@@ -1,0 +1,9 @@
+Django>=2.2.3
+psycopg2
+boto3
+gunicorn
+django-storages
+django-background-tasks
+git+https://github.com/koriaf/django-oidc.git
+python_jwt
+whitenoise

@@ -1,0 +1,91 @@
+documentation_complete: false
+name: Manual Policies and Procedures
+schema_version: 3.1.0
+satisfies:
+- control_key: AC-2
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        XXX You will need to document your account management policies and procedures
+        for GitHub and GCP and your app's users.  There is an excellent 
+        [GSA Account Management Procedures](https://docs.google.com/document/d/1TiqDLPnANT5aPuDUXbj2fR3iYCBqpO1WE6urP8IF0kA/edit)
+        document that you can use for this, as well as looking at what the assessment
+        procedures are in the [LATO SSP_SAR_Test Cases Template](https://docs.google.com/document/d/1ye-MUIq_0cmv8-Lkd41Gx_V0adIiLEho96GwYI_H_8g).
+- control_key: AC-6 (9)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        XXX Document policies here on how often you audit the list of users/admins/etc
+        and critical actions that they have taken in the GCP and GitHub audit logs.
+- control_key: AU-6 (1)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        XXX Document policies here on how often you audit the list of users/admins/etc
+        and critical actions that they have taken in the GCP and GitHub audit logs.
+- control_key: CA-8
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        XXX Document your pentest procedures and the pentest report here.  You will
+        probably have to procure a 3rd Party Assessment Organization (3PAO) to do a
+        pentest on your apps and systems.
+- control_key: CP-7 (1)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        Because the infrastructure is all code, Disaster Recovery into another region
+        should be simple, only requiring a change to the terraform code to change the
+        region and a restore of a database backup from the old region.
+- control_key: PL-8
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        The [DevSecOps Architecture](https://github.com/18F/gcp-appengine-template/blob/master/DEVSECOPS.md)
+        describes the overall system and security architecture.  In particular, the
+        [DevSecOps Requirements](https://github.com/18F/gcp-appengine-template/blob/master/DEVSECOPS.md#devsecops-requirements)
+        section goes into details about the DevSecOps security requirements that this project
+        fulfills.
+
+        XXX Be sure to add information about your app's security architecture either here or in
+        the [DevSecOps Architecture](https://github.com/18F/gcp-appengine-template/blob/master/DEVSECOPS.md)
+        document.
+- control_key: SA-22
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        XXX CircleCI requires you to specify a few specific component versions,
+        such as terraform, the Cloud SDK, any environments you use to do builds/deploys.
+        None are currently old, but you might want to create and document a periodic
+        process to check that all things that have versions are updated if they need to be.
+- control_key: IA-2 (12)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: none
+  narrative:
+    - text: |
+        XXX If your app uses PIV, through login.gov or other mechanism, document that
+        in your app.  Otherwise, say something like
+        "PIV card access is not applicable for this system".
+- control_key: SI-2
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: none
+  narrative:
+    - text: |
+        XXX Document what your policies and procedures for when you receive an OWASP
+        Zap finding that needs remediation.

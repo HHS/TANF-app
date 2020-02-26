@@ -1,0 +1,33 @@
+schema_version: "1.0.0"
+name: TANF Prototype
+metadata:
+  description: "TANF Data Reporting Prototype"
+  maintainers:
+    - timothy.spencer@gsa.gov
+components:
+  - ../upload/compliance
+  - ./components/login.gov
+  - ./components/GitHub
+  - ./components/CircleCI
+  - ./components/ManualProcedures
+dependencies:
+  certifications:
+    - url: https://github.com/18F/GSA-Certifications
+      revision: master
+    - url: https://github.com/opencontrol/certifications
+      revision: master
+  standards:
+    - url: https://github.com/opencontrol/standards
+      revision: master
+  systems:
+# XXX cg-compliance is no longer maintaiend, so this doesn't work.
+#    - url: https://github.com/18F/cg-compliance
+#      revision: master
+# XXX These are actually in cg-compliance, but we are hoping
+# XXX that the leveraged P-ATOs will be enough here that we
+# XXX won't need to include them.
+#    - url: https://github.com/opencontrol/cf-compliance
+#      revision: master
+#    - url: https://github.com/opencontrol/aws-compliance
+#      revision: master
+

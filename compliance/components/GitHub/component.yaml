@@ -1,0 +1,193 @@
+documentation_complete: false
+name: GitHub
+schema_version: 3.1.0
+references:
+  - name: GitHub
+    path: https://github.com/
+    type: URL
+  - name: GitHub Authentication Documentation
+    path: https://help.github.com/en/categories/authenticating-to-github
+    type: URL
+satisfies:
+- control_key: AC-2
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        GitHub users are managed with the tools you can find here:
+        https://help.github.com/en/categories/setting-up-and-managing-organizations-and-teams
+
+        GitHub repos are, by default,
+        read-only except for the repo owner.  Repos can have teams of people added to them
+        (https://help.github.com/en/articles/managing-team-access-to-an-organization-repository)
+        with different access levels 
+        (https://help.github.com/en/articles/repository-permission-levels-for-an-organization).
+- control_key: AC-3
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        GitHub only allows authorized users to make changes to repos.  GitHub authentication
+        is done through ssh keys and two-factor authentication.
+- control_key: AC-6 (5)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        Users are managed in GitHub according to the policies of the Organization
+        they belong to:
+        https://help.github.com/en/categories/setting-up-and-managing-organizations-and-teams
+
+        Generally, this means that Project Owners will be granted Owner permissions,
+        Admins will be granted Admin permissions,
+        Developers will be granted Write permissions,
+        and everybody else will be read-only, or no access, if the repo is a private repo.
+- control_key: AC-6 (9)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        GitHub retains audit log events for your GitHub Organization for 30 days.
+
+        GitHub allows authorized users to review the audit log for their organization:
+        https://help.github.com/en/articles/reviewing-the-audit-log-for-your-organization
+- control_key: AU-2
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        GitHub retains audit log events for your GitHub Organization for 30 days.
+
+        GitHub allows authorized users to review the audit log for their organization:
+        https://help.github.com/en/articles/reviewing-the-audit-log-for-your-organization
+
+        GitHub allows users to audit the changelog and list of Pull Requests for all
+        changes to the code.
+- control_key: CM-2
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        All code for the infrastructure, apps, secrets, and the automation that deploys them is contained
+        in the GitHub project repo:  https://github.com/18F/tanf-prototype
+- control_key: CM-2 (2)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        Whenever Pull Requests are approved for a particular branch/environment, the changes in
+        the Pull Requests will be integrated and CircleCI will be notified that it needs
+        to automatically deploy the changes, thus ensuring that what is deployed is what is
+        in the repo.
+- control_key: CM-3 (1)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        Changes to the application and infrastructure are made through a documented gitops-style workflow.
+        These workflows are documented in the README.md file in the repo.
+
+        The quick summary of these workflows is that users will develop locally, but when their
+        feature is complete enough to want to integrate, they will submit a Pull Request to the
+        "dev" branch, which will notify the GitHub team that changes are available for review.
+        The Pull Request must be individually reviewed and approved by another person before it is
+        incorporated into the dev branch.  Any time the code is changed, it will trigger an
+        automatic deploy of the new code to the proper environment, kick off tests, scan for
+        vulnerabilities, etc.
+        If it looks good, the user can submit a Pull Request for review to staging and after that,
+        production.
+
+        Unapproved Pull Requests can be closed, or the proposed changes can be improved until
+        they meet the approval of the reviewers.  No unapproved changes will be integrated
+        without approval.
+
+        Pull Requests and approval/integration actions will result in email notifications to
+        the GitHub repo Admins and others who have elected to watch the repo, so that they
+        can review the Pull Requests or know when a change was integrated.
+
+        Infrastructure deploys will also require an authorized CircleCI user to log in to CircleCI
+        to review the infrastructure changes that terraform is planning to do.
+        If approved, terraform will apply the changes.
+
+        GitHub supports this process by allowing repo owners to turn on Protected Branches
+        (https://help.github.com/en/articles/about-protected-branches) so that all changes must
+        be reviewed and approved by another person, and by allowing notifications to CircleCI
+        so that it will kick off the automated deploy pipeline.  Additionally, status checks
+        can be required, allowing for automated code security reviews, etc.
+
+        All changes to the codebase are retained in the git log, and discussions and approval
+        records are contained in GitHub Pull Requests.
+- control_key: IA-2
+  standard_key: NIST-800-53
+  control_origins:
+    - inherited
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        All users of GitHub are required to use strong 2-factor 
+        authentication to log in.
+
+        XXX You should be able to show in your organization's policies that you require this, like
+        it does on https://handbook.18f.gov/github/#set-up-two-factor-authentication
+
+        See the [GitHub FedRAMP Package](https://marketplace.fedramp.gov/#/product/github-enterprise-cloud)
+        for the inherited controls.
+- control_key: IA-2 (1)
+  standard_key: NIST-800-53
+  control_origins:
+    - inherited
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        All users of GitHub are required to use strong 2-factor 
+        authentication to log in.
+
+        XXX You should be able to show in your organization's policies that you require this, like
+        it does on https://handbook.18f.gov/github/#set-up-two-factor-authentication
+
+        See the [GitHub FedRAMP Package](https://marketplace.fedramp.gov/#/product/github-enterprise-cloud)
+        for the inherited controls.
+- control_key: IA-2 (2)
+  standard_key: NIST-800-53
+  control_origins:
+    - inherited
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        All users of GitHub are required to use strong 2-factor 
+        authentication to log in.
+
+        XXX You should be able to show in your organization's policies that you require this, like
+        it does on https://handbook.18f.gov/github/#set-up-two-factor-authentication
+
+        See the [GitHub FedRAMP Package](https://marketplace.fedramp.gov/#/product/github-enterprise-cloud)
+        for the inherited controls.
+- control_key: SA-11 (1)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: partial
+  narrative:
+    - text: |
+        XXX GitHub supports many code analysis integrations, which should be set up in the
+        GitHub branch setup step in the
+        [bootstrap process](https://github.com/18F/gcp-appengine-template/blob/master/README.md#bootstrap-process).
+        Document that here.  What integrations you use will depend on what you write your app in, but
+        they should employ static code analysis tools to identify common flaws and document the results of the analysis.
+- control_key: SC-8 (1)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        All GitHub access is done over https.

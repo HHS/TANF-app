@@ -1,0 +1,35 @@
+documentation_complete: true
+name: login.gov
+schema_version: 3.1.0
+references:
+  - name: login.gov Fedramp Package
+    path: https://marketplace.fedramp.gov/#/product/logingov
+    type: URL
+  - name: login.gov
+    path: https://login.gov/
+    type: URL
+satisfies:
+- control_key: AC-2
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        login.gov uses strong multi-factor authentication to authenticate users.
+        It can authenticate using PIV/CAC for federal employees, and uses other
+        standards compliant multi-factor authentications for non-federal users,
+        such as phones, FIDO keys, authentication code applications, etc.
+
+        The upload app admin functionality takes care of user/account management.
+- control_key: AC-3
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        login.gov uses strong multi-factor authentication to authenticate users.
+        It can authenticate using PIV/CAC for federal employees, and uses other
+        standards compliant multi-factor authentications for non-federal users,
+        such as phones, FIDO keys, authentication code applications, etc.
+
+        The upload app admin functionality takes care of user/account management.

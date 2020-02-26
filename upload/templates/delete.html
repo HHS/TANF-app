@@ -1,0 +1,14 @@
+{% extends "base-generic.html" %}
+
+{% block content %}
+	<h1>Delete</h1>
+	<p>Delete an upload to the TANF Data Reporting system!</p>
+
+	<p>Do you really want to delete {{ file }}?</p>
+	<b>It has {{ invaliditems }} issues yet to be resolved, or may be otherwise processing data.</b>
+	<form method="get">
+		{% csrf_token %}
+		<input type="submit" name="confirmed" value="Confirm Delete">
+	</form>
+
+{% endblock %}
