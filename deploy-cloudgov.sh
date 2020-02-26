@@ -97,8 +97,10 @@ fi
 if [ "$1" = "zdt" ] ; then
 	# Do a zero downtime deploy.  This requires enough memory for
 	# two apps to exist in the org/space at one time.
+	cf v3-apply-manifest -f manifest.yml
 	cf v3-zdt-push tanf --no-route || exit 1
 else
+	cf v3-apply-manifest -f manifest.yml
 	cf v3-push tanf --no-route
 
 	# we have to do this after the tanf app is deployed
