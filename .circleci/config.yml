@@ -57,10 +57,16 @@ jobs:
               echo "CF_SPACE is hardcoded already"
             elif [ "$CIRCLE_BRANCH" = master ] ; then
               export CF_SPACE="tanf-prod"
+              export CF_USERNAME="$CF_USERNAME_PROD"
+              export CF_PASSWORD="$CF_PASSWORD_PROD"
             elif [ "$CIRCLE_BRANCH" = staging ] ; then
               export CF_SPACE="tanf-staging"
+              export CF_USERNAME="$CF_USERNAME_STAGING"
+              export CF_PASSWORD="$CF_PASSWORD_STAGING"
             elif [ "$CIRCLE_BRANCH" = dev ] ; then
               export CF_SPACE="tanf-dev"
+              export CF_USERNAME="$CF_USERNAME_DEV"
+              export CF_PASSWORD="$CF_PASSWORD_DEV"
             else
               export CF_SPACE="$CIRCLE_BRANCH"
             fi

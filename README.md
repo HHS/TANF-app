@@ -77,9 +77,24 @@ To enable this, go to [CircleCI](https://circleci.com/), log in, and click on "A
 Find this github repo and enable builds on it.  Then, add the following environment variables
 to the build settings:
 * `CF_ORG`:  This is your cloud.gov org that you are deploying this to.
-* `CF_USERNAME`:  This is the username that you can get with the `cf service-key tanf-keys deployer` command
-* `CF_PASSWORD`:  This is the password that you can get with the `cf service-key tanf-keys deployer` command
-* `CGHOSTNAME`:  This is the hostname that will be routed to the app, like `https://CGHOSTNAME.app.cloud.gov/`
+* `CF_USERNAME_PROD`:  This is the username that you can get with the `cf service-key tanf-keys deployer` command
+  in the production cloud.gov space
+* `CF_PASSWORD_PROD`:  This is the password that you can get with the `cf service-key tanf-keys deployer` command
+  in the production cloud.gov space
+* `CF_USERNAME_STAGING`:  This is the username that you can get with the `cf service-key tanf-keys deployer` command
+  in the staging cloud.gov space
+* `CF_PASSWORD_STAGING`:  This is the password that you can get with the `cf service-key tanf-keys deployer` command
+  in the staging cloud.gov space
+* `CF_USERNAME_DEV`:  This is the username that you can get with the `cf service-key tanf-keys deployer` command
+  in the dev cloud.gov space
+* `CF_PASSWORD_DEV`:  This is the password that you can get with the `cf service-key tanf-keys deployer` command
+  in the dev cloud.gov space
+* `CGHOSTNAME_PROD`:  This is the hostname that will be routed to the app, like `https://CGHOSTNAME.app.cloud.gov/`
+  in the production cloud.gov space
+* `CGHOSTNAME_STAGING`:  This is the hostname that will be routed to the app, like `https://CGHOSTNAME.app.cloud.gov/`
+  in the staging cloud.gov space
+* `CGHOSTNAME_DEV`:  This is the hostname that will be routed to the app, like `https://CGHOSTNAME.app.cloud.gov/`
+  in the dev cloud.gov space
 
 Once all this is set up, you can create branches and commit code to them,
 and it will run the tests for you  You can see the results in github, and you can click through to
