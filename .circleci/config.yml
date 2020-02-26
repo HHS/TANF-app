@@ -92,3 +92,4 @@ workflows:
               # Add branches here if you want more dev/staging/whatever environments to get autodeployed
               only:
                 - master
+                - dev
