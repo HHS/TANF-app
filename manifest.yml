@@ -14,7 +14,7 @@ applications:
   processes:
   - type: worker
     command: python3 manage.py process_tasks --log-std
-    memory: 256M
+    memory: 400M
     instances: 1
     env:
       DISABLE_COLLECTSTATIC: 1
