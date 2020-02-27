@@ -65,7 +65,7 @@ run after each deploy.  This will cause a minute or two of downtime.
 
 ### Set up CI/CD
 
-First, make sure that you have already run all the setup to get the app going in
+First, make sure that you have already run all the setup above to get the app going in
 cloud.gov.
 
 This is set up to run in [CircleCI](https://circleci.com/).  There is a
