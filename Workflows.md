@@ -10,7 +10,7 @@ have oversight and will work.
 
   * You develop locally, pushing changes up to your own feature/fix branch in github
     and building/running tests locally.  If you are developing code to address
-    compliance needs, be sure to update the [compliance documentation](#Compliance-Masonry).
+    compliance needs, be sure to update the compliance documentation.
   * Once you have something that is tested and worthy of going out, you can Pull Request
     (PR) it into the dev branch, where it will be automatically deployed to the dev
     version of the app in cloud.gov and have it's tests run against it.
