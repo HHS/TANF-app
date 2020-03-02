@@ -8,6 +8,18 @@ in a database.
 
 To do local development, you can run this application on your local system.  Here is how
 to get this going:
+* Make sure that [Docker is installed on your system](https://docs.docker.com/install/).
+* Run `./test.sh nodelete` to launch the app using docker-compose.
+* You should be able to access the app on http://localhost:8000/
+
+The app will be running in debug mode and with login.gov disabled.  You will be
+able to log in as `timothy.spencer@gsa.gov` with any password and be an admin in
+the app.  You can stream logs by saying `docker-compose logs -f`.
+
+Be aware that whenever you run `test.sh`, it will entirely delete and recreate the
+database, so you will lose any data you had uploaded to this instance!
+
+You can also run it on your local system without Docker with a few more commands:
 * Make sure that python3 is running on your system.  You can consult one of the
   many guides on the Internet on how to do this, but here's one that has some good
   links:  [Properly Installing Python](https://docs.python-guide.org/starting/installation/)
@@ -18,6 +30,7 @@ to get this going:
   email address.
 * Run the app!  `NOLOGINGOV=TRUE DEBUG=true ./manage.py runserver`
 * You should be able to access the app on http://localhost:8000/
+
 
 ### Testing
 All good applications should be tested.  Here's how you can execute the tests after your
