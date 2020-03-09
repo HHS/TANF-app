@@ -1,0 +1,29 @@
+{% extends "base-generic.html" %}
+
+{% block content %}
+	<h1>Status</h1>
+	<p>Check on status for data uploaded to the TANF Data Reporting system!</p>
+
+	<table>
+		<th>Status</th>
+		<th>List of Submitted Files:</th>
+	{% for f, status in filelist %}
+		<tr>
+			<td>{{ status }}</td>
+			<td><a href={% url 'fileinfo' file=f %}>{{ f }}</a></td>
+			<td><a href={% url 'download' file=f %} download>Download Original</a></td>
+			<td><a href={% url 'download' file=f json=True %} download>Download JSON</a></td>
+			<td><a href={% url 'delete' file=f %}>DELETE</a></td>
+		</tr>
+	{% endfor %}
+	</table>
+
+	<br>
+	<p>To remove all the successful file uploads from this list, click here:
+		<form method="post" action={% url 'deletesuccessful' %}>
+			{% csrf_token %}
+			<input type="submit" name="cleanup" value="Remove Successful">
+		</form>
+	</p>
+
+{% endblock %}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% block title %}<title>TANF Data Reporting</title>{% endblock %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <!-- Add additional CSS in static file -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-2">
+      {% block sidebar %}
+        <ul class="sidebar-nav">
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="{% url 'upload' %}">Upload</a></li>
+          <li><a href="{% url 'status' %}">Status</a></li>
+          <li><a href="{% url 'viewtables' %}">View Tables</a></li>
+          <li><a href="{% url 'viewquarter' %}">View Calendar Quarter</a></li>
+          {% if user.is_staff %}
+          <li><a href="{% url 'useradmin' %}">User Admin</a></li>
+          {% endif %}
+        </ul>
+        {% if user.is_authenticated %}
+          <p>Current user: {{ user.email }}</p>
+          <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <input type="submit" value="logout">
+          </form>
+        {% endif %}
+     {% endblock %}
+      </div>
+      <div class="col-sm-10 ">{% block content %}{% endblock %}</div>
+    </div>
+  </div>
+</body>
+</html>

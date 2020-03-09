@@ -1,0 +1,136 @@
+documentation_complete: false
+name: CircleCI
+schema_version: 3.1.0
+references:
+  - name: CircleCI Documentation
+    path: https://circleci.com/docs/
+    type: URL
+  - name: CircleCI leverages GitHub for all of it's Auth and user management
+    path: https://circleci.com/blog/permissions-101-understanding-permissions-on-circleci/
+    type: URL
+  - name: OWASP ZAP Project
+    path: https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project
+    type: URL
+satisfies:
+- control_key: AC-2
+  standard_key: NIST-800-53
+  covered_by: []
+  control_origins:
+    - inherited
+  implementation_status: complete
+  narrative:
+    - text: |
+        CircleCI uses GitHub for all of it's authentication and authorization.
+- control_key: AC-3
+  standard_key: NIST-800-53
+  covered_by: []
+  control_origins:
+    - inherited
+  implementation_status: complete
+  narrative:
+    - text: |
+        CircleCI uses GitHub for all of it's authentication and authorization.
+- control_key: RA-5
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        The CircleCI deployment pipeline for all apps will
+        be automatically scanned by the OWASP ZAP scanner: 
+        https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project
+- control_key: CM-2 (2)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        The CircleCI deployment pipeline for apps and infrastructure is entirely automated,
+        and thus the resulting system should always reflect the code in the GitHub repo for
+        the proper branch/environment and the current best
+        DevSecOps practices.
+        Whenever changes to the code are approved and integrated for a particular
+        branch/environment, those changes are automatically rolled out.
+- control_key: CM-6 (1)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        The CircleCI deployment pipeline automatically configures the infrastructure
+        that it deploys by using terraform.  Terraform stores it's state so that
+        the next time it runs, it can notice if somebody has changed/removed an
+        aspect of that infrastructure, and if so, correct it.
+        The configuration can be verified by running the `plan_terraform` task
+        and looking at what, if any, changes it thinks it needs to do to bring
+        the infrastructure up to date.
+
+        The CircleCI deployment pipeline configures all applications deployed with it
+        by using a Google App Engine `app.yaml` file, which specifies every aspect of
+        how the app is configured.  The pipeline automatically uses secrets and other
+        configuration data that terraform creates and manages, so the only manual
+        configuration is that which is required to bootstrap the environment or
+        which must be supplied externally.
+
+        No configuration is ever deployed by CircleCI that is not specified in the code.
+- control_key: AU-6 (1)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        CircleCI retains build and deploy logs for an undocumented amount of time, but
+        at least 12 months.  This allows Admins to audit code deploys.
+- control_key: IA-2
+  standard_key: NIST-800-53
+  control_origins:
+    - inherited
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        CircleCI uses GitHub for all of it's authentication and authorization.
+- control_key: IA-2 (1)
+  standard_key: NIST-800-53
+  control_origins:
+    - inherited
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        CircleCI uses GitHub for all of it's authentication and authorization.
+- control_key: IA-2 (2)
+  standard_key: NIST-800-53
+  control_origins:
+    - inherited
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        CircleCI uses GitHub for all of it's authentication and authorization.
+- control_key: SC-8 (1)
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        All CircleCI access is done over https.
+- control_key: SI-2
+  standard_key: NIST-800-53
+  covered_by: []
+  implementation_status: complete
+  narrative:
+    - text: |
+        The CircleCI deployment pipeline for all apps deployed will
+        be automatically scanned by the OWASP ZAP scanner: 
+        https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project
+
+        The CircleCI deployment pipeline for all apps deployed will
+        have tests run against them so that as new deployments get deployed with
+        updated runtimes to verify that the updates are non-breaking.
+
+        These scans and tests are run in the dev/staging environments upon deployment,
+        so if there are problems, they can be resolved in the lower environments before they
+        reach production.
+
+        If flaws are noticed by OWASP ZAP or the tests, CircleCI will notify the Admins.

@@ -1,0 +1,6 @@
+venv
+*.sqlite3
+*.sqlite3-journal
+**/__pycache__
+tmp
+*.pem

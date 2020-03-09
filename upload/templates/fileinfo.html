@@ -1,0 +1,23 @@
+{% extends "base-generic.html" %}
+
+{% block content %}
+	<h1>File Upload Info</h1>
+	<p>Check on status for a file uploaded to the TANF Data Reporting system!</p>
+
+	<table>
+		<th>Status:</th>
+	{% for message in status %}
+		<tr><td>{{ message }}</td></tr>
+	{% endfor %}
+	</table>
+
+	<table>
+		<th>Issues:</th>
+<!-- 	{% for message in invalidata %}
+		<tr><td>{{ message }}</td></tr>
+	{% endfor %}
+ -->	
+ 		<tr><td>{{ invalidata }}</td></tr>
+	</table>
+
+{% endblock %}
