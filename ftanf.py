@@ -8,8 +8,8 @@ import sys
 import datetime
 
 with open(sys.argv[1]) as csvfile:
-    # first line is empty
-    next(csvfile)
+    # # first line is empty
+    # next(csvfile)
 
     # next couple of lines seem to be metadata?
     next(csvfile)
@@ -53,10 +53,14 @@ with open(sys.argv[1]) as csvfile:
         statefipscode = row.popitem(last=False)
         tribalcode = row.popitem(last=False)
         mylengths = lengths.copy()
+        myline = ''
         for _, v in row.items():
             length = mylengths.pop(0)
-            print(f'{v:{length}}', end='')
-        print()
+            myline = myline + f'{v:{length}}'
+        if myline.startswith(('T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7')):
+            print(myline)
+        else:
+            print('invalid line: ' + myline, file=sys.stderr)
 
     # print the trailer out
     print('TRAILER' + 'XXX')
