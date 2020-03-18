@@ -48,19 +48,40 @@ with open(sys.argv[1]) as csvfile:
 
     # process the file
     csvreader = csv.DictReader(csvfile)
+    recordcount = 0
     for row in csvreader:
-        comment = row.popitem(last=False)
-        statefipscode = row.popitem(last=False)
-        tribalcode = row.popitem(last=False)
+        # harvest a few metadata items first
+        _, comment = row.popitem(last=False)
+        _, statefipscode = row.popitem(last=False)
+        _, tribalcode = row.popitem(last=False)
+        _, recordtype = row.popitem(last=False)
+
         mylengths = lengths.copy()
-        myline = ''
-        for _, v in row.items():
+        myline = recordtype.rjust(int(mylengths.pop(0)))
+        for k, v in row.items():
             length = mylengths.pop(0)
-            myline = myline + f'{v:{length}}'
+            try:
+                length = int(length)
+            except ValueError:
+                # if there is no length set, try a default.
+                # XXX probably should just not handle this so that the spreadsheet gets fixed
+                print('no length for column: ' + k + ' Using 8 as a default', file=sys.stderr)
+                length = 8
+            length = int(length)
+
+            # right justify strings and zero pad numbers
+            try:
+                v = int(v)
+                myline = myline + str(v).rjust(int(length), '0')
+            except ValueError:
+                myline = myline + v.rjust(int(length))
+
+        # Do some validation to make sure that this is a real line
         if myline.startswith(('T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7')):
             print(myline)
+            recordcount = recordcount + 1
         else:
             print('invalid line: ' + myline, file=sys.stderr)
 
     # print the trailer out
-    print('TRAILER' + 'XXX')
+    print('TRAILER' + str(recordcount).rjust(7, '0') + '         ')
