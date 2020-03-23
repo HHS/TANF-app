@@ -1,72 +1,112 @@
 #!/usr/bin/env python3
 #
 # This script takes a CSV export of the Aggregate table in the FTANF
-# spreadsheet
+# spreadsheet.  It is _really_ format-dependent, so if OFA changes the
+# format of that xls, you will need to fix this to match.  CSV is such
+# a terrible format.
+#
+# usage:  ./ftanf.py /path/to/exported.csv > tanfdatareportingfile.txt
 #
 import csv
 import sys
-import datetime
+
+
+def popFromFront(mydictionary):
+    keys = list(mydictionary.keys())
+    key = keys[0]
+    return mydictionary, mydictionary.pop(key)
+
+
+def readLineStripLabel(f):
+    line = f.readline()
+    linethings = line.rstrip().split(',')
+    # get rid of label at start of line
+    linethings.pop(0)
+    return linethings
+
 
 with open(sys.argv[1]) as csvfile:
-    # # first line is empty
-    # next(csvfile)
+    ############################################
+    # first section is the HEADER section
+    headerline = csvfile.readline()
+    if 'HEADER' not in headerline:
+        raise Exception('MissingSection', 'missing header line!')
 
-    # next couple of lines seem to be metadata?
+    # header titles
+    next(csvfile)
+
+    # header field lengths
+    next(csvfile)
+
+    # header field froms
+    next(csvfile)
+
+    # header field tos
+    next(csvfile)
+
+    # header comments
+    next(csvfile)
+
+    # header data!
+    headerdataline = csvfile.readline()
+    headerdata = headerdataline.rstrip().split(',')
+
+    # print the header out
+    headerstring = 'HEADER'
+    for i in range(2, 9):
+        headerstring = headerstring + headerdata[i]
+    print(headerstring)
+
+    # empty line
+    next(csvfile)
+
+    ############################################
+    # next is section 3 aggregate data
+    section3line = csvfile.readline()
+    if 'SECTION 3 - AGGREGATE' not in section3line:
+        print(section3line)
+        raise Exception('MissingSection', 'missing section 3 aggregate data!')
+
+    # metadata lines
     next(csvfile)
     next(csvfile)
-
-    # next line is the item #
     next(csvfile)
 
     # Descripton line!
-    dline = csvfile.readline()
-    descriptions = dline.rstrip().split(',')
+    descriptions = readLineStripLabel(csvfile)
 
     # length line
-    lline = csvfile.readline()
-    lengths = lline.rstrip().split(',')
-    # get rid of cruft at start of line
-    lengths.pop(0)
-    lengths.pop(0)
-    lengths.pop(0)
+    lengths = readLineStripLabel(csvfile)
 
     # from line
-    fline = csvfile.readline()
-    froms = fline.rstrip().split(',')
+    froms = readLineStripLabel(csvfile)
 
     # to line
-    tline = csvfile.readline()
-    tos = tline.rstrip().split(',')
+    tos = readLineStripLabel(csvfile)
 
     # commentline
-    cline = csvfile.readline()
-    comments = cline.rstrip().split(',')
+    comments = readLineStripLabel(csvfile)
 
-    # print the header out
-    nowdate = datetime.datetime.now()
-    print('HEADER' + str(nowdate.year) + str((nowdate.month - 1) // 3 + 1) + 'XXX')
+    # itemline
+    itemthings = readLineStripLabel(csvfile)
 
     # process the file
-    csvreader = csv.DictReader(csvfile)
+    csvreader = csv.DictReader(csvfile, fieldnames=descriptions)
     recordcount = 0
     for row in csvreader:
         # harvest a few metadata items first
-        _, comment = row.popitem(last=False)
-        _, statefipscode = row.popitem(last=False)
-        _, tribalcode = row.popitem(last=False)
-        _, recordtype = row.popitem(last=False)
+        row, comment = popFromFront(row)
+        row, recordtype = popFromFront(row)
 
         mylengths = lengths.copy()
         myline = recordtype.rjust(int(mylengths.pop(0)))
-        for k, v in row.items():
+        for _, v in row.items():
             length = mylengths.pop(0)
             try:
                 length = int(length)
             except ValueError:
-                # if there is no length set, try a default.
-                # XXX probably should just not handle this so that the spreadsheet gets fixed
-                print('no length for column: ' + k + ' Using 8 as a default', file=sys.stderr)
-                length = 8
+                # if there is no length set, we are at the end, so stop processing
+                continue
             length = int(length)
 
             # right justify strings and zero pad numbers
@@ -81,7 +121,7 @@ with open(sys.argv[1]) as csvfile:
             print(myline)
             recordcount = recordcount + 1
         else:
-            print('invalid line: ' + myline, file=sys.stderr)
+            print('skipping invalid line: ' + myline, file=sys.stderr)
 
     # print the trailer out
     print('TRAILER' + str(recordcount).rjust(7, '0') + '         ')
