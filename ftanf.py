@@ -61,6 +61,7 @@ with open(sys.argv[1]) as csvfile:
 
         h = headerdata.pop(0)
 
+        # right justify strings and zero pad numbers
         try:
             h = int(h)
             headerstring = headerstring + str(h).rjust(int(length), '0')
