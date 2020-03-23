@@ -36,7 +36,7 @@ with open(sys.argv[1]) as csvfile:
     next(csvfile)
 
     # header field lengths
-    next(csvfile)
+    headerfieldlengths = readLineStripLabel(csvfile)
 
     # header field froms
     next(csvfile)
@@ -48,13 +48,26 @@ with open(sys.argv[1]) as csvfile:
     next(csvfile)
 
     # header data!
-    headerdataline = csvfile.readline()
-    headerdata = headerdataline.rstrip().split(',')
+    headerdata = readLineStripLabel(csvfile)
+
+    # build the headerstring from the header data
+    headerstring = ''
+    for i in headerfieldlengths:
+        try:
+            length = int(i)
+        except ValueError:
+            # if there is no length set, we are at the end, so stop processing
+            continue
+
+        h = headerdata.pop(0)
+
+        try:
+            h = int(h)
+            headerstring = headerstring + str(h).rjust(int(length), '0')
+        except ValueError:
+            headerstring = headerstring + h.rjust(int(length))
 
     # print the header out
-    headerstring = 'HEADER'
-    for i in range(2, 9):
-        headerstring = headerstring + headerdata[i]
     print(headerstring)
 
     # empty line
