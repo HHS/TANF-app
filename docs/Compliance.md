@@ -1,16 +1,13 @@
 # ATO and compliance considerations
 
 Every federal information system must be granted an Authority To Operate (ATO)
-by an Authorizing Official in order to go into production.  A good overview of
-the process can be found in this [excellent ATO overview](https://docs.google.com/presentation/d/1x-Bt8uyW-szHarglY57fFcC6PRCpUGFLe07uOvt93uk/edit#slide=id.g1f710bd7ce_0_847)
-and a more in-depth look can be found in [18F's before-you-ship docs](https://before-you-ship.18f.gov/ato/).  There
+by an Authorizing Official in order to go into production.  A good in-depth
+look can be found in [18F's before-you-ship docs](https://before-you-ship.18f.gov/ato/).  There
 are currently a few options for getting an ATO:
 * A [FedRAMP Tailored](https://tailored.fedramp.gov/) package.
 * A full [FedRAMP JAB ATO](https://www.fedramp.gov/jab-authorization/).
-* A GSA LATO (Lightweight ATO), which can be found by searching for "Lightweight
-  Security Authorization Guide" on 
-  [this page](https://insite.gsa.gov/topics/information-technology/security-and-privacy/it-security/it-security-procedural-guides)
-* Other agencies may have their own ATO process.
+* An agency ATO.  Every agency has their own process for issuing an ATO.
+  An example of this is the GSA LATO (Lightweight ATO) process.
 
 What ATO you get depends on what your project needs.  If you are doing this in
 the GSA, you will probably want to follow the GSA LATO process, and most of the
@@ -18,6 +15,11 @@ compliance data that we have collected here is aimed at fulfilling that process.
 That said, all of these ATO processes all map back to the NIST 800-53 controls,
 so if you decide on a different ATO package, you ought to be able to use the
 GSA LATO compliance data to help speed your ATO journey along.
+
+*NOTE:*  This is an *example* here.  We are expecting
+much of this documentation to be rewritten or significantly extended
+by the vendor as they develop the TANF application and work with the HHS
+ISSO and their particular ATO package.
 
 ## Compliance Masonry
 
@@ -60,38 +62,38 @@ documentation you created with your code in a
 or a [PDF](https://github.com/opencontrol/compliance-masonry/blob/master/docs/gitbook.md#export-as-a-pdf)
 that you can consult while filling out your ATO package.
 
-## GSA LATO Process
+## Generic ATO Process
 
-The process that we are documenting here is aimed at getting a 
-"One year Limited ATO" or "Three-year Full ATO", depending on whether your
-system is classified as FIPS 199 Moderate or FIPS 199 Low.  There is also an
-option to get a 90 day ATO simply by getting pentested, but after that 90 day
-ATO expires, you cannot renew it, and must step up to the 1 or 3 year ATO.
-
-Other ATO types can probably roughly follow this process and use the GSA
-LATO data to fill out their SSP template.  There will probably be additional
-controls that you will need to document for those, as well as different
-documents to follow, different Authorizing Officials and other contacts,
-etc.  You will have to figure that out.
+This process is lightly modeled on the GSA LATO process, and is hopefully
+similar enough to the HHS ATO process that it will be helpful in understanding
+roughly what needs to be done, the roles that people will play,
+and will generate documentation that will
+be useful in filling out an SSP template for their agency.
 
 To apply for a GSA LATO, you should:
-1. Download the [Lightweight Security Authorization Guide](https://insite.gsa.gov/cdnstatic/insite/Lightweight_Security_Authorization_Process_%5BCIO_IT_Security_14-68_Rev_6%5D_04-25-2018.docx)
-   from [insite](https://insite.gsa.gov/topics/information-technology/security-and-privacy/it-security/it-security-procedural-guides)
-   and read it over.  This is the generic process for getting a LATO.
+1. Talk to your CISO or security team about where your ATO process is documented
+   and what needs to be done to start the ATO process.  They may assign you an
+   ISSO for you to talk with about this, who can help you get your ATO package
+   and understand the procedure for real.
 1. Read the 18F [Before You Ship](https://before-you-ship.18f.gov/ato/) document.
-   It is much better at explaining what you should do in regular language, but
-   has some cloud.gov-specific sections in it that you might need to
-   work around, so keep that in mind as you follow the process.  If you are
-   not in 18F, you may also have to skip some of the 18F-specific processes,
-   and instead use your own local ATO-related processes.
-1. Begin following the process outlined in https://before-you-ship.18f.gov/ato/.
-1. When selecting controls, you will select the controls contained in Appendix B of the 
-   [Lightweight Security Authorization Guide](https://insite.gsa.gov/cdnstatic/insite/Lightweight_Security_Authorization_Process_%5BCIO_IT_Security_14-68_Rev_6%5D_04-25-2018.docx).
-1. When documenting the controls, be aware that much of the controls are
-   [already documented](#compliance-documentation).  You will only need
-   to additionally document the controls relevant to your application that
-   you have deployed using this template, as well as any changes to the
-   infrastructure (if any).
+   It is probably much better at explaining what you should do in regular language.
+   You will have to skip some of the 18F-specific processes,
+   and instead use your own agency's ATO-related processes, but it should give you
+   an idea of what things you will be doing.
+1. Begin following the process outlined in the HHS ATO package or other documentation
+   that your ISSO provides.
+1. When selecting controls, you will select the controls specified in your
+   ATO package or otherwise specified by your ISSO.
+1. When documenting the controls, be aware that many controls have been stubbed
+   out in the compliance directory, but you will probably need to add more
+   detail, and probably more controls in general.
+1. Be sure to heavily leverage the P-ATOs on file with the FedRAMP program for cloud.gov,
+   login.gov, and CircleCI.  They will probably take care of most of your controls,
+   leaving you to document only your application and it's administration.
+
+   This will require coordination with the ISSO, and cloud.gov has some
+   [good documentation](https://cloud.gov/docs/compliance/ato-process/) on how
+   that process works.
 1. When you get to where you are filling out the [SSP](https://before-you-ship.18f.gov/ato/ssp/),
    you will want to generate the [compliance documentation](#compliance-documentation)
    from your project and use that information to help you understand what/how
@@ -105,20 +107,20 @@ To apply for a GSA LATO, you should:
    1. open `Tanf-app/compliance/exports/pdf/tanf_compliance.pdf`
       in your favorite PDF viewer.
 
-   Most of the sections in the [SSP Template](https://docs.google.com/document/d/1ye-MUIq_0cmv8-Lkd41Gx_V0adIiLEho96GwYI_H_8g/edit#heading=h.nc0r2rvqrwc4)
-   (which you can find in Appendix A of the [Lightweight Security Authorization Guide](https://insite.gsa.gov/cdnstatic/insite/Lightweight_Security_Authorization_Process_%5BCIO_IT_Security_14-68_Rev_6%5D_04-25-2018.docx))
+   Most of the sections in your SSP Template
    will have some text in the [GitBook](https://github.com/opencontrol/compliance-masonry/blob/master/docs/gitbook.md)
    that you can copy or use as a guide to fill out the various sections
    and controls, in addition to the more general guidance in the
    [SSP documentation](https://before-you-ship.18f.gov/ato/ssp/).
-1. Continue executing the process outlined in the 18F [Before You Ship](https://before-you-ship.18f.gov/ato/)
-   document until you have your ATO!
+1. Continue executing the process outlined in your agency ATO package or other
+   documentation from your ISSO until you have your ATO!
 
-## Continuing Maintenance of GSA LATO
+## Continuing Maintenance of the ATO
 
 You may need to re-authorize your ATO if you make significant changes to
 the system, especially if they change the security posture of the system.
-You will also need to renew your ATO once a year.
+You will also need to renew your ATO regularly according to a schedule
+set by your ISSO.
 
 These processes are also documented at a high level in the
 18F [Before You Ship](https://before-you-ship.18f.gov/ato/) document.

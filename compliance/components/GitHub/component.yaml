@@ -93,7 +93,8 @@ satisfies:
   narrative:
     - text: |
         Changes to the application and infrastructure are made through a documented gitops-style workflow.
-        These workflows are documented in the Workflows.md file in the repo.
+        These workflows are documented in the https://github.com/HHS/TANF-app/blob/master/docs/Workflows.md
+        file in the repo.
 
         The quick summary of these workflows is that users will develop locally, but when their
         feature is complete enough to want to integrate, they will submit a Pull Request to the

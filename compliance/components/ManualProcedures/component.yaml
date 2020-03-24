@@ -46,7 +46,10 @@ satisfies:
     - text: |
         Because the infrastructure is all code, Disaster Recovery
         should be simple, only requiring a relaunch and a restore of a database backup
-        from the old system.
+        from the old system.  Relaunching is documented in https://github.com/HHS/TANF-app/blob/master/docs/Running.md,
+        and database backups can be done with https://cloud.gov/docs/services/relational-database/#export.
+
+        XXX this prototype does not do db backups automatically.  This should probably be implemented, and documented here.
 - control_key: PL-8
   standard_key: NIST-800-53
   covered_by: []
