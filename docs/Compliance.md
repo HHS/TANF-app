@@ -86,7 +86,8 @@ To apply for a GSA LATO, you should:
    ATO package or otherwise specified by your ISSO.
 1. When documenting the controls, be aware that many controls have been stubbed
    out in the compliance directory, but you will probably need to add more
-   detail, and probably more controls in general.
+   detail, and probably more controls in general.  Wherever you see `XXX` in
+   the documentation, you will definitely need to fill out details for the control.
 1. Be sure to heavily leverage the P-ATOs on file with the FedRAMP program for cloud.gov,
    login.gov, and CircleCI.  They will probably take care of most of your controls,
    leaving you to document only your application and it's administration.
