@@ -62,6 +62,6 @@ services:
       <<: *pythonenv
     command: python3 manage.py process_tasks --log-std
     restart: on-failure
-  # zaproxy:
-  #   image: owasp/zap2docker-weekly
-  #   command: sleep 3600
+  zaproxy:
+    image: owasp/zap2docker-weekly
+    command: sleep 3600
