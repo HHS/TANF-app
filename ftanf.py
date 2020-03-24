@@ -76,10 +76,10 @@ with open(sys.argv[1]) as csvfile:
 
     ############################################
     # next is section 3 aggregate data
-    section3line = csvfile.readline()
-    if 'SECTION 3 - AGGREGATE' not in section3line:
-        print(section3line)
-        raise Exception('MissingSection', 'missing section 3 aggregate data!')
+    sectionline = csvfile.readline()
+    if 'SECTION' not in sectionline:
+        print(sectionline)
+        raise Exception('MissingSection', 'missing section data!')
 
     # metadata lines
     next(csvfile)
