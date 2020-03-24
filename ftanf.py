@@ -75,7 +75,7 @@ with open(sys.argv[1]) as csvfile:
     next(csvfile)
 
     ############################################
-    # next is section 3 aggregate data
+    # next is section data (section 1, 2, 3, etc)
     sectionline = csvfile.readline()
     if 'SECTION' not in sectionline:
         print(sectionline)
