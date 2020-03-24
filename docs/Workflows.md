@@ -57,6 +57,39 @@ Note:
 the credentials will only work and the database will only be accessible while
 you have your authenticated `connect-to-service` session going.
 
+## Infrastructure changes
+
+The infrastructure is pretty simple and shouldn't require many changes.
+However, if you do need more infrastructure, there are a few systems that
+you should be able to change to make this happen.
+
+### CircleCI
+
+CircleCI is configured through `.circleci/config.yml`.  This defines the
+dev/staging/prod test/deploy steps, and probably will need to be altered if
+you need to change things with how tests/deploys run.
+
+Information on how to configure CircleCI can be found in 
+[their documentation](https://circleci.com/docs/2.0/configuration-reference/).
+
+### cloud.gov
+
+`deploy_cloudgov.sh` is the script that CircleCI uses to deploy code.  It is
+also a pretty good place to do things like add more code to set up more
+services/infrastructure inside of cloud.gov.  Look at how the postgres db and
+S3 buckets are created there.  One of the OFA staff who have admin privs in
+the staging/prod environments will need to run scripts that do this, but
+the dev environment should be free for experimentation for developers.
+
+Also, the application environment is somewhat configured through the
+`manifest.yml` file.  So if you want to use rails instead of django, you
+may need to do things here to make sure it runs properly.
+
+More information on this can be found in cloud.gov's 
+[Production Ready Guide](https://cloud.gov/docs/deployment/production-ready/).
+
+### 
+
 ## Secrets Rotation Workflow
 
 The main secrets in the system are the login.gov OIDC key, as well
