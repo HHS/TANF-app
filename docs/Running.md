@@ -43,6 +43,9 @@ The python test suites should run and exit cleanly.
 ## Run this on cloud.gov
 
 You can also deploy this application on [cloud.gov](https://cloud.gov/).
+For each environment (dev, staging, prod, or a personal sandbox), you will
+need to get into the proper cloud.gov space and do the following:
+
 * You will need to get [credentials for cloud.gov](https://cloud.gov/signup/), as
   well as [set up the command line cf utility](https://cloud.gov/docs/getting-started/setup/#set-up-the-command-line).
 * Once you have your credentials and are logged in, `./deploy-cloudgov.sh setup`
