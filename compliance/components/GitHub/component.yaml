@@ -93,7 +93,7 @@ satisfies:
   narrative:
     - text: |
         Changes to the application and infrastructure are made through a documented gitops-style workflow.
-        These workflows are documented in the README.md file in the repo.
+        These workflows are documented in the Workflows.md file in the repo.
 
         The quick summary of these workflows is that users will develop locally, but when their
         feature is complete enough to want to integrate, they will submit a Pull Request to the
@@ -112,10 +112,6 @@ satisfies:
         Pull Requests and approval/integration actions will result in email notifications to
         the GitHub repo Admins and others who have elected to watch the repo, so that they
         can review the Pull Requests or know when a change was integrated.
-
-        Infrastructure deploys will also require an authorized CircleCI user to log in to CircleCI
-        to review the infrastructure changes that terraform is planning to do.
-        If approved, terraform will apply the changes.
 
         GitHub supports this process by allowing repo owners to turn on Protected Branches
         (https://help.github.com/en/articles/about-protected-branches) so that all changes must
@@ -179,9 +175,8 @@ satisfies:
   implementation_status: partial
   narrative:
     - text: |
-        XXX GitHub supports many code analysis integrations, which should be set up in the
-        GitHub branch setup step in the
-        [bootstrap process](https://github.com/18F/gcp-appengine-template/blob/master/README.md#bootstrap-process).
+        XXX GitHub supports many code analysis integrations, which should be set up in
+        GitHub.
         Document that here.  What integrations you use will depend on what you write your app in, but
         they should employ static code analysis tools to identify common flaws and document the results of the analysis.
 - control_key: SC-8 (1)

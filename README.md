@@ -4,133 +4,60 @@ This repo has a prototype for a TANF Data Reporting system, where States,
 Territories, and Tribes can upload TANF data and get it validated and stored
 in a database.
 
-## Run this locally
+OFA has partnered with 18F to conduct the initial research, scoping, prototyping,
+and strategy for the new TDRS. 18F has laid the groundwork for a modern and sustainable
+software development process and removed as many barriers as possible for the incoming
+contractor team. This information may highlight important considerations for future
+development team, and should not constrain vendor’s technical approach submissions.
 
-To do local development, you can run this application on your local system.  Here is how
-to get this going:
-* Make sure that [Docker is installed on your system](https://docs.docker.com/install/).
-* Run `./test.sh nodelete` to launch the app using docker-compose.
-* You should be able to access the app on http://localhost:8000/
+The current TDRS is so old, fragile, and difficult to access that 18f only leveraged
+the existing data format that grantees use to submit their data to TDRS and did not
+develop any direct access to the system. This data format is not extensible, not
+human-readable, and does not have adequate documentation. However, the data format
+is standardized and does not immediately require the grantees to change their data
+generation processes. Both OFA staff and grantees would like a user interface for
+entering data in the new  system, but developing this will require more user research.
 
-The app will be running in debug mode and with login.gov disabled.  You will be
-able to log in as `timothy.spencer@gsa.gov` with any password and be an admin in
-the app.  You can stream logs by saying `docker-compose logs -f`.
+This TDRS prototype was built to test assumptions about the primary goal of this project.
+The prototype allows users to upload data in the TANF data
+reporting format and view the resulting data. It conducts limited data validation of the
+submissions.  It is a Python/Django app with Login.gov integration, and running in Cloud.gov.
+The OFA team uses SQL with their existing analysis tools, so 18F developed the prototype
+with a Postgres SQL database. The contractor may extend, extract useful parts, or replace
+the prototype application entirely.
 
-Be aware that whenever you run `test.sh`, it will entirely delete and recreate the
-database, so you will lose any data you had uploaded to this instance!
+The prototype provided an opportunity to develop an application environment. 18F and OFA
+have been working together to get core technical infrastructure approved and set up so
+when the contractor joins the team they can immediately begin to contribute code and have
+it automatically roll out to their development environment.
 
-You can also run it on your local system without Docker with a few more commands:
-* Make sure that python3 is running on your system.  You can consult one of the
-  many guides on the Internet on how to do this, but here's one that has some good
-  links:  [Properly Installing Python](https://docs.python-guide.org/starting/installation/)
-* Install all the python requirements in a venv: 
-  `python3 -m venv venv ; . venv/bin/activate ; pip install -r requirements.txt`
-* Set up the database:  `NOLOGINGOV=TRUE DEBUG=true ./manage.py migrate`
-* Create a superuser: `NOLOGINGOV=TRUE DEBUG=true ./manage.py createsuperuser`  Add your
-  email address.
-* Run the app!  `NOLOGINGOV=TRUE DEBUG=true ./manage.py runserver`
-* You should be able to access the app on http://localhost:8000/
+The application environment is roughly: 
 
+![diagram of prototype apps and services](TANF_Infrastructure.png)
 
-### Testing
-All good applications should be tested.  Here's how you can execute the tests after your
-environment is set up:
+This infrastructure should provide OFA and the contractor with a system that will be easy to get up to speed on, manage, and use. The components are:
+* [Cloud.gov](https://cloud.gov/) This is a GovCloud-based platform-as-a-service that removes almost all of the infrastructure monitoring and maintenance from the system, is already procured for OFA, and has a FedRAMP Joint Authorization Board Provisional Authority to Operate (JAB P-ATO) on file. FedRAMP is a standardized federal security assessment for cloud services, and the FedRAMP ATO helps agencies by providing confidence in the security of cloud solutions and security assessments.    Cloud.gov supports all modern software development frameworks so the contractor team does not need to continue in Python/Django if they prefer another language/framework.
+* [Login.gov](https://www.login.gov/) The TDRS application requires strong multi-factor authentication for the states, tribes, and territories and Personal Identity Verification (PIV) authentication for OFA staff. Login.gov can meet both of these requirements and HHS already has an IAA for this service. Login.gov has a FedRAMP ATO on file.
+* [CircleCI](https://circleci.com/) This is a CI/CD system that is commonly used by 18F. CircleCI has an FedRAMP ATO on file. It is used to automate builds, testing, and deploys from GitHub.
 
-`./test.sh`
+## How to use this prototype
 
-The python test suites should run and exit cleanly.
+This template is meant to be a starting point for the vendors.  Code that is
+checked into this repo will be automatically be tested by running `./test.sh`,
+and if it lives on the `dev`, `staging`, or `prod` branches, it will be deployed
+to cloud.gov using the `./deploy_cloudgov.sh` script.  Thus, vendors can
+immediately start writing software rather than building infrastructure.
 
-## Run this on cloud.gov
+Probably most of this documentation and application code
+will be gone once the vendor gets up to speed, replaced by the documentation of
+the vendor's application, it's technology, and it's processes and procedures.
 
-You can also deploy this application on [cloud.gov](https://cloud.gov/).
-* You will need to get [credentials for cloud.gov](https://cloud.gov/signup/), as
-  well as [set up the command line cf utility](https://cloud.gov/docs/getting-started/setup/#set-up-the-command-line).
-* Once you have your credentials and are logged in, `./deploy-cloudgov.sh setup`
-  sets up all the services required and sets up the database.  If you
-  set the `CGHOSTNAME` environment variable, it will create a route for the app
-  so that you can access it at https://CGHOSTNAME.app.cloud.gov/.  Otherwise,
-  it will be deployed by default at https://tanf.app.cloud.gov/.
-* If you want to deploy this with login.gov authentication, you will need to
-  [register with login.gov as a developer](https://developers.login.gov).
-  You will also need to create a new test app in the integration dashboard for
-  the prototype app.  Eventually when you go to production, you will need to
-  work with the login.gov staff to get your app enabled for their production IDP.
-  You will need to:
-	* Paste in the contents of the `cert.pem` file that was created during the setup
-  	  above as the public certificate.
-  	* Create an Issuer ID for your app.
-  	* Add URLs for "Return to app URL" and "Redirect URIs".  The former should be
-  	  something like https://CGHOSTNAME.app.cloud.gov/about/, and the
-  	  latter should have something like https://CGHOSTNAME.app.cloud.gov/openid/callback/login/
-  	  and https://CGHOSTNAME.app.cloud.gov/openid/callback/logout/.
-  You will also need to set an environment variable:
-  	* `cf set-env tanf OIDC_RP_CLIENT_ID <Issuer ID>`
-* Create a superuser for you to log in with:  `./deploy-cloudgov.sh createsuperuser your@email.gov`
-* If you want to deploy without login.gov integration:  `cf set-env tanf NOLOGINGOV True`
-  Note:  this will make it so that anybody can supply an email address and password and
-  get in.  It basically disables authentication.
-
-### Updating the App in cloud.gov by hand
-
-If you want to update the app, run `./deploy-cloudgov.sh` to push the changes
-up that are in your current directory.  Database migrations will automatically be
-run after each deploy.  This will cause a minute or two of downtime.
-
-### Set up CI/CD
-
-First, make sure that you have already run all the setup above to get the app going in
-cloud.gov.
-
-This is set up to run in [CircleCI](https://circleci.com/).  There is a
-`.circleci/config.yml` file which drives this.  If you need to use another CI/CD system,
-feel free to look at this file.  It should be fairly simple to translate this to whatever
-system you need to do this with.
-
-To enable this, go to [CircleCI](https://circleci.com/), log in, and click on "Add Projects".
-Find this github repo and enable builds on it.  Then, add the following environment variables
-to the build settings:
-* `CF_ORG`:  This is your cloud.gov org that you are deploying this to.
-* `CF_USERNAME_PROD`:  This is the username that you can get with the `cf service-key tanf-keys deployer` command
-  in the production cloud.gov space
-* `CF_PASSWORD_PROD`:  This is the password that you can get with the `cf service-key tanf-keys deployer` command
-  in the production cloud.gov space
-* `CF_USERNAME_STAGING`:  This is the username that you can get with the `cf service-key tanf-keys deployer` command
-  in the staging cloud.gov space
-* `CF_PASSWORD_STAGING`:  This is the password that you can get with the `cf service-key tanf-keys deployer` command
-  in the staging cloud.gov space
-* `CF_USERNAME_DEV`:  This is the username that you can get with the `cf service-key tanf-keys deployer` command
-  in the dev cloud.gov space
-* `CF_PASSWORD_DEV`:  This is the password that you can get with the `cf service-key tanf-keys deployer` command
-  in the dev cloud.gov space
-* `CGHOSTNAME_PROD`:  This is the hostname that will be routed to the app, like `https://CGHOSTNAME.app.cloud.gov/`
-  in the production cloud.gov space
-* `CGHOSTNAME_STAGING`:  This is the hostname that will be routed to the app, like `https://CGHOSTNAME.app.cloud.gov/`
-  in the staging cloud.gov space
-* `CGHOSTNAME_DEV`:  This is the hostname that will be routed to the app, like `https://CGHOSTNAME.app.cloud.gov/`
-  in the dev cloud.gov space
-
-Once all this is set up, you can create branches and commit code to them,
-and it will run the tests for you  You can see the results in github, and you can click through to
-see what went wrong if there is a problem.
-
-Once your code is complete and passes tests, you can create a Pull Request (often called a PR)
-to ask that your code be merged into master.  Once that Pull Request has been approved
-and merged in, circleci will do a full build/test/deploy to the cloud.gov account that you
-set up.
-
-## Connect to the database in cloud.gov
-
-First, you will need to install the [cf connect-to-service plugin](https://github.com/18F/cf-service-connect).
-
-After this is installed, you can get into the database in cloud.gov by doing
-`cf connect-to-service tanf tanf-db`.
-This will give you a postgres psql prompt, and you can do whatever queries you want.
-The `upload_*` tables are what contain all the data.
-
-If you would like to connect a GUI client to the database, then you can run
-`cf connect-to-service --no-client tanf tanf-db`, and it will supply you with the host/port,
-username/password, and database name for you to configure your client to use. 
-
-Note:
-the credentials will only work and the database will only be accessible while
-you have your authenticated `connect-to-service` session going.
+* If you would like to test out how to get the prototype running locally
+  or understand how the environments were set up,
+  then check out [Running the TANF Data Reporting Prototype](docs/Running.md)
+* Compliance documentation and information about how to approach
+  the ATO process can be found in [Compliance.md](docs/Compliance.md).
+* Operational procedures and workflows can be found in the 
+  [Workflows documentation](docs/Workflows.md).  This is an overview of how you
+  should do development using a modified gitops system, how to find logs,
+  update the infrastructure, rotate secrets, etc.

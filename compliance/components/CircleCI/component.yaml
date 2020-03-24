@@ -57,18 +57,10 @@ satisfies:
   implementation_status: complete
   narrative:
     - text: |
-        The CircleCI deployment pipeline automatically configures the infrastructure
-        that it deploys by using terraform.  Terraform stores it's state so that
-        the next time it runs, it can notice if somebody has changed/removed an
-        aspect of that infrastructure, and if so, correct it.
-        The configuration can be verified by running the `plan_terraform` task
-        and looking at what, if any, changes it thinks it needs to do to bring
-        the infrastructure up to date.
-
         The CircleCI deployment pipeline configures all applications deployed with it
-        by using a Google App Engine `app.yaml` file, which specifies every aspect of
+        by using a cloud.gov `manifest.yaml` file, which specifies every aspect of
         how the app is configured.  The pipeline automatically uses secrets and other
-        configuration data that terraform creates and manages, so the only manual
+        configuration data that the admins manage in CircleCI, so the only manual
         configuration is that which is required to bootstrap the environment or
         which must be supplied externally.
 
