@@ -61,8 +61,6 @@ satisfies:
         by using a cloud.gov `manifest.yaml` file, which specifies every aspect of
         how the app is configured.  The pipeline automatically uses secrets and other
         configuration data that the admins manage in CircleCI, so the only manual
-        configuration is that which is required to bootstrap the environment or
-        which must be supplied externally.
 
         No configuration is ever deployed by CircleCI that is not specified in the code.
 - control_key: AU-6 (1)
