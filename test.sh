@@ -5,9 +5,9 @@
 # You can run it like ./test.sh nodelete to leave the test env running
 #
 
-if command -v sha256sum ; then
+if command -v sha256sum >/dev/null ; then
 	SHASUM=sha256sum
-elif command -v shasum ; then
+elif command -v shasum >/dev/null ; then
 	SHASUM=shasum
 fi
 
