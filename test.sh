@@ -5,9 +5,16 @@
 # You can run it like ./test.sh nodelete to leave the test env running
 #
 
+if command -v sha256sum >/dev/null ; then
+	SHASUM=sha256sum
+elif command -v shasum >/dev/null ; then
+	SHASUM=shasum
+fi
+
 # Set some secrets up
-export MINIO_SECRET_KEY=$(date +%s | sha256sum | base64 | head -c 40)
-export MINIO_ACCESS_KEY=$(date +%s | sha256sum | base64 | head -c 20)
+export MINIO_SECRET_KEY=$(date +%s | $SHASUM | base64 | head -c 40)
+sleep 1
+export MINIO_ACCESS_KEY=$(date +%s | $SHASUM | base64 | head -c 20)
 
 docker-compose down
 docker-compose up -d --build
