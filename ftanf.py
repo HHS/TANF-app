@@ -105,16 +105,13 @@ with open(sys.argv[1]) as csvfile:
     csvreader = csv.DictReader(csvfile, fieldnames=descriptions)
     recordcount = 0
     for row in csvreader:
+        # harvest a few metadata items first
         row, comment = popFromFront(row)
         row, recordtype = popFromFront(row)
 
         mylengths = lengths.copy()
         myline = recordtype.rjust(int(mylengths.pop(0)))
-        count=0
-
         for _, v in row.items():
-            count = count +1
-
             length = mylengths.pop(0)
             try:
                 length = int(length)
