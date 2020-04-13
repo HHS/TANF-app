@@ -44,9 +44,6 @@ with open(sys.argv[1]) as csvfile:
     # header field tos
     next(csvfile)
 
-    # header comments
-    next(csvfile)
-
     # header data!
     headerdata = readLineStripLabel(csvfile)
 
@@ -84,10 +81,10 @@ with open(sys.argv[1]) as csvfile:
     # metadata lines
     next(csvfile)
     next(csvfile)
-    next(csvfile)
 
-    # Descripton line!
-    descriptions = readLineStripLabel(csvfile)
+    # Descripton line! Don't pop the front
+    currentLine = csvfile.readline()
+    descriptions = currentLine.rstrip().split(',')
 
     # length line
     lengths = readLineStripLabel(csvfile)
