@@ -82,6 +82,7 @@ with open(sys.argv[1]) as csvfile:
     next(csvfile)
     next(csvfile)
 
+
     # Descripton line! Don't pop the front
     currentLine = csvfile.readline()
     descriptions = currentLine.rstrip().split(',')
