@@ -5,134 +5,90 @@
 # format of that xls, you will need to fix this to match.  CSV is such
 # a terrible format.
 #
-# usage:  ./ftanf.py /path/to/exported.csv > tanfdatareportingfile.txt
+# usage:  ./ftanf.py /path/to/section_x.xlsx > tanfdatareportingfile.txt
 #
-import csv
+
+############################################
+# # Setup script and open sheet           ##
+############################################
+
 import sys
+import xlrd
 
+# Open the workbook
+xl_workbook = xlrd.open_workbook(sys.argv[1])
 
-def popFromFront(mydictionary):
-    keys = list(mydictionary.keys())
-    key = keys[0]
-    return mydictionary, mydictionary.pop(key)
+# Open first sheet by index
+xl_sheet = xl_workbook.sheet_by_index(1)
+print('Opening Sheet: %s' % xl_sheet.name)
 
-
-def readLineStripLabel(f):
-    line = f.readline()
-    linethings = line.rstrip().split(',')
-    # get rid of label at start of line
-    linethings.pop(0)
-    return linethings
-
-
-with open(sys.argv[1]) as csvfile:
-    ############################################
-    # first section is the HEADER section
-    headerline = csvfile.readline()
-    if 'HEADER' not in headerline:
-        raise Exception('MissingSection', 'missing header line!')
-
-    # header titles
-    next(csvfile)
-
-    # header field lengths
-    headerfieldlengths = readLineStripLabel(csvfile)
-
-    # header field froms
-    next(csvfile)
-
-    # header field tos
-    next(csvfile)
-
-    # header data!
-    headerdata = readLineStripLabel(csvfile)
-
-    # build the headerstring from the header data
-    headerstring = ''
-    for i in headerfieldlengths:
+def pad_field_data(field_length_list, value_data):
+    padded_string = ''
+    for i, field_length in enumerate(field_length_list):
         try:
-            length = int(i)
+            length = int(field_length)
         except ValueError:
             # if there is no length set, we are at the end, so stop processing
             continue
 
-        h = headerdata.pop(0)
-
         # right justify strings and zero pad numbers
         try:
-            h = int(h)
-            headerstring = headerstring + str(h).rjust(int(length), '0')
+            h = int(value_data[i])
+            padded_string = padded_string + str(h).rjust(int(length), '0')
         except ValueError:
-            headerstring = headerstring + h.rjust(int(length))
+            padded_string = padded_string + value_data[i].rjust(int(length))
 
-    # print the header out
-    print(headerstring)
+    return padded_string
 
-    # empty line
-    next(csvfile)
+############################################
+# # Process header                       ##
+############################################
 
-    ############################################
-    # next is section data (section 1, 2, 3, etc)
-    sectionline = csvfile.readline()
-    if 'SECTION' not in sectionline:
-        print(sectionline)
-        raise Exception('MissingSection', 'missing section data!')
+# Grab header row by index (i.e. row 1 equals index 0)
+header_row = xl_sheet.row_values(0)
 
-    # metadata lines
-    next(csvfile)
-    next(csvfile)
+if 'HEADER' not in header_row:
+    raise Exception('MissingSection', 'missing header line!')
 
-    # Descripton line! Don't pop the front
-    currentLine = csvfile.readline()
-    descriptions = currentLine.rstrip().split(',')
+# Grab header field lenghts on row 3
+header_field_lengths = xl_sheet.row_values(2)
+header_data = xl_sheet.row_values(5)[1:]
+headerstring = ''
 
-    # length line
-    lengths = readLineStripLabel(csvfile)
+if header_field_lengths[0] == 'Length':
+    headerstring = pad_field_data(header_field_lengths[1:], header_data)
 
-    # from line
-    froms = readLineStripLabel(csvfile)
+# print the header out
+print(headerstring)
 
-    # to line
-    tos = readLineStripLabel(csvfile)
+############################################
+# # Process section                       ##
+############################################
 
-    # commentline
-    comments = readLineStripLabel(csvfile)
+sectionline = xl_sheet.row_values(7)
+# if 'Section' not in sectionline:
+#     print(sectionline)
+#     raise Exception('MissingSection', 'missing section data!')
 
-    # itemline
-    itemthings = readLineStripLabel(csvfile)
+section_field_description = xl_sheet.row_values(10)
+section_field_lengths = xl_sheet.row_values(11)[1:]
 
-    # process the file
-    csvreader = csv.DictReader(csvfile, fieldnames=descriptions)
-    recordcount = 0
-    for row in csvreader:
-        # harvest a few metadata items first
-        row, comment = popFromFront(row)
-        row, recordtype = popFromFront(row)
 
-        mylengths = lengths.copy()
-        myline = recordtype.rjust(int(mylengths.pop(0)))
-        for _, v in row.items():
-            length = mylengths.pop(0)
-            try:
-                length = int(length)
-            except ValueError:
-                # if there is no length set, we are at the end, so stop processing
-                continue
-            length = int(length)
+recordcount = 0
 
-            # right justify strings and zero pad numbers
-            try:
-                v = int(v)
-                myline = myline + str(v).rjust(int(length), '0')
-            except ValueError:
-                myline = myline + v.rjust(int(length))
-
-        # Do some validation to make sure that this is a real line
-        if myline.startswith(('T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7')):
-            print(myline)
+for row_index in range(16,(xl_sheet.ncols-1)):
+    try:
+        data_row_values = xl_sheet.row_values(row_index)[1:]
+        if data_row_values[0].startswith(('T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7')):
             recordcount = recordcount + 1
-        else:
-            print('skipping invalid line: ' + myline, file=sys.stderr)
+            section_string = pad_field_data(section_field_lengths, data_row_values)
+            print(section_string)
+    except IndexError:
+        break
 
-    # print the trailer out
-    print('TRAILER' + str(recordcount).rjust(7, '0') + '         ')
+
+
+############################################
+# # Process section                       ##
+############################################
+print('TRAILER' + str(recordcount).rjust(7, '0') + '         ')
