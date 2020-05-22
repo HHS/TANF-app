@@ -33,11 +33,15 @@ class FTANFProcess:
                 continue
 
             # right justify strings and zero pad numbers
-            try:
-                h = int(value_data[i])
-                padded_string = padded_string + str(h).rjust(int(length), '0')
-            except ValueError:
-                padded_string = padded_string + value_data[i].rjust(int(length))
+            else:
+                try:
+                    h = int(value_data[i])
+                    padded_string = padded_string + str(h).rjust(int(length), '0')
+                except ValueError:
+                    if len(value_data[i]) > 0:
+                        padded_string = padded_string + value_data[i].rjust(int(length))
+                    else:
+                        padded_string = padded_string + value_data[i].zfill(length)
 
         return padded_string
 
