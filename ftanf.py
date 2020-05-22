@@ -15,80 +15,74 @@
 import sys
 import xlrd
 
-# Open the workbook
-xl_workbook = xlrd.open_workbook(sys.argv[1])
+class FTANFProcess:
+    def __init__(self, file_path, data_index):
+        self.record_count = 0
+        self.xl_workbook = xlrd.open_workbook(file_path)
+        self.xl_sheet = self.xl_workbook.sheet_by_index(1)
+        self.data_index = data_index
+        print('Opening Sheet: %s' % self.xl_sheet.name)
 
-# Open first sheet by index
-xl_sheet = xl_workbook.sheet_by_index(1)
-print('Opening Sheet: %s' % xl_sheet.name)
+    def pad_field_data(self, field_length_list, value_data):
+        padded_string = ''
+        for i, field_length in enumerate(field_length_list):
+            try:
+                length = int(field_length)
+            except ValueError:
+                # if there is no length set, we are at the end, so stop processing
+                continue
 
-def pad_field_data(field_length_list, value_data):
-    padded_string = ''
-    for i, field_length in enumerate(field_length_list):
-        try:
-            length = int(field_length)
-        except ValueError:
-            # if there is no length set, we are at the end, so stop processing
-            continue
+            # right justify strings and zero pad numbers
+            try:
+                h = int(value_data[i])
+                padded_string = padded_string + str(h).rjust(int(length), '0')
+            except ValueError:
+                padded_string = padded_string + value_data[i].rjust(int(length))
 
-        # right justify strings and zero pad numbers
-        try:
-            h = int(value_data[i])
-            padded_string = padded_string + str(h).rjust(int(length), '0')
-        except ValueError:
-            padded_string = padded_string + value_data[i].rjust(int(length))
+        return padded_string
 
-    return padded_string
+    def build_header(self):
+        # Grab header row by index (i.e. row 1 equals index 0)
+        header_row = self.xl_sheet.row_values(0)
 
-############################################
-# # Process header                       ##
-############################################
+        if 'HEADER' not in header_row:
+            raise Exception('MissingSection', 'missing header line!')
 
-# Grab header row by index (i.e. row 1 equals index 0)
-header_row = xl_sheet.row_values(0)
+        # Grab header field lenghts on row 3
+        header_field_lengths = self.xl_sheet.row_values(2)
+        header_data = self.xl_sheet.row_values(5)[1:]
+        headerstring = ''
 
-if 'HEADER' not in header_row:
-    raise Exception('MissingSection', 'missing header line!')
+        if header_field_lengths[0] == 'Length':
+            headerstring = self.pad_field_data(header_field_lengths[1:], header_data)
 
-# Grab header field lenghts on row 3
-header_field_lengths = xl_sheet.row_values(2)
-header_data = xl_sheet.row_values(5)[1:]
-headerstring = ''
+        # print the header out
+        print(headerstring)
 
-if header_field_lengths[0] == 'Length':
-    headerstring = pad_field_data(header_field_lengths[1:], header_data)
+    def build_body(self):
+        section_field_lengths = self.xl_sheet.row_values(11)[1:]
 
-# print the header out
-print(headerstring)
-
-############################################
-# # Process section                       ##
-############################################
-
-sectionline = xl_sheet.row_values(7)
-# if 'Section' not in sectionline:
-#     print(sectionline)
-#     raise Exception('MissingSection', 'missing section data!')
-
-section_field_description = xl_sheet.row_values(10)
-section_field_lengths = xl_sheet.row_values(11)[1:]
-
-
-recordcount = 0
-
-for row_index in range(16,(xl_sheet.ncols-1)):
-    try:
-        data_row_values = xl_sheet.row_values(row_index)[1:]
-        if data_row_values[0].startswith(('T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7')):
-            recordcount = recordcount + 1
-            section_string = pad_field_data(section_field_lengths, data_row_values)
-            print(section_string)
-    except IndexError:
-        break
+        #iterate through the rows and check if they start with a T1-6,
+        # if so add length padding and print
+        for row_index in range(self.data_index,(self.xl_sheet.ncols-1)):
+            try:
+                data_row_values = self.xl_sheet.row_values(row_index)[1:]
+                if data_row_values[0].startswith(('T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7')):
+                    self.record_count = self.record_count + 1
+                    section_string = self.pad_field_data(section_field_lengths, data_row_values)
+                    print(section_string)
+            except IndexError:
+                break
 
 
+    def build_trailer(self):
+        print('TRAILER' + str(self.record_count).rjust(7, '0') + '         ')
 
-############################################
-# # Process section                       ##
-############################################
-print('TRAILER' + str(recordcount).rjust(7, '0') + '         ')
+    def build_section(self):
+        self.build_header()
+        self.build_body()
+        self.build_trailer()
+
+
+section = FTANFProcess(sys.argv[1], 15)
+section.build_section()
