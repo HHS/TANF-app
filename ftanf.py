@@ -8,6 +8,7 @@
 # usage:  ./ftanf.py /path/to/section_x.xlsx > tanfdatareportingfile.txt
 #
 
+
 ############################################
 # # Setup script and open sheet           ##
 ############################################
@@ -50,6 +51,7 @@ class FTANFProcess:
         '''
         padded_string = ''
         for i, field_length in enumerate(field_length_list):
+
             try:
                 length = int(field_length)
             except ValueError:
