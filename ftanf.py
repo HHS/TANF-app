@@ -16,6 +16,18 @@ import sys
 import xlrd
 
 class FTANFProcess:
+        '''
+        
+        Input an excel verion of data and convert it into an ftanf datafile
+
+        Args:
+            file_path (str): A path of the excel file you would like top covert
+            data_index (int): The row to start parsing the actual data values
+        
+        Returns:
+            padded_string (str): a string of the data padded per the field length
+
+        '''
     def __init__(self, file_path, data_index):
         self.record_count = 0
         self.xl_workbook = xlrd.open_workbook(file_path)
@@ -24,6 +36,18 @@ class FTANFProcess:
         print('Opening Sheet: %s' % self.xl_sheet.name)
 
     def pad_field_data(self, field_length_list, value_data):
+        '''
+        
+        Pad data field based on provided field lengths.
+
+        Args:
+            field_length_list (list): A list of field lengths
+            value_data (list): A list row data values
+        
+        Returns:
+            padded_string (str): a string of the data padded per the field length
+
+        '''
         padded_string = ''
         for i, field_length in enumerate(field_length_list):
             try:
@@ -46,6 +70,7 @@ class FTANFProcess:
         return padded_string
 
     def build_header(self):
+        ''' parse the section sheets header section'''
         # Grab header row by index (i.e. row 1 equals index 0)
         header_row = self.xl_sheet.row_values(0)
 
@@ -64,6 +89,7 @@ class FTANFProcess:
         print(headerstring)
 
     def build_body(self):
+        '''Parse and print the FTANFs main data section'''
         section_field_lengths = self.xl_sheet.row_values(11)[1:]
 
         #iterate through the rows and check if they start with a T1-6,
@@ -80,13 +106,15 @@ class FTANFProcess:
 
 
     def build_trailer(self):
+        '''print a trailer to data'''
         print('TRAILER' + str(self.record_count).rjust(7, '0') + '         ')
 
-    def build_section(self):
+    def build_file(self):
+        ''' build a full ftanf data format file from parts'''
         self.build_header()
         self.build_body()
         self.build_trailer()
 
 
 section = FTANFProcess(sys.argv[1], 15)
-section.build_section()
+section.build_file()
