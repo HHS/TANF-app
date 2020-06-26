@@ -1,7 +1,7 @@
 # TANF Data Reporting Prototype
 
 This repo has a prototype for a TANF Data Reporting system, where States,
-Territories, and Tribes can upload TANF data and get it validated and stored
+Territories, and Tribes (STT) can upload TANF data and get it validated and stored
 in a database.
 
 OFA has partnered with 18F to conduct the initial research, scoping, prototyping,
