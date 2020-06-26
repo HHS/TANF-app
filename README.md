@@ -10,7 +10,7 @@ software development process and removed as many barriers as possible for the in
 contractor team. This information may highlight important considerations for future
 development team, and should not constrain vendor’s technical approach submissions.
 
-The current TDRS is so old, fragile, and difficult to access that 18f only leveraged
+The current TDRS is so old, fragile, and difficult to access that 18F only leveraged
 the existing data format that grantees use to submit their data to TDRS and did not
 develop any direct access to the system. This data format is not extensible, not
 human-readable, and does not have adequate documentation. However, the data format
