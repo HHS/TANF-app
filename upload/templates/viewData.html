@@ -36,7 +36,12 @@
 		{% for row in data %}
 			<tr>
 				{% for key, value in row.fields.items %}
-					<td>{{ value }}</td>
+					{% if key == 'calendar_quarter' %}
+					<td class="{{ key }}"><input class="usa-input" id="input-type-text" value="{{ value }}" name="input-type-text" type="text">
+					</td>
+					{% else %}
+						<td class="{{ key }}">{{ value }}</td>
+					{% endif %}
 				{% endfor %}
 			</tr>
 		{% endfor %}
