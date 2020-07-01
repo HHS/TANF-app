@@ -6,4 +6,4 @@ tmp
 *.pem
 compliance/opencontrols/
 compliance/exports/
-
+.DS_Store
