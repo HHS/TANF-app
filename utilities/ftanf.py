@@ -7,8 +7,7 @@
 #
 # usage:  ./ftanf.py /path/to/section_x.xlsx > tanfdatareportingfile.txt
 #
-
-
+#
 ############################################
 # # Setup script and open sheet           ##
 ############################################

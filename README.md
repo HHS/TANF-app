@@ -10,7 +10,11 @@ software development process and removed as many barriers as possible for the in
 contractor team. This information may highlight important considerations for future
 development team, and should not constrain vendor’s technical approach submissions.
 
-The current TDRS is so old, fragile, and difficult to access that 18f only leveraged
+The [Wiki](https://github.com/hhs/TANF-app/wiki) includes more information about the vision and working commitments of the team dedicated to building a new TDRS system.
+
+
+## Current TDRS information and prototype.
+The current TDRS is difficult to access that 18F only leveraged
 the existing data format that grantees use to submit their data to TDRS and did not
 develop any direct access to the system. This data format is not extensible, not
 human-readable, and does not have adequate documentation. However, the data format
@@ -33,7 +37,7 @@ it automatically roll out to their development environment.
 
 The application environment is roughly: 
 
-![diagram of prototype apps and services](TANF_Infrastructure.png)
+![diagram of prototype apps and services](docs/updated-tanf-prototype-diagram-system.png)
 
 This infrastructure should provide OFA and the contractor with a system that will be easy to get up to speed on, manage, and use. The components are:
 * [Cloud.gov](https://cloud.gov/) This is a GovCloud-based platform-as-a-service that removes almost all of the infrastructure monitoring and maintenance from the system, is already procured for OFA, and has a FedRAMP Joint Authorization Board Provisional Authority to Operate (JAB P-ATO) on file. FedRAMP is a standardized federal security assessment for cloud services, and the FedRAMP ATO helps agencies by providing confidence in the security of cloud solutions and security assessments.    Cloud.gov supports all modern software development frameworks so the contractor team does not need to continue in Python/Django if they prefer another language/framework.
@@ -61,3 +65,12 @@ the vendor's application, it's technology, and it's processes and procedures.
   [Workflows documentation](docs/Workflows.md).  This is an overview of how you
   should do development using a modified gitops system, how to find logs,
   update the infrastructure, rotate secrets, etc.
+
+
+ ## Public domain
+
+This project is in the worldwide [public domain](LICENSE.md).
+
+> This project is in the public domain within the United States, and copyright and related rights in the work worldwide are waived through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
+>
+> All contributions to this project will be released under the CC0 dedication. By submitting a pull request, you are agreeing to comply with this waiver of copyright interest.
