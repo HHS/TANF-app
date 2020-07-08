@@ -52,10 +52,10 @@ jobs:
           command: |
             # If we do not specify a space, then deploy to the branch that we are on.
             # Also map certain branches to spaces.
-            # This lets you have dev/staging/master branches that automatically go to the right place.
+            # This lets you have dev/staging/main branches that automatically go to the right place.
             if [ -n "$CF_SPACE" ] ; then
               echo "CF_SPACE is hardcoded already"
-            elif [ "$CIRCLE_BRANCH" = master ] ; then
+            elif [ "$CIRCLE_BRANCH" = main ] ; then
               export CF_SPACE="tanf-prod"
               export CF_USERNAME="$CF_USERNAME_PROD"
               export CF_PASSWORD="$CF_PASSWORD_PROD"
@@ -94,6 +94,6 @@ workflows:
             branches:
               # Add branches here if you want more dev/staging/whatever environments to get autodeployed
               only:
-                - master
+                - main
                 - staging
                 - dev

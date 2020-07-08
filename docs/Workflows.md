@@ -18,7 +18,7 @@ have oversight and will work.
     into the staging branch, where they will be approved by another person, and then
     they will automatically be rolled out into the staging version of the app in cloud.gov.
   * After staging has been validated through UAT or other automated testing, your 
-    changes should be PR'ed into the master branch and approved by somebody else,
+    changes should be PR'ed into the main branch and approved by somebody else,
     where they will be automatically rolled out into production.
   * **NOTE:**  The prototype app will run db migrations before doing the promotion to 
     production, so make sure that your old version of the app is forward-compatible
