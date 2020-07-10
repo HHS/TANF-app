@@ -16,21 +16,21 @@ import sys
 import xlrd
 
 class FTANFProcess:
-        '''
-        
-        Input an excel verion of data and convert it into an ftanf datafile
+    '''
+    
+    Input an excel verion of data and convert it into an ftanf datafile
 
-        Args:
-            file_path (str): A path of the excel file you would like top covert
-            data_index (int): The row to start parsing the actual data values
-        
-        Returns:
-            padded_string (str): a string of the data padded per the field length
+    Args:
+        file_path (str): A path of the excel file you would like top covert
+        data_index (int): The row to start parsing the actual data values
+    
+    Returns:
+        padded_string (str): a string of the data padded per the field length
 
-        '''
-    def __init__(self, file_path, data_index):
+    '''
+    def __init__(self, file_excel_path, data_index):
         self.record_count = 0
-        self.xl_workbook = xlrd.open_workbook(file_path)
+        self.xl_workbook = xlrd.open_workbook(file_excel_path)
         self.xl_sheet = self.xl_workbook.sheet_by_index(1)
         self.data_index = data_index
         print('Opening Sheet: %s' % self.xl_sheet.name)
@@ -117,5 +117,6 @@ class FTANFProcess:
         self.build_trailer()
 
 
-section = FTANFProcess(sys.argv[1], 15)
-section.build_file()
+if __name__ == "__main__":
+    section = FTANFProcess(sys.argv[1], 15)
+    section.build_file()
