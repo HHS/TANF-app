@@ -93,7 +93,7 @@ satisfies:
   narrative:
     - text: |
         Changes to the application and infrastructure are made through a documented gitops-style workflow.
-        These workflows are documented in the https://github.com/HHS/TANF-app/blob/master/docs/Workflows.md
+        These workflows are documented in the https://github.com/HHS/TANF-app/blob/main/docs/Workflows.md
         file in the repo.
 
         The quick summary of these workflows is that users will develop locally, but when their

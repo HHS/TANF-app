@@ -43,7 +43,7 @@ satisfies:
     - text: |
         Because the infrastructure is all code, Disaster Recovery
         should be simple, only requiring a relaunch and a restore of a database backup
-        from the old system.  Relaunching is documented in https://github.com/HHS/TANF-app/blob/master/docs/Running.md,
+        from the old system.  Relaunching is documented in https://github.com/HHS/TANF-app/blob/main/docs/Running.md,
         and database backups can be done with https://cloud.gov/docs/services/relational-database/#export.
 
         XXX this prototype does not do db backups automatically.  This should probably be implemented, and documented here.
@@ -56,7 +56,7 @@ satisfies:
         XXX Be sure to add information about your app's security architecture.
         Some data on how GitOps makes sure that separation of duties are maintained
         and other operational security tasks can be found in
-        https://github.com/HHS/TANF-app/blob/master/docs/Workflows.md
+        https://github.com/HHS/TANF-app/blob/main/docs/Workflows.md
 - control_key: SA-22
   standard_key: NIST-800-53
   covered_by: []
