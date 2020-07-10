@@ -117,7 +117,7 @@ and it will run the tests for you  You can see the results in github, and you ca
 see what went wrong if there is a problem.
 
 Once your code is complete and passes tests, you can create a Pull Request (often called a PR)
-to ask that your code be merged into master.  Once that Pull Request has been approved
+to ask that your code be merged into the `main` branch.  Once that Pull Request has been approved
 and merged in, circleci will do a full build/test/deploy to the cloud.gov account that you
 set up.
 

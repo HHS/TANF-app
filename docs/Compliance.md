@@ -39,12 +39,12 @@ compliance documentation at the same time*.  You can run the `compliance-masonry
 tool while in the `Tanf-app/compliance` directory to understand
 what you still need to implement, find controls that are incomplete with
 `compliance-masonry info -i partial`, etc.  Consult the 
-[compliance-masonry usage docs](https://github.com/opencontrol/compliance-masonry/blob/master/docs/usage.md)
+[compliance-masonry usage docs](https://github.com/opencontrol/compliance-masonry/blob/main/docs/usage.md)
 for more info.  
 
 You can also use git tools to see what has changed between releases or
 over time to see if changes are worthy of a Significant Change Request or
-whatever.  For instance: `git checkout master ; git diff staging $(find . -name compliance -type d)`
+whatever.  For instance: `git checkout main ; git diff staging $(find . -name compliance -type d)`
 
 Down the road, we would like to think that tools like this will evolve into
 a Behaviour Driven Compliance Test suite that can actually test the implementation
