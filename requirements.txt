@@ -8,3 +8,4 @@ git+https://github.com/koriaf/django-oidc.git
 python_jwt
 whitenoise
 pytest
+xlrd
