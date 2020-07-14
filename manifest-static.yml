@@ -1,7 +1,7 @@
 ---
 applications:
 - name: tanf-static
-  path: ../static
+  path: ./static
   memory: 64M
   instances: 1
   buildpack: https://github.com/cloudfoundry/staticfile-buildpack.git
