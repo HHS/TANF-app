@@ -14,8 +14,7 @@ The [Wiki](https://github.com/hhs/TANF-app/wiki) includes more information about
 
 
 ## Current TDRS information and prototype.
-The current TDRS is difficult to access that 18F only leveraged
-the existing data format that grantees use to submit their data to TDRS and did not
+The current TDRS is difficult to access that 18F only leveraged the existing data format that grantees use to submit their data to TDRS and did not
 develop any direct access to the system. This data format is not extensible, not
 human-readable, and does not have adequate documentation. However, the data format
 is standardized and does not immediately require the grantees to change their data
