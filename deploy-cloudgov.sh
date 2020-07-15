@@ -53,10 +53,8 @@ if [ "$1" = "setup" ] ; then  echo
 	if cf app tanf >/dev/null 2>&1 ; then
 		echo tanf app already set up
 	else
-		cf v3-create-app tanf
-		cf v3-apply-manifest -f manifest.yml
-		# cf bind-service tanf tanf-db
-		# cf bind-service tanf tanf-storage
+		cf create-app tanf
+		cf apply-manifest -f manifest.yml
 	fi
 
 	# set up JWT key if needed
@@ -94,17 +92,16 @@ if [ "$1" = "regenjwt" ] ; then
 fi
 
 # launch the app
-if [ "$1" = "zdt" ] ; then
+if [ "$1" = "rolling" ] ; then
 	# Do a zero downtime deploy.  This requires enough memory for
 	# two apps to exist in the org/space at one time.
-	cf v3-apply-manifest -f manifest.yml
-	cf v3-zdt-push tanf --no-route || exit 1
+	cf push tanf --no-route -f manifest.yml --strategy rolling || exit 1
+	cf push tanf-static --no-route -f manifest.yml --strategy rolling || exit 1
 
-	cf v3-apply-manifest -f manifest-static.yml
-	cf v3-zdt-push tanf-static --no-route || exit 1
 else
-	cf v3-apply-manifest -f manifest.yml
-	cf v3-push tanf --no-route
+
+	cf push tanf -f manifest.yml --no-route
+	cf push tanf-static -f manifest --no-route
 
 	cf v3-apply-manifest -f manifest-static.yml
 	cf v3-push tanf-static --no-route
