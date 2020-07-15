@@ -97,10 +97,14 @@ if [ "$1" = "rolling" ] ; then
 	# two apps to exist in the org/space at one time.
 	cf push tanf --no-route -f manifest.yml --strategy rolling || exit 1
 	cf push tanf-static --no-route -f manifest.yml --strategy rolling || exit 1
+
 else
 
 	cf push tanf -f manifest.yml --no-route
 	cf push tanf-static -f manifest --no-route
+
+	cf v3-apply-manifest -f manifest-static.yml
+	cf v3-push tanf-static --no-route
 
 	# we have to do this after the tanf app is deployed
 	if [ -n "$SETUPJWT" ] ; then
