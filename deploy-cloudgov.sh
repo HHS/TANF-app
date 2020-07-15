@@ -99,14 +99,10 @@ if [ "$1" = "zdt" ] ; then
 	# two apps to exist in the org/space at one time.
 	cf v3-apply-manifest -f manifest.yml
 	cf v3-zdt-push tanf --no-route || exit 1
-
-	cf v3-apply-manifest -f manifest-static.yml
 	cf v3-zdt-push tanf-static --no-route || exit 1
 else
 	cf v3-apply-manifest -f manifest.yml
 	cf v3-push tanf --no-route
-
-	cf v3-apply-manifest -f manifest-static.yml
 	cf v3-push tanf-static --no-route
 
 	# we have to do this after the tanf app is deployed
