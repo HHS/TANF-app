@@ -18,20 +18,16 @@ Tasks:
 DoD: 
  - [ ] minimum 90% code coverage test
  - [ ] 0 linting errors and warnings
- - [ ] 0 accessability errors
- - [ ] deployed to a staging environment
+ - [ ] 0 accessibility errors
+ - [ ] deployed to a dev environment
  - [ ] all significant changes have been documented
  - [ ] free of high and medium security vulnerabilities
- 
  
  
 
 Supporting Documentation:
 
 (please include any relevant log snippets/ files/ screen shots here.)
-
-
-
 
 
 Open Questions:
