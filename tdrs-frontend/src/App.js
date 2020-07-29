@@ -1,25 +1,21 @@
 import React from 'react';
-import logo from './logo.svg';
+import { GridContainer, GovBanner } from "@trussworks/react-uswds"
+import '@trussworks/react-uswds/lib/uswds.css'
+import '@trussworks/react-uswds/lib/index.css'
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <GovBanner aria-label="Official government website" />
+      <GridContainer className="app">
+        <h1>
+          Welcome to TDRS!
+          <span role="img" aria-label="wave" aria-hidden="true"> 👋</span>
+        </h1>
+        <h2><em>(Hello, world!)</em></h2>
+      </GridContainer>
+    </>
   );
 }
 

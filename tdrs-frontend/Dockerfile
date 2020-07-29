@@ -1,6 +1,6 @@
 # ---
 # Stage 0: Creae the app directory, install dependencies, and copy in the source code
-FROM node:14.5-alpine3.10 AS localdev
+FROM node:12.18-alpine3.12 AS localdev
 
 RUN mkdir /home/node/app/ && chown -R node:node /home/node/app
 WORKDIR /home/node/app

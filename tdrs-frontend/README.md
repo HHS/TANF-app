@@ -1,3 +1,43 @@
+# TDRS Frontend
+
+This project uses the U.S. Web Design System ([USWDS](https://designsystem.digital.gov/)) and in particular, [trussworks/react-uswds](https://github.com/trussworks/react-uswds)
+
+## To run locally
+
+- Clone this repository and
+  ```
+  cd TANF-app/tdrs-frontend
+  ```
+- Build the Docker image locally with
+  ```
+  docker build --target localdev -t adamcaron/tdrs-frontend:local .
+  ```
+- Run the app:
+  ```
+  docker run -it -p 3000:3000 -v $PWD/src/:/home/node/app/src --rm adamcaron/tdrs-frontend:local yarn start
+  ```
+
+Navigate to [localhost:3000](localhost:3000) and you should see the app.
+
+The `TANF-app/tdrs-frontend/src` directory is mounted into the container so changes to the source code, when saved, automatically update the contents of `/home/node/app/src` in the container. Restarting the container is not necessary during development and you should see changes update in the UI instantly.
+
+## To build for deployment
+
+- From `TANF-app/tdrs-frontend` run
+  ```
+  docker build -t adamcaron/tdrs-frontend:build .
+  ```
+- If you wish to run the build distribution locally:
+  ```
+  docker run -it -p 3000:80 --rm adamcaron/tdrs-frontend:build
+  ```
+- Push the image to the remote repository on hub.docker.com:
+  ```
+  docker push adamcaron/tdrs-frontend:build
+  ```
+
+----
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
