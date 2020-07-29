@@ -9,6 +9,9 @@ RUN pip install -r requirements.txt
 COPY . tdpapp
 WORKDIR tdpapp
 
+RUN useradd tdpuser && chown -R tdpuser /tdpapp
+USER tdpuser
+
 EXPOSE 8000
 
 # Run the production server
