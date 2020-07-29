@@ -7,17 +7,18 @@ Backend API Service TDP. Check out the project's [documentation](http://raftergi
 
 # Prerequisites
 
-- [Docker](https://docs.docker.com/docker-for-mac/install/)  
+- [Docker](https://docs.docker.com/docker-for-mac/install/)
 
-# Local Development
+# Initialize the project
 
 Start the dev server for local development:
+
 ```bash
 docker-compose up
 ```
 
-Run a command inside the docker container:
+Create a superuser to login to the admin:
 
 ```bash
-docker-compose run --rm web [command]
+docker-compose run --rm web ./manage.py createsuperuser
 ```
