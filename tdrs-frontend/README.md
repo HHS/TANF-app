@@ -21,6 +21,17 @@ Navigate to [localhost:3000](localhost:3000) and you should see the app.
 
 The `TANF-app/tdrs-frontend/src` directory is mounted into the container so changes to the source code, when saved, automatically update the contents of `/home/node/app/src` in the container. Restarting the container is not necessary during development and you should see changes update in the UI instantly.
 
+### Code Linting and Formatting
+
+The app is set up with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/), and follows the [Airbnb Style Guide](https://github.com/airbnb/javascript).
+
+To run eslint locally:
+```
+yarn lint
+```
+
+If you use [VSCode](https://code.visualstudio.com/) as an [IDE](https://en.wikipedia.org/wiki/Integrated_development_environment), it will be helpful to add the extensions, [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). These make it possible to catch lint errors as they occur, and even auto-fix style errors (with Prettier).
+
 ## To build for deployment
 
 - From `TANF-app/tdrs-frontend` run
@@ -37,6 +48,10 @@ The `TANF-app/tdrs-frontend/src` directory is mounted into the container so chan
   ```
 
 ----
+
+## Create React App Documentation
+
+_The following is the documentation for [Create React App](https://github.com/facebook/create-react-app). It is kept here as a baseline set of documentation for the foundation of the TDRS frontend. It is the default output of initializing the React app._
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
