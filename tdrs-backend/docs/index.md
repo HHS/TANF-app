@@ -1,7 +1,5 @@
 # raft-tdp-main
 
-[![Build Status](https://travis-ci.org/raftergit/raft-tdp-main.svg?branch=master)](https://travis-ci.org/raftergit/raft-tdp-main)
-[![Built with](https://img.shields.io/badge/Built_with-Cookiecutter_Django_Rest-F7B633.svg)](https://github.com/agconti/cookiecutter-django-rest)
 
 Backend API Service TDP. Check out the project's [documentation](http://raftergit.github.io/raft-tdp-main/).
 

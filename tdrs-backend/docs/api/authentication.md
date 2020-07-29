@@ -14,7 +14,7 @@ WWW-Authenticate: Token
 The curl command line tool may be useful for testing token authenticated APIs. For example:
 
 ```bash
-curl -X GET http://127.0.0.1:8000/api/v1/example/ -H 'Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b'
+curl -X GET http://127.0.0.1:8000/api/v1/example/ -H 'Authorization: Token eda22319e88e067da7babb7b0e874d393e471cf0'
 ```
 
 ## Retrieving Tokens
@@ -34,6 +34,6 @@ password | string | The user's password
 **Response**:
 ```json
 { 
-    "token" : "9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b" 
+    "token" : "eda22319e88e067da7babb7b0e874d393e471cf0" 
 }
 ```

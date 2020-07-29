@@ -28,12 +28,11 @@ Content-Type application/json
 201 Created
 
 {
-  "id": "6d5f9bae-a31b-4b7b-82c4-3853eda2b011",
-  "username": "richard",
-  "first_name": "Richard",
-  "last_name": "Hendriks",
-  "email": "richard@piedpiper.com",
-  "auth_token": "132cf952e0165a274bf99e115ab483671b3d9ff6"
+  "username": "jsmith",
+  "first_name": "John",
+  "last_name": "Smith",
+  "email": "jsmith@tester.com",
+  "auth_token": "eda22319e88e067da7babb7b0e874d393e471cf0"
 }
 ```
 
@@ -60,11 +59,11 @@ Content-Type application/json
 200 OK
 
 {
-  "id": "6d5f9bae-a31b-4b7b-82c4-3853eda2b011",
-  "username": "richard",
-  "first_name": "Richard",
-  "last_name": "Hendriks",
-  "email": "richard@piedpiper.com",
+  "username": "jsmith",
+  "first_name": "John",
+  "last_name": "Smith",
+  "email": "jsmith@tester.com",
+  "auth_token": "eda22319e88e067da7babb7b0e874d393e471cf0"
 }
 ```
 
@@ -97,10 +96,10 @@ Content-Type application/json
 200 OK
 
 {
-  "id": "6d5f9bae-a31b-4b7b-82c4-3853eda2b011",
-  "username": "richard",
-  "first_name": "Richard",
-  "last_name": "Hendriks",
-  "email": "richard@piedpiper.com",
+  "username": "jsmith",
+  "first_name": "John",
+  "last_name": "Smith",
+  "email": "jsmith@tester.com",
+  "auth_token": "eda22319e88e067da7babb7b0e874d393e471cf0"
 }
 ```
