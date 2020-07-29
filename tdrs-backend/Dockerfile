@@ -6,8 +6,8 @@ COPY ./requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 # Adds our application code to the image
-COPY . code
-WORKDIR code
+COPY . tdpapp
+WORKDIR tdpapp
 
 EXPOSE 8000
 
