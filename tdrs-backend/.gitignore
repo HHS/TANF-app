@@ -1,35 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@carltonsmith 
-vintasoftware
-/
-django-react-boilerplate
-44
-960
-226
-Code
-Issues
-54
-Pull requests
-26
-Actions
-Security
-Insights
-django-react-boilerplate/.gitignore
-@osantana
-osantana 💄 Make explicit that .idea is a directory in .gitignore
-Latest commit ff00648 on Mar 24
- History
- 11 contributors
-@fjsj@vanessa@victorfsf@pantoja@rsarai@osantana@lucabezerra@laisvarejao@filipeximenes@aericson@andersonresende
-48 lines (39 sloc)  519 Bytes
-  
 *.pyc
 /backend/db.sqlite3
 .DS_Store
@@ -75,18 +43,3 @@ boilerplate.zip
 # Spritesmith
 spritesmith-generated/
 spritesmith.scss
-
-# templated email
-tmp_email/
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
