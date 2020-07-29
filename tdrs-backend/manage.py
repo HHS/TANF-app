@@ -5,7 +5,7 @@ import sys
 
 
 def main():
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tdpservice.config")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tdpservice.settings.local")
     os.environ.setdefault("DJANGO_CONFIGURATION", "Local")
 
     try:
