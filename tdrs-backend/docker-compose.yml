@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 services:
   postgres:
@@ -14,7 +14,7 @@ services:
                ./manage.py migrate &&
                ./manage.py runserver 0.0.0.0:8000"
     volumes:
-      - ./:/code
+      - ./:/tdpapp
     ports:
       - "8000:8000"
     depends_on:
@@ -24,6 +24,6 @@ services:
     build: ./
     command: "mkdocs serve"
     volumes:
-      - ./:/code
+      - ./:/tdpapp
     ports:
       - "8001:8001"
