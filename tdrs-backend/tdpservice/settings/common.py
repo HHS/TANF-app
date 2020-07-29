@@ -18,11 +18,11 @@ class Common(Configuration):
 
 
         # Third party apps
-        'rest_framework',            # utilities for rest apis
-        'rest_framework.authtoken',  # token authentication
-        'django_filters',            # for filtering rest endpoints
+        'rest_framework',            # Utilities for rest apis
+        'rest_framework.authtoken',  # Token authentication
+        'django_filters',            # For filtering rest endpoints
 
-        # Your apps
+        # Local apps
         'tdpservice.users',
 
     )
@@ -43,11 +43,13 @@ class Common(Configuration):
     SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
     WSGI_APPLICATION = 'tdpservice.wsgi.application'
 
-    # Email
+    # Email Server
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+    #Those who will receive error notifications from django via email
     ADMINS = (
-        ('Author', 'csmith@goraft.tech'),
+        ('Admin1', 'ADMIN_EMAIL_FIRST'),
+        ('Admin2', 'ADMIN_EMAIL_SECOND')
     )
 
     # Postgres
