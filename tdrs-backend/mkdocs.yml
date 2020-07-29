@@ -1,8 +1,8 @@
 site_name: tdpservice
 site_description: Backend API Service TDP
-repo_url: https://github.com/raftergit/raft-tdp-main
+repo_url: https://github.com/raft-tech/TANF-app/raft-tdp-main
 site_dir: site
-copyright: Copyright &copy; 2020, <a href="https://github.com/raftergit">raftergit</a>.
+copyright: Copyright &copy; 2020.
 dev_addr: 0.0.0.0:8001
 
 nav:
