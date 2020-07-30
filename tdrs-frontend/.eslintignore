@@ -1,5 +1,11 @@
-node_modules
-build
-public
+node_modules/
+build/
+public/
 serviceWorker.js
-coverage
+
+# testing frameworks
+coverage/
+cypress/fixtures/
+cypress/integration/examples/
+cypress/plugins/
+cypress/support/

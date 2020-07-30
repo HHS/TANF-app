@@ -1,15 +1,20 @@
 {
   "extends": [
     "airbnb",
+    "prettier/react",
     "plugin:prettier/recommended",
-    "prettier/react"
+    "plugin:cypress/recommended"
+  ],
+  "plugins": [
+    "cypress"
   ],
   "env": {
     "browser": true,
     "commonjs": true,
     "es6": true,
     "jest": true,
-    "node": true
+    "node": true,
+    "cypress/globals": true
   },
   "rules": {
     "jsx-a11y/href-no-hash": ["off"],
