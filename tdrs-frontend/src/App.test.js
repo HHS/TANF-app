@@ -1,9 +1,16 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { shallow } from 'enzyme'
+
+import { GovBanner } from '@trussworks/react-uswds'
 import App from './App'
 
-test('renders learn react link', () => {
-  const { getByText } = render(<App />)
-  const linkElement = getByText(/learn react/i)
-  expect(linkElement).toBeInTheDocument()
+describe('App.js', () => {
+  it('renders the Gov Banner', () => {
+    const wrapper = shallow(<App />)
+    expect(wrapper.find(GovBanner)).toExist()
+  })
+  it('renders a welcome message', () => {
+    const wrapper = shallow(<App />)
+    expect(wrapper.find('h1')).toIncludeText('Welcome to TDRS!')
+  })
 })

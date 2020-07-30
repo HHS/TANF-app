@@ -32,6 +32,30 @@ yarn lint
 
 If you use [VSCode](https://code.visualstudio.com/) as an [IDE](https://en.wikipedia.org/wiki/Integrated_development_environment), it will be helpful to add the extensions, [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). These make it possible to catch lint errors as they occur, and even auto-fix style errors (with Prettier).
 
+### Running Tests
+
+This project uses [Jest](https://jestjs.io/) for unit tests.
+
+**Unit Tests with Jest**
+
+Jest provides an interactive test consolde that's helpful for development. After running the following commands, you will see options to run all the tests, run only failing tests, run specific tests, and more.
+- To run unit tests locally:
+  ```
+  yarn test
+  ```
+- To run unit tests with code coverage report:
+  ```
+  yarn test:cov
+  ```
+- To run unit tests as a CI environment would, which runs the tests once (without the interactive console):
+  ```
+  yarn test:ci
+  ```
+
+Another simple way to run only one test (focus on only one test at a time) is to change `it()` to `fit()`. You can skip tests by changing `it()` to `xit()`. [These](https://create-react-app.dev/docs/running-tests/#focusing-and-excluding-tests) can be used in addition to the [methods](https://jestjs.io/docs/en/api) Jest provides.
+
+In addition to [Jest's matchers](https://jestjs.io/docs/en/expect), this project uses [enzyme-matchers](https://github.com/FormidableLabs/enzyme-matchers) to simplify tests and make them more readable. Enzyme matchers is integrated with Jest using the [`jest-enzyme` package](https://github.com/FormidableLabs/enzyme-matchers/blob/master/packages/jest-enzyme/README.md#assertions) which provides many useful assertions for testing React components.
+
 ## To build for deployment
 
 - From `TANF-app/tdrs-frontend` run
