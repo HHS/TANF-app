@@ -3,10 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/dom": "^7.21.5",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
     "@trussworks/react-uswds": "^1.8.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -16,6 +12,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
     "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
@@ -38,11 +36,17 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/dom": "^7.21.5",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
     "babel-eslint": "^10.1.0",
+    "cypress": "^4.11.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-cypress": "^2.11.1",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jsx-a11y": "^6.3.1",
     "eslint-plugin-prettier": "^3.1.4",
