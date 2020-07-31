@@ -11,7 +11,9 @@ services:
     environment:
       - DJANGO_SECRET_KEY=local
     image: tdp
-    build: ./
+    build:
+     context: .
+     dockerfile: ./docker/local/Dockerfile
     command: >
       bash -c "python wait_for_postgres.py &&
                ./manage.py migrate &&
