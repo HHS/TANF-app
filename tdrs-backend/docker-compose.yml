@@ -1,13 +1,16 @@
 version: '3'
 
 services:
+  zaproxy:
+    image: owasp/zap2docker-weekly
+    command: sleep 3600
   postgres:
     image: postgres:11.6
   web:
     restart: always
     environment:
       - DJANGO_SECRET_KEY=local
-    image: web
+    image: tdp
     build: ./
     command: >
       bash -c "python wait_for_postgres.py &&

@@ -46,7 +46,7 @@ class Common(Configuration):
     # Email Server
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-    #Those who will receive error notifications from django via email
+    # Those who will receive error notifications from django via email
     ADMINS = (
         ('Admin1', 'ADMIN_EMAIL_FIRST'),
         ('Admin2', 'ADMIN_EMAIL_SECOND')
