@@ -6,15 +6,15 @@ This project uses the U.S. Web Design System ([USWDS](https://designsystem.digit
 
 - From `TANF-app/tdrs-frontend` run
   ```
-  docker build -t adamcaron/tdrs-frontend:build .
+  docker build -t adamcaron/tdrs-frontend .
   ```
 - If you wish to run the build distribution locally:
   ```
-  docker run -it -p 3000:80 --rm adamcaron/tdrs-frontend:build
+  docker run -it -p 3000:80 --rm adamcaron/tdrs-frontend:latest
   ```
 - Push the image to the remote repository on hub.docker.com:
   ```
-  docker push adamcaron/tdrs-frontend:build
+  docker push adamcaron/tdrs-frontend:latest
   ```
 
 ## To run locally
