@@ -1,7 +1,7 @@
 ---
 version: 1
 applications:
-- name: tdrs-frontend
+- name: tdp-frontend
   instances: 1
   docker:
-    image: adamcaron/tdrs-frontend:build
+    image: adamcaron/tdrs-frontend:initialVoyage
