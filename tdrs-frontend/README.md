@@ -2,6 +2,21 @@
 
 This project uses the U.S. Web Design System ([USWDS](https://designsystem.digital.gov/)) and in particular, [trussworks/react-uswds](https://github.com/trussworks/react-uswds)
 
+## To build for deployment
+
+- From `TANF-app/tdrs-frontend` run
+  ```
+  docker build -t adamcaron/tdrs-frontend:build .
+  ```
+- If you wish to run the build distribution locally:
+  ```
+  docker run -it -p 3000:80 --rm adamcaron/tdrs-frontend:build
+  ```
+- Push the image to the remote repository on hub.docker.com:
+  ```
+  docker push adamcaron/tdrs-frontend:build
+  ```
+
 ## To run locally
 
 - Clone this repository and
@@ -72,21 +87,6 @@ Cypress requires that the application is running locally in order to perform its
   ```
 
 The [Cypress guides](https://docs.cypress.io/guides/getting-started/writing-your-first-test.html#Add-a-test-file) are helpful.
-
-## To build for deployment
-
-- From `TANF-app/tdrs-frontend` run
-  ```
-  docker build -t adamcaron/tdrs-frontend:build .
-  ```
-- If you wish to run the build distribution locally:
-  ```
-  docker run -it -p 3000:80 --rm adamcaron/tdrs-frontend:build
-  ```
-- Push the image to the remote repository on hub.docker.com:
-  ```
-  docker push adamcaron/tdrs-frontend:build
-  ```
 
 ----
 

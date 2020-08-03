@@ -18,7 +18,8 @@
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
     "eject": "react-scripts eject",
-    "lint": "eslint src/ && echo 'Lint complete.'"
+    "lint": "eslint src/ && echo 'Lint complete.'",
+    "test:accessibilty": "pa11y-ci --config .pa11yci.json"
   },
   "eslintConfig": {
     "extends": "react-app"
