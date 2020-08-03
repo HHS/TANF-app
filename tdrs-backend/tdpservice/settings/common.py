@@ -20,10 +20,11 @@ class Common(Configuration):
         # Third party apps
         'rest_framework',            # Utilities for rest apis
         'rest_framework.authtoken',  # Token authentication
-        'django_filters',            # For filtering rest endpoints
+        'django_filters',
 
         # Local apps
         'tdpservice.users',
+        'tdpservice.oidc_app',
 
     )
 
@@ -36,6 +37,7 @@ class Common(Configuration):
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
     )
 
     ALLOWED_HOSTS = ["*"]
@@ -200,4 +202,26 @@ class Common(Configuration):
             'rest_framework.authentication.SessionAuthentication',
             'rest_framework.authentication.TokenAuthentication',
         )
+    }
+
+    AUTHENTICATION_BACKENDS = (
+        'django.contrib.auth.backends.ModelBackend',
+    )
+    OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
+    OIDC_RP_CLIENT_SECRET = ''
+    OIDC_OP_AUTHORIZATION_ENDPOINT = os.environ['OIDC_OP_AUTHORIZATION_ENDPOINT']
+    OIDC_OP_TOKEN_ENDPOINT = os.environ['OIDC_OP_TOKEN_ENDPOINT']
+    OIDC_OP_USER_ENDPOINT = os.environ['OIDC_OP_USER_ENDPOINT']
+    LOGIN_REDIRECT_URL = "http://127.0.0.1:8000/api"
+    LOGOUT_REDIRECT_URL = "http://127.0.0.1:8000"
+    OIDC_RP_SIGN_ALGO = 'RS256'
+    OIDC_OP_JWKS_ENDPOINT = os.environ['OIDC_OP_JWKS_ENDPOINT']
+    OIDC_STORE_ID_TOKEN = True
+    OIDC_AUTH_REQUEST_EXTRA_PARAMS = {
+        'acr_values': os.environ['ACR_VALUES'],
+        'client_id': os.environ['OIDC_RP_CLIENT_ID'],
+        'prompt': 'select_account',
+        'redirect_uri': 'http://localhost:8000/oidc/callback/',
+        'response_type': 'code',
+        'scope': 'openid email',
     }

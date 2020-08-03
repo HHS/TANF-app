@@ -10,6 +10,13 @@ services:
     restart: always
     environment:
       - DJANGO_SECRET_KEY=local
+      - OIDC_RP_CLIENT_ID=${OIDC_RP_CLIENT_ID}
+      - OIDC_OP_AUTHORIZATION_ENDPOINT=${OIDC_OP_AUTHORIZATION_ENDPOINT}
+      - OIDC_OP_TOKEN_ENDPOINT=${OIDC_OP_TOKEN_ENDPOINT}
+      - OIDC_OP_USER_ENDPOINT=${OIDC_OP_USER_ENDPOINT}
+      - OIDC_OP_JWKS_ENDPOINT=${OIDC_OP_JWKS_ENDPOINT}
+      - ACR_VALUES=${ACR_VALUES}
+
     image: tdp
     build:
      context: .
