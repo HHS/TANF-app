@@ -182,6 +182,10 @@ class Common(Configuration):
 
     # Custom user app
     AUTH_USER_MODEL = 'users.User'
+    
+    # Sessions
+    SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies" 
+    SESSION_COOKIE_HTTPONLY = True
 
     # Django Rest Framework
     REST_FRAMEWORK = {

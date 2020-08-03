@@ -6,6 +6,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth.models import User
 
 # consider adding throttling logic
 class ValidateOIDCBearerToken(ObtainAuthToken):
@@ -23,7 +24,21 @@ class ValidateOIDCBearerToken(ObtainAuthToken):
                               headers={'Authorization': 'Bearer '+temp_token})
         if r.status_code == 200:
             data = r.json()
-            return Response(data, status=status.HTTP_200_OK)
+            
+            # get user from database if they exist. if not, create a new one
+            try:
+                user = User.objects.get(email=data.email)
+            except ObjectDoesNotExist:
+                user = User.objects.create_user(data.email)
+                user.set_unusable_password()
+                user.save()
+                
+            session.user_id = user.pk
+            
+            return Response({
+                    'user_id': user.pk,
+                    'email': user.email
+                }, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Request failed"}, status=r.status_code)
  
