@@ -15,8 +15,7 @@ class Common(Configuration):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-
-
+        
         # Third party apps
         'rest_framework',            # Utilities for rest apis
         'rest_framework.authtoken',  # Token authentication
@@ -24,8 +23,6 @@ class Common(Configuration):
 
         # Local apps
         'tdpservice.users',
-        'tdpservice.oidc_app',
-
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
