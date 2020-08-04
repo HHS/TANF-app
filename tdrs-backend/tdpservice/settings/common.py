@@ -1,4 +1,5 @@
 import os
+import json
 from os.path import join
 from distutils.util import strtobool
 import dj_database_url
@@ -39,7 +40,10 @@ class Common(Configuration):
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = 'tdpservice.urls'
-    SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+    SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+    PUBLIC_KEY = os.environ['PUBLIC_KEY']
+    JWT_CERT = os.environ['JWT_CERT']
+    OIDC_RP_IDP_SIGN_KEY = os.environ['OIDC_RP_IDP_SIGN_KEY']
     WSGI_APPLICATION = 'tdpservice.wsgi.application'
 
     # Email Server
@@ -208,21 +212,65 @@ class Common(Configuration):
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
     )
-    OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
-    OIDC_RP_CLIENT_SECRET = ''
-    OIDC_OP_AUTHORIZATION_ENDPOINT = os.environ['OIDC_OP_AUTHORIZATION_ENDPOINT']
-    OIDC_OP_TOKEN_ENDPOINT = os.environ['OIDC_OP_TOKEN_ENDPOINT']
-    OIDC_OP_USER_ENDPOINT = os.environ['OIDC_OP_USER_ENDPOINT']
+ 
     LOGIN_REDIRECT_URL = "http://127.0.0.1:8000/api"
     LOGOUT_REDIRECT_URL = "http://127.0.0.1:8000"
-    OIDC_RP_SIGN_ALGO = 'RS256'
-    OIDC_OP_JWKS_ENDPOINT = os.environ['OIDC_OP_JWKS_ENDPOINT']
-    OIDC_STORE_ID_TOKEN = True
-    OIDC_AUTH_REQUEST_EXTRA_PARAMS = {
-        'acr_values': os.environ['ACR_VALUES'],
-        'client_id': os.environ['OIDC_RP_CLIENT_ID'],
-        'prompt': 'select_account',
-        'redirect_uri': 'http://localhost:8000/oidc/callback/',
-        'response_type': 'code',
-        'scope': 'openid email',
+
+
+    # conditionally set which URI to go to
+    if 'VCAP_APPLICATION' in os.environ:
+        appjson = os.environ['VCAP_APPLICATION']
+        appinfo = json.loads(appjson)
+        if len(appinfo['application_uris']) > 0:
+            appuri = 'https://' + appinfo['application_uris'][0] + '/openid/callback/login/'
+        else:
+            # We are not a web task, so we have no appuri
+            appuri = ''
+    else:
+        # we are running locally
+        appuri = 'http://localhost:8000/openid/callback/login/'
+
+
+# configure things set up by cloudfoundry
+if 'VCAP_SERVICES' in os.environ:
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    servicejson = os.environ['VCAP_SERVICES']
+    services = json.loads(servicejson)
+    AWS_STORAGE_BUCKET_NAME = services['s3'][0]['credentials']['bucket']
+    AWS_S3_REGION_NAME = services['s3'][0]['credentials']['region']
+    AWS_ACCESS_KEY_ID = services['s3'][0]['credentials']['access_key_id']
+    AWS_SECRET_ACCESS_KEY = services['s3'][0]['credentials']['secret_access_key']
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': services['aws-rds'][0]['credentials']['db_name'],
+            'USER': services['aws-rds'][0]['credentials']['username'],
+            'PASSWORD': services['aws-rds'][0]['credentials']['password'],
+            'HOST': services['aws-rds'][0]['credentials']['host'],
+            'PORT': services['aws-rds'][0]['credentials']['port'],
+        }
     }
+    STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+    print('configured for cloud.gov')
+else:
+    # we are in local development mode
+    MEDIA_ROOT = '/tmp/tanf'
+    if 'BUCKETNAME' in os.environ:
+        DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+        AWS_STORAGE_BUCKET_NAME = os.environ['BUCKETNAME']
+        AWS_S3_ENDPOINT_URL = os.environ['AWS_S3_ENDPOINT_URL']
+        AWS_S3_REGION_NAME = os.environ['AWS_S3_REGION_NAME']
+        AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+        AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+    if 'POSTGRES_USER' in os.environ:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.environ['POSTGRES_DB'],
+                'USER': os.environ['POSTGRES_USER'],
+                'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+                'HOST': os.environ['POSTGRES_HOST'],
+                'PORT': os.environ['POSTGRES_PORT'],
+            }
+        }
+    print('configured for local development')

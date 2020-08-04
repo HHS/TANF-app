@@ -5,8 +5,6 @@ from .common import Common
 class Production(Common):
     INSTALLED_APPS = Common.INSTALLED_APPS
 
-    SECRET_KEY = 'w0&df2562wx3g9(cddtwtq)s*3k5jyza8*xwka$+=ya21h@#b('
-
     # Site
     # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
     ALLOWED_HOSTS = ["*"]
