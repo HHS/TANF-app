@@ -1,10 +1,8 @@
----
+version: 1
 applications:
 - name: tdp-app
-  memory: 2G
+  memory: 512M
   instances: 1
-  host: tdp-app
   disk_quota: 1G
   docker:
-    image: rafterdocker/tdp-service:v0
-    username: tdpuser
+    image: goraftdocker/tdp-backend:initialVoyage
