@@ -21,7 +21,5 @@ RUN groupadd -g ${gid} ${group} && useradd -u ${uid} -g ${group} -s /bin/sh ${us
 
 RUN chown -R tdpuser /tdpapp && chmod u+x  gunicorn_start.sh
 
-EXPOSE 8000
-
 
 CMD ["./gunicorn_start.sh"]

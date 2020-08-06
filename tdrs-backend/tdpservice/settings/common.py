@@ -40,7 +40,7 @@ class Common(Configuration):
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = 'tdpservice.urls'
-    SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+    SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
     PUBLIC_KEY = os.environ['PUBLIC_KEY']
     JWT_CERT = os.environ['JWT_CERT']
     OIDC_RP_IDP_SIGN_KEY = os.environ['OIDC_RP_IDP_SIGN_KEY']
@@ -57,10 +57,14 @@ class Common(Configuration):
 
     # Postgres
     DATABASES = {
-        'default': dj_database_url.config(
-            default='postgres://postgres:@postgres:5432/postgres',
-            conn_max_age=int(os.getenv('POSTGRES_CONN_MAX_AGE', 600))
-        )
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT'),
+        }
     }
 
     # General
