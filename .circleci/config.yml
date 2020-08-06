@@ -1,97 +1,28 @@
-version: 2
+version: 2.1
 jobs:
   build:
+    working_directory: ~/repo
     docker:
-      - image: circleci/python:3.7
+      - image: cypress/base:10
     steps:
-    - checkout
-    # Download and cache dependencies
-    - restore_cache:
-        keys:
-        - v1-python37-dependencies-{{ checksum "requirements.txt" }}
-        # fallback to using the latest cache if no exact match is found
-        - v1-python37-dependencies-
-    - run:
-        name: install dependencies
-        command: |
-          python3 -m venv venv
-          . venv/bin/activate
-          pip3 install -r requirements.txt
-    - save_cache:
-        paths:
-          - ./venv
-        key: v1-python37-dependencies-{{ checksum "requirements.txt" }}
-    - setup_remote_docker:
-        docker_layer_caching: false
-    - run:
-        name: run tests
-        command: |
-          ./test.sh
-    - store_artifacts:
-        path: test-reports
-        destination: test-reports
-
-  deploy:
-    docker:
-      - image: circleci/python:3.7
-    steps:
+      - setup_remote_docker
       - checkout
-      - run: &installcf
-          name: install cf-cli
-          command: |
-            sudo apt-get update
-            sudo apt-get install wget gnupg2 apt-transport-https
-            wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
-            echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
-            sudo apt-get update
-            sudo apt-get install cf7-cli
       - run:
-          name: deploy to cloud.gov
-          command: |
-            # If we do not specify a space, then deploy to the branch that we are on.
-            # Also map certain branches to spaces.
-            # This lets you have dev/staging/main branches that automatically go to the right place.
-            if [ -n "$CF_SPACE" ] ; then
-              echo "CF_SPACE is hardcoded already"
-            elif [ "$CIRCLE_BRANCH" = main ] ; then
-              export CF_SPACE="tanf-prod"
-              export CF_USERNAME="$CF_USERNAME_PROD"
-              export CF_PASSWORD="$CF_PASSWORD_PROD"
-              export CGHOSTNAME="$CGHOSTNAME_PROD"
-            elif [ "$CIRCLE_BRANCH" = staging ] ; then
-              export CF_SPACE="tanf-staging"
-              export CF_USERNAME="$CF_USERNAME_STAGING"
-              export CF_PASSWORD="$CF_PASSWORD_STAGING"
-              export CGHOSTNAME="$CGHOSTNAME_STAGING"
-            elif [ "$CIRCLE_BRANCH" = dev ] ; then
-              export CF_SPACE="tanf-dev"
-              export CF_USERNAME="$CF_USERNAME_DEV"
-              export CF_PASSWORD="$CF_PASSWORD_DEV"
-              export CGHOSTNAME="$CGHOSTNAME_DEV"
-            else
-              export CF_SPACE="$CIRCLE_BRANCH"
-            fi
-            if [ -z "$CF_ORG" ] ; then
-              echo CF_ORG not set, aborting
-              exit 1
-            fi
-            cf api https://api.fr.cloud.gov
-            cf auth "$CF_USERNAME" "$CF_PASSWORD"
-            cf target -o "$CF_ORG" -s "$CF_SPACE"
-            ./deploy-cloudgov.sh
-
+          name: Install Package Dependencies
+          command: "cd tdrs-frontend; yarn"
+      - run:
+          name: Run ESLint
+          command: "cd tdrs-frontend; yarn lint"
+      - run:
+          name: Run Pa11y Accessibility Tests
+          command: "cd tdrs-frontend; yarn test:accessibility"
+      - run:
+          name: Run Jest Unit Tests
+          command: "cd tdrs-frontend; yarn test:ci"
+      - run:
+          name: Run Cypress Integration Tests
+          command: "cd tdrs-frontend; yarn cy:run:ci"
 workflows:
-  version: 2
-  build_test_deploy:
+  build-and-test:
     jobs:
       - build
-      - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              # Add branches here if you want more dev/staging/whatever environments to get autodeployed
-              only:
-                - main
-                - staging
-                - dev

@@ -1,0 +1,11 @@
+node_modules/
+build/
+public/
+serviceWorker.js
+
+# testing frameworks
+coverage/
+cypress/fixtures/
+cypress/integration/examples/
+cypress/plugins/
+cypress/support/
