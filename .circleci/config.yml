@@ -1,27 +1,25 @@
 version: 2.1
 jobs:
   build:
-    working_directory: ~/repo
     docker:
-      - image: cypress/base:10
+      - image: circleci/python:3.8
+    branches:
     steps:
-      - setup_remote_docker
       - checkout
+      - setup_remote_docker
       - run:
-          name: Install Package Dependencies
-          command: "cd tdrs-frontend; yarn"
+          name: "Test: Build and Spin-up Local Django API Service"
+          command: "cd tdrs-backend; docker-compose up -d --build "
       - run:
-          name: Run ESLint
-          command: "cd tdrs-frontend; yarn lint"
+          name: "Tear Down Local Django API Service"
+          command: "cd tdrs-backend; docker-compose down "
       - run:
-          name: Run Pa11y Accessibility Tests
-          command: "cd tdrs-frontend; yarn test:accessibility"
+          name:  "Test: Execute Python Unit Tests and Linting Test"
+          command: "cd tdrs-backend; docker-compose run web sh -c \"python manage.py test && flake8\""
       - run:
-          name: Run Jest Unit Tests
-          command: "cd tdrs-frontend; yarn test:ci"
-      - run:
-          name: Run Cypress Integration Tests
-          command: "cd tdrs-frontend; yarn cy:run:ci"
+          name: "Test: Zap Vulnerability Scanner "
+          command: "cd tdrs-backend; ./zap-scanner.sh"
+
 workflows:
   build-and-test:
     jobs:
