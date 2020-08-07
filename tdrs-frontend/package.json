@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@trussworks/react-uswds": "^1.8.0",
+    "node-sass": "^4.14.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.0",
@@ -66,6 +67,7 @@
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
       "!src/index.js",
+      "!src/**/index.js",
       "!src/serviceWorker.js"
     ],
     "coverageThreshold": {
