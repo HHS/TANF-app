@@ -1,0 +1,16 @@
+.welcome {
+  text-align: center;
+  padding-top: 30vh;
+  .left {
+    padding: 19px 50px 0 0;
+    text-align: right;
+  }
+  .right {
+    padding: 0 0 35px 50px;
+    text-align: left;
+    border-left: 1px solid lightgray;
+  }
+  button {
+    margin-top: 35px;
+  }
+}
