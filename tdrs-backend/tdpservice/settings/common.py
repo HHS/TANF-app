@@ -2,7 +2,6 @@ import os
 import json
 from os.path import join
 from distutils.util import strtobool
-import dj_database_url
 from configurations import Configuration
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -16,7 +15,7 @@ class Common(Configuration):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-        
+
         # Third party apps
         'rest_framework',            # Utilities for rest apis
         'rest_framework.authtoken',  # Token authentication
@@ -40,10 +39,7 @@ class Common(Configuration):
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = 'tdpservice.urls'
-    SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-    PUBLIC_KEY = os.environ['PUBLIC_KEY']
-    JWT_CERT = os.environ['JWT_CERT']
-    OIDC_RP_IDP_SIGN_KEY = os.environ['OIDC_RP_IDP_SIGN_KEY']
+    SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
     WSGI_APPLICATION = 'tdpservice.wsgi.application'
 
     # Email Server
@@ -190,9 +186,9 @@ class Common(Configuration):
 
     # Custom user app
     AUTH_USER_MODEL = 'users.User'
-    
+
     # Sessions
-    SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies" 
+    SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
 
     # Django Rest Framework
@@ -216,17 +212,17 @@ class Common(Configuration):
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
     )
- 
+
     LOGIN_REDIRECT_URL = "http://127.0.0.1:8000/api"
     LOGOUT_REDIRECT_URL = "http://127.0.0.1:8000"
-
 
     # conditionally set which URI to go to
     if 'VCAP_APPLICATION' in os.environ:
         appjson = os.environ['VCAP_APPLICATION']
         appinfo = json.loads(appjson)
         if len(appinfo['application_uris']) > 0:
-            appuri = 'https://' + appinfo['application_uris'][0] + '/openid/callback/login/'
+            appuri = 'https://' + \
+                appinfo['application_uris'][0] + '/openid/callback/login/'
         else:
             # We are not a web task, so we have no appuri
             appuri = ''
