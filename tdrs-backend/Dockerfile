@@ -8,7 +8,6 @@ ARG gid=1000
 ENV DJANGO_SECRET_KEY='w0&df2562wx3g9(cddtwtq)s*3k5jyza8*xwka$+=ya21h@#b('
 ENV DJANGO_SETTINGS_MODULE=tdpservice.settings.development
 ENV DJANGO_CONFIGURATION=Development
-ENV OIDC_OP_USER_ENDPOINT=https://idp.int.identitysandbox.gov/api/openid_connect/userinfo
 # Allows docker to cache installed dependencies between builds
 COPY ./requirements.txt requirements.txt
 RUN pip install --upgrade pip && pip install -r requirements.txt
