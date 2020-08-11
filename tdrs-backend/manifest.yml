@@ -1,0 +1,8 @@
+version: 1
+applications:
+- name: tdp-app
+  memory: 512M
+  instances: 1
+  disk_quota: 1G
+  docker:
+    image: goraftdocker/tdp-backend:initialVoyage

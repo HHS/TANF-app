@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  zaproxy:
+    image: owasp/zap2docker-weekly
+    command: sleep 3600
+  postgres:
+    image: postgres:11.6
+    environment:
+      - POSTGRES_USER=tdpuser
+      - POSTGRES_PASSWORD=something_secure
+      - POSTGRES_DB=tdrs_test
+      - POSTGRES_PORT=5432
+  web:
+    restart: always
+    environment:
+      - DJANGO_SECRET_KEY=local
+      - DB_USER=tdpuser
+      - DB_PASSWORD=something_secure
+      - DB_NAME=tdrs_test
+      - DB_PORT=5432
+      - DB_HOST=postgres
+    image: tdp
+    build: 
+     context: .
+     dockerfile: ./docker/local/Dockerfile
+    command: >
+      bash -c "python wait_for_postgres.py &&
+               ./gunicorn_start.sh"
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+  documentation:
+    restart: always
+    build: ./
+    command: "mkdocs serve"
+    volumes:
+      - ./:/tdpapp
+    ports:
+      - "8001:8001"

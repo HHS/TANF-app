@@ -1,0 +1,80 @@
+{
+  "name": "tdrs-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@trussworks/react-uswds": "^1.8.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-scripts": "3.4.0",
+    "typescript": "^3.9.7"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "start:ci": "HOST=localhost BROWSER=none yarn react-scripts start",
+    "build": "react-scripts build",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:ci": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn cy:run'",
+    "test": "react-scripts test",
+    "test:cov": "react-scripts test --coverage --watchAll",
+    "test:ci": "CI=1 react-scripts test --coverage",
+    "test:accessibility": "start-server-and-test 'yarn start:ci' http://localhost:3000 'yarn pa11y-ci --config .pa11yci.json'",
+    "eject": "react-scripts eject",
+    "lint": "eslint src/ && echo 'Lint complete.'"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^7.21.5",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "babel-eslint": "10.0.3",
+    "cypress": "^4.12.0",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-cypress": "^2.11.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-react": "^7.20.5",
+    "eslint-plugin-react-hooks": "^4.0.8",
+    "http-get": "^0.5.10",
+    "jest-enzyme": "^7.1.2",
+    "pa11y-ci": "^2.3.0",
+    "prettier": "^2.0.5",
+    "start-server-and-test": "^1.11.2",
+    "wait-on": "5.1.0"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/index.js",
+      "!src/serviceWorker.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 90,
+        "branches": 90,
+        "functions": 90,
+        "lines": 90
+      }
+    }
+  }
+}
