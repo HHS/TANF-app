@@ -1,7 +1,24 @@
 version: 2.1
 jobs:
   build:
-    working_directory: ~/repo
+    working_directory: ~/repo-backend
+    docker:
+      - image: circleci/python:3.8
+    branches:
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: "Test: Build and Spin-up Django API Service"
+          command: "cd tdrs-backend; docker-compose up -d --build "
+      - run:
+          name: "Tear Down Django API Service"
+          command: "cd tdrs-backend; docker-compose down "
+      - run:
+          name:  "Test: Execute Python Unit Tests and Linting Test"
+          command: "cd tdrs-backend; docker-compose run web sh -c \"python manage.py test && flake8\""
+  build-ui:
+    working_directory: ~/repo-ui
     docker:
       - image: cypress/base:10
     steps:
@@ -21,8 +38,10 @@ jobs:
           command: "cd tdrs-frontend; yarn test:ci"
       - run:
           name: Run Cypress Integration Tests
-          command: "cd tdrs-frontend; yarn cy:run:ci"
+          command: "cd tdrs-frontend; yarn cy:run:ci"          
+
 workflows:
   build-and-test:
     jobs:
       - build
+      - build-ui
