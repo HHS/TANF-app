@@ -41,7 +41,7 @@ class Common(Configuration):
     ROOT_URLCONF = 'tdpservice.urls'
     SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
     WSGI_APPLICATION = 'tdpservice.wsgi.application'
-
+    
     # Email Server
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
@@ -204,12 +204,14 @@ class Common(Configuration):
             'rest_framework.permissions.IsAuthenticated',
         ],
         'DEFAULT_AUTHENTICATION_CLASSES': (
+            'tdpservice.auth_backend.CustomAuthentication',
             'rest_framework.authentication.SessionAuthentication',
             'rest_framework.authentication.TokenAuthentication',
         )
     }
 
     AUTHENTICATION_BACKENDS = (
+        'tdpservice.auth_backend.CustomAuthentication',
         'django.contrib.auth.backends.ModelBackend',
     )
 
