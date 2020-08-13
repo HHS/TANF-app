@@ -24,6 +24,7 @@ ipdb==0.13.3
 ipython==7.16.1
 mkdocs==1.1.2
 flake8==3.8.3
+django-extensions==3.0.5
 
 # Testing
 mock==4.0.2
@@ -36,3 +37,4 @@ coverage==5.2.1
 django-storages==1.9.1
 boto3==1.14.28
 requests==2.24.0
+jwcrypto==0.7.0
