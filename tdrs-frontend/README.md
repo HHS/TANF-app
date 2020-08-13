@@ -23,11 +23,10 @@ This project uses the U.S. Web Design System ([USWDS](https://designsystem.digit
   ```
   cd TANF-app/tdrs-frontend
   ```
-
-- Spin up date application with `docker-compose`
-```
-docker-compose up --build
-```
+- Configure local environment variables with
+  ```
+  cp .env-example .env
+  ```
 - Build the Docker image locally with
   ```
   docker build --target localdev -t adamcaron/tdrs-frontend:local .
@@ -40,6 +39,11 @@ docker-compose up --build
 Navigate to [localhost:3000](localhost:3000) and you should see the app.
 
 The `TANF-app/tdrs-frontend/src` directory is mounted into the container so changes to the source code, when saved, automatically update the contents of `/home/node/app/src` in the container. Restarting the container is not necessary during development and you should see changes update in the UI instantly.
+
+**Alternatively the app can be run with docker-compose:**
+```
+docker-compose up --build
+```
 
 ### Code Linting and Formatting
 
@@ -59,6 +63,12 @@ This project uses [Jest](https://jestjs.io/) for unit tests and [Cypress](https:
 **Unit Tests with Jest**
 
 Jest provides an interactive test consolde that's helpful for development. After running the following commands, you will see options to run all the tests, run only failing tests, run specific tests, and more.
+
+Before running the subsequent commands, first:
+```
+cd TANF-app/tdrs-frontend
+```
+
 - To run unit tests locally:
   ```
   yarn test
@@ -71,6 +81,11 @@ Jest provides an interactive test consolde that's helpful for development. After
   ```
   yarn test:ci
   ```
+
+After running either `test:cov` or `test:ci`, coverage details can be seen as HTML in the browser by running:
+```
+open coverage/lcov-report/index.html
+```
 
 Another simple way to run only one test (focus on only one test at a time) is to change `it()` to `fit()`. You can skip tests by changing `it()` to `xit()`. [These](https://create-react-app.dev/docs/running-tests/#focusing-and-excluding-tests) can be used in addition to the [methods](https://jestjs.io/docs/en/api) Jest provides.
 
@@ -195,7 +210,7 @@ cf login -a api.fr.cloud.gov --sso
 cf target -o <ORG> -s <SPACE>
 ```
 
-4.) Push the image to Cloud.gov ( please ensure you're in the same directory as the manifest.yml): 
+4.) Push the image to Cloud.gov ( please ensure you're in the same directory as the manifest.yml):
 
 `cd tdrs-backend; cf push tdp-frontend --docker-image goraftdocker/tdp-frontend:devtest`
 
