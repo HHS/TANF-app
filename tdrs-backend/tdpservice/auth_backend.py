@@ -1,10 +1,8 @@
-from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 
 # requires to define two functions authenticate and get_user
 
-class CustomAuthentication:  
+class CustomAuthentication:
 
     def authenticate(self, request, username=None):
         User = get_user_model()
@@ -13,7 +11,7 @@ class CustomAuthentication:
             return user
         except User.DoesNotExist:
             return None
-        
+
     def get_user(self, user_id):
         User = get_user_model()
         try:
