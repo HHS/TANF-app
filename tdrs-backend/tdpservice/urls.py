@@ -15,8 +15,8 @@ router.register(r'users', UserCreateViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(router.urls)),
-    path(r'login/', ValidateOIDCBearerToken.as_view()),
-    path('logout/', LogoutUser.as_view()),
+    path(r'login/', ValidateOIDCBearerToken.as_view(), name="login"),
+    path('logout/', LogoutUser.as_view(), name="logout"),
 
     # the 'api-root' from django rest-frameworks default router
     # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
