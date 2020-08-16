@@ -23,6 +23,8 @@ services:
       - OIDC_OP_TOKEN_ENDPOINT=${OIDC_OP_TOKEN_ENDPOINT}
       - JWT_KEY=${JWT_KEY}
       - OIDC_OP_JWKS_ENDPOINT=${OIDC_OP_JWKS_ENDPOINT}
+      - OIDC_OP_AUTHORIZATION_ENDPOINT=${OIDC_OP_AUTHORIZATION_ENDPOINT}
+      - OIDC_OP_LOGOUT_ENDPOINT=${OIDC_OP_LOGOUT_ENDPOINT}
     image: tdp
     build: 
      context: .
@@ -31,7 +33,7 @@ services:
       bash -c "python wait_for_postgres.py &&
                ./gunicorn_start.sh"
     volumes:
-      - ./:/app
+      - ./:/tdpapp
     ports:
       - "8000:8000"
     depends_on:

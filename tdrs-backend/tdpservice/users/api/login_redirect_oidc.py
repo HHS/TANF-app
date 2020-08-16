@@ -1,0 +1,46 @@
+import os
+import requests
+import jwt
+import secrets
+import time
+from jwcrypto import jwk
+from urllib.parse import urlencode, quote_plus
+from django.views.generic.base import RedirectView 
+from django.http import HttpResponseRedirect, JsonResponse
+
+from .utils import add_state_and_nonce_to_session
+
+class LoginRedirectOIDC(RedirectView): 
+    permanent = False
+    query_string = True
+    pattern_name = 'oidc-auth'
+    
+    def get(self, request, *args, **kwargs):
+        state = secrets.token_hex(32)
+        nonce = secrets.token_hex(32)
+        auth_params = {
+            'acr_values': 'http://idmanagement.gov/ns/assurance/ial/1',
+            'client_id': 'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev',
+            'nonce': nonce,
+            "prompt": 'select_account',
+            'redirect_uri': 'http://localhost:8000/login',
+            'response_type': 'code',
+            'state': state
+        }
+        #login.gov expects unescaped '+' value for scope parameter
+        auth_scope='&scope=openid+email'
+
+        #escape params dict into a url encoded query string
+        encoded_params = urlencode(auth_params, quote_via=quote_plus)
+
+        #build out full API GET call to authorize endpoint
+        auth_endpoint  = os.environ['OIDC_OP_AUTHORIZATION_ENDPOINT'] + '?' + encoded_params
+        auth_endpoint_scope = auth_endpoint + '&' + auth_scope
+        #update the user session so OIDC logout URL has token_hint
+        # request.session['openid_authenticity_tracker']= {
+        # 'nonce': nonce,
+        # 'state': state,
+        # 'added_on': time.time(),
+        # }
+
+        return HttpResponseRedirect(auth_endpoint_scope)                
