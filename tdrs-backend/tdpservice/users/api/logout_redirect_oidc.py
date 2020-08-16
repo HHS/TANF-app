@@ -20,7 +20,12 @@ class LogoutRedirectOIDC(RedirectView):
         #generate a random secured hex string for the state parameter
         state = secrets.token_hex(32)   
 
-        token_hint= request.session.get('token',"None")
+        token_hint= request.session['token']
+        
+        del request.session['token']
+        request.session.save()
+        request.session = request.session.__class__(request.session.session_key)
+        
         logout_params = {
             'id_token_hint': token_hint,
             'post_logout_redirect_uri': 'http://localhost:8000/logout',
