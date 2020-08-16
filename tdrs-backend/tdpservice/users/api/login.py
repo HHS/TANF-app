@@ -30,10 +30,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         if state is None :
             return Response({'error': 'OIDC State not found'}, status=status.HTTP_400_BAD_REQUEST)
 
+
         # get the validation keys to confirm generated nonce and state
-        # nonce_and_state = self.getNonceAndState(state,request)
-        # nonce_validator = nonce_and_state.get('nonce', 'not_nonce')
-        # state_validator = nonce_and_state.get('state', 'not_state')
+        nonce_and_state = self.getNonceAndState(state,request)
+        nonce_validator = nonce_and_state.get('nonce', 'not_nonce')
+        state_validator = nonce_and_state.get('state', 'not_state')
 
 
         #build out the query string parameters and full URL path for OIDC token endpoint
@@ -60,9 +61,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             
             decoded_nonce = decoded_payload['nonce']
 
-            # if self.validNonceAndState(decoded_nonce,state,nonce_validator,state_validator) == False:
-            #     msg = ('Could not validate nonce and state') 
-            #     raise SuspiciousOperation(msg)
+            if self.validNonceAndState(decoded_nonce,state,nonce_validator,state_validator) == False:
+                msg = ('Could not validate nonce and state') 
+                raise SuspiciousOperation(msg)
                 
             
             if decoded_payload['email_verified'] is True:
@@ -73,7 +74,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                        login(request, user, backend='tdpservice.auth_backend.CustomAuthentication')
 
                        #update the user session so OIDC logout URL has the token_hint
-                       request.session['token']=id_token
+                       if 'token' not in request.session:
+                           request.session['token']=id_token
                        
                        return Response({
                         'user_id': user.pk,
@@ -164,27 +166,23 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         
     def getNonceAndState(self,state,request):
         
-        if 'openid_authenticity_tracker' not in request.session:
+        if 'state_nonce_tracker' not in request.session:
             msg = ('error: Could not find session store for nonce and state') 
             raise SuspiciousOperation(msg)
 
-        openid_authenticity_tracker = request.session.get('openid_authenticity_tracker',None)
+        openid_authenticity_tracker = request.session.get('state_nonce_tracker',None)
    
         if 'state' not in openid_authenticity_tracker:
-            msg = 'OIDC callback state not found in session `openid_authenticity_tracker`.'
+            msg = 'OIDC callback state was not found in session .'
             raise SuspiciousOperation(msg)
 
         state = openid_authenticity_tracker.get('state', None)
         
         if 'nonce' not in openid_authenticity_tracker:
-            msg = 'OIDC callback state not found in session `openid_authenticity_tracker`.'
+            msg = 'OIDC callback nonce was not found in session `openid_authenticity_tracker`.'
             raise SuspiciousOperation(msg)
         
         nonce = openid_authenticity_tracker.get('nonce', None)
-
-        del request.session['openid_authenticity_tracker']
-        request.session.save()
-        request.session = request.session.__class__(request.session.session_key)
-        
+ 
         validation_keys = {'state': state,'nonce': nonce}
         return validation_keys
