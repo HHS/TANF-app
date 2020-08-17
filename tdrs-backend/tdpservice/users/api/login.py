@@ -53,7 +53,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                                          audience=os.environ['CLIENT_ID'],
                                          algorithm='RS256',
                                          subject=None,
-                                         access_token=None)
+                                         access_token=None,
+                                         options={ 'verify_nbf': False }
+                                         )
 
             decoded_nonce = decoded_payload['nonce']
 
