@@ -1,3 +1,5 @@
+"""Define Django routing."""
+
 from django.conf import settings
 from django.urls import path, re_path, include, reverse_lazy
 from django.conf.urls.static import static
@@ -19,9 +21,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(router.urls)),
     path('login', TokenAuthorizationOIDC.as_view(), name="login"),
-    path('login/oidc', LoginRedirectOIDC.as_view(),name='oidc-auth'),
+    path('login/oidc', LoginRedirectOIDC.as_view(), name='oidc-auth'),
     path('logout', LogoutUser.as_view(), name="logout"),
-    path('logout/oidc', LogoutRedirectOIDC.as_view(),name='oidc-logout'),
+    path('logout/oidc', LogoutRedirectOIDC.as_view(), name='oidc-logout'),
 
 
     # the 'api-root' from django rest-frameworks default router
