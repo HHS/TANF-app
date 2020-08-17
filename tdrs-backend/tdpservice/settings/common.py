@@ -23,6 +23,7 @@ class Common(Configuration):
         'rest_framework',            # Utilities for rest apis
         'rest_framework.authtoken',  # Token authentication
         'django_filters',
+        'corsheaders',
 
         # Local apps
         'tdpservice.users',
@@ -37,13 +38,14 @@ class Common(Configuration):
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+        'corsheaders.middleware.CorsMiddleware',
     )
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = 'tdpservice.urls'
     SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
     WSGI_APPLICATION = 'tdpservice.wsgi.application'
+    CORS_ORIGIN_ALLOW_ALL = True
 
     # Email Server
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
