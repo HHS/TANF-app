@@ -44,4 +44,4 @@ spritesmith-generated/
 spritesmith.scss
 
 # Environment files
-*.env*
+/tdpservice/settings/env_vars/*
