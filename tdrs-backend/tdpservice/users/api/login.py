@@ -54,7 +54,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                                          algorithm='RS256',
                                          subject=None,
                                          access_token=None,
-                                         options={ 'verify_nbf': False }
+                                         options={'verify_nbf': False}
                                          )
 
             decoded_nonce = decoded_payload['nonce']
