@@ -42,3 +42,6 @@ boilerplate.zip
 # Spritesmith
 spritesmith-generated/
 spritesmith.scss
+
+# Environment files
+*.env*
