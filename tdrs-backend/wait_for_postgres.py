@@ -1,3 +1,5 @@
+"""Wait for Postgres before starting application."""
+
 import os
 import logging
 from time import time, sleep
@@ -19,6 +21,7 @@ logger.addHandler(logging.StreamHandler())
 
 
 def pg_isready(host, user, password, dbname):
+    """Check to see if Postgres is ready."""
     while time() - start_time < check_timeout:
         try:
             conn = psycopg2.connect(**vars())

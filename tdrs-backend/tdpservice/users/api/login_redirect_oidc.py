@@ -1,14 +1,9 @@
 import os
-import requests
-import jwt
 import secrets
 import time
-from jwcrypto import jwk
 from urllib.parse import urlencode, quote_plus
-from django.views.generic.base import RedirectView 
-from django.http import HttpResponseRedirect, JsonResponse
-
-from .utils import add_state_and_nonce_to_session
+from django.views.generic.base import RedirectView
+from django.http import HttpResponseRedirect
 
 class LoginRedirectOIDC(RedirectView):
     permanent = False
