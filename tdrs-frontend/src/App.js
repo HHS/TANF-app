@@ -1,6 +1,7 @@
 import React from 'react'
 import { GovBanner } from '@trussworks/react-uswds'
-import Welcome from './containers/Welcome'
+import Routes from './Routes'
+
 import '@trussworks/react-uswds/lib/uswds.css'
 import '@trussworks/react-uswds/lib/index.css'
 
@@ -10,7 +11,7 @@ function App() {
   return (
     <>
       <GovBanner aria-label="Official government website" />
-      <Welcome />
+      <Routes />
     </>
   )
 }

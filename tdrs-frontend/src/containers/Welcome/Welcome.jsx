@@ -1,15 +1,18 @@
 import React from 'react'
+import { useDispatch } from 'react-redux'
 import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
+import { login } from '../../actions/auth'
+
 import '@trussworks/react-uswds/lib/uswds.css'
 import '@trussworks/react-uswds/lib/index.css'
-import auth from '../../services/auth'
 
 import './Welcome.scss'
 
 function Welcome() {
+  const dispatch = useDispatch()
   const handleClick = (event) => {
     event.preventDefault()
-    auth.signinRedirect()
+    dispatch(login())
   }
   return (
     <>
