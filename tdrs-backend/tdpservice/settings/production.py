@@ -1,8 +1,11 @@
+"""Define production configuration settings."""
 import os
 from .common import Common
 
 
 class Production(Common):
+    """Define class for production configuration settings."""
+
     INSTALLED_APPS = Common.INSTALLED_APPS
 
     # Site

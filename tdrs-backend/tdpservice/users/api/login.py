@@ -1,3 +1,5 @@
+"""Log user in to Django from Login.gov."""
+
 import jwt
 import os
 import requests
@@ -10,18 +12,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model
 from django.contrib.auth import login
-from django.contrib.sessions.backends.db import SessionStore
 from django.core.exceptions import SuspiciousOperation
-from django.shortcuts import redirect
 from urllib.parse import urlencode, quote_plus
 
 
 # consider adding throttling logic
 class TokenAuthorizationOIDC(ObtainAuthToken):
+    """Define methods for handling login request from login.gov."""
 
     def get(self, request, *args, **kwargs):
-        '''Handle decoding auth token and authenticate user'''
-
+        """Handle decoding auth token and authenticate user."""
         code = request.GET.get('code', None)
         state = request.GET.get('state', None)
 
@@ -57,7 +57,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
             decoded_nonce = decoded_payload['nonce']
 
-            if self.validNonceAndState(decoded_nonce, state, nonce_validator, state_validator) == False:
+            if self.validNonceAndState(decoded_nonce, state, nonce_validator, state_validator) is False:
                 msg = ('Could not validate nonce and state')
                 raise SuspiciousOperation(msg)
 
@@ -90,9 +90,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                             'status': 'New User Created!'
                         }, status=status.HTTP_200_OK)
 
-                except:
-                    return Response({'error': 'Email verfied, but experienced internal issue with login/registration.'},
-                                    status=status.HTTP_400_BAD_REQUEST)
+                except Exception:
+                    return Response(
+                        {'error': 'Email verfied, but experienced internal issue with login/registration.'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
             else:
                 return Response({'error': 'Unverified email!'}, status=status.HTTP_400_BAD_REQUEST)
@@ -103,6 +104,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         }, status=status.HTTP_400_BAD_REQUEST)
 
     def generateTokenEndpointParameters(self, code):
+        """Generate token parameters."""
         clientAssertion = self.generateClientAssertion()
         params = {
             'client_assertion': clientAssertion,
@@ -114,6 +116,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         return encoded_params
 
     def generateClientAssertion(self):
+        """Generate client assertion."""
         private_key = os.environ['JWT_KEY']
         payload = {
             'iss': os.environ['CLIENT_ID'],
@@ -127,6 +130,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         return encoded_jwt.decode('UTF-8')
 
     def generateJWTFromJWKS(self):
+        """Generate JWT."""
         certs_endpoint = os.environ['OIDC_OP_JWKS_ENDPOINT']
         certs_response = requests.get(certs_endpoint)
         public_cert = jwk.JWK(**certs_response.json().get('keys')[0])
@@ -134,6 +138,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         return public_pem
 
     def validNonceAndState(self, decoded_nonce, state, nonce_validator, state_validator):
+        """Validate nonce and state are correct values."""
         if decoded_nonce != nonce_validator:
             return False
         if state != state_validator:
@@ -141,6 +146,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         return True
 
     def getNonceAndState(self, state, request):
+        """Get the nonce and state values."""
         if 'state_nonce_tracker' not in request.session:
             msg = ('error: Could not find session store for nonce and state')
             raise SuspiciousOperation(msg)

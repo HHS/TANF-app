@@ -1,3 +1,5 @@
+"""Handle logout requests."""
+
 import os
 import secrets
 from urllib.parse import urlencode, quote_plus
@@ -6,12 +8,14 @@ from django.http import HttpResponseRedirect
 
 
 class LogoutRedirectOIDC(RedirectView):
+    """Handle logout requests."""
+
     permanent = False
     query_string = True
     pattern_name = 'oidc-logout'
 
     def get(self, request, *args, **kwargs):
-
+        """Manage logout requests with login.gov."""
         # generate a random secured hex string for the state parameter
         state = secrets.token_hex(32)
 
