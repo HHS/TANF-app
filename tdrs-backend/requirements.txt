@@ -18,7 +18,7 @@ Markdown==3.2.2
 django-filter==2.3.0
 pyjwt==1.7.1
 cryptography==3.0
-django-cors-headers=3.4.0
+django-cors-headers==3.4.0
 
 # Developer Tools
 ipdb==0.13.3
