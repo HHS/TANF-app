@@ -19,11 +19,11 @@ class LoginRedirectOIDC(RedirectView):
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
         auth_params = {
-            'acr_values': 'http://idmanagement.gov/ns/assurance/ial/1',
-            'client_id': 'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev',
+            'acr_values': os.environ['ACR_VALUES'],
+            'client_id': os.environ['CLIENT_ID'],
             'nonce': nonce,
             "prompt": 'select_account',
-            'redirect_uri': 'http://localhost:8000/login',
+            'redirect_uri': os.environ['BASE_URL']+'/login',
             'response_type': 'code',
             'state': state
         }
@@ -36,6 +36,7 @@ class LoginRedirectOIDC(RedirectView):
         #build out full API GET call to authorize endpoint
         auth_endpoint  = os.environ['OIDC_OP_AUTHORIZATION_ENDPOINT'] + '?' + encoded_params
         auth_endpoint_scope = auth_endpoint + '&' + auth_scope
+        
         #update the user session so OIDC logout URL has token_hint
         request.session['state_nonce_tracker']= {
         'nonce': nonce,
@@ -43,4 +44,4 @@ class LoginRedirectOIDC(RedirectView):
         'added_on': time.time(),
         }
 
-        return HttpResponseRedirect(auth_endpoint_scope)                
+        return HttpResponseRedirect(auth_endpoint_scope)
