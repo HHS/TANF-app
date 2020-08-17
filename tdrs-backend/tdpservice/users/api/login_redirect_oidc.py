@@ -10,11 +10,11 @@ from django.http import HttpResponseRedirect, JsonResponse
 
 from .utils import add_state_and_nonce_to_session
 
-class LoginRedirectOIDC(RedirectView): 
+class LoginRedirectOIDC(RedirectView):
     permanent = False
     query_string = True
     pattern_name = 'oidc-auth'
-    
+
     def get(self, request, *args, **kwargs):
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
@@ -27,21 +27,21 @@ class LoginRedirectOIDC(RedirectView):
             'response_type': 'code',
             'state': state
         }
-        #login.gov expects unescaped '+' value for scope parameter
-        auth_scope='&scope=openid+email'
+        # login.gov expects unescaped '+' value for scope parameter
+        auth_scope = '&scope=openid+email'
 
-        #escape params dict into a url encoded query string
+        # escape params dict into a url encoded query string
         encoded_params = urlencode(auth_params, quote_via=quote_plus)
 
-        #build out full API GET call to authorize endpoint
-        auth_endpoint  = os.environ['OIDC_OP_AUTHORIZATION_ENDPOINT'] + '?' + encoded_params
+        # build out full API GET call to authorize endpoint
+        auth_endpoint = os.environ['OIDC_OP_AUTHORIZATION_ENDPOINT'] + '?' + encoded_params
         auth_endpoint_scope = auth_endpoint + '&' + auth_scope
-        
-        #update the user session so OIDC logout URL has token_hint
-        request.session['state_nonce_tracker']= {
-        'nonce': nonce,
-        'state': state,
-        'added_on': time.time(),
+
+        # update the user session so OIDC logout URL has token_hint
+        request.session['state_nonce_tracker'] = {
+            'nonce': nonce,
+            'state': state,
+            'added_on': time.time(),
         }
 
         return HttpResponseRedirect(auth_endpoint_scope)
