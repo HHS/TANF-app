@@ -1,3 +1,5 @@
+"""Handle login requests."""
+
 import os
 import secrets
 import time
@@ -5,12 +7,16 @@ from urllib.parse import urlencode, quote_plus
 from django.views.generic.base import RedirectView
 from django.http import HttpResponseRedirect
 
+
 class LoginRedirectOIDC(RedirectView):
+    """Handle login workflow with login.gov."""
+
     permanent = False
     query_string = True
     pattern_name = 'oidc-auth'
 
     def get(self, request, *args, **kwargs):
+        """Get request and manage login information with login.gov."""
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
         auth_params = {
@@ -18,7 +24,7 @@ class LoginRedirectOIDC(RedirectView):
             'client_id': os.environ['CLIENT_ID'],
             'nonce': nonce,
             "prompt": 'select_account',
-            'redirect_uri': os.environ['BASE_URL']+'/login',
+            'redirect_uri': os.environ['BASE_URL'] + '/login',
             'response_type': 'code',
             'state': state
         }

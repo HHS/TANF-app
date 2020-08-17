@@ -1,3 +1,5 @@
+"""Define settings for all environments."""
+
 import os
 import json
 from os.path import join
@@ -7,6 +9,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class Common(Configuration):
+    """Define configuration class."""
 
     INSTALLED_APPS = (
         'django.contrib.admin',

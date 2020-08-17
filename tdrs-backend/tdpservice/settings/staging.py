@@ -1,8 +1,12 @@
+"""Define configuration settings for staging environment."""
+
 import os
 from .common import Common
 
 
 class Staging(Common):
+    """Class for defining settings for staging environment."""
+
     INSTALLED_APPS = Common.INSTALLED_APPS
 
     # Site
