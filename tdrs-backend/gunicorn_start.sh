@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Apply database migrations
-echo "Apply database migrations"
+echo "Applying database migrations"
 python manage.py makemigrations
 python manage.py migrate
 

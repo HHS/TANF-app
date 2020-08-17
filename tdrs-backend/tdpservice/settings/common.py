@@ -225,14 +225,8 @@ class Common(Configuration):
         appjson = os.environ['VCAP_APPLICATION']
         appinfo = json.loads(appjson)
         if len(appinfo['application_uris']) > 0:
-            appuri = 'https://' + \
-                appinfo['application_uris'][0] + '/openid/callback/login/'
-        else:
-            # We are not a web task, so we have no appuri
-            appuri = ''
-    else:
-        # we are running locally
-        appuri = 'http://localhost:8000/openid/callback/login/'
+            os.environ['BASE_URL'] = 'https://' + \
+                appinfo['application_uris'][0] + 'login/oidc'
 
 
 # configure things set up by cloudfoundry

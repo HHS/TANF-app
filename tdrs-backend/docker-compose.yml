@@ -20,15 +20,13 @@ services:
       - DB_NAME=tdrs_test
       - DB_PORT=5432
       - DB_HOST=postgres
-      - OIDC_OP_TOKEN_ENDPOINT=${OIDC_OP_TOKEN_ENDPOINT}
+      - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
+      - DJANGO_CONFIGURATION=Local
       - JWT_KEY=${JWT_KEY}
-      - OIDC_OP_JWKS_ENDPOINT=${OIDC_OP_JWKS_ENDPOINT}
-      - OIDC_OP_AUTHORIZATION_ENDPOINT=${OIDC_OP_AUTHORIZATION_ENDPOINT}
-      - OIDC_OP_LOGOUT_ENDPOINT=${OIDC_OP_LOGOUT_ENDPOINT}
     image: tdp
     build: 
      context: .
-     dockerfile: ./docker/local/Dockerfile
+     dockerfile: Dockerfile
     command: >
       bash -c "python wait_for_postgres.py &&
                ./gunicorn_start.sh"
