@@ -1,7 +1,7 @@
-import React from 'react'
-import { useDispatch } from 'react-redux'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
-import { login } from '../../actions/auth'
+import { setUser } from '../../actions/auth'
 
 import '@trussworks/react-uswds/lib/uswds.css'
 import '@trussworks/react-uswds/lib/index.css'
@@ -10,9 +10,15 @@ import './Welcome.scss'
 
 function Welcome() {
   const dispatch = useDispatch()
+  const user = useSelector((state) => state.router.location.query.user)
+  useEffect(() => {
+    if (user) {
+      dispatch(setUser(user))
+    }
+  }, [user, dispatch])
   const handleClick = (event) => {
     event.preventDefault()
-    dispatch(login())
+    window.location = 'http://localhost:8000/login/oidc'
   }
   return (
     <>

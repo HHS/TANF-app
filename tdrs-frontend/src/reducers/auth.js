@@ -1,4 +1,4 @@
-import { FETCH_AUTH, SET_AUTH, SET_AUTH_ERROR } from '../actions/auth'
+import { SET_USER } from '../actions/auth'
 
 const initialState = {
   loading: false,
@@ -6,18 +6,10 @@ const initialState = {
 
 const auth = (state = initialState, action) => {
   switch (action.type) {
-    case FETCH_AUTH:
-      return { ...state, loading: true }
-    case SET_AUTH:
+    case SET_USER:
       return {
         ...state,
-        authenticated: action.authenticated,
-        loading: false,
-      }
-    case SET_AUTH_ERROR:
-      return {
-        error: action.error,
-        loading: false,
+        user: action.user,
       }
     default:
       return state
