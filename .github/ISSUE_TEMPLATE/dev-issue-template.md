@@ -31,6 +31,7 @@ DoD:
  - [ ] deployed to a dev environment
  - [ ] all significant changes have been documented
  - [ ] free of high and medium security vulnerabilities
+ - [ ] @lauraGgit has reviewed and signed off
  
  
 
