@@ -24,6 +24,7 @@ class Common(Configuration):
         'rest_framework.authtoken',  # Token authentication
         'django_filters',
         'corsheaders',
+        'django_extensions',
 
         # Local apps
         'tdpservice.users',
@@ -211,14 +212,14 @@ class Common(Configuration):
             'rest_framework.permissions.IsAuthenticated',
         ],
         'DEFAULT_AUTHENTICATION_CLASSES': (
-            'tdpservice.auth_backend.CustomAuthentication',
+            'tdpservice.users.authentication.CustomAuthentication',
             'rest_framework.authentication.SessionAuthentication',
             'rest_framework.authentication.TokenAuthentication',
         )
     }
 
     AUTHENTICATION_BACKENDS = (
-        'tdpservice.auth_backend.CustomAuthentication',
+        'tdpservice.users.authentication.CustomAuthentication',
         'django.contrib.auth.backends.ModelBackend',
     )
 
