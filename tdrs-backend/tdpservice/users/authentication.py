@@ -2,13 +2,11 @@
 
 from django.contrib.auth import get_user_model
 
-# requires to define two functions authenticate and get_user
-
 
 class CustomAuthentication:
     """Define authentication and get user functions for custom authentication."""
 
-    def authenticate(self, request, username=None):
+    def authenticate(self, username=None):
         """Authenticate user with the request and username."""
         User = get_user_model()
         try:

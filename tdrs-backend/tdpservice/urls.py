@@ -19,7 +19,7 @@ router.register(r'users', UserCreateViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include(router.urls)),
+    path('api/v1/', include(router.urls), name="api"),
     path('login', TokenAuthorizationOIDC.as_view(), name="login"),
     path('login/oidc', LoginRedirectOIDC.as_view(), name='oidc-auth'),
     path('logout', LogoutUser.as_view(), name="logout"),
