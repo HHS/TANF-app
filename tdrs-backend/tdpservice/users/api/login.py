@@ -1,4 +1,6 @@
-"""Log user in to Django from Login.gov."""
+"""
+Login.gov/authorize is redirected to this endpoint to start a django user session. 
+"""
 
 import jwt
 import os
@@ -15,8 +17,6 @@ from django.contrib.auth import login
 from django.core.exceptions import SuspiciousOperation
 from urllib.parse import urlencode, quote_plus
 
-
-# consider adding throttling logic
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define methods for handling login request from login.gov."""
 
@@ -31,7 +31,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return Response({'error': 'OIDC State not found'}, status=status.HTTP_400_BAD_REQUEST)
 
         # get the validation keys to confirm generated nonce and state
-        nonce_and_state = self.getNonceAndState(state, request)
+        nonce_and_state = self.getNonceAndState(request)
         nonce_validator = nonce_and_state.get('nonce', 'not_nonce')
         state_validator = nonce_and_state.get('state', 'not_state')
 
@@ -72,25 +72,17 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                     user = CustomAuthentication.authenticate(self, username=decoded_payload['email'])
                     if user is not None:
                         login(request, user, backend='tdpservice.users.authentication.CustomAuthentication')
+                        return self.responseInternal(user, "User Found!", id_token)
 
-                        # update the user session so OIDC logout URL has the token_hint
-
-                        return Response({
-                            'user_id': user.pk,
-                            'email': user.username,
-                            'status': 'Existing User Found!'
-                        }, status=status.HTTP_200_OK)
                     else:
                         User = get_user_model()
                         user = User.objects.create_user(decoded_payload['email'])
                         user.set_unusable_password()
                         user.save()
+
                         login(request, user, backend='tdpservice.users.authentication.CustomAuthentication')
-                        return Response({
-                            'user_id': user.pk,
-                            'email': user.username,
-                            'status': 'New User Created!'
-                        }, status=status.HTTP_200_OK)
+
+                        return self.responseInternal(id_token)
 
                 except Exception:
                     return Response(
@@ -105,6 +97,13 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             'error': 'Invalid Validation Code Or OpenID Connect Authenticator Down!'
         }, status=status.HTTP_400_BAD_REQUEST)
 
+    """
+    Generate a token to be passed to the login.gov/token endpoint
+
+    :param self: parameter to permit django python to call a method within its own class
+    :param code: value returned by a valid call to the login.gov/authorize endpoint
+    :return: query string parameters to call the login.gov/token endpoint
+    """
     def generateTokenEndpointParameters(self, code):
         """Generate token parameters."""
         clientAssertion = self.generateClientAssertion()
@@ -117,8 +116,18 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         encoded_params = urlencode(params, quote_via=quote_plus)
         return encoded_params
 
+    """
+    Generate the client_assertion parameter needed by the login.gov/token endpoint
+
+    :param self: parameter to permit django python to call a method within its own class
+    """
     def generateClientAssertion(self):
-        """Generate client assertion."""
+        """
+        Generate client assertion parameters.
+
+        :param JWT_KEY: private key expected by the login.gov application
+        :param CLIENT_ID: Issuer as defined login.gov application
+        """
         private_key = os.environ['JWT_KEY']
         payload = {
             'iss': os.environ['CLIENT_ID'],
@@ -131,6 +140,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         encoded_jwt = jwt.encode(payload, key=private_key, algorithm='RS256')
         return encoded_jwt.decode('UTF-8')
 
+    """
+    Generate the public JWT key used to verify the token returned from login.gov/token
+    from the login.gov/certs endpoint
+
+    :param self: parameter to permit django python to call a method within its own class
+    """
     def generateJWTFromJWKS(self):
         """Generate JWT."""
         certs_endpoint = os.environ['OIDC_OP_JWKS_ENDPOINT']
@@ -139,20 +154,39 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         public_pem = public_cert.export_to_pem()
         return public_pem
 
+    """
+    Validate the nonce and state returned by login.gov API calls match those
+    originated by the request
+
+    :param self: parameter to permit django python to call a method within its own class
+    :param decoded_nonce: nonce found from the decoded token returned by call to login.gov/token
+    :param state: state value returned by the call to login.gov/authorize
+    :param nonce_validator: the original nonce value created by login_redirect_oidc.py
+    :param state_validator: the original state value created by login_redirect_oidc.py
+    """
     def validNonceAndState(self, decoded_nonce, state, nonce_validator, state_validator):
         """Validate nonce and state are correct values."""
         if decoded_nonce != nonce_validator:
             return False
+
         if state != state_validator:
             return False
+
         return True
 
-    def getNonceAndState(self, state, request):
+    """
+    Get the original nonce and state from the user session
+
+    :param self: parameter to permit django python to call a method within its own class
+    :param request: retains current user session keeping track original the state and nonce
+    """
+    def getNonceAndState(self, request):
         """Get the nonce and state values."""
         if 'state_nonce_tracker' not in request.session:
             msg = ('error: Could not find session store for nonce and state')
             raise SuspiciousOperation(msg)
         openid_authenticity_tracker = request.session.get('state_nonce_tracker', None)
+
         if 'state' not in openid_authenticity_tracker:
             msg = 'OIDC callback state was not found in session .'
             raise SuspiciousOperation(msg)
@@ -165,3 +199,23 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         nonce = openid_authenticity_tracker.get('nonce', None)
         validation_keys = {'state': state, 'nonce': nonce}
         return validation_keys
+
+    """
+    Returns a found users information along with an httpOnly cookie.
+
+    :param self: parameter to permit django python to call a method within its own class
+    :param user: current user associated with this session
+    :param status_message: Helper message to note how the user was found
+    :param id_token: encoded token returned by login.gov/token
+    """
+    def responseInternal(self, user, status_message, id_token):
+        """Respond with an httpOnly cookie to secure the session with the client."""
+        response = Response(
+            {'user_id': user.pk,
+             'email': user.username,
+             'status': status_message
+             }, status=status.HTTP_200_OK)
+        response.set_cookie(
+            'id_token', value=id_token, max_age=None, expires=None, path='/', domain=None, secure=True, httponly=True
+        )
+        return response

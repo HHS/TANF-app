@@ -1,39 +1,6 @@
 # Authentication
-For clients to authenticate, the token key should be included in the Authorization HTTP header. The key should be prefixed by the string literal "Token", with whitespace separating the two strings. For example:
+For clients to authenticate, they have to authenticate with Login.gov via the backend service. Upon successful authentication the backend service will create an [httpOnly cookie](https://owasp.org/www-community/HttpOnly). 
 
-```
-Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
-```
+ This will allow the backend to identify the browser which requested access and authorize them based on the cookie they provide in their API calls. 
 
-Unauthenticated responses that are denied permission will result in an HTTP `401 Unauthorized` response with an appropriate `WWW-Authenticate` header. For example:
-
-```
-WWW-Authenticate: Token
-```
-
-The curl command line tool may be useful for testing token authenticated APIs. For example:
-
-```bash
-curl -X GET http://127.0.0.1:8000/api/v1/example/ -H 'Authorization: Token eda22319e88e067da7babb7b0e874d393e471cf0'
-```
-
-## Retrieving Tokens
-Authorization tokens are issued and returned when a user registers. A registered user can also retrieve their token with the following request:
-
-**Request**:
-
-`POST` `api-token-auth/`
-
-Parameters:
-
-Name | Type | Description
----|---|---
-username | string | The user's username
-password | string | The user's password
-
-**Response**:
-```json
-{ 
-    "token" : "eda22319e88e067da7babb7b0e874d393e471cf0" 
-}
-```
+ The secured portion of this authorization is due to the httpOnly cookie being in accessible to the clients local browser. 

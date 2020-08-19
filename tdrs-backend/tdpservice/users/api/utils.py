@@ -6,7 +6,12 @@ import time
 
 LOGGER = logging.getLogger(__name__)
 
-
+"""
+Stores the state and nonce generated on login in the the users session
+:param request: current session between client and server
+:param state: random string generated to verify API call to login.gov/authorize
+:param nonce: random string generated to verify API call to login.gov/token
+"""
 def add_state_and_nonce_to_session(request, state, nonce):
     """Add state and nonce to session."""
     if 'openid_authenticity_tracker' not in request.session or \
