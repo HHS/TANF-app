@@ -1,3 +1,12 @@
+---
+name: Development issue template
+about: Template for development issues
+title: ''
+labels: development
+assignees: ''
+
+---
+
 Description:
 (please define the reason as to why this issue is being created )
 
