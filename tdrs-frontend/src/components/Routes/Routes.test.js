@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { mount } from 'enzyme'
 
 import Routes from './Routes'
-import Welcome from './containers/Welcome'
+import Welcome from '../Welcome'
 
 describe('Routes.js', () => {
   it('routes "/" to the Welcome page', () => {
