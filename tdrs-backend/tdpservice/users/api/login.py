@@ -69,7 +69,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                     if 'token' not in request.session:
                         request.session['token'] = id_token
 
-                    user = CustomAuthentication.authenticate(self, request, username=decoded_payload['email'])
+                    user = CustomAuthentication.authenticate(self, username=decoded_payload['email'])
                     if user is not None:
                         login(request, user, backend='tdpservice.users.authentication.CustomAuthentication')
 
