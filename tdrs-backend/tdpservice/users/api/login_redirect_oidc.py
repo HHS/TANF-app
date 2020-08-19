@@ -15,6 +15,14 @@ class LoginRedirectOIDC(RedirectView):
     query_string = True
     pattern_name = 'oidc-auth'
 
+    """
+    Redirects user to login.gov/authorize with the needed query parameter strings
+
+    :param self: parameter to permit django python to call a method within its own class
+    :param request: current session between client and server
+    :param args: helper value in the event any additional unknown arguments need to be passed in
+    :param kwargs: helper value in the event any additional unknown key value pairs need to be passed in
+    """
     def get(self, request, *args, **kwargs):
         """Get request and manage login information with login.gov."""
         state = secrets.token_hex(32)

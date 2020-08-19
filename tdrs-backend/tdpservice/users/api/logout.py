@@ -1,4 +1,6 @@
-"""Log out the user from Django."""
+"""
+Login.gov/logout is redirected to this endpoint end a django user session. 
+"""
 
 from rest_framework.response import Response
 from rest_framework import status

@@ -5,7 +5,7 @@ from .common import Common
 from os.path import join, dirname
 from dotenv import load_dotenv
 # load env vars from .env file and override any system environment variables
-dotenv_path = join(dirname(__file__), './env_vars/.env.dev')
+dotenv_path = join(dirname(__file__), './env_vars/.env.deploy')
 load_dotenv(dotenv_path)
 
 
