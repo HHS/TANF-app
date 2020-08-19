@@ -42,9 +42,7 @@ boilerplate.zip
 # Spritesmith
 spritesmith-generated/
 spritesmith.scss
-
-# Environment files
-/tdpservice/settings/env_vars/*
+ 
 
 # Testing files
 htmlcov/*

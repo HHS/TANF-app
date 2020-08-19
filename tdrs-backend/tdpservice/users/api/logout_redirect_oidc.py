@@ -14,6 +14,14 @@ class LogoutRedirectOIDC(RedirectView):
     query_string = True
     pattern_name = 'oidc-logout'
 
+    """
+    Redirects user to login.gov/logout with the needed query parameter strings
+
+    :param self: parameter to permit django python to call a method within its own class
+    :param request: contains a session keeping track of the value needed for the token_hint
+    :param args: helper value in the event any additional unknown arguments need to be passed in
+    :param kwargs: helper value in the event any additional unknown key value pairs need to be passed in
+    """
     def get(self, request, *args, **kwargs):
         """Manage logout requests with login.gov."""
         # generate a random secured hex string for the state parameter

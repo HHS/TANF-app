@@ -6,7 +6,6 @@ copyright: Copyright &copy; 2020.
 dev_addr: 0.0.0.0:8001
 
 nav:
-  - Home: 'index.md'
   - API:
     - Authentication: 'api/authentication.md'
-    - Users: 'api/users.md'
+    - Users: 'api/login.md'
