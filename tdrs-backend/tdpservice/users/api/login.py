@@ -5,7 +5,7 @@ import os
 import requests
 import secrets
 import time
-from ...auth_backend import CustomAuthentication
+from ..authentication import CustomAuthentication
 from jwcrypto import jwk
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
@@ -71,7 +71,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
                     user = CustomAuthentication.authenticate(self, request, username=decoded_payload['email'])
                     if user is not None:
-                        login(request, user, backend='tdpservice.auth_backend.CustomAuthentication')
+                        login(request, user, backend='tdpservice.users.authentication.CustomAuthentication')
 
                         # update the user session so OIDC logout URL has the token_hint
 
@@ -85,7 +85,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                         user = User.objects.create_user(decoded_payload['email'])
                         user.set_unusable_password()
                         user.save()
-                        login(request, user, backend='tdpservice.auth_backend.CustomAuthentication')
+                        login(request, user, backend='tdpservice.users.authentication.CustomAuthentication')
                         return Response({
                             'user_id': user.pk,
                             'email': user.username,
