@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  test-backend:
+  build:
     working_directory: ~/repo-backend
     docker:
       - image: circleci/python:3.8
@@ -96,16 +96,16 @@ jobs:
           command: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin"    
       - run:
           name:  "Build Backend Docker image"
-          command: "docker build -t goraftdocker/tdp-backend:latest . -f ./docker/Dockerfile.dev"
+          command: "docker build -t goraftdocker/tdp-backend:devtest . -f ./docker/Dockerfile.dev"
       - run:
           name:  "Push Backend Image to Docker Hub"
-          command: "docker push goraftdocker/tdp-backend:latest"
+          command: "docker push goraftdocker/tdp-backend:devtest"
       - run:
           name:  "Build Frontend Docker image"
-          command: "docker build -t goraftdocker/tdp-frontend:latest . -f ./docker/Dockerfile.dev"
+          command: "docker build -t goraftdocker/tdp-frontend:devtest . -f ./docker/Dockerfile.dev"
       - run:
           name:  "Push Frontend Image to Docker Hub"
-          command: "docker push goraftdocker/tdp-frontend:latest"
+          command: "docker push goraftdocker/tdp-frontend:devtest"
       - run:
           name: "deploy to cloud.gov"
           command: |
@@ -121,13 +121,4 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - test-backend
-      - test-ui
-      - deploy:
-          requires:
-            - test-backend
-            - test-ui
-          filters:
-            branches:
-              only:
-                - cirlceci-updates
+      - build
