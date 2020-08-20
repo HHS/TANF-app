@@ -104,7 +104,8 @@ cf target -o <ORG> -s <SPACE>
 
 5.) You will then have to set all required environment variables via the cloud.gov GUI or CF CLI
 
- `cf set-env tdp-backend JWT_KEY "$(cat test_wtf.txt)"`
+ `cf set-env tdp-backend JWT_KEY "$(cat test
+ .txt)"`
  **For the list of required envrionment variables please defer to `tdrs-backend/tdpservice/settings/env_vars/.env.local`
 
 5.) After this step you'll need to bind the application to a postgres RDS service ( if one does not exist you'll have to create one): 
