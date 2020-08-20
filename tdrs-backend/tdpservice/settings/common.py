@@ -1,3 +1,5 @@
+"""Define settings for all environments."""
+
 import os
 import json
 from os.path import join
@@ -7,6 +9,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class Common(Configuration):
+    """Define configuration class."""
 
     INSTALLED_APPS = (
         'django.contrib.admin',
@@ -20,6 +23,8 @@ class Common(Configuration):
         'rest_framework',            # Utilities for rest apis
         'rest_framework.authtoken',  # Token authentication
         'django_filters',
+        'corsheaders',
+        'django_extensions',
 
         # Local apps
         'tdpservice.users',
@@ -34,13 +39,14 @@ class Common(Configuration):
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+        'corsheaders.middleware.CorsMiddleware',
     )
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = 'tdpservice.urls'
     SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
     WSGI_APPLICATION = 'tdpservice.wsgi.application'
+    CORS_ORIGIN_ALLOW_ALL = True
 
     # Email Server
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -190,6 +196,8 @@ class Common(Configuration):
     # Sessions
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_PATH = '/;HttpOnly'
 
     # Django Rest Framework
     REST_FRAMEWORK = {
@@ -204,12 +212,14 @@ class Common(Configuration):
             'rest_framework.permissions.IsAuthenticated',
         ],
         'DEFAULT_AUTHENTICATION_CLASSES': (
+            'tdpservice.users.authentication.CustomAuthentication',
             'rest_framework.authentication.SessionAuthentication',
             'rest_framework.authentication.TokenAuthentication',
         )
     }
 
     AUTHENTICATION_BACKENDS = (
+        'tdpservice.users.authentication.CustomAuthentication',
         'django.contrib.auth.backends.ModelBackend',
     )
 
@@ -221,14 +231,8 @@ class Common(Configuration):
         appjson = os.environ['VCAP_APPLICATION']
         appinfo = json.loads(appjson)
         if len(appinfo['application_uris']) > 0:
-            appuri = 'https://' + \
-                appinfo['application_uris'][0] + '/openid/callback/login/'
-        else:
-            # We are not a web task, so we have no appuri
-            appuri = ''
-    else:
-        # we are running locally
-        appuri = 'http://localhost:8000/openid/callback/login/'
+            os.environ['BASE_URL'] = 'https://' + \
+                appinfo['application_uris'][0] + 'login/oidc'
 
 
 # configure things set up by cloudfoundry

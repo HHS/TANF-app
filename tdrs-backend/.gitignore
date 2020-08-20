@@ -42,3 +42,7 @@ boilerplate.zip
 # Spritesmith
 spritesmith-generated/
 spritesmith.scss
+ 
+
+# Testing files
+htmlcov/*

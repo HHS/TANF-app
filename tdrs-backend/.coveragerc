@@ -1,0 +1,19 @@
+[run]
+omit =
+        *Test*
+        *test*
+        */usr/local/lib*
+        */__init__.py
+        */settings/*
+        *wsgi.py
+
+[report]
+
+ignore_errors = True
+omit =
+        *Test*
+        *test*
+        */usr/local/lib*
+        */__init__.py
+        */settings/*
+        *wsgi.py

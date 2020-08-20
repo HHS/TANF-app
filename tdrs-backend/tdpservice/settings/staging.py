@@ -1,8 +1,17 @@
+"""Define configuration settings for staging environment."""
+
 import os
 from .common import Common
+from os.path import join, dirname
+from dotenv import load_dotenv
+# load env vars from .env file and override any system environment variables
+dotenv_path = join(dirname(__file__), './env_vars/.env.deploy')
+load_dotenv(dotenv_path)
 
 
 class Staging(Common):
+    """Class for defining settings for staging environment."""
+
     INSTALLED_APPS = Common.INSTALLED_APPS
 
     # Site
