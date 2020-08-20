@@ -1,6 +1,4 @@
-"""
-Login.gov/authorize is redirected to this endpoint to start a django user session. 
-"""
+"""Login.gov/authorize is redirected to this endpoint to start a django user session."""
 
 import jwt
 import os
@@ -72,7 +70,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                     user = CustomAuthentication.authenticate(self, username=decoded_payload['email'])
                     if user is not None:
                         login(request, user, backend='tdpservice.users.authentication.CustomAuthentication')
-                        return self.responseInternal(user, "User Found!", id_token)
+                        return self.responseInternal(user, "User Found", id_token)
 
                     else:
                         User = get_user_model()
@@ -81,8 +79,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                         user.save()
 
                         login(request, user, backend='tdpservice.users.authentication.CustomAuthentication')
-
-                        return self.responseInternal(id_token)
+                        return self.responseInternal(user, "User Created", id_token)
 
                 except Exception:
                     return Response(

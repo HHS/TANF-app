@@ -1,0 +1,24 @@
+version: "3"
+services:
+  zaproxy:
+    image: owasp/zap2docker-stable
+    container_name: zap-scan
+    command: sleep 3600
+    ports:
+      - 8090:8090
+    networks:
+      - local  
+  tdp-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tdp-ui
+    ports:
+      - 3000:80
+    volumes:
+      - ./:/home/node/app
+    networks:
+      - local
+networks:
+  local:
+    driver: bridge

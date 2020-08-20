@@ -162,3 +162,44 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 ### `yarn build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+
+
+## Cloud.gov Deployments:
+
+1.) Build a tagged docker image against the the target github branch:
+
+`cd tdrs-backend; docker build -t goraftdocker/tdp-backend:devtest . -f docker/Dockerfile.dev`
+
+2.) Define the tagged within the manifest.yml found inside the the `tdrs-backend/` directory:
+
+```
+version: 1
+applications:
+- name: tdp-frontend
+  memory: 512M
+  instances: 1
+  disk_quota: 512
+  docker:
+    image: goraftdocker/tdp-frontend:devtest
+```
+
+3.) Log into your cloud.gov account and set your space and organization:
+
+```
+cf login -a api.fr.cloud.gov --sso
+cf target -o <ORG> -s <SPACE>
+```
+
+
+4.) Push the image to Cloud.gov ( please ensure you're in the same directory as the manifest.yml): 
+
+`cd tdrs-backend; cf push tdp-frontend --docker-image goraftdocker/tdp-frontend:devtest`
+
+5.) You will then have to set all required environment variables via the cloud.gov GUI or CF CLI
+
+ `cf set-env tdp-backend JWT_KEY "$(cat test_wtf.txt)"`
+ **For the list of required envrionment variables please defer to `tdrs-backend/tdpservice/settings/env_vars/.env.local`
+
+
+6.) To apply this newly bound service you may have to restage:
+`cf restage tdp-frontend`
