@@ -4,7 +4,10 @@
   "defaults": {
     "timeout": 20000,
     "wait": 2000,
-    "ignore": []
+    "ignore": [],
+    "chromeLaunchConfig": {
+      "args": ["--no-sandbox"]
+    }
   },
   "urls": [
     "http://localhost:3000/"
