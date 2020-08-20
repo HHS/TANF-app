@@ -24,10 +24,10 @@ jobs:
           command: "cd tdrs-backend; docker-compose down "
       - run:
           name:  "Test: Execute Python Unit Tests"
-          command: "cd tdrs-backend; docker-compose run tdp sh -c \"python manage.py test\""
+          command: "cd tdrs-backend; docker-compose run web sh -c \"python manage.py test\""
       - run:
           name:  "Test: Execute Python Linting Test"
-          command: "cd tdrs-backend; docker-compose run --rm tdp bash -c \"flake8 .\""
+          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
