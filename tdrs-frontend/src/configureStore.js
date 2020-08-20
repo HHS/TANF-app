@@ -8,7 +8,7 @@ import createRootReducer from './reducers'
 export const history = createBrowserHistory()
 
 export default function configureStore(preloadedState) {
-  const middlewares = [loggerMiddleware, thunkMiddleware]
+  const middlewares = [thunkMiddleware, loggerMiddleware]
   const composedEnhancers = composeWithDevTools(applyMiddleware(...middlewares))
   const store = createStore(
     createRootReducer(history),

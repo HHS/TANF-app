@@ -1,12 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Provider } from 'react-redux'
+
 import { ConnectedRouter as Router } from 'connected-react-router'
-import './index.css'
-import App from './App'
+import { Provider } from 'react-redux'
+
 import configureStore, { history } from './configureStore'
+import { fetchAuth } from './actions/auth'
+import App from './App'
+import './index.css'
 
 const store = configureStore()
+store.dispatch(fetchAuth())
 
 ReactDOM.render(
   <Provider store={store}>

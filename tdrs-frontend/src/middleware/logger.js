@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 const logger = (store) => (next) => (action) => {
+  console.log('action: ', action)
   console.group(action.type)
   console.info('dispatching', action)
   const result = next(action)
