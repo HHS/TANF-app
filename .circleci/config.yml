@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  build:
+  test-backend:
     working_directory: ~/repo-backend
     docker:
       - image: circleci/python:3.8
@@ -121,4 +121,13 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - build
+      - test-backend
+      - test-ui
+      - deploy:
+          requires:
+            - test-backend
+            - test-ui
+          filters:
+            branches:
+              only:
+                - cirlceci-updates
