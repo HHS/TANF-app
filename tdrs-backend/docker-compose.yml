@@ -30,7 +30,7 @@ services:
       bash -c "python wait_for_postgres.py &&
                ./gunicorn_start.sh"
     volumes:
-      - ./:/tdpapp
+      - ./:/app
     ports:
       - "8080:8080"
     depends_on:
