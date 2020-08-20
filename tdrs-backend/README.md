@@ -35,7 +35,7 @@ cd tdrs-backend; docker-compose up --build
 
 1.) Via a web-browser ( we suggest using `Chrome`) enter the following URL:
 ```
-http://localhost:8000/v1/login/oidc
+http://localhost:8080/v1/login/oidc
 ```
 
 2.) This will redirect you to the `login.gov` authentication page
@@ -50,7 +50,7 @@ http://localhost:8000/v1/login/oidc
 
 1.) Via a web-browser ( we suggest using `Chrome`) enter the following URL:
 ```
-http://localhost:8000/v1/logout/oidc
+http://localhost:8080/v1/logout/oidc
 ```
 
 Run this command to tear down the docker container:
@@ -104,7 +104,8 @@ cf target -o <ORG> -s <SPACE>
 
 5.) You will then have to set all required environment variables via the cloud.gov GUI or CF CLI
 
- `cf set-env tdp-backend JWT_KEY "$(cat test_wtf.txt)"`
+ `cf set-env tdp-backend JWT_KEY "$(cat test
+ .txt)"`
  **For the list of required envrionment variables please defer to `tdrs-backend/tdpservice/settings/env_vars/.env.local`
 
 5.) After this step you'll need to bind the application to a postgres RDS service ( if one does not exist you'll have to create one): 
