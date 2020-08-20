@@ -96,13 +96,13 @@ jobs:
           command: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin"    
       - run:
           name:  "Build Backend Docker image"
-          command: "docker build -t goraftdocker/tdp-backend:latest ."
+          command: "docker build -t goraftdocker/tdp-backend:latest . -f ./docker/Dockerfile.dev"
       - run:
           name:  "Push Backend Image to Docker Hub"
           command: "docker push goraftdocker/tdp-backend:latest"
       - run:
           name:  "Build Frontend Docker image"
-          command: "docker build -t goraftdocker/tdp-frontend:latest ."
+          command: "docker build -t goraftdocker/tdp-frontend:latest . -f ./docker/Dockerfile.dev"
       - run:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push goraftdocker/tdp-frontend:latest"
@@ -130,4 +130,4 @@ workflows:
           filters:
             branches:
               only:
-                - ci-pipeline-updates
+                - cirlceci-updates
