@@ -35,7 +35,7 @@ cd tdrs-backend; docker-compose up --build
 
 1.) Via a web-browser ( we suggest using `Chrome`) enter the following URL:
 ```
-http://localhost:8000/v1/login/oidc
+http://localhost:8080/v1/login/oidc
 ```
 
 2.) This will redirect you to the `login.gov` authentication page
@@ -50,7 +50,7 @@ http://localhost:8000/v1/login/oidc
 
 1.) Via a web-browser ( we suggest using `Chrome`) enter the following URL:
 ```
-http://localhost:8000/v1/logout/oidc
+http://localhost:8080/v1/logout/oidc
 ```
 
 Run this command to tear down the docker container:
