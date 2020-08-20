@@ -23,6 +23,11 @@ This project uses the U.S. Web Design System ([USWDS](https://designsystem.digit
   ```
   cd TANF-app/tdrs-frontend
   ```
+
+- Spin up date application with `docker-compose`
+```
+docker-compose up --build
+```
 - Build the Docker image locally with
   ```
   docker build --target localdev -t adamcaron/tdrs-frontend:local .
@@ -189,7 +194,6 @@ applications:
 cf login -a api.fr.cloud.gov --sso
 cf target -o <ORG> -s <SPACE>
 ```
-
 
 4.) Push the image to Cloud.gov ( please ensure you're in the same directory as the manifest.yml): 
 
