@@ -3,6 +3,6 @@ applications:
 - name: tdp-app
   memory: 512M
   instances: 1
-  disk_quota: 1G
+  disk_quota: 2G
   docker:
-    image: goraftdocker/tdp-backend:initialVoyage
+    image: goraftdocker/tdp-backend:devtest

@@ -56,18 +56,32 @@ class Common(Configuration):
         ('Admin1', 'ADMIN_EMAIL_FIRST'),
         ('Admin2', 'ADMIN_EMAIL_SECOND')
     )
-
-    # Postgres
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT'),
+    if 'VCAP_SERVICES' in os.environ:
+        servicejson = os.environ['VCAP_SERVICES']
+        services = json.loads(servicejson)
+        AWS_STORAGE_BUCKET_NAME = services['s3'][0]['credentials']['bucket']
+        AWS_S3_REGION_NAME = services['s3'][0]['credentials']['region']
+        AWS_ACCESS_KEY_ID = services['s3'][0]['credentials']['access_key_id']
+        AWS_SECRET_ACCESS_KEY = services['s3'][0]['credentials']['secret_access_key']
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': services['aws-rds'][0]['credentials']['db_name'],
+                'USER': services['aws-rds'][0]['credentials']['username'],
+                'PASSWORD': services['aws-rds'][0]['credentials']['password'],
+                'HOST': services['aws-rds'][0]['credentials']['host'],
+                'PORT': services['aws-rds'][0]['credentials']['port'], }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.getenv('DB_NAME'),
+                'USER': os.getenv('DB_USER'),
+                'PASSWORD': os.getenv('DB_PASSWORD'),
+                'HOST': os.getenv('DB_HOST'),
+                'PORT': os.getenv('DB_PORT'), }
+        }
 
     # General
     APPEND_SLASH = False
@@ -232,49 +246,7 @@ class Common(Configuration):
         appinfo = json.loads(appjson)
         if len(appinfo['application_uris']) > 0:
             os.environ['BASE_URL'] = 'https://' + \
-                appinfo['application_uris'][0] + 'login/oidc'
+                appinfo['application_uris'][0] + '/v1'
 
 
 # configure things set up by cloudfoundry
-if 'VCAP_SERVICES' in os.environ:
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    servicejson = os.environ['VCAP_SERVICES']
-    services = json.loads(servicejson)
-    AWS_STORAGE_BUCKET_NAME = services['s3'][0]['credentials']['bucket']
-    AWS_S3_REGION_NAME = services['s3'][0]['credentials']['region']
-    AWS_ACCESS_KEY_ID = services['s3'][0]['credentials']['access_key_id']
-    AWS_SECRET_ACCESS_KEY = services['s3'][0]['credentials']['secret_access_key']
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': services['aws-rds'][0]['credentials']['db_name'],
-            'USER': services['aws-rds'][0]['credentials']['username'],
-            'PASSWORD': services['aws-rds'][0]['credentials']['password'],
-            'HOST': services['aws-rds'][0]['credentials']['host'],
-            'PORT': services['aws-rds'][0]['credentials']['port'],
-        }
-    }
-    STATIC_ROOT = os.path.join(BASE_DIR, "static/")
-    print('configured for cloud.gov')
-else:
-    # we are in local development mode
-    MEDIA_ROOT = '/tmp/tanf'
-    if 'BUCKETNAME' in os.environ:
-        DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-        AWS_STORAGE_BUCKET_NAME = os.environ['BUCKETNAME']
-        AWS_S3_ENDPOINT_URL = os.environ['AWS_S3_ENDPOINT_URL']
-        AWS_S3_REGION_NAME = os.environ['AWS_S3_REGION_NAME']
-        AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-        AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
-    if 'POSTGRES_USER' in os.environ:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': os.environ['POSTGRES_DB'],
-                'USER': os.environ['POSTGRES_USER'],
-                'PASSWORD': os.environ['POSTGRES_PASSWORD'],
-                'HOST': os.environ['POSTGRES_HOST'],
-                'PORT': os.environ['POSTGRES_PORT'],
-            }
-        }
-    print('configured for local development')
