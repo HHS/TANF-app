@@ -1,19 +1,22 @@
 import React from 'react'
-import { Switch, Route, useHistory } from 'react-router-dom'
+import { Switch, Route } from 'react-router-dom'
 import Welcome from '../Welcome'
 import Dashboard from '../Dashboard'
 import Private from '../Private'
+import LoginCallback from '../LoginCallback'
 
 const Routes = () => {
-  const history = useHistory()
   return (
     <Switch>
-      <Private path="/dashboard" history={history}>
-        <Dashboard />
-      </Private>
-      <Route path="/">
+      <Route exact path="/">
         <Welcome />
       </Route>
+      <Route exact path="/login">
+        <LoginCallback />
+      </Route>
+      <Private exact path="/dashboard">
+        <Dashboard />
+      </Private>
     </Switch>
   )
 }

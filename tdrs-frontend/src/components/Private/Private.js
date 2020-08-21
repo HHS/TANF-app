@@ -1,23 +1,23 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { Route } from 'react-router-dom'
+import { Route, withRouter } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Notify'
 
-export default function Private({ children, history, path }) {
+function Private({ children, history, path }) {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (!authenticated && authLoading) {
-      dispatch(setAlert({ heading: 'Signing In...', type: ALERT_INFO }))
+    if (!authenticated && !authLoading) {
+      dispatch(setAlert({ heading: 'Please sign in first', type: ALERT_INFO }))
+      history.push('/')
     }
 
-    if (!authenticated && !authLoading) {
-      dispatch(setAlert({ heading: 'Please login first', type: ALERT_INFO }))
-      history.push('/')
+    if (authLoading) {
+      dispatch(setAlert({ heading: 'Signing In...', type: ALERT_INFO }))
     }
 
     if (authenticated) {
@@ -25,7 +25,7 @@ export default function Private({ children, history, path }) {
     }
   }, [authenticated, authLoading, dispatch, history])
 
-  return <Route path={path}>{children}</Route>
+  return authenticated ? <Route path={path}>{children}</Route> : null
 }
 
 Private.propTypes = {
@@ -35,3 +35,5 @@ Private.propTypes = {
   }).isRequired,
   path: PropTypes.string.isRequired,
 }
+
+export default withRouter(Private)

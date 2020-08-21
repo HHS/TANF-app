@@ -6,21 +6,27 @@ const initialState = {
 }
 
 const auth = (state = initialState, action) => {
-  switch (action.type) {
+  const { type, payload = {} } = action
+  switch (type) {
     case FETCH_AUTH:
-      return { ...state, loading: false }
-    case SET_AUTH:
+      return { ...state, loading: true }
+    case SET_AUTH: {
+      const { authenticated, user } = payload
       return {
         ...state,
-        authenticated: action.authenticated,
         loading: false,
+        authenticated,
+        user,
       }
-    case SET_AUTH_ERROR:
+    }
+    case SET_AUTH_ERROR: {
+      const { error } = payload
       return {
         authenticated: false,
-        error: action.error,
+        error,
         loading: false,
       }
+    }
     default:
       return state
   }

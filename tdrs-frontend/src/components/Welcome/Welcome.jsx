@@ -1,4 +1,6 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
+import { Redirect } from 'react-router-dom'
 import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
 
 import '@trussworks/react-uswds/lib/uswds.css'
@@ -7,11 +9,18 @@ import '@trussworks/react-uswds/lib/index.css'
 import './Welcome.scss'
 
 function Welcome() {
+  const authenticated = useSelector((state) => state.auth.authenticated)
+
   const handleClick = (event) => {
     event.preventDefault()
     // window.location = 'https://tdp-backend.app.cloud.gov/v1/login/oidc'
     window.location = 'http://localhost:8080/v1/login/oidc'
   }
+
+  if (authenticated) {
+    return <Redirect to="/dashboard" />
+  }
+
   return (
     <GridContainer className="welcome">
       <Grid row>

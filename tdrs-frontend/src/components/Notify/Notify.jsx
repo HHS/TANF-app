@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Alert as USWDSAlert } from '@trussworks/react-uswds'
+import { Alert } from '@trussworks/react-uswds'
 
 export const ALERT_SUCCESS = 'success'
 export const ALERT_INFO = 'info'
@@ -20,8 +20,8 @@ export function Notify() {
   }
 
   return (
-    <USWDSAlert type={type} heading={heading} slim={!!body}>
+    <Alert type={type} heading={heading} slim={!!body}>
       {body}
-    </USWDSAlert>
+    </Alert>
   )
 }

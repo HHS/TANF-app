@@ -7,10 +7,12 @@ const initialState = {
   type: '',
 }
 
-const alert = (state = initialState, action) => {
-  switch (action.type) {
+const alertReducer = (state = initialState, action) => {
+  const { type, payload = {} } = action
+  switch (type) {
     case SET_ALERT: {
-      return { ...state, ...action.alert, show: true }
+      const { alert } = payload
+      return { ...state, ...alert, show: true }
     }
     case CLEAR_ALERT:
       return initialState
@@ -19,4 +21,4 @@ const alert = (state = initialState, action) => {
   }
 }
 
-export default alert
+export default alertReducer
