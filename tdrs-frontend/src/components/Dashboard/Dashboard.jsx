@@ -6,7 +6,8 @@ function Dashboard() {
   const user = useSelector((state) => state.auth.user)
   const handleClick = (event) => {
     event.preventDefault()
-    window.location = 'https://tdp-backend.app.cloud.gov/v1/logout/oidc'
+    // window.location = 'https://tdp-backend.app.cloud.gov/v1/logout/oidc'
+    window.location = 'http://localhost:8080/v1/logout/oidc'
   }
   return (
     <GridContainer className="welcome">

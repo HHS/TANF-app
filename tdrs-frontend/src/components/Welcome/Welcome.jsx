@@ -9,7 +9,8 @@ import './Welcome.scss'
 function Welcome() {
   const handleClick = (event) => {
     event.preventDefault()
-    window.location = 'https://tdp-backend.app.cloud.gov/v1/login/oidc'
+    // window.location = 'https://tdp-backend.app.cloud.gov/v1/login/oidc'
+    window.location = 'http://localhost:8080/v1/login/oidc'
   }
   return (
     <GridContainer className="welcome">
