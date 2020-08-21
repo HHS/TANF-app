@@ -1,4 +1,9 @@
-import { FETCH_AUTH, SET_AUTH, SET_AUTH_ERROR } from '../actions/auth'
+import {
+  FETCH_AUTH,
+  SET_AUTH,
+  SET_AUTH_ERROR,
+  CLEAR_AUTH,
+} from '../actions/auth'
 
 const initialState = {
   loading: false,
@@ -11,22 +16,25 @@ const auth = (state = initialState, action) => {
     case FETCH_AUTH:
       return { ...state, loading: true }
     case SET_AUTH: {
-      const { authenticated, user } = payload
+      const { user } = payload
       return {
         ...state,
         loading: false,
-        authenticated,
+        authenticated: true,
         user,
       }
     }
     case SET_AUTH_ERROR: {
       const { error } = payload
       return {
+        ...state,
+        loading: false,
         authenticated: false,
         error,
-        loading: false,
       }
     }
+    case CLEAR_AUTH:
+      return initialState
     default:
       return state
   }
