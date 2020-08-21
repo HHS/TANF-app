@@ -13,8 +13,7 @@ function Welcome() {
 
   const handleClick = (event) => {
     event.preventDefault()
-    // window.location = 'https://tdp-backend.app.cloud.gov/v1/login/oidc'
-    window.location = 'http://localhost:8080/v1/login/oidc'
+    window.location = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
   }
 
   if (authenticated) {

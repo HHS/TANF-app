@@ -6,9 +6,10 @@ export const CLEAR_AUTH = 'CLEAR_AUTH'
 export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
   try {
-    const { user } = {
-      // user: { email: 'Cool.Uzer@dabomb.com' },
-    } /* Dummy response */
+    const response = await fetch('http://localhost:8080/v1/auth_check', {
+      credentials: 'include',
+    })
+    const { user } = await response.json()
 
     if (user) {
       dispatch({ type: SET_AUTH, payload: { user } })

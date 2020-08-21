@@ -24,3 +24,14 @@ class CustomAuthentication(BaseAuthentication):
             return User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return None
+
+    def authenticate_header(self, request):
+        return 'Session'
+
+    def enforce_csrf(self, request):
+        'Enforce CSRF validation for session based authentication.'
+
+        reason = CSRFCheck().process_view(request, None, (), {})
+        if reason:
+            # CSRF failed, bail with explicit error message
+            raise exceptions.PermissionDenied('CSRF Failed: %s' % reason)
