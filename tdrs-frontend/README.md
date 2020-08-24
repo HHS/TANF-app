@@ -87,8 +87,6 @@ After running either `test:cov` or `test:ci`, coverage details can be seen as HT
 open coverage/lcov-report/index.html
 ```
 
-Another simple way to run only one test (focus on only one test at a time) is to change `it()` to `fit()`. You can skip tests by changing `it()` to `xit()`. [These](https://create-react-app.dev/docs/running-tests/#focusing-and-excluding-tests) can be used in addition to the [methods](https://jestjs.io/docs/en/api) Jest provides.
-
 In addition to [Jest's matchers](https://jestjs.io/docs/en/expect), this project uses [enzyme-matchers](https://github.com/FormidableLabs/enzyme-matchers) to simplify tests and make them more readable. Enzyme matchers is integrated with Jest using the [`jest-enzyme` package](https://github.com/FormidableLabs/enzyme-matchers/blob/master/packages/jest-enzyme/README.md#assertions) which provides many useful assertions for testing React components.
 
 **End-to-End Tests with Cypress**

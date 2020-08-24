@@ -75,13 +75,13 @@
     "pa11y-ci": "^2.3.0",
     "prettier": "^2.0.5",
     "redux-devtools-extension": "^2.13.8",
+    "redux-mock-store": "^1.5.4",
     "start-server-and-test": "^1.11.2",
     "wait-on": "5.1.0"
   },
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
-      "!src/index.js",
       "!src/**/index.js",
       "!src/serviceWorker.js",
       "!src/configureStore.js",

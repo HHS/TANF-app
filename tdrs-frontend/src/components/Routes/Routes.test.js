@@ -1,18 +1,42 @@
 import React from 'react'
-import { MemoryRouter } from 'react-router-dom'
 import { mount } from 'enzyme'
+import thunk from 'redux-thunk'
+import { Provider } from 'react-redux'
+import configureStore from 'redux-mock-store'
+import { MemoryRouter } from 'react-router-dom'
 
 import Routes from './Routes'
 import Welcome from '../Welcome'
+import Dashboard from '../Dashboard'
 
 describe('Routes.js', () => {
-  it('routes "/" to the Welcome page', () => {
+  const mockStore = configureStore([thunk])
+
+  it('routes "/" to the Welcome page when user not authenticated', () => {
+    const store = mockStore({ auth: { authenticated: false } })
     const wrapper = mount(
-      <MemoryRouter initialEntries={['/']}>
-        <Routes />
-      </MemoryRouter>
+      <Provider store={store}>
+        <MemoryRouter>
+          <Routes />
+        </MemoryRouter>
+      </Provider>
     )
 
     expect(wrapper.find(Welcome)).toExist()
+  })
+
+  it('routes "/" to the Dashboard page when user is authenticated', () => {
+    const store = mockStore({
+      auth: { authenticated: true, user: { email: 'hi@bye.com' } },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <Routes />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(wrapper.find(Dashboard)).toExist()
   })
 })

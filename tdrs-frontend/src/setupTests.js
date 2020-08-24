@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import/prefer-default-export */
 
 // jest-dom adds custom jest matchers for asserting on DOM nodes.
 // allows you to do things like:
@@ -7,17 +7,6 @@
 import '@testing-library/jest-dom/extend-expect'
 import 'jest-enzyme'
 import Enzyme from 'enzyme'
-import crypto from 'crypto'
 import Adapter from 'enzyme-adapter-react-16'
 
 Enzyme.configure({ adapter: new Adapter() })
-
-/**
- * Make Crypto available in the test environment
- * since the tests run on server and not browser here.
- */
-Object.defineProperty(global.self, 'crypto', {
-  value: {
-    getRandomValues: (arr) => crypto.randomBytes(arr.length),
-  },
-})

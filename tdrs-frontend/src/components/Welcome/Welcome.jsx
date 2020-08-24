@@ -13,7 +13,7 @@ function Welcome() {
 
   const handleClick = (event) => {
     event.preventDefault()
-    window.location = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
   }
 
   if (authenticated) {
