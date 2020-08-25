@@ -53,7 +53,10 @@ describe('Private.js', () => {
       </Provider>
     )
     expect(wrapper.find(Route).exists()).toBeFalsy()
-    expect(spy).toHaveBeenCalledWith({ heading: 'Signing In...', type: 'info' })
+    expect(spy).toHaveBeenCalledWith({
+      heading: 'Please wait...',
+      type: 'info',
+    })
     spy.mockRestore()
   })
 })

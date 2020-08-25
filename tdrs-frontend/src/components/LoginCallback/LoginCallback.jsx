@@ -11,10 +11,8 @@ function LoginCallback() {
 
   useEffect(() => {
     if (authLoading) {
-      dispatch(setAlert({ heading: 'Signing In...', type: ALERT_INFO }))
-    }
-
-    if (authenticated) {
+      dispatch(setAlert({ heading: 'Please wait...', type: ALERT_INFO }))
+    } else {
       dispatch(clearAlert())
     }
   }, [authenticated, authLoading, dispatch])

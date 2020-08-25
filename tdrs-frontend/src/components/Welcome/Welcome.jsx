@@ -10,6 +10,7 @@ import './Welcome.scss'
 
 function Welcome() {
   const authenticated = useSelector((state) => state.auth.authenticated)
+  const authLoading = useSelector((state) => state.auth.loading)
 
   const handleClick = (event) => {
     event.preventDefault()
@@ -18,6 +19,10 @@ function Welcome() {
 
   if (authenticated) {
     return <Redirect to="/dashboard" />
+  }
+
+  if (authLoading) {
+    return null
   }
 
   return (

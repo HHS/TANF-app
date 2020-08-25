@@ -49,7 +49,7 @@ describe('LoginCallback.js', () => {
     )
     expect(wrapper.find(Route).exists()).toBeFalsy()
     expect(spy).toHaveBeenCalledWith({
-      heading: 'Signing In...',
+      heading: 'Please wait...',
       type: ALERT_INFO,
     })
     spy.mockRestore()
