@@ -16,8 +16,8 @@ class AuthorizationCheck(APIView):
         if user.is_authenticated:
             auth_params = {
                 'authenticated': True,
-                'user': { 'email': user.username }
+                'user': {'email': user.username}
             }
             return Response(auth_params)
         else:
-            return Response({ 'authenticated': False })
+            return Response({'authenticated': False})
