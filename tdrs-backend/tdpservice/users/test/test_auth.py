@@ -32,7 +32,6 @@ T6dvkLKRvbk42NtigQJAEZasjEA9FtBZL7ZSSTAs9X5OzPgMHOOukCjmyFaLfSO7
 -----END RSA PRIVATE KEY-----
 """
 
-
 class MockRequest:
     """Mock request class."""
 

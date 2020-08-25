@@ -7,6 +7,8 @@ class UserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
 
     class Meta:
+        """Hardcoded metata data for users."""
+
         model = "users.User"
         django_get_or_create = ("username",)
 
