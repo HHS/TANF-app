@@ -4,6 +4,7 @@
   "license": "MIT",
   "dependencies": {
     "@trussworks/react-uswds": "^1.8.0",
+    "axios": "^0.20.0",
     "connected-react-router": "^6.8.0",
     "history": "^4.7.2",
     "immutable": "^4.0.0-rc.12",
