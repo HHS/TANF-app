@@ -22,6 +22,16 @@ describe('Welcome.js', () => {
     expect(wrapper.find('h1')).toIncludeText('Welcome to TDRS!')
   })
 
+  it('does not render the page while auth is loading', () => {
+    const store = mockStore({ auth: { loading: true } })
+    const wrapper = mount(
+      <Provider store={store}>
+        <Welcome />
+      </Provider>
+    )
+    expect(wrapper.find('h1')).not.toIncludeText('Welcome to TDRS!')
+  })
+
   it('redirects to API login endpoint when sign-in button is clicked', () => {
     const store = mockStore(initialState)
 
