@@ -6,6 +6,7 @@ import {
 } from '../actions/auth'
 
 const initialState = {
+  user: null,
   loading: false,
   authenticated: false,
 }
@@ -27,9 +28,7 @@ const auth = (state = initialState, action) => {
     case SET_AUTH_ERROR: {
       const { error } = payload
       return {
-        ...state,
-        loading: false,
-        authenticated: false,
+        ...initialState,
         error,
       }
     }
