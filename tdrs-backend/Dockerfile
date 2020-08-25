@@ -5,16 +5,16 @@ ARG user=tdpuser
 ARG group=tdpuser
 ARG uid=1000
 ARG gid=1000
- 
+
 ENV DJANGO_SETTINGS_MODULE=tdpservice.settings.development
 ENV DJANGO_CONFIGURATION=Development
 # Allows docker to cache installed dependencies between builds
-COPY ./requirements.txt requirements.txt
-RUN pip install --upgrade pip && pip install -r requirements.txt
+COPY Pipfile Pipfile.lock /tdpapp/
+WORKDIR /tdpapp/
+RUN pip install --upgrade pip pipenv && pipenv install --dev --system --deploy
 
 # Adds our application code to the image
 COPY . /tdpapp
-WORKDIR /tdpapp/
 
 RUN groupadd -g ${gid} ${group} && useradd -u ${uid} -g ${group} -s /bin/sh ${user}
 

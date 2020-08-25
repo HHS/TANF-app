@@ -1,7 +1,7 @@
 *.pyc
 /backend/db.sqlite3
 .DS_Store
-.env
+ .env
 /staticfiles/*
 /mediafiles/*
 __pycache__/
@@ -35,7 +35,6 @@ npm-debug.log
 /{{project_name}}-venv/
 /venv/
 /env/
-*/env_vars/*
 /output/
 /cache/
 boilerplate.zip
@@ -47,8 +46,3 @@ spritesmith.scss
 
 # Testing files
 htmlcov/*
-
-# Ignore txt and pem files
-*.pem
-*.rsa
-*.txt

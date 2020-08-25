@@ -2,8 +2,10 @@
 
 from django.contrib.auth import get_user_model
 
+from rest_framework.authentication import BaseAuthentication
 
-class CustomAuthentication:
+
+class CustomAuthentication(BaseAuthentication):
     """Define authentication and get user functions for custom authentication."""
 
     def authenticate(self, username=None):

@@ -20,6 +20,9 @@ tdrs-frontend/cypress/screenshots/
 tdrs-frontend/npm-debug.log*
 tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
+tdrs-backend/*/env_vars/*.env*
+tdrs-backend/*/env_vars/*.env*.*
+
 
 # General
 .DS_Store
