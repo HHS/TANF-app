@@ -13,11 +13,11 @@ class AuthorizationCheck(APIView):
     def get(self, request, *args, **kwargs):
         """Handle get request and authenticate user."""
         user = request.user
-        if user is not None:
+        if user.is_authenticated:
             auth_params = {
-                'authorized': True,
-                'user': {'email': user.username}
-                }
+                'authenticated': True,
+                'user': { 'email': user.username }
+            }
             return Response(auth_params)
         else:
-            return Response({'authorized': False})
+            return Response({ 'authenticated': False })
