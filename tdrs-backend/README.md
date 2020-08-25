@@ -15,6 +15,7 @@ Configure your local environment variables via the file found in this path:
 
 (default values have been pulled from: [Login.gov Developers Guide](https://developers.login.gov/oidc/))
 
+
 `TANF-app/tdrs-backend/tdpservice/settings/env_vars/.env.local`
 
 _Exceptions_:
@@ -59,15 +60,15 @@ docker-compose down --remove-orphans
 ```
 ## Manual Test Scripts:
 
-- "Test: Execute Python Unit Tests:
+1. Run local unit tests by executing the following command:
 
 `"cd tdrs-backend; docker-compose run tdp sh -c \"python manage.py test\"`
 
-- Test: Execute Python Linting Test:
+2. Run local linting tests by executing the following command:
 
 `"cd tdrs-backend; docker-compose run --rm tdp bash -c \"flake8 .\"`
 
-- Test: Execute Python OWASP ZAP Vulnerability Scan:
+3. Run local penetration tests by executing the following command:
 
 `"cd tdrs-backend; ./zap-scanner.sh"`
 
@@ -92,6 +93,10 @@ applications:
 
 3.) Log into your cloud.gov account and set your space and organization:
 
+**<ORG>: The target deployment organization as defined in cloud.gov Applications**
+**<SPACE>: The target deployment space under the organization as defined in cloud.gov Applications**
+
+
 ```
 cf login -a api.fr.cloud.gov --sso
 cf target -o <ORG> -s <SPACE>
@@ -113,5 +118,4 @@ cf target -o <ORG> -s <SPACE>
 
 6.) To apply this newly bound service you may have to restage:
 `cf restage tdp-backend`
-
 

@@ -1,6 +1,7 @@
 """Serialize user data."""
 
 from rest_framework import serializers
+
 from .models import User
 
 
@@ -11,8 +12,13 @@ class UserSerializer(serializers.ModelSerializer):
         """Define meta user serializer attributes."""
 
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name',)
-        read_only_fields = ('username', )
+        fields = (
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+        )
+        read_only_fields = ("username",)
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -29,7 +35,14 @@ class CreateUserSerializer(serializers.ModelSerializer):
         """Define meta user serializer attributes."""
 
         model = User
-        fields = ('id', 'username', 'password', 'first_name',
-                  'last_name', 'email', 'auth_token',)
-        read_only_fields = ('auth_token',)
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = (
+            "id",
+            "username",
+            "password",
+            "first_name",
+            "last_name",
+            "email",
+            "auth_token",
+        )
+        read_only_fields = ("auth_token",)
+        extra_kwargs = {"password": {"write_only": True}}

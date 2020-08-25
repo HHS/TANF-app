@@ -8,8 +8,9 @@ ARG gid=1000
 ENV DJANGO_SETTINGS_MODULE=tdpservice.settings.local
 ENV DJANGO_CONFIGURATION=Local
 # Allows docker to cache installed dependencies between builds
-COPY ./requirements.txt requirements.txt
-RUN pip install --upgrade pip && pip install -r requirements.txt
+COPY Pipfile Pipfile.lock /tdpapp/
+WORKDIR /tdpapp/
+RUN pip install --upgrade pip pipenv && pipenv install --dev --system --deploy
 
 # Adds our application code to the image
 COPY . /tdpapp
