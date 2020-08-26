@@ -6,6 +6,7 @@ import time
 
 from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation
+from django.http import HttpResponseRedirect
 
 import jwt
 import requests
@@ -26,13 +27,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         state = request.GET.get("state", None)
 
         if code is None:
-            return Response(
-                {"error": "OIDC Code not found!"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            logger.info("Redirecting call to main page. No code provided.")
+            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
+
         if state is None:
-            return Response(
-                {"error": "OIDC State not found"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            logger.info("Redirecting call to main page. No state provided.")
+            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
 
         # get the validation keys to confirm generated nonce and state
         nonce_and_state = utils.get_nonce_and_state(request)
