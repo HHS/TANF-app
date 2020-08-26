@@ -15,7 +15,8 @@ from jwcrypto import jwk
 from rest_framework import status
 from rest_framework.response import Response
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 """
 Stores the state and nonce generated on login in the the users session
@@ -34,7 +35,7 @@ def add_state_and_nonce_to_session(request, state, nonce):
 
     limit = 1
     if len(request.session["openid_authenticity_tracker"]) >= limit:
-        LOGGER.info(
+        logger.info(
             'User has more than {} "openid_authenticity_tracker" in his session, '
             "deleting the oldest one!".format(limit)
         )
@@ -207,8 +208,6 @@ def response_redirect(self, id_token):
     :param id_token: encoded token returned by login.gov/token
     """
     response = HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"] + "/login")
-
-    print(response)
     response.set_cookie(
         "id_token",
         value=id_token,
