@@ -6,6 +6,7 @@ import time
 
 from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation
+from django.http import HttpResponseRedirect
 
 import jwt
 import requests
@@ -15,6 +16,10 @@ from rest_framework.response import Response
 
 from ..authentication import CustomAuthentication
 from . import utils
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 
 class TokenAuthorizationOIDC(ObtainAuthToken):
@@ -26,13 +31,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         state = request.GET.get("state", None)
 
         if code is None:
-            return Response(
-                {"error": "OIDC Code not found!"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            logger.info("Redirecting call to main page. No code provided.")
+            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
+
         if state is None:
-            return Response(
-                {"error": "OIDC State not found"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            logger.info("Redirecting call to main page. No state provided.")
+            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
 
         # get the validation keys to confirm generated nonce and state
         nonce_and_state = utils.get_nonce_and_state(request)
@@ -72,7 +76,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             access_token=None,
             options={"verify_nbf": False},
         )
-
         decoded_nonce = decoded_payload["nonce"]
 
         if not utils.validate_nonce_and_state(
@@ -100,10 +103,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                     user,
                     backend="tdpservice.users.authentication.CustomAuthentication",
                 )
-                return utils.response_internal(user, "User Found", id_token)
+                datetime_time = datetime.datetime.fromtimestamp(time.time())
+                logger.info(f"Found User:  {user.username} on {datetime_time}(UTC)")
 
+                return utils.response_redirect(user, id_token)
             else:
-                print("line 106")
                 User = get_user_model()
                 user = User.objects.create_user(decoded_payload["email"])
                 user.set_unusable_password()

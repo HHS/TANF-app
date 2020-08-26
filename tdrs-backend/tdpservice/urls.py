@@ -24,6 +24,10 @@ urlpatterns = [
     path("login/oidc", LoginRedirectOIDC.as_view(), name="oidc-auth"),
     path("logout", LogoutUser.as_view(), name="logout"),
     path("logout/oidc", LogoutRedirectOIDC.as_view(), name="oidc-logout"),
+    path("auth_check", AuthorizationCheck.as_view(), name="authorization-check"),
+    # the 'api-root' from django rest-frameworks default router
+    # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
+    re_path(r"^$", RedirectView.as_view(url=reverse_lazy("api-root"), permanent=False)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += router.urls
