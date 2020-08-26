@@ -1,6 +1,8 @@
 """Login.gov/authorize is redirected to this endpoint to start a django user session."""
-
+import datetime
+import logging
 import os
+import time
 
 from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation
@@ -101,6 +103,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 return utils.response_internal(user, "User Found", id_token)
 
             else:
+                print("line 106")
                 User = get_user_model()
                 user = User.objects.create_user(decoded_payload["email"])
                 user.set_unusable_password()
@@ -111,9 +114,14 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                     user,
                     backend="tdpservice.users.authentication.CustomAuthentication",
                 )
-                return utils.response_internal(user, "User Created", id_token)
 
-        except Exception:
+                datetime_time = datetime.datetime.fromtimestamp(time.time())
+                logger.info(f"Created User:  {user.username} at {datetime_time}(UTC)")
+
+                return utils.response_redirect(user, id_token)
+
+        except Exception as e:
+            logger.info(f"Error attempting to login/registeruser:  {e} at...")
             return Response(
                 {
                     "error": (

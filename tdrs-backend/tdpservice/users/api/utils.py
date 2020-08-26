@@ -7,6 +7,7 @@ import time
 from urllib.parse import quote_plus, urlencode
 
 from django.core.exceptions import SuspiciousOperation
+from django.http import HttpResponseRedirect
 
 import jwt
 import requests
@@ -185,6 +186,29 @@ def response_internal(user, status_message, id_token):
         {"user_id": user.pk, "email": user.username, "status": status_message},
         status=status.HTTP_200_OK,
     )
+    response.set_cookie(
+        "id_token",
+        value=id_token,
+        max_age=None,
+        expires=None,
+        path="/",
+        domain=None,
+        secure=True,
+        httponly=True,
+    )
+    return response
+
+
+def response_redirect(self, id_token):
+    """
+    Redirects to web app with an httpOnly cookie.
+
+    :param self: parameter to permit django python to call a method within its own class
+    :param id_token: encoded token returned by login.gov/token
+    """
+    response = HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"] + "/login")
+
+    print(response)
     response.set_cookie(
         "id_token",
         value=id_token,

@@ -5,7 +5,6 @@ import uuid
 import pytest
 from rest_framework import status
 
-from ..authentication import CustomAuthentication
 from ..api.utils import (
     generate_client_assertion,
     generate_jwt_from_jwks,
@@ -13,6 +12,7 @@ from ..api.utils import (
     response_internal,
     validate_nonce_and_state,
 )
+from ..authentication import CustomAuthentication
 
 test_private_key = """
 -----BEGIN RSA PRIVATE KEY-----
@@ -31,6 +31,7 @@ T6dvkLKRvbk42NtigQJAEZasjEA9FtBZL7ZSSTAs9X5OzPgMHOOukCjmyFaLfSO7
 0wBNH/N1oe6U/mTeKdJktsnX1okYbcXxMkGnS2/rUQ==
 -----END RSA PRIVATE KEY-----
 """
+
 
 class MockRequest:
     """Mock request class."""
@@ -95,7 +96,7 @@ def test_logout(api_client, user):
     """Test logout."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.get("/v1/logout")
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_302_FOUND
 
 
 @pytest.mark.django_db

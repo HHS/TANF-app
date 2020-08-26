@@ -234,5 +234,3 @@ class Common(Configuration):
 
     # CORS
     CORS_ALLOW_CREDENTIALS = True
-
-# configure things set up by cloudfoundry

@@ -22,6 +22,7 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
+      - JWT_KEY=${JWT_KEY}
     image: tdp
     build:
       context: .
