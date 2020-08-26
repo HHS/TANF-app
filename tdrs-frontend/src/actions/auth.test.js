@@ -15,7 +15,9 @@ describe('actions/auth.js', () => {
   it('fetches a user and sets user info, when the user is authenticated', async () => {
     axios.get.mockImplementationOnce(() =>
       Promise.resolve({
-        user: { email: 'hi@bye.com' },
+        data: {
+          user: { email: 'hi@bye.com' },
+        },
       })
     )
     const store = mockStore()
@@ -31,7 +33,9 @@ describe('actions/auth.js', () => {
   it('clears the auth state, if user is not authenticated', async () => {
     axios.get.mockImplementationOnce(() =>
       Promise.resolve({
-        authenticated: false,
+        data: {
+          authenticated: false,
+        },
       })
     )
     const store = mockStore()
