@@ -13,18 +13,12 @@ export const fetchAuth = () => async (dispatch) => {
       data: { user },
     } = await axios.get(URL, {
       withCredentials: true,
-    }).then((response) => {
-
-      if (response.data) {
-        const user = response.data.user
-        dispatch({ type: SET_AUTH, payload: { user } })
-      } else {
-        dispatch({ type: CLEAR_AUTH })
-      }
     })
-
-
-
+    if (user) {
+      dispatch({ type: SET_AUTH, payload: { user } })
+    } else {
+      dispatch({ type: CLEAR_AUTH })
+    }
   } catch (error) {
     dispatch({ type: SET_AUTH_ERROR, payload: { error } })
   }
