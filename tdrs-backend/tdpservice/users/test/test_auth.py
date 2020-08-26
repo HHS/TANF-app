@@ -101,18 +101,16 @@ def test_logout(api_client, user):
 
 @pytest.mark.django_db
 def test_login_without_code(api_client):
-    """Test login fails without code."""
+    """Test login redirects without code."""
     response = api_client.get("/v1/login")
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.data == {"error": "OIDC Code not found!"}
+    assert response.status_code == status.HTTP_302_FOUND
 
 
 @pytest.mark.django_db
 def test_login_fails_without_state(api_client):
-    """Test login fails without state."""
+    """Test login redirects without state."""
     response = api_client.get("/v1/login", {"code": "dummy"})
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.data == {"error": "OIDC State not found"}
+    assert response.status_code == status.HTTP_302_FOUND
 
 
 @pytest.mark.django_db
