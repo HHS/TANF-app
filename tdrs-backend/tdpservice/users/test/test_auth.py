@@ -1,7 +1,6 @@
 """Test the custom authorization class."""
 import os
 import uuid
-
 import pytest
 from rest_framework import status
 
@@ -44,7 +43,6 @@ class MockRequest:
         """Return data."""
         return self.data
 
-
 @pytest.mark.django_db
 def test_authentication(user):
     """Test authentication method."""
@@ -52,14 +50,12 @@ def test_authentication(user):
     authenticated_user = auth.authenticate(username=user.username)
     assert authenticated_user.username == user.username
 
-
 @pytest.mark.django_db
 def test_get_user(user):
     """Test get_user method."""
     auth = CustomAuthentication()
     found_user = auth.get_user(user.pk)
     assert found_user.username == user.username
-
 
 @pytest.mark.django_db
 def test_get_non_user(user):
@@ -69,18 +65,15 @@ def test_get_non_user(user):
     nonuser = auth.get_user(test_uuid)
     assert nonuser is None
 
-
 def test_oidc_auth(api_client):
     """Test login url redirects."""
     response = api_client.get("/v1/login/oidc")
     assert response.status_code == status.HTTP_302_FOUND
 
-
 def test_oidc_logout(api_client):
     """Test logout url redirects."""
     response = api_client.get("/v1/logout/oidc")
     assert response.status_code == status.HTTP_302_FOUND
-
 
 def test_oidc_logout_with_token(api_client):
     """Test logging out with token redirects and token is removed."""
@@ -90,7 +83,6 @@ def test_oidc_logout_with_token(api_client):
     response = api_client.get("/v1/logout/oidc")
     assert response.status_code == status.HTTP_302_FOUND
 
-
 @pytest.mark.django_db
 def test_logout(api_client, user):
     """Test logout."""
@@ -98,13 +90,11 @@ def test_logout(api_client, user):
     response = api_client.get("/v1/logout")
     assert response.status_code == status.HTTP_302_FOUND
 
-
 @pytest.mark.django_db
 def test_login_without_code(api_client):
     """Test login redirects without code."""
     response = api_client.get("/v1/login", {"state": "dummy"})
     assert response.status_code == status.HTTP_302_FOUND
-
 
 @pytest.mark.django_db
 def test_login_fails_without_state(api_client):
@@ -112,13 +102,11 @@ def test_login_fails_without_state(api_client):
     response = api_client.get("/v1/login", {"code": "dummy"})
     assert response.status_code == status.HTTP_302_FOUND
 
-
 @pytest.mark.django_db
 def test_login_fails_with_bad_data(api_client):
     """Test login fails with bad data."""
     response = api_client.get("/v1/login", {"code": "dummy", "state": "dummy"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-
 
 @pytest.mark.django_db
 def test_response_internal(user):
@@ -127,7 +115,6 @@ def test_response_internal(user):
         user, status_message="hello", id_token={"fake": "stuff"}
     )
     assert response.status_code == status.HTTP_200_OK
-
 
 def test_generate_jwt_from_jwks(mocker):
     """Test JWT generation."""
@@ -142,7 +129,6 @@ def test_generate_jwt_from_jwks(mocker):
     mock_get.return_value = MockRequest(data={"keys": [jwk]})
     assert generate_jwt_from_jwks() is not None
 
-
 def test_validate_nonce_and_state():
     """Test nonece and state validation."""
     assert validate_nonce_and_state("x", "y", "x", "y") is True
@@ -150,12 +136,10 @@ def test_validate_nonce_and_state():
     assert validate_nonce_and_state("x", "y", "y", "x") is False
     assert validate_nonce_and_state("x", "z", "y", "y") is False
 
-
 def test_generate_client_assertion():
     """Test client assertion generation."""
     os.environ["JWT_KEY"] = test_private_key
     assert generate_client_assertion() is not None
-
 
 def test_generate_token_endpoint_parameters():
     """Test token endpoint parameter generation."""

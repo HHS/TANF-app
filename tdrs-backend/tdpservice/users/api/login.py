@@ -39,7 +39,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
 
         # get the validation keys to confirm generated nonce and state
-        nonce_and_state = utils.get_nonce_and_state(request)  # pragma: no cover
+        nonce_and_state = utils.get_nonce_and_state(request.session)  # pragma: no cover
         nonce_validator = nonce_and_state.get("nonce", "not_nonce")  # pragma: no cover
         state_validator = nonce_and_state.get("state", "not_state")  # pragma: no cover
 
