@@ -20,8 +20,11 @@ tdrs-frontend/cypress/screenshots/
 tdrs-frontend/npm-debug.log*
 tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
+tdrs-frontend/vars-frontend.yml
+#BACKEND
 tdrs-backend/*/env_vars/*.env*
 tdrs-backend/*/env_vars/*.env*.*
+tdrs-backend/vars-backend.yml
 
 
 # Commmon

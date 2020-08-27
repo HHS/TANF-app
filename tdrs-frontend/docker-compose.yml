@@ -9,6 +9,8 @@ services:
     networks:
       - local  
   tdp-frontend:
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
     build:
       context: .
       dockerfile: Dockerfile

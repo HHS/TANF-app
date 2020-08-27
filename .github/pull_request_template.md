@@ -1,4 +1,6 @@
-Adding a template for Pull Requests###This pull request changes...
+Adding a template for Pull Requests
+
+###This pull request changes...
 
 - expected change 1
 - expected change 2

@@ -1,27 +1,18 @@
 ---
 applications:
-- name: tanf
-  disk_quota: 768M
+- name: tdp-backend
+  memory: 512M
+  instances: 1
+  disk_quota: 2G
   timeout: 180
   services:
-    - tanf-storage
-    - tanf-db
-  memory: 128M
+    - tdp-db
+  docker:
+    image: goraftdocker/tdp-backend:dev
+- name: tdp-frontend
+  memory: 512M
   instances: 1
-  command: python3 manage.py collectstatic --noinput ; gunicorn -b :8080 tanf.wsgi
-  env:
-    DISABLE_COLLECTSTATIC: 1
-  processes:
-  - type: worker
-    command: python3 manage.py process_tasks --log-std
-    memory: 400M
-    instances: 1
-    env:
-      DISABLE_COLLECTSTATIC: 1
-- name: tanf-static
-  path: ./static
-  memory: 64M
-  instances: 1
-  buildpack: https://github.com/cloudfoundry/staticfile-buildpack.git
-  env:
-    FORCE_HTTPS: true
+  disk_quota: 1G
+  timeout: 180
+  docker:
+    image: goraftdocker/tdp-frontend:dev
