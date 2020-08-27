@@ -1,8 +1,8 @@
 version: 1
 applications:
-- name: tdp-app
+- name: tdp-backend
   memory: 512M
   instances: 1
   disk_quota: 2G
   docker:
-    image: goraftdocker/tdp-backend:devtest
+    image: ((docker-backend))

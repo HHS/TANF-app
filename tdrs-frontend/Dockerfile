@@ -9,7 +9,6 @@ USER node
 RUN yarn install && yarn cache clean
 COPY --chown=node:node . .
 
-
 # ---
 # Stage 1: Create a production build
 FROM localdev AS build
@@ -28,6 +27,5 @@ COPY --from=build /home/node/app/build /usr/share/nginx/html
 # remove default nginx configuration file, replace with custom conf
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx/nginx.conf /etc/nginx/conf.d
-
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
