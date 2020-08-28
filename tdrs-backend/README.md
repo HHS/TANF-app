@@ -32,26 +32,24 @@ cd tdrs-backend; docker-compose up --build
 
 ## Testing the local API Service:
 
-**_Login_**
+**Login is now linked with the [tdrs-frontend](../tdrs-frontend/README.md) service. You will need a local instance of that application running**
+
 
 1.) Via a web-browser ( we suggest using `Chrome`) enter the following URL:
 ```
-http://localhost:8080/v1/login/oidc
+http://localhost:3000
 ```
 
-2.) This will redirect you to the `login.gov` authentication page
+2.) This will redirect you to the `TDP Login` page where you'll have the option to `Sign in with Login.gov`
     - You must a agree to associate your account with the `TANF Prototype: Development` application.
 
-3.) Upon successful authentication with `login.gov` you'll be redirected to your local running service:
-    - The response here will include your username and if you're a new/existing user
+3.) Upon successful authentication with `login.gov` you'll be redirected to the frontend UI displaying your username and an option to sign out.
 
 **_Logout_**
 
 **Please note: If you attempt to logout without being logged in you will receive a 500 error**
 
-1.) Via a web-browser ( we suggest using `Chrome`) enter the following URL:
-```
-http://localhost:8080/v1/logout/oidc
+1.) Clicking the `Sign Out` button via the UI will make api calls to log you out of Login.gov and the backend service while returning you to the `Sign in with Login.gov` screen
 ```
 
 Run this command to tear down the docker container:
@@ -74,35 +72,48 @@ docker-compose down --remove-orphans
 
 ## Cloud.gov Deployments:
 
-1.) Build and push a tagged docker image while on the the target github branch:
-
- (**Please note you need to be logged into docker for these operations**)
+1.) Build a tagged docker image against the the target github branch:
 
 `cd tdrs-backend; docker build -t goraftdocker/tdp-backend:devtest . -f docker/Dockerfile.dev`
 
-`docker push goraftdocker/tdp-backend:devtest`
+2.) Define the tagged within the manifest.yml found inside the the `tdrs-backend/` directory:
 
-2.) Log into your cloud.gov account and set your space and organization:
+```
+version: 1
+applications:
+- name: tdp-app
+  memory: 512M
+  instances: 1
+  disk_quota: 2G
+  docker:
+    image: goraftdocker/tdp-backend:devtest
+```
 
-**ORG: The target deployment organization as defined in cloud.gov Applications**
+3.) Log into your cloud.gov account and set your space and organization:
 
-**SPACE: The target deployment space under the organization as defined in cloud.gov Applications**
+**<ORG>: The target deployment organization as defined in cloud.gov Applications**
+**<SPACE>: The target deployment space under the organization as defined in cloud.gov Applications**
+
+
 ```
 cf login -a api.fr.cloud.gov --sso
 cf target -o <ORG> -s <SPACE>
 ```
 
-3.) Push the image to Cloud.gov ( you will need to be in the same directory as`tdrs-backend/manifest.yml`):
 
-( **The `--var` parameter ingest a value into the ((docker-backend)) environment variable in the manifest.yml**)
+4.) Push the image to Cloud.gov ( please ensure you're in the same directory as the manifest.yml): 
 
-`cf push tdp-backend --no-route -f manifest.yml --var docker-backend=goraftdockertdp-backend:devtest`
+`cd tdrs-backend; cf push tdp-backend --docker-image goraftdocker/tdp-backend:devtest`
 
+5.) You will then have to set all required environment variables via the cloud.gov GUI or CF CLI
 
-4.) After this step you will need to bind the application to a postgres RDS service ( if one does not exist you'll have to create one): 
+ `cf set-env tdp-backend JWT_KEY "$(cat test
+ .txt)"`
+ **For the list of required envrionment variables please defer to `tdrs-backend/tdpservice/settings/env_vars/.env.local`
+
+5.) After this step you'll need to bind the application to a postgres RDS service ( if one does not exist you'll have to create one): 
 `cf bind-service tdp-backend db-raft`
 
-5.) To apply this newly bound service you may have to restage:
-
+6.) To apply this newly bound service you may have to restage:
 `cf restage tdp-backend`
 
