@@ -210,10 +210,10 @@ cf target -o <ORG> -s <SPACE>
 
 3.) Push the image to Cloud.gov (  you will need to be in the same directory as`tdrs-frontend/manifest.yml`):
 
-( **The `--var` parameter ingest a value into the ((docker-backend)) environment variable in the manifest.yml**)
+( **The `--var` parameter ingests a value into the ((docker-backend)) environment variable in the manifest.yml**)
 
 `cf push tdp-frontend --no-route -f manifest.yml --var docker-backend=goraftdockertdp-frontend:devtest`
 
-4.) To  may be required to restage the application after deployment:
+4.) It may be required to restage the application after deployment:
 
 `cf restage tdp-frontend`
