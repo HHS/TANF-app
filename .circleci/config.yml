@@ -41,10 +41,6 @@ jobs:
       - setup_remote_docker: 
          docker_layer_caching: true 
       - checkout
-      - restore_cache:
-          name: Restore Yarn Cache
-          keys:
-            - yarn-packages-{{ checksum "yarn.lock" }}
       - run:
           name: 'Ensure docker exists,otherwise install it.'
           command: "./scripts/docker-check.sh"
@@ -53,7 +49,7 @@ jobs:
           command: "./scripts/docker-compose-check.sh"     
       - run:
           name: "Install Package Dependencies"
-          command: "cd tdrs-frontend; yarn --cache-folder ~/.cache/yarn"
+          command: "cd tdrs-frontend; yarn"
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
@@ -77,11 +73,6 @@ jobs:
           severity-threshold: medium
           additional-arguments: "--trust-policies"
           fail-on-issues: false
-      - save_cache:
-          name: Save Yarn Cache
-          key: yarn-packages-{{ checksum "yarn.lock" }}
-          paths:
-            - ~/.cache/yarn    
   deploy:
     working_directory: ~/tdp-deploy
     docker:
