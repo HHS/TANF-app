@@ -49,6 +49,7 @@ update_frontend()
 	if [ "$1" = "rolling" ] ; then
 		# Do a zero downtime deploy.  This requires enough memory for
 		# two apps to exist in the org/space at one time.
+		#The `--var` parameter ingest a value into the ((docker-frontend)) environment variable in the manifest.yml**
 		cf push $CGHOSTNAME_FRONTEND --no-route -f tdrs-frontend/manifest.yml --var docker-frontend=$DOCKER_IMAGE_FRONTEND --strategy rolling || exit 1
 	else
 		cf push $CGHOSTNAME_FRONTEND --no-route -f tdrs-frontend/manifest.yml --var docker-frontend=$DOCKER_IMAGE_FRONTEND
@@ -62,6 +63,7 @@ update_backend()
 	if [ "$1" = "rolling" ] ; then
 		# Do a zero downtime deploy.  This requires enough memory for
 		# two apps to exist in the org/space at one time.
+		#The `--var` parameter ingest a value into the ((docker-backend)) environment variable in the manifest.yml**
 		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND --strategy rolling || exit 1
 
 	else

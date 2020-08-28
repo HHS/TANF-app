@@ -74,48 +74,35 @@ docker-compose down --remove-orphans
 
 ## Cloud.gov Deployments:
 
-1.) Build a tagged docker image against the the target github branch:
+1.) Build and push a tagged docker image while on the the target github branch:
+
+ (**Please note you need to be logged into docker for these operations**)
 
 `cd tdrs-backend; docker build -t goraftdocker/tdp-backend:devtest . -f docker/Dockerfile.dev`
 
-2.) Define the tagged within the manifest.yml found inside the the `tdrs-backend/` directory:
+`docker push goraftdocker/tdp-backend:devtest`
 
-```
-version: 1
-applications:
-- name: tdp-app
-  memory: 512M
-  instances: 1
-  disk_quota: 2G
-  docker:
-    image: goraftdocker/tdp-backend:devtest
-```
+2.) Log into your cloud.gov account and set your space and organization:
 
-3.) Log into your cloud.gov account and set your space and organization:
+**ORG: The target deployment organization as defined in cloud.gov Applications**
 
-**<ORG>: The target deployment organization as defined in cloud.gov Applications**
-**<SPACE>: The target deployment space under the organization as defined in cloud.gov Applications**
-
-
+**SPACE: The target deployment space under the organization as defined in cloud.gov Applications**
 ```
 cf login -a api.fr.cloud.gov --sso
 cf target -o <ORG> -s <SPACE>
 ```
 
+3.) Push the image to Cloud.gov ( you will need to be in the same directory as`tdrs-backend/manifest.yml`):
 
-4.) Push the image to Cloud.gov ( please ensure you're in the same directory as the manifest.yml): 
+( **The `--var` parameter ingest a value into the ((docker-backend)) environment variable in the manifest.yml**)
 
-`cd tdrs-backend; cf push tdp-backend --docker-image goraftdocker/tdp-backend:devtest`
+`cf push tdp-backend --no-route -f manifest.yml --var docker-backend=goraftdockertdp-backend:devtest`
 
-5.) You will then have to set all required environment variables via the cloud.gov GUI or CF CLI
 
- `cf set-env tdp-backend JWT_KEY "$(cat test
- .txt)"`
- **For the list of required envrionment variables please defer to `tdrs-backend/tdpservice/settings/env_vars/.env.local`
-
-5.) After this step you'll need to bind the application to a postgres RDS service ( if one does not exist you'll have to create one): 
+4.) After this step you will need to bind the application to a postgres RDS service ( if one does not exist you'll have to create one): 
 `cf bind-service tdp-backend db-raft`
 
-6.) To apply this newly bound service you may have to restage:
+5.) To apply this newly bound service you may have to restage:
+
 `cf restage tdp-backend`
 
