@@ -104,18 +104,18 @@ if [ "$1" = "setup" ] ; then  echo
 	  echo "to get the CF_USERNAME and CF_PASSWORD, execute 'cf service-key tdp-app-keys deployer'"
 	fi
 
-	if service_exists "db-raft" ; then
-	  echo db-raft already created
+	if service_exists "tdp-db" ; then
+	  echo tdp-db already created
 	else
 	  if [ $DEPLOY_ENV = "prod" ] ; then
-	    cf create-service aws-rds medium-psql-redundant db-raft
+	    cf create-service aws-rds medium-psql-redundant tdp-db
 		  echo sleeping until db is awake
 		  for i in 1 2 3 ; do
 		  	sleep 60
 		  	echo $i minutes...
 		  done
 	  else
-	    cf create-service aws-rds shared-psql db-raft
+	    cf create-service aws-rds shared-psql tdp-db
 	    sleep 2
 	  fi
 	fi
@@ -125,7 +125,7 @@ if [ "$1" = "setup" ] ; then  echo
 		echo $CGHOSTNAME_BACKEND app already set up
 	else
 	    update_backend
-		cf bind-service $CGHOSTNAME_BACKEND db-raft
+		cf bind-service $CGHOSTNAME_BACKEND tdp-db
 		cf restage $CGHOSTNAME_BACKEND
 	fi
 

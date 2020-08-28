@@ -4,7 +4,7 @@ applications:
 - name: tdp-frontend
   memory: 512M
   instances: 1
-  disk_quota: 1G
+  disk_quota: 256M
   timeout: 180
   docker:
     image: ((docker-frontend))

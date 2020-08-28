@@ -2,159 +2,68 @@
 version: v1.14.1
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
-  SNYK-JS-LODASH-590103:
-    - '@babel/core > @babel/helper-module-transforms > lodash':
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.179Z'
-    - '@babel/core > @babel/generator > @babel/types > lodash':
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.181Z'
-    - '@babel/core > @babel/helper-module-transforms > @babel/helper-replace-supers > @babel/traverse > lodash':
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.182Z'
-    - '@trussworks/react-uswds > happo-plugin-storybook > archiver > async > lodash':
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.182Z'
-    - babel-eslint > @babel/traverse > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.182Z'
-    - babel-eslint > @babel/traverse > @babel/generator > @babel/types > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.182Z'
-    - concurrently > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.182Z'
-    - eslint > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.183Z'
-    - eslint > inquirer > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.183Z'
-    - eslint > table > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.183Z'
-    - node-sass > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.183Z'
-    - node-sass > sass-graph > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.183Z'
-    - node-sass > gaze > globule > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.183Z'
-    - react-scripts > eslint > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.183Z'
-    - react-scripts > eslint-plugin-flowtype > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.183Z'
-    - react-scripts > eslint > inquirer > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.184Z'
-    - react-scripts > eslint > table > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.184Z'
-    - react-scripts > react-dev-utils > inquirer > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.184Z'
-    - react-scripts > webpack-dev-server > http-proxy-middleware > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.184Z'
-    - react-scripts > webpack-dev-server > portfinder > async > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.184Z'
-    - react-scripts > @typescript-eslint/eslint-plugin > @typescript-eslint/experimental-utils > @typescript-eslint/typescript-estree > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.184Z'
-    - react-scripts > babel-jest > @jest/transform > @babel/core > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.185Z'
-    - react-scripts > @svgr/webpack > @babel/preset-env > @babel/plugin-transform-classes > @babel/helper-define-map > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.186Z'
-    - react-scripts > @svgr/webpack > @babel/preset-env > @babel/plugin-proposal-unicode-property-regex > @babel/helper-create-regexp-features-plugin > @babel/helper-regex > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.187Z'
-    - react-scripts > jest > jest-cli > @jest/core > @jest/reporters > jest-runtime > jest-config > jest-environment-jsdom > jsdom > request-promise-native > request-promise-core > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.190Z'
-    - react-scripts > @babel/core > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.190Z'
-    - react-scripts > html-webpack-plugin > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.190Z'
-    - react-scripts > @babel/core > @babel/helper-module-transforms > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.190Z'
-    - react-scripts > @babel/core > @babel/generator > @babel/types > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.190Z'
-    - react-scripts > @babel/core > @babel/helper-module-transforms > @babel/helper-replace-supers > @babel/traverse > lodash:
-        reason: no known fix at the moment
-        expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-535497:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-535498:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-535502:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540956:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540958:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540964:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540974:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540978:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540990:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540992:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540994:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540996:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-541000:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-541002:
     - node-sass:
-        reason: no known fix at the moment
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:10:10.191Z'
   SNYK-JS-NODESASS-540980:
     - node-sass:
-        reason: no known fix yet
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:14:37.144Z'
   SNYK-JS-NODESASS-540998:
     - node-sass:
-        reason: no known fix yet
+        reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:14:37.145Z'
 patch: {}
