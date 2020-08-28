@@ -1,5 +1,3 @@
-Adding a template for Pull Requests
-
 ###This pull request changes...
 
 - expected change 1
