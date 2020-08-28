@@ -31,8 +31,7 @@ jobs:
       - snyk/scan:
           target-file: tdrs-backend/Pipfile
           severity-threshold: medium
-          additional-arguments: "--allow-missing --skip-unresolved"
-          fail-on-issues: false
+          additional-arguments: "--allow-missing --skip-unresolved --trust-policies"
   test-ui:
     working_directory: ~/tdp-apps
     docker:
@@ -76,7 +75,6 @@ jobs:
       - snyk/scan:
           target-file: tdrs-frontend/yarn.lock
           severity-threshold: medium
-          fail-on-issues: false
       - save_cache:
           name: Save Yarn Cache
           key: yarn-packages-{{ checksum "yarn.lock" }}
