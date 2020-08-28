@@ -38,6 +38,11 @@ This project uses the U.S. Web Design System ([USWDS](https://designsystem.digit
 
 Navigate to [localhost:3000](localhost:3000) and you should see the app.
 
+
+***Login is now linked with the [tdrs-backend](../tdrs-backend/README.md) service. You will need a local instance of that application running**
+
+
+
 The `TANF-app/tdrs-frontend/src` directory is mounted into the container so changes to the source code, when saved, automatically update the contents of `/home/node/app/src` in the container. Restarting the container is not necessary during development and you should see changes update in the UI instantly.
 
 **Alternatively the app can be run with docker-compose:**
@@ -184,39 +189,31 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/tr
 
 ## Cloud.gov Deployments:
 
-1.) Build a tagged docker image against the the target github branch:
+1.) Build and push a tagged docker image while on the the target github branch:
 
-`cd tdrs-backend; docker build -t goraftdocker/tdp-backend:devtest . -f docker/Dockerfile.dev`
+ (**Please note you need to be logged into docker for these operations**)
 
-2.) Define the tagged within the manifest.yml found inside the the `tdrs-backend/` directory:
+`cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:devtest . -f docker/Dockerfile.dev`
 
-```
-version: 1
-applications:
-- name: tdp-frontend
-  memory: 512M
-  instances: 1
-  disk_quota: 512
-  docker:
-    image: goraftdocker/tdp-frontend:devtest
-```
+`docker push goraftdocker/tdp-frontend:devtest`
 
-3.) Log into your cloud.gov account and set your space and organization:
 
+2.) Log into your cloud.gov account and set your space and organization:
+
+**ORG: The target deployment organization as defined in cloud.gov Applications**
+
+**SPACE: The target deployment space under the organization as defined in cloud.gov Applications**
 ```
 cf login -a api.fr.cloud.gov --sso
 cf target -o <ORG> -s <SPACE>
 ```
 
-4.) Push the image to Cloud.gov ( please ensure you're in the same directory as the manifest.yml):
+3.) Push the image to Cloud.gov (  you will need to be in the same directory as`tdrs-frontend/manifest.yml`):
 
-`cd tdrs-backend; cf push tdp-frontend --docker-image goraftdocker/tdp-frontend:devtest`
+( **The `--var` parameter ingests a value into the ((docker-backend)) environment variable in the manifest.yml**)
 
-5.) You will then have to set all required environment variables via the cloud.gov GUI or CF CLI
+`cf push tdp-frontend --no-route -f manifest.yml --var docker-backend=goraftdockertdp-frontend:devtest`
 
- `cf set-env tdp-backend JWT_KEY "$(cat test.txt)"`
- **For the list of required envrionment variables please defer to `tdrs-backend/tdpservice/settings/env_vars/.env.local`
+4.) It may be required to restage the application after deployment:
 
-
-6.) To apply this newly bound service you may have to restage:
 `cf restage tdp-frontend`
