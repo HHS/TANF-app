@@ -76,6 +76,7 @@ jobs:
           target-file: tdrs-frontend/yarn.lock
           severity-threshold: medium
           additional-arguments: "--trust-policies"
+          fail-on-issues: false
       - save_cache:
           name: Save Yarn Cache
           key: yarn-packages-{{ checksum "yarn.lock" }}
