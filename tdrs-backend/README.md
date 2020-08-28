@@ -32,26 +32,24 @@ cd tdrs-backend; docker-compose up --build
 
 ## Testing the local API Service:
 
-**_Login_**
+**Login is now linked with the [tdrs-frontend](../tdrs-frontend/README.md) service. You will need a local instance of that application running**
+
 
 1.) Via a web-browser ( we suggest using `Chrome`) enter the following URL:
 ```
-http://localhost:8080/v1/login/oidc
+http://localhost:3000
 ```
 
-2.) This will redirect you to the `login.gov` authentication page
+2.) This will redirect you to the `TDP Login` page where you'll have the option to `Sign in with Login.gov`
     - You must a agree to associate your account with the `TANF Prototype: Development` application.
 
-3.) Upon successful authentication with `login.gov` you'll be redirected to your local running service:
-    - The response here will include your username and if you're a new/existing user
+3.) Upon successful authentication with `login.gov` you'll be redirected to the frontend UI displaying your username and an option to sign out.
 
 **_Logout_**
 
 **Please note: If you attempt to logout without being logged in you will receive a 500 error**
 
-1.) Via a web-browser ( we suggest using `Chrome`) enter the following URL:
-```
-http://localhost:8080/v1/logout/oidc
+1.) Clicking the `Sign Out` button via the UI will make api calls to log you out of Login.gov and the backend service while returning you to the `Sign in with Login.gov` screen
 ```
 
 Run this command to tear down the docker container:
