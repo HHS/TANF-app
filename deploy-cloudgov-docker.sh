@@ -70,7 +70,7 @@ update_backend()
 		if cf e $CGHOSTNAME_BACKEND | grep -q JWT_KEY ; then
 		   echo jwt cert already created
 		else
-		   export SETUPJWT="True"
+		   generate_jwt_cert
 	   fi
 	fi
 	cf map-route $CGHOSTNAME_BACKEND app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
@@ -155,12 +155,6 @@ generate_jwt_cert()
 		cf set-env $CGHOSTNAME_BACKEND OIDC_RP_CLIENT_ID "XXX"
 	fi
 }
-
-# Regenerate jwt cert
-if [ "$1" = "regenjwt" ] ; then
-	generate_jwt_cert
-fi
-
 
 # Tell people where to go
 echo
