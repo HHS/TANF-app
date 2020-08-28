@@ -31,7 +31,7 @@ jobs:
       - snyk/scan:
           target-file: tdrs-backend/Pipfile
           severity-threshold: medium
-          additional-arguments: "--allow-missing --skip-unresolved --package-manager=pip"
+          additional-arguments: "--allow-missing --skip-unresolved --package-manager=pip --command=python3"
   test-ui:
     working_directory: ~/tdp-apps
     docker:
