@@ -116,11 +116,13 @@ def get_nonce_and_state(session):
     if "state_nonce_tracker" not in session:
         msg = "error: Could not find session store for nonce and state"
         raise SuspiciousOperation(msg)
+
     openid_authenticity_tracker = session.get("state_nonce_tracker", None)
 
     if "state" not in openid_authenticity_tracker:
         msg = "OIDC callback state was not found in session."
         raise SuspiciousOperation(msg)
+
     state = openid_authenticity_tracker.get("state", None)
 
     if "nonce" not in openid_authenticity_tracker:
