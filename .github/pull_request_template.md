@@ -1,9 +1,9 @@
-###This pull request changes...
+### This pull request changes...
 
 - expected change 1
 - expected change 2
 
-###[AC] This pull request is ready to merge when...
+### [AC] This pull request is ready to merge when...
 
 - [ ] Tests have been updated (and all tests are passing)
 - [ ] Vulnerability Scan Test (Zap) has no high/critcial CVEs
@@ -17,7 +17,7 @@
 - [ ] Changelog is updated as appropriate
 
 
-###[DoD] This feature is done when...
+### [DoD] This feature is done when...
 
 - [ ] Design has approved the experience
 - [ ] Product has approved the experience
