@@ -2,21 +2,6 @@
 
 This project uses the U.S. Web Design System ([USWDS](https://designsystem.digital.gov/)) and in particular, [trussworks/react-uswds](https://github.com/trussworks/react-uswds)
 
-## To build for deployment
-
-- From `TANF-app/tdrs-frontend` run
-  ```
-  docker build -t adamcaron/tdrs-frontend .
-  ```
-- If you wish to run the build distribution locally:
-  ```
-  docker run -it -p 3000:80 --rm adamcaron/tdrs-frontend:latest
-  ```
-- Push the image to the remote repository on hub.docker.com:
-  ```
-  docker push adamcaron/tdrs-frontend:latest
-  ```
-
 ## To run locally
 
 - Clone this repository and
@@ -25,14 +10,14 @@ This project uses the U.S. Web Design System ([USWDS](https://designsystem.digit
   ```
 - Build the Docker image locally with
   ```
-  docker build --target localdev -t adamcaron/tdrs-frontend:local .
+  docker build --target localdev -t tdp-frontend:local . -f Dockerfile.local
   ```
 - Run the app:
   ```
-  docker run -it -p 3000:3000 -v $PWD/src/:/home/node/app/src --rm adamcaron/tdrs-frontend:local yarn start
+  docker run -it -p 3000:3000 -v $PWD/src/:/home/node/app/src --rm tdp-frontend:local yarn start
   ```
 
-Navigate to [localhost:3000](localhost:3000) and you should see the app.
+Navigate to [localhost:3000](localhost:3000) and you should see the app. The above command mounds the `/src` directory into the container, so code changes automatically take effect while the container is running, without any need to restart the container. This makes is convenient for development.
 
 **Login is now linked with the [tdrs-backend](../tdrs-backend/README.md) service. You will need a local instance of that application running**
 
@@ -189,7 +174,7 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/tr
 
  (**Please note you need to be logged into docker for these operations**)
 
-`cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:devtest . -f docker/Dockerfile.dev`
+`cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:devtest . -f Dockerfile.dev`
 
 `docker push goraftdocker/tdp-frontend:devtest`
 
