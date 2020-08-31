@@ -25,7 +25,7 @@ This project uses the U.S. Web Design System ([USWDS](https://designsystem.digit
   ```
 - Configure local environment variables with
   ```
-  cp .env.local.example .env.local
+  cp .env.example .env.local && cp .env.example .env.test
   ```
 - Build the Docker image locally with
   ```
