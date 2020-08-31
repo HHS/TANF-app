@@ -19,45 +19,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 """
-Stores the state and nonce generated on login in the the users session
-:param request: current session between client and server
-:param state: random string generated to verify API call to login.gov/authorize
-:param nonce: random string generated to verify API call to login.gov/token
-"""
-
-
-def add_state_and_nonce_to_session(request, state, nonce):
-    """Add state and nonce to session."""
-    if "openid_authenticity_tracker" not in request.session or not isinstance(
-        request.session["openid_authenticity_tracker"], dict
-    ):
-        request.session["openid_authenticity_tracker"] = {}
-
-    limit = 1
-    if len(request.session["openid_authenticity_tracker"]) >= limit:
-        logger.info(
-            'User has more than {} "openid_authenticity_tracker" in his session, '
-            "deleting the oldest one!".format(limit)
-        )
-        oldest_state = None
-        oldest_added_on = time.time()
-        for item_state, item in request.session["openid_authenticity_tracker"].items():
-            if item["added_on"] < oldest_added_on:
-                oldest_state = item_state
-                oldest_added_on = item["added_on"]
-        if oldest_state:
-            del request.session["openid_authenticity_tracker"][oldest_state]
-
-    request.session["openid_authenticity_tracker"][state] = {
-        "nonce": nonce,
-        "added_on": time.time(),
-    }
-    # Tell the session object explicitly that it has been modified by setting
-    # the modified attribute on the session object:
-    request.session.modified = True
-
-
-"""
 Validate the nonce and state returned by login.gov API calls match those
 originated by the request
 
@@ -150,16 +111,18 @@ Get the original nonce and state from the user session
 """
 
 
-def get_nonce_and_state(request):
+def get_nonce_and_state(session):
     """Get the nonce and state values."""
-    if "state_nonce_tracker" not in request.session:
+    if "state_nonce_tracker" not in session:
         msg = "error: Could not find session store for nonce and state"
         raise SuspiciousOperation(msg)
-    openid_authenticity_tracker = request.session.get("state_nonce_tracker", None)
+
+    openid_authenticity_tracker = session.get("state_nonce_tracker", None)
 
     if "state" not in openid_authenticity_tracker:
         msg = "OIDC callback state was not found in session."
         raise SuspiciousOperation(msg)
+
     state = openid_authenticity_tracker.get("state", None)
 
     if "nonce" not in openid_authenticity_tracker:
