@@ -2,7 +2,7 @@
 name: Development issue template
 about: Template for development issues
 title: ''
-labels: development
+labels: ''
 assignees: ''
 
 ---
