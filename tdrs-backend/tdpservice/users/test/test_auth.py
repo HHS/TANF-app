@@ -1,4 +1,5 @@
 """Test the custom authorization class."""
+import base64
 import os
 import uuid
 import pytest
@@ -13,7 +14,7 @@ from ..api.utils import (
 )
 from ..authentication import CustomAuthentication
 
-test_private_key = os.environ["JWT_CERT"]
+test_private_key = base64.b64decode(os.environ["JWT_CERT_TEST"]).decode('utf-8')
 
 class MockRequest:
     """Mock request class."""
