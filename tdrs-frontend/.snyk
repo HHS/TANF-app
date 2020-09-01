@@ -69,7 +69,7 @@ ignore:
   SNYK-JS-NODEFORGE-598677:
     - react-scripts > webpack-dev-server > selfsigned > node-forge:
         reason: >-
-          There is no known fix for the dependancy node-forge as reported by
-          snyk https://snyk.io/vuln/SNYK-JS-NODEFORGE-598677
-        expires: '2020-10-01T16:22:11.260Z'
+          No resolution at the moment for node-forge 0.9.0 as described in the
+          snyk report https://snyk.io/vuln/SNYK-JS-NODEFORGE-598677
+        expires: '2020-10-01T16:30:56.032Z'
 patch: {}
