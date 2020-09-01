@@ -7,9 +7,9 @@ import configureStore from 'redux-mock-store'
 import { MemoryRouter, Route } from 'react-router-dom'
 import * as Alert from '../../actions/alert'
 
-import Private from '.'
+import PrivateRoute from '.'
 
-describe('Private.js', () => {
+describe('PrivateRoute.js', () => {
   const mockStore = configureStore([thunk])
 
   it('does not return children when user is not authenticated', () => {
@@ -17,9 +17,9 @@ describe('Private.js', () => {
     const wrapper = mount(
       <Provider store={store}>
         <MemoryRouter>
-          <Private path="/very-secret-route">
+          <PrivateRoute path="/very-secret-route">
             <Route>Hello Private Content</Route>
-          </Private>
+          </PrivateRoute>
         </MemoryRouter>
       </Provider>
     )
@@ -31,9 +31,9 @@ describe('Private.js', () => {
     const wrapper = mount(
       <Provider store={store}>
         <MemoryRouter>
-          <Private path="/very-secret-route">
+          <PrivateRoute path="/very-secret-route">
             <Route>Hello Private Content</Route>
-          </Private>
+          </PrivateRoute>
         </MemoryRouter>
       </Provider>
     )
@@ -46,9 +46,9 @@ describe('Private.js', () => {
     const wrapper = mount(
       <Provider store={store}>
         <MemoryRouter>
-          <Private path="/very-secret-route">
+          <PrivateRoute path="/very-secret-route">
             <Route>Hello Private Content</Route>
-          </Private>
+          </PrivateRoute>
         </MemoryRouter>
       </Provider>
     )
