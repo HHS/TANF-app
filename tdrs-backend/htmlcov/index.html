@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Coverage report</title>
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.ba-throttle-debounce.min.js"></script>
+    <script type="text/javascript" src="jquery.tablesorter.min.js"></script>
+    <script type="text/javascript" src="jquery.hotkeys.js"></script>
+    <script type="text/javascript" src="coverage_html.js"></script>
+    <script type="text/javascript">
+        jQuery(document).ready(coverage.index_ready);
+    </script>
+</head>
+<body class="indexfile">
+<div id="header">
+    <div class="content">
+        <h1>Coverage report:
+            <span class="pc_cov">53%</span>
+        </h1>
+        <img id="keyboard_icon" src="keybd_closed.png" alt="Show keyboard shortcuts" />
+        <form id="filter_container">
+            <input id="filter" type="text" value="" placeholder="filter..." />
+        </form>
+    </div>
+</div>
+<div class="help_panel">
+    <img id="panel_icon" src="keybd_open.png" alt="Hide keyboard shortcuts" />
+    <p class="legend">Hot-keys on this page</p>
+    <div>
+    <p class="keyhelp">
+        <span class="key">n</span>
+        <span class="key">s</span>
+        <span class="key">m</span>
+        <span class="key">x</span>
+        <span class="key">c</span> &nbsp; change column sorting
+    </p>
+    </div>
+</div>
+<div id="index">
+    <table class="index">
+        <thead>
+            <tr class="tablehead" title="Click to sort">
+                <th class="name left headerSortDown shortkey_n">Module</th>
+                <th class="shortkey_s">statements</th>
+                <th class="shortkey_m">missing</th>
+                <th class="shortkey_x">excluded</th>
+                <th class="right shortkey_c">coverage</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr class="total">
+                <td class="name left">Total</td>
+                <td>157</td>
+                <td>74</td>
+                <td>36</td>
+                <td class="right" data-ratio="83 157">53%</td>
+            </tr>
+        </tfoot>
+        <tbody>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_urls_py.html">tdpservice/urls.py</a></td>
+                <td>17</td>
+                <td>5</td>
+                <td>0</td>
+                <td class="right" data-ratio="12 17">71%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_users_api_login_py.html">tdpservice/users/api/login.py</a></td>
+                <td>30</td>
+                <td>14</td>
+                <td>36</td>
+                <td class="right" data-ratio="16 30">53%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_users_api_login_redirect_oidc_py.html">tdpservice/users/api/login_redirect_oidc.py</a></td>
+                <td>20</td>
+                <td>9</td>
+                <td>0</td>
+                <td class="right" data-ratio="11 20">55%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_users_api_logout_py.html">tdpservice/users/api/logout.py</a></td>
+                <td>10</td>
+                <td>7</td>
+                <td>0</td>
+                <td class="right" data-ratio="3 10">30%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_users_api_logout_redirect_oidc_py.html">tdpservice/users/api/logout_redirect_oidc.py</a></td>
+                <td>19</td>
+                <td>12</td>
+                <td>0</td>
+                <td class="right" data-ratio="7 19">37%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_users_authentication_py.html">tdpservice/users/authentication.py</a></td>
+                <td>16</td>
+                <td>5</td>
+                <td>0</td>
+                <td class="right" data-ratio="11 16">69%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_users_models_py.html">tdpservice/users/models.py</a></td>
+                <td>7</td>
+                <td>4</td>
+                <td>0</td>
+                <td class="right" data-ratio="3 7">43%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_users_permissions_py.html">tdpservice/users/permissions.py</a></td>
+                <td>6</td>
+                <td>3</td>
+                <td>0</td>
+                <td class="right" data-ratio="3 6">50%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_users_serializers_py.html">tdpservice/users/serializers.py</a></td>
+                <td>16</td>
+                <td>7</td>
+                <td>0</td>
+                <td class="right" data-ratio="9 16">56%</td>
+            </tr>
+            <tr class="file">
+                <td class="name left"><a href="tdpservice_users_views_py.html">tdpservice/users/views.py</a></td>
+                <td>16</td>
+                <td>8</td>
+                <td>0</td>
+                <td class="right" data-ratio="8 16">50%</td>
+            </tr>
+        </tbody>
+    </table>
+    <p id="no_rows">
+        No items found using the specified filter.
+    </p>
+</div>
+<div id="footer">
+    <div class="content">
+        <p>
+            <a class="nav" href="https://coverage.readthedocs.io">coverage.py v5.2.1</a>,
+            created at 2020-08-26 20:09 +0000
+        </p>
+    </div>
+</div>
+</body>
+</html>

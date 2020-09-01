@@ -18,6 +18,12 @@ def test_auth_check_endpoint_with_authenticated_user(api_client, user):
     response = api_client.get(reverse("authorization-check"))
     assert response.status_code == status.HTTP_200_OK
 
+def test_auth_check_endpoint_with_bad_user(api_client):
+    """If the user doesn't exist, auth_check should not authenticate."""
+    api_client.login(usernam="nonexistent", password="test_password")
+    response = api_client.get(reverse("authorization-check"))
+    assert response.data["authenticated"] is False
+
 @pytest.mark.django_db
 def test_auth_check_returns_authenticated(api_client, user):
     """If user is authenticated auth_check should return authenticated true."""
