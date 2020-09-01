@@ -11,6 +11,8 @@
     "eslint": "6.x",
     "history": "^4.7.2",
     "immutable": "^4.0.0-rc.12",
+    "include-media": "^1.4.9",
+    "node-sass": "^4.14.1",
     "oidc-client": "1.11.0-beta.1",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",

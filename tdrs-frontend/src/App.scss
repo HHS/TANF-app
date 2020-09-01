@@ -1,3 +1,11 @@
+@import 'theme/_global.scss';
+
 .gov-banner {
   display: none;
+}
+
+@include media(">=medium") {
+  .gov-banner {
+    display: block;
+  }
 }
