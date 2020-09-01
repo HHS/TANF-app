@@ -66,4 +66,10 @@ ignore:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
         expires: '2020-09-27T00:14:37.145Z'
+  SNYK-JS-NODEFORGE-598677:
+    - react-scripts > webpack-dev-server > selfsigned > node-forge:
+        reason: >-
+          There is no known fix for the dependancy node-forge as reported by
+          snyk https://snyk.io/vuln/SNYK-JS-NODEFORGE-598677
+        expires: '2020-10-01T16:22:11.260Z'
 patch: {}
