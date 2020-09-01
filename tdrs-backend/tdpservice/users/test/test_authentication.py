@@ -20,13 +20,15 @@ class TestCustomAuthentication(TestCase):
 
     def test_authorization(self):
         """Test authorization method."""
-        user = CustomAuthentication.authenticate(self, username=self.user_data['username'])
-        assert user.username == self.user_data['username']
+        user = CustomAuthentication.authenticate(
+            self, username=self.user_data["username"]
+        )
+        assert user.username == self.user_data["username"]
 
     def test_get_user(self):
         """Test get_user method."""
         user = CustomAuthentication.get_user(self, self.user_id)
-        assert user.username == self.user_data['username']
+        assert user.username == self.user_data["username"]
 
     def test_get_non_user(self):
         """Test that an invalid user does not return a user."""

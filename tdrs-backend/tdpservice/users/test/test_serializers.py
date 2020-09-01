@@ -31,4 +31,4 @@ class TestCreateUserSerializer(TestCase):
         ok_(serializer.is_valid())
 
         user = serializer.save()
-        ok_(check_password(self.user_data.get('password'), user.password))
+        ok_(check_password(self.user_data.get("password"), user.password))

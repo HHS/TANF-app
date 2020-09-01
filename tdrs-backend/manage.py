@@ -6,8 +6,7 @@ import sys
 
 def main():
     """Set up the application."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE",
-                          "tdpservice.settings.local")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tdpservice.settings.local")
     os.environ.setdefault("DJANGO_CONFIGURATION", "Local")
 
     try:
@@ -28,5 +27,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

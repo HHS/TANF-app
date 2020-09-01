@@ -11,7 +11,7 @@ class TestUserModel(TestCase):
 
     def setUp(self):
         """Get test user for tests."""
-        user = UserFactory.build(username='test@example.com')
+        user = UserFactory.build(username="test@example.com")
         user.set_password(user.password)
         user.save()
         self.user_data = model_to_dict(user)
