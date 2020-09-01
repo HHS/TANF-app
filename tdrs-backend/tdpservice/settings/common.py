@@ -222,7 +222,6 @@ class Common(Configuration):
         "django.contrib.auth.backends.ModelBackend",
     )
 
-
     # conditionally set which URI to go to
     if "VCAP_APPLICATION" in os.environ:  # pragma: nocover
         appjson = os.environ["VCAP_APPLICATION"]
