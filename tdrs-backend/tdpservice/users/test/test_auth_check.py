@@ -18,11 +18,27 @@ def test_auth_check_endpoint_with_authenticated_user(api_client, user):
     response = api_client.get(reverse("authorization-check"))
     assert response.status_code == status.HTTP_200_OK
 
+@pytest.mark.django_db
 def test_auth_check_endpoint_with_bad_user(api_client):
     """If the user doesn't exist, auth_check should not authenticate."""
-    api_client.login(usernam="nonexistent", password="test_password")
+    api_client.login(username="nonexistent", password="test_password")
     response = api_client.get(reverse("authorization-check"))
-    assert response.data["authenticated"] is False
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+@pytest.mark.django_db
+def test_auth_check_endpoint_with_unauthorized_email(api_client):
+    """If the user has an email address not in the system it should not authenticate."""
+    api_client.login(username="bademail@example.com", password="test_password")
+    response = api_client.get(reverse("authorization-check"))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    
+@pytest.mark.django_db
+def test_auth_check_will_not_authenticate_user_who_is_logged_out(api_client, user):
+    """If the user is logged out, it will not authenticate."""
+    api_client.login(username=user.name, password="test_password")
+    api_client.logout(user)
+    response = api_client.get(reverse("authorization-check"))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 @pytest.mark.django_db
 def test_auth_check_returns_authenticated(api_client, user):

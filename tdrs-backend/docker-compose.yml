@@ -23,6 +23,7 @@ services:
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
       - JWT_KEY=${JWT_KEY}
+      - JWT_CERT=${JWT_CERT}
     image: tdp
     build:
       context: .
