@@ -20,7 +20,10 @@ import './App.scss'
 function App() {
   return (
     <>
-      <GovBanner aria-label="Official government website" />
+      <GovBanner
+        aria-label="Official government website"
+        className="gov-banner"
+      />
       <Notify />
       <Routes />
     </>
