@@ -16,7 +16,7 @@ fi
 
 cf delete $CGHOSTNAME_BACKEND -r -f
 cf delete $CGHOSTNAME_FRONTEND -r -f
-cf delete-service db-raft -f 
+cf delete-service tdp-db -f 
 cf delete-service-key tdp-app-keys deployer -f
 cf delete-service tdp-app-keys -f 
 
