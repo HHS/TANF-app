@@ -69,7 +69,9 @@ ignore:
   SNYK-JS-NODEFORGE-598677:
     - react-scripts > webpack-dev-server > selfsigned > node-forge:
         reason: >-
+          Self sigend will most likely not be used in the frontend
+          since we'll be leveraging cloud.gov.
           No resolution at the moment for node-forge 0.9.0 as described in the
-          snyk report https://snyk.io/vuln/SNYK-JS-NODEFORGE-598677
+          snyk report https://snyk.io/vuln/SNYK-JS-NODEFORGE-598677 
         expires: '2020-10-01T16:30:56.032Z'
 patch: {}
