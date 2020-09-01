@@ -25,6 +25,9 @@ _Exceptions_:
 
 - the `CLIENT_ID` has had the values unique to deployment environments obscured. Please populate this with the intended `Issuer` value found via the login.gov app management dashboard
 
+- the `JWT_CERT_TEST` is a base64 encoded public cert used for remote unit tests that can't properly format a pem value.
+
+
 - This project uses a Pipfile for depenpancy management. However, due to an issue with snyk in circle ci not correctly identifying this file as a manifest we must continue to support a requirements.txt for the time being.
 
 
