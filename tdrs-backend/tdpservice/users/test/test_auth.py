@@ -13,24 +13,7 @@ from ..api.utils import (
 )
 from ..authentication import CustomAuthentication
 
-test_private_key = """
------BEGIN RSA PRIVATE KEY-----
-MIICWwIBAAKBgQCNPblYH0LCEubHfT8C/yDuv/V+iZic0B6kpjiO3LnZqv3fgldS
-+XhkLFipCDm5QAe/r6JUEVEuIOmynX60rnRdSMDA5v6hI9fwl4ajc0zr7dlauQ7q
-PSZ3P4oQwSgkv9hmglIVXlbs9Zghvjf9w0FAxGPL75KhKbcQ+5X5+E0WbwIDAQAB
-AoGAPcz4QHrNNyYWHMvMun7v5gfQX2HNiS/3eIvSy5ABMiEDnLzngMLvzsUoti2H
-NGuz+Efde3NoVgrItwL64gxDlbWaq9dwFC083dFbsruxoqA6Zj/DmboloPu24niv
-HCjhJh8OAYXBHPf/5oy00VjQvAIvppcMVYIUgcDeHg3/UuECQQDbRQq8w4aPVmSR
-P1xOsT8L6qXCBVe9Y0vL0ZsEHsRl4bMBJQRXzPjB4acTHsUw9q8NhoZgC60xcedP
-elxuHbILAkEApOaTnYBP2Ly5yLO56wqaecJemb+Il4zvYIKXPNN7xrj3/kO8nGMm
-OIabH2jMdv2k3Tgb+I7N2K9mQjse4LtvrQJAezQYDGhwuyl36IUJgM3m9vMpoBMQ
-ccHRXPyxdWc0Q2rGAeaiwhLR017PWdb4RcLWKWtlJaJp9lZh+i5usRDOcQJAKm6q
-zXyXD06BAAQ/cxvnZC1/6lA+9cBuWIdCI4TH9Prj1anYfuWEkEcS46Iz+uqJ4eLu
-T6dvkLKRvbk42NtigQJAEZasjEA9FtBZL7ZSSTAs9X5OzPgMHOOukCjmyFaLfSO7
-0wBNH/N1oe6U/mTeKdJktsnX1okYbcXxMkGnS2/rUQ==
------END RSA PRIVATE KEY-----
-"""
-
+test_private_key = os.environ["JWT_CERT"]
 
 class MockRequest:
     """Mock request class."""
