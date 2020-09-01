@@ -7,6 +7,9 @@ import createRootReducer from './reducers'
 
 export const history = createBrowserHistory()
 
+/**
+ * Sets up the Redux store
+ */
 export default function configureStore(preloadedState) {
   const middlewares = [thunkMiddleware, loggerMiddleware]
   const composedEnhancers = composeWithDevTools(applyMiddleware(...middlewares))

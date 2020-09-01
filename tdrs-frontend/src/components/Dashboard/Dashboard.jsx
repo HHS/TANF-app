@@ -2,6 +2,14 @@ import React from 'react'
 import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
 import { useSelector } from 'react-redux'
 
+/**
+ * This component renders for a user who just logged in.
+ * It renders a sign-out button and when clicked,
+ * the user is redirected to the backend's logout endpoint,
+ * initiating the logout process.
+ *
+ * @param {object} email - a user's email address
+ */
 function Dashboard() {
   const user = useSelector((state) => state.auth.user.email)
   const handleClick = (event) => {

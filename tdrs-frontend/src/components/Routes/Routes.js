@@ -5,6 +5,11 @@ import Dashboard from '../Dashboard'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 
+/**
+ * This component renters the routes for the app.
+ * Routes have the 'exact' prop, so the order of routes
+ * does not matter.
+ */
 const Routes = () => {
   return (
     <Switch>
