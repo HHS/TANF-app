@@ -1,15 +1,3 @@
-# API
-venv
-*.sqlite3
-*.sqlite3-journal
-**/__pycache__
-tmp
-*.pem
-*.rsa
-*.txt
-compliance/opencontrols/
-compliance/exports/
-
 # UI
 tdrs-frontend/node_modules/
 tdrs-frontend/build/
@@ -37,6 +25,16 @@ tdrs-backend/vars-backend.yml
 /mediafiles/*
 __pycache__/
 /.vscode/
+venv
+*.sqlite3
+*.sqlite3-journal
+**/__pycache__
+tmp
+*.pem
+*.rsa
+*.txt
+compliance/opencontrols/
+compliance/exports/
 
 # coverage result
 .coverage
@@ -73,7 +71,7 @@ boilerplate.zip
 # Spritesmith
 spritesmith-generated/
 spritesmith.scss
- 
+
 
 # Testing files
 htmlcov/*
