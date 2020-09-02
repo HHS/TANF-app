@@ -11,6 +11,16 @@ const initialState = {
   authenticated: false,
 }
 
+/**
+ * Reduces data onto the Redux store for Authentication
+ *
+ * SET_AUTH defines `authenticated: true` on the store
+ * which is used through the app to determine if user is logged in
+ *
+ * SET_AUTH_ERROR reverts to the initial state,
+ * clears any authenticated state),
+ * and sets the error on the store
+ */
 const auth = (state = initialState, action) => {
   const { type, payload = {} } = action
   switch (type) {

@@ -8,6 +8,20 @@ import '@trussworks/react-uswds/lib/index.css'
 
 import './Welcome.scss'
 
+/**
+ * This component renders at the '/' route
+ * when a user is not logged in.
+ *
+ * If a user is logged in, it redirects them to '/dashboard'
+ *
+ * If user not logged in, and clicks log in,
+ * it redirects user to API's login route
+ * which forwards them to login.gov
+ *
+ * @param {boolean} authLoading
+ *  - whether there is an authentication check in progress
+ * @param {boolean} authenticated - whether user is authenticated
+ */
 function Welcome() {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)

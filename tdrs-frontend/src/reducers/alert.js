@@ -7,6 +7,13 @@ const initialState = {
   type: '',
 }
 
+/**
+ * Reduces data onto the Redux store for Alerts
+ *
+ * SET_ALERT will set 'show' to true,
+ * which is what the Notify component depends on
+ * to render or hide an alert.
+ */
 const alertReducer = (state = initialState, action) => {
   const { type, payload = {} } = action
   switch (type) {
