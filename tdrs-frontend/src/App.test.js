@@ -9,8 +9,4 @@ describe('App.js', () => {
     const wrapper = shallow(<App />)
     expect(wrapper.find(GovBanner)).toExist()
   })
-  it('renders a welcome message', () => {
-    const wrapper = shallow(<App />)
-    expect(wrapper.find('h1')).toIncludeText('Welcome to TDRS!')
-  })
 })

@@ -1,27 +1,29 @@
-from django.test import TestCase
-from django.forms.models import model_to_dict
+"""Test user serializers."""
 from django.contrib.auth.hashers import check_password
-from nose.tools import eq_, ok_
-from .factories import UserFactory
+
+import pytest
+
 from ..serializers import CreateUserSerializer
 
 
-class TestCreateUserSerializer(TestCase):
+def test_serializer_with_empty_data():
+    """If an empty serialized request is returned it should not be valid."""
+    serializer = CreateUserSerializer(data={})
+    assert serializer.is_valid() is False
 
-    def setUp(self):
-        self.user_data = model_to_dict(UserFactory.build())
 
-    def test_serializer_with_empty_data(self):
-        serializer = CreateUserSerializer(data={})
-        eq_(serializer.is_valid(), False)
+@pytest.mark.django_db
+def test_serializer_with_valid_data(user_data):
+    """If a serializer has valid data it will return a valid object."""
+    serializer = CreateUserSerializer(data=user_data)
+    assert serializer.is_valid() is True
 
-    def test_serializer_with_valid_data(self):
-        serializer = CreateUserSerializer(data=self.user_data)
-        ok_(serializer.is_valid())
 
-    def test_serializer_hashes_password(self):
-        serializer = CreateUserSerializer(data=self.user_data)
-        ok_(serializer.is_valid())
+@pytest.mark.django_db
+def test_serializer_hashes_password(user_data):
+    """The serializer should hash the user's password."""
+    serializer = CreateUserSerializer(data=user_data)
+    assert serializer.is_valid() is True
 
-        user = serializer.save()
-        ok_(check_password(self.user_data.get('password'), user.password))
+    user = serializer.save()
+    assert check_password(user_data["password"], user.password) is True

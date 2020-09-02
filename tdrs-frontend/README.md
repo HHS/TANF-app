@@ -23,6 +23,10 @@ This project uses the U.S. Web Design System ([USWDS](https://designsystem.digit
   ```
   cd TANF-app/tdrs-frontend
   ```
+- Configure local environment variables with
+  ```
+  cp .env.local.example .env.local
+  ```
 - Build the Docker image locally with
   ```
   docker build --target localdev -t adamcaron/tdrs-frontend:local .
@@ -34,7 +38,17 @@ This project uses the U.S. Web Design System ([USWDS](https://designsystem.digit
 
 Navigate to [localhost:3000](localhost:3000) and you should see the app.
 
+
+**Login is now linked with the [tdrs-backend](../tdrs-backend/README.md) service. You will need a local instance of that application running**
+
+
+
 The `TANF-app/tdrs-frontend/src` directory is mounted into the container so changes to the source code, when saved, automatically update the contents of `/home/node/app/src` in the container. Restarting the container is not necessary during development and you should see changes update in the UI instantly.
+
+**Alternatively the app can be run with docker-compose:**
+- ```
+  docker-compose up --build
+  ```
 
 ### Code Linting and Formatting
 
@@ -54,6 +68,12 @@ This project uses [Jest](https://jestjs.io/) for unit tests and [Cypress](https:
 **Unit Tests with Jest**
 
 Jest provides an interactive test consolde that's helpful for development. After running the following commands, you will see options to run all the tests, run only failing tests, run specific tests, and more.
+
+Before running the subsequent commands, first:
+```
+cd TANF-app/tdrs-frontend
+```
+
 - To run unit tests locally:
   ```
   yarn test
@@ -67,7 +87,10 @@ Jest provides an interactive test consolde that's helpful for development. After
   yarn test:ci
   ```
 
-Another simple way to run only one test (focus on only one test at a time) is to change `it()` to `fit()`. You can skip tests by changing `it()` to `xit()`. [These](https://create-react-app.dev/docs/running-tests/#focusing-and-excluding-tests) can be used in addition to the [methods](https://jestjs.io/docs/en/api) Jest provides.
+After running either `test:cov` or `test:ci`, coverage details can be seen as HTML in the browser by running:
+```
+open coverage/lcov-report/index.html
+```
 
 In addition to [Jest's matchers](https://jestjs.io/docs/en/expect), this project uses [enzyme-matchers](https://github.com/FormidableLabs/enzyme-matchers) to simplify tests and make them more readable. Enzyme matchers is integrated with Jest using the [`jest-enzyme` package](https://github.com/FormidableLabs/enzyme-matchers/blob/master/packages/jest-enzyme/README.md#assertions) which provides many useful assertions for testing React components.
 
@@ -162,3 +185,35 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 ### `yarn build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+
+
+## Cloud.gov Deployments:
+
+1.) Build and push a tagged docker image while on the the target github branch:
+
+ (**Please note you need to be logged into docker for these operations**)
+
+`cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:devtest . -f docker/Dockerfile.dev`
+
+`docker push goraftdocker/tdp-frontend:devtest`
+
+
+2.) Log into your cloud.gov account and set your space and organization:
+
+**ORG: The target deployment organization as defined in cloud.gov Applications**
+
+**SPACE: The target deployment space under the organization as defined in cloud.gov Applications**
+```
+cf login -a api.fr.cloud.gov --sso
+cf target -o <ORG> -s <SPACE>
+```
+
+3.) Push the image to Cloud.gov (  you will need to be in the same directory as`tdrs-frontend/manifest.yml`):
+
+( **The `--var` parameter ingests a value into the ((docker-backend)) environment variable in the manifest.yml**)
+
+`cf push tdp-frontend --no-route -f manifest.yml --var docker-backend=goraftdockertdp-frontend:devtest`
+
+4.) It may be required to restage the application after deployment:
+
+`cf restage tdp-frontend`

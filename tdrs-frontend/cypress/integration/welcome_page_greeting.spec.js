@@ -3,7 +3,6 @@ describe('welcome page greeting', () => {
     cy.visit('http://localhost:3000/')
 
     cy.contains('Welcome to TDRS!')
-    cy.contains('(Hello, world!)')
   })
   it('tells the user this is a governament website', () => {
     cy.visit('http://localhost:3000/')

@@ -2,6 +2,10 @@
 version: 1
 applications:
 - name: tdp-frontend
+  memory: 512M
   instances: 1
+  disk_quota: 256M
+  timeout: 180
   docker:
-    image: adamcaron/tdrs-frontend:initialVoyage
+    image: ((docker-frontend))
+

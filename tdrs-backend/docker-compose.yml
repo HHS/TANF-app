@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   zaproxy:
@@ -20,17 +20,20 @@ services:
       - DB_NAME=tdrs_test
       - DB_PORT=5432
       - DB_HOST=postgres
+      - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
+      - DJANGO_CONFIGURATION=Local
+      - JWT_KEY=${JWT_KEY}
+      - JWT_CERT_TEST=${JWT_CERT_TEST}
+
     image: tdp
-    build: 
-     context: .
-     dockerfile: ./docker/local/Dockerfile
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.local
     command: >
       bash -c "python wait_for_postgres.py &&
                ./gunicorn_start.sh"
-    volumes:
-      - ./:/app
     ports:
-      - "8000:8000"
+      - "8080:8080"
     depends_on:
       - postgres
   documentation:

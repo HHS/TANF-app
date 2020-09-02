@@ -1,0 +1,44 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+black = "==19.10b0"
+mkdocs = "*"
+factory-boy = "*"
+flake8 = "*"
+flake8-docstrings = "*"
+isort = "*"
+nose-progressive = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-django = "*"
+pytest-mock = "*"
+
+[packages]
+boto3 = "*"
+cryptography = "*"
+django = "~=3.1"
+django-configurations = "*"
+django-cors-headers = "*"
+django-extensions = "*"
+django-filter = "*"
+django-model-utils = "*"
+django-storages = "*"
+django-unique-upload = "*"
+djangorestframework = "*"
+dj-database-url = "*"
+gunicorn = "*"
+ipdb = "*"
+ipython = "*"
+jwcrypto = "*"
+markdown = "*"
+psycopg2-binary = "*"
+ptpython = "*"
+pyjwt = "*"
+python-dotenv = "*"
+requests = "*"
+
+[requires]
+python_version = "3.8"

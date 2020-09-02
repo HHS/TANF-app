@@ -1,25 +1,28 @@
 import React from 'react'
-import { GridContainer, GovBanner } from '@trussworks/react-uswds'
+import { GovBanner } from '@trussworks/react-uswds'
+import Routes from './components/Routes'
+import { Notify } from './components/Notify'
+
 import '@trussworks/react-uswds/lib/uswds.css'
 import '@trussworks/react-uswds/lib/index.css'
-import './App.css'
 
+import './App.scss'
+
+/**
+ * The root component
+ *
+ * Renders the Gov Banner on every page.
+ *
+ * Renders the Notify component which will show or hide alerts
+ *
+ * Renders Routes and all its children
+ */
 function App() {
   return (
     <>
       <GovBanner aria-label="Official government website" />
-      <GridContainer className="app">
-        <h1>
-          Welcome to TDRS!
-          <span role="img" aria-label="wave" aria-hidden="true">
-            {' '}
-            👋
-          </span>
-        </h1>
-        <h2>
-          <em>(Hello, world!)</em>
-        </h2>
-      </GridContainer>
+      <Notify />
+      <Routes />
     </>
   )
 }
