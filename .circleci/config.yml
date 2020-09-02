@@ -128,7 +128,7 @@ jobs:
               export CF_PASSWORD="$CF_PASSWORD_DEV"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
-            elif [ "$CIRCLE_BRANCH" == "sprint1-pr-review" ] ; then
+            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
               export CF_PASSWORD="$CF_PASSWORD_DEV"
