@@ -11,6 +11,7 @@ tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
 tdrs-frontend/.env.production
+tdrs-frontend/.env.development.local
 tdrs-frontend/.env.local
 tdrs-frontend/.env
 
