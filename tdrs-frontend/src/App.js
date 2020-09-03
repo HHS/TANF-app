@@ -2,6 +2,7 @@ import React from 'react'
 import { GovBanner } from '@trussworks/react-uswds'
 import Routes from './components/Routes'
 import { Notify } from './components/Notify'
+import Header from './components/Header'
 
 import '@trussworks/react-uswds/lib/uswds.css'
 import '@trussworks/react-uswds/lib/index.css'
@@ -20,10 +21,8 @@ import './App.scss'
 function App() {
   return (
     <>
-      <GovBanner
-        aria-label="Official government website"
-        className="gov-banner"
-      />
+      <GovBanner aria-label="Official government website" />
+      <Header />
       <Notify />
       <Routes />
     </>

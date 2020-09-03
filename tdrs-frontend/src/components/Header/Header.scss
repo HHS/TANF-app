@@ -1,0 +1,17 @@
+@import 'theme/_global.scss';
+
+.header {
+  height: 140px;
+}
+
+@include media(">=medium") {
+  .header {
+    height: 126px;
+  }
+}
+
+@include media(">=xlarge") {
+  .header {
+    height: 148px;
+  }
+}
