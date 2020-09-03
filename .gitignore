@@ -5,6 +5,7 @@ tdrs-frontend/coverage/
 tdrs-frontend/cypress/videos/
 tdrs-frontend/cypress/support/
 tdrs-frontend/cypress/screenshots/
+tdrs-frontend/cypress/fixtures/example.json
 tdrs-frontend/npm-debug.log*
 tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
