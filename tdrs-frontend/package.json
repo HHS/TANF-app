@@ -38,9 +38,10 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:run:ci": "concurrently -k -s first 'yarn start:ci' 'wait-on http://localhost:3000/ && yarn cy:run'",
-    "test": "snyk test && react-scripts test",
+    "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
+    "snyk": "snyk test",
     "test:accessibility": "concurrently -k -s first 'yarn start:ci' 'wait-on http://localhost:3000/ && yarn pa11y-ci --config .pa11yci.json'",
     "eject": "react-scripts eject",
     "lint": "eslint src/ && echo 'Lint complete.'"
