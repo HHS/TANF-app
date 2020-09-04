@@ -6,6 +6,8 @@ import {
   Header, 
   Title,
   ExtendedNav,
+  GridContainer,
+  Grid
 } from '@trussworks/react-uswds'
 
 function HeaderComp() {
@@ -48,26 +50,30 @@ function HeaderComp() {
         Skip to main content
       </a>
       <div className={`usa-overlay ${mobileNavOpen ? 'is-visible' : ''}`}></div>
-      <Header extended>
-        <div className="usa-navbar">
-          <Title id="extended-logo">
-            <a href="/" title="Home" aria-label="Home">
-              TANF Data Portal
-            </a>
-          </Title>
-          <NavMenuButton
-            label="Menu"
-            onClick={toggleMobileNav}
-            className="usa-menu-btn"
-          />
-          <ExtendedNav
-            primaryItems={testItemsMenu}
-            secondaryItems={[]}
-            mobileExpanded={expanded}
-            onToggleMobileNav={onClick}>
-          </ExtendedNav>
-        </div>
-      </Header>
+      <GridContainer>
+        <Grid>
+          <Header extended>
+            <div className="usa-navbar">
+              <Title id="extended-logo">
+                <a href="/" title="Home" aria-label="Home">
+                  TANF Data Portal
+                </a>
+              </Title>
+              <NavMenuButton
+                label="Menu"
+                onClick={toggleMobileNav}
+                className="usa-menu-btn"
+              />
+              <ExtendedNav
+                primaryItems={testItemsMenu}
+                secondaryItems={[]}
+                mobileExpanded={expanded}
+                onToggleMobileNav={onClick}>
+              </ExtendedNav>
+            </div>
+          </Header>
+        </Grid>
+      </GridContainer>
     </>
   )
 }
