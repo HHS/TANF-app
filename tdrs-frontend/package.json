@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "dependencies": {
-    "@trussworks/react-uswds": "^1.8.0",
+    "@trussworks/react-uswds": "^1.9.0",
     "axios": "^0.20.0",
     "babel-eslint": "10",
     "concurrently": "^5.3.0",
