@@ -125,6 +125,49 @@ def test_login_with_valid_state_and_code(mocker, api_client):
     assert response.status_code == status.HTTP_302_FOUND
     
 @pytest.mark.django_db
+def test_login_with_general_exception(mocker):
+    """Test login with state and code."""
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1NzktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ292IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xIiwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InVybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4ZE5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJjX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpYXQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNdlc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn00Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caRYePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYdhzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg"
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test@example.com",
+        "email_verified": True,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "verified_at": 1577854800
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    # A custom session will throw a general exception
+    request.session = {}
+    request.session["state_nonce_tracker"] = {
+            "nonce": nonce,
+            "state": state,
+            "added_on": time.time(),
+        }
+    response = view(request)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data == {
+        "error": (
+            "Email verfied, but experienced internal issue "
+            "with login/registration."
+        )
+    }
+
+@pytest.mark.django_db
 def test_login_with_existing_user(mocker, api_client, user):
     """Login should work with existing user."""
     user.username = "test@example.com"

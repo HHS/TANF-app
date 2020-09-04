@@ -132,7 +132,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
                 return response_redirect(user, id_token)
 
-        except Exception as e:  # pragma: nocover
+        except Exception as e:
             logger.exception(f"Error attempting to login/registeruser:  {e} at...")
             return Response(
                 {
