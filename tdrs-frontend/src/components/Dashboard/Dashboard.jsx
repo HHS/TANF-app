@@ -1,6 +1,6 @@
-import React from 'react'
-import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
-import { useSelector } from 'react-redux'
+import React from 'react';
+import { GridContainer, Button, Grid } from '@trussworks/react-uswds';
+import { useSelector } from 'react-redux';
 
 /**
  * This component renders for a user who just logged in.
@@ -11,11 +11,11 @@ import { useSelector } from 'react-redux'
  * @param {object} email - a user's email address
  */
 function Dashboard() {
-  const user = useSelector((state) => state.auth.user.email)
+  const user = useSelector((state) => state.auth.user.email);
   const handleClick = (event) => {
-    event.preventDefault()
-    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
-  }
+    event.preventDefault();
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`;
+  };
   return (
     <GridContainer className="welcome">
       <Grid row>
@@ -35,7 +35,7 @@ function Dashboard() {
         </Grid>
       </Grid>
     </GridContainer>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;

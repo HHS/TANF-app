@@ -21,7 +21,9 @@ import './App.scss'
 function App() {
   return (
     <>
-      <GovBanner aria-label="Official government website" />
+      <GovBanner aria-label="Official government website">
+        <p className="usa-banner__header-text">This is a DEMO site</p>
+      </GovBanner>
       <Header />
       <Notify />
       <Routes />
