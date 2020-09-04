@@ -10,11 +10,13 @@ RUN yarn install && yarn cache clean
 COPY --chown=node:node . .
 
 
+
 # ---
 # Stage 1: Create a production build
 FROM localdev AS build
 ENV SASS_PATH=node_modules
 RUN yarn build
+
 
 
 # ---

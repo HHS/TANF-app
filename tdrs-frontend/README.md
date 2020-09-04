@@ -124,6 +124,14 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
+**SASS Setup at Build Time:**
+The `SASS_PATH=node_modules:src` variable is set on the `yarn build` command which makes it possible to import SASS modules without relative paths. Removing this will require all @imports in .scss files to be make with relative paths, like '../../node_modules/my_package'. Presently both of these are possible (in an .scss file):
+```
+@import 'theme/_global.scss';
+@import '../../theme/_global.scss';
+```
+Without the variable, only the relavtive import is possible.
+
 ### `yarn eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can’t go back!**
