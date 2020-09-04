@@ -1,6 +1,7 @@
 """Test the authorization check."""
 
 import pytest
+import requests
 from django.urls import reverse
 from rest_framework import status
 
@@ -46,3 +47,13 @@ def test_auth_check_returns_user_email(api_client, user):
     api_client.login(username=user.username, password="test_password")
     response = api_client.get(reverse("authorization-check"))
     assert response.data["user"]["email"] == user.username
+
+@pytest.mark.django_db
+def test_http_only_cookie(api_client, user, httpbin):
+    """Requests should contain a cookie value for id_token."""
+    api_client.login(username=user.username, password="test_password")
+    session = requests.session()
+    url = httpbin(reverse("authorization-check"))
+    session.get(url)
+    cookieval = session.cookies["id_token"]
+    assert len(cookieval) > 0

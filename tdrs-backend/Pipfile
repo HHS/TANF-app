@@ -15,6 +15,8 @@ pytest = "*"
 pytest-cov = "*"
 pytest-django = "*"
 pytest-mock = "*"
+httpbin = "*"
+pytest-httpbin = "*"
 
 [packages]
 boto3 = "*"
@@ -39,6 +41,8 @@ ptpython = "*"
 pyjwt = "*"
 python-dotenv = "*"
 requests = "*"
+httpbin = "==0.2.1"
+pytest-httpbin = "==1.0.0"
 
 [requires]
 python_version = "3.8"
