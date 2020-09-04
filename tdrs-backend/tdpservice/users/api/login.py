@@ -68,9 +68,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        token_data = token_response.json()  
-        id_token = token_data.get("id_token")  
-        cert_str = generate_jwt_from_jwks()  
+        token_data = token_response.json()
+        id_token = token_data.get("id_token")
+        cert_str = generate_jwt_from_jwks()
 
         # issuer: issuer of the response
         # subject : UUID - not useful for login.gov set options to ignore this
@@ -83,21 +83,21 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             subject=None,
             access_token=None,
             options={"verify_nbf": False},
-        )  
-        decoded_nonce = decoded_payload["nonce"]  
+        )
+        decoded_nonce = decoded_payload["nonce"]
 
         if not validate_nonce_and_state(
             decoded_nonce, state, nonce_validator, state_validator
-        ):  
+        ):
             msg = "Could not validate nonce and state"
             raise SuspiciousOperation(msg)
 
-        if not decoded_payload["email_verified"]:  
+        if not decoded_payload["email_verified"]:
             return Response(
                 {"error": "Unverified email!"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        try:  
+        try:
             # get user from database if they exist. if not, create a new one
             if "token" not in request.session:
                 request.session["token"] = id_token
