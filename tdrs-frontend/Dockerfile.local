@@ -7,19 +7,15 @@ WORKDIR /home/node/app
 COPY --chown=node:node package.json yarn.lock ./
 USER node
 RUN yarn install && yarn cache clean
-
-# The node-sass binding for OSX gets carried over into this image
-# and does not play nice in Linux. Needs to be rebuild. Known behavior.
-# To research:
-RUN npm rebuild node-sass
-
 COPY --chown=node:node . .
+
 
 
 # ---
 # Stage 1: Create a production build
 FROM localdev AS build
 RUN yarn build
+
 
 
 # ---
