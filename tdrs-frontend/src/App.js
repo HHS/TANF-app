@@ -3,6 +3,7 @@ import { GovBanner } from '@trussworks/react-uswds'
 import Routes from './components/Routes'
 import { Notify } from './components/Notify'
 import Header from './components/Header'
+import Footer from './components/Footer'
 
 import '@trussworks/react-uswds/lib/uswds.css'
 import '@trussworks/react-uswds/lib/index.css'
@@ -27,6 +28,7 @@ function App() {
       <Header />
       <Notify />
       <Routes />
+      <Footer />
     </>
   )
 }
