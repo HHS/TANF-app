@@ -45,19 +45,19 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
 
         # get the validation keys to confirm generated nonce and state
-        nonce_and_state = get_nonce_and_state(request.session)  # pragma: no cover
-        nonce_validator = nonce_and_state.get("nonce", "not_nonce")  # pragma: no cover
-        state_validator = nonce_and_state.get("state", "not_state")  # pragma: no cover
+        nonce_and_state = get_nonce_and_state(request.session)
+        nonce_validator = nonce_and_state.get("nonce", "not_nonce")
+        state_validator = nonce_and_state.get("state", "not_state")
 
         # build out the query string parameters
         # and full URL path for OIDC token endpoint
-        token_params = generate_token_endpoint_parameters(code)  # pragma: no cover
+        token_params = generate_token_endpoint_parameters(code)
         token_endpoint = (os.environ["OIDC_OP_TOKEN_ENDPOINT"]
                           + "?"
-                          + token_params)  # pragma: no cover
-        token_response = requests.post(token_endpoint)  # pragma: no cover
+                          + token_params)
+        token_response = requests.post(token_endpoint)
 
-        if token_response.status_code != 200:  # pragma: no cover
+        if token_response.status_code != 200:
             return Response(
                 {
                     "error": (
@@ -68,9 +68,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        token_data = token_response.json()  # pragma: no cover
-        id_token = token_data.get("id_token")  # pragma: no cover
-        cert_str = generate_jwt_from_jwks()  # pragma: no cover
+        token_data = token_response.json()  
+        id_token = token_data.get("id_token")  
+        cert_str = generate_jwt_from_jwks()  
 
         # issuer: issuer of the response
         # subject : UUID - not useful for login.gov set options to ignore this
@@ -83,21 +83,21 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             subject=None,
             access_token=None,
             options={"verify_nbf": False},
-        )  # pragma: no cover
-        decoded_nonce = decoded_payload["nonce"]  # pragma: no cover
+        )  
+        decoded_nonce = decoded_payload["nonce"]  
 
         if not validate_nonce_and_state(
             decoded_nonce, state, nonce_validator, state_validator
-        ):  # pragma: no cover
+        ):  
             msg = "Could not validate nonce and state"
             raise SuspiciousOperation(msg)
 
-        if not decoded_payload["email_verified"]:  # pragma: no cover
+        if not decoded_payload["email_verified"]:  
             return Response(
                 {"error": "Unverified email!"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        try:  # pragma: no cover
+        try:  
             # get user from database if they exist. if not, create a new one
             if "token" not in request.session:
                 request.session["token"] = id_token
@@ -132,8 +132,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
                 return response_redirect(user, id_token)
 
-        except Exception as e:  # pragma: no cover
-            logger.info(f"Error attempting to login/registeruser:  {e} at...")
+        except Exception as e:  # pragma: nocover
+            logger.exception(f"Error attempting to login/registeruser:  {e} at...")
             return Response(
                 {
                     "error": (

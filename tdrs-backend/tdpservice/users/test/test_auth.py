@@ -2,8 +2,13 @@
 import base64
 import os
 import uuid
+import time
+import secrets
 import pytest
 from rest_framework import status
+from django.core.exceptions import SuspiciousOperation
+from rest_framework.test import APIRequestFactory
+from ..api.login import TokenAuthorizationOIDC
 
 from ..api.utils import (
     generate_client_assertion,
@@ -61,9 +66,6 @@ def test_oidc_logout(api_client):
 
 def test_oidc_logout_with_token(api_client):
     """Test logging out with token redirects and token is removed."""
-    session = api_client.session
-    session["token"] = "abcd"
-    session.save()
     response = api_client.get("/v1/logout/oidc")
     assert response.status_code == status.HTTP_302_FOUND
 
@@ -85,6 +87,215 @@ def test_login_fails_without_state(api_client):
     """Test login redirects without state."""
     response = api_client.get("/v1/login", {"code": "dummy"})
     assert response.status_code == status.HTTP_302_FOUND
+
+@pytest.mark.django_db
+def test_login_with_valid_state_and_code(mocker, api_client):
+    """Test login with state and code."""
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1NzktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ292IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xIiwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InVybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4ZE5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJjX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpYXQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNdlc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn00Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caRYePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYdhzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg"
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test@example.com",
+        "email_verified": True,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "verified_at": 1577854800
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["state_nonce_tracker"] = {
+            "nonce": nonce,
+            "state": state,
+            "added_on": time.time(),
+        }
+    response = view(request)
+    assert response.status_code == status.HTTP_302_FOUND
+    
+@pytest.mark.django_db
+def test_login_with_existing_user(mocker, api_client, user):
+    """Login should work with existing user."""
+    user.username = "test@example.com"
+    user.save()
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1NzktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ292IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xIiwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InVybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4ZE5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJjX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpYXQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNdlc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn00Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caRYePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYdhzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg"
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test@example.com",
+        "email_verified": True,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "verified_at": 1577854800
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["state_nonce_tracker"] = {
+            "nonce": nonce,
+            "state": state,
+            "added_on": time.time(),
+        }
+    response = view(request)
+    assert response.status_code == status.HTTP_302_FOUND
+    
+@pytest.mark.django_db
+def test_login_with_existing_token(mocker, api_client):
+    """Login should proceed when token already exists"""
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1NzktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ292IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xIiwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InVybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4ZE5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJjX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpYXQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNdlc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn00Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caRYePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYdhzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg"
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test@example.com",
+        "email_verified": True,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "verified_at": 1577854800
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["token"] = "testtoken"
+    request.session["state_nonce_tracker"] = {
+            "nonce": nonce,
+            "state": state,
+            "added_on": time.time(),
+        }
+    response = view(request)
+    assert response.status_code == status.HTTP_302_FOUND
+
+@pytest.mark.django_db
+def test_login_with_bad_validation_code(mocker, api_client):
+    """Login should error with a bad validatino code."""
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    mock_post.return_value = MockRequest(
+        data={}, status_code=status.HTTP_400_BAD_REQUEST
+    )
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["state_nonce_tracker"] = {
+            "nonce": nonce,
+            "state": state,
+            "added_on": time.time(),
+        }
+    response = view(request)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data == {
+        "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
+    }
+    
+@pytest.mark.django_db
+def test_login_with_bad_nonce_and_state(mocker, api_client):
+    """Login should error with a bad nonce and state."""
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1NzktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ292IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xIiwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InVybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4ZE5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJjX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpYXQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNdlc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn00Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caRYePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYdhzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg"
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test@example.com",
+        "email_verified": True,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "verified_at": 1577854800
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["state_nonce_tracker"] = {
+            "nonce": "badnonce",
+            "state": "badstate",
+            "added_on": time.time(),
+        }
+    with pytest.raises(SuspiciousOperation):
+        view(request)
+        
+@pytest.mark.django_db
+def test_login_with_email_unverified(mocker, api_client):
+    """Login should faild with unverified email."""
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1NzktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ292IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xIiwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InVybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4ZE5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJjX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpYXQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNdlc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn00Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caRYePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYdhzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg"
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test@example.com",
+        "email_verified": False,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "verified_at": 1577854800
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["state_nonce_tracker"] = {
+            "nonce": nonce,
+            "state": state,
+            "added_on": time.time(),
+        }
+    response = view(request)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data == {"error": "Unverified email!"}
 
 @pytest.mark.django_db
 def test_login_fails_with_bad_data(api_client):
