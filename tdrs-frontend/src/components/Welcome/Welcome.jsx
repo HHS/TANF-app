@@ -36,13 +36,16 @@ function Dashboard() {
           <Grid>
             <div className="usa-hero__callout">
               <h1 className="usa-hero__heading">
-                <span className="usa-hero__heading--alt">Sign into TANF Data Portal</span>
+                <span className="usa-hero__heading--alt">
+                  Sign into TANF Data Portal
+                </span>
               </h1>
               <p>
-                Our vision is to build a new, secure, web based data reporting system to improve
-                the federal reporting experience for TANF grantees and federal staff.
-                The new system will allow grantees to easily submit accurate data and be confident
-                that they have fulfilled their reporting requirements.
+                Our vision is to build a new, secure, web based data reporting
+                system to improve the federal reporting experience for TANF
+                grantees and federal staff. The new system will allow grantees
+                to easily submit accurate data and be confident that they have
+                fulfilled their reporting requirements.
               </p>
               <Button type="button" size="big" onClick={handleClick}>
                 Sign in with Login.gov
@@ -58,12 +61,8 @@ function Dashboard() {
             <h2 className="font-heading-xl margin-top-0 tablet:margin-bottom-0">
               Featured TANF Resources
             </h2>
-            <p>
-              Questions about TANF data?
-            </p>
-            <p>
-              Email: tanfdata@acf.hhs.gov
-            </p>
+            <p>Questions about TANF data?</p>
+            <p>Email: tanfdata@acf.hhs.gov</p>
           </Grid>
           <Grid tablet={{ col: 8 }}>
             <img

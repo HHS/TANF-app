@@ -1,12 +1,11 @@
 import React from 'react'
+import { GridContainer, Grid } from '@trussworks/react-uswds'
 
 import footerSvg from '../../footer.svg'
 
-import { GridContainer, Grid } from '@trussworks/react-uswds'
-
 function Footer() {
   return (
-    <div style={{ backgroundColor: '#E2EFF7'}}>
+    <div style={{ backgroundColor: '#E2EFF7' }}>
       <GridContainer>
         <Grid>
           <img alt="Office of Family Assistance Logo" src={footerSvg} />
