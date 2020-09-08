@@ -2,9 +2,14 @@
 
 import pytest
 import requests
+import logging
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APIClient
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 @pytest.mark.django_db
 def test_auth_check_endpoint_with_no_user(api_client, user):
@@ -49,11 +54,18 @@ def test_auth_check_returns_user_email(api_client, user):
     assert response.data["user"]["email"] == user.username
 
 @pytest.mark.django_db
-def test_http_only_cookie(api_client, user, httpbin):
-    """Requests should contain a cookie value for id_token."""
-    api_client.login(username=user.username, password="test_password")
-    session = requests.session()
-    url = httpbin(reverse("authorization-check"))
-    session.get(url)
-    cookieval = session.cookies["id_token"]
-    assert len(cookieval) > 0
+def test_setting_http_only_cookie(httpbin):
+    """Http only cookie is set."""
+    key = 'some_cookie'
+    value = 'some_value'
+    secure = True
+    domain = 'test.com'
+    rest = {'HttpOnly': True}
+    jar = requests.cookies.RequestsCookieJar()
+    jar.set(key, value, secure=secure, domain=domain, rest=rest)
+    assert len(jar) == 1
+    assert 'some_cookie' in jar
+    cookie = list(jar)[0]
+    assert cookie.secure == secure
+    assert cookie.domain == domain
+    assert cookie._rest['HttpOnly'] == rest['HttpOnly']
