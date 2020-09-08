@@ -1,11 +1,9 @@
 """Test the authorization check."""
 
 import pytest
-import requests
 import logging
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
