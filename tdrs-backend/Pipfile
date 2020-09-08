@@ -15,8 +15,6 @@ pytest = "*"
 pytest-cov = "*"
 pytest-django = "*"
 pytest-mock = "*"
-httpbin = "*"
-pytest-httpbin = "*"
 
 [packages]
 boto3 = "*"

@@ -8,7 +8,6 @@ ARG gid=1000
 
 ENV DJANGO_SETTINGS_MODULE=tdpservice.settings.development
 ENV DJANGO_CONFIGURATION=Development
-RUN apt-get update -y && apt-get install -y build-essential python-dev libffi-dev
 # Allows docker to cache installed dependencies between builds
 COPY Pipfile Pipfile.lock /tdpapp/
 WORKDIR /tdpapp/

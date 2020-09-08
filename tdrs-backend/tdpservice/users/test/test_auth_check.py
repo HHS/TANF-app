@@ -52,20 +52,3 @@ def test_auth_check_returns_user_email(api_client, user):
     api_client.login(username=user.username, password="test_password")
     response = api_client.get(reverse("authorization-check"))
     assert response.data["user"]["email"] == user.username
-
-@pytest.mark.django_db
-def test_setting_http_only_cookie(httpbin):
-    """Http only cookie is set."""
-    key = 'some_cookie'
-    value = 'some_value'
-    secure = True
-    domain = 'test.com'
-    rest = {'HttpOnly': True}
-    jar = requests.cookies.RequestsCookieJar()
-    jar.set(key, value, secure=secure, domain=domain, rest=rest)
-    assert len(jar) == 1
-    assert 'some_cookie' in jar
-    cookie = list(jar)[0]
-    assert cookie.secure == secure
-    assert cookie.domain == domain
-    assert cookie._rest['HttpOnly'] == rest['HttpOnly']
