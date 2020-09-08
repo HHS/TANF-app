@@ -16,12 +16,12 @@ from rest_framework.response import Response
 
 from ..authentication import CustomAuthentication
 from .utils import (
-        get_nonce_and_state,
-        generate_token_endpoint_parameters,
-        generate_jwt_from_jwks,
-        validate_nonce_and_state,
-        response_redirect
-    )
+    get_nonce_and_state,
+    generate_token_endpoint_parameters,
+    generate_jwt_from_jwks,
+    validate_nonce_and_state,
+    response_redirect,
+)
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -52,9 +52,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # build out the query string parameters
         # and full URL path for OIDC token endpoint
         token_params = generate_token_endpoint_parameters(code)  # pragma: no cover
-        token_endpoint = (os.environ["OIDC_OP_TOKEN_ENDPOINT"]
-                          + "?"
-                          + token_params)  # pragma: no cover
+        token_endpoint = (
+            os.environ["OIDC_OP_TOKEN_ENDPOINT"] + "?" + token_params
+        )  # pragma: no cover
         token_response = requests.post(token_endpoint)  # pragma: no cover
 
         if token_response.status_code != 200:  # pragma: no cover

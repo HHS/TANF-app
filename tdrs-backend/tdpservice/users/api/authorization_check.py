@@ -20,7 +20,14 @@ class AuthorizationCheck(APIView):
         """Handle get request and authenticate user."""
         user = request.user
         if user.is_authenticated:
-            auth_params = {"authenticated": True, "user": {"email": user.username}}
+            auth_params = {
+                "authenticated": True,
+                "user": {
+                    "email": user.username,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                },
+            }
             datetime_time = datetime.datetime.fromtimestamp(time.time())
             logger.info(
                 f"Auth check PASS for user:  {user.username} on {datetime_time}(UTC)"
