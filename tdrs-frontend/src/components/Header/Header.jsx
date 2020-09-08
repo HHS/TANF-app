@@ -2,18 +2,12 @@ import React, { useState } from 'react'
 
 import {
   NavMenuButton,
-  Menu,
   Header,
   Title,
   ExtendedNav,
-  GridContainer,
-  Grid,
 } from '@trussworks/react-uswds'
 
 function HeaderComp() {
-  const [expanded, setExpanded] = useState(false)
-  const onClick = () => setExpanded((prvExpanded) => !prvExpanded)
-  const [isOpen] = useState([false])
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const toggleMobileNav = () => {
@@ -21,9 +15,6 @@ function HeaderComp() {
   }
 
   const testItemsMenu = [
-    <>
-      <Menu key="one" items={[]} isOpen={isOpen[0]} id="testDropDownOne" />
-    </>,
     <a href="/" key="two" className="usa-nav__link">
       <span>Welcome</span>
     </a>,
@@ -35,30 +26,26 @@ function HeaderComp() {
         Skip to main content
       </a>
       <div className={`usa-overlay ${mobileNavOpen ? 'is-visible' : ''}`} />
-      <GridContainer>
-        <Grid>
-          <Header extended>
-            <div className="usa-navbar">
-              <Title id="extended-logo">
-                <a href="/" title="Home" aria-label="Home">
-                  TANF Data Portal
-                </a>
-              </Title>
-              <NavMenuButton
-                label="Menu"
-                onClick={toggleMobileNav}
-                className="usa-menu-btn"
-              />
-              <ExtendedNav
-                primaryItems={testItemsMenu}
-                secondaryItems={[]}
-                mobileExpanded={expanded}
-                onToggleMobileNav={onClick}
-              />
-            </div>
-          </Header>
-        </Grid>
-      </GridContainer>
+      <Header extended>
+        <div className="usa-navbar">
+          <Title id="extended-logo">
+            <a href="/" title="Home" aria-label="Home">
+              TANF Data Portal
+            </a>
+          </Title>
+          <NavMenuButton
+            label="Menu"
+            onClick={toggleMobileNav}
+            className="usa-menu-btn"
+          />
+        </div>
+        <ExtendedNav
+          primaryItems={testItemsMenu}
+          secondaryItems={[]}
+          onToggleMobileNav={toggleMobileNav}
+          mobileExpanded={mobileNavOpen}
+        />
+      </Header>
     </>
   )
 }

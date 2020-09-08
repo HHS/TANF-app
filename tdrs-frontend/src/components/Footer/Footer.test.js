@@ -4,7 +4,7 @@ import { shallow } from 'enzyme'
 import Footer from './Footer'
 
 describe('Footer', () => {
-  it('renders a sign in header', () => {
+  it('renders the children & families logo', () => {
     const wrapper = shallow(<Footer />)
     expect(wrapper.find('img')).toExist()
   })
