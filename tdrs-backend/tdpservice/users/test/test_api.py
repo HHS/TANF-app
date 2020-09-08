@@ -38,3 +38,26 @@ def test_create_user(api_client, user_data):
     response = api_client.post("/v1/users/", user_data)
     assert response.status_code == status.HTTP_201_CREATED
     assert User.objects.filter(username=user_data["username"]).exists()
+
+
+@pytest.mark.django_db
+def test_set_profile_data(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "Joe", "last_name": "Bloggs"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "Joe", "last_name": "Bloggs"}
+    user.refresh_from_db()
+    assert user.first_name == "Joe"
+    assert user.last_name == "Bloggs"
+
+
+@pytest.mark.django_db
+def test_set_profile_data_anonymous(api_client, user):
+    """Test can't set profile data if not logged in."""
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "Joe", "last_name": "Bloggs"},
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
