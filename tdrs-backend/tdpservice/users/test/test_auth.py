@@ -91,6 +91,7 @@ def test_login_fails_without_state(api_client):
 @pytest.mark.django_db
 def test_login_with_valid_state_and_code(mocker, api_client):
     """Test login with state and code."""
+    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -127,6 +128,7 @@ def test_login_with_valid_state_and_code(mocker, api_client):
 @pytest.mark.django_db
 def test_login_with_expired_token(mocker, api_client):
     """It should not allow login with an expired token."""
+    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -163,6 +165,7 @@ def test_login_with_expired_token(mocker, api_client):
 @pytest.mark.django_db
 def test_login_with_general_exception(mocker):
     """Test login with state and code."""
+    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -206,6 +209,7 @@ def test_login_with_general_exception(mocker):
 @pytest.mark.django_db
 def test_login_with_existing_user(mocker, api_client, user):
     """Login should work with existing user."""
+    os.environ["JWT_KEY"] = test_private_key
     user.username = "test@example.com"
     user.save()
     nonce = "testnonce"
@@ -244,6 +248,7 @@ def test_login_with_existing_user(mocker, api_client, user):
 @pytest.mark.django_db
 def test_login_with_existing_token(mocker, api_client):
     """Login should proceed when token already exists."""
+    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -281,6 +286,7 @@ def test_login_with_existing_token(mocker, api_client):
 @pytest.mark.django_db
 def test_login_with_bad_validation_code(mocker, api_client):
     """Login should error with a bad validatino code."""
+    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -306,6 +312,7 @@ def test_login_with_bad_validation_code(mocker, api_client):
 @pytest.mark.django_db
 def test_login_with_bad_nonce_and_state(mocker, api_client):
     """Login should error with a bad nonce and state."""
+    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -342,6 +349,7 @@ def test_login_with_bad_nonce_and_state(mocker, api_client):
 @pytest.mark.django_db
 def test_login_with_email_unverified(mocker, api_client):
     """Login should faild with unverified email."""
+    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
