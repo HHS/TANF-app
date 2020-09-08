@@ -125,6 +125,42 @@ def test_login_with_valid_state_and_code(mocker, api_client):
     assert response.status_code == status.HTTP_302_FOUND
 
 @pytest.mark.django_db
+def test_login_with_expired_token(mocker, api_client):
+    """It should not allow login with an expired token."""
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 0,
+        "id_token": os.environ["MOCK_TOKEN"]
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test@example.com",
+        "email_verified": True,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "verified_at": 1577854800
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["state_nonce_tracker"] = {
+            "nonce": nonce,
+            "state": state,
+            "added_on": time.time(),
+        }
+    response = view(request)
+    assert response.status_code == status.HTTP_302_FOUND
+
+@pytest.mark.django_db
 def test_login_with_general_exception(mocker):
     """Test login with state and code."""
     nonce = "testnonce"
