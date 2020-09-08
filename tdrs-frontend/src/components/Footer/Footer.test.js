@@ -1,7 +1,11 @@
 import React from 'react'
+import { shallow } from 'enzyme'
+
+import Footer from './Footer'
 
 describe('Footer', () => {
-  it('should do something', () => {
-    expect(true).toEqual(true)
+  it('renders a sign in header', () => {
+    const wrapper = shallow(<Footer />)
+    expect(wrapper.find('img')).toExist()
   })
 })

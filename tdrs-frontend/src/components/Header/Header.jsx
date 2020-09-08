@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 
-import { 
-  NavMenuButton, 
-  Menu, 
-  Header, 
+import {
+  NavMenuButton,
+  Menu,
+  Header,
   Title,
   ExtendedNav,
   GridContainer,
-  Grid
+  Grid,
 } from '@trussworks/react-uswds'
 
 function HeaderComp() {
@@ -20,36 +20,21 @@ function HeaderComp() {
     setMobileNavOpen((prevOpen) => !prevOpen)
   }
 
-  const testMenuItems = [
-    <a href="#linkOne" key="one">
-      Simple link one
-    </a>,
-    <a href="#linkTwo" key="two">
-      Simple link two
-    </a>,
-  ]
-
   const testItemsMenu = [
     <>
-      <Menu
-        key="one"
-        items={testMenuItems}
-        isOpen={isOpen[0]}
-        id="testDropDownOne"
-      />
+      <Menu key="one" items={[]} isOpen={isOpen[0]} id="testDropDownOne" />
     </>,
-    <a href="#two" key="two" className="usa-nav__link">
+    <a href="/" key="two" className="usa-nav__link">
       <span>Welcome</span>
-    </a>
+    </a>,
   ]
-
 
   return (
     <>
       <a className="usa-skipnav" href="#main-content">
         Skip to main content
       </a>
-      <div className={`usa-overlay ${mobileNavOpen ? 'is-visible' : ''}`}></div>
+      <div className={`usa-overlay ${mobileNavOpen ? 'is-visible' : ''}`} />
       <GridContainer>
         <Grid>
           <Header extended>
@@ -68,8 +53,8 @@ function HeaderComp() {
                 primaryItems={testItemsMenu}
                 secondaryItems={[]}
                 mobileExpanded={expanded}
-                onToggleMobileNav={onClick}>
-              </ExtendedNav>
+                onToggleMobileNav={onClick}
+              />
             </div>
           </Header>
         </Grid>
