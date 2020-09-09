@@ -39,7 +39,7 @@ This project uses the U.S. Web Design System ([USWDS](https://designsystem.digit
 Navigate to [localhost:3000](localhost:3000) and you should see the app.
 
 
-***Login is now linked with the [tdrs-backend](../tdrs-backend/README.md) service. You will need a local instance of that application running**
+**Login is now linked with the [tdrs-backend](../tdrs-backend/README.md) service. You will need a local instance of that application running**
 
 
 

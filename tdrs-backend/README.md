@@ -22,7 +22,13 @@ _Exceptions_:
 
 - the `JWT_KEY` should be the private key used generate the client_assertion for the `/authorize` call to login.gov 
    - By default  this file is referencing a system environment variable. To prevent
+
 - the `CLIENT_ID` has had the values unique to deployment environments obscured. Please populate this with the intended `Issuer` value found via the login.gov app management dashboard
+
+- the `JWT_CERT_TEST` is a base64 encoded public cert used for remote unit tests that can't properly format a pem value.
+
+
+- This project uses a Pipfile for depenpancy management. However, due to an issue with snyk in circle ci not correctly identifying this file as a manifest we must continue to support a requirements.txt for the time being.
 
 
 To start a docker container local development( project root exists in `tdrs-backend/`):

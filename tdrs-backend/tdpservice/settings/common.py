@@ -222,9 +222,6 @@ class Common(Configuration):
         "django.contrib.auth.backends.ModelBackend",
     )
 
-    LOGIN_REDIRECT_URL = "http://127.0.0.1:8000/api"
-    LOGOUT_REDIRECT_URL = "http://127.0.0.1:8000"
-
     # conditionally set which URI to go to
     if "VCAP_APPLICATION" in os.environ:  # pragma: nocover
         appjson = os.environ["VCAP_APPLICATION"]

@@ -8,9 +8,14 @@ export const ALERT_WARNING = 'warning'
 export const ALERT_ERROR = 'error'
 
 /**
- * body is any additional content to include in the alert, in the form of valid HTML.
- * show is boolean and determines whether an alert is shown or now
- * type is a string and must be one of ['success', 'info', 'warning', 'error']
+ * This component renders an alert on the page,
+ * if an alert is set within the redux store.
+ *
+ * @param {boolean} show - determines whether an alert is shown or not
+ * @param {string} heading - The title of the alert
+ * @param {string} type - the type of alert:
+ * one of ['success', 'info', 'warning', 'error']
+ * @param {string} body - additional content to include in the alert.
  */
 export function Notify() {
   const { show, type, heading, body } = useSelector((state) => state.alert)

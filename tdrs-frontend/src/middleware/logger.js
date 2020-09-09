@@ -1,4 +1,8 @@
 /* eslint-disable no-console */
+
+/**
+ * Logs Redux actions that have been dispatched
+ */
 const logger = (store) => (next) => (action) => {
   console.group(action.type)
   console.info('dispatching', action)
