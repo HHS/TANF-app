@@ -142,7 +142,7 @@ def test_set_profile_data_spaced_last_name(api_client, user):
     """Test profile data can be set."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
-        "/v1/users/set_profile/", {"first_name": "Mary Ann", "last_name": "Jones"},
+        "/v1/users/set_profile/", {"first_name": "Joan", "last_name": "Mary Ann"},
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {"first_name": "Joan", "last_name": "Mary Ann"}
