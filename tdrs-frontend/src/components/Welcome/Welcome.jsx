@@ -66,18 +66,27 @@ function Dashboard() {
             <h2 className="font-heading-xl margin-top-0 tablet:margin-bottom-0">
               Featured TANF Resources
             </h2>
-            <div className="resource-info__secondary">
+            <div className="font-heading-3xs resource-info__secondary">
               <p>Questions about TANF data?</p>
               <p>Email: tanfdata@acf.hhs.gov</p>
             </div>
           </Grid>
-          <Grid tablet={{ col: true }}>
+          <Grid
+            tablet={{ col: true }}
+            className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
+          >
             <div className="resource-card">Resource 1</div>
           </Grid>
-          <Grid tablet={{ col: true }}>
+          <Grid
+            tablet={{ col: true }}
+            className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
+          >
             <div className="resource-card">Resource 2</div>
           </Grid>
-          <Grid tablet={{ col: true }}>
+          <Grid
+            tablet={{ col: true }}
+            className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
+          >
             <div className="resource-card">Resource 3</div>
           </Grid>
         </Grid>
