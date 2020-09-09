@@ -50,6 +50,7 @@ function Dashboard() {
               </p>
               <Button type="button" size="big" onClick={handleClick}>
                 Sign in with Login.gov
+                <span className="visually-hidden">Opens in a new website</span>
               </Button>
             </div>
           </Grid>
