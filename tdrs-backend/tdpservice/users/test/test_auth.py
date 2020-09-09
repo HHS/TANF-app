@@ -6,12 +6,10 @@ import time
 import secrets
 import pytest
 import jwt
-from django.urls import reverse
 from rest_framework import status
 from django.core.exceptions import SuspiciousOperation
 from rest_framework.test import APIRequestFactory
 from ..api.login import TokenAuthorizationOIDC
-from rest_framework import serializers
 
 from ..api.utils import (
     generate_client_assertion,

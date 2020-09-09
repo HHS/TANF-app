@@ -31,6 +31,61 @@ logger.addHandler(logging.StreamHandler())
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define methods for handling login request from login.gov."""
 
+    def decode_payload(self, id_token):
+        """Decode the payload."""
+        cert_str = generate_jwt_from_jwks()
+
+        # issuer: issuer of the response
+        # subject : UUID - not useful for login.gov set options to ignore this
+        try:
+            decoded_payload = jwt.decode(
+                id_token,
+                key=cert_str,
+                issuer=os.environ["OIDC_OP_ISSUER"],
+                audience=os.environ["CLIENT_ID"],
+                algorithm="RS256",
+                subject=None,
+                access_token=None,
+                options={"verify_nbf": False},
+            )
+            return decoded_payload
+        except jwt.ExpiredSignatureError:
+            return {"error": "The token is expired."}
+
+    def handle_user(self, request, id_token, decoded_payload):
+        """Handle the incoming user."""
+        # get user from database if they exist. if not, create a new one
+        if "token" not in request.session:
+            request.session["token"] = id_token
+
+        user = CustomAuthentication.authenticate(
+            self, username=decoded_payload["email"]
+        )
+        if user is not None:
+            login(
+                request,
+                user,
+                backend="tdpservice.users.authentication.CustomAuthentication",
+            )
+            datetime_time = datetime.datetime.fromtimestamp(time.time())
+            logger.info(f"Found User:  {user.username} on {datetime_time}(UTC)")
+        else:
+            User = get_user_model()
+            user = User.objects.create_user(decoded_payload["email"])
+            user.set_unusable_password()
+            user.save()
+
+            login(
+                request,
+                user,
+                backend="tdpservice.users.authentication.CustomAuthentication",
+            )
+
+            datetime_time = datetime.datetime.fromtimestamp(time.time())
+            logger.info(f"Created User:  {user.username} at {datetime_time}(UTC)")
+
+        return user
+
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""
         code = request.GET.get("code", None)
@@ -70,25 +125,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         token_data = token_response.json()
         id_token = token_data.get("id_token")
-        cert_str = generate_jwt_from_jwks()
 
-        # issuer: issuer of the response
-        # subject : UUID - not useful for login.gov set options to ignore this
-        try:
-            decoded_payload = jwt.decode(
-                id_token,
-                key=cert_str,
-                issuer=os.environ["OIDC_OP_ISSUER"],
-                audience=os.environ["CLIENT_ID"],
-                algorithm="RS256",
-                subject=None,
-                access_token=None,
-                options={"verify_nbf": False},
-            )
-        except jwt.ExpiredSignatureError:
-            return Response(
-                {"error": "The token is expired."}, status=status.HTTP_401_UNAUTHORIZED
-            )
+        decoded_payload = self.decode_payload(id_token)
+        if decoded_payload == {"error": "The token is expired."}:
+            return Response(decoded_payload, status=status.HTTP_401_UNAUTHORIZED)
 
         decoded_nonce = decoded_payload["nonce"]
 
@@ -104,39 +144,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             )
 
         try:
-            # get user from database if they exist. if not, create a new one
-            if "token" not in request.session:
-                request.session["token"] = id_token
-
-            user = CustomAuthentication.authenticate(
-                self, username=decoded_payload["email"]
-            )
-            if user is not None:
-                login(
-                    request,
-                    user,
-                    backend="tdpservice.users.authentication.CustomAuthentication",
-                )
-                datetime_time = datetime.datetime.fromtimestamp(time.time())
-                logger.info(f"Found User:  {user.username} on {datetime_time}(UTC)")
-
-                return response_redirect(user, id_token)
-            else:
-                User = get_user_model()
-                user = User.objects.create_user(decoded_payload["email"])
-                user.set_unusable_password()
-                user.save()
-
-                login(
-                    request,
-                    user,
-                    backend="tdpservice.users.authentication.CustomAuthentication",
-                )
-
-                datetime_time = datetime.datetime.fromtimestamp(time.time())
-                logger.info(f"Created User:  {user.username} at {datetime_time}(UTC)")
-
-                return response_redirect(user, id_token)
+            user = self.handle_user(request, id_token, decoded_payload)
+            return response_redirect(user, id_token)
 
         except Exception as e:
             logger.exception(f"Error attempting to login/registeruser:  {e} at...")
