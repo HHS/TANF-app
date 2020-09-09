@@ -88,11 +88,7 @@ def test_set_profile_data_empty_first_name(api_client, user):
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "", "last_name": "Jones"},
     )
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data == {"first_name": "", "last_name": "Jones"}
-    user.refresh_from_db()
-    assert user.first_name == ""
-    assert user.last_name == "Jones"
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
@@ -102,11 +98,17 @@ def test_set_profile_data_empty_last_name(api_client, user):
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "John", "last_name": ""},
     )
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data == {"first_name": "John", "last_name": ""}
-    user.refresh_from_db()
-    assert user.first_name == "John"
-    assert user.last_name == ""
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+def test_set_profile_data_empty_first_name_and_last_name(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "", "last_name": ""},
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
@@ -149,3 +151,31 @@ def test_set_profile_data_spaced_last_name(api_client, user):
     user.refresh_from_db()
     assert user.first_name == "Joan"
     assert user.last_name == "Mary Ann"
+
+
+@pytest.mark.django_db
+def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "Max", "last_name": "Grecheñ"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "Max", "last_name": "Grecheñ"}
+    user.refresh_from_db()
+    assert user.first_name == "Max"
+    assert user.last_name == "Grecheñ"
+
+
+@pytest.mark.django_db
+def test_set_profile_data_last_name_with_tilde(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "Max", "last_name": "Glen~"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "Max", "last_name": "Glen~"}
+    user.refresh_from_db()
+    assert user.first_name == "Max"
+    assert user.last_name == "Glen~"

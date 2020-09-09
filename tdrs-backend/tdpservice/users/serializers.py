@@ -56,3 +56,7 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
 
         model = User
         fields = ["first_name", "last_name"]
+        extra_kwargs = {
+            "first_name": {"allow_blank": False, "required": True},
+            "last_name": {"allow_blank": False, "required": True},
+        }
