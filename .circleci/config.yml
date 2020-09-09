@@ -15,7 +15,7 @@ jobs:
           command: "./scripts/docker-compose-check.sh"
       - run:
           name: "Test: Build and Spin-up Django API Service"
-          command: "cd tdrs-backend; docker-compose build "
+          command: "cd tdrs-backend; docker-compose up --build"
       - run:
           name: "Tear Down Django API Service"
           command: "cd tdrs-backend; docker-compose down "
