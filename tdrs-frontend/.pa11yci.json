@@ -1,6 +1,7 @@
 {
   "defaults": {
     "timeout": 100000,
+    "threshold": 2,
     "wait": 1000
   },
   "level": "error",
@@ -13,8 +14,8 @@
       ],
   "viewport": {
       "width": 1000,
-      "height": 1000 
-    },
+      "height": 1000
+     },
   "urls": [
     {
       "url": "http://localhost:3000",

@@ -10,8 +10,10 @@ tdrs-frontend/npm-debug.log*
 tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
+tdrs-frontend/pa11y-screenshots/*
 tdrs-frontend/.env*
  
+
 #BACKEND
 tdrs-backend/*/env_vars/*.env*
 tdrs-backend/*/env_vars/*.env*.*

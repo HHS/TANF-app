@@ -1,45 +1,110 @@
-# TDRS Frontend
+# Frontend for TDP
 
-This project uses the U.S. Web Design System ([USWDS](https://designsystem.digital.gov/)) and in particular, [trussworks/react-uswds](https://github.com/trussworks/react-uswds)
+Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.cloud.gov/ . The project uses [USWDS](https://designsystem.digital.gov/) and in particular, [trussworks/react-uswds](https://github.com/trussworks/react-uswds)
 
-## To run locally
+# Prerequisites
 
-- Clone this repository and
+- [Docker](https://docs.docker.com/docker-for-mac/install/)  
+- [Login.gov Sandbox Account](https://idp.int.identitysandbox.gov/sign_up/enter_email)
+- [Cloud.gov Account](https://cloud.gov/)
+- [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
+- [Yarn JavaScript Package Manager](https://classic.yarnpkg.com/en/docs/install/#mac-stable) 
+
+# Contents
+
+- [Local Development Options](#Local-Development-Options)
+- [Code Linting and Formatting](#Code-Linting-and-Formatting)
+- [Unit and Integration Testing](#Unit-and-Integration-Testing)
+- [Manual Cloud.gov Deployments](#Manual-Cloud.gov-Deployments)
+
+# Testing the local Frontend Service:
+
+  **Login is now dependent on the [tdrs-backend](../tdrs-backend/README.md) service. You will need a local instance of that application running.**
+
+
+### Local Development Options
+
+**Commands are to be executed from within the `tdrs-frontend` directory**
+
+1.) Create a `env.local` file with the following command:
   ```
-  cd TANF-app/tdrs-frontend
+  cp .env.local.example .env.local
   ```
-- Build the Docker image locally with
-  ```
-  docker build --target localdev -t tdp-frontend:local . -f Dockerfile.local
-  ```
-- Run the app:
-  ```
-  docker run -it -p 3000:3000 -v $PWD/src/:/home/node/app/src --rm tdp-frontend:local yarn start
-  ```
+  - The `REACT_APP_BACKEND_URL` variable in this file points to the backend host. For local testing this value should default to the following :
+  
+   ```
+   http://localhost:8080/v1
+   ```
 
-Navigate to [localhost:3000](localhost:3000) and you should see the app. The above command mounds the `/src` directory into the container, so code changes automatically take effect while the container is running, without any need to restart the container. This makes is convenient for development.
 
-**Login is now linked with the [tdrs-backend](../tdrs-backend/README.md) service. You will need a local instance of that application running**
+2.) Frontend project spin-up options: 
 
-The `TANF-app/tdrs-frontend/src` directory is mounted into the container so changes to the source code, when saved, automatically update the contents of `/home/node/app/src` in the container. Restarting the container is not necessary during development and you should see changes update in the UI instantly.
+- Option 1 (Using Yarn directly): We recommend using [NVM](https://github.com/nvm-sh/nvm)
 
-**Alternatively the app can be run with docker-compose:**
-- ```
-  docker-compose up --build
-  ```
+    ```bash
+    $ nvm install 12.18.3 # Install specific node version
+    $ yarn
+    $ yarn build
+    $ yarn start 
+    ```
 
+- Option 2 (Build and start via docker-compose):
+
+    ```bash
+    $ docker-compose up -d --build
+    ```
+    This will start one container named `tdrs-frontend_tdp-frontend` with port `3000`. Any changes made in `tdrs-frontend` folder will be picked up by docker automatically (no stop/run containers each time). 
+
+
+3.) With the project started, you can access the landing page via a web-browser ( we recommend `Chrome`) at the following URL:
+```
+http://localhost:3000
+```
+
+4.) This will redirect you to the `TDP Homepage` page with a button labeled `Sign in with Login.gov`.
+
+- Clicking this button will redirect you to the login.gov authentication page.
+-  You must agree to associate your account with the `TANF Prototype: Development` application.
+-  If you encounter any issues signing in, please ensure you are using a [Login.gov-Sandbox Account](https://idp.int.identitysandbox.gov/) and **NOT** your [Login.gov Account](login.gov).
+
+
+5.) Upon successful authentication with you will be redirected to the frontend dashboard (`/dashboard`) UI with an option to sign out.
+
+
+6.) Clicking the `Sign Out` button will log you out of the application and redirect you to the landing page,
+
+
+7.) Frontend project tear down options: 
+
+  - If using Option 1 or 3 from above:
+
+    ```
+     Kill the application running in your terminal.
+
+     MacOS Example: control+c
+    ```
+
+  - Option 2 (If you ran the application via docker-compose):
+
+    ```bash
+    $ docker-compose down
+    ```
+
+----
 ### Code Linting and Formatting
 
 The app is set up with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/), and follows the [Airbnb Style Guide](https://github.com/airbnb/javascript).
 
 To run eslint locally:
-```
-yarn lint
+```bash
+$ yarn lint
 ```
 
 If you use [VSCode](https://code.visualstudio.com/) as an [IDE](https://en.wikipedia.org/wiki/Integrated_development_environment), it will be helpful to add the extensions, [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). These make it possible to catch lint errors as they occur, and even auto-fix style errors (with Prettier).
 
-### Running Tests
+----
+
+### Unit and Integration Testing
 
 This project uses [Jest](https://jestjs.io/) for unit tests and [Cypress](https://www.cypress.io/) for end-to-end (e2e) tests.
 
@@ -47,27 +112,23 @@ This project uses [Jest](https://jestjs.io/) for unit tests and [Cypress](https:
 
 Jest provides an interactive test consolde that's helpful for development. After running the following commands, you will see options to run all the tests, run only failing tests, run specific tests, and more.
 
-Before running the subsequent commands, first:
-```
-cd TANF-app/tdrs-frontend
-```
 
-- To run unit tests locally:
+1.) To run unit tests locally:
+  ```bash
+  $ yarn test
   ```
-  yarn test
+2.) To run unit tests with code coverage report:
+  ```bash
+  $ yarn test:cov
   ```
-- To run unit tests with code coverage report:
-  ```
-  yarn test:cov
-  ```
-- To run unit tests as a CI environment would, which runs the tests once (without the interactive console):
-  ```
-  yarn test:ci
+3.) To run unit tests as a continuous integration environment would, which runs the tests once (without the interactive console):
+  ```bash
+  $ yarn test:ci
   ```
 
 After running either `test:cov` or `test:ci`, coverage details can be seen as HTML in the browser by running:
-```
-open coverage/lcov-report/index.html
+```bash
+$ open coverage/lcov-report/index.html
 ```
 
 In addition to [Jest's matchers](https://jestjs.io/docs/en/expect), this project uses [enzyme-matchers](https://github.com/FormidableLabs/enzyme-matchers) to simplify tests and make them more readable. Enzyme matchers is integrated with Jest using the [`jest-enzyme` package](https://github.com/FormidableLabs/enzyme-matchers/blob/master/packages/jest-enzyme/README.md#assertions) which provides many useful assertions for testing React components.
@@ -78,131 +139,54 @@ It is required to run the application locally for Cypress to run, since it actua
 Cypress requires that the application is running locally in order to perform its tests, since it navigates to the URL and performs tests on the rendered UI.
 - Run the app (see docs [to run locally](#to-run-locally))
 - Open the Cypress app:
-  ```
-  yarn cy:open
+  ```bash
+  $ yarn cy:open
   ```
 - The Cypress Test Runner immediately displays a list of Integration Tests. Click on one to run it, or run all tests.
 - Alternatively the tests can all be run from the command line without the interactive browser window:
-  ```
-  yarn cy:run
+  ```bash
+  $ yarn cy:run
   ```
 
 The [Cypress guides](https://docs.cypress.io/guides/getting-started/writing-your-first-test.html#Add-a-test-file) are helpful.
 
 ----
 
-## Create React App Documentation
+### Manual Cloud.gov Deployments:
 
-_The following is the documentation for [Create React App](https://github.com/facebook/create-react-app). It is kept here as a baseline set of documentation for the foundation of the TDRS frontend. It is the default output of initializing the React app._
+Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `yarn start`
-
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
-
-### `yarn test`
-
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `yarn build`
-
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-**SASS Setup at Build Time:**
-The `SASS_PATH=node_modules:src` variable is set on the `yarn build` command which makes it possible to import SASS modules without relative paths. Removing this will require all @imports in .scss files to be make with relative paths, like '../../node_modules/my_package'. Presently both of these are possible (in an .scss file):
-```
-@import 'theme/_global.scss';
-@import '../../theme/_global.scss';
-```
-Without the variable, only the relavtive import is possible.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
-
-### _(end Create React App Documentation)_
-
-----
-
-## Cloud.gov Deployments:
-
-1.) Build and push a tagged docker image while on the the target github branch:
+1.) Build and push a tagged docker image while on the the target Github branch:
 
  (**Please note you need to be logged into docker for these operations**)
 
-`cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:devtest . -f Dockerfile.dev`
+```
+docker build -t goraftdocker/tdp-frontend:devtest . -f Dockerfile.dev`
 
-`docker push goraftdocker/tdp-frontend:devtest`
+docker push goraftdocker/tdp-frontend:devtest
+```
 
 
 2.) Log into your cloud.gov account and set your space and organization:
 
-**ORG: The target deployment organization as defined in cloud.gov Applications**
+##### - **ORG: The target deployment organization as defined in cloud.gov Applications** 
 
-**SPACE: The target deployment space under the organization as defined in cloud.gov Applications**
-```
-cf login -a api.fr.cloud.gov --sso
-cf target -o <ORG> -s <SPACE>
+##### - **SPACE: The target deployment space under the organization as defined in cloud.gov Applications**
+```bash
+$ cf login -a api.fr.cloud.gov --sso
+$ cf target -o <ORG> -s <SPACE>
 ```
 
 3.) Push the image to Cloud.gov (  you will need to be in the same directory as`tdrs-frontend/manifest.yml`):
 
-( **The `--var` parameter ingests a value into the ((docker-backend)) environment variable in the manifest.yml**)
+( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
 
-`cf push tdp-frontend --no-route -f manifest.yml --var docker-backend=goraftdockertdp-frontend:devtest`
+```bash
+ cf push tdp-frontend --no-route -f manifest.yml --var docker-frontend=goraftdocker/tdp-frontend:devtest
+```
 
 4.) It may be required to restage the application after deployment:
 
-`cf restage tdp-frontend`
+```bash
+$ cf restage tdp-frontend
+```

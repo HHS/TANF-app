@@ -1,125 +1,139 @@
 # raft-tdp-main
 
-Backend API Service TDP.
+Backend API Service for TDP. Deployed to Cloud.gov at https://tdp-backend.app.cloud.gov/ .
 
 # Prerequisites
 
 - [Docker](https://docs.docker.com/docker-for-mac/install/)  
 - [Login.gov Account](https://login.gov/)
-- [Cloud.gov Account](https://cloud.gov/)]
+- [Cloud.gov Account](https://cloud.gov/)
 - [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
 
-# Local Development
+# Contents
 
-Configure your local environment variables via the file found in this path:
+- [Local Development Options](#Local-Development-Options)
+- [Code Unit Test, Linting Test, and Vulnerability Scan](#Code-Unit-Test,-Linting-Test,-and-Vulnerability-Scan)
+- [Manual Cloud.gov Deployments](#Manual-Cloud.gov-Deployments)
 
-(default values have been pulled from: [Login.gov Developers Guide](https://developers.login.gov/oidc/))
+# Testing the Local Backend Service:
 
+  **Login is dependent on the [tdrs-frontend](../tdrs-frontend/README.md) service. You will need a local instance of that application running.**
+  
+This project uses a Pipfile for dependency management. However, due to the limitations of the [Snyk Github Integration Supported Files](https://support.snyk.io/hc/en-us/articles/360000911957-Language-support) we must continue to support a requirements.txt for the time being.
 
-`TANF-app/tdrs-backend/tdpservice/settings/env_vars/.env.local`
+  
+### Local Development Options
 
-_Exceptions_:
-
-- the `JWT_KEY` should be the private key used generate the client_assertion for the `/authorize` call to login.gov 
-   - By default  this file is referencing a system environment variable. To prevent
-
-- the `CLIENT_ID` has had the values unique to deployment environments obscured. Please populate this with the intended `Issuer` value found via the login.gov app management dashboard
-
-- the `JWT_CERT_TEST` is a base64 encoded public cert used for remote unit tests that can't properly format a pem value.
-
-
-- This project uses a Pipfile for depenpancy management. However, due to an issue with snyk in circle ci not correctly identifying this file as a manifest we must continue to support a requirements.txt for the time being.
+**Commands are to be executed from within the `tdrs-backend` directory**
 
 
-To start a docker container local development( project root exists in `tdrs-backend/`):
+1.) Configure your local environment variables via the  `.env.local` file found in this path:
+
+```tdpservice/settings/env_vars/.env.local```
+
+
+2.)Build and start the backend via docker-compose: 
+
+
+```bash
+$ docker-compose up -d --build
 ```
-cd tdrs-backend; docker-compose up --build
+This command will start the following containers: `tdrs-backend_web_1` (webserver) on port `8080`, `tdrs-backend_postgres_1` (`postgresql` DB) on port `5432`, and `tdrs-backend_zaproxy_1` (OWASP ZAP).
+
+
+3.) The backend service will now be available via the following URL: 
 ```
-
-## Testing the local API Service:
-
-**Login is now linked with the [tdrs-frontend](../tdrs-frontend/README.md) service. You will need a local instance of that application running**
-
-
-1.) Via a web-browser ( we suggest using `Chrome`) enter the following URL:
-```
-http://localhost:3000
-```
-
-2.) This will redirect you to the `TDP Login` page where you'll have the option to `Sign in with Login.gov`
-    - You must a agree to associate your account with the `TANF Prototype: Development` application.
-
-3.) Upon successful authentication with `login.gov` you'll be redirected to the frontend UI displaying your username and an option to sign out.
-
-**_Logout_**
-
-**Please note: If you attempt to logout without being logged in you will receive a 500 error**
-
-1.) Clicking the `Sign Out` button via the UI will make api calls to log you out of Login.gov and the backend service while returning you to the `Sign in with Login.gov` screen
+http://localhost:8080
 ```
 
-Run this command to tear down the docker container:
-```
-docker-compose down --remove-orphans
-```
-## Manual Test Scripts:
+4.) To get an OpenAPI compliant schema of all the API endpoints, do a `GET` on `http://localhost:8080/api-scehma.json` or go to http://localhost:8080/apidocs/ in the browser to view all API endpoints.
 
-1. Run local unit tests by executing the following command:
+5.) To `exec` into the PostgreSQL database in the container. 
 
-`"cd tdrs-backend; docker-compose run tdp sh -c \"python manage.py test\"`
+```bash
+$ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
+```
+
+
+5.) Backend project tear down: 
+
+```bash
+ $ docker-compose down --remove-orphans
+```
+
+----
+### Code Unit Test, Linting Test, and Vulnerability Scan
+
+1. Run local unit tests by executing the following command.
+
+```bash
+$ docker-compose run web sh -c "pytest"
+```
 
 2. Run local linting tests by executing the following command:
 
-`"cd tdrs-backend; docker-compose run --rm tdp bash -c \"flake8 .\"`
-
-3. Run local penetration tests by executing the following command:
-
-`"cd tdrs-backend; ./zap-scanner.sh"`
-
-## Cloud.gov Deployments:
-
-1.) Build a tagged docker image against the the target github branch:
-
-`cd tdrs-backend; docker build -t goraftdocker/tdp-backend:devtest . -f docker/Dockerfile.dev`
-
-2.) Define the tagged within the manifest.yml found inside the the `tdrs-backend/` directory:
-
-```
-version: 1
-applications:
-- name: tdp-app
-  memory: 512M
-  instances: 1
-  disk_quota: 2G
-  docker:
-    image: goraftdocker/tdp-backend:devtest
+```bash
+$ docker-compose run --rm web bash -c "flake8 ."
 ```
 
-3.) Log into your cloud.gov account and set your space and organization:
+The [flake8](https://flake8.pycqa.org/en/latest/) linter is configured to check the formatting of the source against this [setup.cfg](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/tdrs-backend/setup.cfg#L20-L34) file. 
 
-**<ORG>: The target deployment organization as defined in cloud.gov Applications**
-**<SPACE>: The target deployment space under the organization as defined in cloud.gov Applications**
+3. Run local penetration tests by executing the following shell script:
 
-
+```bash
+$ ./zap-scanner.sh
 ```
-cf login -a api.fr.cloud.gov --sso
-cf target -o <ORG> -s <SPACE>
+
+This will spin up a local instance of the backend service and execute a penetration test via open source tool [OWASP Zed Attack Proxy ](https://owasp.org/www-project-zap/).
+
+----
+
+### Manual Cloud.gov Deployments:
+
+Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
+
+
+1.) Build and push a tagged docker image while on the the target Github branch:
+
+
+```bash
+$ docker build -t goraftdocker/tdp-backend:local . -f docker/Dockerfile.dev
+
+$ docker push goraftdocker/tdp-backend:local
 ```
 
 
-4.) Push the image to Cloud.gov ( please ensure you're in the same directory as the manifest.yml): 
+2.) Log into your cloud.gov account and set your space and organization:
 
-`cd tdrs-backend; cf push tdp-backend --docker-image goraftdocker/tdp-backend:devtest`
+```bash
+$ cf login -a api.fr.cloud.gov --sso
+$ cf target -o <ORG> -s <SPACE>
+```
 
-5.) You will then have to set all required environment variables via the cloud.gov GUI or CF CLI
+3.) Push the image to Cloud.gov (you will need to be in the same directory as`tdrs-backend/manifest.yml`):
 
- `cf set-env tdp-backend JWT_KEY "$(cat test
- .txt)"`
- **For the list of required envrionment variables please defer to `tdrs-backend/tdpservice/settings/env_vars/.env.local`
+( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
 
-5.) After this step you'll need to bind the application to a postgres RDS service ( if one does not exist you'll have to create one): 
-`cf bind-service tdp-backend db-raft`
+```bash
+ $ cf push tdp-frontend --no-route -f manifest.yml --var docker-backend=goraftdocker/tdp-backend:devtest
+```
+
+4.) You will then have to set all required environment variables via the cloud.gov GUI or the [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html) via commands like the following:
+
+ ```bash
+ $ cf set-env tdp-backend JWT_KEY "$(cat key.pem)"
+ ```
+ 
+- **For the list of required environment variables please defer to the `.env.local` file
+
+5.) After this step you will need to bind the application to a Postgres RDS service if it has not been bound already: 
+```bash
+$ cf bind-service tdp-backend tdp-db
+```
+
+- **If a Postgres Service does not exist, create it using `cf create-service aws-rds shared-psql tdp-db`**
 
 6.) To apply this newly bound service you may have to restage:
-`cf restage tdp-backend`
-
+```bash
+$ cf restage tdp-backend
+```
