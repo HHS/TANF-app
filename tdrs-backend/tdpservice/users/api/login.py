@@ -16,12 +16,12 @@ from rest_framework.response import Response
 
 from ..authentication import CustomAuthentication
 from .utils import (
-        get_nonce_and_state,
-        generate_token_endpoint_parameters,
-        generate_jwt_from_jwks,
-        validate_nonce_and_state,
-        response_redirect
-    )
+    get_nonce_and_state,
+    generate_token_endpoint_parameters,
+    generate_jwt_from_jwks,
+    validate_nonce_and_state,
+    response_redirect,
+)
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
