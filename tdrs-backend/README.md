@@ -115,8 +115,11 @@ $ cf target -o <ORG> -s <SPACE>
 ( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
 
 ```bash
- $ cf push tdp-frontend --no-route -f manifest.yml --var docker-backend=goraftdocker/tdp-backend:devtest
+ $ cf push tdp-backend -f manifest.yml --var docker-backend=goraftdocker/tdp-backend:local
 ```
+
+**Steps 4 and 5 are reserved for deployments to new environments**
+
 
 4.) You will then have to set all required environment variables via the cloud.gov GUI or the [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html) via commands like the following:
 
@@ -133,7 +136,7 @@ $ cf bind-service tdp-backend tdp-db
 
 - **If a Postgres Service does not exist, create it using `cf create-service aws-rds shared-psql tdp-db`**
 
-6.) To apply this newly bound service you may have to restage:
+6.) To apply this newly bound service or apply any changes made to environment variables you will need to restage the application:
 ```bash
 $ cf restage tdp-backend
 ```

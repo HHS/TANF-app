@@ -161,9 +161,9 @@ Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-a
  (**Please note you need to be logged into docker for these operations**)
 
 ```
-docker build -t goraftdocker/tdp-frontend:devtest . -f Dockerfile.dev`
+docker build -t goraftdocker/tdp-frontend:local . -f Dockerfile.dev
 
-docker push goraftdocker/tdp-frontend:devtest
+docker push goraftdocker/tdp-frontend:local
 ```
 
 
@@ -182,7 +182,7 @@ $ cf target -o <ORG> -s <SPACE>
 ( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
 
 ```bash
- cf push tdp-frontend --no-route -f manifest.yml --var docker-frontend=goraftdocker/tdp-frontend:devtest
+ cf push tdp-frontend -f manifest.yml --var docker-frontend=goraftdocker/tdp-frontend:local
 ```
 
 4.) It may be required to restage the application after deployment:

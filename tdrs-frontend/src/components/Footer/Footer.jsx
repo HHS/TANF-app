@@ -3,6 +3,8 @@ import { GridContainer, Grid, Logo, SocialLinks } from '@trussworks/react-uswds'
 
 import ACFLogo from '../../assets/ACFLogo.svg'
 
+import './Footer.scss'
+
 function Footer() {
   const socialLinks = [
     <a
@@ -25,7 +27,7 @@ function Footer() {
   ]
 
   return (
-    <section className="bg-primary-lighter">
+    <section className="bg-primary-lighter footer-container">
       <GridContainer>
         <Grid row>
           <Logo
