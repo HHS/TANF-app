@@ -1,11 +1,10 @@
 """API Tests."""
 from django.contrib.auth import get_user_model
-
+import logging
 import pytest
 from rest_framework import status
 
 User = get_user_model()
-
 
 @pytest.mark.django_db
 def test_retrieve_user(api_client, user):
@@ -55,9 +54,96 @@ def test_set_profile_data(api_client, user):
 
 
 @pytest.mark.django_db
-def test_set_profile_data_anonymous(api_client, user):
-    """Test can't set profile data if not logged in."""
+def test_set_profile_data_last_name_apostrophe(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
     response = api_client.post(
-        "/v1/users/set_profile/", {"first_name": "Joe", "last_name": "Bloggs"},
+        "/v1/users/set_profile/", {"first_name": "Mike", "last_name": "O'Hare"},
     )
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "Mike", "last_name": "O'Hare"}
+    user.refresh_from_db()
+    assert user.first_name == "Mike"
+    assert user.last_name == "O'Hare"
+
+
+@pytest.mark.django_db
+def test_set_profile_data_first_name_apostrophe(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "Pat'Jack", "last_name": "Smith"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "Pat'Jack", "last_name": "Smith"}
+    user.refresh_from_db()
+    assert user.first_name == "Pat'Jack"
+    assert user.last_name == "Smith"
+
+
+@pytest.mark.django_db
+def test_set_profile_data_empty_first_name(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "", "last_name": "Jones"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "", "last_name": "Jones"}
+    user.refresh_from_db()
+    assert user.first_name == ""
+    assert user.last_name == "Jones"
+
+
+@pytest.mark.django_db
+def test_set_profile_data_empty_last_name(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "John", "last_name": ""},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "John", "last_name": ""}
+    user.refresh_from_db()
+    assert user.first_name == "John"
+    assert user.last_name == ""
+
+
+@pytest.mark.django_db
+def test_set_profile_data_special_last_name(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "John", "last_name": "Smith-O'Hare"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "John", "last_name": "Smith-O'Hare"}
+    user.refresh_from_db()
+    assert user.first_name == "John"
+    assert user.last_name == "Smith-O'Hare"
+
+@pytest.mark.django_db
+def test_set_profile_data_special_first_name(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "John-Tom'", "last_name": "Jacobs"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "John-Tom'", "last_name": "Jacobs"}
+    user.refresh_from_db()
+    assert user.first_name == "John-Tom'"
+    assert user.last_name == "Jacobs"
+
+@pytest.mark.django_db
+def test_set_profile_data_special_first_name(api_client, user):
+    """Test profile data can be set."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "Mary Ann", "last_name": "Jones"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "Mary Ann", "last_name": "Jones"}
+    user.refresh_from_db()
+    assert user.first_name == "Mary Ann"
+    assert user.last_name == "Jones"
