@@ -6,14 +6,15 @@ import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
 import './Welcome.scss'
 
 /**
- * This component renders for a user who just logged in.
- * It renders a sign-out button and when clicked,
- * the user is redirected to the backend's logout endpoint,
- * initiating the logout process.
+ * This component renders on all pages of the TANF Data Portal.
+ * It renders a hero element with a login button and when clicked
+ * the user is redirected to the backend's login endpoint,
+ * initiating the sign in process.
  *
- * @param {object} email - a user's email address
+ * @param {boolean} authenticated - has user been authenticated
+ * @param {boolean} authLoading - set to true when checking if user is authenticated
  */
-function Dashboard() {
+function Welcome() {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)
 
@@ -96,4 +97,4 @@ function Dashboard() {
   )
 }
 
-export default Dashboard
+export default Welcome
