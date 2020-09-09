@@ -5,10 +5,13 @@ import uuid
 import time
 import secrets
 import pytest
+import jwt
+from django.urls import reverse
 from rest_framework import status
 from django.core.exceptions import SuspiciousOperation
 from rest_framework.test import APIRequestFactory
 from ..api.login import TokenAuthorizationOIDC
+from rest_framework import serializers
 
 from ..api.utils import (
     generate_client_assertion,
@@ -126,8 +129,8 @@ def test_login_with_valid_state_and_code(mocker, api_client):
     assert response.status_code == status.HTTP_302_FOUND
 
 @pytest.mark.django_db
-def test_login_with_expired_token(mocker, api_client):
-    """It should not allow login with an expired token."""
+def test_login_with_existing_token(mocker, api_client):
+    """Login should proceed when token already exists."""
     os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
@@ -136,7 +139,7 @@ def test_login_with_expired_token(mocker, api_client):
     token = {
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
-        "expires_in": 0,
+        "expires_in": 3600,
         "id_token": os.environ["MOCK_TOKEN"]
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
@@ -154,6 +157,7 @@ def test_login_with_expired_token(mocker, api_client):
     view = TokenAuthorizationOIDC.as_view()
     request = factory.get("/v1/login", {"state": state, "code": code})
     request.session = api_client.session
+    request.session["token"] = "testtoken"
     request.session["state_nonce_tracker"] = {
             "nonce": nonce,
             "state": state,
@@ -246,7 +250,7 @@ def test_login_with_existing_user(mocker, api_client, user):
     assert response.status_code == status.HTTP_302_FOUND
 
 @pytest.mark.django_db
-def test_login_with_existing_token(mocker, api_client):
+def test_login_with_expired_token(mocker, api_client):
     """Login should proceed when token already exists."""
     os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
@@ -260,28 +264,20 @@ def test_login_with_existing_token(mocker, api_client):
         "id_token": os.environ["MOCK_TOKEN"]
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
-    decoded_token = {
-        "email": "test@example.com",
-        "email_verified": True,
-        "nonce": nonce,
-        "iss": "https://idp.int.identitysandbox.gov",
-        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
-        "verified_at": 1577854800
-    }
+    mock_decode.side_effect = jwt.ExpiredSignatureError()
     mock_post.return_value = MockRequest(data=token)
-    mock_decode.return_value = decoded_token
     factory = APIRequestFactory()
     view = TokenAuthorizationOIDC.as_view()
     request = factory.get("/v1/login", {"state": state, "code": code})
     request.session = api_client.session
-    request.session["token"] = "testtoken"
     request.session["state_nonce_tracker"] = {
             "nonce": nonce,
             "state": state,
             "added_on": time.time(),
         }
     response = view(request)
-    assert response.status_code == status.HTTP_302_FOUND
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.data == {"error": "The token is expired."}
 
 @pytest.mark.django_db
 def test_login_with_bad_validation_code(mocker, api_client):
@@ -398,6 +394,7 @@ def test_response_internal(user):
     )
     assert response.status_code == status.HTTP_200_OK
 
+@pytest.mark.django_db
 def test_generate_jwt_from_jwks(mocker):
     """Test JWT generation."""
     mock_get = mocker.patch("requests.get")
@@ -411,6 +408,7 @@ def test_generate_jwt_from_jwks(mocker):
     mock_get.return_value = MockRequest(data={"keys": [jwk]})
     assert generate_jwt_from_jwks() is not None
 
+@pytest.mark.django_db
 def test_validate_nonce_and_state():
     """Test nonece and state validation."""
     assert validate_nonce_and_state("x", "y", "x", "y") is True
@@ -418,11 +416,13 @@ def test_validate_nonce_and_state():
     assert validate_nonce_and_state("x", "y", "y", "x") is False
     assert validate_nonce_and_state("x", "z", "y", "y") is False
 
+@pytest.mark.django_db
 def test_generate_client_assertion():
     """Test client assertion generation."""
     os.environ["JWT_KEY"] = test_private_key
     assert generate_client_assertion() is not None
 
+@pytest.mark.django_db
 def test_generate_token_endpoint_parameters():
     """Test token endpoint parameter generation."""
     os.environ["JWT_KEY"] = test_private_key
@@ -431,3 +431,11 @@ def test_generate_token_endpoint_parameters():
     assert "client_assertion_type" in params
     assert "code=test_code" in params
     assert "grant_type=authorization_code" in params
+
+# @pytest.mark.django_db
+# def test_token_expiry_refresh(api_client, mocker):
+#     """If the token is expired it should not authenticate."""
+#     mock_validate = mocker.patch('tdpservice.users.api.login.jwt.decode')
+#     mock_validate.side_effect = serializers.ValidationError('Refresh has expired.')
+#     response = api_client.get(reverse("login"))
+#     assert response.status_code == status.HTTP_400_BAD_REQUEST

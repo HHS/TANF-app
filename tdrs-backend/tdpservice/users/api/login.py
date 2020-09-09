@@ -74,16 +74,22 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         # issuer: issuer of the response
         # subject : UUID - not useful for login.gov set options to ignore this
-        decoded_payload = jwt.decode(
-            id_token,
-            key=cert_str,
-            issuer=os.environ["OIDC_OP_ISSUER"],
-            audience=os.environ["CLIENT_ID"],
-            algorithm="RS256",
-            subject=None,
-            access_token=None,
-            options={"verify_nbf": False},
-        )
+        try:
+            decoded_payload = jwt.decode(
+                id_token,
+                key=cert_str,
+                issuer=os.environ["OIDC_OP_ISSUER"],
+                audience=os.environ["CLIENT_ID"],
+                algorithm="RS256",
+                subject=None,
+                access_token=None,
+                options={"verify_nbf": False},
+            )
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {"error": "The token is expired."}, status=status.HTTP_401_UNAUTHORIZED
+            )
+
         decoded_nonce = decoded_payload["nonce"]
 
         if not validate_nonce_and_state(
