@@ -1,0 +1,35 @@
+@import 'theme/_global.scss';
+
+.usa-banner__header {
+  display: none;
+}
+
+@include media(">=medium") {
+  .usa-banner {
+    background-color: #ebf3fa;
+    &__header {
+      display: block;
+      background-color: #122E51;
+      &-text {
+        color: white;
+      }
+    }
+    &__button {
+      &-text {
+        color: white;
+      }
+      &::after {
+        background-color: white;
+      }
+      &:hover {
+        &::after {
+          background-color: white;
+        }
+      }
+    }
+    &__button[aria-expanded=true]::after,
+    &__button[aria-expanded=true]:hover::after {
+      background-color: white;
+    }
+  }
+}

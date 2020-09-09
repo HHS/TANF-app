@@ -12,14 +12,15 @@ describe('Welcome.js', () => {
   const initialState = { auth: { authenticated: false } }
   const mockStore = configureStore([thunk])
 
-  it('renders a welcome message', () => {
+  it('renders a sign in header', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
         <Welcome />
       </Provider>
     )
-    expect(wrapper.find('h1')).toIncludeText('Welcome to TDRS!')
+    const hero = wrapper.find('.usa-hero__callout')
+    expect(hero.find('h1')).toIncludeText('Sign into TANF Data Portal')
   })
 
   it('does not render the page while auth is loading', () => {
