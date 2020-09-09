@@ -3,8 +3,6 @@ import { GridContainer, Grid, Logo, SocialLinks } from '@trussworks/react-uswds'
 
 import ACFLogo from '../../assets/ACFLogo.svg'
 
-import './Footer.scss'
-
 function Footer() {
   const socialLinks = [
     <a
