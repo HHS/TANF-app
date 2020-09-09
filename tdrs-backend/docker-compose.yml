@@ -34,11 +34,3 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
-  documentation:
-    restart: always
-    build: ./
-    command: "mkdocs serve"
-    volumes:
-      - ./:/tdpapp
-    ports:
-      - "8001:8001"
