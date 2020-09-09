@@ -46,3 +46,19 @@ class CreateUserSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("auth_token",)
         extra_kwargs = {"password": {"write_only": True}}
+
+
+class SetUserProfileSerializer(serializers.ModelSerializer):
+    """Serializer used for setting a user's profile."""
+
+    class Meta:
+        """Metadata."""
+
+        model = User
+        fields = ["first_name", "last_name"]
+
+        """Enforce first and last name to be in API call and not empty"""
+        extra_kwargs = {
+            "first_name": {"allow_blank": False, "required": True},
+            "last_name": {"allow_blank": False, "required": True},
+        }

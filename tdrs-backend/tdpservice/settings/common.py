@@ -197,7 +197,13 @@ class Common(Configuration):
     # Sessions
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = True
+
+    # The CSRF token Cookie holds no security benefits when confined to HttpOnly.
+    # Setting this to false to allow the frontend to include it in the header
+    # of API POST calls to prevent false negative authorization errors.
+    # https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
+    CSRF_COOKIE_HTTPONLY = False
+
     SESSION_COOKIE_PATH = "/;HttpOnly"
 
     # Django Rest Framework
