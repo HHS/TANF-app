@@ -135,14 +135,12 @@ def test_validate_nonce_and_state():
     assert validate_nonce_and_state("x", "z", "y", "y") is False
 
 
-@pytest.mark.skipif(not test_private_key, reason="No test private key set")
 def test_generate_client_assertion():
     """Test client assertion generation."""
     os.environ["JWT_KEY"] = test_private_key
     assert generate_client_assertion() is not None
 
 
-@pytest.mark.skipif(not test_private_key, reason="No test private key set")
 def test_generate_token_endpoint_parameters():
     """Test token endpoint parameter generation."""
     os.environ["JWT_KEY"] = test_private_key
