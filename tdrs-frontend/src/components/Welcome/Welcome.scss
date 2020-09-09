@@ -1,16 +1,10 @@
-.welcome {
-  text-align: center;
-  padding-top: 30vh;
-  .left {
-    padding: 20px 48px 0 0;
-    text-align: right;
-  }
-  .right {
-    padding: 0 0 32px 48px;
-    text-align: left;
-    border-left: 1px solid lightgray;
-  }
-  button {
-    margin-top: 32px;
+.resource-card {
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  height: 110px;
+}
+
+@media screen and (max-width: 640px) {
+  .resource-info__secondary {
+    display: none;
   }
 }

@@ -14,8 +14,8 @@ function HeaderComp() {
     setMobileNavOpen((prevOpen) => !prevOpen)
   }
 
-  const testItemsMenu = [
-    <a href="/" key="two" className="usa-nav__link">
+  const navigationBar = [
+    <a href="/" key="welcome" className="usa-nav__link">
       <span>Welcome</span>
     </a>,
   ]
@@ -28,7 +28,7 @@ function HeaderComp() {
       <div className={`usa-overlay ${mobileNavOpen ? 'is-visible' : ''}`} />
       <Header extended>
         <div className="usa-navbar">
-          <Title id="extended-logo">
+          <Title>
             <a href="/" title="Home" aria-label="Home">
               TANF Data Portal
             </a>
@@ -40,7 +40,7 @@ function HeaderComp() {
           />
         </div>
         <ExtendedNav
-          primaryItems={testItemsMenu}
+          primaryItems={navigationBar}
           secondaryItems={[]}
           onToggleMobileNav={toggleMobileNav}
           mobileExpanded={mobileNavOpen}

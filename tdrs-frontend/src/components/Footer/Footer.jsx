@@ -1,7 +1,7 @@
 import React from 'react'
 import { GridContainer, Grid } from '@trussworks/react-uswds'
 
-import footerSvg from '../../footer.svg'
+import footerSvg from '../../assets/ACFLogo.svg'
 
 function Footer() {
   return (

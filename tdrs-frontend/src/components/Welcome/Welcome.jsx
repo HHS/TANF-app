@@ -2,7 +2,8 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
-import circleImg from '../../matt-wang-eNwx-kYd6fM-unsplash.jpg'
+
+import './Welcome.scss'
 
 /**
  * This component renders for a user who just logged in.
@@ -55,37 +56,32 @@ function Dashboard() {
         </GridContainer>
       </section>
 
-      <section className="grid-container usa-section">
+      <GridContainer className="usa-section">
         <Grid row gap>
-          <Grid tablet={{ col: 4 }}>
+          <Grid
+            className="resource-info__primary"
+            tablet={{ col: 6 }}
+            mobileLg={{ col: 12 }}
+          >
             <h2 className="font-heading-xl margin-top-0 tablet:margin-bottom-0">
               Featured TANF Resources
             </h2>
-            <p>Questions about TANF data?</p>
-            <p>Email: tanfdata@acf.hhs.gov</p>
+            <div className="resource-info__secondary">
+              <p>Questions about TANF data?</p>
+              <p>Email: tanfdata@acf.hhs.gov</p>
+            </div>
           </Grid>
-          <Grid tablet={{ col: 8 }}>
-            <img
-              className="usa-media-block__img"
-              src={circleImg}
-              style={{ height: '120px' }}
-              alt="Alt text"
-            />
-            <img
-              className="usa-media-block__img"
-              src={circleImg}
-              style={{ height: '120px' }}
-              alt="Alt text"
-            />
-            <img
-              className="usa-media-block__img"
-              src={circleImg}
-              style={{ height: '120px' }}
-              alt="Alt text"
-            />
+          <Grid tablet={{ col: true }}>
+            <div className="resource-card">Resource 1</div>
+          </Grid>
+          <Grid tablet={{ col: true }}>
+            <div className="resource-card">Resource 2</div>
+          </Grid>
+          <Grid tablet={{ col: true }}>
+            <div className="resource-card">Resource 3</div>
           </Grid>
         </Grid>
-      </section>
+      </GridContainer>
     </main>
   )
 }
