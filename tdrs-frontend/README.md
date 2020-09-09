@@ -2,46 +2,24 @@
 
 This project uses the U.S. Web Design System ([USWDS](https://designsystem.digital.gov/)) and in particular, [trussworks/react-uswds](https://github.com/trussworks/react-uswds)
 
-## To build for deployment
-
-- From `TANF-app/tdrs-frontend` run
-  ```
-  docker build -t adamcaron/tdrs-frontend .
-  ```
-- If you wish to run the build distribution locally:
-  ```
-  docker run -it -p 3000:80 --rm adamcaron/tdrs-frontend:latest
-  ```
-- Push the image to the remote repository on hub.docker.com:
-  ```
-  docker push adamcaron/tdrs-frontend:latest
-  ```
-
 ## To run locally
 
 - Clone this repository and
   ```
   cd TANF-app/tdrs-frontend
   ```
-- Configure local environment variables with
-  ```
-  cp .env.local.example .env.local
-  ```
 - Build the Docker image locally with
   ```
-  docker build --target localdev -t adamcaron/tdrs-frontend:local .
+  docker build --target localdev -t tdp-frontend:local . -f Dockerfile.local
   ```
 - Run the app:
   ```
-  docker run -it -p 3000:3000 -v $PWD/src/:/home/node/app/src --rm adamcaron/tdrs-frontend:local yarn start
+  docker run -it -p 3000:3000 -v $PWD/src/:/home/node/app/src --rm tdp-frontend:local yarn start
   ```
 
-Navigate to [localhost:3000](localhost:3000) and you should see the app.
-
+Navigate to [localhost:3000](localhost:3000) and you should see the app. The above command mounds the `/src` directory into the container, so code changes automatically take effect while the container is running, without any need to restart the container. This makes is convenient for development.
 
 **Login is now linked with the [tdrs-backend](../tdrs-backend/README.md) service. You will need a local instance of that application running**
-
-
 
 The `TANF-app/tdrs-frontend/src` directory is mounted into the container so changes to the source code, when saved, automatically update the contents of `/home/node/app/src` in the container. Restarting the container is not necessary during development and you should see changes update in the UI instantly.
 
@@ -146,6 +124,14 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
+**SASS Setup at Build Time:**
+The `SASS_PATH=node_modules:src` variable is set on the `yarn build` command which makes it possible to import SASS modules without relative paths. Removing this will require all @imports in .scss files to be make with relative paths, like '../../node_modules/my_package'. Presently both of these are possible (in an .scss file):
+```
+@import 'theme/_global.scss';
+@import '../../theme/_global.scss';
+```
+Without the variable, only the relavtive import is possible.
+
 ### `yarn eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can’t go back!**
@@ -186,6 +172,9 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
 
+### _(end Create React App Documentation)_
+
+----
 
 ## Cloud.gov Deployments:
 
@@ -193,7 +182,7 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/tr
 
  (**Please note you need to be logged into docker for these operations**)
 
-`cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:devtest . -f docker/Dockerfile.dev`
+`cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:devtest . -f Dockerfile.dev`
 
 `docker push goraftdocker/tdp-frontend:devtest`
 

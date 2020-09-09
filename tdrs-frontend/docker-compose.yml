@@ -7,13 +7,13 @@ services:
     ports:
       - 8090:8090
     networks:
-      - local  
+      - local
   tdp-frontend:
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     build:
       context: .
-      dockerfile: docker/Dockerfile.local
+      dockerfile: Dockerfile.local
     container_name: tdp-ui
     ports:
       - 3000:80
