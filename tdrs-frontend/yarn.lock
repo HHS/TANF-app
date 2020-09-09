@@ -1942,10 +1942,10 @@
   resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-7.2.1.tgz#2ad4e844175a3738cb9e7064be5ea070b8863a1c"
   integrity sha512-oZ0Ib5I4Z2pUEcoo95cT1cr6slco9WY7yiPpG+RGNkj8YcYgJnM7pXmYmorNOReh8MIGcKSqXyeGjxnr8YiZbA==
 
-"@trussworks/react-uswds@^1.8.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@trussworks/react-uswds/-/react-uswds-1.8.0.tgz#b686f5d70bd156f1a5e365db79b7cb9b85280eaa"
-  integrity sha512-7PJDUvk3eWQD69DiPsV9nHWK4p7ebWmMMkvPzoJS2XjJrVrPVzVdCfga7nBXYp1VfK5ICpDm0/VY0OB7DS8jhg==
+"@trussworks/react-uswds@^1.9.0":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@trussworks/react-uswds/-/react-uswds-1.9.1.tgz#079c9e38c5e39ca2903a45e0415481490088d4a1"
+  integrity sha512-Ps67SJFRc3AfWnIkLHgdyG2hcNawaorswcHm9t0pgSjJ0ZpAGvhVwKbPdeTheZEeS11mFGj/VXD991oloe12ag==
   dependencies:
     classnames "^2.2.6"
     dotenv "^8.2.0"
@@ -7428,6 +7428,11 @@ in-publish@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/in-publish/-/in-publish-2.0.1.tgz#948b1a535c8030561cea522f73f78f4be357e00c"
   integrity sha512-oDM0kUSNFC31ShNxHKUyfZKy8ZeXZBWMjMdZHKLOk13uvT27VTL/QzRGfRUcevJhpkZAvlhPYuXkF7eNWrtyxQ==
+
+include-media@^1.4.9:
+  version "1.4.9"
+  resolved "https://registry.yarnpkg.com/include-media/-/include-media-1.4.9.tgz#d0020b7be3eb2d54868a20943595ce380e0bc43b"
+  integrity sha1-0AILe+PrLVSGiiCUNZXOOA4LxDs=
 
 indent-string@^2.1.0:
   version "2.1.0"

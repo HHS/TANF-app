@@ -1,4 +1,32 @@
-# API
+# UI
+tdrs-frontend/node_modules/
+tdrs-frontend/build/
+tdrs-frontend/coverage/
+tdrs-frontend/cypress/videos/
+tdrs-frontend/cypress/support/
+tdrs-frontend/cypress/screenshots/
+tdrs-frontend/cypress/fixtures/example.json
+tdrs-frontend/npm-debug.log*
+tdrs-frontend/yarn-debug.log*
+tdrs-frontend/yarn-error.log*
+tdrs-frontend/vars-frontend.yml
+tdrs-frontend/pa11y-screenshots/*
+tdrs-frontend/.env*
+ 
+
+#BACKEND
+tdrs-backend/*/env_vars/*.env*
+tdrs-backend/*/env_vars/*.env*.*
+tdrs-backend/vars-backend.yml
+tdrs-backend/coverage.xml
+*.pyc
+/backend/db.sqlite3
+.DS_Store
+ .env
+/staticfiles/*
+/mediafiles/*
+__pycache__/
+/.vscode/
 venv
 *.sqlite3
 *.sqlite3-journal
@@ -9,33 +37,6 @@ tmp
 *.txt
 compliance/opencontrols/
 compliance/exports/
-
-# UI
-tdrs-frontend/node_modules/
-tdrs-frontend/build/
-tdrs-frontend/coverage/
-tdrs-frontend/cypress/videos/
-tdrs-frontend/cypress/support/
-tdrs-frontend/cypress/screenshots/
-tdrs-frontend/npm-debug.log*
-tdrs-frontend/yarn-debug.log*
-tdrs-frontend/yarn-error.log*
-tdrs-frontend/vars-frontend.yml
-tdrs-frontend/.env.local
-tdrs-frontend/pa11y-screenshots/*
-
-#BACKEND
-tdrs-backend/*/env_vars/*.env*
-tdrs-backend/*/env_vars/*.env*.*
-tdrs-backend/vars-backend.yml
-*.pyc
-/backend/db.sqlite3
-.DS_Store
- .env
-/staticfiles/*
-/mediafiles/*
-__pycache__/
-/.vscode/
 
 # coverage result
 .coverage
@@ -72,7 +73,7 @@ boilerplate.zip
 # Spritesmith
 spritesmith-generated/
 spritesmith.scss
- 
+
 
 # Testing files
 htmlcov/*
