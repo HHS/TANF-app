@@ -3,24 +3,16 @@ import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
 
-import '@trussworks/react-uswds/lib/uswds.css'
-import '@trussworks/react-uswds/lib/index.css'
-
 import './Welcome.scss'
 
 /**
- * This component renders at the '/' route
- * when a user is not logged in.
+ * This component renders on all pages of the TANF Data Portal.
+ * It renders a hero element with a login button and when clicked
+ * the user is redirected to the backend's login endpoint,
+ * initiating the sign in process.
  *
- * If a user is logged in, it redirects them to '/dashboard'
- *
- * If user not logged in, and clicks log in,
- * it redirects user to API's login route
- * which forwards them to login.gov
- *
- * @param {boolean} authLoading
- *  - whether there is an authentication check in progress
- * @param {boolean} authenticated - whether user is authenticated
+ * @param {boolean} authenticated - has user been authenticated
+ * @param {boolean} authLoading - set to true when checking if user is authenticated
  */
 function Welcome() {
   const authenticated = useSelector((state) => state.auth.authenticated)
@@ -40,24 +32,68 @@ function Welcome() {
   }
 
   return (
-    <GridContainer className="welcome">
-      <Grid row>
-        <Grid col={6} className="left">
-          <h1>
-            Welcome to TDRS!
-            <span role="img" aria-label="wave" aria-hidden="true">
-              {' '}
-              👋
-            </span>
-          </h1>
+    <main id="main-content">
+      <section className="usa-hero" aria-label="Introduction">
+        <GridContainer>
+          <Grid>
+            <div className="usa-hero__callout">
+              <h1 className="usa-hero__heading">
+                <span className="usa-hero__heading--alt">
+                  Sign into TANF Data Portal
+                </span>
+              </h1>
+              <p>
+                Our vision is to build a new, secure, web based data reporting
+                system to improve the federal reporting experience for TANF
+                grantees and federal staff. The new system will allow grantees
+                to easily submit accurate data and be confident that they have
+                fulfilled their reporting requirements.
+              </p>
+              <Button type="button" size="big" onClick={handleClick}>
+                Sign in with Login.gov
+                <span className="visually-hidden">Opens in a new website</span>
+              </Button>
+            </div>
+          </Grid>
+        </GridContainer>
+      </section>
+
+      <GridContainer className="usa-section">
+        <Grid row gap>
+          <Grid
+            className="resource-info__primary"
+            tablet={{ col: 6 }}
+            mobileLg={{ col: 12 }}
+          >
+            <h2 className="font-heading-xl margin-top-0 tablet:margin-bottom-0">
+              Featured TANF Resources
+            </h2>
+            <div className="font-heading-3xs resource-info__secondary">
+              <p>Questions about TANF data?</p>
+              <p>Email: tanfdata@acf.hhs.gov</p>
+            </div>
+          </Grid>
+          <Grid
+            tablet={{ col: true }}
+            className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
+          >
+            <div className="resource-card">Resource 1</div>
+          </Grid>
+          <Grid
+            tablet={{ col: true }}
+            className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
+          >
+            <div className="resource-card">Resource 2</div>
+          </Grid>
+          <Grid
+            tablet={{ col: true }}
+            className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
+          >
+            <div className="resource-card">Resource 3</div>
+          </Grid>
         </Grid>
-        <Grid col={6} className="right">
-          <Button type="button" size="big" onClick={handleClick}>
-            Sign in with Login.gov
-          </Button>
-        </Grid>
-      </Grid>
-    </GridContainer>
+      </GridContainer>
+    </main>
   )
 }
 
