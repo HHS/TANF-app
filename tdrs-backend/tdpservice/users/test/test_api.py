@@ -1,10 +1,10 @@
 """API Tests."""
 from django.contrib.auth import get_user_model
-import logging
 import pytest
 from rest_framework import status
 
 User = get_user_model()
+
 
 @pytest.mark.django_db
 def test_retrieve_user(api_client, user):
@@ -122,6 +122,7 @@ def test_set_profile_data_special_last_name(api_client, user):
     assert user.first_name == "John"
     assert user.last_name == "Smith-O'Hare"
 
+
 @pytest.mark.django_db
 def test_set_profile_data_special_first_name(api_client, user):
     """Test profile data can be set."""
@@ -135,15 +136,16 @@ def test_set_profile_data_special_first_name(api_client, user):
     assert user.first_name == "John-Tom'"
     assert user.last_name == "Jacobs"
 
+
 @pytest.mark.django_db
-def test_set_profile_data_special_first_name(api_client, user):
+def test_set_profile_data_spaced_last_name(api_client, user):
     """Test profile data can be set."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "Mary Ann", "last_name": "Jones"},
     )
     assert response.status_code == status.HTTP_200_OK
-    assert response.data == {"first_name": "Mary Ann", "last_name": "Jones"}
+    assert response.data == {"first_name": "Joan", "last_name": "Mary Ann"}
     user.refresh_from_db()
-    assert user.first_name == "Mary Ann"
-    assert user.last_name == "Jones"
+    assert user.first_name == "Joan"
+    assert user.last_name == "Mary Ann"
