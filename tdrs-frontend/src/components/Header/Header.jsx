@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
 
 import {
   NavMenuButton,
@@ -8,6 +9,7 @@ import {
 } from '@trussworks/react-uswds'
 
 function HeaderComp() {
+  const pathname = useSelector((state) => state.router.location.pathname)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const toggleMobileNav = () => {
@@ -15,7 +17,11 @@ function HeaderComp() {
   }
 
   const navigationBar = [
-    <a href="/" key="welcome" className="usa-nav__link">
+    <a
+      href="/"
+      key="welcome"
+      className={`usa-nav__link ${pathname === '/' ? 'usa-current' : ''}`}
+    >
       <span>Welcome</span>
     </a>,
   ]
