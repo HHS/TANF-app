@@ -15,7 +15,7 @@ jobs:
           command: "./scripts/docker-compose-check.sh"
       - run:
           name: "Test: Build and Spin-up Django API Service"
-          command: "cd tdrs-backend; docker-compose build "
+          command: "cd tdrs-backend; docker-compose up -d --build"
       - run:
           name: "Tear Down Django API Service"
           command: "cd tdrs-backend; docker-compose down "
@@ -28,10 +28,6 @@ jobs:
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
-      - snyk/scan:
-          target-file: tdrs-backend/requirements.txt
-          severity-threshold: medium
-          additional-arguments: "--allow-missing --skip-unresolved --package-manager=pip --command=python3"
   test-ui:
     working_directory: ~/tdp-apps
     docker:
@@ -64,14 +60,7 @@ jobs:
           command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-frontend; ./zap-scanner.sh"
-      - run:
-          name: 'Ensure sudo is installed, otherwise install it.'
-          command: "./scripts/sudo-check.sh"
-      - snyk/scan:
-          target-file: tdrs-frontend/yarn.lock
-          severity-threshold: low
-          additional-arguments: "--trust-policies"
+          command: "cd tdrs-frontend; ./zap-scanner.sh"  
   deploy:
     working_directory: ~/tdp-deploy
     docker:
@@ -146,8 +135,6 @@ jobs:
             cf auth "$CF_USERNAME" "$CF_PASSWORD"
             cf target -o $CF_ORG -s "$CF_SPACE"
             ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH
-orbs:
-  snyk: snyk/snyk@0.0.10
 workflows:
   build-and-test:
     jobs:
