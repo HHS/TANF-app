@@ -148,7 +148,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return response_redirect(user, id_token)
 
         except Exception as e:
-            logger.exception(f"Error attempting to login/registeruser:  {e} at...")
+            logger.exception(f"Error attempting to login/register user:  {e} at...")
             return Response(
                 {
                     "error": (

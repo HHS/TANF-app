@@ -1,13 +1,8 @@
 """Test the authorization check."""
 
 import pytest
-import logging
 from django.urls import reverse
 from rest_framework import status
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
 
 @pytest.mark.django_db
 def test_auth_check_endpoint_with_no_user(api_client, user):
