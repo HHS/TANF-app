@@ -57,7 +57,7 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ["first_name", "last_name"]
 
-        """Enforce first and last name to be in API call and are not blank"""
+        """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {
             "first_name": {"allow_blank": False, "required": True},
             "last_name": {"allow_blank": False, "required": True},
