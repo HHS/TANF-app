@@ -55,7 +55,7 @@ def test_set_profile_data(api_client, user):
 
 @pytest.mark.django_db
 def test_set_profile_data_last_name_apostrophe(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data last name  can be set with an apostrophe."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "Mike", "last_name": "O'Hare"},
@@ -69,7 +69,7 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
 
 @pytest.mark.django_db
 def test_set_profile_data_first_name_apostrophe(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data first name can be set with an apostrophe."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "Pat'Jack", "last_name": "Smith"},
@@ -83,7 +83,7 @@ def test_set_profile_data_first_name_apostrophe(api_client, user):
 
 @pytest.mark.django_db
 def test_set_profile_data_empty_first_name(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data cannot be be set if first name is blank."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "", "last_name": "Jones"},
@@ -93,7 +93,7 @@ def test_set_profile_data_empty_first_name(api_client, user):
 
 @pytest.mark.django_db
 def test_set_profile_data_empty_last_name(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data cannot be set last name is blank."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "John", "last_name": ""},
@@ -103,7 +103,7 @@ def test_set_profile_data_empty_last_name(api_client, user):
 
 @pytest.mark.django_db
 def test_set_profile_data_empty_first_name_and_last_name(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data cannot be set if first and last name are blank."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "", "last_name": ""},
@@ -113,7 +113,7 @@ def test_set_profile_data_empty_first_name_and_last_name(api_client, user):
 
 @pytest.mark.django_db
 def test_set_profile_data_special_last_name(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data can be set if last name has multipe special characters."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "John", "last_name": "Smith-O'Hare"},
@@ -127,7 +127,7 @@ def test_set_profile_data_special_last_name(api_client, user):
 
 @pytest.mark.django_db
 def test_set_profile_data_special_first_name(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data can be set if first name has multiple special characters."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "John-Tom'", "last_name": "Jacobs"},
@@ -141,7 +141,7 @@ def test_set_profile_data_special_first_name(api_client, user):
 
 @pytest.mark.django_db
 def test_set_profile_data_spaced_last_name(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data can be set if last name has a space."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "Joan", "last_name": "Mary Ann"},
@@ -154,8 +154,22 @@ def test_set_profile_data_spaced_last_name(api_client, user):
 
 
 @pytest.mark.django_db
+def test_set_profile_data_spaced_first_name(api_client, user):
+    """Test profile data can be set if first name has a space."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post(
+        "/v1/users/set_profile/", {"first_name": "John Jim", "last_name": "Smith"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"first_name": "John Jim", "last_name": "Smith"}
+    user.refresh_from_db()
+    assert user.first_name == "John Jim"
+    assert user.last_name == "Smith"
+
+
+@pytest.mark.django_db
 def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data can be set if last name includes a tilde character."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "Max", "last_name": "Grecheñ"},
@@ -169,7 +183,7 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
 
 @pytest.mark.django_db
 def test_set_profile_data_last_name_with_tilde(api_client, user):
-    """Test profile data can be set."""
+    """Test profile data can be set if last name includes alternate tilde character."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.post(
         "/v1/users/set_profile/", {"first_name": "Max", "last_name": "Glen~"},
