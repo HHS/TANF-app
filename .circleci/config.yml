@@ -15,7 +15,7 @@ jobs:
           command: "./scripts/docker-compose-check.sh"
       - run:
           name: "Test: Build and Spin-up Django API Service"
-          command: "cd tdrs-backend; docker-compose build "
+          command: "cd tdrs-backend; docker-compose up -d --build"
       - run:
           name: "Tear Down Django API Service"
           command: "cd tdrs-backend; docker-compose down "
@@ -28,10 +28,6 @@ jobs:
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
-      - snyk/scan:
-          target-file: tdrs-backend/requirements.txt
-          severity-threshold: medium
-          additional-arguments: "--allow-missing --skip-unresolved --package-manager=pip --command=python3"
   test-ui:
     working_directory: ~/tdp-apps
     docker:
@@ -65,13 +61,6 @@ jobs:
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-frontend; ./zap-scanner.sh"  
-      - run:
-          name: 'Ensure sudo is installed, otherwise install it.'
-          command: "./scripts/sudo-check.sh"
-      - snyk/scan:
-          target-file: tdrs-frontend/yarn.lock
-          severity-threshold: low
-          additional-arguments: "--trust-policies"
   deploy:
     working_directory: ~/tdp-deploy
     docker:
@@ -128,7 +117,7 @@ jobs:
               export CF_PASSWORD="$CF_PASSWORD_DEV"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
-            elif [ "$CIRCLE_BRANCH" == "sprint1-pr-review" ] ; then
+            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
               export CF_PASSWORD="$CF_PASSWORD_DEV"
@@ -146,8 +135,6 @@ jobs:
             cf auth "$CF_USERNAME" "$CF_PASSWORD"
             cf target -o $CF_ORG -s "$CF_SPACE"
             ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH
-orbs:
-  snyk: snyk/snyk@0.0.10
 workflows:
   build-and-test:
     jobs:
