@@ -7,6 +7,7 @@ import Footer from './components/Footer'
 
 import '@trussworks/react-uswds/lib/uswds.css'
 import '@trussworks/react-uswds/lib/index.css'
+import '@khanacademy/tota11y'
 
 import './App.scss'
 
@@ -25,7 +26,9 @@ function App() {
       <GovBanner aria-label="Official government website" />
       <Header />
       <Notify />
-      <Routes />
+      <main id="main-content">
+        <Routes />
+      </main>
       <Footer />
     </>
   )

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "dependencies": {
+    "@khanacademy/tota11y": "^0.2.0",
     "@trussworks/react-uswds": "^1.9.0",
     "axios": "^0.20.0",
     "babel-eslint": "10",
