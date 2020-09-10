@@ -7,7 +7,9 @@ WORKDIR /home/node/app
 COPY --chown=node:node package.json yarn.lock ./
 USER node
 RUN yarn install && yarn cache clean
-RUN touch .env.production && echo "REACT_APP_BACKEND_URL=https://tdp-backend.app.cloud.gov/v1" > .env.production
+RUN touch .env.production && echo "REACT_APP_BACKEND_URL=https://tdp-backend.app.cloud.gov/v1" >> .env.production
+RUN echo "REACT_APP_BACKEND_URL=https://tdp-backend.app.cloud.gov/v1" >> .env.production
+
 COPY --chown=node:node . .
 
 

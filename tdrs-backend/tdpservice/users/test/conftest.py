@@ -1,9 +1,7 @@
 """User fixtures."""
 
 import uuid
-
 import pytest
-
 
 @pytest.fixture
 def user_data():
