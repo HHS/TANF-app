@@ -33,7 +33,7 @@ function Welcome() {
   }
 
   return (
-    <main id="main-content">
+    <div class="wrapper">
       <section className="usa-hero" aria-label="Introduction">
         <GridContainer>
           <Grid>
@@ -94,7 +94,7 @@ function Welcome() {
           </Grid>
         </Grid>
       </GridContainer>
-    </main>
+    </div>
   )
 }
 
