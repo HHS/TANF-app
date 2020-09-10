@@ -87,7 +87,7 @@ jobs:
           command: "docker push goraftdocker/tdp-backend:$CIRCLE_BRANCH"
       - run:
           name:  "Build Frontend Docker image"
-          command: "cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:$CIRCLE_BRANCH . -f ./docker/Dockerfile.dev"
+          command: "cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:$CIRCLE_BRANCH . -f Dockerfile.dev"
       - run:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push goraftdocker/tdp-frontend:$CIRCLE_BRANCH"
