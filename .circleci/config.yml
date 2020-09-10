@@ -18,22 +18,25 @@ jobs:
           name: "Upload Backend Coverage Report to CodeCov If Target Branch"
           command: |
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main-frontend
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main-backend
+            elif [ "$CIRCLE_BRANCH" == "187-markdown-badges" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
             fi
-      # - run:
-      #     name: "Tear Down Django API Service"
-      #     command: "cd tdrs-backend; docker-compose down "
-      # - run:
-      #     name:  "Test: Execute Python Unit Tests"
-      #     command: "cd tdrs-backend; docker-compose run web sh -c \"pytest\""
-      # - run:
-      #     name:  "Test: Execute Python Linting Test"
-      #     command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
-      # - run:
-      #     name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
-      #     command: "cd tdrs-backend; ./zap-scanner.sh"
+      - run:
+          name: "Tear Down Django API Service"
+          command: "cd tdrs-backend; docker-compose down "
+      - run:
+          name:  "Test: Execute Python Unit Tests"
+          command: "cd tdrs-backend; docker-compose run web sh -c \"pytest\""
+      - run:
+          name:  "Test: Execute Python Linting Test"
+          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
+      - run:
+          name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
+          command: "cd tdrs-backend; ./zap-scanner.sh"
+      - run:
+          name:  "Clean Up Docker Machine"
+          command: "docker volume prune --force"
   test-frontend:
     working_directory: ~/tdp-apps
     docker:
