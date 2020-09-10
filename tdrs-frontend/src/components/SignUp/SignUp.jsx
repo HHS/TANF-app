@@ -13,9 +13,6 @@ import {
 } from '@trussworks/react-uswds'
 
 function SignUp() {
-  const mockSubmit = () => {
-    console.log('triggered signup submit')
-  }
   return (
     <GridContainer>
       <CardGroup>
@@ -28,13 +25,13 @@ function SignUp() {
             </p>
           </CardHeader>
           <CardBody>
-            <Form onSubmit={mockSubmit}>
+            <Form>
               <Fieldset>
                 <Label htmlFor="first-name">First name</Label>
                 <TextInput id="first-name" name="first-name" type="text" />
                 <Label htmlFor="last-name">Last name</Label>
                 <TextInput id="last-name" name="last-name" type="text" />
-                <Button className="usa-button--big" type="button">
+                <Button className="usa-button--big" type="submit">
                   Request Access
                 </Button>
               </Fieldset>

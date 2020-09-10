@@ -39,7 +39,13 @@ function HeaderComp() {
   }
 
   const signOutBtn = (
-    <Button type="button" small unstyled onClick={handleClick}>
+    <Button
+      className="sign-out"
+      type="button"
+      small
+      unstyled
+      onClick={handleClick}
+    >
       <Grid offset={4}>
         <FontAwesomeIcon icon={faSignOutAlt} />
       </Grid>
