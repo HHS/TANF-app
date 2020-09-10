@@ -6,9 +6,10 @@ import SignUp from './SignUp'
 describe('SignUp', () => {
   it('should have a card with header Request Access', () => {
     const wrapper = mount(<SignUp />)
-    const cardHeader = wrapper.find('.usa-card__heading')
+    const h1 = wrapper.find('h1')
 
-    expect(cardHeader).toExist()
+    expect(h1).toExist()
+    expect(h1.text()).toEqual('Request Access')
   })
 
   it('should have a first name input', () => {
