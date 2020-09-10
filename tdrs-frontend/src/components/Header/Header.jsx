@@ -13,6 +13,16 @@ import {
   Grid,
 } from '@trussworks/react-uswds'
 
+/**
+ * This component is rendered on every page and contains the navigation bar.
+ * When a user is authenticated, it will also display their email and will
+ * display a sign out button and when clicked, the user is redirected to the
+ * backend's logout endpoint, initiating the logout process.
+ *
+ * @param {object} pathname - the window's path
+ * @param {object} authenticated - whether the user is authenticated or not
+ * @param {object} user - the current user's information
+ */
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const authenticated = useSelector((state) => state.auth.authenticated)

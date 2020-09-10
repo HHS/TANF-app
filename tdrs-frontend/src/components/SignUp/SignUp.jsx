@@ -7,6 +7,12 @@ import {
   Button,
 } from '@trussworks/react-uswds'
 
+/**
+ * This component renders when a user logs in for the first time
+ * and needs to finish setting up their account. The user will
+ * submit their first and last name along with their state, tribe or territory.
+ */
+
 function SignUp() {
   return (
     <GridContainer>

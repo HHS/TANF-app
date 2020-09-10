@@ -3,6 +3,10 @@ import { Footer, Logo, SocialLinks } from '@trussworks/react-uswds'
 
 import ACFLogo from '../../assets/ACFLogo.svg'
 
+/**
+ * This component is rendered on every page and contains
+ * the department logo and social links.
+ */
 function renderFooter() {
   const socialLinks = [
     <a
