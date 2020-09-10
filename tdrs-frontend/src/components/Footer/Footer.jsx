@@ -1,7 +1,7 @@
 import React from 'react'
 import { Footer, Logo, SocialLinks } from '@trussworks/react-uswds'
 
-import ACFLogo from '../../assets/ACFLogo.svg'
+import ACFLogo from '../../assets/placeholder.png'
 
 function renderFooter() {
   const socialLinks = [
