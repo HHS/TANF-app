@@ -7,7 +7,6 @@ import Footer from './components/Footer'
 
 import '@trussworks/react-uswds/lib/uswds.css'
 import '@trussworks/react-uswds/lib/index.css'
-import '@khanacademy/tota11y'
 
 import './App.scss'
 
