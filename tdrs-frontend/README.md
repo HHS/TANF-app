@@ -26,10 +26,8 @@ Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.
 
 **Commands are to be executed from within the `tdrs-frontend` directory**
 
-1.) Create a `env.local` file with the following command:
-  ```
-  cp .env.local.example .env.local
-  ```
+1.) React will use the  `env.development` file for local development:
+ 
   - The `REACT_APP_BACKEND_URL` variable in this file points to the backend host. For local testing this value should default to the following :
   
    ```
@@ -55,26 +53,33 @@ Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.
     ```
     This will start one container named `tdrs-frontend_tdp-frontend` with port `3000`. Any changes made in `tdrs-frontend` folder will be picked up by docker automatically (no stop/run containers each time). 
 
+- Option 3 ( Build and start via docker)
+  ```
+  1.) Build the Docker image locally:
+  docker build --target localdev -t tdp-frontend:local . -f Dockerfile.local
+  
+  2.) Run the app:
+  docker run -it -p 3000:3000 -v $PWD/src/:/home/node/app/src --rm tdp-frontend:local 
 
-3.) With the project started, you can access the landing page via a web-browser ( we recommend `Chrome`) at the following URL:
+ With the project started, you can access the landing page via a web-browser ( we recommend `Chrome`) at the following URL:
 ```
-http://localhost:3000
+  http://localhost:3000
 ```
 
-4.) This will redirect you to the `TDP Homepage` page with a button labeled `Sign in with Login.gov`.
+3.) This will redirect you to the `TDP Homepage` page with a button labeled `Sign in with Login.gov`.
 
 - Clicking this button will redirect you to the login.gov authentication page.
 -  You must agree to associate your account with the `TANF Prototype: Development` application.
 -  If you encounter any issues signing in, please ensure you are using a [Login.gov-Sandbox Account](https://idp.int.identitysandbox.gov/) and **NOT** your [Login.gov Account](login.gov).
 
 
-5.) Upon successful authentication with you will be redirected to the frontend dashboard (`/dashboard`) UI with an option to sign out.
+4.) Upon successful authentication with you will be redirected to the frontend dashboard (`/dashboard`) UI with an option to sign out.
 
 
-6.) Clicking the `Sign Out` button will log you out of the application and redirect you to the landing page,
+5.) Clicking the `Sign Out` button will log you out of the application and redirect you to the landing page,
 
 
-7.) Frontend project tear down options: 
+6.) Frontend project tear down options: 
 
   - If using Option 1 or 3 from above:
 
