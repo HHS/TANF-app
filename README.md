@@ -1,3 +1,13 @@
+
+| Repos  | Raft-Tech |  HHS |
+|---|---|---|
+|**Build**| [![Raft](https://circleci.com/gh/raft-tech/TANF-app.svg?style=shield)](https://circleci.com/gh/raft-tech/TANF-app)   | [![HHS](https://circleci.com/gh/HHS/TANF-app.svg?style=shield)](https://circleci.com/gh/HHS/TANF-app)|
+|**Security Frontend**| [![Known Vulnerabilities-raft](https://snyk.io/test/github/raft-tech/TANF-app/badge.svg)](https://snyk.io/test/github/raft-tech/TANF-app)  | [![Known Vulneralities](https://snyk.io/test/github/HHS/TANF-app/badge.svg)](https://snyk.io/test/github/HHS/TANF-app)|
+|**Security Backend**| [![Snyk Vulnerabilities Raft-Tech Backend](https://img.shields.io/snyk/vulnerabilities/github/raft-tech/TANF-app/tdrs-backend/requirements.txt?cacheSeconds=maxAge)](https://snyk.io/test/github/raft-tech/TANF-app) | [![Snyk Vulnerabilities HHS Backend](https://img.shields.io/snyk/vulnerabilities/github/HHS/TANF-app/tdrs-backend/requirements.txt?cacheSeconds=maxAge)](https://snyk.io/test/github/HHS/TANF-app) 
+|**Frontend Coverage**| [![codecov-dev-frontend](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main/graph/badge.svg?flag=dev-frontend&precision=2)](https://codecov.io/gh/raft-tech/TANF-app?flag=dev-frontend) | [![codecov-hhs-frontend](https://codecov.io/gh/raft-tech/TANF-app/branch/main/graph/badge.svg?flag=main-frontend&precision=2)](https://codecov.io/gh/raft-tech/TANF-app?flag=main-frontend)   |
+|**Backend Coverage**|  [![codecov-dev-backend](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main/graph/badge.svg?flag=dev-backend&precision=2)](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main?flag=dev-backend)|   [![codecov-hhs-backend](https://codecov.io/gh/raft-tech/TANF-app/branch/main/graph/badge.svg?flag=main-backend&precision=2)](https://codecov.io/gh/raft-tech/TANF-app/branch/main?flag=main-backend) |
+
+
 # TANF Data Reporting Prototype
 
 This repo has a prototype for a TANF Data Reporting system, where States,
