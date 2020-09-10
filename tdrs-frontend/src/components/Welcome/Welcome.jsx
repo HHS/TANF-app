@@ -33,7 +33,7 @@ function Welcome() {
   }
 
   return (
-    <div class="wrapper">
+    <div>
       <section className="usa-hero" aria-label="Introduction">
         <GridContainer>
           <Grid>
