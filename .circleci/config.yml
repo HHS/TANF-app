@@ -26,9 +26,6 @@ jobs:
               cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
             fi
       - run:
-          name:  "Test: Execute Python Unit Tests"
-          command: "cd tdrs-backend; docker-compose run web sh -c \"pytest\""
-      - run:
           name:  "Test: Execute Python Linting Test"
           command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
       - run:
