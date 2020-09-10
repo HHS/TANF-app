@@ -50,5 +50,7 @@ class UserViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save()
         datetime_time = datetime.datetime.fromtimestamp(time.time())
-        logger.info(f"Updated profile data for  User:  {self.request.user} on {datetime_time}(UTC)")
+        logger.info(
+            f"Updated profile data for  User:  {self.request.user} on {datetime_time}(UTC)"
+        )
         return Response(serializer.data)
