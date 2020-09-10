@@ -2,6 +2,7 @@ import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 import Welcome from '../Welcome'
 import Dashboard from '../Dashboard'
+import SignUp from '../SignUp'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 
@@ -21,6 +22,9 @@ const Routes = () => {
       </Route>
       <PrivateRoute exact path="/dashboard">
         <Dashboard />
+      </PrivateRoute>
+      <PrivateRoute exact path="/signup">
+        <SignUp />
       </PrivateRoute>
     </Switch>
   )

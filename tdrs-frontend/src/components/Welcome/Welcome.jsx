@@ -12,7 +12,8 @@ import './Welcome.scss'
  * initiating the sign in process.
  *
  * @param {boolean} authenticated - has user been authenticated
- * @param {boolean} authLoading - set to true when checking if user is authenticated
+ * @param {boolean} authLoading - set to true when checking if user
+ * is authenticated.
  */
 function Welcome() {
   const authenticated = useSelector((state) => state.auth.authenticated)
