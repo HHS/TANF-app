@@ -18,7 +18,7 @@ function SignUp() {
       <CardGroup>
         <Card gridLayout={{ col: 6 }}>
           <CardHeader>
-            <h3 className="usa-card__heading">Request Access</h3>
+            <h1 className="usa-card__heading">Request Access</h1>
             <p>
               We need to collect some information before an OFA Admin can grant
               you access
@@ -26,7 +26,7 @@ function SignUp() {
           </CardHeader>
           <CardBody>
             <Form>
-              <Fieldset>
+              <Fieldset legend="Name">
                 <Label htmlFor="first-name">First name</Label>
                 <TextInput id="first-name" name="first-name" type="text" />
                 <Label htmlFor="last-name">Last name</Label>
