@@ -174,7 +174,22 @@ docker push goraftdocker/tdp-frontend:local
 ##### - **SPACE: The target deployment space under the organization as defined in cloud.gov Applications**
 ```bash
 $ cf login -a api.fr.cloud.gov --sso
-$ cf target -o <ORG> -s <SPACE>
+$ cf target -o <ORG> -s <SPACE-1>
+```
+
+You may be prompted to select from a list of spaces under the selected target. Please follow the prompt to select your intended deployment space
+
+
+Example Prompt:
+```
+Targeted org hhs-acf-prototyping.
+
+Select a space:
+1. <SPACE-1>
+2. <SPACE-2>
+
+Space (enter to skip): 1
+Targeted space <SPACE-1>.
 ```
 
 3.) Push the image to Cloud.gov (  you will need to be in the same directory as`tdrs-frontend/manifest.yml`):
@@ -185,7 +200,7 @@ $ cf target -o <ORG> -s <SPACE>
  cf push tdp-frontend -f manifest.yml --var docker-frontend=goraftdocker/tdp-frontend:local
 ```
 
-4.) It may be required to restage the application after deployment:
+4.) To apply any changes made to environment variables you will need to restage the application::
 
 ```bash
 $ cf restage tdp-frontend

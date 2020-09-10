@@ -110,6 +110,21 @@ $ cf login -a api.fr.cloud.gov --sso
 $ cf target -o <ORG> -s <SPACE>
 ```
 
+You may be prompted to select from a list of spaces under the selected organization. Please follow the prompt to select your intended deployment space
+
+
+Example Prompt:
+```
+Targeted org hhs-acf-prototyping.
+
+Select a space:
+1. <SPACE-1>
+2. <SPACE-2>
+
+Space (enter to skip): 1
+Targeted space <SPACE-1>.
+```
+
 3.) Push the image to Cloud.gov (you will need to be in the same directory as`tdrs-backend/manifest.yml`):
 
 ( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
