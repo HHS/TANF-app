@@ -15,8 +15,13 @@ jobs:
           name: "Create Code Coverage Report"
           command: "cd tdrs-backend; docker-compose run web sh -c \"pytest --cov-report=xml\""
       - run:
-          name: "Upload Backend Coverage Report to CodeCov"
-          command: "cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend"
+          name: "Upload Backend Coverage Report to CodeCov If Target Branch"
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main-frontend
+            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
+            fi
       # - run:
       #     name: "Tear Down Django API Service"
       #     command: "cd tdrs-backend; docker-compose down "
@@ -57,8 +62,13 @@ jobs:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
       - run:
-          name: "Upload Backend Coverage Report to CodeCov"
-          command: "cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend"
+          name: "Upload Frontend Coverage Report to CodeCov If Target Branch"
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main-frontend
+            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
+            fi
       # - run:
       #     name: "Run Cypress Integration Tests"
       #     command: "cd tdrs-frontend; yarn cy:run:ci"
