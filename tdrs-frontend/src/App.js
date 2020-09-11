@@ -22,6 +22,9 @@ import './App.scss'
 function App() {
   return (
     <>
+      <a className="usa-skipnav" href="#main-content">
+        Skip to main content
+      </a>
       <GovBanner aria-label="Official government website" />
       <Header />
       <Notify />
