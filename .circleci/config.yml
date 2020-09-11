@@ -21,9 +21,9 @@ jobs:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main-backend
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main_backend
             elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev_backend
             fi
       - run:
           name:  "Test: Execute Python Linting Test"
@@ -65,9 +65,9 @@ jobs:
           name: "Upload Frontend Coverage Report to CodeCov If Target Branch"
           command: |
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main-frontend
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main_frontend
+            elif [ "$CIRCLE_BRANCH" == "187-markdown-badges" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev_frontend
             fi
       - run:
           name: "Run Cypress Integration Tests"
