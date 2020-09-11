@@ -8,7 +8,7 @@ import Header from './Header'
 
 describe('Header', () => {
   let initialState = {
-    router: { location: { pathname: '/' } },
+    router: { location: { pathname: '/edit-profile' } },
     auth: { user: { email: 'test@test.com' }, authenticated: true },
   }
   const mockStore = configureStore([thunk])
@@ -94,7 +94,7 @@ describe('Header', () => {
     expect(nav.hasClass('is-visible')).toEqual(false)
   })
 
-  it("should add usa-current class to Welcome tab when on '/'", () => {
+  it("should add usa-current class to Welcome tab when on '/edit-profile'", () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>

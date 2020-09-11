@@ -13,7 +13,7 @@ import {
  * submit their first and last name along with their state, tribe or territory.
  */
 
-function SignUp() {
+function EditProfile() {
   return (
     <GridContainer>
       <h1>Request Access</h1>
@@ -26,7 +26,7 @@ function SignUp() {
         <TextInput id="first-name" name="first-name" type="text" />
         <Label htmlFor="last-name">Last name</Label>
         <TextInput id="last-name" name="last-name" type="text" />
-        <Button className="usa-button--big" type="submit">
+        <Button className="usa-button--big" type="submit" disabled>
           Request Access
         </Button>
       </Form>
@@ -34,4 +34,4 @@ function SignUp() {
   )
 }
 
-export default SignUp
+export default EditProfile

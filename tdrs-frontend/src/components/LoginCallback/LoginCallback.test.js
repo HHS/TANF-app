@@ -22,7 +22,7 @@ describe('LoginCallback.js', () => {
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/dashboard" />)
+    expect(wrapper).toContainReact(<Redirect to="/edit-profile" />)
   })
 
   it('redirects to "/" when user not authenticated', () => {

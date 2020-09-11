@@ -2,7 +2,9 @@ import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
+import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+
+import './Header.scss'
 
 import {
   NavMenuButton,
@@ -10,7 +12,6 @@ import {
   Title,
   ExtendedNav,
   Button,
-  Grid,
 } from '@trussworks/react-uswds'
 
 /**
@@ -37,7 +38,9 @@ function HeaderComp() {
     <a
       href="/"
       key="welcome"
-      className={`usa-nav__link ${pathname === '/' ? 'usa-current' : ''}`}
+      className={`usa-nav__link ${
+        pathname === '/edit-profile' ? 'usa-current' : ''
+      }`}
     >
       <span>Welcome</span>
     </a>,
@@ -56,10 +59,15 @@ function HeaderComp() {
       unstyled
       onClick={handleClick}
     >
-      <Grid offset={4}>
-        <FontAwesomeIcon icon={faSignOutAlt} />
-      </Grid>
-      <Grid>Sign Out</Grid>
+      <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
+      Sign Out
+    </Button>
+  )
+
+  const accountBtn = ({ email }) => (
+    <Button type="button" small unstyled>
+      <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
+      {email}
     </Button>
   )
 
@@ -69,26 +77,28 @@ function HeaderComp() {
         Skip to main content
       </a>
       <div className={`usa-overlay ${mobileNavOpen ? 'is-visible' : ''}`} />
-      <Header extended>
-        <div className="usa-navbar">
-          <Title>
-            <a href="/" title="Home" aria-label="Home">
-              TANF Data Portal
-            </a>
-          </Title>
-          <NavMenuButton
-            label="Menu"
-            onClick={toggleMobileNav}
-            className="usa-menu-btn"
+      <section>
+        <Header extended>
+          <div className="usa-navbar">
+            <Title className="page-title">
+              <a href="/" title="Home" aria-label="Home">
+                TANF Data Portal
+              </a>
+            </Title>
+            <NavMenuButton
+              label="Menu"
+              onClick={toggleMobileNav}
+              className="usa-menu-btn"
+            />
+          </div>
+          <ExtendedNav
+            primaryItems={navigationBar}
+            secondaryItems={authenticated ? [accountBtn(user), signOutBtn] : []}
+            onToggleMobileNav={toggleMobileNav}
+            mobileExpanded={mobileNavOpen}
           />
-        </div>
-        <ExtendedNav
-          primaryItems={navigationBar}
-          secondaryItems={authenticated ? [user.email, signOutBtn] : []}
-          onToggleMobileNav={toggleMobileNav}
-          mobileExpanded={mobileNavOpen}
-        />
-      </Header>
+        </Header>
+      </section>
     </>
   )
 }

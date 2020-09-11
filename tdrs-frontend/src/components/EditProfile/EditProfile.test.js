@@ -1,11 +1,11 @@
 import React from 'react'
 import { mount } from 'enzyme'
 
-import SignUp from './SignUp'
+import EditProfile from './EditProfile'
 
-describe('SignUp', () => {
+describe('EditProfile', () => {
   it('should have a card with header Request Access', () => {
-    const wrapper = mount(<SignUp />)
+    const wrapper = mount(<EditProfile />)
     const h1 = wrapper.find('h1')
 
     expect(h1).toExist()
@@ -13,7 +13,7 @@ describe('SignUp', () => {
   })
 
   it('should have a first name input', () => {
-    const wrapper = mount(<SignUp />)
+    const wrapper = mount(<EditProfile />)
 
     const nameInput = wrapper.find('#first-name')
 
@@ -21,7 +21,7 @@ describe('SignUp', () => {
   })
 
   it('should have a last name input', () => {
-    const wrapper = mount(<SignUp />)
+    const wrapper = mount(<EditProfile />)
 
     const nameInput = wrapper.find('#last-name')
 
@@ -29,7 +29,7 @@ describe('SignUp', () => {
   })
 
   it('should have a submit button', () => {
-    const wrapper = mount(<SignUp />)
+    const wrapper = mount(<EditProfile />)
 
     const nameInput = wrapper.find('button[type="submit"]')
 
