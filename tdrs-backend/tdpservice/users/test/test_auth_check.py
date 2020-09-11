@@ -4,6 +4,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
+
 @pytest.mark.django_db
 def test_auth_check_endpoint_with_no_user(api_client, user):
     """If there is no user auth_check should return FORBIDDEN."""
