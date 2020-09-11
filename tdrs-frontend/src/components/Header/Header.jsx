@@ -51,9 +51,20 @@ function HeaderComp() {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
   }
 
-  const signOutBtn = (
+  const secondaryNavItems = ({ email }) => [
+    <Button
+      className="email"
+      key="secondaryNav_email"
+      type="button"
+      small
+      unstyled
+    >
+      <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
+      {email}
+    </Button>,
     <Button
       className="sign-out"
+      key="secondaryNav_sign-out"
       type="button"
       small
       unstyled
@@ -61,15 +72,8 @@ function HeaderComp() {
     >
       <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
       Sign Out
-    </Button>
-  )
-
-  const accountBtn = ({ email }) => (
-    <Button type="button" small unstyled>
-      <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
-      {email}
-    </Button>
-  )
+    </Button>,
+  ]
 
   return (
     <>
@@ -89,8 +93,9 @@ function HeaderComp() {
             />
           </div>
           <ExtendedNav
+            aria-label="Primary navigation"
             primaryItems={navigationBar}
-            secondaryItems={authenticated ? [accountBtn(user), signOutBtn] : []}
+            secondaryItems={authenticated ? secondaryNavItems(user) : []}
             onToggleMobileNav={toggleMobileNav}
             mobileExpanded={mobileNavOpen}
           />
