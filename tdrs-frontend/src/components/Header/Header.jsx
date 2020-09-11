@@ -73,7 +73,7 @@ function HeaderComp() {
 
   return (
     <>
-      <a className="usa-skipnav" href="#main-content">
+      <a className="usa-skipnav" href="#main-content" tabIndex={1}>
         Skip to main content
       </a>
       <div className={`usa-overlay ${mobileNavOpen ? 'is-visible' : ''}`} />

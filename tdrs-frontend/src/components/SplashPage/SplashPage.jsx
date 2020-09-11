@@ -78,19 +78,19 @@ function SplashPage() {
             tablet={{ col: true }}
             className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
           >
-            <div className="resource-card">Resource 1</div>
+            <div className="resource-card shadow-2">Resource 1</div>
           </Grid>
           <Grid
             tablet={{ col: true }}
             className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
           >
-            <div className="resource-card">Resource 2</div>
+            <div className="resource-card shadow-2">Resource 2</div>
           </Grid>
           <Grid
             tablet={{ col: true }}
             className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
           >
-            <div className="resource-card">Resource 3</div>
+            <div className="resource-card shadow-2">Resource 3</div>
           </Grid>
         </Grid>
       </GridContainer>
