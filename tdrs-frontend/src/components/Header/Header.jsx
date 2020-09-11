@@ -47,11 +47,14 @@ function HeaderComp() {
   ]
 
   const renderSecondaryNav = ({ email }) => [
-    <Link href="/">
+    <Link className="account-link" href="/">
       <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
       {email}
     </Link>,
-    <Link href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}>
+    <Link
+      className="sign-out-link"
+      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
+    >
       <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
       Sign Out
     </Link>,
