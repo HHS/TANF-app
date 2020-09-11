@@ -34,7 +34,7 @@ function HeaderComp() {
     setMobileNavOpen((prevOpen) => !prevOpen)
   }
 
-  const navigationBar = [
+  const primaryNav = [
     <a
       href="/"
       key="welcome"
@@ -46,33 +46,15 @@ function HeaderComp() {
     </a>,
   ]
 
-  const handleClick = (event) => {
-    event.preventDefault()
-    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
-  }
-
-  const secondaryNavItems = ({ email }) => [
-    <Button
-      className="email"
-      key="secondaryNav_email"
-      type="button"
-      small
-      unstyled
-    >
+  const renderSecondaryNav = ({ email }) => [
+    <a href="/">
       <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
       {email}
-    </Button>,
-    <Button
-      className="sign-out"
-      key="secondaryNav_sign-out"
-      type="button"
-      small
-      unstyled
-      onClick={handleClick}
-    >
+    </a>,
+    <a href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}>
       <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
       Sign Out
-    </Button>,
+    </a>,
   ]
 
   return (
@@ -94,8 +76,8 @@ function HeaderComp() {
           </div>
           <ExtendedNav
             aria-label="Primary navigation"
-            primaryItems={navigationBar}
-            secondaryItems={authenticated ? secondaryNavItems(user) : []}
+            primaryItems={primaryNav}
+            secondaryItems={authenticated ? renderSecondaryNav(user) : []}
             onToggleMobileNav={toggleMobileNav}
             mobileExpanded={mobileNavOpen}
           />
