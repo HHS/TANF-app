@@ -117,7 +117,7 @@ This project uses [Jest](https://jestjs.io/) for unit tests and [Cypress](https:
 
 **Unit Tests with Jest**
 
-Jest provides an interactive test consolde that's helpful for development. After running the following commands, you will see options to run all the tests, run only failing tests, run specific tests, and more.
+Jest provides an interactive test console that's helpful for development. After running the following commands, you will see options to run all the tests, run only failing tests, run specific tests, and more.
 
 
 1.) To run unit tests locally:
@@ -207,7 +207,7 @@ Targeted space <SPACE-1>.
  cf push tdp-frontend -f manifest.yml --var docker-frontend=goraftdocker/tdp-frontend:local
 ```
 
-4.) To apply any changes made to environment variables you will need to restage the application::
+4.) To apply any changes made to environment variables you will need to restage the application:
 
 ```bash
 $ cf restage tdp-frontend
