@@ -7,7 +7,10 @@ import configureStore from 'redux-mock-store'
 import Header from './Header'
 
 describe('Header', () => {
-  let initialState = { router: { location: { pathname: '/' } } }
+  let initialState = {
+    router: { location: { pathname: '/edit-profile' } },
+    auth: { user: { email: 'test@test.com' }, authenticated: true },
+  }
   const mockStore = configureStore([thunk])
 
   it('should have a title link', () => {
@@ -91,7 +94,7 @@ describe('Header', () => {
     expect(nav.hasClass('is-visible')).toEqual(false)
   })
 
-  it("should add usa-current class to Welcome tab when on '/'", () => {
+  it("should add usa-current class to Welcome tab when on '/edit-profile'", () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
@@ -105,7 +108,7 @@ describe('Header', () => {
   })
 
   it("should not add usa-current class to Welcome tab when not on '/'", () => {
-    initialState = { router: { location: '/dashboard' } }
+    initialState = { ...initialState, router: { location: '/dashboard' } }
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
@@ -116,5 +119,56 @@ describe('Header', () => {
     const welcomeTab = wrapper.find('.usa-nav__link')
 
     expect(welcomeTab.hasClass('usa-current')).toEqual(false)
+  })
+
+  it('should log out user when sign out button is clicked', () => {
+    const store = mockStore(initialState)
+    const url = 'http://localhost:8080/v1/logout/oidc'
+    global.window = Object.create(window)
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: url,
+      },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+
+    const signOutBtn = wrapper.find('.sign-out').first()
+
+    signOutBtn.simulate('click', {
+      preventDefault: () => {},
+    })
+
+    expect(window.location.href).toEqual(url)
+  })
+
+  it('should have secondaryItems when user is logged in', () => {
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+
+    const secondaryLinks = wrapper.find('.usa-nav__secondary-item')
+
+    expect(secondaryLinks.length).toEqual(2)
+  })
+
+  it('should not have secondaryItems when user is logged in', () => {
+    initialState = { ...initialState, auth: { user: {}, authenticated: false } }
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+
+    const secondaryLinks = wrapper.find('.usa-nav__secondary-item')
+
+    expect(secondaryLinks.length).toEqual(0)
   })
 })

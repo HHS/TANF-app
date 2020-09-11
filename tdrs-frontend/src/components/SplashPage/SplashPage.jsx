@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
 
-import './Welcome.scss'
+import './SplashPage.scss'
 
 /**
  * This component renders on all pages of the TANF Data Portal.
@@ -12,9 +12,10 @@ import './Welcome.scss'
  * initiating the sign in process.
  *
  * @param {boolean} authenticated - has user been authenticated
- * @param {boolean} authLoading - set to true when checking if user is authenticated
+ * @param {boolean} authLoading - set to true when checking if user
+ * is authenticated.
  */
-function Welcome() {
+function SplashPage() {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)
 
@@ -32,7 +33,7 @@ function Welcome() {
   }
 
   return (
-    <div class="wrapper">
+    <div>
       <section className="usa-hero" aria-label="Introduction">
         <GridContainer>
           <Grid>
@@ -97,4 +98,4 @@ function Welcome() {
   )
 }
 
-export default Welcome
+export default SplashPage

@@ -6,9 +6,9 @@ import configureStore from 'redux-mock-store'
 import { MemoryRouter, Redirect } from 'react-router-dom'
 import { Button } from '@trussworks/react-uswds'
 
-import Welcome from './Welcome'
+import SplashPage from './SplashPage'
 
-describe('Welcome.js', () => {
+describe('SplashPage.js', () => {
   const initialState = { auth: { authenticated: false } }
   const mockStore = configureStore([thunk])
 
@@ -16,7 +16,7 @@ describe('Welcome.js', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <Welcome />
+        <SplashPage />
       </Provider>
     )
     const hero = wrapper.find('.usa-hero__callout')
@@ -27,10 +27,10 @@ describe('Welcome.js', () => {
     const store = mockStore({ auth: { loading: true } })
     const wrapper = mount(
       <Provider store={store}>
-        <Welcome />
+        <SplashPage />
       </Provider>
     )
-    expect(wrapper.find('h1')).not.toIncludeText('Welcome to TDRS!')
+    expect(wrapper.find('h1')).not.toIncludeText('SplashPage to TDRS!')
   })
 
   it('redirects to API login endpoint when sign-in button is clicked', () => {
@@ -46,7 +46,7 @@ describe('Welcome.js', () => {
 
     const wrapper = mount(
       <Provider store={store}>
-        <Welcome />
+        <SplashPage />
       </Provider>
     )
     wrapper.find(Button).simulate('click', {
@@ -62,7 +62,7 @@ describe('Welcome.js', () => {
     const wrapper = mount(
       <Provider store={store}>
         <MemoryRouter>
-          <Welcome />
+          <SplashPage />
         </MemoryRouter>
       </Provider>
     )
