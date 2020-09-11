@@ -25,7 +25,9 @@ function App() {
       <GovBanner aria-label="Official government website" />
       <Header />
       <Notify />
-      <Routes />
+      <main id="main-content">
+        <Routes />
+      </main>
       <Footer />
     </>
   )

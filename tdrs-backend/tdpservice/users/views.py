@@ -1,5 +1,7 @@
 """Define API views for user class."""
-
+import datetime
+import logging
+import time
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -12,6 +14,8 @@ from .serializers import (
     SetUserProfileSerializer,
     UserSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class UserViewSet(
@@ -45,4 +49,8 @@ class UserViewSet(
         serializer = self.get_serializer(self.request.user, request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        datetime_time = datetime.datetime.fromtimestamp(time.time())
+        logger.info(
+            f"Profile update for user:  {self.request.user} on {datetime_time}(UTC)"
+        )
         return Response(serializer.data)
