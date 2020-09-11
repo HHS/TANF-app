@@ -1,5 +1,5 @@
 import React from 'react'
-import { Footer, Logo, SocialLinks } from '@trussworks/react-uswds'
+import { Footer, Logo, SocialLinks, Grid } from '@trussworks/react-uswds'
 
 import ACFLogo from '../../assets/placeholder.png'
 
@@ -33,7 +33,7 @@ function renderFooter() {
       size="big"
       primary={null}
       secondary={
-        <div className="grid-row grid-gap">
+        <Grid row gap>
           <Logo
             size="big"
             image={
@@ -47,7 +47,7 @@ function renderFooter() {
           <div className="usa-footer__contact-links mobile-lg:grid-col-6">
             <SocialLinks links={socialLinks} />
           </div>
-        </div>
+        </Grid>
       }
     />
   )
