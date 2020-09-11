@@ -11,7 +11,7 @@ import {
   Header,
   Title,
   ExtendedNav,
-  Button,
+  Link,
 } from '@trussworks/react-uswds'
 
 /**
@@ -47,14 +47,14 @@ function HeaderComp() {
   ]
 
   const renderSecondaryNav = ({ email }) => [
-    <a href="/">
+    <Link href="/">
       <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
       {email}
-    </a>,
-    <a href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}>
+    </Link>,
+    <Link href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}>
       <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
       Sign Out
-    </a>,
+    </Link>,
   ]
 
   return (
