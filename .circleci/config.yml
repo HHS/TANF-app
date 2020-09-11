@@ -31,9 +31,6 @@ jobs:
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
-      # - run:
-      #     name:  "Clean Up Docker Machine"
-      #     command: "docker volume prune --force"
   test-frontend:
     working_directory: ~/tdp-apps
     docker:
@@ -154,3 +151,11 @@ workflows:
     jobs:
       - test-backend
       - test-frontend
+      - deploy:
+          requires:
+            - test-backend
+            - test-frontend
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
