@@ -1,11 +1,9 @@
 import React from 'react'
-import { GridContainer, Grid, Logo, SocialLinks } from '@trussworks/react-uswds'
+import { Footer, Logo, SocialLinks } from '@trussworks/react-uswds'
 
-import ACFLogo from '../../assets/ACFLogo.svg'
+import ACFLogo from '../../assets/placeholder.png'
 
-import './Footer.scss'
-
-function Footer() {
+function renderFooter() {
   const socialLinks = [
     <a
       key="facebook"
@@ -27,29 +25,28 @@ function Footer() {
   ]
 
   return (
-    <section className="bg-primary-lighter footer-container">
-      <GridContainer>
-        <Grid row>
+    <Footer
+      size="big"
+      primary={null}
+      secondary={
+        <div className="grid-row grid-gap">
           <Logo
-            big
+            size="big"
             image={
               <img
                 className="usa-footer__logo-img"
-                src={ACFLogo}
                 alt="Administration for Children and Families Logo"
+                src={ACFLogo}
               />
             }
           />
-          <Grid
-            className="padding-right-0 usa-footer__contact-links"
-            mobileLg={{ col: 6 }}
-          >
+          <div className="usa-footer__contact-links mobile-lg:grid-col-6">
             <SocialLinks links={socialLinks} />
-          </Grid>
-        </Grid>
-      </GridContainer>
-    </section>
+          </div>
+        </div>
+      }
+    />
   )
 }
 
-export default Footer
+export default renderFooter

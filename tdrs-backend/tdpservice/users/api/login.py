@@ -107,9 +107,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # build out the query string parameters
         # and full URL path for OIDC token endpoint
         token_params = generate_token_endpoint_parameters(code)
-        token_endpoint = (os.environ["OIDC_OP_TOKEN_ENDPOINT"]
-                          + "?"
-                          + token_params)
+        token_endpoint = os.environ["OIDC_OP_TOKEN_ENDPOINT"] + "?" + token_params
         token_response = requests.post(token_endpoint)
 
         if token_response.status_code != 200:
