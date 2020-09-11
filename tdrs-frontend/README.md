@@ -60,8 +60,10 @@ Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.
   
   2.) Run the app:
   docker run -it -p 3000:3000 -v $PWD/src/:/home/node/app/src --rm tdp-frontend:local 
+  ```
+    This will start one container `tdp-frontend` with port `3000`. Any changes amde in `src` folder will be picked up by docker automatically (no stop/run containers each time).
 
- With the project started, you can access the landing page via a web-browser ( we recommend `Chrome`) at the following URL:
+   With the project started, you can access the landing page via a web-browser ( we recommend `Chrome`) at the following URL:
 ```
   http://localhost:3000
 ```
@@ -73,7 +75,7 @@ Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.
 -  If you encounter any issues signing in, please ensure you are using a [Login.gov-Sandbox Account](https://idp.int.identitysandbox.gov/) and **NOT** your [Login.gov Account](login.gov).
 
 
-4.) Upon successful authentication with you will be redirected to the frontend dashboard (`/dashboard`) UI with an option to sign out.
+4.) Upon successful authentication you will be redirected to the frontend edit-profile (`/edit-profile`) UI with an option to sign out.
 
 
 5.) Clicking the `Sign Out` button will log you out of the application and redirect you to the landing page,
