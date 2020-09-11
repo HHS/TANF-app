@@ -1,14 +1,9 @@
 version: 2.1
 jobs:
   test-backend:
-    working_directory: ~/tdp-be
-    docker:
-      - image: circleci/python:3.8
-        user : root
+    machine: true
     branches:
     steps:
-      - setup_remote_docker:
-         docker_layer_caching: true
       - checkout
       - run:
           name: 'Ensure docker-compose exists,otherwise install it.'
@@ -20,15 +15,26 @@ jobs:
           name: "Tear Down Django API Service"
           command: "cd tdrs-backend; docker-compose down "
       - run:
-          name:  "Test: Execute Python Unit Tests"
-          command: "cd tdrs-backend; docker-compose run web sh -c \"pytest\""
+          name: "Test: Run Unit Tests And Create Code Coverage Report"
+          command: "cd tdrs-backend; docker-compose run web sh -c \"pytest && pytest --cov-report=xml\""
+      - run:
+          name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main-backend
+            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
+            fi
       - run:
           name:  "Test: Execute Python Linting Test"
           command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
-  test-ui:
+      # - run:
+      #     name:  "Clean Up Docker Machine"
+      #     command: "docker volume prune --force"
+  test-frontend:
     working_directory: ~/tdp-apps
     docker:
       - image: cypress/base:10
@@ -55,6 +61,14 @@ jobs:
       - run:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
+      - run:
+          name: "Upload Frontend Coverage Report to CodeCov If Target Branch"
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main-frontend
+            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
+            fi
       - run:
           name: "Run Cypress Integration Tests"
           command: "cd tdrs-frontend; yarn cy:run:ci"
@@ -109,8 +123,8 @@ jobs:
               export CF_SPACE="tanf-staging"
               export CF_USERNAME="$CF_USERNAME_STAGING"
               export CF_PASSWORD="$CF_PASSWORD_STAGING"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_STAGIN"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_STAGIN"
+              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_STAGING"
+              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_STAGING"
             elif [ "$CIRCLE_BRANCH" == "dev" ] ; then
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
@@ -139,12 +153,4 @@ workflows:
   build-and-test:
     jobs:
       - test-backend
-      - test-ui
-      - deploy:
-          requires:
-            - test-backend
-            - test-ui
-          filters:
-            branches:
-              only:
-                - raft-tdp-main
+      - test-frontend
