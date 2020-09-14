@@ -1,6 +1,9 @@
-// I know that these double classes are bad practice but this is the only way we could find
-// to be able to override the default values coming from classes. This is done in multiple places
-// to ensure that it matches the mock but will be reworked later.
+// Creating double classes is not best practice, however, this is the only way
+// to override the default values coming from classes. 
+// This is done in multiple places to ensure that the frontend matches 
+// the custom color and font of the mockups. 
+// This issue # has been created to discuss more on the problems we ran into while 
+// customizing USWDS using trussworks framework and how we plan to address them going forward.
 
 .resources-header {
   color: #221122;

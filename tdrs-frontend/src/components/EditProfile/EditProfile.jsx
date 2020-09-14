@@ -7,6 +7,8 @@ import {
   Button,
 } from '@trussworks/react-uswds'
 
+import './EditProfile.scss'
+
 /**
  * This component renders when a user logs in for the first time
  * and needs to finish setting up their account. The user will
@@ -16,8 +18,8 @@ import {
 function EditProfile() {
   return (
     <GridContainer>
-      <h1>Request Access</h1>
-      <p>
+      <h1 className="request-access-header font-serif-2xl">Request Access</h1>
+      <p className="request-access-secondary">
         We need to collect some information before an OFA Admin can grant you
         access
       </p>
