@@ -45,11 +45,11 @@ function SplashPage() {
           <Grid>
             <div className="usa-hero__callout">
               <h1 className="usa-hero__heading">
-                <span className="usa-hero__heading--alt margin-bottom-6">
+                <span className="usa-hero__heading--alt margin-bottom-5">
                   Sign into TANF Data Portal
                 </span>
               </h1>
-              <p className="text-black margin-bottom-6">
+              <p className="text-black margin-bottom-5">
                 Our vision is to build a new, secure, web based data reporting
                 system to improve the federal reporting experience for TANF
                 grantees and federal staff. The new system will allow grantees
