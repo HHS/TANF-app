@@ -1,3 +1,7 @@
+// I know that these double classes are bad practice but this is the only way we could find
+// to be able to override the default values coming from classes. This is done in multiple places
+// to ensure that it matches the mock but will be reworked later.
+
 .resources-header {
   color: #221122;
 }
