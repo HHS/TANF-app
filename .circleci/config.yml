@@ -21,9 +21,9 @@ jobs:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main-backend
+              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main-backend
             elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
+              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
             fi
       - run:
           name:  "Test: Execute Python Linting Test"
