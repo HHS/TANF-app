@@ -1,10 +1,9 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
-import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
+import { GridContainer, Button, Grid, Link } from '@trussworks/react-uswds'
 
 import './SplashPage.scss'
-
 /**
  * This component renders on all pages of the TANF Data Portal.
  * It renders a hero element with a login button and when clicked
@@ -71,7 +70,12 @@ function SplashPage() {
             </h2>
             <div className="font-heading-3xs resource-info__secondary">
               <p>Questions about TANF data?</p>
-              <p>Email: tanfdata@acf.hhs.gov</p>
+              <p>
+                Email:{' '}
+                <Link href="mailto: tanfdata@acf.hhs.gov">
+                  tanfdata@acf.hhs.gov
+                </Link>
+              </p>
             </div>
           </Grid>
           <Grid
