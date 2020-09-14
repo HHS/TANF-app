@@ -1,7 +1,14 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
-import { GridContainer, Button, Grid, Link } from '@trussworks/react-uswds'
+import {
+  GridContainer,
+  Button,
+  Grid,
+  Link,
+  CardGroup,
+  Card,
+} from '@trussworks/react-uswds'
 
 import './SplashPage.scss'
 /**
@@ -38,18 +45,23 @@ function SplashPage() {
           <Grid>
             <div className="usa-hero__callout">
               <h1 className="usa-hero__heading">
-                <span className="usa-hero__heading--alt">
+                <span className="usa-hero__heading--alt margin-bottom-6">
                   Sign into TANF Data Portal
                 </span>
               </h1>
-              <p>
+              <p className="text-black margin-bottom-6">
                 Our vision is to build a new, secure, web based data reporting
                 system to improve the federal reporting experience for TANF
                 grantees and federal staff. The new system will allow grantees
                 to easily submit accurate data and be confident that they have
                 fulfilled their reporting requirements.
               </p>
-              <Button type="button" size="big" onClick={handleClick}>
+              <Button
+                className="sign-in-button"
+                type="button"
+                size="big"
+                onClick={handleClick}
+              >
                 Sign in with Login.gov
                 <span className="visually-hidden">Opens in a new website</span>
               </Button>
@@ -62,10 +74,10 @@ function SplashPage() {
         <Grid row gap>
           <Grid
             className="resource-info__primary"
-            tablet={{ col: 6 }}
+            tablet={{ col: 4 }}
             mobileLg={{ col: 12 }}
           >
-            <h2 className="font-heading-xl margin-top-0 tablet:margin-bottom-0">
+            <h2 className="resources-header font-heading-2xl margin-top-0 tablet:margin-bottom-0">
               Featured TANF Resources
             </h2>
             <div className="font-heading-3xs resource-info__secondary">
@@ -78,23 +90,18 @@ function SplashPage() {
               </p>
             </div>
           </Grid>
-          <Grid
-            tablet={{ col: true }}
-            className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
-          >
-            <div className="resource-card shadow-2">Resource 1</div>
-          </Grid>
-          <Grid
-            tablet={{ col: true }}
-            className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
-          >
-            <div className="resource-card shadow-2">Resource 2</div>
-          </Grid>
-          <Grid
-            tablet={{ col: true }}
-            className="tablet:margin-bottom-0 mobile-lg:margin-bottom-2"
-          >
-            <div className="resource-card shadow-2">Resource 3</div>
+          <Grid tablet={{ col: 8 }} mobileLg={{ col: 12 }} row gap>
+            <CardGroup className="grid-col-12">
+              <Card className="resource-card tablet:grid-col-4 mobile-lg:grid-col-12">
+                Resource 1
+              </Card>
+              <Card className="resource-card tablet:grid-col-4 mobile-lg:grid-col-12">
+                Resource 2
+              </Card>
+              <Card className="resource-card tablet:grid-col-4 mobile-lg:grid-col-12">
+                Resource 3
+              </Card>
+            </CardGroup>
           </Grid>
         </Grid>
       </GridContainer>

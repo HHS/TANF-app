@@ -67,7 +67,12 @@ function HeaderComp() {
         <Header extended>
           <div className="usa-navbar">
             <Title className="page-title">
-              <a href="/" title="Home" aria-label="Home">
+              <a
+                className="header-link"
+                href="/"
+                title="Home"
+                aria-label="Home"
+              >
                 TANF Data Portal
               </a>
             </Title>
