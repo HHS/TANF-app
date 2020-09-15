@@ -193,3 +193,42 @@ def test_set_profile_data_last_name_with_tilde(api_client, user):
     user.refresh_from_db()
     assert user.first_name == "Max"
     assert user.last_name == "Glen~"
+
+
+@pytest.mark.django_db
+def test_set_profile_data_extra_field_include_required(api_client, user):
+    with pytest.raises(AttributeError):
+        """Test profile data will ignore any extra fields passed in via request body"""
+        api_client.login(username=user.username, password="test_password")
+        response = api_client.post(
+            "/v1/users/set_profile/",
+            {
+                "first_name": "Heather",
+                "last_name": "Class",
+                "middle_initial": "Unknown",
+            },
+        )
+        assert response.status_code == status.HTTP_200_OK
+        """Test to ensure response data does not include unknown field"""
+        assert response.data == {"first_name": "Heather", "last_name": "Class"}
+        user.refresh_from_db()
+        assert user.first_name == "Heather"
+        assert user.last_name == "Class"
+        """Test fails if AttributeError exception isn't thrown"""
+        assert user.middle_name == "Unknown"
+
+
+@pytest.mark.django_db
+def test_set_profile_data_missing_last_name_field(api_client, user):
+    """Test profile data cannot be set if last name field is missing."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post("/v1/users/set_profile/", {"first_name": "Heather",},)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+def test_set_profile_data_missing_first_name_field(api_client, user):
+    """Test profile data cannot be set if first name field is missing."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.post("/v1/users/set_profile/", {"last_name": "Heather",},)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
