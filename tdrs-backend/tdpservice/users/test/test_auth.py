@@ -10,6 +10,7 @@ from rest_framework import status
 from django.core.exceptions import SuspiciousOperation
 from rest_framework.test import APIRequestFactory
 from ..api.login import TokenAuthorizationOIDC
+from ..api.logout_redirect_oidc import LogoutRedirectOIDC
 
 from ..api.utils import (
     generate_client_assertion,
@@ -66,15 +67,20 @@ def test_oidc_auth(api_client):
     assert response.status_code == status.HTTP_302_FOUND
 
 
-def test_oidc_logout(api_client):
-    """Test logout url redirects."""
+def test_oidc_logout_without_token(api_client):
+    """Test logging out with token redirects and token is removed."""
     response = api_client.get("/v1/logout/oidc")
     assert response.status_code == status.HTTP_302_FOUND
 
 
 def test_oidc_logout_with_token(api_client):
-    """Test logging out with token redirects and token is removed."""
-    response = api_client.get("/v1/logout/oidc")
+    """Test logging out with token redirects."""
+    factory = APIRequestFactory()
+    view = LogoutRedirectOIDC.as_view()
+    request = factory.get("/v1/logout/oidc")
+    request.session = api_client.session
+    request.session["token"] = "testtoken"
+    response = view(request)
     assert response.status_code == status.HTTP_302_FOUND
 
 
