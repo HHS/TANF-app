@@ -64,12 +64,7 @@ function SplashPage() {
                 size="big"
                 onClick={handleClick}
               >
-                Sign in with{' '}
-                <img
-                  className="login-logo padding-left-1"
-                  src={loginLogo}
-                  alt="login logo"
-                />
+                Sign in with Login.gov
                 <span className="visually-hidden">Opens in a new website</span>
               </Button>
             </div>
