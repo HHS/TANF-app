@@ -68,13 +68,13 @@ def test_oidc_auth(api_client):
 
 
 def test_oidc_logout_without_token(api_client):
-    """Test logging out with token redirects and token is removed."""
+    """Test logout redirect with token missing."""
     response = api_client.get("/v1/logout/oidc")
     assert response.status_code == status.HTTP_302_FOUND
 
 
 def test_oidc_logout_with_token(api_client):
-    """Test logging out with token redirects."""
+    """Test logout redirect with token present."""
     factory = APIRequestFactory()
     view = LogoutRedirectOIDC.as_view()
     request = factory.get("/v1/logout/oidc")
