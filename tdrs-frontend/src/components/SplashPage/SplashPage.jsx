@@ -10,6 +10,8 @@ import {
   Card,
 } from '@trussworks/react-uswds'
 
+import loginLogo from '../../assets/login-gov-logo.svg'
+
 import './SplashPage.scss'
 /**
  * This component renders on all pages of the TANF Data Portal.
@@ -62,7 +64,12 @@ function SplashPage() {
                 size="big"
                 onClick={handleClick}
               >
-                Sign in with Login.gov
+                Sign in with{' '}
+                <img
+                  className="login-logo padding-left-1"
+                  src={loginLogo}
+                  alt="login logo"
+                />
                 <span className="visually-hidden">Opens in a new website</span>
               </Button>
             </div>
@@ -70,7 +77,7 @@ function SplashPage() {
         </GridContainer>
       </section>
 
-      <GridContainer className="usa-section">
+      <GridContainer className="usa-section padding-right-0">
         <Grid row gap>
           <Grid
             className="resource-info__primary"
@@ -90,7 +97,7 @@ function SplashPage() {
               </p>
             </div>
           </Grid>
-          <Grid tablet={{ col: 8 }} mobileLg={{ col: 12 }} row gap>
+          <Grid tablet={{ col: 8 }} mobileLg={{ col: 12 }} row>
             <CardGroup className="grid-col-12">
               <Card className="resource-card tablet:grid-col-4 mobile-lg:grid-col-12">
                 Resource 1

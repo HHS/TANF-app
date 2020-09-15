@@ -33,9 +33,10 @@ describe('welcome page greeting', () => {
   })
   it('contains a link to the tanf email', () => {
     cy.get('div.resource-info__secondary p a.usa-link')
-     .should('have.attr', 'href').and('include', 'mailto: tanfdata@acf.hhs.gov')
+      .should('have.attr', 'href')
+      .and('include', 'mailto: tanfdata@acf.hhs.gov')
   })
   it('contains a button to sign in', () => {
-    cy.get('button.sign-in-button').contains('Sign in with Login.gov')
+    cy.get('button.sign-in-button').contains('Sign in with ')
   })
 })
