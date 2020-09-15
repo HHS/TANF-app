@@ -8,9 +8,8 @@ import {
   Link,
   CardGroup,
   Card,
+  CardHeader,
 } from '@trussworks/react-uswds'
-
-import loginLogo from '../../assets/login-gov-logo.svg'
 
 import './SplashPage.scss'
 /**
@@ -95,13 +94,13 @@ function SplashPage() {
           <Grid tablet={{ col: 8 }} mobileLg={{ col: 12 }} row>
             <CardGroup className="grid-col-12">
               <Card className="resource-card tablet:grid-col-4 mobile-lg:grid-col-12">
-                Resource 1
+                <CardHeader>Resource 1</CardHeader>
               </Card>
               <Card className="resource-card tablet:grid-col-4 mobile-lg:grid-col-12">
-                Resource 2
+                <CardHeader>Resource 2</CardHeader>
               </Card>
               <Card className="resource-card tablet:grid-col-4 mobile-lg:grid-col-12">
-                Resource 3
+                <CardHeader>Resource 3</CardHeader>
               </Card>
             </CardGroup>
           </Grid>

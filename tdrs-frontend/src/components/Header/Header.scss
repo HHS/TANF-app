@@ -1,4 +1,10 @@
 .header-link.header-link {
-  color: #221122;
-  font-family: Arial, Helvetica, sans-serif;
+  color: #264A64;;
+  font-family: Arial, Helvetica, sans-serif
+}
+
+
+// I know !important is bad practice but I can't find another way to get this to override the default
+.usa-current::after, .usa-nav__link::after {
+  background-color: #A12854 !important;
 }
