@@ -136,11 +136,9 @@ describe('Header', () => {
       </Provider>
     )
 
-    const signOutBtn = wrapper.find('.sign-out').first()
+    const signOutLink = wrapper.find('.sign-out-link').first()
 
-    signOutBtn.simulate('click', {
-      preventDefault: () => {},
-    })
+    signOutLink.simulate('click')
 
     expect(window.location.href).toEqual(url)
   })

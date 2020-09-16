@@ -1,4 +1,15 @@
-.usa-nav__secondary-links {
-  display: flex;
-  justify-content: center;
+.header-link.header-link {
+  color: #264A64;;
+  font-family: Arial, Helvetica, sans-serif
+}
+
+// I know !important is bad practice but I can't find another way to get this to override the default right now,
+// this will hopefully be easier once trussworks is removed. 
+.usa-nav__primary-item > a:hover {
+  color: #A12854 !important;
+}
+
+
+.usa-current::after, .usa-nav__link::after {
+  background-color: #A12854 !important;
 }

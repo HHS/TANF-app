@@ -11,7 +11,7 @@ import {
   Header,
   Title,
   ExtendedNav,
-  Button,
+  Link,
 } from '@trussworks/react-uswds'
 
 /**
@@ -34,7 +34,7 @@ function HeaderComp() {
     setMobileNavOpen((prevOpen) => !prevOpen)
   }
 
-  const navigationBar = [
+  const primaryNav = [
     <a
       href="/"
       key="welcome"
@@ -46,42 +46,33 @@ function HeaderComp() {
     </a>,
   ]
 
-  const handleClick = (event) => {
-    event.preventDefault()
-    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
-  }
-
-  const signOutBtn = (
-    <Button
-      className="sign-out"
-      type="button"
-      small
-      unstyled
-      onClick={handleClick}
+  const renderSecondaryNav = ({ email }) => [
+    <Link className="account-link" href="/">
+      <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
+      {email}
+    </Link>,
+    <Link
+      className="sign-out-link"
+      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
     >
       <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
       Sign Out
-    </Button>
-  )
-
-  const accountBtn = ({ email }) => (
-    <Button type="button" small unstyled>
-      <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
-      {email}
-    </Button>
-  )
+    </Link>,
+  ]
 
   return (
     <>
-      <a className="usa-skipnav" href="#main-content">
-        Skip to main content
-      </a>
       <div className={`usa-overlay ${mobileNavOpen ? 'is-visible' : ''}`} />
       <section>
         <Header extended>
           <div className="usa-navbar">
             <Title className="page-title">
-              <a href="/" title="Home" aria-label="Home">
+              <a
+                className="header-link"
+                href="/"
+                title="Home"
+                aria-label="Home"
+              >
                 TANF Data Portal
               </a>
             </Title>
@@ -92,8 +83,9 @@ function HeaderComp() {
             />
           </div>
           <ExtendedNav
-            primaryItems={navigationBar}
-            secondaryItems={authenticated ? [accountBtn(user), signOutBtn] : []}
+            aria-label="Primary navigation"
+            primaryItems={primaryNav}
+            secondaryItems={authenticated ? renderSecondaryNav(user) : []}
             onToggleMobileNav={toggleMobileNav}
             mobileExpanded={mobileNavOpen}
           />
