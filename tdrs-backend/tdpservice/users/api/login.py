@@ -62,29 +62,25 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             self, username=decoded_payload["email"]
         )
         if user is not None:
-            login(
-                request,
-                user,
-                backend="tdpservice.users.authentication.CustomAuthentication",
-            )
-            datetime_time = datetime.datetime.fromtimestamp(time.time())
-            logger.info(f"Found User:  {user.username} on {datetime_time}(UTC)")
+            self.login_user(request, user, "User Found")
         else:
             User = get_user_model()
             user = User.objects.create_user(decoded_payload["email"])
             user.set_unusable_password()
             user.save()
-
-            login(
-                request,
-                user,
-                backend="tdpservice.users.authentication.CustomAuthentication",
-            )
-
-            datetime_time = datetime.datetime.fromtimestamp(time.time())
-            logger.info(f"Created User:  {user.username} at {datetime_time}(UTC)")
+            self.login_user(request, user, "User Created")
 
         return user
+
+    def login_user(self, request, user, user_status):
+        """Create a session for the associated user."""
+        login(
+            request,
+            user,
+            backend="tdpservice.users.authentication.CustomAuthentication",
+        )
+        datetime_time = datetime.datetime.fromtimestamp(time.time())
+        logger.info(f"{user_status}:  {user.username} on {datetime_time}(UTC)")
 
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""

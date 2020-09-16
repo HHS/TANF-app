@@ -26,7 +26,11 @@ Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.
 
 **Commands are to be executed from within the `tdrs-frontend` directory**
 
-1.) React will use the  `env.development` file for local development:
+1.) Create a `.env.local` file for local development configured to reference the backend service:
+
+```bash
+$ touch .env.local && echo "REACT_APP_BACKEND_URL=http://localhost:8080/v1" >> .env.local
+```
  
   - The `REACT_APP_BACKEND_URL` variable in this file points to the backend host. For local testing this value should default to the following :
   
