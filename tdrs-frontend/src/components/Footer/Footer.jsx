@@ -1,7 +1,7 @@
 import React from 'react'
-import { Footer, Logo, SocialLinks, Grid } from '@trussworks/react-uswds'
+import { Footer, Logo, Grid } from '@trussworks/react-uswds'
 
-import ACFLogo from '../../assets/placeholder.png'
+import ACFLogo from '../../assets/ACFLogo.svg'
 
 import './Footer.scss'
 
@@ -20,7 +20,7 @@ function renderFooter() {
             size="big"
             image={
               <img
-                className="usa-footer__logo-img"
+                className="usa-footer__logo-img maxw-mobile"
                 alt="Administration for Children and Families Logo"
                 src={ACFLogo}
               />
