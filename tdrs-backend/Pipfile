@@ -16,6 +16,7 @@ pytest-cov = "*"
 pytest-django = "*"
 pytest-mock = "*"
 pyparsing = "*"
+pygraphviz = "*"
 
 [packages]
 boto3 = "*"
@@ -40,7 +41,6 @@ ptpython = "*"
 pyjwt = "*"
 python-dotenv = "*"
 requests = "*"
-pygraphviz = "*"
 
 [requires]
 python_version = "3.8"
