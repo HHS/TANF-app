@@ -43,3 +43,9 @@ class Development(Common):
     AWS_HEADERS = {
         "Cache-Control": "max-age=86400, s-maxage=86400, must-revalidate",
     }
+
+    # Graph Models for GraphViz
+    GRAPH_MODELS = {
+        'all_applications': True,
+        'group_models': True,
+    }
