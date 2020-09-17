@@ -1,7 +1,8 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
-import Welcome from '../Welcome'
+import SplashPage from '../SplashPage'
 import Dashboard from '../Dashboard'
+import EditProfile from '../EditProfile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 
@@ -14,13 +15,16 @@ const Routes = () => {
   return (
     <Switch>
       <Route exact path="/">
-        <Welcome />
+        <SplashPage />
       </Route>
       <Route exact path="/login">
         <LoginCallback />
       </Route>
       <PrivateRoute exact path="/dashboard">
         <Dashboard />
+      </PrivateRoute>
+      <PrivateRoute exact path="/edit-profile">
+        <EditProfile />
       </PrivateRoute>
     </Switch>
   )

@@ -3,4 +3,4 @@ For clients to authenticate, they have to authenticate with Login.gov via the ba
 
  This will allow the backend to identify the browser which requested access and authorize them based on the cookie they provide in their API calls. 
 
- The secured portion of this authorization is due to the httpOnly cookie being in accessible to the clients local browser. 
+ The secured portion of this authorization is due to the httpOnly cookie being inaccessible to the client's local browser. 

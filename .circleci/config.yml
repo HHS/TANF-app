@@ -1,52 +1,51 @@
 version: 2.1
 jobs:
   test-backend:
-    working_directory: ~/tdp-be
-    docker:
-      - image: circleci/python:3.8
-        user : root
+    machine: true
     branches:
     steps:
-      - setup_remote_docker: 
-         docker_layer_caching: true 
       - checkout
       - run:
           name: 'Ensure docker-compose exists,otherwise install it.'
           command: "./scripts/docker-compose-check.sh"
       - run:
           name: "Test: Build and Spin-up Django API Service"
-          command: "cd tdrs-backend; docker-compose build "
+          command: "cd tdrs-backend; docker-compose up -d --build"
       - run:
           name: "Tear Down Django API Service"
           command: "cd tdrs-backend; docker-compose down "
       - run:
-          name:  "Test: Execute Python Unit Tests"
-          command: "cd tdrs-backend; docker-compose run web sh -c \"pytest\""
+          name: "Test: Run Unit Tests And Create Code Coverage Report"
+          command: "cd tdrs-backend; docker-compose run web sh -c \"pytest && pytest --cov-report=xml\""
+      - run:
+          name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main-backend
+            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
+              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
+            fi
       - run:
           name:  "Test: Execute Python Linting Test"
           command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
-      - snyk/scan:
-          target-file: tdrs-backend/requirements.txt
-          severity-threshold: medium
-          additional-arguments: "--allow-missing --skip-unresolved --package-manager=pip --command=python3"
-  test-ui:
+  test-frontend:
     working_directory: ~/tdp-apps
     docker:
       - image: cypress/base:10
         user : root
     steps:
-      - setup_remote_docker: 
-         docker_layer_caching: true 
+      - setup_remote_docker:
+         docker_layer_caching: true
       - checkout
       - run:
           name: 'Ensure docker exists,otherwise install it.'
           command: "./scripts/docker-check.sh"
       - run:
           name: 'Ensure docker-compose exists,otherwise install it.'
-          command: "./scripts/docker-compose-check.sh"     
+          command: "./scripts/docker-compose-check.sh"
       - run:
           name: "Install Package Dependencies"
           command: "cd tdrs-frontend; yarn"
@@ -60,26 +59,27 @@ jobs:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
       - run:
+          name: "Upload Frontend Coverage Report to CodeCov If Target Branch"
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main-frontend
+            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
+              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
+            fi
+      - run:
           name: "Run Cypress Integration Tests"
-          command: "cd tdrs-frontend; yarn cy:run:ci"  
+          command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-frontend; ./zap-scanner.sh"  
-      - run:
-          name: 'Ensure sudo is installed, otherwise install it.'
-          command: "./scripts/sudo-check.sh"
-      - snyk/scan:
-          target-file: tdrs-frontend/yarn.lock
-          severity-threshold: low
-          additional-arguments: "--trust-policies"
   deploy:
     working_directory: ~/tdp-deploy
     docker:
       - image: circleci/python:3.8
         user : root
     steps:
-      - setup_remote_docker: 
-         docker_layer_caching: true 
+      - setup_remote_docker:
+         docker_layer_caching: true
       - checkout
       - run:
           name: 'Ensure sudo is installed, otherwise install it.'
@@ -89,7 +89,7 @@ jobs:
           command: "./scripts/cf-check.sh"
       - run:
           name: "Log Into Docker"
-          command: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin"    
+          command: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin"
       - run:
           name:  "Build Backend Docker image"
           command: "cd tdrs-backend; docker build -t goraftdocker/tdp-backend:$CIRCLE_BRANCH . -f ./docker/Dockerfile.dev"
@@ -98,7 +98,7 @@ jobs:
           command: "docker push goraftdocker/tdp-backend:$CIRCLE_BRANCH"
       - run:
           name:  "Build Frontend Docker image"
-          command: "cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:$CIRCLE_BRANCH . -f ./docker/Dockerfile.dev"
+          command: "cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:$CIRCLE_BRANCH . -f Dockerfile.dev"
       - run:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push goraftdocker/tdp-frontend:$CIRCLE_BRANCH"
@@ -120,8 +120,8 @@ jobs:
               export CF_SPACE="tanf-staging"
               export CF_USERNAME="$CF_USERNAME_STAGING"
               export CF_PASSWORD="$CF_PASSWORD_STAGING"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_STAGIN"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_STAGIN"
+              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_STAGING"
+              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_STAGING"
             elif [ "$CIRCLE_BRANCH" == "dev" ] ; then
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
@@ -146,17 +146,15 @@ jobs:
             cf auth "$CF_USERNAME" "$CF_PASSWORD"
             cf target -o $CF_ORG -s "$CF_SPACE"
             ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH
-orbs:
-  snyk: snyk/snyk@0.0.10
 workflows:
   build-and-test:
     jobs:
       - test-backend
-      - test-ui
+      - test-frontend
       - deploy:
           requires:
             - test-backend
-            - test-ui
+            - test-frontend
           filters:
             branches:
               only:

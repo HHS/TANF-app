@@ -6,13 +6,13 @@ import configureStore from 'redux-mock-store'
 import { MemoryRouter } from 'react-router-dom'
 
 import Routes from './Routes'
-import Welcome from '../Welcome'
+import SplashPage from '../SplashPage'
 import Dashboard from '../Dashboard'
 
 describe('Routes.js', () => {
   const mockStore = configureStore([thunk])
 
-  it('routes "/" to the Welcome page when user not authenticated', () => {
+  it('routes "/" to the SplashPage page when user not authenticated', () => {
     const store = mockStore({ auth: { authenticated: false } })
     const wrapper = mount(
       <Provider store={store}>
@@ -22,7 +22,7 @@ describe('Routes.js', () => {
       </Provider>
     )
 
-    expect(wrapper.find(Welcome)).toExist()
+    expect(wrapper.find(SplashPage)).toExist()
   })
 
   it('routes "/" to the Dashboard page when user is authenticated', () => {

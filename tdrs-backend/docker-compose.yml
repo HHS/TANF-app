@@ -24,7 +24,8 @@ services:
       - DJANGO_CONFIGURATION=Local
       - JWT_KEY=${JWT_KEY}
       - JWT_CERT_TEST=${JWT_CERT_TEST}
-
+    volumes:
+      - .:/tdpapp
     image: tdp
     build:
       context: .
@@ -36,11 +37,3 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
-  documentation:
-    restart: always
-    build: ./
-    command: "mkdocs serve"
-    volumes:
-      - ./:/tdpapp
-    ports:
-      - "8001:8001"

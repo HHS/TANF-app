@@ -1,12 +1,9 @@
-# raft-tdp-main
-
-
-Backend API Service TDP. Check out the project's [documentation](http://raftergit.github.io/raft-tdp-main/).
 
 # Authentication Login via Login.gov
-Supports registering, viewing, a user via Login.gov.
+Supports registering, authenticating, and logging out a user via Login.gov.
 
-## Perform a get request to be redirected to login.gov
+## Login
+
 
 **Request**:
 
@@ -20,22 +17,13 @@ None
 
 - Not Authorization Protected
 
-**Response**:
 
-```json
-Content-Type application/json
-200 Ok
+This will return with an httpOnly cookie and be stored by the clients browser for authenticating future requests to the API and redirect them to the frontend landing page. See [Authentication](api/authentication.md).
 
-{
-  "user_id":"1234567-1235-123b-b88d-069792f4ca7b",
-  "email":"tester@mailnator.com",
-  "status":"New User Created!"
- }
-```
+----
 
-This will return with an httpOnly cookie and be stored by the client for
-authenticating future requests to the API. See [Authentication](api/authentication.md).
-
+## Logout
+**Request**:
 
 `Get` `v1/logout/oidc`
 
@@ -47,19 +35,4 @@ None
 
 - Not Authorization Protected
 
-**Response**:
-
-```json
-Content-Type application/json
-200 Ok
-
-{
-  "user_id":"1234567-1235-123b-b88d-069792f4ca7b",
-  "email":"tester@mailnator.com",
-  "status":"New User Created!"
- }
-```
-
-This will return with an httpOnly cookie and be stored by the client for
-authenticating future requests to the API. See [Authentication](api/authentication.md).
-
+This will destroy the current user session while also logging out of Login.gov to then be redirected to the UI landing page.
