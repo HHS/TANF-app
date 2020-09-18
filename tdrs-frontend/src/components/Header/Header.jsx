@@ -4,8 +4,6 @@ import { useSelector } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 
-import './Header.scss'
-
 /**
  * This component is rendered on every page and contains the navigation bar.
  * When a user is authenticated, it will also display their email and will
