@@ -36,8 +36,7 @@ function HeaderComp() {
     </a>,
   ]
 
-  const renderSecondaryNav = (userInfo) => {
-    console.log('userInfo', userInfo)
+  const renderSecondaryNav = ({ email }) => {
     return [
       <a className="account-link" href="/">
         <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
@@ -65,7 +64,11 @@ function HeaderComp() {
               </a>
             </em>
           </div>
-          <button type="button" className="usa-menu-btn">
+          <button
+            type="button"
+            className="usa-menu-btn"
+            onClick={toggleMobileNav}
+          >
             Menu
           </button>
         </div>
@@ -75,17 +78,7 @@ function HeaderComp() {
               <img src="/assets/img/close.svg" alt="close" />
             </button>
             <ul className="usa-nav__primary usa-accordion">
-              <li className="usa-nav__primary-item">
-                <a
-                  href="/"
-                  key="welcome"
-                  className={`usa-nav__link ${
-                    pathname === '/edit-profile' ? 'usa-current' : ''
-                  }`}
-                >
-                  <span>Welcome</span>
-                </a>
-              </li>
+              <li className="usa-nav__primary-item">{primaryNav}</li>
             </ul>
             {user && (
               <div className="usa-nav__secondary">
