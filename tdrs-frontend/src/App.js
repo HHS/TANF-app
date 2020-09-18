@@ -1,9 +1,9 @@
 import React from 'react'
 // import { GovBanner } from '@trussworks/react-uswds'
-// import Routes from './components/Routes'
+import Routes from './components/Routes'
 // import { Notify } from './components/Notify'
 import Header from './components/Header'
-// import Footer from './components/Footer'
+import Footer from './components/Footer'
 
 /**
  * The root component
@@ -23,10 +23,10 @@ function App() {
       {/* <GovBanner aria-label="Official government website" /> */}
       <Header />
       {/* <Notify /> */}
-      {/* <main id="main-content">
+      <main id="main-content">
         <Routes />
       </main>
-      <Footer /> */}
+      <Footer />
     </>
   )
 }
