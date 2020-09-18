@@ -16,40 +16,11 @@ import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
  */
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
-  const authenticated = useSelector((state) => state.auth.authenticated)
   const user = useSelector((state) => state.auth.user)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const toggleMobileNav = () => {
     setMobileNavOpen((prevOpen) => !prevOpen)
-  }
-
-  const primaryNav = [
-    <a
-      href="/"
-      key="welcome"
-      className={`usa-nav__link ${
-        pathname === '/edit-profile' ? 'usa-current' : ''
-      }`}
-    >
-      <span>Welcome</span>
-    </a>,
-  ]
-
-  const renderSecondaryNav = ({ email }) => {
-    return [
-      <a className="account-link" href="/">
-        <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
-        {user.email}
-      </a>,
-      <a
-        className="sign-out-link"
-        href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
-      >
-        <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
-        Sign Out
-      </a>,
-    ]
   }
 
   return (
@@ -78,18 +49,41 @@ function HeaderComp() {
               <img src="/assets/img/close.svg" alt="close" />
             </button>
             <ul className="usa-nav__primary usa-accordion">
-              <li className="usa-nav__primary-item">{primaryNav}</li>
+              <li className="usa-nav__primary-item">
+                <a
+                  href="/"
+                  key="welcome"
+                  className={`usa-nav__link ${
+                    pathname === '/edit-profile' ? 'usa-current' : ''
+                  }`}
+                >
+                  <span>Welcome</span>
+                </a>
+              </li>
             </ul>
             {user && (
               <div className="usa-nav__secondary">
                 <ul className="usa-nav__secondary-links">
-                  {/* <li className="usa-nav__secondary-item">
-                  <a href="/">Secondary link</a>
-                </li>
-                <li className="usa-nav__secondary-item">
-                  <a href="/">Another secondary link</a>
-                </li> */}
-                  {renderSecondaryNav(user)}
+                  <li className="usa-nav__secondary-item">
+                    <a href="/">
+                      <FontAwesomeIcon
+                        className="margin-right-1"
+                        icon={faUserCircle}
+                      />
+                      {user.email}
+                    </a>
+                  </li>
+                  <li className="usa-nav__secondary-item">
+                    <a
+                      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
+                    >
+                      <FontAwesomeIcon
+                        className="margin-right-1"
+                        icon={faSignOutAlt}
+                      />
+                      Sign Out
+                    </a>
+                  </li>
                 </ul>
               </div>
             )}
