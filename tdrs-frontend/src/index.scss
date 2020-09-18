@@ -1,5 +1,7 @@
-@import 'assets/uswds-settings';
-@import "uswds/dist/scss/uswds";
+$theme-show-compile-warnings: false;
+$theme-font-path: '../../../fonts';
+$theme-image-path: '../../../img';
+$theme-hero-image: '../../img/hero.png';
+// $theme-show-notifications: false;
 
-@import 'assets/App';
-@import 'assets/Header'
+@import 'uswds/dist/scss/uswds';
