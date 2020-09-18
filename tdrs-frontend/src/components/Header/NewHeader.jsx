@@ -39,17 +39,17 @@ function HeaderComp() {
   ]
 
   const renderSecondaryNav = ({ email }) => [
-    <a className="account-link" href="/">
+    <Link className="account-link" href="/">
       <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
       {email}
-    </a>,
-    <a
+    </Link>,
+    <Link
       className="sign-out-link"
       href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
     >
       <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
       Sign Out
-    </a>,
+    </Link>,
   ]
 
   return (
@@ -74,7 +74,6 @@ function HeaderComp() {
                 </p>
               </div>
               <button
-                type="button"
                 className="usa-accordion__button usa-banner__button"
                 aria-expanded="false"
                 aria-controls="gov-banner"
@@ -94,6 +93,7 @@ function HeaderComp() {
                 <img
                   className="usa-banner__icon usa-media-block__img"
                   src="/assets/img/icon-dot-gov.svg"
+                  role="img"
                   alt="Dot gov"
                 />
                 <div className="usa-media-block__body">
@@ -108,6 +108,7 @@ function HeaderComp() {
                 <img
                   className="usa-banner__icon usa-media-block__img"
                   src="/assets/img/icon-https.svg"
+                  role="img"
                   alt="Https"
                 />
                 <div className="usa-media-block__body">
@@ -156,19 +157,16 @@ function HeaderComp() {
               </a>
             </em>
           </div>
-          <button type="button" className="usa-menu-btn">
-            Menu
-          </button>
+          <button className="usa-menu-btn">Menu</button>
         </div>
         <nav aria-label="Primary navigation" className="usa-nav">
           <div className="usa-nav__inner">
-            <button type="button" className="usa-nav__close">
-              <img src="/assets/img/close.svg" alt="close" />
+            <button className="usa-nav__close">
+              <img src="/assets/img/close.svg" role="img" alt="close" />
             </button>
             <ul className="usa-nav__primary usa-accordion">
               <li className="usa-nav__primary-item">
                 <button
-                  type="button"
                   className="usa-accordion__button usa-nav__link  usa-current"
                   aria-expanded="false"
                   aria-controls="extended-nav-section-one"
@@ -177,19 +175,19 @@ function HeaderComp() {
                 </button>
                 <ul id="extended-nav-section-one" className="usa-nav__submenu">
                   <li className="usa-nav__submenu-item">
-                    <a href="/" className="">
+                    <a href="#" className="">
                       {' '}
                       Navigation link
                     </a>
                   </li>
                   <li className="usa-nav__submenu-item">
-                    <a href="/" className="">
+                    <a href="#" className="">
                       {' '}
                       Navigation link
                     </a>
                   </li>
                   <li className="usa-nav__submenu-item">
-                    <a href="/" className="">
+                    <a href="#" className="">
                       {' '}
                       Navigation link
                     </a>
@@ -198,7 +196,6 @@ function HeaderComp() {
               </li>
               <li className="usa-nav__primary-item">
                 <button
-                  type="button"
                   className="usa-accordion__button usa-nav__link"
                   aria-expanded="false"
                   aria-controls="extended-nav-section-two"
@@ -207,19 +204,19 @@ function HeaderComp() {
                 </button>
                 <ul id="extended-nav-section-two" className="usa-nav__submenu">
                   <li className="usa-nav__submenu-item">
-                    <a href="/" className="">
+                    <a href="#" className="">
                       {' '}
                       Navigation link
                     </a>
                   </li>
                   <li className="usa-nav__submenu-item">
-                    <a href="/" className="">
+                    <a href="#" className="">
                       {' '}
                       Navigation link
                     </a>
                   </li>
                   <li className="usa-nav__submenu-item">
-                    <a href="/" className="">
+                    <a href="#" className="">
                       {' '}
                       Navigation link
                     </a>
@@ -227,7 +224,7 @@ function HeaderComp() {
                 </ul>
               </li>
               <li className="usa-nav__primary-item">
-                <a className="usa-nav__link" href="/">
+                <a className="usa-nav__link" href="javascript:void(0)">
                   <span>Simple link</span>
                 </a>
               </li>
@@ -235,10 +232,10 @@ function HeaderComp() {
             <div className="usa-nav__secondary">
               <ul className="usa-nav__secondary-links">
                 <li className="usa-nav__secondary-item">
-                  <a href="/">Secondary link</a>
+                  <a href="">Secondary link</a>
                 </li>
                 <li className="usa-nav__secondary-item">
-                  <a href="/">Another secondary link</a>
+                  <a href="">Another secondary link</a>
                 </li>
               </ul>
               <form className="usa-search usa-search--small" role="search">
@@ -247,13 +244,13 @@ function HeaderComp() {
                   htmlFor="extended-search-field-small"
                 >
                   Search small
-                  <input
-                    className="usa-input"
-                    id="extended-search-field-small"
-                    type="search"
-                    name="search"
-                  />
                 </label>
+                <input
+                  className="usa-input"
+                  id="extended-search-field-small"
+                  type="search"
+                  name="search"
+                />
                 <button className="usa-button" type="submit">
                   <span className="usa-sr-only">Search</span>
                 </button>
