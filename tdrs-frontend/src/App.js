@@ -1,7 +1,7 @@
 import React from 'react'
-// import { GovBanner } from '@trussworks/react-uswds'
+import GovBanner from './components/GovBanner'
 import Routes from './components/Routes'
-// import { Notify } from './components/Notify'
+import { Notify } from './components/Notify'
 import Header from './components/Header'
 import Footer from './components/Footer'
 
@@ -20,9 +20,9 @@ function App() {
       <a className="usa-skipnav" href="#main-content">
         Skip to main content
       </a>
-      {/* <GovBanner aria-label="Official government website" /> */}
+      <GovBanner />
       <Header />
-      {/* <Notify /> */}
+      <Notify />
       <main id="main-content">
         <Routes />
       </main>

@@ -1,5 +1,4 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
+import React, { useSelector } from 'react'
 
 export const ALERT_SUCCESS = 'success'
 export const ALERT_INFO = 'info'
@@ -24,15 +23,8 @@ export function Notify() {
   }
 
   return (
-    <div
-      className={`usa-alert usa-alert--${type} ${
-        !body ? 'usa-alert--slim' : ''
-      }`}
-    >
-      <div className="usa-alert__body">
-        <h3 className="usa-alert__heading">{heading}</h3>
-        <p className="usa-alert__text">{body}</p>
-      </div>
-    </div>
+    <Alert type={type} heading={heading} slim={!!body}>
+      {body}
+    </Alert>
   )
 }

@@ -17,11 +17,6 @@ import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
-
-  const toggleMobileNav = () => {
-    setMobileNavOpen((prevOpen) => !prevOpen)
-  }
 
   return (
     <>
@@ -35,11 +30,7 @@ function HeaderComp() {
               </a>
             </em>
           </div>
-          <button
-            type="button"
-            className="usa-menu-btn"
-            onClick={toggleMobileNav}
-          >
+          <button type="button" className="usa-menu-btn">
             Menu
           </button>
         </div>
