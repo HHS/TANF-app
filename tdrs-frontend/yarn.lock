@@ -1968,10 +1968,10 @@
   resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-7.2.1.tgz#2ad4e844175a3738cb9e7064be5ea070b8863a1c"
   integrity sha512-oZ0Ib5I4Z2pUEcoo95cT1cr6slco9WY7yiPpG+RGNkj8YcYgJnM7pXmYmorNOReh8MIGcKSqXyeGjxnr8YiZbA==
 
-"@trussworks/react-uswds@^1.9.0":
-  version "1.9.1"
-  resolved "https://registry.yarnpkg.com/@trussworks/react-uswds/-/react-uswds-1.9.1.tgz#079c9e38c5e39ca2903a45e0415481490088d4a1"
-  integrity sha512-Ps67SJFRc3AfWnIkLHgdyG2hcNawaorswcHm9t0pgSjJ0ZpAGvhVwKbPdeTheZEeS11mFGj/VXD991oloe12ag==
+"@trussworks/react-uswds@^1.9.1":
+  version "1.9.2"
+  resolved "https://registry.yarnpkg.com/@trussworks/react-uswds/-/react-uswds-1.9.2.tgz#2dd6559ce79a5dee23d358db41ca7ef1ad16165a"
+  integrity sha512-q9sFM2z6l497BJdUmYcWr1IwRzN9v/6pR2BM1VqPu1yvmJ0K0iKzKlwdRoTrjbhRFf7krTfO4sdM1X/z/GbZLw==
   dependencies:
     classnames "^2.2.6"
     dotenv "^8.2.0"
@@ -15312,10 +15312,6 @@ write-file-atomic@2.4.1:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/write-file-atomic/-/write-file-atomic-2.4.1.tgz#d0b05463c188ae804396fd5ab2a370062af87529"
   integrity sha512-TGHFeZEZMnv+gBFRfjAcxL5bPHrsGKtnb4qsFAws7/vlh+QfwAaySIw4AXP9ZskTTh5GWu3FLuJhsWVdiJPGvg==
-  dependencies:
-    graceful-fs "^4.1.11"
-    imurmurhash "^0.1.4"
-    signal-exit "^3.0.2"
 
 write-file-atomic@^3.0.0:
   version "3.0.3"
