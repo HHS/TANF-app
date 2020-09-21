@@ -21,10 +21,19 @@ class RegionAPIView(generics.ListAPIView):
     serializer_class = RegionSerializer
 
 
-class STTApiView(generics.ListAPIView):
+class STTApiAlphaView(generics.ListAPIView):
     """Simple view to get all STTs alphabetized."""
 
     pagination_class = None
     permission_classes = [IsAuthenticated]
     queryset = STT.objects.order_by("name")
+    serializer_class = STTSerializer
+
+
+class STTApiView(generics.ListAPIView):
+    """Simple view to get all STTs."""
+
+    pagination_class = None
+    permission_classes = [IsAuthenticated]
+    queryset = STT.objects
     serializer_class = STTSerializer

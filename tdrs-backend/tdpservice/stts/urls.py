@@ -5,5 +5,6 @@ from . import views
 
 urlpatterns = [
     path("by_region", views.RegionAPIView.as_view(), name="stts-by-region"),
-    path("alpha", views.STTApiView.as_view(), name="stts-alpha"),
+    path("alpha", views.STTApiAlphaView.as_view(), name="stts-alpha"),
+    path("", views.STTApiView.as_view(), name="stts")
 ]
