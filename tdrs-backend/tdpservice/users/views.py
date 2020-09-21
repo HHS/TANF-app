@@ -3,34 +3,20 @@ import datetime
 import logging
 import time
 
-from django.db.models import Prefetch
-
-from rest_framework import generics, mixins, viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .models import Region, STT, User
+from .models import User
 from .permissions import IsUserOrReadOnly
 from .serializers import (
     CreateUserSerializer,
-    RegionSerializer,
     SetUserProfileSerializer,
     UserSerializer,
 )
 
 logger = logging.getLogger(__name__)
-
-
-class RegionAPIView(generics.ListAPIView):
-    """Simple view to get all regions and STTs, without pagination."""
-
-    pagination_class = None
-    permission_classes = [AllowAny]
-    queryset = Region.objects.prefetch_related(
-        Prefetch("stts", queryset=STT.objects.select_related("state").order_by("name"))
-    ).order_by("id")
-    serializer_class = RegionSerializer
 
 
 class UserViewSet(
