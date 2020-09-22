@@ -59,7 +59,9 @@ function SplashPage() {
               <p>Questions about TANF data?</p>
               <p>
                 Email:{' '}
-                <a href="mailto: tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov</a>
+                <a className="usa-link" href="mailto: tanfdata@acf.hhs.gov">
+                  tanfdata@acf.hhs.gov
+                </a>
               </p>
             </div>
           </div>

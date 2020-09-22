@@ -18,7 +18,7 @@ function GovBanner() {
             </div>
             <div className="grid-col-fill tablet:grid-col-auto">
               <p className="usa-banner__header-text">
-                An DEMO website of the United States government
+                A DEMO website of the United States government
               </p>
               <p className="usa-banner__header-action" aria-hidden="true">
                 Here’s how you know
