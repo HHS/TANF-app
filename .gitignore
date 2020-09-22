@@ -39,6 +39,9 @@ tmp
 compliance/opencontrols/
 compliance/exports/
 
+# don't ignore requirements.txt
+!requirements.txt
+
 # coverage result
 .coverage
 /coverage/
