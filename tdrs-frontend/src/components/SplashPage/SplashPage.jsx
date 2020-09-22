@@ -37,7 +37,7 @@ function SplashPage() {
               fulfilled their reporting requirements.
             </p>
             <button
-              className="usa-button"
+              className="usa-button sign-in-button"
               type="button"
               size="big"
               onClick={handleClick}

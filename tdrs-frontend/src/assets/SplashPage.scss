@@ -1,49 +1,38 @@
-// Creating double classes is not best practice, however, this is the only way
-// to override the default values coming from classes. 
-// This is done in multiple places to ensure that the frontend matches 
-// the custom color and font of the mockups. 
-// This issue #https://github.com/raft-tech/TANF-app/issues/274 has been created to discuss more on the problems we ran into while 
-// customizing USWDS using trussworks framework and how we plan to address them going forward.
-
 // There are some minor changes that need to be made before releasing beta,
 // these are captured in issue #276: https://github.com/raft-tech/TANF-app/issues/276
 
-// .resources-header {
-//   color: #221122;
-// }
+.resources-header {
+  color: #221122;
+}
 
-// .usa-hero__callout.usa-hero__callout {
-//   background-color: #E2EFF7;
-//   font-family: Arial, Helvetica, sans-serif;
-// }
+.usa-hero__callout {
+  background-color: #E2EFF7;
+  font-family: Arial, Helvetica, sans-serif;
+}
 
-// .usa-hero__heading--alt.usa-hero__heading--alt {
-//   color: #264A64;
-// }
+.usa-hero__heading--alt {
+  color: #264A64;
+}
 
-// .sign-in-button.sign-in-button,
-// .sign-in-button:hover.sign-in-button:hover {
-//   background-color: #336A90;
-//   font-family: Arial, Helvetica, sans-serif;
-//   font-size: 16px;
-// }
+.sign-in-button,
+.sign-in-button:hover {
+  background-color: #336A90;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+}
 
-// .resource-info__secondary.resource-info__secondary {
-//   font-family: Arial, Helvetica, sans-serif;
-//   font-size: 16px;
-// }
+.resource-info__secondary {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+}
 
-// .usa-card__container {
-//   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-// }
+.usa-card__header {
+  font-family: "Merriweather", serif;
+}
 
-// .usa-card__header {
-//   font-family: "Merriweather", serif;
-// }
-
-// .resource-card {
-//   height: 182px;
-// }
+.resource-card {
+  height: 182px;
+}
 
 .visually-hidden:not(:focus):not(:active) {
   clip: rect(0 0 0 0);

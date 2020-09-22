@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 
+import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 
@@ -37,7 +38,7 @@ function HeaderComp() {
         <nav aria-label="Primary navigation" className="usa-nav">
           <div className="usa-nav__inner">
             <button type="button" className="usa-nav__close">
-              <img src="/assets/img/close.svg" alt="close" />
+              <img src={closeIcon} alt="close" />
             </button>
             <ul className="usa-nav__primary usa-accordion">
               <li className="usa-nav__primary-item">

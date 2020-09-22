@@ -1,5 +1,7 @@
 import React from 'react'
 
+import smallFlag from 'uswds/dist/img/us_flag_small.png'
+
 function GovBanner() {
   return (
     <section className="usa-banner" aria-label="Official government website">
@@ -9,13 +11,13 @@ function GovBanner() {
             <div className="grid-col-auto">
               <img
                 className="usa-banner__header-flag"
-                src="/assets/img/us_flag_small.png"
+                src={smallFlag}
                 alt="U.S. flag"
               />
             </div>
             <div className="grid-col-fill tablet:grid-col-auto">
               <p className="usa-banner__header-text">
-                An official website of the United States government
+                An DEMO website of the United States government
               </p>
               <p className="usa-banner__header-action" aria-hidden="true">
                 Here’s how you know

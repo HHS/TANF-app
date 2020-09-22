@@ -1,6 +1,4 @@
 @import 'theme/_global.scss';
-// @import './theme/uswds-settings';
-// @import "../node_modules/uswds/dist/scss/uswds";
 
 html, body, div#root {
   height: 100%;
@@ -18,34 +16,4 @@ main#main-content {
   min-height: calc(100% - 239px);
   padding: 0;
   margin: 0;
-}
-
-@include media(">=medium") {
-  .usa-banner {
-    background-color: #ebf3fa;
-    &__header {
-      display: block;
-      background-color: #122E51;
-      &-text {
-        color: white;
-      }
-    }
-    &__button {
-      &-text {
-        color: white;
-      }
-      &::after {
-        background-color: white;
-      }
-      &:hover {
-        &::after {
-          background-color: white;
-        }
-      }
-    }
-    &__button[aria-expanded=true]::after,
-    &__button[aria-expanded=true]:hover::after {
-      background-color: white;
-    }
-  }
 }

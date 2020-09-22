@@ -3,13 +3,11 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-// I know !important is bad practice but I can't find another way to get this to override the default right now,
-// this will hopefully be easier once trussworks is removed. 
-.usa-nav__primary-item > a:hover {
-  color: #A12854 !important;
+.usa-nav__primary > .usa-nav__primary-item > a:hover {
+  color: #A12854;
 }
 
-
-.usa-current::after, .usa-nav__link::after {
-  background-color: #A12854 !important;
+.usa-header--extended .usa-nav__primary-item > .usa-current::after, 
+.usa-header--extended .usa-nav__primary-item > .usa-nav__link:hover::after {
+  background-color: #A12854;
 }
