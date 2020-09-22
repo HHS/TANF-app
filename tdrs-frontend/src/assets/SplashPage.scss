@@ -7,7 +7,7 @@
 
 .usa-hero__callout {
   background-color: #E2EFF7;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: $sans-serif;
 }
 
 .usa-hero__heading--alt {
@@ -17,12 +17,12 @@
 .sign-in-button,
 .sign-in-button:hover {
   background-color: #336A90;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: $sans-serif;
   font-size: 16px;
 }
 
 .resource-info__secondary {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: $sans-serif;
   font-size: 16px;
 }
 
