@@ -1,4 +1,4 @@
-"""API Tests."""
+"""API User Tests."""
 from django.contrib.auth import get_user_model
 import pytest
 from rest_framework import status
