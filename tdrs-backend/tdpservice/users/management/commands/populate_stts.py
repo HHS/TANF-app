@@ -27,7 +27,7 @@ def _get_states():
                 code=row["Code"],
                 name=row["Name"],
                 region_id=row["Region"],
-                type=STT.STTType.STATE,
+                type=STT.EntityType.STATE,
             )
             for row in reader
         ]
@@ -41,7 +41,7 @@ def _get_territories():
                 code=row["Code"],
                 name=row["Name"],
                 region_id=row["Region"],
-                type=STT.STTType.TERRITORY,
+                type=STT.EntityType.TERRITORY,
             )
             for row in reader
         ]
@@ -55,7 +55,7 @@ def _populate_tribes():
                 name=row["Name"],
                 region_id=row["Region"],
                 state=STT.objects.get(code=row["Code"]),
-                type=STT.STTType.TRIBE,
+                type=STT.EntityType.TRIBE,
             )
             for row in reader
         ]

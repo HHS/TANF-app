@@ -17,7 +17,7 @@ class Region(models.Model):
 class STT(models.Model):
     """A model representing a US state, tribe or territory."""
 
-    class STTType(models.TextChoices):
+    class EntityType(models.TextChoices):
         """Enum representing types of STT."""
 
         STATE = "state"
@@ -25,7 +25,7 @@ class STT(models.Model):
         TRIBE = "tribe"
 
     type = models.CharField(
-        max_length=200, blank=True, null=True, choices=STTType.choices
+        max_length=200, blank=True, null=True, choices=EntityType.choices
     )
     code = models.CharField(max_length=2, blank=True, null=True)
     name = models.CharField(max_length=1000)

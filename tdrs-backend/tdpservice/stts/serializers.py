@@ -18,7 +18,7 @@ class STTSerializer(serializers.ModelSerializer):
 
     def get_code(self, obj):
         """Return the state code."""
-        if obj.type == STT.STTType.TRIBE:
+        if obj.type == STT.EntityType.TRIBE:
             return obj.state.code
         return obj.code
 
