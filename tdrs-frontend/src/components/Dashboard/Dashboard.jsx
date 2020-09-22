@@ -1,6 +1,5 @@
 import React from 'react'
-// import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
-// import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 /**
  * This component renders for a user who just logged in.
@@ -11,31 +10,34 @@ import React from 'react'
  * @param {object} email - a user's email address
  */
 function Dashboard() {
-  // const user = useSelector((state) => state.auth.user.email)
-  // const handleClick = (event) => {
-  //   event.preventDefault()
-  //   window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
-  // }
+  const user = useSelector((state) => state.auth.user.email)
+  const handleClick = (event) => {
+    event.preventDefault()
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
+  }
   return (
-    <div>hello</div>
-    // <GridContainer className="welcome">
-    //   <Grid row>
-    //     <Grid col={8} className="left">
-    //       <h1>
-    //         Welcome, <em>{user}</em>!
-    //         <span role="img" aria-label="wave" aria-hidden="true">
-    //           {' '}
-    //           🎉
-    //         </span>
-    //       </h1>
-    //     </Grid>
-    //     <Grid col={4} className="right">
-    //       <Button type="button" size="big" onClick={handleClick}>
-    //         Sign Out
-    //       </Button>
-    //     </Grid>
-    //   </Grid>
-    // </GridContainer>
+    <div className="grid-container" className="welcome">
+      <div className="grid-row">
+        <div className="grid-col-8">
+          <h1>
+            Welcome, <em>{user}</em>!
+            <span role="img" aria-label="wave" aria-hidden="true">
+              {' '}
+              🎉
+            </span>
+          </h1>
+        </div>
+        <div className="grid-col-4">
+          <button
+            type="button"
+            className="usa-button usa-button--big"
+            onClick={handleClick}
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

@@ -3,7 +3,6 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { Button } from '@trussworks/react-uswds'
 
 import Dashboard from './Dashboard'
 
@@ -28,7 +27,7 @@ describe('Dashboard.js', () => {
         <Dashboard />
       </Provider>
     )
-    wrapper.find(Button).simulate('click', {
+    wrapper.find('.usa-button').simulate('click', {
       preventDefault: () => {},
     })
     expect(window.location.href).toEqual(url)

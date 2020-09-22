@@ -53,7 +53,7 @@ function HeaderComp() {
                 </a>
               </li>
             </ul>
-            {user && (
+            {user && user.email && (
               <div className="usa-nav__secondary">
                 <ul className="usa-nav__secondary-links">
                   <li className="usa-nav__secondary-item">
@@ -67,6 +67,7 @@ function HeaderComp() {
                   </li>
                   <li className="usa-nav__secondary-item">
                     <a
+                      className="sign-out-link"
                       href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
                     >
                       <FontAwesomeIcon

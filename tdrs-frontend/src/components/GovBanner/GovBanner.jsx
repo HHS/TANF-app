@@ -5,6 +5,7 @@ import smallFlag from 'uswds/dist/img/us_flag_small.png'
 function GovBanner() {
   return (
     <section className="usa-banner" aria-label="Official government website">
+      {' '}
       <div className="usa-accordion">
         <header className="usa-banner__header">
           <div className="usa-banner__inner">

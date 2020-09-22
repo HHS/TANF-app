@@ -48,52 +48,6 @@ describe('Header', () => {
     expect(menuBtn).toExist()
   })
 
-  it('should call toggleMobileNav when menu button is clicked on mobile', () => {
-    const store = mockStore(initialState)
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-    const menuBtn = wrapper.find('button.usa-menu-btn')
-    let nav = wrapper.find('.usa-nav')
-
-    expect(nav.hasClass('is-visible')).toEqual(false)
-
-    menuBtn.simulate('click')
-
-    nav = wrapper.find('.usa-nav')
-
-    expect(nav.hasClass('is-visible')).toEqual(true)
-  })
-
-  it('should close menu overlay when close button is clicked', () => {
-    const store = mockStore(initialState)
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-    const menuBtn = wrapper.find('button.usa-menu-btn')
-    let nav = wrapper.find('.usa-nav')
-
-    expect(nav.hasClass('is-visible')).toEqual(false)
-
-    menuBtn.simulate('click')
-
-    nav = wrapper.find('.usa-nav')
-
-    expect(nav.hasClass('is-visible')).toEqual(true)
-
-    const closeBtn = wrapper.find('button.usa-nav__close')
-
-    closeBtn.simulate('click')
-
-    nav = wrapper.find('.usa-nav')
-
-    expect(nav.hasClass('is-visible')).toEqual(false)
-  })
-
   it("should add usa-current class to Welcome tab when on '/edit-profile'", () => {
     const store = mockStore(initialState)
     const wrapper = mount(
@@ -156,8 +110,11 @@ describe('Header', () => {
     expect(secondaryLinks.length).toEqual(2)
   })
 
-  it('should not have secondaryItems when user is logged in', () => {
-    initialState = { ...initialState, auth: { user: {}, authenticated: false } }
+  it('should not have secondaryItems when user is logged out', () => {
+    initialState = {
+      ...initialState,
+      auth: { user: {}, authenticated: false },
+    }
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>

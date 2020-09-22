@@ -31,7 +31,7 @@ describe('EditProfile', () => {
   it('should have a submit button', () => {
     const wrapper = mount(<EditProfile />)
 
-    const nameInput = wrapper.find('button[type="submit"]')
+    const nameInput = wrapper.find('input[type="submit"]')
 
     expect(nameInput).toExist()
   })
