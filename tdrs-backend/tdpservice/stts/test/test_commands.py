@@ -1,10 +1,7 @@
 """Commands tests."""
 
 from django.core.management import call_command
-from unittest.mock import patch, ANY
-
 import pytest
-
 from ..models import Region, STT
 
 
