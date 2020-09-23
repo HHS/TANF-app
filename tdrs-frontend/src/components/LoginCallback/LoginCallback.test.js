@@ -11,7 +11,7 @@ import LoginCallback from '.'
 describe('LoginCallback.js', () => {
   const mockStore = configureStore([thunk])
 
-  it('redirects to "/dashboard" when user is already authenticated', () => {
+  it('redirects to "/edit-profile" when user is already authenticated', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })

@@ -1,7 +1,6 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 import SplashPage from '../SplashPage/SplashPage'
-import Dashboard from '../Dashboard'
 import EditProfile from '../EditProfile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
@@ -20,9 +19,6 @@ const Routes = () => {
       <Route exact path="/login">
         <LoginCallback />
       </Route>
-      <PrivateRoute exact path="/dashboard">
-        <Dashboard />
-      </PrivateRoute>
       <PrivateRoute exact path="/edit-profile">
         <EditProfile />
       </PrivateRoute>

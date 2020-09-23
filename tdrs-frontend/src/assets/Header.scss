@@ -1,13 +1,24 @@
 .usa-logo a {
-  color: #264A64;
+  color: $main-text-color;
   font-family: $sans-serif;
 }
 
 .usa-nav__primary > .usa-nav__primary-item > a:hover {
-  color: #A12854;
+  color: $active-color;
 }
 
 .usa-header--extended .usa-nav__primary-item > .usa-current::after, 
 .usa-header--extended .usa-nav__primary-item > .usa-nav__link:hover::after {
-  background-color: #A12854;
+  background-color: $active-color;
+}
+
+.usa-nav__secondary-item a {
+  color: $secondary-text-color;
+  &:hover {
+    color: $active-color;
+  }
+}
+
+.usa-menu-btn, .usa-menu-btn:hover {
+  background-color: $button-color;
 }
