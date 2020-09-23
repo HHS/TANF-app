@@ -29,7 +29,9 @@ class STT(models.Model):
     )
     code = models.CharField(max_length=2, blank=True, null=True)
     name = models.CharField(max_length=1000)
-    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name="stts")
+    region = models.ForeignKey(
+        Region, on_delete=models.CASCADE, related_name="stts", null=True
+    )
     # Tribes have a state, which we need to store.
     state = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
 
