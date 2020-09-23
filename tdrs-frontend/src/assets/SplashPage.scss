@@ -2,21 +2,21 @@
 // these are captured in issue #276: https://github.com/raft-tech/TANF-app/issues/276
 
 .resources-header {
-  color: #221122;
+  color: $secondary-text-color;
 }
 
 .usa-hero__callout {
-  background-color: #E2EFF7;
+  background-color: $main-background-color;
   font-family: $sans-serif;
 }
 
 .usa-hero__heading--alt {
-  color: #264A64;
+  color: $main-text-color;
 }
 
 .sign-in-button,
 .sign-in-button:hover {
-  background-color: #336A90;
+  background-color: $button-color;
   font-family: $sans-serif;
   font-size: 16px;
   display: flex;
