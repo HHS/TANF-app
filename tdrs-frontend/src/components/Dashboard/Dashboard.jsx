@@ -16,7 +16,7 @@ function Dashboard() {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
   }
   return (
-    <div className="grid-container" className="welcome">
+    <div className="grid-container welcome">
       <div className="grid-row">
         <div className="grid-col-8">
           <h1>
