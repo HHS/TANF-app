@@ -23,6 +23,11 @@
   background-color: $primary-medium-blue;
 }
 
-.usa-nav__primary .usa-current {
-  color: #565c65;
+.usa-nav__primary > .usa-nav__primary-item > a {
+  font-weight: 400;
+  color: $primary-graphite;
+}
+
+.usa-nav__primary > .usa-nav__primary-item > .usa-current {
+  font-weight: 700;
 }
