@@ -32,12 +32,13 @@ function EditProfile() {
             aria-required="true"
           />
         </label>
-        <input
+        <button
           type="submit"
-          className="usa-button usa-button--big"
-          value="Request Access"
+          className="usa-button usa-button--big request-access-button"
           disabled
-        />
+        >
+          Request Access
+        </button>
       </form>
     </div>
   )

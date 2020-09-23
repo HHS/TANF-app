@@ -19,6 +19,8 @@
   background-color: #336A90;
   font-family: $sans-serif;
   font-size: 16px;
+  display: flex;
+  justify-content: center;
 }
 
 .resource-info__secondary {
@@ -47,5 +49,13 @@
 @media screen and (max-width: 640px) {
   .resource-info__secondary {
     display: none;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .sign-in-button {
+    flex-direction: column;
+    align-content: center;
+    margin: auto;
   }
 }

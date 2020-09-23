@@ -2,6 +2,8 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 
+import loginLogo from '../../assets/login-gov-logo.svg'
+
 function SplashPage() {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)
@@ -37,12 +39,19 @@ function SplashPage() {
               fulfilled their reporting requirements.
             </p>
             <button
-              className="usa-button sign-in-button"
+              className="usa-button width-full sign-in-button"
               type="button"
               size="big"
               onClick={handleClick}
             >
-              Sign in with Login.gov
+              <div className="mobile:margin-x-auto mobile-lg:margin-0">
+                Sign in with{' '}
+              </div>
+              <img
+                className="mobile:margin-x-auto mobile:padding-top-1 mobile-lg:margin-0 mobile-lg:padding-top-0 width-15 padding-left-1"
+                src={loginLogo}
+                alt=""
+              />
               <span className="visually-hidden">Opens in a new website</span>
             </button>
           </div>

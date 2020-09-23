@@ -1,3 +1,11 @@
+.request-access-button {
+  font-size: 1rem;
+}
+
+.request-access-button:disabled {
+  color: #4a4a4a;
+}
+
 .request-access-secondary {
   font-family: $sans-serif;
 }
