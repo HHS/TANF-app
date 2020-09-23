@@ -10,13 +10,13 @@ function EditProfile() {
   const stts = useSelector((state) => state.stts.stts)
   const dispatch = useDispatch()
 
-  useEffect(() => {
-    if (sttsLoading) {
-      dispatch(setAlert({ heading: 'Please wait...', type: ALERT_INFO }))
-    } else {
-      dispatch(clearAlert())
-    }
-  }, [sttsLoading, dispatch])
+  // useEffect(() => {
+  //   if (sttsLoading) {
+  //     dispatch(setAlert({ heading: 'Please wait...', type: ALERT_INFO }))
+  //   } else {
+  //     dispatch(clearAlert())
+  //   }
+  // }, [sttsLoading, dispatch])
 
   useEffect(() => {
     dispatch(fetchStts())
@@ -24,7 +24,6 @@ function EditProfile() {
 
   const customStyles = {
     control: (provided, state) => ({
-      // none of react-select's styles are passed to <Control />
       ...provided,
       border: '1px solid #1b1b1b',
       width: 320,
@@ -35,18 +34,11 @@ function EditProfile() {
     dropdownIndicator: (provided, state) => ({
       ...provided,
       color: '#1b1b1b',
-      height: '2.25em',
     }),
     placeholder: (provided, state) => ({
       ...provided,
       color: '#1b1b1b',
     }),
-    // singleValue: (provided, state) => {
-    //   const opacity = state.isDisabled ? 0.5 : 1
-    //   const transition = 'opacity 300ms'
-
-    //   return { ...provided, opacity, transition }
-    // },
   }
 
   return (
@@ -87,16 +79,17 @@ function EditProfile() {
             styles={customStyles}
             name="stt"
             id="stt"
+            isLoading={sttsLoading}
             options={stts}
-            theme={(theme) => ({
-              ...theme,
-              borderRadius: 0,
-              colors: {
-                ...theme.colors,
-                primary25: 'hotpink',
-                primary: 'black',
-              },
-            })}
+            // theme={(theme) => ({
+            //   ...theme,
+            //   borderRadius: 0,
+            //   colors: {
+            //     ...theme.colors,
+            //     primary25: 'blue',
+            //     primary: 'black',
+            //   },
+            // })}
           />
         </label>
         <button
