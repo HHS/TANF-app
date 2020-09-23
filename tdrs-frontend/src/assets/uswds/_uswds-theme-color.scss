@@ -17,13 +17,39 @@ https://designsystem.digital.gov/design-tokens/color
 ----------------------------------------
 */
 
-$button-color: #336A90;
-$main-text-color: #264A64;
-$secondary-text-color: #221122;
-$main-background-color: #E2EFF7;
-$active-color: #A12854;
-$disabled-color: #4A4A4A;
+$disabled-button-color: #4A4A4A;
 $gov-banner-background: #122E51;
+
+/* Primary Color Palette */
+
+$primary-pale-blue: #BCD9ED;
+$primary-light-pale-blue: #E2EFF7;
+$primary-medium-blue: #336A90;
+$primary-light-medium-blue: #779CB5;
+$primary-acf-blue: #264A64;
+$primary-deep-acf-blue: #172C3C;
+$primary-neutral: #BFB0A3;
+$primary-deep-neutral: #8F847A;
+$primary-medium-gray: #475260;
+$primary-deep-medium-gray: #323A45;
+$primary-light-medium-gray: #80858C;
+$primary-ligh-medium-gray-accessible: #72777E;
+$primary-light-cool-gray: #DDE2E8;
+$primary-graphite: #221122;
+
+/* Accent Color Palette */
+
+$accent-teal: #63BAB0;
+$accent-light-teal: #A6D8D2;
+$accent-deep-teal: #407972;
+$accent-dark-teal: #2D544F;
+$accent-yellow: #F9E585;
+$accent-light-yellow: #FCF1BF;
+$accent-magenta: #A12854;
+$accent-medium-deep-magenta: #711C3B;
+$accent-deep-magenta: #481226;
+$accent-orange: #E29F4D;
+$accent-light-orange: #ECBF88;
 
 /*
 ----------------------------------------
