@@ -1,24 +1,24 @@
 .usa-logo a {
-  color: $main-text-color;
+  color: $primary-acf-blue;
   font-family: $sans-serif;
 }
 
 .usa-nav__primary > .usa-nav__primary-item > a:hover {
-  color: $active-color;
+  color: $accent-magenta;
 }
 
 .usa-header--extended .usa-nav__primary-item > .usa-current::after, 
 .usa-header--extended .usa-nav__primary-item > .usa-nav__link:hover::after {
-  background-color: $active-color;
+  background-color: $accent-magenta;
 }
 
 .usa-nav__secondary-item a {
-  color: $secondary-text-color;
+  color: $primary-graphite;
   &:hover {
-    color: $active-color;
+    color: $accent-magenta;
   }
 }
 
 .usa-menu-btn, .usa-menu-btn:hover {
-  background-color: $button-color;
+  background-color: $primary-medium-blue;
 }
