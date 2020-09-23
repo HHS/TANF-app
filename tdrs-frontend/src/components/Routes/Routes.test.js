@@ -7,7 +7,7 @@ import { MemoryRouter } from 'react-router-dom'
 
 import Routes from './Routes'
 import SplashPage from '../SplashPage'
-import Dashboard from '../Dashboard'
+import EditProfile from '../EditProfile'
 
 describe('Routes.js', () => {
   const mockStore = configureStore([thunk])
@@ -25,7 +25,7 @@ describe('Routes.js', () => {
     expect(wrapper.find(SplashPage)).toExist()
   })
 
-  it('routes "/" to the Dashboard page when user is authenticated', () => {
+  it('routes "/" to the Edit-Profile page when user is authenticated', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -37,6 +37,6 @@ describe('Routes.js', () => {
       </Provider>
     )
 
-    expect(wrapper.find(Dashboard)).toExist()
+    expect(wrapper.find(EditProfile)).toExist()
   })
 })

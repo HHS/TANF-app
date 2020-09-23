@@ -14,6 +14,9 @@
 
 .usa-nav__secondary-item a {
   color: $secondary-text-color;
+  &:hover {
+    color: $active-color;
+  }
 }
 
 .usa-menu-btn, .usa-menu-btn:hover {

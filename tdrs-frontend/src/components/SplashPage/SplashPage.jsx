@@ -14,7 +14,7 @@ function SplashPage() {
   }
 
   if (authenticated) {
-    return <Redirect to="/dashboard" />
+    return <Redirect to="/edit-profile" />
   }
 
   if (authLoading) {

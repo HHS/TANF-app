@@ -61,8 +61,8 @@ describe('Header', () => {
     expect(welcomeTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should not add usa-current class to Welcome tab when not on '/'", () => {
-    initialState = { ...initialState, router: { location: '/dashboard' } }
+  it("should not add usa-current class to Welcome tab when not on '/edit-profile'", () => {
+    initialState = { ...initialState, router: { location: '/' } }
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
