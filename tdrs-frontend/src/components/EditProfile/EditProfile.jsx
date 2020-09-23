@@ -1,6 +1,54 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import Select from 'react-select'
+import { fetchStts } from '../../actions/stts'
+import { setAlert, clearAlert } from '../../actions/alert'
+import { ALERT_INFO } from '../Notify'
 
 function EditProfile() {
+  const sttsLoading = useSelector((state) => state.stts.loading)
+  const stts = useSelector((state) => state.stts.stts)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (sttsLoading) {
+      dispatch(setAlert({ heading: 'Please wait...', type: ALERT_INFO }))
+    } else {
+      dispatch(clearAlert())
+    }
+  }, [sttsLoading, dispatch])
+
+  useEffect(() => {
+    dispatch(fetchStts())
+  }, [dispatch])
+
+  const customStyles = {
+    control: (provided, state) => ({
+      // none of react-select's styles are passed to <Control />
+      ...provided,
+      border: '1px solid #1b1b1b',
+      width: 320,
+      height: 40,
+      marginTop: '.5rem',
+      borderRadius: 0,
+    }),
+    dropdownIndicator: (provided, state) => ({
+      ...provided,
+      color: '#1b1b1b',
+      height: '2.25em',
+    }),
+    placeholder: (provided, state) => ({
+      ...provided,
+      color: '#1b1b1b',
+    }),
+    // singleValue: (provided, state) => {
+    //   const opacity = state.isDisabled ? 0.5 : 1
+    //   const transition = 'opacity 300ms'
+
+    //   return { ...provided, opacity, transition }
+    // },
+  }
+
   return (
     <div className="grid-container">
       <h1 className="request-access-header font-serif-2xl">Request Access</h1>
@@ -30,6 +78,25 @@ function EditProfile() {
             type="text"
             required
             aria-required="true"
+          />
+        </label>
+
+        <label className="usa-label" htmlFor="stt">
+          State, Tribe or Territory
+          <Select
+            styles={customStyles}
+            name="stt"
+            id="stt"
+            options={stts}
+            theme={(theme) => ({
+              ...theme,
+              borderRadius: 0,
+              colors: {
+                ...theme.colors,
+                primary25: 'hotpink',
+                primary: 'black',
+              },
+            })}
           />
         </label>
         <input
