@@ -3,7 +3,7 @@ describe('person logs in', () => {
     it('sees a button to sign in', () => {
       cy.visit('http://localhost:3000/')
 
-      cy.contains('Sign in with Login.gov')
+      cy.contains('Sign in with ')
     })
   })
 })

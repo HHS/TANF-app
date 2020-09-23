@@ -37,6 +37,6 @@ describe('welcome page greeting', () => {
       .and('include', 'mailto: tanfdata@acf.hhs.gov')
   })
   it('contains a button to sign in', () => {
-    cy.get('button.sign-in-button').contains('Sign in with Login.gov')
+    cy.get('button.sign-in-button').contains('Sign in with ')
   })
 })
