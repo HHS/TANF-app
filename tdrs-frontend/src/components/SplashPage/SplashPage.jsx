@@ -27,7 +27,7 @@ function SplashPage() {
         <div className="grid-container">
           <div className="usa-hero__callout">
             <h1 className="usa-hero__heading">
-              <span className="usa-hero__heading--alt margin-bottom-5">
+              <span className="usa-hero__heading--alt font-serif-2xl margin-bottom-5">
                 Sign into TANF Data Portal
               </span>
             </h1>
@@ -64,7 +64,7 @@ function SplashPage() {
             <h2 className="resources-header font-heading-2xl margin-top-0 tablet:margin-bottom-0">
               Featured TANF Resources
             </h2>
-            <div className="font-heading-3xs resource-info__secondary">
+            <div className="resource-info__secondary">
               <p>Questions about TANF data?</p>
               <p>
                 Email:{' '}

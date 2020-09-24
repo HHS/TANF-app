@@ -167,7 +167,7 @@ $theme-font-type-lang: false;
 $theme-font-type-mono: "roboto-mono";
 
 // sans-serif
-$theme-font-type-sans: "source-sans-pro";
+// $theme-font-type-sans: "source-sans-pro";
 
 // serif
 $theme-font-type-serif: "merriweather";
@@ -420,3 +420,13 @@ $theme-lead-font-family: "heading";
 $theme-lead-font-size: "lg";
 $theme-lead-line-height: 6;
 $theme-lead-measure: 6;
+
+$theme-typeface-tokens: (
+  acf-arial: (
+    display-name: "Arial",
+    cap-height: 345px,
+  ),
+);
+
+$theme-font-type-sans: "acf-arial";
+$theme-font-sans-custom-stack: "Helvetica", sans;
