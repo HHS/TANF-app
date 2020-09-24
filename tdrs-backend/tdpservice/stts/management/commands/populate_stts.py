@@ -72,16 +72,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Populate the various regions, states, territories, and tribes."""
         logger.info("The STT import is running")
-        try:
-            _populate_regions()
-            stts = _get_states()
-            stts.extend(_get_territories())
-            STT.objects.bulk_create(stts, ignore_conflicts=True)
-            _populate_tribes()
-            """Possible logic to include roles in combo box"""
-            STT.objects.get_or_create(
-                id=-1, region_id=1000, name="I work at Federal Government "
-            )
-            logger.info("STT import ran and it completed successfully.")
-        except Exception as e:
-            logger.exception(f"Error attempting to import STTs:  {e} at...")
+        _populate_regions()
+        stts = _get_states()
+        stts.extend(_get_territories())
+        STT.objects.bulk_create(stts, ignore_conflicts=True)
+        _populate_tribes()
+        logger.info("STT import ran and it completed successfully.")

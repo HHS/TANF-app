@@ -1,9 +1,7 @@
 """Commands tests."""
 
 from django.core.management import call_command
-
 import pytest
-
 from ..models import Region, STT
 
 
