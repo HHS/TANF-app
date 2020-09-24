@@ -12,12 +12,11 @@ export const fetchStts = () => async (dispatch) => {
     const { data } = await axios.get(URL, {
       withCredentials: true,
     })
-    const sttNames = data.map((stt) => ({
-      value: stt.name.toLowerCase(),
-      label: stt.name,
-    }))
-    console.log('DATA', data)
     if (data) {
+      const sttNames = data.map((stt) => ({
+        value: stt.name.toLowerCase(),
+        label: stt.name,
+      }))
       dispatch({ type: SET_STTS, payload: { sttNames } })
     } else {
       dispatch({ type: CLEAR_STTS })

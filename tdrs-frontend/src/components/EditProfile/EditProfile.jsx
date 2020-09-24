@@ -74,7 +74,7 @@ function EditProfile() {
         </label>
 
         <label className="usa-label" htmlFor="stt">
-          State, Tribe or Territory
+          Associated State, Tribe, or Territory
           <Select
             styles={customStyles}
             name="stt"
