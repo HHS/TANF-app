@@ -38,6 +38,9 @@ tmp
 compliance/opencontrols/
 compliance/exports/
 
+# Graph Models ERD
+tdrs-backend/tdp-erd.png
+
 # coverage result
 .coverage
 /coverage/
