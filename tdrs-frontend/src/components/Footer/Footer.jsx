@@ -10,7 +10,7 @@ function Footer() {
           <div className="usa-footer__logo grid-row grid-gap-2">
             <div className="grid-col-auto">
               <img
-                className="maxw-mobile"
+                className="mobile-lg:maxw-mobile mobile:width-mobile"
                 alt="Administration for Children and Families Logo"
                 src={ACFLogo}
               />

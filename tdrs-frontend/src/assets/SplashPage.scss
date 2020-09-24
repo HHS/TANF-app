@@ -7,7 +7,11 @@
 
 .usa-hero__callout {
   background-color: $primary-light-pale-blue;
-  font-family: $sans-serif;
+}
+
+.usa-card__heading {
+  font-size: 16px;
+  font-weight: 400;
 }
 
 .usa-hero__heading--alt {
@@ -17,19 +21,9 @@
 .sign-in-button,
 .sign-in-button:hover {
   background-color: $primary-medium-blue;
-  font-family: $sans-serif;
   font-size: 16px;
   display: flex;
   justify-content: center;
-}
-
-.resource-info__secondary {
-  font-family: $sans-serif;
-  font-size: 16px;
-}
-
-.usa-card__header {
-  font-family: 'serif';
 }
 
 .resource-card {
