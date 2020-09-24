@@ -16,6 +16,7 @@ export const fetchStts = () => async (dispatch) => {
       value: stt.name.toLowerCase(),
       label: stt.name,
     }))
+    console.log('DATA', data)
     if (data) {
       dispatch({ type: SET_STTS, payload: { sttNames } })
     } else {

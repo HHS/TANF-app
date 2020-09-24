@@ -1,11 +1,22 @@
 import React from 'react'
+import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
+import { Provider } from 'react-redux'
+import configureStore from 'redux-mock-store'
 
 import EditProfile from './EditProfile'
 
 describe('EditProfile', () => {
+  const initialState = { stts: { stts: [], loading: false } }
+  const mockStore = configureStore([thunk])
+
   it('should have a card with header Request Access', () => {
-    const wrapper = mount(<EditProfile />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
     const h1 = wrapper.find('h1')
 
     expect(h1).toExist()
@@ -13,7 +24,12 @@ describe('EditProfile', () => {
   })
 
   it('should have a first name input', () => {
-    const wrapper = mount(<EditProfile />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
 
     const nameInput = wrapper.find('#first-name')
 
@@ -21,7 +37,12 @@ describe('EditProfile', () => {
   })
 
   it('should have a last name input', () => {
-    const wrapper = mount(<EditProfile />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
 
     const nameInput = wrapper.find('#last-name')
 
@@ -29,7 +50,12 @@ describe('EditProfile', () => {
   })
 
   it('should have a submit button', () => {
-    const wrapper = mount(<EditProfile />)
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
 
     const submitBtn = wrapper.find('button[type="submit"]')
 
