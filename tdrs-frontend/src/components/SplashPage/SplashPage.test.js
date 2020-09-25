@@ -4,11 +4,10 @@ import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter, Redirect } from 'react-router-dom'
-import { Button } from '@trussworks/react-uswds'
 
 import SplashPage from './SplashPage'
 
-describe('SplashPage.js', () => {
+describe('SplashPage', () => {
   const initialState = { auth: { authenticated: false } }
   const mockStore = configureStore([thunk])
 
@@ -49,13 +48,13 @@ describe('SplashPage.js', () => {
         <SplashPage />
       </Provider>
     )
-    wrapper.find(Button).simulate('click', {
+    wrapper.find('button').simulate('click', {
       preventDefault: () => {},
     })
     expect(window.location.href).toEqual(url)
   })
 
-  it('redirects to /dashboard when user is already authenticated', () => {
+  it('redirects to /edit-profile when user is already authenticated', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -66,6 +65,6 @@ describe('SplashPage.js', () => {
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/dashboard" />)
+    expect(wrapper).toContainReact(<Redirect to="/edit-profile" />)
   })
 })
