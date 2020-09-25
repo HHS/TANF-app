@@ -77,19 +77,9 @@ function EditProfile() {
           Associated State, Tribe, or Territory
           <Select
             styles={customStyles}
-            name="stt"
-            id="stt"
+            inputId="stt"
             isLoading={sttsLoading}
             options={stts}
-            // theme={(theme) => ({
-            //   ...theme,
-            //   borderRadius: 0,
-            //   colors: {
-            //     ...theme.colors,
-            //     primary25: 'blue',
-            //     primary: 'black',
-            //   },
-            // })}
           />
         </label>
         <button
