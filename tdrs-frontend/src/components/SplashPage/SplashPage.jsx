@@ -22,7 +22,7 @@ function SplashPage() {
   }
 
   return (
-    <main id="main-content">
+    <>
       <section className="usa-hero" aria-label="Introduction">
         <div className="grid-container">
           <div className="usa-hero__callout">
@@ -101,7 +101,7 @@ function SplashPage() {
           </div>
         </div>
       </section>
-    </main>
+    </>
   )
 }
 
