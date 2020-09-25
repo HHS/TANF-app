@@ -25,7 +25,6 @@ from .utils import (
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
 
 
 class TokenAuthorizationOIDC(ObtainAuthToken):

@@ -7,13 +7,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stts', '0001_initial'),
+        ("stts", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='stt',
-            name='region',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='stts', to='stts.region'),
+            model_name="stt",
+            name="region",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="stts",
+                to="stts.region",
+            ),
         ),
     ]
