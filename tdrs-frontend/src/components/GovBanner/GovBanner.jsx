@@ -1,6 +1,7 @@
 import React from 'react'
 
 import smallFlag from 'uswds/dist/img/us_flag_small.png'
+import lockImg from 'uswds/dist/img/icon-dot-gov.svg'
 
 function GovBanner() {
   return (
@@ -44,8 +45,8 @@ function GovBanner() {
             <div className="usa-banner__guidance tablet:grid-col-6">
               <img
                 className="usa-banner__icon usa-media-block__img"
-                src="/assets/img/icon-dot-gov.svg"
-                alt=""
+                src={lockImg}
+                alt="Https"
               />
               <div className="usa-media-block__body">
                 <p>
@@ -58,7 +59,7 @@ function GovBanner() {
             <div className="usa-banner__guidance tablet:grid-col-6">
               <img
                 className="usa-banner__icon usa-media-block__img"
-                src="/assets/img/icon-https.svg"
+                src={lockImg}
                 alt="Https"
               />
               <div className="usa-media-block__body">

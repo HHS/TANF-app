@@ -22,7 +22,7 @@ function SplashPage() {
   }
 
   return (
-    <main id="main-content">
+    <>
       <section className="usa-hero" aria-label="Introduction">
         <div className="grid-container">
           <div className="usa-hero__callout">
@@ -50,7 +50,7 @@ function SplashPage() {
               <img
                 className="mobile:margin-x-auto mobile:padding-top-1 mobile-lg:margin-0 mobile-lg:padding-top-0 width-15 padding-left-1"
                 src={loginLogo}
-                alt=""
+                alt="Login.gov"
               />
               <span className="visually-hidden">Opens in a new website</span>
             </button>
@@ -101,7 +101,7 @@ function SplashPage() {
           </div>
         </div>
       </section>
-    </main>
+    </>
   )
 }
 
