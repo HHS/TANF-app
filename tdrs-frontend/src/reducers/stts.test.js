@@ -5,7 +5,6 @@ import {
   SET_STTS_ERROR,
   CLEAR_STTS,
 } from '../actions/stts'
-import { CLEAR_AUTH } from '../actions/auth'
 
 describe('reducers/stts', () => {
   it('should return the initial state', () => {
@@ -35,11 +34,13 @@ describe('reducers/stts', () => {
         },
         {
           type: SET_STTS,
-          payload: { sttNames: [{ value: 'alabama', label: 'Alabama' }] },
+          payload: {
+            data: [{ id: 1, type: 'state', code: 'AL', name: 'Alabama' }],
+          },
         }
       )
     ).toEqual({
-      stts: [{ value: 'alabama', label: 'Alabama' }],
+      stts: [{ id: 1, type: 'state', code: 'AL', name: 'Alabama' }],
       loading: false,
     })
   })

@@ -13,11 +13,7 @@ export const fetchStts = () => async (dispatch) => {
       withCredentials: true,
     })
     if (data) {
-      const sttNames = data.map((stt) => ({
-        value: stt.name.toLowerCase(),
-        label: stt.name,
-      }))
-      dispatch({ type: SET_STTS, payload: { sttNames } })
+      dispatch({ type: SET_STTS, payload: { data } })
     } else {
       dispatch({ type: CLEAR_STTS })
     }

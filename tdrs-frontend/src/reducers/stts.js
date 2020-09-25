@@ -16,11 +16,11 @@ const stts = (state = initialState, action) => {
     case FETCH_STTS:
       return { ...state, loading: true }
     case SET_STTS: {
-      const { sttNames } = payload
+      const { data } = payload
       return {
         ...state,
         loading: false,
-        stts: sttNames,
+        stts: data,
       }
     }
     case SET_STTS_ERROR: {

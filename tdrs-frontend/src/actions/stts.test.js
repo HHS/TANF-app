@@ -26,8 +26,8 @@ describe('actions/stts.js', () => {
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_STTS)
     expect(actions[1].type).toBe(SET_STTS)
-    expect(actions[1].payload.sttNames).toStrictEqual([
-      { value: 'alabama', label: 'Alabama' },
+    expect(actions[1].payload.data).toStrictEqual([
+      { id: 1, type: 'state', code: 'AL', name: 'Alabama' },
     ])
   })
 

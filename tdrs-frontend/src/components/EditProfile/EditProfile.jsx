@@ -2,21 +2,16 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Select from 'react-select'
 import { fetchStts } from '../../actions/stts'
-import { setAlert, clearAlert } from '../../actions/alert'
-import { ALERT_INFO } from '../Notify'
 
 function EditProfile() {
   const sttsLoading = useSelector((state) => state.stts.loading)
-  const stts = useSelector((state) => state.stts.stts)
+  const stts = useSelector((state) =>
+    state.stts.stts.map((stt) => ({
+      value: stt.name.toLowerCase(),
+      label: stt.name,
+    }))
+  )
   const dispatch = useDispatch()
-
-  // useEffect(() => {
-  //   if (sttsLoading) {
-  //     dispatch(setAlert({ heading: 'Please wait...', type: ALERT_INFO }))
-  //   } else {
-  //     dispatch(clearAlert())
-  //   }
-  // }, [sttsLoading, dispatch])
 
   useEffect(() => {
     dispatch(fetchStts())
