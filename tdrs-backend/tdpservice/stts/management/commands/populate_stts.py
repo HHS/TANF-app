@@ -2,6 +2,8 @@
 
 import csv
 import logging
+import datetime
+import time
 from pathlib import Path
 from django.core.management import BaseCommand
 from ...models import Region, STT
@@ -10,7 +12,6 @@ from ...models import Region, STT
 DATA_DIR = BASE_DIR = Path(__file__).resolve().parent / "data"
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
 
 
 def _populate_regions():
@@ -71,10 +72,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Populate the various regions, states, territories, and tribes."""
-        logger.info("The STT import is running")
         _populate_regions()
         stts = _get_states()
         stts.extend(_get_territories())
         STT.objects.bulk_create(stts, ignore_conflicts=True)
         _populate_tribes()
-        logger.info("STT import ran and it completed successfully.")
+        datetime_time = datetime.datetime.fromtimestamp(time.time())
+        logger.info(f"STT import executed by ADMIN and completed at: {datetime_time}")

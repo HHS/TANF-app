@@ -1,6 +1,7 @@
 """Define settings for all environments."""
 
 import json
+import logging
 import os
 from distutils.util import strtobool
 from os.path import join
@@ -238,3 +239,7 @@ class Common(Configuration):
 
     # CORS
     CORS_ALLOW_CREDENTIALS = True
+
+    # Capture all logging statements across the service in the root handler
+    logger = logging.getLogger()
+    logger.addHandler(logging.StreamHandler())
