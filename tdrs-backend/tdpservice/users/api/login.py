@@ -1,12 +1,11 @@
 """Login.gov/authorize is redirected to this endpoint to start a django user session."""
-import datetime
 import logging
 import os
-import time
 
 from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect
+from ...utils.timestamp import TimeStampManager
 
 import jwt
 import requests
@@ -78,8 +77,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             user,
             backend="tdpservice.users.authentication.CustomAuthentication",
         )
-        datetime_time = datetime.datetime.fromtimestamp(time.time())
-        logger.info(f"{user_status}:  {user.username} on {datetime_time}(UTC)")
+        logger.info(
+            (f"{user_status}:  {user.username} "
+             f"on {TimeStampManager.create()}(UTC)")
+        )
 
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""

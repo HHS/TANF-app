@@ -1,10 +1,9 @@
 """Handle logout requests."""
-import datetime
 import logging
-import time
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from ...utils.timestamp import TimeStampManager
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -28,14 +27,14 @@ class AuthorizationCheck(APIView):
                     "last_name": user.last_name,
                 },
             }
-            datetime_time = datetime.datetime.fromtimestamp(time.time())
             logger.info(
-                f"Auth check PASS for user:  {user.username} on {datetime_time}(UTC)"
+                (f"Auth check PASS for user:  {user.username} "
+                 f"on {TimeStampManager.create()}(UTC)")
             )
             return Response(auth_params)
         else:
-            datetime_time = datetime.datetime.fromtimestamp(time.time())
             logger.info(
-                f"Auth check FAIL for user: {request.items()} on {datetime_time}(UTC)"
+                (f"Auth check FAIL for user: {request.items()} "
+                 f"on {TimeStampManager.create()}(UTC)")
             )
             return Response({"authenticated": False})

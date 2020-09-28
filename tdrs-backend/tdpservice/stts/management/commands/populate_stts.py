@@ -2,11 +2,10 @@
 
 import csv
 import logging
-import datetime
-import time
 from pathlib import Path
 from django.core.management import BaseCommand
 from ...models import Region, STT
+from ....utils.timestamp import TimeStampManager
 
 
 DATA_DIR = BASE_DIR = Path(__file__).resolve().parent / "data"
@@ -77,5 +76,6 @@ class Command(BaseCommand):
         stts.extend(_get_territories())
         STT.objects.bulk_create(stts, ignore_conflicts=True)
         _populate_tribes()
-        datetime_time = datetime.datetime.fromtimestamp(time.time())
-        logger.info(f"STT import executed by ADMIN and completed at: {datetime_time}")
+        logger.info(
+            f"STT import executed by ADMIN. Completed at: {TimeStampManager.create()}"
+        )
