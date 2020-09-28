@@ -3,7 +3,6 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { Alert } from '@trussworks/react-uswds'
 import { ALERT_INFO, Notify } from '.'
 
 describe('Notify.js', () => {
@@ -23,9 +22,26 @@ describe('Notify.js', () => {
         <Notify />
       </Provider>
     )
-    expect(wrapper.find(Alert)).toExist()
+    expect(wrapper.find('.usa-alert')).toExist()
     expect(wrapper.find('h3')).toIncludeText('Hey, Look at Me!')
     expect(wrapper.find('p')).toIncludeText('more details')
+  })
+
+  it('returns a "slim" alert if there is no body', () => {
+    const store = mockStore({
+      alert: {
+        show: true,
+        type: ALERT_INFO,
+        heading: 'Hey, Look at Me!',
+      },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <Notify />
+      </Provider>
+    )
+
+    expect(wrapper.find('.usa-alert--slim')).toExist()
   })
 
   it('returns nothing if the "show" property is false', () => {
@@ -35,6 +51,6 @@ describe('Notify.js', () => {
         <Notify />
       </Provider>
     )
-    expect(wrapper.find(Alert)).not.toExist()
+    expect(wrapper.find('.usa-alert')).not.toExist()
   })
 })

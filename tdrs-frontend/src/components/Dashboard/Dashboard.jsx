@@ -1,5 +1,4 @@
 import React from 'react'
-import { GridContainer, Button, Grid } from '@trussworks/react-uswds'
 import { useSelector } from 'react-redux'
 
 /**
@@ -17,9 +16,9 @@ function Dashboard() {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
   }
   return (
-    <GridContainer className="welcome">
-      <Grid row>
-        <Grid col={8} className="left">
+    <div className="grid-container welcome">
+      <div className="grid-row">
+        <div className="grid-col-8">
           <h1>
             Welcome, <em>{user}</em>!
             <span role="img" aria-label="wave" aria-hidden="true">
@@ -27,14 +26,18 @@ function Dashboard() {
               🎉
             </span>
           </h1>
-        </Grid>
-        <Grid col={4} className="right">
-          <Button type="button" size="big" onClick={handleClick}>
+        </div>
+        <div className="grid-col-4">
+          <button
+            type="button"
+            className="usa-button usa-button--big"
+            onClick={handleClick}
+          >
             Sign Out
-          </Button>
-        </Grid>
-      </Grid>
-    </GridContainer>
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

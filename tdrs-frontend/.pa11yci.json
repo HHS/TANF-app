@@ -15,15 +15,15 @@
   "viewport": {
       "width": 1000,
       "height": 1000
-     },
+    },
   "urls": [
     {
       "url": "http://localhost:3000",
       "screenCapture": "pa11y-screenshots/homepage.png"
     },
     {
-      "url": "http://localhost:3000/dashboard",
-      "screenCapture": "pa11y-screenshots/dashboard.png"      
+      "url": "http://localhost:3000/edit-profile",
+      "screenCapture": "pa11y-screenshots/edit-profile.png"      
     }
   ]
 }

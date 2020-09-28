@@ -1,7 +1,8 @@
 import React from 'react'
 import { shallow } from 'enzyme'
 
-import { GovBanner } from '@trussworks/react-uswds'
+import GovBanner from './components/GovBanner'
+
 import App from './App'
 
 describe('App.js', () => {

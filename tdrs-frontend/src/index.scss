@@ -1,0 +1,17 @@
+$theme-hero-image: '../../img/hero.png';
+
+@import "./assets/uswds/uswds-theme-general";
+@import "./assets/uswds/uswds-theme-typography";
+@import "./assets/uswds/uswds-theme-spacing";
+@import "./assets/uswds/uswds-theme-color";
+@import "./assets/uswds/uswds-theme-utilities";
+@import "uswds/dist/scss/uswds";
+
+@import 'theme/global';
+
+@import './assets/App';
+@import './assets/GovBanner';
+@import './assets/Header';
+@import './assets/SplashPage';
+@import './assets/EditProfile';
+@import './assets/Footer';
