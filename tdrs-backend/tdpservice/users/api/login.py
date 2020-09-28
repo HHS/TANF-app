@@ -5,7 +5,7 @@ import os
 from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect
-from ...utils.timestamp import TimeStampManager
+from django.utils import timezone
 
 import jwt
 import requests
@@ -77,10 +77,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             user,
             backend="tdpservice.users.authentication.CustomAuthentication",
         )
-        logger.info(
-            (f"{user_status}:  {user.username} "
-             f"on {TimeStampManager.create()}(UTC)")
-        )
+        logger.info("%s: %s on %s", user_status, user.username, timezone.now)
 
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""

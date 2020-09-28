@@ -3,7 +3,7 @@ import logging
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from ...utils.timestamp import TimeStampManager
+from django.utils import timezone
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -28,13 +28,9 @@ class AuthorizationCheck(APIView):
                 },
             }
             logger.info(
-                (f"Auth check PASS for user:  {user.username} "
-                 f"on {TimeStampManager.create()}(UTC)")
+                "Auth check PASS for user: %s on %s", user.username, timezone.now()
             )
             return Response(auth_params)
         else:
-            logger.info(
-                (f"Auth check FAIL for user: {request.items()} "
-                 f"on {TimeStampManager.create()}(UTC)")
-            )
+            logger.info("Auth check FAIL for user on %s", timezone.now())
             return Response({"authenticated": False})

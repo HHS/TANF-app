@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from .models import User
 from .permissions import IsUserOrReadOnly
-from ..utils.timestamp import TimeStampManager
+from django.utils import timezone
 from .serializers import (
     CreateUserSerializer,
     SetUserProfileSerializer,
@@ -50,7 +50,6 @@ class UserViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save()
         logger.info(
-            f"Profile update for user:  {self.request.user} "
-            f"on {TimeStampManager.create()}(UTC)"
+            "Profile update for user: %s on %s", self.request.user, timezone.now()
         )
         return Response(serializer.data)

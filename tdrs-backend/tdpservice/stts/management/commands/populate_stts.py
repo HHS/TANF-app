@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from django.core.management import BaseCommand
 from ...models import Region, STT
-from ....utils.timestamp import TimeStampManager
+from django.utils import timezone
 
 
 DATA_DIR = BASE_DIR = Path(__file__).resolve().parent / "data"
@@ -76,6 +76,4 @@ class Command(BaseCommand):
         stts.extend(_get_territories())
         STT.objects.bulk_create(stts, ignore_conflicts=True)
         _populate_tribes()
-        logger.info(
-            f"STT import executed by ADMIN. Completed at: {TimeStampManager.create()}"
-        )
+        logger.info("STT import executed by Admin at %s", timezone.now())
