@@ -74,6 +74,7 @@ function EditProfile() {
             styles={customStyles}
             inputId="stt"
             isLoading={sttsLoading}
+            isClearable
             options={stts}
           />
         </label>
