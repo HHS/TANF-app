@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
 
-import Button from './Button.tsx'
+import Button from './Button'
 
 describe('Button component', () => {
   beforeEach(() => {
@@ -40,6 +40,7 @@ describe('Button component', () => {
         )
         expect(queryByTestId('button')).toHaveClass(data[1])
       })
+      return false
     })
 
     it('renders uswds class for size big', () => {
