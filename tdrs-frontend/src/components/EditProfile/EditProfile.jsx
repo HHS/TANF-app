@@ -1,4 +1,5 @@
 import React from 'react'
+import Button from '../Button'
 
 function EditProfile() {
   return (
@@ -32,13 +33,9 @@ function EditProfile() {
             aria-required="true"
           />
         </label>
-        <button
-          type="submit"
-          className="usa-button usa-button--big request-access-button"
-          disabled
-        >
+        <Button type="submit" classes="request-access-button" disabled big>
           Request Access
-        </button>
+        </Button>
       </form>
     </div>
   )
