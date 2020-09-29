@@ -16,7 +16,7 @@ export const ALERT_ERROR = 'error'
  * one of ['success', 'info', 'warning', 'error']
  * @param {string} body - additional content to include in the alert.
  */
-export function Notify() {
+export function Alert() {
   const { show, type, heading, body } = useSelector((state) => state.alert)
 
   if (!show) {

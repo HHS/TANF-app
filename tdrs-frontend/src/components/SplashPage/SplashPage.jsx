@@ -79,21 +79,21 @@ function SplashPage() {
               <li className="usa-card tablet:grid-col-4 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
-                    <h2 className="usa-card__heading">Resource 1</h2>
+                    <h3 className="usa-card__heading">Resource 1</h3>
                   </header>
                 </div>
               </li>
               <li className="usa-card tablet:grid-col-4 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
-                    <h2 className="usa-card__heading">Resource 1</h2>
+                    <h3 className="usa-card__heading">Resource 1</h3>
                   </header>
                 </div>
               </li>
               <li className="usa-card tablet:grid-col-4 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
-                    <h2 className="usa-card__heading">Resource 1</h2>
+                    <h3 className="usa-card__heading">Resource 1</h3>
                   </header>
                 </div>
               </li>

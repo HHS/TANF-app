@@ -5,7 +5,7 @@ import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter, Redirect, Route } from 'react-router-dom'
 import * as Alert from '../../actions/alert'
-import { ALERT_INFO } from '../Notify'
+import { ALERT_INFO } from '../Alert'
 import LoginCallback from '.'
 
 describe('LoginCallback.js', () => {
