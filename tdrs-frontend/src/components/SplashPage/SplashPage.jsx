@@ -41,7 +41,6 @@ function SplashPage() {
             <button
               className="usa-button width-full sign-in-button"
               type="button"
-              size="big"
               onClick={handleClick}
             >
               <div className="mobile:margin-x-auto mobile-lg:margin-0">
