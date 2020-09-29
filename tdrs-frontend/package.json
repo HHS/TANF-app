@@ -99,7 +99,6 @@
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
-      "src/**/*.{ts,tsx}",
       "!src/**/index.js",
       "!src/serviceWorker.js",
       "!src/configureStore.js",

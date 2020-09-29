@@ -14,7 +14,7 @@ function Button({
   unstyled,
   onClick,
   className,
-  ...defaultProps
+  disabled,
 }) {
   const isBig = size ? size === 'big' : false
   const isSmall = size ? size === 'small' : false
@@ -40,7 +40,7 @@ function Button({
       className={classes}
       onClick={onClick}
       data-testid="button"
-      {...defaultProps}
+      disabled={disabled}
     >
       {children}
     </button>
@@ -59,6 +59,7 @@ Button.propTypes = {
   unstyled: PropTypes.bool,
   onClick: PropTypes.func,
   className: PropTypes.string,
+  disabled: PropTypes.bool,
 }
 Button.defaultProps = {
   secondary: false,
@@ -70,6 +71,7 @@ Button.defaultProps = {
   unstyled: false,
   onClick: null,
   className: null,
+  disabled: false,
 }
 
 export default Button
