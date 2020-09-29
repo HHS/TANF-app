@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 
 import loginLogo from '../../assets/login-gov-logo.svg'
+import Button from '../Button'
 
 function SplashPage() {
   const authenticated = useSelector((state) => state.auth.authenticated)
@@ -38,8 +39,8 @@ function SplashPage() {
               easily submit accurate data and be confident that they have
               fulfilled their reporting requirements.
             </p>
-            <button
-              className="usa-button width-full sign-in-button"
+            <Button
+              className="width-full sign-in-button"
               type="button"
               onClick={handleClick}
             >
@@ -52,7 +53,7 @@ function SplashPage() {
                 alt="Login.gov"
               />
               <span className="visually-hidden">Opens in a new website</span>
-            </button>
+            </Button>
           </div>
         </div>
       </section>
