@@ -33,7 +33,12 @@ function EditProfile() {
             aria-required="true"
           />
         </label>
-        <Button type="submit" classes="request-access-button" disabled big>
+        <Button
+          type="submit"
+          disabled
+          size="big"
+          className="request-access-button"
+        >
           Request Access
         </Button>
       </form>
