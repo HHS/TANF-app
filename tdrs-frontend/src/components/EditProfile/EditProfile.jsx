@@ -68,7 +68,7 @@ function EditProfile() {
             aria-required="true"
           />
         </label>
-
+        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         <label className="usa-label" htmlFor="stt">
           Associated State, Tribe, or Territory
           <Select

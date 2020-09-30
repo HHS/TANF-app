@@ -8921,10 +8921,6 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-libsass@sass/libsass#3.6.4:
-  version "0.0.0"
-  resolved "https://codeload.github.com/sass/libsass/tar.gz/8d312a1c91bb7dd22883ebdfc829003f75a82396"
-
 lie@~3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/lie/-/lie-3.3.0.tgz#dcf82dee545f46074daf200c7c1c5a08e0f40f6a"
