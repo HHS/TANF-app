@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Select from 'react-select'
 import { fetchStts } from '../../actions/stts'
+import Button from '../Button'
 
 function EditProfile() {
   const sttsLoading = useSelector((state) => state.stts.loading)
@@ -78,13 +79,14 @@ function EditProfile() {
             options={stts}
           />
         </label>
-        <button
+        <Button
           type="submit"
-          className="usa-button usa-button--big request-access-button"
           disabled
+          size="big"
+          className="request-access-button"
         >
           Request Access
-        </button>
+        </Button>
       </form>
     </div>
   )

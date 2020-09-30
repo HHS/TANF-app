@@ -84,3 +84,6 @@ htmlcov/*
 
 # Commmon
 .DS_Store
+
+# Coverage
+tdrs-backend/htmlcov/*

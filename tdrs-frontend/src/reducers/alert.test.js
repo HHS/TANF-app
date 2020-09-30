@@ -1,5 +1,5 @@
 import reducer from './alert'
-import { ALERT_INFO } from '../components/Notify'
+import { ALERT_INFO } from '../components/Alert'
 import { SET_ALERT, CLEAR_ALERT } from '../actions/alert'
 
 describe('recucers/alert', () => {
