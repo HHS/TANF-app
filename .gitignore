@@ -41,6 +41,8 @@ compliance/exports/
 
 # don't ignore requirements.txt
 !requirements.txt
+# Graph Models ERD
+tdrs-backend/tdp-erd.png
 
 # coverage result
 .coverage

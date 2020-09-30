@@ -11,7 +11,7 @@ class Region(models.Model):
 
     def __str__(self):
         """Return the ID."""
-        return str("Region " + str(self.id))
+        return f"Region {self.id}"
 
 
 class STT(models.Model):
