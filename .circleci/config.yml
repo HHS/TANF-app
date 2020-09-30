@@ -128,7 +128,7 @@ jobs:
               export CF_PASSWORD="$CF_PASSWORD_DEV"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
+            elif [ "$CIRCLE_BRANCH" == "cloudgov-backend-mem-increase" ] ; then
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
               export CF_PASSWORD="$CF_PASSWORD_DEV"
@@ -158,4 +158,4 @@ workflows:
           filters:
             branches:
               only:
-                - raft-tdp-main
+                - cloudgov-backend-mem-increase
