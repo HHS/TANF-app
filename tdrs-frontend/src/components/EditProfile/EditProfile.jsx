@@ -39,10 +39,6 @@ function EditProfile() {
       ...provided,
       color: '#1b1b1b',
     }),
-    placeholder: (provided, state) => ({
-      ...provided,
-      color: '#1b1b1b',
-    }),
   }
 
   const validateInputs = ({ name, value }) => {
