@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 
 import loginLogo from '../../assets/login-gov-logo.svg'
+import Button from '../Button'
 
 function SplashPage() {
   const authenticated = useSelector((state) => state.auth.authenticated)
@@ -38,10 +39,9 @@ function SplashPage() {
               easily submit accurate data and be confident that they have
               fulfilled their reporting requirements.
             </p>
-            <button
-              className="usa-button width-full sign-in-button"
+            <Button
+              className="width-full sign-in-button"
               type="button"
-              size="big"
               onClick={handleClick}
             >
               <div className="mobile:margin-x-auto mobile-lg:margin-0">
@@ -53,7 +53,7 @@ function SplashPage() {
                 alt="Login.gov"
               />
               <span className="visually-hidden">Opens in a new website</span>
-            </button>
+            </Button>
           </div>
         </div>
       </section>
@@ -79,21 +79,21 @@ function SplashPage() {
               <li className="usa-card tablet:grid-col-4 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
-                    <h2 className="usa-card__heading">Resource 1</h2>
+                    <h3 className="usa-card__heading">Resource 1</h3>
                   </header>
                 </div>
               </li>
               <li className="usa-card tablet:grid-col-4 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
-                    <h2 className="usa-card__heading">Resource 1</h2>
+                    <h3 className="usa-card__heading">Resource 1</h3>
                   </header>
                 </div>
               </li>
               <li className="usa-card tablet:grid-col-4 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
-                    <h2 className="usa-card__heading">Resource 1</h2>
+                    <h3 className="usa-card__heading">Resource 1</h3>
                   </header>
                 </div>
               </li>
