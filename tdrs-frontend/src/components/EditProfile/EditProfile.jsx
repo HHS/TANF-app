@@ -31,10 +31,6 @@ function EditProfile() {
       ...provided,
       color: '#1b1b1b',
     }),
-    placeholder: (provided, state) => ({
-      ...provided,
-      color: '#1b1b1b',
-    }),
   }
 
   return (
@@ -80,6 +76,7 @@ function EditProfile() {
             isLoading={sttsLoading}
             isClearable
             options={stts}
+            placeholder=""
           />
         </label>
         <Button
