@@ -19,15 +19,16 @@ function EditProfile() {
   }, [dispatch])
 
   const customStyles = {
-    control: (provided, state) => ({
+    control: (provided, { isFocused }) => ({
       ...provided,
       border: '1px solid #1b1b1b',
       width: 320,
       height: 40,
       marginTop: '.5rem',
       borderRadius: 0,
+      outline: isFocused ? '0.25rem solid #2491ff' : '',
     }),
-    dropdownIndicator: (provided, state) => ({
+    dropdownIndicator: (provided) => ({
       ...provided,
       color: '#1b1b1b',
     }),
