@@ -37,7 +37,5 @@ class AuthorizationCheck(APIView):
             return Response(auth_params)
         else:
             datetime_time = datetime.datetime.fromtimestamp(time.time())
-            logger.info(
-                f"Auth check FAIL for user on {datetime_time}(UTC)"
-            )
+            logger.info(f"Auth check FAIL for user on {datetime_time}(UTC)")
             return Response({"authenticated": False})
