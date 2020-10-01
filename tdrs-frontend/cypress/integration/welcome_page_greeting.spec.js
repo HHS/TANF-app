@@ -4,12 +4,19 @@ describe('welcome page greeting', () => {
 
     cy.contains('TANF Data Portal')
   })
-  it('tells the user this is a governament website', () => {
+  it('tells the user this is a government website', () => {
     cy.visit('http://localhost:3000/')
 
-    cy.get('[data-testid="govBanner"]').contains(
-      'An official website of the United States government'
+    cy.get('.usa-banner').contains(
+      'A DEMO website of the United States government'
     )
+  })
+  it('expands banner content where "Here\'s how you know" is clicked', () => {
+    cy.visit('http://localhost:3000/')
+
+    cy.get('.usa-banner__button').click()
+
+    cy.get('.usa-banner__content').should('be.visible')
   })
   it('contains a navigation link', () => {
     cy.visit('http://localhost:3000')
@@ -37,6 +44,15 @@ describe('welcome page greeting', () => {
       .and('include', 'mailto: tanfdata@acf.hhs.gov')
   })
   it('contains a button to sign in', () => {
-    cy.get('button.sign-in-button').contains('Sign in with Login.gov')
+    cy.get('button.sign-in-button').contains('Sign in with ')
+  })
+  it('open mobile menu on menu button click', () => {
+    cy.visit('http://localhost:3000')
+
+    cy.viewport(550, 750)
+
+    cy.get('.usa-menu-btn').click()
+
+    cy.get('.usa-nav').should('be.visible')
   })
 })

@@ -5,73 +5,65 @@ ignore:
   SNYK-JS-NODESASS-535497:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-535498:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-535502:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540956:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540958:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540964:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540974:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540978:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540990:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540992:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540994:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540996:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-541000:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-541002:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:10:10.191Z'
+        expires: '2020-10-29T00:10:10.191Z'
   SNYK-JS-NODESASS-540980:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:14:37.144Z'
+        expires: '2020-10-29T00:14:37.144Z'
   SNYK-JS-NODESASS-540998:
     - node-sass:
         reason: This is only used in compilation and wont be part for deployment.
-        expires: '2020-09-27T00:14:37.145Z'
-  SNYK-JS-NODEFORGE-598677:
-    - react-scripts > webpack-dev-server > selfsigned > node-forge:
-        reason: >-
-          Self sigend will most likely not be used in the frontend
-          since we'll be leveraging cloud.gov.
-          No resolution at the moment for node-forge 0.9.0 as described in the
-          snyk report https://snyk.io/vuln/SNYK-JS-NODEFORGE-598677 
-        expires: '2020-10-01T16:30:56.032Z'
+        expires: '2020-10-29T00:14:37.145Z'
 patch: {}

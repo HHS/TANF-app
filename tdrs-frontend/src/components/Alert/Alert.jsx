@@ -1,6 +1,5 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Alert } from '@trussworks/react-uswds'
 
 export const ALERT_SUCCESS = 'success'
 export const ALERT_INFO = 'info'
@@ -17,7 +16,7 @@ export const ALERT_ERROR = 'error'
  * one of ['success', 'info', 'warning', 'error']
  * @param {string} body - additional content to include in the alert.
  */
-export function Notify() {
+export function Alert() {
   const { show, type, heading, body } = useSelector((state) => state.alert)
 
   if (!show) {
@@ -25,8 +24,15 @@ export function Notify() {
   }
 
   return (
-    <Alert type={type} heading={heading} slim={!!body}>
-      {body}
-    </Alert>
+    <div
+      className={`usa-alert usa-alert--${type} ${
+        !body ? 'usa-alert--slim' : ''
+      }`}
+    >
+      <div className="usa-alert__body">
+        <h3 className="usa-alert__heading">{heading}</h3>
+        <p className="usa-alert__text">{body}</p>
+      </div>
+    </div>
   )
 }

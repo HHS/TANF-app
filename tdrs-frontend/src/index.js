@@ -7,7 +7,9 @@ import { Provider } from 'react-redux'
 import configureStore, { history } from './configureStore'
 import { fetchAuth } from './actions/auth'
 import App from './App'
-import './index.css'
+
+import 'uswds/dist/js/uswds'
+import './index.scss'
 
 const store = configureStore()
 store.dispatch(fetchAuth())

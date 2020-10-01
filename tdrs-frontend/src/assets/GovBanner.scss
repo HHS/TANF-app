@@ -1,29 +1,9 @@
-@import 'theme/_global.scss';
-
-html, body, div#root {
-  height: 100%;
-  min-height: 100%;
-  padding: 0;
-  margin: 0;
-  overflow: auto;
-}
-
-.usa-banner__header {
-  display: none;
-}
-
-main#main-content {
-  min-height: calc(100% - 239px);
-  padding: 0;
-  margin: 0;
-}
-
 @include media(">=medium") {
   .usa-banner {
     background-color: #ebf3fa;
     &__header {
       display: block;
-      background-color: #122E51;
+      background-color: $gov-banner-background;
       &-text {
         color: white;
       }

@@ -1,18 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
 
+import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
-
-import './Header.scss'
-
-import {
-  NavMenuButton,
-  Header,
-  Title,
-  ExtendedNav,
-  Link,
-} from '@trussworks/react-uswds'
 
 /**
  * This component is rendered on every page and contains the navigation bar.
@@ -26,71 +17,72 @@ import {
  */
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
-  const authenticated = useSelector((state) => state.auth.authenticated)
   const user = useSelector((state) => state.auth.user)
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
-
-  const toggleMobileNav = () => {
-    setMobileNavOpen((prevOpen) => !prevOpen)
-  }
-
-  const primaryNav = [
-    <a
-      href="/"
-      key="welcome"
-      className={`usa-nav__link ${
-        pathname === '/edit-profile' ? 'usa-current' : ''
-      }`}
-    >
-      <span>Welcome</span>
-    </a>,
-  ]
-
-  const renderSecondaryNav = ({ email }) => [
-    <Link className="account-link" href="/">
-      <FontAwesomeIcon className="margin-right-1" icon={faUserCircle} />
-      {email}
-    </Link>,
-    <Link
-      className="sign-out-link"
-      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
-    >
-      <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
-      Sign Out
-    </Link>,
-  ]
 
   return (
     <>
-      <div className={`usa-overlay ${mobileNavOpen ? 'is-visible' : ''}`} />
-      <section>
-        <Header extended>
-          <div className="usa-navbar">
-            <Title className="page-title">
-              <a
-                className="header-link"
-                href="/"
-                title="Home"
-                aria-label="Home"
-              >
+      <div className="usa-overlay" />
+      <header className="usa-header usa-header--extended">
+        <div className="usa-navbar">
+          <div className="usa-logo" id="extended-logo">
+            <em className="usa-logo__text">
+              <a href="/" title="Home" aria-label="Home">
                 TANF Data Portal
               </a>
-            </Title>
-            <NavMenuButton
-              label="Menu"
-              onClick={toggleMobileNav}
-              className="usa-menu-btn"
-            />
+            </em>
           </div>
-          <ExtendedNav
-            aria-label="Primary navigation"
-            primaryItems={primaryNav}
-            secondaryItems={authenticated ? renderSecondaryNav(user) : []}
-            onToggleMobileNav={toggleMobileNav}
-            mobileExpanded={mobileNavOpen}
-          />
-        </Header>
-      </section>
+          <button type="button" className="usa-menu-btn">
+            Menu
+          </button>
+        </div>
+        <nav aria-label="Primary navigation" className="usa-nav">
+          <div className="usa-nav__inner">
+            <button type="button" className="usa-nav__close">
+              <img src={closeIcon} alt="close" />
+            </button>
+            <ul className="usa-nav__primary usa-accordion">
+              <li className="usa-nav__primary-item">
+                <a
+                  href="/"
+                  key="welcome"
+                  className={`usa-nav__link ${
+                    pathname === '/edit-profile' ? 'usa-current' : ''
+                  }`}
+                >
+                  <span>Welcome</span>
+                </a>
+              </li>
+            </ul>
+            {user && user.email && (
+              <div className="usa-nav__secondary">
+                <ul className="usa-nav__secondary-links">
+                  <li className="usa-nav__secondary-item">
+                    <a href="/">
+                      <FontAwesomeIcon
+                        className="margin-right-1"
+                        icon={faUserCircle}
+                      />
+                      {user.email}
+                    </a>
+                  </li>
+                  <li className="usa-nav__secondary-item">
+                    <a
+                      className="sign-out-link"
+                      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
+                    >
+                      <FontAwesomeIcon
+                        className="margin-right-1"
+                        icon={faSignOutAlt}
+                      />
+                      Sign Out
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </nav>
+      </header>
     </>
   )
 }

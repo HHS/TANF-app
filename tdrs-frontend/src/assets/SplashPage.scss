@@ -1,0 +1,55 @@
+// There are some minor changes that need to be made before releasing beta,
+// these are captured in issue #276: https://github.com/raft-tech/TANF-app/issues/276
+
+.resources-header {
+  color: $primary-graphite;
+}
+
+.usa-hero__callout {
+  background-color: $primary-light-pale-blue;
+}
+
+.usa-card__heading {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.usa-hero__heading--alt {
+  color: $primary-acf-blue;
+}
+
+.sign-in-button,
+.sign-in-button:hover {
+  background-color: $primary-medium-blue;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.resource-card {
+  height: 182px;
+}
+
+.visually-hidden:not(:focus):not(:active) {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media screen and (max-width: 640px) {
+  .resource-info__secondary {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .sign-in-button {
+    flex-direction: column;
+    align-content: center;
+    margin: auto;
+  }
+}
