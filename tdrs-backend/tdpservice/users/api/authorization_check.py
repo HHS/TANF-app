@@ -5,6 +5,7 @@ import time
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -15,6 +16,7 @@ class AuthorizationCheck(APIView):
 
     query_string = False
     pattern_name = "authorization-check"
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, *args, **kwargs):
         """Handle get request and authenticate user."""
@@ -36,6 +38,6 @@ class AuthorizationCheck(APIView):
         else:
             datetime_time = datetime.datetime.fromtimestamp(time.time())
             logger.info(
-                f"Auth check FAIL for user: {request.items()} on {datetime_time}(UTC)"
+                f"Auth check FAIL for user on {datetime_time}(UTC)"
             )
             return Response({"authenticated": False})
