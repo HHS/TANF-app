@@ -1,11 +1,10 @@
 """Handle logout requests."""
-import datetime
 import logging
-import time
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.utils import timezone
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -30,12 +29,10 @@ class AuthorizationCheck(APIView):
                     "last_name": user.last_name,
                 },
             }
-            datetime_time = datetime.datetime.fromtimestamp(time.time())
             logger.info(
-                f"Auth check PASS for user:  {user.username} on {datetime_time}(UTC)"
+                "Auth check PASS for user: %s on %s", user.username, timezone.now()
             )
             return Response(auth_params)
         else:
-            datetime_time = datetime.datetime.fromtimestamp(time.time())
-            logger.info(f"Auth check FAIL for user on {datetime_time}(UTC)")
+            logger.info("Auth check FAIL for user on %s", timezone.now())
             return Response({"authenticated": False})
