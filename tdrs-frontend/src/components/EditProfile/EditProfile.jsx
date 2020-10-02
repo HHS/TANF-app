@@ -1,37 +1,34 @@
 import React, { useEffect } from 'react'
+import { Select } from 'antd'
 import { useDispatch, useSelector } from 'react-redux'
-import Select from 'react-select'
 import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
 
+const { Option } = Select
+
 function EditProfile() {
   const sttsLoading = useSelector((state) => state.stts.loading)
-  const stts = useSelector((state) =>
-    state.stts.stts.map((stt) => ({
-      value: stt.name.toLowerCase(),
-      label: stt.name,
-    }))
-  )
+  const stts = useSelector((state) => state.stts.stts)
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(fetchStts())
   }, [dispatch])
 
-  const customStyles = {
-    control: (provided, { isFocused }) => ({
-      ...provided,
-      border: '1px solid #1b1b1b',
-      width: 320,
-      height: 40,
-      marginTop: '.5rem',
-      borderRadius: 0,
-      outline: isFocused ? '0.25rem solid #2491ff' : '',
-    }),
-    dropdownIndicator: (provided) => ({
-      ...provided,
-      color: '#1b1b1b',
-    }),
+  function onChange(value) {
+    console.log(`selected ${value}`)
+  }
+
+  function onBlur() {
+    console.log('blur')
+  }
+
+  function onFocus() {
+    console.log('focus')
+  }
+
+  function onSearch(val) {
+    console.log('search:', val)
   }
 
   return (
@@ -72,13 +69,29 @@ function EditProfile() {
         <label className="usa-label" htmlFor="stt">
           Associated State, Tribe, or Territory
           <Select
-            styles={customStyles}
-            inputId="stt"
-            isLoading={sttsLoading}
-            isClearable
-            options={stts}
-            placeholder=""
-          />
+            showSearch
+            allowClear
+            style={{ width: 320 }}
+            placeholder="Select a person"
+            onChange={onChange}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onSearch={onSearch}
+            loading={sttsLoading}
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
+            {stts.map((stt) => (
+              <Option
+                key={stt.id}
+                label={stt.name}
+                value={stt.name.toLowerCase()}
+              >
+                {stt.name}
+              </Option>
+            ))}
+          </Select>
         </label>
         <Button
           type="submit"
