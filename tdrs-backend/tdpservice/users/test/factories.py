@@ -2,6 +2,8 @@
 
 import factory
 
+from tdpservice.stts.test.factories import STTFactory
+
 
 class UserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
@@ -13,13 +15,14 @@ class UserFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ("username",)
 
     id = factory.Faker("uuid4")
-    username = factory.Sequence(lambda n: f"testuser{n}")
+    username = factory.Sequence(lambda n: "testuser%d" % n)
     password = "test_password"  # Static password so we can login.
     email = factory.Faker("email")
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     is_active = True
     is_staff = False
+    stt = factory.SubFactory(STTFactory)
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):

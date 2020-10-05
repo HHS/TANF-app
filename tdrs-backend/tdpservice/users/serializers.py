@@ -51,11 +51,13 @@ class CreateUserSerializer(serializers.ModelSerializer):
 class SetUserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for setting a user's profile."""
 
+    stt = serializers.SlugRelatedField(many=False, read_only=True, slug_field="name")
+
     class Meta:
         """Metadata."""
 
         model = User
-        fields = ["first_name", "last_name"]
+        fields = ["first_name", "last_name", "stt"]
 
         """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {

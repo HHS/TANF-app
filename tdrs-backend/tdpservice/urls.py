@@ -5,18 +5,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path, reverse_lazy
 from django.views.generic.base import RedirectView
-
-from rest_framework.routers import DefaultRouter
-
 from .users.api.authorization_check import AuthorizationCheck
 from .users.api.login import TokenAuthorizationOIDC
 from .users.api.login_redirect_oidc import LoginRedirectOIDC
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
-from .users import views
-
-router = DefaultRouter()
-router.register("users", views.UserViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -31,8 +24,6 @@ urlpatterns = [
     # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
     re_path(r"^$", RedirectView.as_view(url=reverse_lazy("api-root"), permanent=False)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-urlpatterns += router.urls
 
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 urlpatterns = [path("v1/", include(urlpatterns))]

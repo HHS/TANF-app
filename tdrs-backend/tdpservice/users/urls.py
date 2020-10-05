@@ -1,8 +1,12 @@
 """Routing for Users."""
 
-from django.urls import path
+from rest_framework.routers import DefaultRouter
 from . import views
 
-urlpatterns = [
-    path("me", views.UserViewSet.set_profile, name="update-user"),
-]
+router = DefaultRouter()
+
+router.register("", views.UserViewSet)
+
+urlpatterns = []
+
+urlpatterns += router.urls

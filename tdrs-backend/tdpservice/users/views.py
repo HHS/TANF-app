@@ -26,7 +26,7 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
-    queryset = User.objects.all()
+    queryset = User.objects.select_related("stt")
 
     def get_permissions(self):
         """Get permissions for the viewset."""
