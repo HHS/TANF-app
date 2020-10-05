@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import Select from 'react-select'
 import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
 
@@ -13,33 +12,13 @@ function EditProfile() {
   const [errors, setErrors] = useState({})
 
   const sttsLoading = useSelector((state) => state.stts.loading)
-  const stts = useSelector((state) =>
-    state.stts.stts.map((stt) => ({
-      value: stt.name.toLowerCase(),
-      label: stt.name,
-    }))
-  )
+  const stts = useSelector((state) => state.stts.stts)
 
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(fetchStts())
   }, [dispatch])
-
-  const customStyles = {
-    control: (provided, state) => ({
-      ...provided,
-      border: errors.stt ? '.25rem solid #b50909' : '1px solid #1b1b1b',
-      width: 320,
-      height: 40,
-      marginTop: '.5rem',
-      borderRadius: 0,
-    }),
-    dropdownIndicator: (provided, state) => ({
-      ...provided,
-      color: '#1b1b1b',
-    }),
-  }
 
   const validateInputs = ({ name, value }) => {
     if (value.length < 1)
@@ -143,39 +122,83 @@ function EditProfile() {
             but only once it's rendered.
           */}
           {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-          <label
-            className={`usa-label ${errors.stt ? 'usa-label--error' : ''}`}
-            htmlFor="stt"
-          >
+          <label className="usa-label" htmlFor="stt">
             Associated State, Tribe, or Territory
-            {errors.stt && (
-              <span
-                className="usa-error-message"
-                id="input-error-message"
-                role="alert"
+            <div className="usa-combo-box">
+              <select
+                className="usa-select usa-combo-box__select"
+                name="stt"
+                id="fruit"
               >
-                {errors.stt}
-              </span>
-            )}
-            <Select
-              styles={customStyles}
-              inputId="stt"
-              isLoading={sttsLoading}
-              isClearable
-              placeholder=""
-              options={stts}
-              // value={stts.filter((stt) => stt.value === profileInfo.stt)}
-              // onChange={(e) => {
-              //   if (e === null) {
-              //     setProfileInfo({ ...profileInfo, stt: '' })
-              //     setErrors({ stt: 'You must select a STT' })
-              //   } else {
-              //     const { value } = e
-              //     validateInputs({ name: 'stt', value })
-              //     setProfileInfo({ ...profileInfo, stt: value })
-              //   }
-              // }}
-            />
+                <option value>Select a fruit</option>
+                <option value="apple">Apple</option>
+                <option value="apricot">Apricot</option>
+                <option value="avocado">Avocado</option>
+                <option value="banana">Banana</option>
+                <option value="blackberry">Blackberry</option>
+                <option value="blood orange">Blood orange</option>
+                <option value="blueberry">Blueberry</option>
+                <option value="boysenberry">Boysenberry</option>
+                <option value="breadfruit">Breadfruit</option>
+                <option value="buddhas hand citron">
+                  Buddha&apos;s hand citron
+                </option>
+                <option value="cantaloupe">Cantaloupe</option>
+                <option value="clementine">Clementine</option>
+                <option value="crab apple">Crab apple</option>
+                <option value="currant">Currant</option>
+                <option value="cherry">Cherry</option>
+                <option value="custard apple">Custard apple</option>
+                <option value="coconut">Coconut</option>
+                <option value="cranberry">Cranberry</option>
+                <option value="date">Date</option>
+                <option value="dragonfruit">Dragonfruit</option>
+                <option value="durian">Durian</option>
+                <option value="elderberry">Elderberry</option>
+                <option value="fig">Fig</option>
+                <option value="gooseberry">Gooseberry</option>
+                <option value="grape">Grape</option>
+                <option value="grapefruit">Grapefruit</option>
+                <option value="guava">Guava</option>
+                <option value="honeydew melon">Honeydew melon</option>
+                <option value="jackfruit">Jackfruit</option>
+                <option value="kiwifruit">Kiwifruit</option>
+                <option value="kumquat">Kumquat</option>
+                <option value="lemon">Lemon</option>
+                <option value="lime">Lime</option>
+                <option value="lychee">Lychee</option>
+                <option value="mandarine">Mandarine</option>
+                <option value="mango">Mango</option>
+                <option value="mangosteen">Mangosteen</option>
+                <option value="marionberry">Marionberry</option>
+                <option value="nectarine">Nectarine</option>
+                <option value="orange">Orange</option>
+                <option value="papaya">Papaya</option>
+                <option value="passionfruit">Passionfruit</option>
+                <option value="peach">Peach</option>
+                <option value="pear">Pear</option>
+                <option value="persimmon">Persimmon</option>
+                <option value="plantain">Plantain</option>
+                <option value="plum">Plum</option>
+                <option value="pineapple">Pineapple</option>
+                <option value="pluot">Pluot</option>
+                <option value="pomegranate">Pomegranate</option>
+                <option value="pomelo">Pomelo</option>
+                <option value="quince">Quince</option>
+                <option value="raspberry">Raspberry</option>
+                <option value="rambutan">Rambutan</option>
+                <option value="soursop">Soursop</option>
+                <option value="starfruit">Starfruit</option>
+                <option value="strawberry">Strawberry</option>
+                <option value="tamarind">Tamarind</option>
+                <option value="tangelo">Tangelo</option>
+                <option value="tangerine">Tangerine</option>
+                <option value="ugli fruit">Ugli fruit</option>
+                <option value="watermelon">Watermelon</option>
+                <option value="white currant">White currant</option>
+                <option value="yuzu">Yuzu</option>
+              </select>
+            </div>
           </label>
         </div>
         <Button
