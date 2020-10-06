@@ -37,14 +37,14 @@
 
 ## Sprint Review 
 - Goal: To share and demo the issues that are in QASP review pipeline with a smaller group of stakeholders. The sprint review is less formal than sprint demo which has stakeholders including members from the OCIO/IPT team. The issues that are demoed have received product owner’s approval in the sprint demo prep meeting.  
-- Attendees: Core team and Dvora, Thomas, Yun, Alex, Kathleen 
+- Attendees: Core team, Dvora, Thomas, Yun, Alex, Kathleen 
 - Facilitator: Lauren 
 - When: Every 4 weeks / 2nd Tuesday of each month 2:00-3:00pm EST 
 - Format: This meeting is an informal version of the Sprint demo meeting with an emphasis on demonstrating work to stakeholders outside the product team. The product owner or her designee will demo new work and features to the attendees. Attendees feedback on the demo is noted as a new issue. 
 
 ## Sprint Demo 
 - Goal: To inspect the work completed in the sprint and demo new work to team members or other stakeholders. The sprint demo is a more formal version of Sprint review. The issues that are demoed have received product owner’s approval in the sprint demo prep meeting.  
-- Attendees: Core team. Plus Dvora, Thomas, Yun, Alex, Kathleen, OCIO IPT members, and other stakeholders by invitation.  
+- Attendees: Core team, Dvora, Thomas, Yun, Alex, Kathleen, OCIO IPT members, and other stakeholders by invitation.  
 - Facilitator: Lauren 
 - When: Every 4 weeks / 4th Tuesday of each month 2:00 – 3:00pm EST 
 - Format: This meeting is a formal version of Sprint Review with an emphasis on demonstrating work to stakeholders outside the product team. The product owner or her designee will demo new work and features to the attendees. How attendees give feedback on the demo needs to be determined. 
