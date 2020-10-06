@@ -3,6 +3,8 @@
 - For all recurring team meetings and standups use OFA WebEx in the invite. Zoom or Google Meet is okay for ad hoc conversations. 
 - If you have background noise, mute your mic. 
 - Try not to talk over others.  
+- If you are creating a new meeting invite, please be explicit include an goal/outcome in the meeting invite. What do we hope to accomplish in that time? 
+- OFA and Raft both use Outlook and 18F uses Google Calendar. Generally, cross-platform calendar invites work okay. However, if you modify an existing meeting--especially a recurring meeting--double check that the invitees got the update. 
 
 
 # Recurring Meetings 
