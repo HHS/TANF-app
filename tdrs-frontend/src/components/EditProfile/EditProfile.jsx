@@ -117,10 +117,6 @@ function EditProfile() {
             errors.stt ? 'usa-form-group--error' : ''
           }`}
         >
-          {/* I am disabling this rule here because the <Select> component does have an input with an id of 'stt'
-            but only once it's rendered.
-          */}
-          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
           <label className="usa-label" htmlFor="stt">
             Associated State, Tribe, or Territory
             <div className="usa-combo-box">
