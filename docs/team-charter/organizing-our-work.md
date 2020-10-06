@@ -82,36 +82,25 @@ We have three project management boards for organizing our work:
   - closes PR to merge it into the Raft dev environment 
   - creates a new PR for all the issues to be reviewed during QASP review using the ‘Sprint Summary Report’ template (page 16) with a WIP label/note until it is ready to be reviewed 
   - moves the issues to ‘Government Review’ pipeline and assign Laura (gov tech lead) and Lauren to review the PR 
-
-Once the WIP label is removed from the PR created in the HHS repo, no work is to be done against the branch submitted for review unless changes are requested and/or the branch has been approved and merged. 
-
-For design or research issues, if issue meets the acceptance criteria and all tasks are done, the reviewer 
-
-moves the issue to ‘Government Review’ pipeline and tags Christine and Lauren for review 
+  - Once the WIP label is removed from the PR created in the HHS repo, no work is to be done against the branch submitted for review unless changes are requested and/or the branch has been approved and merged. 
+- For design or research issues, if issue meets the acceptance criteria and all tasks are done, the reviewer 
+  - moves the issue to ‘Government Review’ pipeline and tags Lauren for review 
 
 ## The issue is reviewed by government  
-
-Lauren and Christine or Laura verify that all the acceptance criteria and the relevant QASP elements have been met. 
-
-If issues meet the acceptance criteria, reviewers move the issue to “Done and ready for demo.” Only issues in “Done and ready for demo” will be demoed. (So keep issues small!) 
-
-If changes are needed, government reviewer/s move the issue back to ‘In Progress,’ notes the comments, and tags the assignee. Small tweaks can be sent back to the assignee on the same issue at this stage, but a new issue should be created if the feedback constitutes an significant expansion of scope. 
-
-When issues are being reviewed by QASP review day (Day 13), Raft team can continue to work on issues that are ‘In progress’ or ‘To Do’ pipeline. If all issues in these columns have been addressed, then Raft team can pull from prioritized product backlog 'Ready to go for Next Sprint' 
+- Lauren verifies that all the acceptance criteria and the relevant QASP elements have been met. 
+- If issues meet the acceptance criteria, reviewers move the issue to “Done and ready for demo.” Only issues in “Done and ready for demo” will be demoed. (So keep issues small!) 
+- If changes are needed, government reviewer/s move the issue back to ‘In Progress,’ notes the comments, and tags the assignee. Small tweaks can be sent back to the assignee on the same issue at this stage, but a new issue should be created if the feedback constitutes an significant expansion of scope. 
+- When issues are being reviewed by QASP review day (Day 13), Raft team can continue to work on issues that are ‘In progress’ or ‘To Do’ pipeline. If all issues in these columns have been addressed, then Raft team can pull from prioritized product backlog 'Ready to go for Next Sprint' 
  
 
 ## The issue is ready for demo  
-
-When QASP reviewers have signed off and the team is ready for feedback from OFA stakeholders, then the feature is demonstrated in Sprint Demo meeting.  
-
-Feedback from stakeholders is discussed and, if necessary, new issues are created to address feedback. 
+- When QASP reviewers have signed off and the team is ready for feedback from OFA stakeholders, then the feature is demonstrated in Sprint Demo meeting.  
+- Feedback from stakeholders is discussed and, if necessary, new issues are created to address feedback. 
  
 
 ## The issue is complete, and the sprint has ended 
-
-Raft creates a PR and a Sprint Summary Report (see Page 11), which is included in the PR notes.  
-
-Laura/Tech lead reviews the PR, the COR comments acceptance, and Lauren merges the PR into main HHS repo 
+- Raft creates a PR and a Sprint Summary Report (see Page 11), which is included in the PR notes.  
+- Tech lead reviews the PR, the COR comments acceptance, and Lauren merges the PR into main HHS repo 
  
 
 ## The issue is considered ‘sprint done’ when  
