@@ -19,7 +19,7 @@
 - All links can be found on the wiki  
  
 
-##Weekly Ship Email 
+## Weekly Ship Email 
 
 - Weekly ship email history lives in 18F’s Drive 
 - Goal: To keep stakeholders’ informed of the team's work 
