@@ -6,57 +6,55 @@
 
 # Sprint Schedule
 
-### Wednesday Sprint Day 1
-- Focus: Planning
+### Wednesday Sprint Day 1: Planning Day!
 - 9:30-10:30am EST: Backlog Refinement 
 - NO STANDUP!
 - 3:30-5:00pm EST: Sprint Planning  
 
-### Thursday Sprint Day 2  
-- Focus: Work, pair, WIP reviews
+### Thursday Sprint Day 2: Work day!   
+- 10:30-10:45am EST: Standup
+- Request feedback from teammates on rolling basis
+
+### Friday Sprint Day 3: Work day!   
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis 
 
-### Friday Sprint Day 3  
-- Focus: Work, pair, WIP reviews
+### Monday Sprint Day 6: Work day!  
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis 
 
-### Monday Sprint Day 6  
-- Focus: Work, pair, WIP reviews
-- 10:30-10:45am EST: Standup
-- Request feedback from teammates on rolling basis 
-
-### Tuesday Sprint Day 7  
-- Focus: Work, pair, WIP reviews
+### Tuesday Sprint Day 7: Work day!  
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis 
 
 ### Wednesday Sprint Day 8 
 - Request Raft review for items that are to be ready for QASP review on Sprint Day 10    
+- NO STANDUP!
 
 ### Thursday Sprint Day 9  
-- Focus: Work, pair, WIP reviews
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis 
 
-### Friday Sprint Day 10 
+### Friday Sprint Day 10: Submit Day!
+- 10:30-10:45am EST: Standup
 - Last day to request government review for work to count in this sprint 
  
 
-### Monday Sprint Day 13
-- Reviewing Day! 
-- Ad hoc pairing meetings for dev and design/research reviews  
+### Monday Sprint Day 13: Review Day!
+- 10:30-10:45am EST: Standup
+- Pairing meetings for dev and design/research reviews  
  
 
-### Tuesday Sprint Day 14
-- 10:00-10:30am EST: Sprint Demo Planning meeting to review what is ready for demo 
-- 2:00-3:00pm EST: Sprint Review/Demo meeting to show done issues to stakeholders 
-- 3:30-4:30pm EST: Sprint Retro to reflect on team practice 
+### Tuesday Sprint Day 14: Demo Day!
+- 10:00-10:30am EST: Sprint Demo Planning  
+- 10:30-10:45am EST: Standup
+- 2:00-3:00pm EST: Sprint Demo 
+- 3:30-4:30pm EST: Sprint Retro  
 - Issue owners respond to feedback, revise issue, and resubmit for review. 
  
 
 ### Wednesday Sprint Day 15 
+- NO STANDUP
 - Issue owners update QASP review feedback by 12pm on Day 15.   
 - Issues in “Done and ready for demo” column are closed by Lauren prior to the next sprint planning meeting (Day 1) 
 - PR created for main HHS repo is reviewed by Laura/Tech lead. COR comments acceptance and Lauren merges PR into main HHS repo. PR notes include the sprint summary report (see Page 11) for PO and COR to review.  
