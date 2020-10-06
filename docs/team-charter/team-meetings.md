@@ -15,11 +15,11 @@ When: Daily 10:30-10:45am EST and asynchronously on Wednesdays<br>
 Format: Each team member gives quick update to answer these questions: What did you do yesterday that advances the sprint goal? What are you doing today that advances the sprint goal? Are you encountering any blockers? If you can’t make Standup in real-time, please post a short async update to General channel of MS Teams.  
 
 ## Backlog Refinement 
-Goal: To identify goals for next sprint and create issues to be discussed in Sprint Planning 
-Attendees: Lauren, Alex, Shubhi, Carl, Matthew. On alternate weeks, Ryan, Penyin, Tijan.
-Facilitators: Lauren + Shubhi
-When: Every Wednesday 9:30-10:30am EST 
-Format: The product owner will collaborate with the leads to review the backlog, prioritize issues for the next sprint, and to make sure items are ready for discussion in the upcoming Sprint Planning session. By the end of the session, a set of issues should be selected, acceptance criteria outlined, questions for the team noted within the issue. This set of issues should be sent to the sprint board before Sprint Planning. On alternating weeks, this meeting will focus on security and compliance issues.  
+- Goal: To identify goals for next sprint and create issues to be discussed in Sprint Planning 
+- Attendees: Lauren, Alex, Shubhi, Carl, Matthew. On alternate weeks, Ryan, Penyin, Tijan.
+- Facilitators: Lauren + Shubhi
+- When: Every Wednesday 9:30-10:30am EST 
+- Format: The product owner will collaborate with the leads to review the backlog, prioritize issues for the next sprint, and to make sure items are ready for discussion in the upcoming Sprint Planning session. By the end of the session, a set of issues should be selected, acceptance criteria outlined, questions for the team noted within the issue. This set of issues should be sent to the sprint board before Sprint Planning. On alternating weeks, this meeting will focus on security and compliance issues.  
  
 ## Sprint Planning 
 Goal: To define the work we’re committing to complete in the next two weeks 
