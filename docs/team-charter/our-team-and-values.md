@@ -1,4 +1,8 @@
-# Our Team
+# Our Team Name
+
+- Tadpoles! As in "Tanf Data Portal-les"
+
+# Our Team Members 
 
 - Lauren Frohlich, OFA, product owner
 - Ryan Ahearn, 18F, compliance consultant
