@@ -1,5 +1,22 @@
 # Our Team
 
+### OFA
+- Lauren Frohlich, OFA, product owner
+
+### 18F
+- Ryan Ahearn, 18F, compliance consultant
+- Alex Soble, 18F, consulting engineer
+
+### Raft
+- Patrick Asata, Raft, tech lead
+- Matthew Doty, Raft, user researcher
+- Spencer Hilvitz, Raft frontend engineer
+- Dimitri Knapp, Raft, visual designer
+- Shubhi Mishra, Raft, design lead + facilitator
+- Miles Reiter, Raft, user researcher
+- Carlton Smith, Raft, backend engineer
+
+Please refer to [the Team Members doc](https://teams.microsoft.com/l/file/4EF9F646-A6E3-4C6E-9F34-8B100507A76B?tenantId=d58addea-5053-4a80-8499-ba4d944910df&fileType=docx&objectUrl=https%3A%2F%2Fhhsgov.sharepoint.com%2Fsites%2FTANFDataPortalOFA%2FShared%20Documents%2FGeneral%2FAdmin%2FTeam%20Members'%20Info.docx&baseUrl=https%3A%2F%2Fhhsgov.sharepoint.com%2Fsites%2FTANFDataPortalOFA&serviceName=teams&threadId=19:f769bbcb029f4f02b55ae7fad90e310d@thread.skype&groupId=41f194a6-c1d3-4680-933e-c8ee7d17e287) for our typical hours and contact info.
 
 
 # Our Vision 
