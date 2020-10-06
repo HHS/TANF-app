@@ -50,10 +50,14 @@ function EditProfile() {
             <select
               className="usa-select usa-combo-box__select"
               name="stt"
-              id="fruit"
+              id="sttList"
             >
               {stts.map((stt) => (
-                <option key={stt.id} value={stt.name.toLowerCase()}>
+                <option
+                  className="sttOption"
+                  key={stt.id}
+                  value={stt.name.toLowerCase()}
+                >
                   {stt.name}
                 </option>
               ))}
