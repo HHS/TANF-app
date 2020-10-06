@@ -1,13 +1,8 @@
 # Our Team
 
-### OFA
 - Lauren Frohlich, OFA, product owner
-
-### 18F
 - Ryan Ahearn, 18F, compliance consultant
 - Alex Soble, 18F, consulting engineer
-
-### Raft
 - Patrick Asata, Raft, tech lead
 - Matthew Doty, Raft, user researcher
 - Spencer Hilvitz, Raft frontend engineer
