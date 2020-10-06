@@ -107,3 +107,17 @@ We have three project management boards for organizing our work:
   - Issue is closed  
   - Issues in sprint meet the QASP  
   - PR is merged in main HHS repo 
+
+### Definition of Done (DoD) 
+
+Dev issues: DoD for dev issues is reviewed at the QASP level and is met when the PR: (1) note contains sprint report, (2) meets the QASP, (3) Raft has addressed small feedback (by 12pm on Wednesday, which is Day 15 of the last sprint/Day 1 of next sprint), and (4) has received a signed off from QASP reviewer.   
+
+Design issues: DoD for design issues is stated in the actual issues 
+
+### Acceptance Criteria (AC) and DoD Evaluation  
+
+The following evaluate AC and DoD to close issues and/or PR: 
+
+AC: Lauren or Alex S (Tech lead)
+
+DoD: Alex S (Tech lead) for dev issues; Design and research - Lauren and Christine (design lead) 
