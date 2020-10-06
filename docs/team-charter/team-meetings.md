@@ -7,10 +7,10 @@
 # Recurring Meetings 
 
 ## Standup 
-Goal: To inspect progress towards sprint goal and identify blockers 
-Attendees: Core team.  
-Facilitator: None 
-When: Daily 10:30-10:45am EST 
+Goal: To inspect progress towards sprint goal and identify blockers <br>
+Attendees: Core team <br>
+Facilitator: None <br>
+When: Daily 10:30-10:45am EST <br>
 Format: Each team member gives quick update to answer these questions: What did you do yesterday that advances the sprint goal? What are you doing today that advances the sprint goal? Are you encountering any blockers? If you can’t make Standup in real-time, please post a short async update to General channel of MS Teams.  
 
 ## Backlog Refinement 
