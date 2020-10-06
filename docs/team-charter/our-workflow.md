@@ -112,6 +112,14 @@ We have three project management boards for organizing our work:
   - Issues in sprint meet the QASP  
   - PR is merged in main HHS repo 
 
+
+# NEED TO INCORPORATE 
+
+### PR Review process: 
+
+QASP reviewer reviews the PR against the contract QASP, DoD, and provides feedback by Monday (Day 13). Raft address any small feedback (one/two pointer) prior to 12pm Day 15 deadline. Larger feedback is added as an issue for backlog refinement and PR is updated with a note on the ‘issue # has been created to address the specific feedback.’  
+
+
 ### Definition of Done (DoD) 
 
 Dev issues: DoD for dev issues is reviewed at the QASP level and is met when the PR: (1) note contains sprint report, (2) meets the QASP, (3) Raft has addressed small feedback (by 12pm on Wednesday, which is Day 15 of the last sprint/Day 1 of next sprint), and (4) has received a signed off from QASP reviewer.   
