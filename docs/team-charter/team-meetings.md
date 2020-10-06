@@ -12,6 +12,7 @@
 - 3:30-5:00pm EST: Sprint Planning  
 
 ### Thursday Sprint Day 2: Work day!   
+- 10:00-11:30am EST: OFA + 18F Coordination
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis
 
@@ -28,36 +29,37 @@
 - Request feedback from teammates on rolling basis 
 
 ### Wednesday Sprint Day 8 
-- Request Raft review for items that are to be ready for QASP review on Sprint Day 10    
+- 9:30-10:30am EST: Backlog Refinement (Security focused)
 - NO STANDUP!
+- Request Raft review for items that are to be ready for QASP review on Sprint Day 10    
 
 ### Thursday Sprint Day 9  
+- 10:00-11:30am EST: OFA + 18F Coordination
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis 
 
 ### Friday Sprint Day 10: Submit Day!
 - 10:30-10:45am EST: Standup
 - Last day to request government review for work to count in this sprint 
- 
 
 ### Monday Sprint Day 13: Review Day!
 - 10:30-10:45am EST: Standup
 - Pairing meetings for dev and design/research reviews  
  
-
 ### Tuesday Sprint Day 14: Demo Day!
 - 10:00-10:30am EST: Sprint Demo Planning  
 - 10:30-10:45am EST: Standup
 - 2:00-3:00pm EST: Sprint Demo 
 - 3:30-4:30pm EST: Sprint Retro  
-- Issue owners respond to feedback, revise issue, and resubmit for review. 
- 
+- Issue owners respond to feedback, revise issue, and resubmit for review 
 
 ### Wednesday Sprint Day 15 
-- NO STANDUP
+- 9:30-10:30am EST: Backlog Refinement 
+- NO STANDUP!
+- 3:30-5:00pm EST: Sprint Planning _for next sprint_
 - Issue owners update QASP review feedback by 12pm on Day 15.   
 - Issues in “Done and ready for demo” column are closed by Lauren prior to the next sprint planning meeting (Day 1) 
-- PR created for main HHS repo is reviewed by Laura/Tech lead. COR comments acceptance and Lauren merges PR into main HHS repo. PR notes include the sprint summary report (see Page 11) for PO and COR to review.  
+- PR created for main HHS repo is reviewed by Alex S. COR comments acceptance and Lauren merges PR into main HHS repo. PR notes include the sprint summary report (see Page 11) for PO and COR to review.  
 
 
 
@@ -72,7 +74,7 @@ Format: Each team member gives quick update to answer these questions: What did 
 
 ## Backlog Refinement 
 Goal: To identify goals for next sprint and create issues to be discussed in Sprint Planning 
-Attendees:  Lauren, Selena, Patrick, Shubhi, Matthew 
+Attendees:  Lauren, Alex, Shubhi, Carl, Matthew 
 Facilitator: Shared 
 When: Every Wednesday 9:30-10:30am EST 
 Format: The product owner will collaborate with the leads to review the backlog, prioritize issues for the next sprint, and to make sure items are ready for discussion in the upcoming Sprint Planning session. By the end of the session, a set of issues should be selected, acceptance criteria outlined, questions for the team noted within the issue. This set of issues should be sent to the sprint board before sprint planning.  
@@ -87,7 +89,7 @@ Format: Product owner should come with priority cards prepared and ready to disc
 
 ## Sprint Demo Prep  
 Goal: To plan what will be demoed in Sprint Demo 
-Attendees: Lauren, Selena, Patrick, Shubhi, Carl 
+Attendees: Lauren, Alex, Shubhi, Carl, Matthew 
 Facilitator: Lauren 
 When:  Every other Tuesday 10:00-10:30am EST 
 Format: The team will start by reviewing/updating the board. By the end of the meeting, the team should decide what is ready to be demoed (and label it as “demo”), who will conduct the demo/s, and who should be invited to attend.  
