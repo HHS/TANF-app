@@ -44,12 +44,12 @@ function EditProfile() {
             aria-required="true"
           />
         </label>
-        <label className="usa-label" htmlFor="stt">
+        <label className="usa-label" htmlFor="sttList">
           Associated State, Tribe, or Territory
           <div className="usa-combo-box">
             <select
               className="usa-select usa-combo-box__select"
-              name="stt"
+              name="sttList"
               id="sttList"
             >
               {stts.map((stt) => (
