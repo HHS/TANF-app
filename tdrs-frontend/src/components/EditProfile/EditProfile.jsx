@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import comboBox from 'uswds/src/js/components/combo-box'
 import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
 
@@ -7,25 +8,70 @@ function EditProfile() {
   const [profileInfo, setProfileInfo] = useState({
     firstName: '',
     lastName: '',
-    stt: '',
   })
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = React.useState({})
 
-  const sttsLoading = useSelector((state) => state.stts.loading)
+  const [touched, setTouched] = React.useState({})
+
   const stts = useSelector((state) => state.stts.stts)
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(fetchStts())
+    comboBox.init()
   }, [dispatch])
 
-  const validateInputs = ({ name, value }) => {
-    if (value.length < 1)
-      return setErrors({
-        ...errors,
-        [name]: 'You need at least 1 character',
-      })
-    return setErrors({})
+  const nameValidation = (fieldName, fieldValue) => {
+    if (fieldValue.trim() === '') {
+      return `${fieldName} is required`
+    }
+    return null
+  }
+
+  const validate = {
+    firstName: (name) => nameValidation('First Name', name),
+    lastName: (name) => nameValidation('Last Name', name),
+  }
+
+  const handleBlur = (evt) => {
+    const { name, value } = evt.target
+
+    const { [name]: removedError, ...rest } = errors
+
+    const error = validate[name](value)
+
+    setErrors({
+      ...rest,
+      ...(error && { [name]: touched[name] && error }),
+    })
+  }
+
+  const handleSubmit = (evt) => {
+    evt.preventDefault()
+
+    // validate the form
+    const formValidation = Object.keys(profileInfo).reduce(
+      (acc, key) => {
+        const newError = validate[key](profileInfo[key])
+        const newTouched = { [key]: true }
+        return {
+          errors: {
+            ...acc.errors,
+            ...(newError && { [key]: newError }),
+          },
+          touched: {
+            ...acc.touched,
+            ...newTouched,
+          },
+        }
+      },
+      {
+        errors: { ...errors },
+        touched: { ...touched },
+      }
+    )
+    setErrors(formValidation.errors)
+    setTouched(formValidation.touched)
   }
 
   return (
@@ -35,80 +81,76 @@ function EditProfile() {
         We need to collect some information before an OFA Admin can grant you
         access
       </p>
-      <form className="usa-form">
+      <form className="usa-form" onSubmit={handleSubmit}>
         <div
           className={`usa-form-group ${
-            errors['first-name'] ? 'usa-form-group--error' : ''
+            errors.firstName ? 'usa-form-group--error' : ''
           }`}
         >
           <label
             className={`usa-label ${
-              errors['first-name'] ? 'usa-label--error' : ''
+              errors.firstName ? 'usa-label--error' : ''
             }`}
             htmlFor="first-name"
           >
             First name
-            {errors['first-name'] && (
+            {errors.firstName && (
               <span
                 className="usa-error-message"
                 id="input-error-message"
                 role="alert"
               >
-                {errors['first-name']}
+                {errors.firstName}
               </span>
             )}
             <input
               className={`usa-input ${
-                errors['first-name'] ? 'usa-input--error' : ''
+                errors.firstName ? 'usa-input--error' : ''
               }`}
               id="first-name"
-              name="first-name"
+              name="firstName"
               type="text"
-              required
               aria-required="true"
               value={profileInfo.firstName}
               onChange={({ target }) => {
-                validateInputs(target)
                 setProfileInfo({ ...profileInfo, firstName: target.value })
               }}
+              onBlur={handleBlur}
             />
           </label>
         </div>
         <div
           className={`usa-form-group ${
-            errors['last-name'] ? 'usa-form-group--error' : ''
+            errors.lastName ? 'usa-form-group--error' : ''
           }`}
         >
           <label
-            className={`usa-label ${
-              errors['last-name'] ? 'usa-label--error' : ''
-            }`}
+            className={`usa-label ${errors.lastName ? 'usa-label--error' : ''}`}
             htmlFor="last-name"
           >
             Last name
-            {errors['last-name'] && (
+            {errors.lastName && (
               <span
                 className="usa-error-message"
                 id="input-error-message"
                 role="alert"
               >
-                {errors['last-name']}
+                {errors.lastName}
               </span>
             )}
             <input
               className={`usa-input ${
-                errors['last-name'] ? 'usa-input--error' : ''
+                errors.lastName ? 'usa-input--error' : ''
               }`}
               id="last-name"
-              name="last-name"
+              name="lastName"
               type="text"
-              required
               aria-required="true"
               value={profileInfo.lastName}
               onChange={({ target }) => {
-                validateInputs(target)
                 setProfileInfo({ ...profileInfo, lastName: target.value })
               }}
+              onBlur={handleBlur}
             />
           </label>
         </div>
@@ -123,10 +165,12 @@ function EditProfile() {
               <select
                 className="usa-select usa-combo-box__select"
                 name="stt"
-                id="fruit"
+                id="stt"
               >
                 {stts.map((stt) => (
-                  <option value={stt.name.toLowerCase()}>{stt.name}</option>
+                  <option key={stt.id} value={stt.name.toLowerCase()}>
+                    {stt.name}
+                  </option>
                 ))}
               </select>
             </div>
