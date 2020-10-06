@@ -13,7 +13,6 @@ function EditProfile() {
 
   const sttsLoading = useSelector((state) => state.stts.loading)
   const stts = useSelector((state) => state.stts.stts)
-
   const dispatch = useDispatch()
 
   useEffect(() => {
