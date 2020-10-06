@@ -28,6 +28,10 @@ We have three project management boards for organizing our work:
 - The PO will come to Sprint Planning meeting with a set of issues she would like the team to focus on for the next sprint. The team discusses these and may add clarifications to the issue cards, break one issue down into two, or in other ways adjust the definition of the work.  
 - All elements of the issue template should be defined before the issue is accepted into the sprint 
  
+## The issue is assigned points
+- We will follow a hybrid approach of tracking product delivery and utilization to point issues that are related to admin and tech debt. When assigning points to OCIO related issues, we are thinking of the Raft’s commitment.   
+- At the end of sprint planning, we will acknowledge how many points are for non-product issues (e.g., admin and tech debt) and use them to guide the team towards future planning.  
+
 
 ## The issue is accepted into the sprint 
 - If the issue is accepted into the sprint, it should move to the Sprint Board and the Sprint Backlog column.  
