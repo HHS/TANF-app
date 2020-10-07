@@ -85,7 +85,9 @@ Based on the September 2020 iron triangle conversations, the product team commit
   - Acceptance criteria is met or a note is added in GitHub if AC is not being to be met and why 
   - Issue contains links to documents or environments necessary to review the work 
   - If dev issue, create a PR for the issue using the PR template 
-  - If all this is in place, the assignee should move the card to “Raft Review” column/pipeline and ping the appropriate reviewer/s. 
+  - See docs/team-charter/reviewing-work.md
+- If all this is in place, the assignee should move the card to “Raft Review” column/pipeline and ping the appropriate reviewer/s. 
+  
  
  
 ## The issue is reviewed by Raft 
