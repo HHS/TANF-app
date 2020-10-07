@@ -1,7 +1,7 @@
 # Sprint Schedule
 
 ### Wednesday Sprint Day 1: Planning Day!
-- 9:30-10:30am EST: Backlog Refinement 
+- 10:00-11:00am EST: Backlog Refinement 
 - NO STANDUP!
 - 3:30-5:00pm EST: Sprint Planning  
 
@@ -23,7 +23,7 @@
 - Request feedback from teammates on rolling basis 
 
 ### Wednesday Sprint Day 8 
-- 9:30-10:30am EST: Backlog Refinement (Security focused)
+- 10:00-11:00am EST: Backlog Refinement  (Security focused)
 - NO STANDUP!
 - Request Raft review for items that are to be ready for QASP review on Sprint Day 10    
 
@@ -48,7 +48,7 @@
 - Issue owners respond to feedback, revise issue, and resubmit for review 
 
 ### Wednesday Sprint Day 15 
-- 9:30-10:30am EST: Backlog Refinement 
+- 10:00-11:00am EST: Backlog Refinement
 - NO STANDUP!
 - 3:30-5:00pm EST: Sprint Planning _for next sprint_
 - Issue owners update QASP review feedback by 12pm on Day 15.   
