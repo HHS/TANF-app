@@ -18,7 +18,7 @@
     - What did you do yesterday that advances the sprint goal? 
     - What are you doing today that advances the sprint goal?
     - Are you encountering any blockers? 
- - If you can’t make Standup in real-time, please post a short async update to [General channel of MS Teams](https://teams.microsoft.com/_#/conversations/General?threadId=19:f769bbcb029f4f02b55ae7fad90e310d@thread.skype&ctx=channel)  
+  - If you can’t make Standup in real-time, please post a short async update to [General channel of MS Teams](https://teams.microsoft.com/_#/conversations/General?threadId=19:f769bbcb029f4f02b55ae7fad90e310d@thread.skype&ctx=channel)  
 
 ## Backlog Refinement 
 - Goal: To identify goals for next sprint and create issues to be discussed in Sprint Planning 
