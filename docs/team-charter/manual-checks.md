@@ -23,7 +23,7 @@ Review to ensure each frontend screen with the following the guidelines below to
 - Run the Accessibility Insight for Web "Manual test for tab stops" 
 - Test using screen reader VoiceOver for Mac and keyboard (Tab) only 
 - Review design accessibility using [Stark](https://www.figma.com/community/plugin/732603254453395948) (Figma contrast ratio plugin). 
-- Also, review [Raft’s Do’s and Don’ts](LINK)
+- Also, review [Raft’s Do’s and Don’ts](https://github.com/HHS/TANF-app/blob/SelenaJV-patch-1/docs/team-charter/rafts-accessibility-dos-and-donts.md)
 
 ## Deliverable 5: Deployed 
 
