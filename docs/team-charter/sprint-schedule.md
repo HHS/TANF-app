@@ -25,7 +25,7 @@
 ### Wednesday Sprint Day 8 
 - 10:00-11:00am EST: Backlog Refinement  (Security focused)
 - NO STANDUP!
-- Request Raft review for items that are to be ready for QASP review on Sprint Day 10    
+- Request Raft review for issues that will likely be including in current sprint's PR    
 
 ### Thursday Sprint Day 9  
 - 10:00-11:30am EST: OFA + 18F Coordination
@@ -45,12 +45,12 @@
 - 10:30-10:45am EST: Standup
 - 2:00-3:00pm EST: Sprint Demo 
 - 3:30-4:30pm EST: Sprint Retro  
-- Issue owners respond to feedback, revise issue, and resubmit for review 
+- Issue owners respond to feedback, revise issue, and resubmit for review if necessary
 
 ### Wednesday Sprint Day 15 
 - 10:00-11:00am EST: Backlog Refinement
 - NO STANDUP!
 - 3:30-5:00pm EST: Sprint Planning _for next sprint_
-- Issue owners update QASP review feedback by 12pm on Day 15.   
+- Issue owners have until 12pm EST to make revisions in response to government feed and get their issue into the current sprint PR  
 - Issues in “Done and ready for demo” column are closed by Lauren prior to the next sprint planning meeting (Day 1) 
-- PR created for main HHS repo is reviewed by Alex S. COR comments acceptance and Lauren merges PR into main HHS repo. PR notes include the sprint summary report (see Page 11) for PO and COR to review.  
+- Raft writes Sprint Report details and submits as SPRINT X PR to government for review and merging into HHS repo
