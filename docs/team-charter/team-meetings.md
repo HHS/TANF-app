@@ -58,13 +58,13 @@
 ## Sprint Retro 
 - Goal: To inspect the team itself and create plans for improvements to be made going forward 
 - Attendees: Core team  
-- Facilitator: Rotates among team members 
-- When: Every other Tuesday 3:30-4:30pm EST 
+- Facilitator: Team members may take turns to facilitate the retro 
+- When: Every other Tuesday 3:30-5:00pm EST 
 - Format: The team will work in a Mural board to discuss
   - *What went well?* 
   - *What didn’t go well?* 
-  - *What actions + commitments can we make?* 
-  - Team members may take turns to facilitate the retro. Whoever facilitates the retro is responsible for documenting commitments in GH issues or Team Charter as appropriate.
+  - *What 2-4 commitments can we make in next sprint to improve?* 
+  - Whoever facilitates the retro is responsible for documenting commitments in GH issues or Team Charter as appropriate.
  
 ## OFA + 18F Sync
 - Goal: To check in on the tasks and progress of non-development tasks, especially those related to ATOing and ACF stakeholder management. 
