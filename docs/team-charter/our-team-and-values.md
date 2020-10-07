@@ -34,4 +34,4 @@ Our team will build a new, secure, web-based data reporting system to improve th
 
 # Our Individual Preferences 
 
-While we share values, we also have our individual preferences, habits, and peeves. Take some time to read our team forming Mural and understand how our team mates like to work, what makes them grumpy, and how they prefer feedback as  
+While we share values, we also have our individual preferences, habits, and peeves. Take some time to read [our team forming Mural](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1595974160269/d9c2e1f9cb436a2b13a96d05ba2266bea5f66497) and understand how our team mates like to work, what makes them grumpy, and how they prefer feedback as  
