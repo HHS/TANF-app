@@ -1,4 +1,4 @@
- # Manual checks to meet QASP 
+ # Raft's manual checks to meet QASP 
 
 This document describes the manual practices that the Raft team will follow to manually check deliverables against the QASP in addition to the automated testing checks.  
 
