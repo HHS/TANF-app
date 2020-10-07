@@ -9,13 +9,13 @@
 ## MS Teams Files 
 
 - Text documents, spreadsheets, and presentations should be stored on OFA’s MS Teams Files. This includes user research interview notes and project planning documents. 
-- Raw user research interview notes should have restricted access and only be available to the core research team. Participants should have code names and notes should be anonymized of PII after each session. Learn more about how we manage research records and protect participant privacy here. <<NEED LINK>>
+- Raw user research interview notes should have restricted access and only be available to the core research team. Participants should have code names and notes should be anonymized of PII after each session. Learn more about how we manage research records and protect participant privacy [here](NEED LINK).
 
 
 ## Mural  
 
 - Currently, only Lauren has member access. Others can edit Murals as visitors after entering the password. Ask Lauren for the password.
-- All links can be found <<NEED LINK>>
+- [Mural links can be found here](NEED LINK)
  
 
 ## Weekly Ship Email 
