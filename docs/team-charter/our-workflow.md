@@ -2,15 +2,14 @@
 
 We have three project management boards for organizing our work: 
 
-- **Sprint Board:** This is only for the issues our team committed to for the current sprint. This lives in the Raft GitHub account. 
-- **Product Backlog:** This is where the PO can stage user stories, adjust prioritization, and prepare issues to bring to Sprint Planning meetings. This also lives in the Raft GitHub account. 
-- **Project Backlog:** This is for project and contract management tasks. It’s the domain of OFA and 18F and lives on 18F’s Trello account.  
+- **[Sprint Board](https://github.com/raft-tech/TANF-app#workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/board?repos=281707402)** This is only for the issues our team committed to for the current sprint. This lives in the Raft GitHub account. 
+- **[Product Backlog](https://github.com/raft-tech/TANF-app#workspaces/tdrs-product-backlog-5f2c6cdc7c0bb1001bdc43a5/board?repos=281707402)** This is where the PO can stage user stories, adjust prioritization, and prepare issues to bring to Sprint Planning meetings. This also lives in the Raft GitHub account.  
+
 
 # ZenHub Workflow 
  
-
 ## A new issue is created 
-- New issues should usually be created on the Product Backlog and placed in the “New issues to be sorted column.” 
+- New issues should usually be created on the [Product Backlog](https://github.com/raft-tech/TANF-app#workspaces/tdrs-product-backlog-5f2c6cdc7c0bb1001bdc43a5/board?repos=281707402) and placed in the “New issues to be sorted column.” 
 - Whenever possible, the title of the issue should be a user story with a clear goal. 
 - The default issue templates will outline the standard elements for you—a description, a list of tasks, acceptance criteria, and definition of done. An issue may also contain open questions or helpful links.  
 - If an issue is tightly scoped, the templates for engineering, research, or design may be used for more specialized acceptance criteria and definition of done. 
@@ -21,7 +20,7 @@ We have three project management boards for organizing our work:
 ## The issue is refined and organized into an epic 
 - The product owner, Design Lead, and Tech lead will meet weekly to review issues on the Product Backlog. They will flesh out details on the issues, prioritize them, and group them.  
 - Epics are used to group issues by their theme. The Epics appear as issues with the label “Epic.” The “Epic Name” should be simple, high-level user story using the “As a <role>, I want to <action> so that <value> syntax.  
-- Issues and epics are organized into Product Goals. Most of the columns or “pipelines” on the Product Backlog board are Product Goals. These are a set of epics that we work on in parallel and develop KPIs around. These are laid on the Product Roadmap. 
+- Issues and epics are organized into Product Goals. Most of the columns or “pipelines” on the Product Backlog board are Product Goals. These are a set of epics that we work on in parallel and develop KPIs around. These are laid on the [Product Roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592336604317/61159efd030645a74c267130ea19b2083f87dd09). 
  
 
 ## The product owner proposes the issue for the next sprint  
@@ -66,10 +65,11 @@ We have three project management boards for organizing our work:
  
 
 ## If the issue becomes blocked  
-- When an issue can’t be resolved due to other issues or is dependent on completion of other issues document those dependencies within the issue. See how to utilize dependencies. 
+- When an issue can’t be resolved due to other issues or is dependent on completion of other issues document those dependencies within the issue. [See how to utilize dependencies.](https://help.zenhub.com/support/solutions/articles/43000010349-create-github-issue-dependencies) 
 - If no progress can be made, move the issue to the “Blocked” column/pipeline. 
 - Assignee should discuss any blocked issue in standup. 
 - Long-standing blocked issues will also be reviewed as part of Sprint Planning. 
+
 
 ## The issue is ready for Raft review 
 - Once the assignee feels the issue is ready for review, they should check the following: 
@@ -79,7 +79,7 @@ We have three project management boards for organizing our work:
   - If dev issue, create a PR for the issue using the PR template 
   - If all this is in place, the assignee should move the card to “Raft Review” column/pipeline and ping the appropriate reviewer/s. 
  
-
+ 
 ## The issue is reviewed by Raft 
 - If changes are needed, reviewer moves the issue back to ‘In Progress’ and notes the comments and pings the assignee for revision.  
 - For dev issues, if issue meets the acceptance criteria and all tasks are done, the reviewer
@@ -90,23 +90,24 @@ We have three project management boards for organizing our work:
 - For design or research issues, if issue meets the acceptance criteria and all tasks are done, the reviewer 
   - moves the issue to ‘Government Review’ pipeline and tags Lauren for review 
 
+
 ## The issue is reviewed by government  
 - Lauren verifies that all the acceptance criteria and the relevant QASP elements have been met. 
 - If issues meet the acceptance criteria, reviewers move the issue to “Done and ready for demo.” Only issues in “Done and ready for demo” will be demoed. (So keep issues small!) 
 - If changes are needed, government reviewer/s move the issue back to ‘In Progress,’ notes the comments, and tags the assignee. Small tweaks can be sent back to the assignee on the same issue at this stage, but a new issue should be created if the feedback constitutes an significant expansion of scope. 
 - When issues are being reviewed by QASP review day (Day 13), Raft team can continue to work on issues that are ‘In progress’ or ‘To Do’ pipeline. If all issues in these columns have been addressed, then Raft team can pull from prioritized product backlog 'Ready to go for Next Sprint' 
- 
+
 
 ## The issue is ready for demo  
 - When QASP reviewers have signed off and the team is ready for feedback from OFA stakeholders, then the feature is demonstrated in Sprint Demo meeting.  
 - Feedback from stakeholders is discussed and, if necessary, new issues are created to address feedback. 
  
-
+ 
 ## The issue is complete, and the sprint has ended 
 - Raft creates a PR and a Sprint Summary Report (see Page 11), which is included in the PR notes.  
 - Tech lead reviews the PR, the COR comments acceptance, and Lauren merges the PR into main HHS repo 
  
-
+ 
 ## The issue is considered ‘sprint done’ when  
   - Issue is closed  
   - Issues in sprint meet the QASP  
