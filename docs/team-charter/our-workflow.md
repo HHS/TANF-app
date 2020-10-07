@@ -5,6 +5,14 @@ We have three project management boards for organizing our work:
 - **[Sprint Board](https://github.com/raft-tech/TANF-app#workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/board?repos=281707402)** This is only for the issues our team committed to for the current sprint. This lives in the Raft GitHub account. 
 - **[Product Backlog](https://github.com/raft-tech/TANF-app#workspaces/tdrs-product-backlog-5f2c6cdc7c0bb1001bdc43a5/board?repos=281707402)** This is where the PO can stage user stories, adjust prioritization, and prepare issues to bring to Sprint Planning meetings. This also lives in the Raft GitHub account.  
 
+# Government Priorities 
+
+Based on the September 2020 iron triangle conversations, the product team committed to the following: 
+
+1. **Prioritizing quality over time and scope.** Quality is the rigid end of the triangle while time and scope are flexible ends of the triangle.  
+2. **Raft moves issues to QASP review pipeline if and only if Raft believes issues meet the AC.** [who checks off the AC has not been determined – so far – until Sprint 4 - Lauren/QASP reviewers have been checking off the AC]. If AC cannot be met or has to be updated, then Rafter(s) document the change/update in GitHub.    
+3. **Issue(s) are submitted for QASP review on a rolling basis.** For each sprint, Raft submits at least one issue for QASP review. 
+
 
 # ZenHub Workflow 
  
