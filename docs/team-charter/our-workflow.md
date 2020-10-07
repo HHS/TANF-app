@@ -95,7 +95,7 @@ We have three project management boards for organizing our work:
 - Lauren verifies that all the acceptance criteria and the relevant QASP elements have been met. 
 - If issues meet the acceptance criteria, reviewers move the issue to “Done and ready for demo.” Only issues in “Done and ready for demo” will be demoed. (So keep issues small!) 
 - If changes are needed, government reviewer/s move the issue back to ‘In Progress,’ notes the comments, and tags the assignee. Small tweaks can be sent back to the assignee on the same issue at this stage, but a new issue should be created if the feedback constitutes an significant expansion of scope. 
-- When issues are being reviewed by QASP review day (Day 13), Raft team can continue to work on issues that are ‘In progress’ or ‘To Do’ pipeline. If all issues in these columns have been addressed, then Raft team can pull from prioritized product backlog 'Ready to go for Next Sprint' 
+- When issues are being reviewed by QASP review day (Day 13), Raft team can continue to work on issues that are ‘In progress’ or ‘To Do’ pipeline. If all issues in these columns have been addressed, then Raft team can pull from prioritized product backlog 'Ready to go for Next Sprint'  
 
 
 ## The issue is ready for demo  
@@ -103,34 +103,21 @@ We have three project management boards for organizing our work:
 - Feedback from stakeholders is discussed and, if necessary, new issues are created to address feedback. 
  
  
-## The issue is complete, and the sprint has ended 
+## The issue is complete and ready for final QASP review
 - Raft creates a PR and a Sprint Summary Report (see Page 11), which is included in the PR notes.  
 - Tech lead reviews the PR, the COR comments acceptance, and Lauren merges the PR into main HHS repo 
- 
- 
-## The issue is considered ‘sprint done’ when  
-  - Issue is closed  
-  - Issues in sprint meet the QASP  
-  - PR is merged in main HHS repo 
-
-
-# NEED TO INCORPORATE 
-
-### PR Review process: 
-
-QASP reviewer reviews the PR against the contract QASP, DoD, and provides feedback by Monday (Day 13). Raft address any small feedback (one/two pointer) prior to 12pm Day 15 deadline. Larger feedback is added as an issue for backlog refinement and PR is updated with a note on the ‘issue # has been created to address the specific feedback.’  
-
-
-### Definition of Done (DoD) 
-
-Dev issues: DoD for dev issues is reviewed at the QASP level and is met when the PR: (1) note contains sprint report, (2) meets the QASP, (3) Raft has addressed small feedback (by 12pm on Wednesday, which is Day 15 of the last sprint/Day 1 of next sprint), and (4) has received a signed off from QASP reviewer.   
-
-Design issues: DoD for design issues is stated in the actual issues 
-
-### Acceptance Criteria (AC) and DoD Evaluation  
+- QASP reviewer reviews the PR against the contract QASP, DoD, and provides feedback by Monday (Day 13). Raft address any small feedback (one/two pointer) prior to 12pm Day 15 deadline. Larger feedback is added as an issue for backlog refinement and PR is updated with a note on the ‘issue # has been created to address the specific feedback.’ 
+- Dev issues: DoD for dev issues is reviewed at the QASP level and is met when the PR: (1) note contains sprint report, (2) meets the QASP, (3) Raft has addressed small feedback (by 12pm on Wednesday, which is Day 15 of the last sprint/Day 1 of next sprint), and (4) has received a signed off from QASP reviewer.   
+- Design issues: DoD for design issues is stated in the actual issues 
 
 The following evaluate AC and DoD to close issues and/or PR: 
 
 AC: Lauren or Alex S (Tech lead)
 
 DoD: Alex S (Tech lead) for dev issues; Design and research - Lauren and Christine (design lead) 
+ 
+ 
+## The issue is considered ‘sprint done’ when  
+  - Issue is closed  
+  - Issues in sprint meet the QASP  
+  - PR is merged in main HHS repo 
