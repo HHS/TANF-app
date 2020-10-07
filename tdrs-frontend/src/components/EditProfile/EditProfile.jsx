@@ -8,6 +8,7 @@ function EditProfile() {
   const [profileInfo, setProfileInfo] = useState({
     firstName: '',
     lastName: '',
+    stt: '',
   })
   const [errors, setErrors] = React.useState({})
 
@@ -21,7 +22,7 @@ function EditProfile() {
     comboBox.init()
   }, [dispatch])
 
-  const nameValidation = (fieldName, fieldValue) => {
+  const validation = (fieldName, fieldValue) => {
     if (fieldValue.trim() === '') {
       return `${fieldName} is required`
     }
@@ -29,8 +30,9 @@ function EditProfile() {
   }
 
   const validate = {
-    firstName: (name) => nameValidation('First Name', name),
-    lastName: (name) => nameValidation('Last Name', name),
+    firstName: (name) => validation('First Name', name),
+    lastName: (name) => validation('Last Name', name),
+    stt: (stt) => validation('stt', stt),
   }
 
   const handleBlur = (evt) => {
@@ -91,7 +93,7 @@ function EditProfile() {
             className={`usa-label ${
               errors.firstName ? 'usa-label--error' : ''
             }`}
-            htmlFor="first-name"
+            htmlFor="firstName"
           >
             First name
             {errors.firstName && (
@@ -107,7 +109,7 @@ function EditProfile() {
               className={`usa-input ${
                 errors.firstName ? 'usa-input--error' : ''
               }`}
-              id="first-name"
+              id="firstName"
               name="firstName"
               type="text"
               aria-required="true"
@@ -159,13 +161,29 @@ function EditProfile() {
             errors.stt ? 'usa-form-group--error' : ''
           }`}
         >
-          <label className="usa-label" htmlFor="stt">
+          <label className="usa-label" htmlFor="sttList">
             Associated State, Tribe, or Territory
+            {errors.stt && (
+              <span
+                className="usa-error-message"
+                id="input-error-message"
+                role="alert"
+              >
+                {errors.stt}
+              </span>
+            )}
             <div className="usa-combo-box">
               <select
                 className="usa-select usa-combo-box__select"
-                name="stt"
-                id="stt"
+                name="sttList"
+                id="sttList"
+                // value={profileInfo.stt}
+                // onChange={(e) =>
+                //   setProfileInfo({
+                //     ...profileInfo,
+                //     stt: e.target.value,
+                //   })
+                // }
               >
                 {stts.map((stt) => (
                   <option key={stt.id} value={stt.name.toLowerCase()}>
