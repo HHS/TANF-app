@@ -22,8 +22,8 @@ Review to ensure each frontend screen with the following the guidelines below to
 - Run the Accessibility Insight for [Web “Fast Pass” tool](https://accessibilityinsights.io/docs/en/web/getstarted/fastpass)  
 - Run the Accessibility Insight for Web "Manual test for tab stops" 
 - Test using screen reader VoiceOver for Mac and keyboard (Tab) only 
-
-Review design accessibility using [Stark](https://www.figma.com/community/plugin/732603254453395948) (Figma contrast ratio plugin). Also, review Raft’s Do’s and Don’ts listed on Page 3. 
+- Review design accessibility using [Stark](https://www.figma.com/community/plugin/732603254453395948) (Figma contrast ratio plugin). 
+- Also, review [Raft’s Do’s and Don’ts](LINK)
 
 ## Deliverable 5: Deployed 
 
