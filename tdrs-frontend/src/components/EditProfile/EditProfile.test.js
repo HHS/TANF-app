@@ -61,4 +61,41 @@ describe('EditProfile', () => {
 
     expect(submitBtn).toExist()
   })
+
+  it('should render a list of options based on stts from the store', () => {
+    const store = mockStore({
+      ...initialState,
+      stts: {
+        stts: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
+
+    const options = wrapper.find('.sttOption')
+
+    expect(options.length).toEqual(3)
+  })
 })
