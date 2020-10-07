@@ -18,13 +18,10 @@ Review Circle CI to ensure [flake8](https://pypi.org/project/flake8/) and [AirBn
 
 Review to ensure each frontend screen with the following the guidelines below to meet the accessibility WCAG2.1 AA performance standard as stated in the QASP. 
 
-Use [DHS Trusted Tester v5 Conformance Test](https://section508coordinators.github.io/TrustedTester/), [Tota11y](https://github.com/Khan/tota11y), and [WAVE](https://wave.webaim.org/) 
-
-Run the Accessibility Insight for [Web “Fast Pass” tool](https://accessibilityinsights.io/docs/en/web/getstarted/fastpass)  
-
-Run the Accessibility Insight for Web "Manual test for tab stops" 
-
-Test using screen reader VoiceOver for Mac and keyboard (Tab) only 
+- Use [DHS Trusted Tester v5 Conformance Test](https://section508coordinators.github.io/TrustedTester/), [Tota11y](https://github.com/Khan/tota11y), and [WAVE](https://wave.webaim.org/) 
+- Run the Accessibility Insight for [Web “Fast Pass” tool](https://accessibilityinsights.io/docs/en/web/getstarted/fastpass)  
+- Run the Accessibility Insight for Web "Manual test for tab stops" 
+- Test using screen reader VoiceOver for Mac and keyboard (Tab) only 
 
 Review design accessibility using [Stark](https://www.figma.com/community/plugin/732603254453395948) (Figma contrast ratio plugin). Also, review Raft’s Do’s and Don’ts listed on Page 3. 
 
