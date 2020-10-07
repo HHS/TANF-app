@@ -1,6 +1,6 @@
 # Sprint Schedule
 
-_This is just a quick summary of each day's meetings and focus. See Team Meetings and Our Workflow for more details._
+_This is just a quick summary of each day's meetings and focus. See [Team Meetings](https://github.com/HHS/TANF-app/blob/SelenaJV-patch-1/docs/team-charter/team-meetings.md) and Our Workflow for more details._
  
 ### Wednesday Sprint Day 1: Planning Day!
 - 10:00-11:00am EST: Backlog Refinement 
