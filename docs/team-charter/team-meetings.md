@@ -15,9 +15,9 @@
 - Facilitator: None 
 - When: Daily 10:30-10:45am EST and asynchronously on Wednesdays
 - Format: Each team member gives quick update to answer these questions 
-    - What did you do yesterday that advances the sprint goal? 
-    - What are you doing today that advances the sprint goal?
-    - Are you encountering any blockers? 
+  - *What did you do yesterday that advances the sprint goal?* 
+  - *What are you doing today that advances the sprint goal?*
+  - *Are you encountering any blockers?* 
   - If you can’t make Standup in real-time, please post a short async update to [General channel of MS Teams](https://teams.microsoft.com/_#/conversations/General?threadId=19:f769bbcb029f4f02b55ae7fad90e310d@thread.skype&ctx=channel)  
 
 ## Backlog Refinement 
@@ -61,9 +61,9 @@
 - Facilitator: Rotates among team members 
 - When: Every other Tuesday 3:30-4:30pm EST 
 - Format: The team will work in a Mural board to discuss
-    - What went well? 
-    - What didn’t go well? 
-    - What actions + commitments can we make? 
+  - *What went well?* 
+  - *What didn’t go well?* 
+  - *What actions + commitments can we make?* 
   - Team members may take turns to facilitate the retro. Whoever facilitates the retro is responsible for documenting commitments in GH issues or Team Charter as appropriate.
  
 ## OFA + 18F Sync
