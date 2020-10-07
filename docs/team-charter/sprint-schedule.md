@@ -1,33 +1,35 @@
 # Sprint Schedule
 
+_This is just a quick summary of each day's meetings and focus. See Team Meetings and Our Workflow for more details._
+ 
 ### Wednesday Sprint Day 1: Planning Day!
 - 10:00-11:00am EST: Backlog Refinement 
 - NO STANDUP!
 - 3:30-5:00pm EST: Sprint Planning  
 
-### Thursday Sprint Day 2: Work day!   
+### Thursday Sprint Day 2: Work Day!   
 - 10:00-11:30am EST: OFA + 18F Coordination
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis
 
-### Friday Sprint Day 3: Work day!   
+### Friday Sprint Day 3: Work Day!   
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis 
 
-### Monday Sprint Day 6: Work day!  
+### Monday Sprint Day 6: Work Day!  
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis 
 
-### Tuesday Sprint Day 7: Work day!  
+### Tuesday Sprint Day 7: Work Day!  
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis 
 
-### Wednesday Sprint Day 8 
+### Wednesday Sprint Day 8: Raft Review Day!
 - 10:00-11:00am EST: Backlog Refinement  (Security focused)
 - NO STANDUP!
 - Request Raft review for issues that will likely be including in current sprint's PR    
 
-### Thursday Sprint Day 9  
+### Thursday Sprint Day 9: Work Day!  
 - 10:00-11:30am EST: OFA + 18F Coordination
 - 10:30-10:45am EST: Standup
 - Request feedback from teammates on rolling basis 
@@ -36,7 +38,7 @@
 - 10:30-10:45am EST: Standup
 - Last day to request government review for work to count in this sprint 
 
-### Monday Sprint Day 13: Review Day!
+### Monday Sprint Day 13: Government Review Day!
 - 10:30-10:45am EST: Standup
 - Pairing meetings for dev and design/research reviews  
  
@@ -47,7 +49,7 @@
 - 3:30-4:30pm EST: Sprint Retro  
 - Issue owners respond to feedback, revise issue, and resubmit for review if necessary
 
-### Wednesday Sprint Day 15 
+### Wednesday Sprint Day 15: Merge Day! 
 - 10:00-11:00am EST: Backlog Refinement
 - NO STANDUP!
 - 3:30-5:00pm EST: Sprint Planning _for next sprint_
