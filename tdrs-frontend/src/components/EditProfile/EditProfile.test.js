@@ -31,7 +31,7 @@ describe('EditProfile', () => {
       </Provider>
     )
 
-    const nameInput = wrapper.find('#first-name')
+    const nameInput = wrapper.find('#firstName')
 
     expect(nameInput).toExist()
   })
@@ -44,7 +44,7 @@ describe('EditProfile', () => {
       </Provider>
     )
 
-    const nameInput = wrapper.find('#last-name')
+    const nameInput = wrapper.find('#lastName')
 
     expect(nameInput).toExist()
   })
@@ -94,7 +94,7 @@ describe('EditProfile', () => {
       </Provider>
     )
 
-    const options = wrapper.find('.sttOption')
+    const options = wrapper.find('option')
 
     expect(options.length).toEqual(3)
   })

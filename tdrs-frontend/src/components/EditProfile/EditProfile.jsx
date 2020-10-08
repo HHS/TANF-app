@@ -29,18 +29,12 @@ function EditProfile() {
     return null
   }
 
-  const validate = {
-    firstName: (name) => validation('First Name', name),
-    lastName: (name) => validation('Last Name', name),
-    stt: (stt) => validation('stt', stt),
-  }
-
   const handleBlur = (evt) => {
     const { name, value } = evt.target
 
     const { [name]: removedError, ...rest } = errors
 
-    const error = validate[name](value)
+    const error = validation(name, value)
 
     setErrors({
       ...rest,
@@ -54,7 +48,7 @@ function EditProfile() {
     // validate the form
     const formValidation = Object.keys(profileInfo).reduce(
       (acc, key) => {
-        const newError = validate[key](profileInfo[key])
+        const newError = validation(key, profileInfo[key])
         const newTouched = { [key]: true }
         return {
           errors: {
@@ -128,7 +122,7 @@ function EditProfile() {
         >
           <label
             className={`usa-label ${errors.lastName ? 'usa-label--error' : ''}`}
-            htmlFor="last-name"
+            htmlFor="lastName"
           >
             Last name
             {errors.lastName && (
@@ -144,7 +138,7 @@ function EditProfile() {
               className={`usa-input ${
                 errors.lastName ? 'usa-input--error' : ''
               }`}
-              id="last-name"
+              id="lastName"
               name="lastName"
               type="text"
               aria-required="true"
@@ -174,7 +168,7 @@ function EditProfile() {
             )}
             <div className="usa-combo-box">
               <select
-                className="usa-select usa-combo-box__select"
+                className="usa-select"
                 name="sttList"
                 id="sttList"
                 // value={profileInfo.stt}
