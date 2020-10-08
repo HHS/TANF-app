@@ -21,14 +21,15 @@ Parameters:
   }
   ```
 
-*Note:*
+*Notes:*
 
-# Fields
-- first_name: string (first name of user)
-- last_name: string (last name of user)
-- stt: integer (id of the State, Tribe or Territory)
+### Fields
+* first_name: string (first name of user)
+* last_name: string (last name of user)
+* stt: integer (id of the State, Tribe or Territory)
 
-- Authorization Protected 
+
+Authorization Protected 
 
 **Response**:
 
@@ -45,10 +46,10 @@ Content-Type application/json
 
 This will return a JSON response with the authenticated user's data as defined in their request JSON.
 
-# Fields
-- first_name: string (first name of user)
-- last_name: string (last name of user)
-- stt: string (name of State, Tribe or Territory)
+### Fields
+* first_name: string (first name of user)
+* last_name: string (last name of user)
+* stt: string (name of State, Tribe or Territory)
 
 ----
 **Failure to Authenticate Response:**
