@@ -1,13 +1,17 @@
 import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import comboBox from 'uswds/src/js/components/combo-box'
+import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
 
-import stts from '../../data/stts.json'
-
 function EditProfile() {
+  const stts = useSelector((state) => state.stts.stts)
+  const dispatch = useDispatch()
+
   useEffect(() => {
+    dispatch(fetchStts())
     comboBox.init()
-  })
+  }, [dispatch])
 
   return (
     <div className="grid-container">
@@ -43,7 +47,7 @@ function EditProfile() {
         <label className="usa-label" htmlFor="stt">
           Associated State, Tribe, or Territory
           <div className="usa-combo-box">
-            <select className="usa-select" name="stt" id="sttList">
+            <select className="usa-select" name="stt" id="stt">
               {stts.map((stt) => (
                 <option
                   className="sttOption"
