@@ -21,10 +21,10 @@ def user():
 @pytest.fixture
 def stt():
     """Return an STT."""
-    return STTFactory()
+    return STTFactory.create()
 
 
 @pytest.fixture
 def region():
     """Return a region."""
-    return RegionFactory()
+    return RegionFactory.create()
