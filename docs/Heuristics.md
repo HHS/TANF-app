@@ -10,6 +10,60 @@ It is not meant to replace the [Quality Assurance Surveillance Plan (QASP)](htt
 
 Understanding code quality and maintainability requires examining the code itself and comprehending it at least at a high level. The indicators below are generally intended for someone who already has the knowledge to do that, but each one includes steps that a non-coder can take to help determine if things are going well or not.  
 
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th class="col-indicator">Indicator</th>
+        <th class="col-good-sign">Good sign</th>
+        <th class="col-bad-sign">Bad sign</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr valign="top">
+        <td class="col-indicator"></td>
+        <td class="col-good-sign"></td>
+        <td class="col-bad-sign"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr valign="top">
+        <th class="col-indicator">Indicator</th>
+        <th class="col-good-sign">Good sign</th>
+        <th class="col-bad-sign">Bad sign</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr valign="top">
+        <td class="col-indicator">Code actually does what the stories intend </td>
+        <td class="col-good-sign">Incremental code delivery can be traced back to user story value or user story tasks. 
+        <br><br>Occasionally, there will be concerted efforts to remediate technical debt but this should not be the norm.</td>
+        <td class="col-bad-sign">Code does not address users stories or user story acceptance criteria. </td>
+      </tr>
+
+      <tr valign="top">
+        <td class="col-indicator">Code uses Do Not Repeat Yourself (DRY) principles </td>
+        <td class="col-good-sign">Common functionality uses open source libraries when possible.
+        <br><br>When new code is developed repeat code is centralized into a module.
+        <br><br>Developers leverage USWDS code and guidance as much as possible, rather than creating custom components.
+        <br><br> **Non dev:** The dev team will not have similar code throughout the code base, but will design it so that central modules can be reused. </td>
+        <td class="col-bad-sign">Common functionality uses custom code.
+        <br><br>The same methods are repeated throughout different files.
+        <br><br>Custom components that deviate from USWDS guidance are common. </td>
+      </tr>
+
+
+    </tbody>
+  </table>
+</div>
+
 ## Design heuristics  - fix links
 
 Design touches every area of the product, and can mean different things to different teams at different times. The work you'll evaluate may vary from sprint-to-sprint; you may review research plans on week and user interface mockups the next. No matter the work, these design heuristics are the specific markers to look for to ensure design decisions are user centered, ethical, and maintainable.  
@@ -32,7 +86,7 @@ A content heuristic is the specific, identifiable, and measurable qualities that
 
 It is not enough to say that content should be ‘clear;’ instead it is more helpful to describe what clear content means for the user experience and how it should be demonstrated. Content heuristics are used to evaluate how well we are producing clear content and can be used during a content audit and user testing. With this in mind, here’s how we are defining clear, actionable, and accurate content.  
 
-### Product Team Heuristics  
+## Product Team Heuristics  
 
 The following indicators are intended to help stakeholders understand whether the product team has the leadership it needs in order to be successful.  
 
