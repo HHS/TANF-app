@@ -1,6 +1,10 @@
 """Serialize user data."""
 
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
+from tdpservice.core.models import GlobalPermission
+
 
 from .models import User
 
@@ -62,3 +66,32 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
             "first_name": {"allow_blank": False, "required": True},
             "last_name": {"allow_blank": False, "required": True},
         }
+
+
+class PermissionSerializer(serializers.ModelSerializer):
+    """Permission serializer."""
+
+    class Meta:
+        """Metadata."""
+
+        model = Permission
+        fields = ["codename", "name", "content_type"]
+        extra_kwargs = {"content_type": {"allow_null": True}}
+
+    def validate_content_type(self, value):
+        """Validate content type.
+        If no content type is set, use the one for global permissions.
+        """
+        if not value:
+            value = ContentType.objects.get_for_model(GlobalPermission)
+        return value
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    """Group (role) serializer."""
+
+    class Meta:
+        """Metadata."""
+
+        model = Group
+        fields = ["name", "permissions"]

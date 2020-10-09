@@ -27,6 +27,7 @@ class Common(Configuration):
         "corsheaders",
         "django_extensions",
         # Local apps
+        "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
     )
 

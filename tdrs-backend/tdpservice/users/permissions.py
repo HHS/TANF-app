@@ -18,3 +18,11 @@ class IsUserOrReadOnly(permissions.BasePermission):
             return True
 
         return obj == request.user
+
+
+class IsAdmin(permissions.BasePermission):
+    """Permission for admin-only views."""
+
+    def has_permission(self, request, view):
+        """Check if a user is admin or superuser."""
+        return request.user.is_authenticated and request.user.is_admin

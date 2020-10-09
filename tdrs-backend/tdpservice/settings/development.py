@@ -46,6 +46,6 @@ class Development(Common):
 
     # Graph Models for GraphViz
     GRAPH_MODELS = {
-        'all_applications': True,
-        'group_models': True,
+        "all_applications": True,
+        "group_models": True,
     }
