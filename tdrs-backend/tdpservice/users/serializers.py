@@ -75,13 +75,11 @@ class PermissionSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = Permission
-        fields = ["codename", "name", "content_type"]
+        fields = ["id", "codename", "name", "content_type"]
         extra_kwargs = {"content_type": {"allow_null": True}}
 
     def validate_content_type(self, value):
-        """Validate content type.
-        If no content type is set, use the one for global permissions.
-        """
+        """If no content type is set use the one for global permissions."""
         if not value:
             value = ContentType.objects.get_for_model(GlobalPermission)
         return value
@@ -94,4 +92,4 @@ class GroupSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = Group
-        fields = ["name", "permissions"]
+        fields = ["id", "name", "permissions"]

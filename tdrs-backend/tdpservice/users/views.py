@@ -75,8 +75,8 @@ class PermissionViewSet(viewsets.ModelViewSet):
 
 class GroupViewSet(viewsets.ModelViewSet):
     """CRUD for groups (roles)."""
+
     pagination_class = None
     queryset = Group.objects.all()
     permission_classes = [IsAdmin]
     serializer_class = GroupSerializer
- 

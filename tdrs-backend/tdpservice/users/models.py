@@ -27,6 +27,8 @@ class TDRSAdmin(models.Model):
     """Define model for custom admin permission."""
 
     class Meta:
+        """Custom permission for TDRS System Admin."""
+
         permissions = [("tdrs_can_admin", "Can Admin Applicable STT")]
 
 
@@ -34,6 +36,8 @@ class TDRSRead(models.Model):
     """Define model for custom read permission."""
 
     class Meta:
+        """Custom permission to read data."""
+
         permissions = [("tdrs_can_read_data", "Can Read STT Data")]
 
 
@@ -41,4 +45,6 @@ class TDRSEdit(models.Model):
     """Define model for custom edit permission."""
 
     class Meta:
+        """Custom permission to edit/prepare data."""
+
         permissions = [("tdrs_can_edit_data", "Can Prepare STT Data")]
