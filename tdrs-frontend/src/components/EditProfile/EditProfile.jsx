@@ -4,6 +4,13 @@ import comboBox from 'uswds/src/js/components/combo-box'
 import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
 
+export const validation = (fieldName, fieldValue) => {
+  if (fieldValue.trim() === '') {
+    return `${fieldName} is required`
+  }
+  return null
+}
+
 function EditProfile() {
   const stts = useSelector((state) => state.stts.stts)
   const dispatch = useDispatch()
@@ -21,13 +28,6 @@ function EditProfile() {
     dispatch(fetchStts())
     comboBox.init()
   }, [dispatch])
-
-  const validation = (fieldName, fieldValue) => {
-    if (fieldValue.trim() === '') {
-      return `${fieldName} is required`
-    }
-    return null
-  }
 
   const handleBlur = (evt) => {
     const { name, value } = evt.target
@@ -186,6 +186,7 @@ function EditProfile() {
                 ))}
               </select>
             </div>
+            {/* <Button label="Hello Button" /> */}
           </label>
         </div>
         <Button type="submit" size="big" className="request-access-button">
