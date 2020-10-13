@@ -14,6 +14,7 @@ This is a follow-on to #
 AC: 
 - [ ] The problem we are trying to solve is clearly stated, as are questions we still have 
 - [ ] The design is consistent with the team’s past decisions, or a change is clearly documented 
+- [ ] The design is reviewed alongside [our design principles](https://github.com/HHS/TANF-app/wiki/Design-principles) and any friction is documented and discussed with the team
 - [ ] The design is usable, meaning... 
    - [ ] It uses [USWDS components and follows it’s UX guidance](https://designsystem.digital.gov/components/), or a deviation is clearly documented 
    - [ ] Language is intentional and [plain](https://plainlanguage.gov/guidelines/); placeholders are clearly documented 
