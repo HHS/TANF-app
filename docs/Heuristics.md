@@ -5,8 +5,15 @@
 This document was created  to help OFA staff assess whether the product development team performs satisfactorily and identify areas for improvement. We built this from 18F's evaluation practices for our own internal and external work.  
 
 It is not meant to replace the [Quality Assurance Surveillance Plan (QASP)](https://github.com/18F/tdrs-app-rfq/blob/main/Final-RFQ/FINAL-TDRS-software-development-RFQ.md#32-quality-assurance-surveillance-plan-qasp), acceptance criteria, or to be an exhaustive checklist for all work. These heuristics should compliment contractual evaluative measures and be used to identify feedback opportunities within the team.
+* [Code maintainability](#code-maintainability)
+* [Design](#design)
+  * [Universal Design (Accessibility)](#accessibility)
+  * [User Research/Usability Testing ](#research)
+  * [Content](#content)
+* [Product team](#product)
 
-## Code Maintainability Heuristics  
+<a name="code-maintainability"></a>
+## Code Maintainability
 
 Understanding code quality and maintainability requires examining the code itself and comprehending it at least at a high level. The indicators below are generally intended for someone who already has the knowledge to do that, but each one includes steps that a non-coder can take to help determine if things are going well or not.  
 
@@ -38,7 +45,7 @@ Understanding code quality and maintainability requires examining the code itsel
       </tr>
       <tr valign="top">
         <td class="col-indicator">Code methods are short and simple, and maintainable </td>
-        <td class="col-good-sign">Methods are generally shorter than 25 lines of code. The methods generally have few conditionals to minimize cyclomatic complexity. The team may include automated tests like [flake8](https://www.flake8rules.com/rules/C901.html) to check for code readability and complexity. 
+        <td class="col-good-sign">Methods are generally shorter than 25 lines of code. The methods generally have few conditionals to minimize cyclomatic complexity. The team may include automated tests like <a href="https://www.flake8rules.com/rules/C901.html">flake8</a> to check for code readability and complexity. 
         <br><br>Methods are easy to test. Method function can outputs can be reasoned out by review of the method and the accompanying tests.  
         <br><br><b>Non dev:</b> Coded methods are short. At the individual-method level, there are only a few pieces of logic. We favor coding styles that allow for testing and clarity.</td>
         <td class="col-bad-sign">Methods are very long and cram a lot of different iterations or conditionals into a single method. Methods are hard to test.
@@ -93,7 +100,8 @@ Understanding code quality and maintainability requires examining the code itsel
   </table>
 </div>
 
-## Design heuristics  - fix links
+<a name="design"></a>
+## Design
 
 Design touches every area of the product, and can mean different things to different teams at different times. The work you'll evaluate may vary from sprint-to-sprint; you may review research plans on week and user interface mockups the next. No matter the work, these design heuristics are the specific markers to look for to ensure design decisions are user centered, ethical, and maintainable.  
 
@@ -139,7 +147,7 @@ These indicators are meant to help evaluate the practices and work of a design t
     </tr>
     <tr valign="top">
       <td class="col-indicator">Uses reusable design patterns  </td>
-      <td class="col-good-sign">The design team creates and leverages reusable UI patterns to create consistent designs. They follow [USWDS](https://designsystem.digital.gov/) usability and accessibility best practices.  
+      <td class="col-good-sign">The design team creates and leverages reusable UI patterns to create consistent designs. They follow <a href="https://designsystem.digital.gov/">USWDS</a> usability and accessibility best practices.  
       <br><br>If a deviation is made from an established pattern, the reason is clearly stated, and deviations still feel consistent with the team's prior design choices.</td>
       <td class="col-bad-sign">Designers deviate frequently from past design patterns and create new ones that are not consistent with prior design choices.  
       <br><br>Design prioritizes novelty and bespoke solutions over established patterns.</td>
@@ -160,8 +168,8 @@ These indicators are meant to help evaluate the practices and work of a design t
   </table>
 </div>
 
-
-### Universal Design (Accessibility) Heuristics  
+<a name="accessibility"></a>
+### Universal Design (Accessibility)
 
 The following indicators support design of barrier-free digital products that can be used by everyone. The "good signs" and "bad signs" are merely examples; they are in no way comprehensive.  
 
@@ -207,7 +215,8 @@ The [Principles of Universal Design](https://projects.ncsu.edu/ncsu/design/cud/
   </table>
 </div>
 
-### User Research/Usability Test Heuristics  
+<a name="research"></a>
+### User Research/Usability Testing  
 
 The following indicators can help determine if a usability test will produce useful results. This is not an exhaustive list, but it should be helpful in planning and assessing usability tests.  
 
@@ -319,8 +328,8 @@ The following indicators can help determine if a usability test will produce use
   </table>
 </div>
 
-
-### Content Heuristics  
+<a name="content"></a>
+### Content  
 
 A content heuristic is the specific, identifiable, and measurable qualities that content should have in order to achieve positive user experiences.  
 
@@ -421,7 +430,8 @@ It is not enough to say that content should be ‘clear;’ instead it is more h
   </table>
 </div>
 
-## Product Team Heuristics  
+<a name="product"></a>
+## Product Team
 
 The following indicators are intended to help stakeholders understand whether the product team has the leadership it needs in order to be successful.  
 
