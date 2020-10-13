@@ -13,6 +13,7 @@ Description:
 AC: 
 
 - [ ] [Draft research plan]/[user interviews]/[synthesis] is complete. 
+- [ ] Research plans and artifacts are reviewed alongside [our design principles](https://github.com/HHS/TANF-app/wiki/Design-principles) and any friction is documented and discussed with the team
 
 Proposed Tasks: 
 
