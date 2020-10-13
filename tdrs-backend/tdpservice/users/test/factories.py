@@ -1,13 +1,6 @@
 """Generate test data for users."""
-from django.contrib.auth.models import Group
 
 import factory
-import logging
-
-
-
-LOGGER = logging.getLogger(__name__)
-
 
 class UserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""

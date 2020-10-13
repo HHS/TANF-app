@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from .models import User
 from .permissions import IsAdmin, IsUserOrReadOnly
 from .serializers import (
-     CreateUserSerializer,
+    CreateUserSerializer,
     SetUserProfileSerializer,
     UserSerializer,
     GroupSerializer,
@@ -61,6 +61,7 @@ class UserViewSet(
 
 class PermissionViewSet(viewsets.ModelViewSet):
     """CRUD for permissions."""
+
     pagination_class = None
     queryset = Permission.objects.all()
     permission_classes = [IsAdmin]
@@ -74,6 +75,7 @@ class PermissionViewSet(viewsets.ModelViewSet):
 
 class GroupViewSet(viewsets.ModelViewSet):
     """CRUD for groups (roles)."""
+
     pagination_class = None
     queryset = Group.objects.all()
     permission_classes = [IsAdmin]

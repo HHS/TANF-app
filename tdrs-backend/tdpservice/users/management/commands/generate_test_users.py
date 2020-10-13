@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import BaseCommand
 from django.db import IntegrityError, transaction
-from django.apps import apps
 
 import factory
 
@@ -19,9 +18,9 @@ class Command(BaseCommand):
     help = "Generate a test user for each role."
 
     def handle(self, *args, **options):
+        """Generate a test user for each role."""
         groups = [Group(name=group_name) for group_name in group_names]
         Group.objects.bulk_create(groups, ignore_conflicts=True)
-        """Generate a test user for each role."""
         first_name = factory.Faker("first_name")
         last_name = factory.Faker("last_name")
         password = "test_password"  # Static password so we can login.
@@ -45,7 +44,7 @@ class Command(BaseCommand):
             self.stdout.write()
         for group in Group.objects.all():
             username = f"test__{group.name.replace(' ', '_').lower()}"
-            email = f"test_{group.name.replace(' ', '_').lower()}"+ "@example.com"
+            email = f"test_{group.name.replace(' ', '_').lower()}" + "@example.com"
 
             try:
                 with transaction.atomic():

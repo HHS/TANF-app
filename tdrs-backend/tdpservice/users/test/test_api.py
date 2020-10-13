@@ -5,14 +5,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 import pytest
 from rest_framework import status
-from django.core.management import call_command
 
 User = get_user_model()
+
 
 @pytest.mark.django_db
 @pytest.fixture(scope="function")
 def generate_groups():
-    """ create groups and users under those groups """
+    """Create groups and users under those groups."""
     call_command("generate_test_users")
 
 
@@ -244,6 +244,7 @@ def test_set_profile_data_missing_first_name_field(api_client, user):
     response = api_client.post("/v1/users/set_profile/", {"last_name": "Heather"},)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
+
 @pytest.mark.django_db
 def test_role_list(api_client, generate_groups):
     """Test role list."""
@@ -254,6 +255,7 @@ def test_role_list(api_client, generate_groups):
     role_names = {group["name"] for group in response.data}
     assert role_names == {"admin", "OFA analyst", "data prepper"}
 
+
 @pytest.mark.django_db
 def test_role_create(api_client, generate_groups):
     """Test creating a role."""
@@ -261,6 +263,7 @@ def test_role_create(api_client, generate_groups):
     response = api_client.post("/v1/roles/", {"name": "Test Role"})
     assert response.status_code == status.HTTP_201_CREATED
     assert Group.objects.filter(name="Test Role").exists()
+
 
 @pytest.mark.django_db
 def test_role_create_with_permission(api_client, generate_groups):
@@ -274,6 +277,7 @@ def test_role_create_with_permission(api_client, generate_groups):
     assert Group.objects.filter(name="Test Role").exists()
     assert permission in Group.objects.get(name="Test Role").permissions.all()
 
+
 @pytest.mark.django_db
 def test_role_update(api_client, generate_groups):
     """Test role update."""
@@ -283,6 +287,7 @@ def test_role_update(api_client, generate_groups):
     assert response.status_code == status.HTTP_200_OK
     assert Group.objects.filter(name="staff").exists()
     assert not Group.objects.filter(name="admin").exists()
+
 
 @pytest.mark.django_db
 def test_role_delete(api_client, generate_groups):
