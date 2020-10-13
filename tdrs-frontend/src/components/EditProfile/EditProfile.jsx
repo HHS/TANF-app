@@ -171,6 +171,7 @@ function EditProfile() {
                 className="usa-select"
                 name="sttList"
                 id="sttList"
+                data-value={profileInfo.stt}
                 // value={profileInfo.stt}
                 // onChange={(e) =>
                 //   setProfileInfo({
