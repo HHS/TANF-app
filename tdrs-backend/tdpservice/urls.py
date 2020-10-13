@@ -22,7 +22,6 @@ router.register("permissions", views.PermissionViewSet)
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("login", TokenAuthorizationOIDC.as_view(), name="login"),
     path("login/oidc", LoginRedirectOIDC.as_view(), name="oidc-auth"),
     path("logout", LogoutUser.as_view(), name="logout"),
@@ -37,3 +36,6 @@ urlpatterns += router.urls
 
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 urlpatterns = [path("v1/", include(urlpatterns))]
+urlpatterns += [
+    path("admin/", admin.site.urls),
+]

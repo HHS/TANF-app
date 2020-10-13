@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from .models import User
 from .permissions import IsAdmin, IsUserOrReadOnly
 from .serializers import (
-    CreateUserSerializer,
+     CreateUserSerializer,
     SetUserProfileSerializer,
     UserSerializer,
     GroupSerializer,
@@ -61,7 +61,6 @@ class UserViewSet(
 
 class PermissionViewSet(viewsets.ModelViewSet):
     """CRUD for permissions."""
-
     pagination_class = None
     queryset = Permission.objects.all()
     permission_classes = [IsAdmin]
@@ -69,13 +68,12 @@ class PermissionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Get list of custom permissions."""
-        queryset = Permission.objects.filter(codename__startswith="tdrs_")
+        queryset = Permission.objects.all()
         return queryset
 
 
 class GroupViewSet(viewsets.ModelViewSet):
     """CRUD for groups (roles)."""
-
     pagination_class = None
     queryset = Group.objects.all()
     permission_classes = [IsAdmin]

@@ -222,6 +222,8 @@ class Common(Configuration):
             "rest_framework.authentication.SessionAuthentication",
             "rest_framework.authentication.TokenAuthentication",
         ),
+        "TEST_REQUEST_DEFAULT_FORMAT": "json",
+        "TEST_REQUEST_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     }
 
     AUTHENTICATION_BACKENDS = (
