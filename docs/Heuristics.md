@@ -161,8 +161,8 @@ These indicators are meant to help evaluate the practices and work of a design t
     </tr>
     <tr valign="top">
       <td class="col-indicator">Integrates content, accessibility, and usability testing heuristics in work </td>
-      <td class="col-good-sign">Reference back to content accessibility, and usability testing heuristics. </td>
-      <td class="col-bad-sign">Does not follow content accessibility, and usability testing heuristics,</td>
+     <td class="col-good-sign">Reference back to <a href="#content">content</a>, <a href="#accessibility">accessibility</a>, and <a href="#research">usability testing</a> heuristics. </td>
+      <td class="col-bad-sign">Does not follow <a href="#content">content</a>, <a href="#accessibility">accessibility</a>, and <a href="#research">usability testing</a> heuristics</td>
     </tr>
     </tbody>
   </table>
