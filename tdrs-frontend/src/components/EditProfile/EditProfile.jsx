@@ -1,41 +1,17 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import Select from 'react-select'
+import comboBox from 'uswds/src/js/components/combo-box'
 import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
 
 function EditProfile() {
-  const sttsLoading = useSelector((state) => state.stts.loading)
-  const stts = useSelector((state) =>
-    state.stts.stts.map((stt) => ({
-      value: stt.name.toLowerCase(),
-      label: stt.name,
-    }))
-  )
+  const stts = useSelector((state) => state.stts.stts)
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(fetchStts())
+    comboBox.init()
   }, [dispatch])
-
-  const customStyles = {
-    control: (provided, state) => ({
-      ...provided,
-      border: '1px solid #1b1b1b',
-      width: 320,
-      height: 40,
-      marginTop: '.5rem',
-      borderRadius: 0,
-    }),
-    dropdownIndicator: (provided, state) => ({
-      ...provided,
-      color: '#1b1b1b',
-    }),
-    placeholder: (provided, state) => ({
-      ...provided,
-      color: '#1b1b1b',
-    }),
-  }
 
   return (
     <div className="grid-container">
@@ -68,16 +44,21 @@ function EditProfile() {
             aria-required="true"
           />
         </label>
-        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         <label className="usa-label" htmlFor="stt">
           Associated State, Tribe, or Territory
-          <Select
-            styles={customStyles}
-            inputId="stt"
-            isLoading={sttsLoading}
-            isClearable
-            options={stts}
-          />
+          <div className="usa-combo-box">
+            <select className="usa-select" name="stt" id="stt">
+              {stts.map((stt) => (
+                <option
+                  className="sttOption"
+                  key={stt.id}
+                  value={stt.name.toLowerCase()}
+                >
+                  {stt.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </label>
         <Button
           type="submit"
