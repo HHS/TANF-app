@@ -5,7 +5,10 @@ import comboBox from 'uswds/src/js/components/combo-box'
 const ComboBox = ({ sttList }) => {
   const selectRef = useRef()
   useEffect(() => {
+    // The combo box was not rendering as a combo box without this line
     comboBox.init()
+    // This solved the issue when tabbing through the form on EditProfile,
+    // a selection was automatically being made on the first option
     selectRef.current.value = ''
   })
   return (
