@@ -15,7 +15,7 @@ const ComboBox = ({ sttList }) => {
         <select className="usa-select" name="stt" id="stt" ref={selectRef}>
           {sttList.map((stt) => (
             <option
-              className="stt-option"
+              className="sttOption"
               key={stt.id}
               value={stt.name.toLowerCase()}
             >

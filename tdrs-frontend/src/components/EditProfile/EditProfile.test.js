@@ -31,7 +31,7 @@ describe('EditProfile', () => {
       </Provider>
     )
 
-    const nameInput = wrapper.find('#first-name')
+    const nameInput = wrapper.find('#firstName')
 
     expect(nameInput).toExist()
   })
@@ -44,7 +44,7 @@ describe('EditProfile', () => {
       </Provider>
     )
 
-    const nameInput = wrapper.find('#last-name')
+    const nameInput = wrapper.find('#lastName')
 
     expect(nameInput).toExist()
   })

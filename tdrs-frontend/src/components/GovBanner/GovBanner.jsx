@@ -1,14 +1,10 @@
-import React, { useEffect } from 'react'
-import accordion from 'uswds/src/js/components/accordion'
+import React from 'react'
 import smallFlag from 'uswds/dist/img/us_flag_small.png'
 import govLogo from 'uswds/dist/img/icon-dot-gov.svg'
 import httpsLogo from 'uswds/dist/img/icon-https.svg'
 import lock from 'uswds/dist/img/lock.svg'
 
 function GovBanner() {
-  useEffect(() => {
-    accordion.init()
-  })
   return (
     <section className="usa-banner" aria-label="Official government website">
       {' '}
@@ -35,9 +31,6 @@ function GovBanner() {
               className="usa-accordion__button usa-banner__button"
               aria-expanded="false"
               aria-controls="gov-banner"
-              onClick={(e) => {
-                accordion.toggle(e.currentTarget)
-              }}
             >
               <span className="usa-banner__button-text">
                 Here’s how you know

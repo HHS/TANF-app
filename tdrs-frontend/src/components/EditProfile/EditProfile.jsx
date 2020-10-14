@@ -25,41 +25,25 @@ function EditProfile() {
           First name
           <input
             className="usa-input"
-            id="first-name"
-            name="first-name"
+            id="firstName"
+            name="firstName"
             type="text"
             required
             aria-required="true"
           />
         </label>
 
-        <label className="usa-label" htmlFor="last-name">
+        <label className="usa-label" htmlFor="lastName">
           Last name
           <input
             className="usa-input"
-            id="last-name"
-            name="last-name"
+            id="lastName"
+            name="lastName"
             type="text"
             required
             aria-required="true"
           />
         </label>
-        {/* <label className="usa-label" htmlFor="stt">
-          Associated State, Tribe, or Territory
-          <div className="usa-combo-box">
-            <select className="usa-select" name="stt" id="stt">
-              {stts.map((stt) => (
-                <option
-                  className="sttOption"
-                  key={stt.id}
-                  value={stt.name.toLowerCase()}
-                >
-                  {stt.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </label> */}
         <ComboBox sttList={stts} />
         <Button
           type="submit"
