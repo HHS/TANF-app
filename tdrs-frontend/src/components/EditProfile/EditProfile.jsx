@@ -11,7 +11,6 @@ function EditProfile() {
 
   useEffect(() => {
     dispatch(fetchStts())
-    // comboBox.init()
   }, [dispatch])
 
   return (
