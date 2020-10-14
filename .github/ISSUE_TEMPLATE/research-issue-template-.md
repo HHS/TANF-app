@@ -43,7 +43,9 @@ Synthesis
 - [ ] Perform topline synthesis
 - [ ] Synthesis workshop with PO/stakeholders
 - [ ] Document synthesis - Scope (research goal(s)), High-level findings, Actionable learnings, Issues that have to be added to Zenhub, Takeways for future research
-- [ ] Document 'What we focussed on', 'Key Takeaways', and 'Opportuntiies for future research' in Wiki.
+
+Documentation - 
+- [ ] Document 'What we wanted to learn', 'Who we talked to', 'What we tested', 'What we learned' and add URL for full research plan (living in User research folder in  Teams) in Code<> docs.
 
 DoD: 
  - [ ] Documentation: [Draft research plan has been shared with the PO and team for feedback]/ [Interviews have been conducted] / [Research synthesis has been documented and shared with PO and team]
