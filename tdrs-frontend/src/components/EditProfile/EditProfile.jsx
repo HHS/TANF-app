@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import comboBox from 'uswds/src/js/components/combo-box'
+// import comboBox from 'uswds/src/js/components/combo-box'
 import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
+import ComboBox from '../ComboBox'
 
 function EditProfile() {
   const stts = useSelector((state) => state.stts.stts)
@@ -10,7 +11,7 @@ function EditProfile() {
 
   useEffect(() => {
     dispatch(fetchStts())
-    comboBox.init()
+    // comboBox.init()
   }, [dispatch])
 
   return (
@@ -44,7 +45,7 @@ function EditProfile() {
             aria-required="true"
           />
         </label>
-        <label className="usa-label" htmlFor="stt">
+        {/* <label className="usa-label" htmlFor="stt">
           Associated State, Tribe, or Territory
           <div className="usa-combo-box">
             <select className="usa-select" name="stt" id="stt">
@@ -59,7 +60,8 @@ function EditProfile() {
               ))}
             </select>
           </div>
-        </label>
+        </label> */}
+        <ComboBox sttList={stts} />
         <Button
           type="submit"
           disabled

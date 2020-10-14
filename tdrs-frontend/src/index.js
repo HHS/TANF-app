@@ -8,7 +8,7 @@ import configureStore, { history } from './configureStore'
 import { fetchAuth } from './actions/auth'
 import App from './App'
 
-import 'uswds/dist/js/uswds'
+// import 'uswds/dist/js/uswds'
 import './index.scss'
 
 const store = configureStore()
