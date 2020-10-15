@@ -1,5 +1,4 @@
 import React from 'react'
-
 import smallFlag from 'uswds/dist/img/us_flag_small.png'
 import govLogo from 'uswds/dist/img/icon-dot-gov.svg'
 import httpsLogo from 'uswds/dist/img/icon-https.svg'

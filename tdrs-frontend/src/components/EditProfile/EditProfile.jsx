@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import comboBox from 'uswds/src/js/components/combo-box'
 import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
+import ComboBox from '../ComboBox'
 
 export const validation = (fieldName, fieldValue) => {
   if (fieldValue.trim() === '') {
@@ -26,7 +26,6 @@ function EditProfile() {
 
   useEffect(() => {
     dispatch(fetchStts())
-    comboBox.init()
   }, [dispatch])
 
   const handleBlur = (evt) => {
@@ -166,28 +165,7 @@ function EditProfile() {
                 {errors.stt}
               </span>
             )}
-            <div className="usa-combo-box">
-              <select
-                className="usa-select"
-                name="sttList"
-                id="sttList"
-                data-value={profileInfo.stt}
-                // value={profileInfo.stt}
-                // onChange={(e) =>
-                //   setProfileInfo({
-                //     ...profileInfo,
-                //     stt: e.target.value,
-                //   })
-                // }
-              >
-                {stts.map((stt) => (
-                  <option key={stt.id} value={stt.name.toLowerCase()}>
-                    {stt.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {/* <Button label="Hello Button" /> */}
+            <ComboBox sttList={stts} />
           </label>
         </div>
         <Button type="submit" size="big" className="request-access-button">
