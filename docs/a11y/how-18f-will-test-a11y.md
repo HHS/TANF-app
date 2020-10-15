@@ -30,6 +30,6 @@ Depending on the project's needs, we may decide to do accessibility testing beyo
 
 We will invite in ACF's 508 Coordinator to review the accessibility of the site at strategic points in the process.
 
-The ultimate goal of this evaluation plan is to ensure that the site is accessible to its users, meets WCAG 2.1 AA standards as per contract, meets and Section 508 legal requirements.
+The ultimate goal of this evaluation plan is to ensure that the site is accessible to its users, meets WCAG 2.1 AA standards as per contract, and meets Section 508 legal requirements.
 
 If we find that this evaluation plan isn't helping us meet those goals, we may adjust the plan after consulting with subject matter experts and the development team.
