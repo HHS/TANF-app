@@ -26,8 +26,6 @@ We will check new pages, features, and interactions added during the course of e
 
 We won't re-rest pages or elements that have previously been tested and haven't changed since, such as header or footer elements.
 
-Depending on the project's needs, we may decide to do accessibility testing beyond the per-sprint testing described above, such as a manual end-to-end test of the site using a screen reader.
-
 We will invite in ACF's 508 Coordinator to review the accessibility of the site at strategic points in the process.
 
 The ultimate goal of this evaluation plan is to ensure that the site is accessible to its users, meets WCAG 2.1 AA standards as per contract, and meets Section 508 legal requirements.
