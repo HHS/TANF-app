@@ -165,7 +165,13 @@ function EditProfile() {
                 {errors.stt}
               </span>
             )}
-            <ComboBox sttList={stts} />
+            <ComboBox
+              sttList={stts}
+              sttError={errors.stt}
+              setProfileInfo={setProfileInfo}
+              selectedStt={profileInfo.stt}
+              profileInfo={profileInfo}
+            />
           </label>
         </div>
         <Button type="submit" size="big" className="request-access-button">
