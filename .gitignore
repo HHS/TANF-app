@@ -19,6 +19,7 @@ tdrs-backend/*/env_vars/*.env*
 tdrs-backend/*/env_vars/*.env*.*
 tdrs-backend/vars-backend.yml
 tdrs-backend/coverage.xml
+tdrs-backend/htmlcov/*
 *.pyc
 /backend/db.sqlite3
 .DS_Store
@@ -38,6 +39,8 @@ tmp
 compliance/opencontrols/
 compliance/exports/
 
+# don't ignore requirements.txt
+!requirements.txt
 # Graph Models ERD
 tdrs-backend/tdp-erd.png
 
