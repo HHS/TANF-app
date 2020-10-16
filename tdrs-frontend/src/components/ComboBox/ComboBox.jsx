@@ -8,17 +8,25 @@ const ComboBox = ({
   profileInfo,
   selectedStt,
   handleBlur,
+  sttError,
 }) => {
   const selectRef = useRef()
+  let input
   useEffect(() => {
     // The combo box was not rendering as a combo box without this line
     comboBox.init()
     // This solved the issue when tabbing through the form on EditProfile,
     // a selection was automatically being made on the first option
     selectRef.current.value = ''
+
+    if (sttError) {
+      input = document.querySelector('.usa-combo-box__input')
+      input.classList.add('usa-combo-box__input--error')
+    }
   })
+
   return (
-    <div className="usa-combo-box">
+    <div className="usa-combo-box usa-combo-box--error">
       {/* eslint-disable-next-line */}
       <select
         className="usa-select"
@@ -27,6 +35,7 @@ const ComboBox = ({
         ref={selectRef}
         onChange={(e) => {
           handleBlur(e)
+          input.classList.remove('usa-combo-box__input--error')
           setProfileInfo({ ...profileInfo, stt: e.target.value })
         }}
         value={selectedStt}
@@ -56,10 +65,12 @@ ComboBox.propTypes = {
   profileInfo: PropTypes.objectOf(PropTypes.string).isRequired,
   selectedStt: PropTypes.string,
   handleBlur: PropTypes.func.isRequired,
+  sttError: PropTypes.string,
 }
 
 ComboBox.defaultProps = {
   selectedStt: '',
+  sttError: '',
 }
 
 export default ComboBox
