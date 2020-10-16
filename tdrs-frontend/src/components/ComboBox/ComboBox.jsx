@@ -4,10 +4,10 @@ import comboBox from 'uswds/src/js/components/combo-box'
 
 const ComboBox = ({
   sttList,
-  sttError,
   setProfileInfo,
   profileInfo,
   selectedStt,
+  handleBlur,
 }) => {
   const selectRef = useRef()
   useEffect(() => {
@@ -19,16 +19,17 @@ const ComboBox = ({
   })
   return (
     <div className="usa-combo-box">
+      {/* eslint-disable-next-line */}
       <select
         className="usa-select"
         name="stt"
         id="stt"
         ref={selectRef}
-        onChange={({ target: { value } }) => {
-          console.log('VALUE', value)
-          selectRef.current.value = value
-          setProfileInfo({ ...profileInfo, stt: value })
+        onChange={(e) => {
+          handleBlur(e)
+          setProfileInfo({ ...profileInfo, stt: e.target.value })
         }}
+        value={selectedStt}
       >
         {sttList.map((stt) => (
           <option
@@ -52,11 +53,13 @@ ComboBox.propTypes = {
     })
   ).isRequired,
   setProfileInfo: PropTypes.func.isRequired,
-  sttError: PropTypes.string,
+  profileInfo: PropTypes.objectOf(PropTypes.string).isRequired,
+  selectedStt: PropTypes.string,
+  handleBlur: PropTypes.func.isRequired,
 }
 
 ComboBox.defaultProps = {
-  sttError: '',
+  selectedStt: '',
 }
 
 export default ComboBox

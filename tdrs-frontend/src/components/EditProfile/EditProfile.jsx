@@ -5,8 +5,22 @@ import Button from '../Button'
 import ComboBox from '../ComboBox'
 
 export const validation = (fieldName, fieldValue) => {
+  let field
+  switch (fieldName) {
+    case 'firstName':
+      field = 'First Name'
+      break
+    case 'lastName':
+      field = 'Last Name'
+      break
+    case 'stt':
+      field = 'STT'
+      break
+    default:
+      field = ''
+  }
   if (fieldValue.trim() === '') {
-    return `${fieldName} is required`
+    return `${field} is required`
   }
   return null
 }
@@ -171,6 +185,7 @@ function EditProfile() {
               setProfileInfo={setProfileInfo}
               selectedStt={profileInfo.stt}
               profileInfo={profileInfo}
+              handleBlur={handleBlur}
             />
           </label>
         </div>
