@@ -53,7 +53,7 @@ def test_set_profile_data(api_client, user):
             "stt": {
                 "id": stt.id
             }
-        },
+        }, format='json'
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -61,6 +61,8 @@ def test_set_profile_data(api_client, user):
         "last_name": "Bloggs",
         "stt": {
             "id": stt.id,
+            "type": stt.type,
+            "code": stt.code,
             "name": stt.name,
         }
     }
@@ -82,8 +84,8 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
             "last_name": "O'Hare",
             "stt": {
                 "id": stt.id
-            },
-        }
+            }
+        }, format='json'
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -91,6 +93,8 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
         "last_name": "O'Hare",
         "stt": {
             "id": stt.id,
+            "type": stt.type,
+            "code": stt.code,
             "name": stt.name,
         }
     }
@@ -113,7 +117,7 @@ def test_set_profile_data_first_name_apostrophe(api_client, user):
             "stt": {
                 "id": stt.id
             },
-        }
+        }, format='json'
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -121,6 +125,8 @@ def test_set_profile_data_first_name_apostrophe(api_client, user):
         "last_name": "Smith",
         "stt": {
             "id": stt.id,
+            "type": stt.type,
+            "code": stt.code,
             "name": stt.name,
         }
     }
@@ -176,7 +182,7 @@ def test_set_profile_data_special_last_name(api_client, user):
             "stt": {
                 "id": stt.id
             },
-        }
+        }, format='json'
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -184,8 +190,10 @@ def test_set_profile_data_special_last_name(api_client, user):
         "last_name": "Smith-O'Hare",
         "stt": {
             "id": stt.id,
+            "type": stt.type,
+            "code": stt.code,
             "name": stt.name,
-        },
+        }
     }
     user.refresh_from_db()
     assert user.first_name == "John"
@@ -206,7 +214,7 @@ def test_set_profile_data_special_first_name(api_client, user):
             "stt": {
                 "id": stt.id
             },
-        }
+        }, format='json'
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -214,8 +222,10 @@ def test_set_profile_data_special_first_name(api_client, user):
         "last_name": "Jacobs",
         "stt": {
             "id": stt.id,
+            "type": stt.type,
+            "code": stt.code,
             "name": stt.name,
-        },
+        }
     }
     user.refresh_from_db()
     assert user.first_name == "John-Tom'"
@@ -236,7 +246,7 @@ def test_set_profile_data_spaced_last_name(api_client, user):
             "stt": {
                 "id": stt.id
             },
-        }
+        }, format='json'
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -244,8 +254,10 @@ def test_set_profile_data_spaced_last_name(api_client, user):
         "last_name": "Mary Ann",
         "stt": {
             "id": stt.id,
+            "type": stt.type,
+            "code": stt.code,
             "name": stt.name,
-        },
+        }
     }
     user.refresh_from_db()
     assert user.first_name == "Joan"
@@ -266,7 +278,7 @@ def test_set_profile_data_spaced_first_name(api_client, user):
             "stt": {
                 "id": stt.id
             },
-        }
+        }, format='json'
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -274,8 +286,10 @@ def test_set_profile_data_spaced_first_name(api_client, user):
         "last_name": "Smith",
         "stt": {
             "id": stt.id,
+            "type": stt.type,
+            "code": stt.code,
             "name": stt.name,
-        },
+        }
     }
     user.refresh_from_db()
     assert user.first_name == "John Jim"
@@ -296,7 +310,7 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
             "stt": {
                 "id": stt.id
             },
-        }
+        }, format='json'
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -304,8 +318,10 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
         "last_name": "Grecheñ",
         "stt": {
             "id": stt.id,
+            "type": stt.type,
+            "code": stt.code,
             "name": stt.name,
-        },
+        }
     }
     user.refresh_from_db()
     assert user.first_name == "Max"
@@ -326,7 +342,7 @@ def test_set_profile_data_last_name_with_tilde(api_client, user):
             "stt": {
                 "id": stt.id
             },
-        }
+        }, format='json'
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
@@ -334,8 +350,10 @@ def test_set_profile_data_last_name_with_tilde(api_client, user):
         "last_name": "Glen~",
         "stt": {
             "id": stt.id,
-            "name": stt.name
-        },
+            "type": stt.type,
+            "code": stt.code,
+            "name": stt.name,
+        }
     }
     user.refresh_from_db()
     assert user.first_name == "Max"
@@ -359,7 +377,7 @@ def test_set_profile_data_extra_field_include_required(api_client, user):
                 "stt": {
                     "id": stt.id
                 },
-            }
+            }, format='json'
         )
         assert response.status_code == status.HTTP_200_OK
         """Test to ensure response data does not include unknown field"""
@@ -368,8 +386,10 @@ def test_set_profile_data_extra_field_include_required(api_client, user):
             "last_name": "Class",
             "stt": {
                 "id": stt.id,
+                "type": stt.type,
+                "code": stt.code,
                 "name": stt.name,
-            },
+            }
         }
         user.refresh_from_db()
         assert user.first_name == "Heather"

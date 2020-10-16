@@ -3,6 +3,7 @@
 from rest_framework import serializers
 
 from .models import User
+from tdpservice.stts.serializers import STTUpdateSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -51,7 +52,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
 class SetUserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for setting a user's profile."""
 
-    stt = serializers.SlugRelatedField(many=False, read_only=True, slug_field="name")
+    stt = STTUpdateSerializer()
 
     class Meta:
         """Metadata."""

@@ -22,6 +22,17 @@ class STTSerializer(serializers.ModelSerializer):
             return obj.state.code
         return obj.code
 
+class STTUpdateSerializer(serializers.ModelSerializer):
+    """STT serializer."""
+
+    class Meta:
+        """Metadata."""
+
+        model = STT
+        fields = ["id"]
+        
+    def to_representation(self, instance):
+        return STTSerializer(instance).data
 
 class RegionSerializer(serializers.ModelSerializer):
     """Region serializer."""
