@@ -11,19 +11,21 @@ const ComboBox = ({ sttList, setStt, selectedStt, handleBlur, sttError }) => {
     // a selection was automatically being made on the first option
     selectRef.current.value = ''
 
-    // const input = document.querySelector('.usa-combo-box__input')
+    const input = document.querySelector('.usa-combo-box__input')
 
-    // if (sttError) {
-    //   input.classList.add('usa-combo-box__input--error')
-    // }
+    if (input) {
+      if (sttError) {
+        input.classList.add('usa-combo-box__input--error')
+      }
 
-    // if (!sttError) {
-    //   input.classList.remove('usa-combo-box__input--error')
-    // }
+      if (!sttError) {
+        input.classList.remove('usa-combo-box__input--error')
+      }
+    }
   })
 
   return (
-    <div className="usa-combo-box usa-combo-box--error">
+    <div className="usa-combo-box">
       {/* eslint-disable-next-line */}
       <select
         className="usa-select"
