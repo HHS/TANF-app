@@ -42,6 +42,10 @@ function EditProfile() {
     dispatch(fetchStts())
   }, [dispatch])
 
+  const setStt = (stt) => {
+    setProfileInfo({ ...profileInfo, stt })
+  }
+
   const handleBlur = (evt) => {
     const { name, value } = evt.target
 
@@ -121,8 +125,8 @@ function EditProfile() {
               type="text"
               aria-required="true"
               value={profileInfo.firstName}
-              onChange={({ target }) => {
-                setProfileInfo({ ...profileInfo, firstName: target.value })
+              onChange={({ target: { value } }) => {
+                setProfileInfo({ ...profileInfo, firstName: value })
               }}
               onBlur={handleBlur}
             />
@@ -156,8 +160,8 @@ function EditProfile() {
               type="text"
               aria-required="true"
               value={profileInfo.lastName}
-              onChange={({ target }) => {
-                setProfileInfo({ ...profileInfo, lastName: target.value })
+              onChange={({ target: { value } }) => {
+                setProfileInfo({ ...profileInfo, lastName: value })
               }}
               onBlur={handleBlur}
             />
@@ -182,9 +186,8 @@ function EditProfile() {
             <ComboBox
               sttList={stts}
               sttError={errors.stt}
-              setProfileInfo={setProfileInfo}
+              setStt={setStt}
               selectedStt={profileInfo.stt}
-              profileInfo={profileInfo}
               handleBlur={handleBlur}
             />
           </label>

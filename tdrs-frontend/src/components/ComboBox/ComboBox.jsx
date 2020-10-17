@@ -2,16 +2,8 @@ import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import comboBox from 'uswds/src/js/components/combo-box'
 
-const ComboBox = ({
-  sttList,
-  setProfileInfo,
-  profileInfo,
-  selectedStt,
-  handleBlur,
-  sttError,
-}) => {
+const ComboBox = ({ sttList, setStt, selectedStt, handleBlur, sttError }) => {
   const selectRef = useRef()
-  let input
   useEffect(() => {
     // The combo box was not rendering as a combo box without this line
     comboBox.init()
@@ -19,10 +11,15 @@ const ComboBox = ({
     // a selection was automatically being made on the first option
     selectRef.current.value = ''
 
-    if (sttError) {
-      input = document.querySelector('.usa-combo-box__input')
-      input.classList.add('usa-combo-box__input--error')
-    }
+    // const input = document.querySelector('.usa-combo-box__input')
+
+    // if (sttError) {
+    //   input.classList.add('usa-combo-box__input--error')
+    // }
+
+    // if (!sttError) {
+    //   input.classList.remove('usa-combo-box__input--error')
+    // }
   })
 
   return (
@@ -35,8 +32,7 @@ const ComboBox = ({
         ref={selectRef}
         onChange={(e) => {
           handleBlur(e)
-          input.classList.remove('usa-combo-box__input--error')
-          setProfileInfo({ ...profileInfo, stt: e.target.value })
+          setStt(e.target.value)
         }}
         value={selectedStt}
       >
@@ -61,8 +57,7 @@ ComboBox.propTypes = {
       id: PropTypes.number,
     })
   ).isRequired,
-  setProfileInfo: PropTypes.func.isRequired,
-  profileInfo: PropTypes.objectOf(PropTypes.string).isRequired,
+  setStt: PropTypes.func.isRequired,
   selectedStt: PropTypes.string,
   handleBlur: PropTypes.func.isRequired,
   sttError: PropTypes.string,
