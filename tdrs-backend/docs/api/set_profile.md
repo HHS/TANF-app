@@ -17,7 +17,9 @@ Parameters:
   {
    "first_name": "John",
    "last_name": "Jones",
-   "stt": 1
+   "stt": {
+     "id": 1
+   }
   }
   ```
 
@@ -26,7 +28,8 @@ Parameters:
 ### Fields
 * first_name: string (first name of user)
 * last_name: string (last name of user)
-* stt: integer (id of the State, Tribe or Territory)
+* stt: object
+  * id: integer (id of the State, Tribe or Terrritory)
 
 
 Authorization Protected 
@@ -40,7 +43,12 @@ Content-Type application/json
   {
    "first_name": "John",
    "last_name": "Jones",
-   "stt": "Michigan"
+   "stt": {
+        "id": 1,
+        "type": "state",
+        "code": "AL",
+        "name": "Alabama"
+    }
   }
 ```
 
@@ -49,7 +57,11 @@ This will return a JSON response with the authenticated user's data as defined i
 ### Fields
 * first_name: string (first name of user)
 * last_name: string (last name of user)
-* stt: string (name of State, Tribe or Territory)
+* stt: object
+  * id: integer (id of the State, Tribe or Terrritory)
+  * type: string (identifies it as a State, Tribe or Territory)
+  * code: string (abbreviation)
+  * string (name of State, Tribe or Territory)
 
 ----
 **Failure to Authenticate Response:**
