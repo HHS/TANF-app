@@ -44,7 +44,17 @@ function EditProfile() {
             aria-required="true"
           />
         </label>
-        <ComboBox sttList={stts} />
+        <ComboBox>
+          {stts.map((stt) => (
+            <option
+              className="sttOption"
+              key={stt.id}
+              value={stt.name.toLowerCase()}
+            >
+              {stt.name}
+            </option>
+          ))}
+        </ComboBox>
         <Button
           type="submit"
           disabled
