@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import comboBox from 'uswds/src/js/components/combo-box'
 
-const ComboBox = ({ sttList, setStt, selectedStt, handleBlur, sttError }) => {
+const ComboBox = ({ children, handleSelect, selected, handleBlur, error }) => {
   const selectRef = useRef()
   useEffect(() => {
     // The combo box was not rendering as a combo box without this line
@@ -14,11 +14,11 @@ const ComboBox = ({ sttList, setStt, selectedStt, handleBlur, sttError }) => {
     const input = document.querySelector('.usa-combo-box__input')
 
     if (input) {
-      if (sttError) {
+      if (error) {
         input.classList.add('usa-combo-box__input--error')
       }
 
-      if (!sttError) {
+      if (!error) {
         input.classList.remove('usa-combo-box__input--error')
       }
     }
@@ -34,40 +34,32 @@ const ComboBox = ({ sttList, setStt, selectedStt, handleBlur, sttError }) => {
         ref={selectRef}
         onChange={(e) => {
           handleBlur(e)
-          setStt(e.target.value)
+          handleSelect(e.target.value)
         }}
-        value={selectedStt}
+        value={selected}
       >
-        {sttList.map((stt) => (
-          <option
-            className="sttOption"
-            key={stt.id}
-            value={stt.name.toLowerCase()}
-          >
-            {stt.name}
-          </option>
-        ))}
+        {children}
       </select>
     </div>
   )
 }
 
 ComboBox.propTypes = {
-  sttList: PropTypes.arrayOf(
+  children: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string,
       id: PropTypes.number,
     })
   ).isRequired,
-  setStt: PropTypes.func.isRequired,
-  selectedStt: PropTypes.string,
+  handleSelect: PropTypes.func.isRequired,
+  selected: PropTypes.string,
   handleBlur: PropTypes.func.isRequired,
-  sttError: PropTypes.string,
+  error: PropTypes.string,
 }
 
 ComboBox.defaultProps = {
-  selectedStt: '',
-  sttError: '',
+  selected: '',
+  error: '',
 }
 
 export default ComboBox

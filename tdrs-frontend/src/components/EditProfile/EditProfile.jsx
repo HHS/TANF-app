@@ -184,12 +184,22 @@ function EditProfile() {
               </span>
             )}
             <ComboBox
-              sttList={stts}
-              sttError={errors.stt}
-              setStt={setStt}
-              selectedStt={profileInfo.stt}
+              options={stts}
+              error={errors.stt}
+              handleSelect={setStt}
+              selected={profileInfo.stt}
               handleBlur={handleBlur}
-            />
+            >
+              {stts.map((stt) => (
+                <option
+                  className="sttOption"
+                  key={stt.id}
+                  value={stt.name.toLowerCase()}
+                >
+                  {stt.name}
+                </option>
+              ))}
+            </ComboBox>
           </label>
         </div>
         <Button type="submit" size="big" className="request-access-button">
