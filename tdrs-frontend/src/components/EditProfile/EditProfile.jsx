@@ -34,9 +34,9 @@ function EditProfile() {
     lastName: '',
     stt: '',
   })
-  const [errors, setErrors] = React.useState({})
+  const [errors, setErrors] = useState({})
 
-  const [touched, setTouched] = React.useState({})
+  const [touched, setTouched] = useState({})
 
   useEffect(() => {
     dispatch(fetchStts())
