@@ -1,10 +1,14 @@
 """Serialize user data."""
 
+import logging
 from rest_framework import serializers
 
 from .models import User
 from tdpservice.stts.serializers import STTUpdateSerializer
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 class UserSerializer(serializers.ModelSerializer):
     """Define meta user serializer class."""
@@ -52,7 +56,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
 class SetUserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for setting a user's profile."""
 
-    stt = STTUpdateSerializer()
+    stt = STTUpdateSerializer(required=True)
 
     class Meta:
         """Metadata."""
@@ -65,3 +69,8 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
             "first_name": {"allow_blank": False, "required": True},
             "last_name": {"allow_blank": False, "required": True},
         }
+
+    def update(self, instance, validated_data):
+        """Update the user with the STT."""
+        instance.stt_id = validated_data.pop("stt")["id"]
+        return super().update(instance, validated_data)
