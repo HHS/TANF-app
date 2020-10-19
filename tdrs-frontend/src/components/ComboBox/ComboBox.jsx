@@ -45,12 +45,10 @@ const ComboBox = ({ children, handleSelect, selected, handleBlur, error }) => {
 }
 
 ComboBox.propTypes = {
-  children: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string,
-      id: PropTypes.number,
-    })
-  ).isRequired,
+  children: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.node,
+  ]).isRequired,
   handleSelect: PropTypes.func.isRequired,
   selected: PropTypes.string,
   handleBlur: PropTypes.func.isRequired,
