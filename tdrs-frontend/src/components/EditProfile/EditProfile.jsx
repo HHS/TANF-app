@@ -172,35 +172,24 @@ function EditProfile() {
             errors.stt ? 'usa-form-group--error' : ''
           }`}
         >
-          <label className="usa-label" htmlFor="sttList">
-            Associated State, Tribe, or Territory
-            {errors.stt && (
-              <span
-                className="usa-error-message"
-                id="input-error-message"
-                role="alert"
+          <ComboBox
+            name="stt"
+            options={stts}
+            error={errors.stt}
+            handleSelect={setStt}
+            selected={profileInfo.stt}
+            handleBlur={handleBlur}
+          >
+            {stts.map((stt) => (
+              <option
+                className="sttOption"
+                key={stt.id}
+                value={stt.name.toLowerCase()}
               >
-                {errors.stt}
-              </span>
-            )}
-            <ComboBox
-              options={stts}
-              error={errors.stt}
-              handleSelect={setStt}
-              selected={profileInfo.stt}
-              handleBlur={handleBlur}
-            >
-              {stts.map((stt) => (
-                <option
-                  className="sttOption"
-                  key={stt.id}
-                  value={stt.name.toLowerCase()}
-                >
-                  {stt.name}
-                </option>
-              ))}
-            </ComboBox>
-          </label>
+                {stt.name}
+              </option>
+            ))}
+          </ComboBox>
         </div>
         <Button type="submit" size="big" className="request-access-button">
           Request Access

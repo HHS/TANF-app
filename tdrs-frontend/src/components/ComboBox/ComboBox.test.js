@@ -9,6 +9,7 @@ describe('ComboBox', () => {
     const props = {
       handleBlur: jest.fn(),
       handleSelect: jest.fn(),
+      name: 'stt',
     }
 
     const stts = [
@@ -82,6 +83,7 @@ describe('ComboBox', () => {
     const props = {
       handleBlur: jest.fn(),
       handleSelect: jest.fn(),
+      name: 'stt',
     }
 
     const stts = [
@@ -155,6 +157,7 @@ describe('ComboBox', () => {
       handleBlur: jest.fn(),
       handleSelect: jest.fn(),
       error: 'There is an error',
+      name: 'stt',
     }
 
     const stts = [
@@ -219,6 +222,7 @@ describe('ComboBox', () => {
     const props = {
       handleBlur: jest.fn(),
       handleSelect: jest.fn(),
+      name: 'stt',
     }
 
     const stts = [
