@@ -1,7 +1,5 @@
 """Define API views for user class."""
-import datetime
 import logging
-import time
 from django.contrib.auth.models import Group, Permission
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
@@ -10,6 +8,7 @@ from rest_framework.response import Response
 
 from .models import User
 from .permissions import IsAdmin, IsUserOrReadOnly
+from django.utils import timezone
 from .serializers import (
     CreateUserSerializer,
     SetUserProfileSerializer,
@@ -52,9 +51,8 @@ class UserViewSet(
         serializer = self.get_serializer(self.request.user, request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        datetime_time = datetime.datetime.fromtimestamp(time.time())
         logger.info(
-            f"Profile update for user:  {self.request.user} on {datetime_time}(UTC)"
+            "Profile update for user: %s on %s", self.request.user, timezone.now()
         )
         return Response(serializer.data)
 

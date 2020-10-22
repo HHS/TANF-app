@@ -1,6 +1,7 @@
 """Define settings for all environments."""
 
 import json
+import logging
 import os
 from distutils.util import strtobool
 from os.path import join
@@ -29,6 +30,7 @@ class Common(Configuration):
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
+        "tdpservice.stts",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -240,3 +242,7 @@ class Common(Configuration):
 
     # CORS
     CORS_ALLOW_CREDENTIALS = True
+
+    # Capture all logging statements across the service in the root handler
+    logger = logging.getLogger()
+    logger.addHandler(logging.StreamHandler())

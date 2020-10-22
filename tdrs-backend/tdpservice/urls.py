@@ -27,6 +27,7 @@ urlpatterns = [
     path("logout", LogoutUser.as_view(), name="logout"),
     path("logout/oidc", LogoutRedirectOIDC.as_view(), name="oidc-logout"),
     path("auth_check", AuthorizationCheck.as_view(), name="authorization-check"),
+    path("stts/", include("tdpservice.stts.urls")),
     # the 'api-root' from django rest-frameworks default router
     # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
     re_path(r"^$", RedirectView.as_view(url=reverse_lazy("api-root"), permanent=False)),
