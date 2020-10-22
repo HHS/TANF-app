@@ -14,7 +14,7 @@ const ComboBox = ({ children }) => {
   return (
     <label className="usa-label" htmlFor="sttList">
       Associated State, Tribe, or Territory
-      <div className="usa-combo-box">
+      <div className="usa-combo-box" data-placeholder="- Select or Search -">
         <select className="usa-select" name="stt" id="stt" ref={selectRef}>
           {children}
         </select>
