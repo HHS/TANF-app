@@ -27,7 +27,7 @@ describe('EditProfile', () => {
   it('should have a page title with Request Access in it', () => {
     const wrapper = mount(<EditProfile />)
 
-    expect(Helmet.peek().title.join("")).toEqual(
+    expect(Helmet.peek().title.join('')).toEqual(
       'Request Access - TDP - TANF Data Portal'
     )
   })
