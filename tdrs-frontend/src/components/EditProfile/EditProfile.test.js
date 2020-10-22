@@ -3,7 +3,6 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { render } from '@testing-library/react'
 
 import EditProfile, { validation } from './EditProfile'
 
@@ -13,20 +12,20 @@ describe('EditProfile', () => {
 
   it('should have a card with header Request Access', () => {
     const store = mockStore(initialState)
-    const { wrapper } = render(
+    const wrapper = mount(
       <Provider store={store}>
         <EditProfile />
       </Provider>
     )
-    const h1 = wrapper.find('h1')
 
+    const h1 = wrapper.find('h1')
     expect(h1).toExist()
     expect(h1.text()).toEqual('Request Access')
   })
 
   it('should have a first name input', () => {
     const store = mockStore(initialState)
-    const { wrapper } = render(
+    const wrapper = mount(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -39,7 +38,7 @@ describe('EditProfile', () => {
 
   it('should have a last name input', () => {
     const store = mockStore(initialState)
-    const { wrapper } = render(
+    const wrapper = mount(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -52,7 +51,7 @@ describe('EditProfile', () => {
 
   it('should have a submit button', () => {
     const store = mockStore(initialState)
-    const { wrapper } = render(
+    const wrapper = mount(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -63,7 +62,7 @@ describe('EditProfile', () => {
     expect(submitBtn).toExist()
   })
 
-  it('should render a list of options based on stts from the store', () => {
+  it('should mount a list of options based on stts from the store', () => {
     const store = mockStore({
       ...initialState,
       stts: {
@@ -89,7 +88,7 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const { wrapper } = render(
+    const wrapper = mount(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -97,7 +96,7 @@ describe('EditProfile', () => {
 
     const options = wrapper.find('option')
 
-    expect(options.length).toEqual(3)
+    expect(options.length).toEqual(4)
   })
 
   it('should have errors when you try to submit and first name does not have at least 1 character', () => {
@@ -126,7 +125,7 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const { wrapper } = render(
+    const wrapper = mount(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -172,7 +171,7 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const { wrapper } = render(
+    const wrapper = mount(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -288,7 +287,7 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const { wrapper } = render(
+    const wrapper = mount(
       <Provider store={store}>
         <EditProfile />
       </Provider>

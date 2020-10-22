@@ -34,6 +34,7 @@ function EditProfile() {
     lastName: '',
     stt: '',
   })
+
   const [errors, setErrors] = useState({})
 
   const [touched, setTouched] = useState({})
@@ -42,8 +43,10 @@ function EditProfile() {
     dispatch(fetchStts())
   }, [dispatch])
 
-  const setStt = (stt) => {
-    setProfileInfo({ ...profileInfo, stt })
+  const setStt = (sttName) => {
+    let selectedStt = stts.find((stt) => sttName === stt.name.toLowerCase())
+    if (!selectedStt) selectedStt = ''
+    setProfileInfo({ ...profileInfo, stt: selectedStt })
   }
 
   const handleBlur = (evt) => {
@@ -174,12 +177,16 @@ function EditProfile() {
         >
           <ComboBox
             name="stt"
-            options={stts}
             error={errors.stt}
             handleSelect={setStt}
-            selected={profileInfo.stt}
+            selected={
+              profileInfo.stt &&
+              profileInfo.stt.name &&
+              profileInfo.stt.name.toLowerCase()
+            }
             handleBlur={handleBlur}
           >
+            <option value="">Select an STT</option>
             {stts.map((stt) => (
               <option
                 className="sttOption"

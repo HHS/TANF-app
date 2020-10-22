@@ -11,42 +11,10 @@ const ComboBox = ({
   name,
 }) => {
   useEffect(() => {
-    const selectEl = document.querySelector('.usa-select')
-
-    const selectElChange = (e) => {
-      console.log('triggered on select', e)
-      handleBlur(e)
-      handleSelect(e.detail.value)
-    }
-
-    const clearButtonClick = () => {
-      handleSelect('')
-      selectEl.value = ''
-    }
-
-    const testFunction = (e) => {
-      console.log('triggered on click', e)
-    }
-
-    if (selectEl) {
-      console.log('why tho?')
-      selectEl.addEventListener('change', selectElChange)
-      selectEl.addEventListener('click', testFunction)
-    }
-
-    const clearButton = document.querySelector('.usa-combo-box__clear-input')
-    if (clearButton) {
-      clearButton.addEventListener('click', clearButtonClick)
-    }
-
     // The combo box was not rendering as a combo box without this line
     comboBox.init()
-    // This solved the issue when tabbing through the form on EditProfile,
-    // a selection was automatically being made on the first option
-    selectEl.value = ''
 
     const input = document.querySelector('.usa-combo-box__input')
-
     if (input) {
       if (error) {
         input.classList.add('usa-combo-box__input--error')
@@ -54,13 +22,6 @@ const ComboBox = ({
 
       if (!error) {
         input.classList.remove('usa-combo-box__input--error')
-      }
-    }
-
-    return () => {
-      selectEl.removeEventListener('change', selectElChange)
-      if (clearButton) {
-        clearButton.removeEventListener('click', clearButtonClick)
       }
     }
   })
@@ -83,7 +44,10 @@ const ComboBox = ({
           className="usa-select"
           name={name}
           id={name}
-          onChange={() => {}}
+          onChange={(e) => {
+            handleSelect(e.target.value)
+            handleBlur(e)
+          }}
           value={selected}
         >
           {children}

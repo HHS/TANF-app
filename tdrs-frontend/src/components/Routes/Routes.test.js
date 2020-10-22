@@ -4,7 +4,6 @@ import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter } from 'react-router-dom'
-import { render } from '@testing-library/react'
 
 import Routes from './Routes'
 import SplashPage from '../SplashPage'
@@ -18,7 +17,7 @@ describe('Routes.js', () => {
       auth: { authenticated: false },
       stts: { stts: [], loading: false },
     })
-    const { container } = render(
+    const wrapper = mount(
       <Provider store={store}>
         <MemoryRouter>
           <Routes />
@@ -26,7 +25,7 @@ describe('Routes.js', () => {
       </Provider>
     )
 
-    expect(container.find(SplashPage)).toExist()
+    expect(wrapper.find(SplashPage)).toExist()
   })
 
   it('routes "/" to the Edit-Profile page when user is authenticated', () => {
