@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-// import comboBox from 'uswds/src/js/components/combo-box'
 import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
 import ComboBox from '../ComboBox'
@@ -44,7 +43,17 @@ function EditProfile() {
             aria-required="true"
           />
         </label>
-        <ComboBox sttList={stts} />
+        <ComboBox>
+          {stts.map((stt) => (
+            <option
+              className="sttOption"
+              key={stt.id}
+              value={stt.name.toLowerCase()}
+            >
+              {stt.name}
+            </option>
+          ))}
+        </ComboBox>
         <Button
           type="submit"
           disabled
