@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import comboBox from 'uswds/src/js/components/combo-box'
 
@@ -10,13 +10,40 @@ const ComboBox = ({
   error,
   name,
 }) => {
-  const selectRef = useRef()
   useEffect(() => {
+    const selectEl = document.querySelector('.usa-select')
+
+    const selectElChange = (e) => {
+      console.log('triggered on select', e)
+      handleBlur(e)
+      handleSelect(e.detail.value)
+    }
+
+    const clearButtonClick = () => {
+      handleSelect('')
+      selectEl.value = ''
+    }
+
+    const testFunction = (e) => {
+      console.log('triggered on click', e)
+    }
+
+    if (selectEl) {
+      console.log('why tho?')
+      selectEl.addEventListener('change', selectElChange)
+      selectEl.addEventListener('click', testFunction)
+    }
+
+    const clearButton = document.querySelector('.usa-combo-box__clear-input')
+    if (clearButton) {
+      clearButton.addEventListener('click', clearButtonClick)
+    }
+
     // The combo box was not rendering as a combo box without this line
     comboBox.init()
     // This solved the issue when tabbing through the form on EditProfile,
     // a selection was automatically being made on the first option
-    selectRef.current.value = ''
+    selectEl.value = ''
 
     const input = document.querySelector('.usa-combo-box__input')
 
@@ -27,6 +54,13 @@ const ComboBox = ({
 
       if (!error) {
         input.classList.remove('usa-combo-box__input--error')
+      }
+    }
+
+    return () => {
+      selectEl.removeEventListener('change', selectElChange)
+      if (clearButton) {
+        clearButton.removeEventListener('click', clearButtonClick)
       }
     }
   })
@@ -49,11 +83,7 @@ const ComboBox = ({
           className="usa-select"
           name={name}
           id={name}
-          ref={selectRef}
-          onChange={(e) => {
-            handleBlur(e)
-            handleSelect(e.target.value)
-          }}
+          onChange={() => {}}
           value={selected}
         >
           {children}

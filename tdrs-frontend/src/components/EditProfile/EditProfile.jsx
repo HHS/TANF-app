@@ -19,7 +19,7 @@ export const validation = (fieldName, fieldValue) => {
     default:
       field = ''
   }
-  if (fieldValue.trim() === '') {
+  if (typeof fieldValue === 'string' && fieldValue.trim() === '') {
     return `${field} is required`
   }
   return null

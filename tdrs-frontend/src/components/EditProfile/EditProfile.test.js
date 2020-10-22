@@ -3,6 +3,7 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
+import { render } from '@testing-library/react'
 
 import EditProfile, { validation } from './EditProfile'
 
@@ -12,7 +13,7 @@ describe('EditProfile', () => {
 
   it('should have a card with header Request Access', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { wrapper } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -25,7 +26,7 @@ describe('EditProfile', () => {
 
   it('should have a first name input', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { wrapper } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -38,7 +39,7 @@ describe('EditProfile', () => {
 
   it('should have a last name input', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { wrapper } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -51,7 +52,7 @@ describe('EditProfile', () => {
 
   it('should have a submit button', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { wrapper } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -88,7 +89,7 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { wrapper } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -125,7 +126,7 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { wrapper } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -171,7 +172,7 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { wrapper } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
@@ -287,7 +288,7 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { wrapper } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
