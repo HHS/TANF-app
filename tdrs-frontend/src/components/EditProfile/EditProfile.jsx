@@ -1,10 +1,24 @@
 import React from 'react'
 import Button from '../Button'
+import {Helmet} from "react-helmet"
+
+function TitleHeading({title}) {
+
+  return (
+    <>
+      <Helmet>
+        <title>{title} - TDP - TANF Data Portal</title>
+      </Helmet>
+      <h1 className="request-access-header font-serif-2xl">{title}</h1>
+    </>
+  )
+
+}
 
 function EditProfile() {
   return (
     <div className="grid-container">
-      <h1 className="request-access-header font-serif-2xl">Request Access</h1>
+      <TitleHeading title = "Request Access"/>
       <p className="request-access-secondary">
         We need to collect some information before an OFA Admin can grant you
         access

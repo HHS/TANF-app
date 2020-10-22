@@ -1,5 +1,6 @@
 import React from 'react'
 import { mount } from 'enzyme'
+import {Helmet} from 'react-helmet'
 
 import EditProfile from './EditProfile'
 
@@ -10,6 +11,12 @@ describe('EditProfile', () => {
 
     expect(h1).toExist()
     expect(h1.text()).toEqual('Request Access')
+  })
+
+  it('should have a page title with Request Access in it',() => {
+    const wrapper = mount( <EditProfile />)
+
+    expect(Helmet.peek().title.join("")).toEqual('Request Access - TDP - TANF Data Portal')
   })
 
   it('should have a first name input', () => {
