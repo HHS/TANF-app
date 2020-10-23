@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchStts } from '../../actions/stts'
+import { fetchSttList } from '../../actions/sttList'
 import { setUser } from '../../actions/setUser'
 import Button from '../Button'
 import ComboBox from '../ComboBox'
@@ -44,7 +44,7 @@ export const validation = (fieldName, fieldValue) => {
  *  an associated STT.
  */
 function EditProfile() {
-  const stts = useSelector((state) => state.stts.stts)
+  const sttList = useSelector((state) => state.stts.sttList)
   const dispatch = useDispatch()
 
   const [profileInfo, setProfileInfo] = useState({
@@ -58,11 +58,11 @@ function EditProfile() {
   const [touched, setTouched] = useState({})
 
   useEffect(() => {
-    dispatch(fetchStts())
+    dispatch(fetchSttList())
   }, [dispatch])
 
   const setStt = (sttName) => {
-    let selectedStt = stts.find((stt) => sttName === stt.name.toLowerCase())
+    let selectedStt = sttList.find((stt) => sttName === stt.name.toLowerCase())
     if (!selectedStt) selectedStt = ''
     setProfileInfo({ ...profileInfo, stt: selectedStt })
   }
@@ -210,7 +210,7 @@ function EditProfile() {
             placeholder="- Select or Search -"
           >
             <option value="">Select an STT</option>
-            {stts.map((stt) => (
+            {sttList.map((stt) => (
               <option
                 className="sttOption"
                 key={stt.id}

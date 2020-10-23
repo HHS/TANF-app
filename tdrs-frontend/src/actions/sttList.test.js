@@ -3,12 +3,12 @@ import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 
 import {
-  fetchStts,
+  fetchSttList,
   FETCH_STTS,
   SET_STTS,
   SET_STTS_ERROR,
   CLEAR_STTS,
-} from './stts'
+} from './sttList'
 
 describe('actions/stts.js', () => {
   const mockStore = configureStore([thunk])
@@ -21,7 +21,7 @@ describe('actions/stts.js', () => {
     )
     const store = mockStore()
 
-    await store.dispatch(fetchStts())
+    await store.dispatch(fetchSttList())
 
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_STTS)
@@ -35,7 +35,7 @@ describe('actions/stts.js', () => {
     axios.get.mockImplementationOnce(() => Promise.resolve({ test: {} }))
     const store = mockStore()
 
-    await store.dispatch(fetchStts())
+    await store.dispatch(fetchSttList())
 
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_STTS)
@@ -48,7 +48,7 @@ describe('actions/stts.js', () => {
     )
     const store = mockStore()
 
-    await store.dispatch(fetchStts())
+    await store.dispatch(fetchSttList())
 
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_STTS)

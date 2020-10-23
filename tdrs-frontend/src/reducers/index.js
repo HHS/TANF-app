@@ -2,7 +2,7 @@ import { combineReducers } from 'redux'
 import { connectRouter } from 'connected-react-router'
 import alert from './alert'
 import auth from './auth'
-import stts from './stts'
+import stts from './sttList'
 
 /**
  * Combines all store reducers

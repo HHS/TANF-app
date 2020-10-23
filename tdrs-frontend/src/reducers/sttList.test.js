@@ -1,10 +1,10 @@
-import reducer from './stts'
+import reducer from './sttList'
 import {
   FETCH_STTS,
   SET_STTS,
   SET_STTS_ERROR,
   CLEAR_STTS,
-} from '../actions/stts'
+} from '../actions/sttList'
 
 describe('reducers/stts', () => {
   it('should return the initial state', () => {
