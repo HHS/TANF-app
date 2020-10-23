@@ -177,7 +177,9 @@ describe('EditProfile', () => {
     expect(errorMessages.length).toEqual(3)
     expect(errorMessages.first().text()).toEqual('First Name is required')
     expect(errorMessages.at(1).text()).toEqual('Last Name is required')
-    expect(errorMessages.last().text()).toEqual('STT is required')
+    expect(errorMessages.last().text()).toEqual(
+      'A state, tribe, or territory is required'
+    )
   })
 
   it('should remove error message when you add a character and blur out of input', () => {
@@ -278,10 +280,10 @@ describe('EditProfile', () => {
     expect(error).toEqual('Last Name is required')
   })
 
-  it("should return 'STT is required' if fieldName is firstName and fieldValue is empty", () => {
+  it("should return 'A state, tribe, or territory is required' if fieldName is firstName and fieldValue is empty", () => {
     const error = validation('stt', '')
 
-    expect(error).toEqual('STT is required')
+    expect(error).toEqual('A state, tribe, or territory is required')
   })
 
   it("should return ' is required' if fieldName is not passed in and fieldValue is empty", () => {

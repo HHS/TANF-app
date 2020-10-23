@@ -14,7 +14,7 @@ export const validation = (fieldName, fieldValue) => {
       field = 'Last Name'
       break
     case 'stt':
-      field = 'A state, tribe or territory'
+      field = 'A state, tribe, or territory'
       break
     default:
       field = ''
