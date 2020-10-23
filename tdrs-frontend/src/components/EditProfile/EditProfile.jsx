@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchStts } from '../../actions/stts'
+import { setUser } from '../../actions/setUser'
 import Button from '../Button'
 import ComboBox from '../ComboBox'
 
@@ -88,6 +89,10 @@ function EditProfile() {
     )
     setErrors(formValidation.errors)
     setTouched(formValidation.touched)
+
+    if (!Object.values(formValidation.errors).length) {
+      dispatch(setUser())
+    }
   }
 
   return (
