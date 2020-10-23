@@ -91,7 +91,7 @@ function EditProfile() {
     setTouched(formValidation.touched)
 
     if (!Object.values(formValidation.errors).length) {
-      dispatch(setUser())
+      dispatch(setUser(profileInfo))
     }
   }
 
