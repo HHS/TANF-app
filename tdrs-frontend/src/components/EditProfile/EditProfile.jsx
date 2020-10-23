@@ -4,6 +4,14 @@ import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
 import ComboBox from '../ComboBox'
 
+/**
+ *
+ * @param {string} fieldName - The name of the element that is being validated
+ * @param {string || object} fieldValue - The value of the field. A string from
+ * First Name and Last Name.
+ * The STT fieldValue is either a string or an object if there is a selected
+ * STT.
+ */
 export const validation = (fieldName, fieldValue) => {
   let field
   switch (fieldName) {
@@ -25,6 +33,15 @@ export const validation = (fieldName, fieldValue) => {
   return null
 }
 
+/**
+ * EditProfile renders the Request Access form for creating a profile.
+ * EditProfile dispatches event fetchStts to get a list of STTs to render
+ * inside of the combo box.
+ *
+ * EditProfile renders a form for a user to request access to the application.
+ * There is an input for first and last name and a combo box to select
+ *  an associated STT.
+ */
 function EditProfile() {
   const stts = useSelector((state) => state.stts.stts)
   const dispatch = useDispatch()
