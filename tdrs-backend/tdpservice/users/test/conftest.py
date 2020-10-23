@@ -14,4 +14,5 @@ def user_data():
         "last_name": "Smith",
         "password": "correcthorsebatterystaple",
         "auth_token": "xxx",
+        "stt": "Michigan",
     }
