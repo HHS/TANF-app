@@ -26,20 +26,20 @@ Content-Type application/json
 [
     {
         "id": 46,
-        "codename": "tdrs_can_edit_data",
-        "name": "Can Prepare STT Data",
+        "codename": "submit_stt_data",
+        "name": "Can Submit STT Data",
         "content_type": 11
     },
     {
         "id": 45,
-        "codename": "view_tdrsedit",
-        "name": "Can view tdrs edit",
+        "codename": "edit_stt_data",
+        "name": "Can Edit STT Data",
         "content_type": 11
     },
     {
         "id": 47,
-        "codename": "add_tdrsread",
-        "name": "Can add tdrs read",
+        "codename": "viw_stt_data",
+        "name": "Can View STT Data",
         "content_type": 12
     },
 ]
@@ -50,7 +50,7 @@ This will return a JSON response with the currently defined list of permissions.
 - **id**: Integer value noting the primary key of the permission in relation to its row in the database.
 - **codename**: A unique string identifier for the permission.
 - **permission**: A unique label for the permission
--  **content_type**: 12primary key(ID). 
+- **content_type**: database primary key of the model associated with the permission. 
 
 ----
 **Failure to Authenticate Response:**
@@ -88,9 +88,9 @@ Parameters:
 - JSON request body with the following **required** fields :
   ```json
     {
-        "id": 1,
-        "name": "OFA Test",
-        "permissions": [46]
+        "codename": "submit_stt_data",
+        "name": "Can Submit STT Data",
+        "content_type": 11
     }
   ```
 
@@ -106,18 +106,18 @@ Content-Type application/json
 
 [
     {
-        "id": 1,
-        "name": "OFA Test",
-        "permissions": [46]
+        "codename": "submit_stt_data",
+        "name": "Can Submit STT Data",
+        "content_type": 11
     }
 ]
 ```
 
-This will return a JSON response with the created permission and permission if applicable. If the permission ID is specified  then the permissions `name` and `permissions` list can be altered via the request.
+This will return a JSON response with the created permission.
 
-- **id**: Integer value noting the primary key of the permission in relation to its row in the database.
-- **name**: A unique label for the row.
-- **permission**: A list of permissions by their associated unique database primary key(ID). 
+- **codename**: A unique string identifier for the permission.
+- **permission**: A unique label for the permission
+- **content_type**: database primary key of the model associated with the permission. 
 
 ----
 **Failure to Authenticate Response:**
@@ -139,17 +139,5 @@ Content-Type application/json
 System Error Message:
 Does Not Exist
 Group matching query does not exist.
-
-```
-----
- **Failure to define a unique permission:**
-```json
-Content-Type application/json
-400 Internal Server Error
-
-
-{
-  "name": ["group with this name already exists."]
-}
 
 ```
