@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import comboBox from 'uswds/src/js/components/combo-box'
 
+
 const ComboBox = ({ children, handleSelect, selected, handleBlur, error }) => {
   const selectRef = useRef()
   useEffect(() => {
