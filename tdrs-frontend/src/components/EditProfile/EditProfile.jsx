@@ -14,7 +14,7 @@ export const validation = (fieldName, fieldValue) => {
       field = 'Last Name'
       break
     case 'stt':
-      field = 'STT'
+      field = 'A state, tribe or territory'
       break
     default:
       field = ''
@@ -199,7 +199,11 @@ function EditProfile() {
             ))}
           </ComboBox>
         </div>
-        <Button type="submit" size="big" className="request-access-button">
+        <Button
+          type="submit"
+          size="big"
+          className="width-full request-access-button"
+        >
           Request Access
         </Button>
       </form>
