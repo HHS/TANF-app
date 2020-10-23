@@ -9,6 +9,7 @@ const ComboBox = ({
   handleBlur,
   error,
   name,
+  placeholder,
 }) => {
   useEffect(() => {
     // The combo box was not rendering as a combo box without this line
@@ -38,7 +39,7 @@ const ComboBox = ({
           {error}
         </span>
       )}
-      <div className="usa-combo-box">
+      <div className="usa-combo-box" data-placeholder={placeholder}>
         {/* eslint-disable-next-line */}
         <select
           className="usa-select"
@@ -67,11 +68,13 @@ ComboBox.propTypes = {
   handleBlur: PropTypes.func.isRequired,
   error: PropTypes.string,
   name: PropTypes.string.isRequired,
+  placeholder: PropTypes.string,
 }
 
 ComboBox.defaultProps = {
   selected: '',
   error: '',
+  placeholder: '',
 }
 
 export default ComboBox

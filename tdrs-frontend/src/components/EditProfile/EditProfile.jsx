@@ -185,6 +185,7 @@ function EditProfile() {
               profileInfo.stt.name.toLowerCase()
             }
             handleBlur={handleBlur}
+            placeholder="- Select or Search -"
           >
             <option value="">Select an STT</option>
             {stts.map((stt) => (
