@@ -13,7 +13,7 @@ export const CLEAR_AUTH = 'CLEAR_AUTH'
  * the window is loaded.
  *
  * This call is made with `withCredentials` to include
- * HTTP_ONLY cookies, which contain the encrypted auth token info info.
+ * HTTP_ONLY cookies, which contain the encrypted auth token info.
  *
  * If the API responds with `data` in the body and a `user` object,
  * then SET_AUTH is dispatched, setting the authenticated state
