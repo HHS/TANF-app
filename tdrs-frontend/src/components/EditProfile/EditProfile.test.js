@@ -3,6 +3,7 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
+import { fireEvent, render } from '@testing-library/react'
 
 import EditProfile, { validation } from './EditProfile'
 
@@ -47,6 +48,40 @@ describe('EditProfile', () => {
     const nameInput = wrapper.find('#lastName')
 
     expect(nameInput).toExist()
+  })
+
+  it('should set firstName state value to equal the input value', () => {
+    const store = mockStore(initialState)
+    const { container } = render(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
+
+    const input = container.querySelector('input[name="firstName"]')
+
+    fireEvent.change(input, {
+      target: { value: 'Peter' },
+    })
+
+    expect(input.value).toEqual('Peter')
+  })
+
+  it('should set lastName state value to equal the input value', () => {
+    const store = mockStore(initialState)
+    const { container } = render(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
+
+    const input = container.querySelector('input[name="lastName"]')
+
+    fireEvent.change(input, {
+      target: { value: 'Parker' },
+    })
+
+    expect(input.value).toEqual('Parker')
   })
 
   it('should have a submit button', () => {
@@ -330,5 +365,128 @@ describe('EditProfile', () => {
     errorMessages = wrapper.find('.usa-error-message')
 
     expect(errorMessages.length).toEqual(3)
+  })
+
+  it('should set the Select element value to the value of the event when there is a selected stt', () => {
+    const store = mockStore({
+      ...initialState,
+      stts: {
+        stts: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
+
+    const select = wrapper.find('.usa-select')
+
+    select.simulate('change', {
+      target: { value: 'alaska' },
+    })
+
+    expect(select.instance().value).toEqual('alaska')
+  })
+
+  it('should reset Select element value to an empty string when there is no selected stt', () => {
+    const store = mockStore({
+      ...initialState,
+      stts: {
+        stts: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
+
+    const select = wrapper.find('.usa-select')
+
+    select.simulate('change', {
+      target: { value: '' },
+    })
+
+    expect(select.instance().value).toEqual('')
+  })
+
+  it('should reset Select element value to an empty string when there is no stt that matches the value passed in', () => {
+    const store = mockStore({
+      ...initialState,
+      stts: {
+        stts: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
+
+    const select = wrapper.find('.usa-select')
+
+    select.simulate('change', {
+      target: { value: 'colorado' },
+    })
+
+    expect(select.instance().value).toEqual('')
   })
 })
