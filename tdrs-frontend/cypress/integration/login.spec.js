@@ -5,9 +5,5 @@ describe('person logs in', () => {
 
       cy.contains('Sign in with ')
     })
-    it('is redirected to login.gov portal when signin button is pressed',() => {})
-    describe('When session already exists',() => {
-    })
-    describe('')
   })
 })
