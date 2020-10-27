@@ -13,13 +13,12 @@ class AuthUpdateMiddleware:
     def __call__(self, request):
         """Update cookie."""
         response = self.get_response(request)
-        user = getattr(request, "user", None)
 
         # if there is no user, the user is currently
         # in the authentication process so we can't
         # update the cookie yet
-        if user:
-            id_token = getattr(request, "id_token", None)
+        if request.user.is_authenticated:
+            id_token = request.COOKIES.get("id_token")
             response.set_cookie(
                 "id_token",
                 value=id_token,
