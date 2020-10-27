@@ -11,7 +11,8 @@
 - Documented a11y QASP review checklist
 - Documented Docker layer caching
 - Created a comprehensive list of epics and user stories for OFA MVP
-- Completed scheduling and started user interviews  
+- Completed scheduling and started user interviews 
+- Onboarded Aaron Beavers as a frontend developer and said good bye to Selena Juneau-Vogel, Christine Bath, Ryan Ahearn 
 
 ### User Stories Delivered for QASP Review
 - [As an OFA Admin, I need a list of MVP roles in the database to assign to new users](https://github.com/raft-tech/TANF-app/issues/309)
