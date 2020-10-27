@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Redirect } from 'react-router-dom'
+import axios from 'axios'
+
 import { fetchSttList } from '../../actions/sttList'
-import { setUser } from '../../actions/setUser'
 import Button from '../Button'
 import ComboBox from '../ComboBox'
 
@@ -53,6 +55,8 @@ function EditProfile() {
     stt: '',
   })
 
+  const [returnedUser, setReturnedUser] = useState(null)
+
   const [errors, setErrors] = useState({})
 
   const [touched, setTouched] = useState({})
@@ -80,7 +84,7 @@ function EditProfile() {
     })
   }
 
-  const handleSubmit = (evt) => {
+  const handleSubmit = async (evt) => {
     evt.preventDefault()
 
     // validate the form
@@ -108,14 +112,44 @@ function EditProfile() {
     setTouched(formValidation.touched)
 
     if (!Object.values(formValidation.errors).length) {
-      dispatch(setUser(profileInfo))
+      const {
+        firstName,
+        lastName,
+        stt: { id },
+      } = profileInfo
+      try {
+        const URL = `${process.env.REACT_APP_BACKEND_URL}/users/set_profile/`
+        const user = {
+          first_name: firstName,
+          last_name: lastName,
+          stt: { id },
+        }
+        const { data } = await axios.patch(URL, user, {
+          withCredentials: true,
+        })
+        if (data) {
+          setReturnedUser(true)
+        } else {
+          setReturnedUser(false)
+        }
+      } catch (error) {
+        return console.log('error', error)
+      }
     }
+
+    return true
+  }
+
+  if (returnedUser) {
+    return <Redirect to="/unassigned" />
   }
 
   return (
     <div className="grid-container">
-      <h1 className="request-access-header font-serif-2xl">Request Access</h1>
-      <p className="request-access-secondary">
+      <h1 className="font-serif-2xl" style={{ fontWeight: 400 }}>
+        Request Access
+      </h1>
+      <p>
         We need to collect some information before an OFA Admin can grant you
         access
       </p>
