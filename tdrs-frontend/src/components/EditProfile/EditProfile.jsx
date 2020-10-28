@@ -5,6 +5,7 @@ import axios from 'axios'
 
 import { fetchSttList } from '../../actions/sttList'
 import Button from '../Button'
+import FormGroup from '../FormGroup'
 import ComboBox from '../ComboBox'
 
 /**
@@ -55,7 +56,7 @@ function EditProfile() {
     stt: '',
   })
 
-  const [returnedUser, setReturnedUser] = useState(null)
+  const [successfulSubmit, setSuccessfulSubmit] = useState(false)
 
   const [errors, setErrors] = useState({})
 
@@ -71,6 +72,10 @@ function EditProfile() {
     setProfileInfo({ ...profileInfo, stt: selectedStt })
   }
 
+  const handleChange = ({ name, value }) => {
+    setProfileInfo({ ...profileInfo, [name]: value })
+  }
+
   const handleBlur = (evt) => {
     const { name, value } = evt.target
 
@@ -84,7 +89,33 @@ function EditProfile() {
     })
   }
 
-  const handleSubmit = async (evt) => {
+  const submitForm = async () => {
+    const {
+      firstName,
+      lastName,
+      stt: { id },
+    } = profileInfo
+    try {
+      const URL = `${process.env.REACT_APP_BACKEND_URL}/users/set_profile/`
+      const user = {
+        first_name: firstName,
+        last_name: lastName,
+        stt: { id },
+      }
+      const { data } = await axios.patch(URL, user, {
+        withCredentials: true,
+      })
+      console.log('DATA', data)
+      if (data) {
+        return setSuccessfulSubmit(true)
+      }
+      return setSuccessfulSubmit(false)
+    } catch (error) {
+      return console.log('error', error)
+    }
+  }
+
+  const handleSubmit = (evt) => {
     evt.preventDefault()
 
     // validate the form
@@ -112,35 +143,11 @@ function EditProfile() {
     setTouched(formValidation.touched)
 
     if (!Object.values(formValidation.errors).length) {
-      const {
-        firstName,
-        lastName,
-        stt: { id },
-      } = profileInfo
-      try {
-        const URL = `${process.env.REACT_APP_BACKEND_URL}/users/set_profile/`
-        const user = {
-          first_name: firstName,
-          last_name: lastName,
-          stt: { id },
-        }
-        const { data } = await axios.patch(URL, user, {
-          withCredentials: true,
-        })
-        if (data) {
-          setReturnedUser(true)
-        } else {
-          setReturnedUser(false)
-        }
-      } catch (error) {
-        return console.log('error', error)
-      }
+      submitForm()
     }
-
-    return true
   }
 
-  if (returnedUser) {
+  if (successfulSubmit) {
     return <Redirect to="/unassigned" />
   }
 
@@ -154,78 +161,20 @@ function EditProfile() {
         access
       </p>
       <form className="usa-form" onSubmit={handleSubmit}>
-        <div
-          className={`usa-form-group ${
-            errors.firstName ? 'usa-form-group--error' : ''
-          }`}
-        >
-          <label
-            className={`usa-label ${
-              errors.firstName ? 'usa-label--error' : ''
-            }`}
-            htmlFor="firstName"
-          >
-            First name
-            {errors.firstName && (
-              <span
-                className="usa-error-message"
-                id="input-error-message"
-                role="alert"
-              >
-                {errors.firstName}
-              </span>
-            )}
-            <input
-              className={`usa-input ${
-                errors.firstName ? 'usa-input--error' : ''
-              }`}
-              id="firstName"
-              name="firstName"
-              type="text"
-              aria-required="true"
-              value={profileInfo.firstName}
-              onChange={({ target: { value } }) => {
-                setProfileInfo({ ...profileInfo, firstName: value })
-              }}
-              onBlur={handleBlur}
-            />
-          </label>
-        </div>
-        <div
-          className={`usa-form-group ${
-            errors.lastName ? 'usa-form-group--error' : ''
-          }`}
-        >
-          <label
-            className={`usa-label ${errors.lastName ? 'usa-label--error' : ''}`}
-            htmlFor="lastName"
-          >
-            Last name
-            {errors.lastName && (
-              <span
-                className="usa-error-message"
-                id="input-error-message"
-                role="alert"
-              >
-                {errors.lastName}
-              </span>
-            )}
-            <input
-              className={`usa-input ${
-                errors.lastName ? 'usa-input--error' : ''
-              }`}
-              id="lastName"
-              name="lastName"
-              type="text"
-              aria-required="true"
-              value={profileInfo.lastName}
-              onChange={({ target: { value } }) => {
-                setProfileInfo({ ...profileInfo, lastName: value })
-              }}
-              onBlur={handleBlur}
-            />
-          </label>
-        </div>
+        <FormGroup
+          error={errors.firstName}
+          name="firstName"
+          inputValue={profileInfo.firstName}
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+        />
+        <FormGroup
+          error={errors.lastName}
+          name="lastName"
+          inputValue={profileInfo.lastName}
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+        />
         <div
           className={`usa-form-group ${
             errors.stt ? 'usa-form-group--error' : ''

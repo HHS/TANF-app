@@ -20,7 +20,7 @@ function Unassigned() {
               </p>
             </div>
             <div className="usa-card__footer">
-              <Button className="width-full">
+              <Button className="width-full" type="button">
                 <FontAwesomeIcon
                   className="margin-right-1"
                   icon={faSignOutAlt}
