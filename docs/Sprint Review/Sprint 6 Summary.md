@@ -19,7 +19,7 @@
 - [As a user, I cannot submit my profile information unless my inputs are valid](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/230)
 - [As a new user, I can select an applicable STT or OFA category from the combo box](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/229) 
 - [ [Spike] As a user, I need to be timed out from my session (Research session timeout)](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/282)
-- [As a user, I want to know I am logging into a demo site](https://github.com/raft-tech/TANF-app/issues/235)
+- [As a user, I want to know I am logging into a demo site](https://github.com/raft-tech/TANF-app/issues/235) - This was delivered in Sprint 4 but closed out this sprint. 
 - [As an STT user, I want to be invited to participate in research (round 3)](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/106)
 - [Draft interview protocol for Round 3 of research with STTs](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/170)
 - [ [Spike] As a STT user, I would like to clearly understand where to go to reset my password](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/318)
