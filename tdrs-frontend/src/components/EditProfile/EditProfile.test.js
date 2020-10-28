@@ -27,13 +27,13 @@ describe('EditProfile', () => {
 
   it('should have a page title with Request Access in it', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+      const {container} = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
     )
 
-    expect(Helmet.peek().title.join('')).toEqual(
+    expect(document.title).toEqual(
       'Request Access - TDP - TANF Data Portal'
     )
   })

@@ -43,18 +43,18 @@ export const validation = (fieldName, fieldValue) => {
  * There is an input for first and last name and a combo box to select
  *  an associated STT.
  */
-function TitleHeading({title}) {
+// function TitleHeading({title}) {
 
-  return (
-    <>
-      <Helmet>
-        <title>{title} - TDP - TANF Data Portal</title>
-      </Helmet>
-      <h1 className="request-access-header font-serif-2xl">{title}</h1>
-    </>
-  )
+//   return (
+//     <>
+//       <Helmet>
+//         <title>{title} - TDP - TANF Data Portal</title>
+//       </Helmet>
+//       <h1 className="request-access-header font-serif-2xl">{title}</h1>
+//     </>
+//   )
 
-}
+// }
 
 function EditProfile() {
   const stts = useSelector((state) => state.stts.stts)
@@ -120,10 +120,13 @@ function EditProfile() {
     setErrors(formValidation.errors)
     setTouched(formValidation.touched)
   }
+    useEffect(() => {
+        document.title = "Request Access - TDP - TANF Data Portal"
+    })
 
   return (
     <div className="grid-container">
-      <TitleHeading title = "Request Access"/>
+      <h1 className="request-access-header font-serif-2xl">Request Access</h1>
       <p className="request-access-secondary">
         We need to collect some information before an OFA Admin can grant you
         access
