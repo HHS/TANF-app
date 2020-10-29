@@ -12,7 +12,7 @@ function FormGroup({ error, name, inputValue, handleChange, handleBlur }) {
         {error && (
           <span
             className="usa-error-message"
-            id="input-error-message"
+            id={`${name}-error-message`}
             role="alert"
           >
             {error}
