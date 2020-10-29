@@ -132,8 +132,8 @@ function EditProfile() {
         Request Access
       </h1>
       <p>
-        We need to collect some information before an OFA Admin can grant you
-        access
+        Please enter your information to request access from an OFA
+        administrator
       </p>
       <form className="usa-form" onSubmit={handleSubmit}>
         <FormGroup
