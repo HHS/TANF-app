@@ -130,7 +130,7 @@ function EditProfile() {
             {errors.firstName && (
               <span
                 className="usa-error-message"
-                id="input-error-message"
+                id="firstName-error-message"
                 role="alert"
               >
                 {errors.firstName}
@@ -165,7 +165,7 @@ function EditProfile() {
             {errors.lastName && (
               <span
                 className="usa-error-message"
-                id="input-error-message"
+                id="lastName-error-message"
                 role="alert"
               >
                 {errors.lastName}
