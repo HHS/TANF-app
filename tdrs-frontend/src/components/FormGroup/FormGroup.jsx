@@ -1,14 +1,21 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-function FormGroup({ error, name, inputValue, handleChange, handleBlur }) {
+function FormGroup({
+  error,
+  label,
+  name,
+  inputValue,
+  handleChange,
+  handleBlur,
+}) {
   return (
     <div className={`usa-form-group ${error ? 'usa-form-group--error' : ''}`}>
       <label
         className={`usa-label ${error ? 'usa-label--error' : ''}`}
         htmlFor={name}
       >
-        First name
+        {label}
         {error && (
           <span
             className="usa-error-message"
@@ -37,6 +44,7 @@ function FormGroup({ error, name, inputValue, handleChange, handleBlur }) {
 
 FormGroup.propTypes = {
   error: PropTypes.string,
+  label: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   inputValue: PropTypes.string,
   handleChange: PropTypes.func.isRequired,

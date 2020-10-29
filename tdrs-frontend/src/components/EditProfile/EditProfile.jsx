@@ -139,6 +139,7 @@ function EditProfile() {
         <FormGroup
           error={errors.firstName}
           name="firstName"
+          label="First Name"
           inputValue={profileInfo.firstName}
           handleChange={handleChange}
           handleBlur={handleBlur}
@@ -146,6 +147,7 @@ function EditProfile() {
         <FormGroup
           error={errors.lastName}
           name="lastName"
+          label="Last Name"
           inputValue={profileInfo.lastName}
           handleChange={handleChange}
           handleBlur={handleBlur}
