@@ -6,31 +6,18 @@ import Button from '../Button'
 function Unassigned() {
   return (
     <div className="grid-container margin-top-3">
-      <ul className="usa-card-group">
-        <li className="tablet:grid-col-6 usa-card">
-          <div className="usa-card__container">
-            <header className="usa-card__header">
-              <h1 className="font-serif-2xl" style={{ fontWeight: 400 }}>
-                Request Submitted
-              </h1>
-            </header>
-            <div className="usa-card__body">
-              <p>
-                An administrator will be in touch soon to confirm your access!
-              </p>
-            </div>
-            <div className="usa-card__footer">
-              <Button className="width-full" type="button">
-                <FontAwesomeIcon
-                  className="margin-right-1"
-                  icon={faSignOutAlt}
-                />
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </li>
-      </ul>
+      <div className="maxw-mobile-lg">
+        <h1 className="font-serif-2xl margin-bottom-0 text-normal">
+          Request Submitted
+        </h1>
+        <p className="margin-top-1 margin-bottom-4">
+          An administrator will be in touch soon to confirm your access!
+        </p>
+        <Button className="width-full" type="button">
+          <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
+          Sign Out
+        </Button>
+      </div>
     </div>
   )
 }

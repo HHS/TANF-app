@@ -128,10 +128,10 @@ function EditProfile() {
 
   return (
     <div className="grid-container">
-      <h1 className="font-serif-2xl" style={{ fontWeight: 400 }}>
+      <h1 className="font-serif-2xl margin-bottom-0 text-normal">
         Request Access
       </h1>
-      <p>
+      <p className="margin-top-1 margin-bottom-4">
         Please enter your information to request access from an OFA
         administrator
       </p>
