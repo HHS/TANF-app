@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
-import axios from 'axios'
 
 import { fetchSttList } from '../../actions/sttList'
+import { requestAccess } from '../../actions/requestAccess'
 import Button from '../Button'
 import FormGroup from '../FormGroup'
 import ComboBox from '../ComboBox'
@@ -48,6 +48,10 @@ export const validation = (fieldName, fieldValue) => {
  */
 function EditProfile() {
   const sttList = useSelector((state) => state.stts.sttList)
+  const requestedAccess = useSelector(
+    (state) => state.requestAccess.requestAccess
+  )
+
   const dispatch = useDispatch()
 
   const [profileInfo, setProfileInfo] = useState({
@@ -55,8 +59,6 @@ function EditProfile() {
     lastName: '',
     stt: '',
   })
-
-  const [successfulSubmit, setSuccessfulSubmit] = useState(false)
 
   const [errors, setErrors] = useState({})
 
@@ -88,33 +90,6 @@ function EditProfile() {
       ...(error && { [name]: touched[name] && error }),
     })
   }
-
-  const submitForm = async () => {
-    const {
-      firstName,
-      lastName,
-      stt: { id },
-    } = profileInfo
-    try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/users/set_profile/`
-      const user = {
-        first_name: firstName,
-        last_name: lastName,
-        stt: { id },
-      }
-      const { data } = await axios.patch(URL, user, {
-        withCredentials: true,
-      })
-      console.log('DATA', data)
-      if (data) {
-        return setSuccessfulSubmit(true)
-      }
-      return setSuccessfulSubmit(false)
-    } catch (error) {
-      return console.log('error', error)
-    }
-  }
-
   const handleSubmit = (evt) => {
     evt.preventDefault()
 
@@ -143,11 +118,11 @@ function EditProfile() {
     setTouched(formValidation.touched)
 
     if (!Object.values(formValidation.errors).length) {
-      submitForm()
+      dispatch(requestAccess(profileInfo))
     }
   }
 
-  if (successfulSubmit) {
+  if (requestedAccess) {
     return <Redirect to="/unassigned" />
   }
 

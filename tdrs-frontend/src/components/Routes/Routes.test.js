@@ -16,6 +16,11 @@ describe('Routes.js', () => {
     const store = mockStore({
       auth: { authenticated: false },
       stts: { sttList: [], loading: false },
+      requestAccess: {
+        requestAccess: false,
+        loading: false,
+        user: {},
+      },
     })
     const wrapper = mount(
       <Provider store={store}>
@@ -32,6 +37,11 @@ describe('Routes.js', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
       stts: { sttList: [], loading: false },
+      requestAccess: {
+        requestAccess: false,
+        loading: false,
+        user: {},
+      },
     })
     const wrapper = mount(
       <Provider store={store}>

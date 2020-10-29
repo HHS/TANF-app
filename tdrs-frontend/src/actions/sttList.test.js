@@ -31,6 +31,38 @@ describe('actions/stts.js', () => {
     ])
   })
 
+  it('fetches a list of stts and puts "Federal Government" as the first option if it exists, when the user is authenticated', async () => {
+    axios.get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: [
+          { id: 1, type: 'state', code: 'AL', name: 'Alabama' },
+          {
+            id: 57,
+            type: 'territory',
+            code: 'US',
+            name: 'Federal Government',
+          },
+        ],
+      })
+    )
+    const store = mockStore()
+
+    await store.dispatch(fetchSttList())
+
+    const actions = store.getActions()
+    expect(actions[0].type).toBe(FETCH_STTS)
+    expect(actions[1].type).toBe(SET_STTS)
+    expect(actions[1].payload.data).toStrictEqual([
+      {
+        id: 57,
+        type: 'territory',
+        code: 'US',
+        name: 'Federal Government',
+      },
+      { id: 1, type: 'state', code: 'AL', name: 'Alabama' },
+    ])
+  })
+
   it('clears the stt state, if user is not authenticated', async () => {
     axios.get.mockImplementationOnce(() => Promise.resolve({ test: {} }))
     const store = mockStore()

@@ -38,6 +38,12 @@ export const fetchSttList = () => async (dispatch) => {
     })
 
     if (data) {
+      data.forEach((item, i) => {
+        if (item.id === 57) {
+          data.splice(i, 1)
+          data.unshift(item)
+        }
+      })
       dispatch({ type: SET_STTS, payload: { data } })
     } else {
       dispatch({ type: CLEAR_STTS })
