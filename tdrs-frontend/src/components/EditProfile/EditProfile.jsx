@@ -126,7 +126,7 @@ function EditProfile() {
             }`}
             htmlFor="firstName"
           >
-            First name
+            First Name
             {errors.firstName && (
               <span
                 className="usa-error-message"
@@ -161,7 +161,7 @@ function EditProfile() {
             className={`usa-label ${errors.lastName ? 'usa-label--error' : ''}`}
             htmlFor="lastName"
           >
-            Last name
+            Last Name
             {errors.lastName && (
               <span
                 className="usa-error-message"
