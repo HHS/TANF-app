@@ -2,39 +2,34 @@ import React from 'react'
 import { shallow } from 'enzyme'
 
 import Unassigned from '.'
+import Button from '../Button'
 
 describe('Unassigned', () => {
-  it('should have a card group', () => {
+  it('should have an h1 with "Request Submitted"', () => {
     const wrapper = shallow(<Unassigned />)
 
-    const cardGroup = wrapper.find('.usa-card-group')
+    const h1 = wrapper.find('h1')
 
-    expect(cardGroup).toExist()
+    expect(h1).toExist()
+    expect(h1.text()).toEqual('Request Submitted')
   })
 
-  it('should have a card', () => {
+  it('should have a subheading with "An administrator will be in touch soon to confirm your access!"', () => {
     const wrapper = shallow(<Unassigned />)
 
-    const card = wrapper.find('.usa-card')
+    const p = wrapper.find('p')
 
-    expect(card).toExist()
-  })
-  it('should have a card header', () => {
-    const wrapper = shallow(<Unassigned />)
-
-    const cardHeader = wrapper.find('.usa-card__header')
-
-    expect(cardHeader).toExist()
-    expect(cardHeader.text()).toEqual('Request Submitted')
-  })
-  it('should have a card body', () => {
-    const wrapper = shallow(<Unassigned />)
-
-    const cardBody = wrapper.find('.usa-card__body')
-
-    expect(cardBody).toExist()
-    expect(cardBody.text()).toEqual(
+    expect(p).toExist()
+    expect(p.text()).toEqual(
       'An administrator will be in touch soon to confirm your access!'
     )
+  })
+
+  it('should have a sign out button', () => {
+    const wrapper = shallow(<Unassigned />)
+
+    const button = wrapper.find(Button)
+
+    expect(button).toExist()
   })
 })
