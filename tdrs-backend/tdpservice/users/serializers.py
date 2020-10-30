@@ -57,12 +57,13 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for setting a user's profile."""
 
     stt = STTUpdateSerializer(required=True)
+    email = serializers.SerializerMethodField('get_email')
 
     class Meta:
         """Metadata."""
 
         model = User
-        fields = ["first_name", "last_name", "stt"]
+        fields = ["first_name", "last_name", "stt", "email"]
 
         """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {
@@ -74,3 +75,7 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
         """Update the user with the STT."""
         instance.stt_id = validated_data.pop("stt")["id"]
         return super().update(instance, validated_data)
+
+    def get_email(self,obj):
+        return obj.username
+
