@@ -58,6 +58,7 @@ def test_auth_check_returns_user_email(api_client, user):
     response = api_client.get(reverse("authorization-check"))
     assert response.data["user"]["email"] == user.username
 
+
 @pytest.mark.django_db
 def test_auth_check_returns_user_stt(api_client, user):
     """If user is authenticated auth_check should return user data."""

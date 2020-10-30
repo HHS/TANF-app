@@ -10,6 +10,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
+
 class UserSerializer(serializers.ModelSerializer):
     """Define meta user serializer class."""
 
@@ -57,7 +58,7 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for setting a user's profile."""
 
     stt = STTUpdateSerializer(required=True)
-    email = serializers.SerializerMethodField('get_email')
+    email = serializers.SerializerMethodField("get_email")
 
     class Meta:
         """Metadata."""
@@ -76,6 +77,5 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
         instance.stt_id = validated_data.pop("stt")["id"]
         return super().update(instance, validated_data)
 
-    def get_email(self,obj):
+    def get_email(self, obj):
         return obj.username
-
