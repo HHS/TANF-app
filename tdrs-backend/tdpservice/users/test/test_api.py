@@ -57,6 +57,7 @@ def test_set_profile_data(api_client, user):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
+        "email":user.username,
         "first_name": "Joe",
         "last_name": "Bloggs",
         "stt": {
@@ -89,6 +90,7 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
+        "email":user.username,
         "first_name": "Mike",
         "last_name": "O'Hare",
         "stt": {
@@ -121,6 +123,7 @@ def test_set_profile_data_first_name_apostrophe(api_client, user):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
+        "email" :user.username,
         "first_name": "Pat'Jack",
         "last_name": "Smith",
         "stt": {
@@ -186,6 +189,7 @@ def test_set_profile_data_special_last_name(api_client, user):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
+        "email" :user.username,
         "first_name": "John",
         "last_name": "Smith-O'Hare",
         "stt": {
@@ -218,6 +222,7 @@ def test_set_profile_data_special_first_name(api_client, user):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
+        "email" :user.username,
         "first_name": "John-Tom'",
         "last_name": "Jacobs",
         "stt": {
@@ -250,6 +255,7 @@ def test_set_profile_data_spaced_last_name(api_client, user):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
+        "email" :user.username,
         "first_name": "Joan",
         "last_name": "Mary Ann",
         "stt": {
@@ -282,6 +288,7 @@ def test_set_profile_data_spaced_first_name(api_client, user):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
+        "email" :user.username,
         "first_name": "John Jim",
         "last_name": "Smith",
         "stt": {
@@ -314,6 +321,7 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
+        "email" :user.username,
         "first_name": "Max",
         "last_name": "Grecheñ",
         "stt": {
@@ -346,6 +354,7 @@ def test_set_profile_data_last_name_with_tilde(api_client, user):
     )
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
+        "email" :user.username,
         "first_name": "Max",
         "last_name": "Glen~",
         "stt": {
@@ -382,6 +391,7 @@ def test_set_profile_data_extra_field_include_required(api_client, user):
         assert response.status_code == status.HTTP_200_OK
         """Test to ensure response data does not include unknown field"""
         assert response.data == {
+            "email" :user.username,
             "first_name": "Heather",
             "last_name": "Class",
             "stt": {

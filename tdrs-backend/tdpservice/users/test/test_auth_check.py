@@ -3,6 +3,7 @@
 import pytest
 from django.urls import reverse
 from rest_framework import status
+from ..serializers import SetUserProfileSerializer
 
 
 @pytest.mark.django_db
@@ -56,3 +57,11 @@ def test_auth_check_returns_user_email(api_client, user):
     api_client.login(username=user.username, password="test_password")
     response = api_client.get(reverse("authorization-check"))
     assert response.data["user"]["email"] == user.username
+
+@pytest.mark.django_db
+def test_auth_check_returns_user_stt(api_client, user):
+    """If user is authenticated auth_check should return user data."""
+    api_client.login(username=user.username, password="test_password")
+    serializer = SetUserProfileSerializer(user)
+    response = api_client.get(reverse("authorization-check"))
+    assert response.data["user"]["stt"] == serializer.data["stt"]
