@@ -47,6 +47,7 @@ export const validation = (fieldName, fieldValue) => {
  *  an associated STT.
  */
 function EditProfile() {
+  const errorRef = useRef(null)
   const sttList = useSelector((state) => state.stts.sttList)
   const requestedAccess = useSelector(
     (state) => state.requestAccess.requestAccess
@@ -118,8 +119,9 @@ function EditProfile() {
     setTouched(formValidation.touched)
 
     if (!Object.values(formValidation.errors).length) {
-      dispatch(requestAccess(profileInfo))
+      return dispatch(requestAccess(profileInfo))
     }
+    return setTimeout(() => errorRef.current.focus(), 10)
   }
 
   if (requestedAccess) {
@@ -136,6 +138,18 @@ function EditProfile() {
         administrator
       </p>
       <form className="usa-form" onSubmit={handleSubmit}>
+        <div
+          className={`usa-error-message ${
+            !!Object.keys(errors).length && !!Object.keys(touched).length
+              ? 'display-block'
+              : 'display-none'
+          }`}
+          ref={errorRef}
+          tabIndex="-1"
+          role="alert"
+        >
+          There are {Object.keys(errors).length} errors in this form
+        </div>
         <FormGroup
           error={errors.firstName}
           name="firstName"
