@@ -1,7 +1,6 @@
 import React from 'react'
 import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
-import { Helmet } from 'react-helmet'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { fireEvent, render } from '@testing-library/react'
@@ -27,15 +26,13 @@ describe('EditProfile', () => {
 
   it('should have a page title with Request Access in it', () => {
     const store = mockStore(initialState)
-      const {container} = render(
+    const { container } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
     )
 
-    expect(document.title).toEqual(
-      'Request Access - TDP - TANF Data Portal'
-    )
+    expect(document.title).toEqual('Request Access - TDP - TANF Data Portal')
   })
 
   it('should have a first name input', () => {
