@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0003_tdrsadmin_tdrsedit_tdrsread'),
-        ('users', '0003_auto_20200921_1753'),
+        ("users", "0003_tdrsadmin_tdrsedit_tdrsread"),
+        ("users", "0003_auto_20200921_1753"),
     ]
 
-    operations = [
-    ]
+    operations = []

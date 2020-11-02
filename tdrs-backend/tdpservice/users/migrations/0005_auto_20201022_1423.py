@@ -6,23 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('users', '0004_merge_20201022_1417'),
+        ("auth", "0012_alter_user_first_name_max_length"),
+        ("users", "0004_merge_20201022_1417"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='TDRSAdmin',
+            name="TDRSAdmin",
         ),
         migrations.DeleteModel(
-            name='TDRSEdit',
+            name="TDRSEdit",
         ),
         migrations.DeleteModel(
-            name='TDRSRead',
+            name="TDRSRead",
         ),
         migrations.AddField(
-            model_name='user',
-            name='requested_roles',
-            field=models.ManyToManyField(related_name='users_requested', to='auth.Group'),
+            model_name="user",
+            name="requested_roles",
+            field=models.ManyToManyField(
+                related_name="users_requested", to="auth.Group"
+            ),
         ),
     ]

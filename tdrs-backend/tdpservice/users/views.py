@@ -1,10 +1,12 @@
 """Define API views for user class."""
 import logging
 from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.apps import AppConfig
 
 from .models import User
 from .permissions import IsAdmin, IsUserOrReadOnly
@@ -42,7 +44,7 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "create": CreateUserSerializer,
-            "set_profile": SetUserProfileSerializer,
+            "set_profile": SetUserProfileSerializer
         }.get(self.action, UserSerializer)
 
     @action(methods=["POST"], detail=False)
@@ -69,6 +71,27 @@ class PermissionViewSet(viewsets.ModelViewSet):
         """Get list of custom permissions."""
         queryset = Permission.objects.all()
         return queryset
+
+    @action(methods=["POST"], detail=False)
+    def create_permission(self, request, pk=None):
+        """Create a permission based on an object."""
+        serializer = PermissionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        model = AppConfig.get_model(serializer.data["object"], require_ready=True)
+        content_type = ContentType.objects.get_for_model(model)
+        permission = Permission.objects.create(
+            codename=serializer.data["codename"],
+            name=serializer.data["name"],
+            content_type=content_type,
+        )
+        permission.save()
+        logger.info(
+            "Permission created: %s for %s on %s",
+            permission.name,
+            serializer.data["object"].title(),
+            timezone.now(),
+        )
+        return Response(serializer.data)
 
 
 class GroupViewSet(viewsets.ModelViewSet):

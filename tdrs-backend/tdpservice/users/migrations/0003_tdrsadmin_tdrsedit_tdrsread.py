@@ -23,7 +23,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"permissions": [("tdrs_can_admin", "Can Admin Applicable STT")],},
+            options={
+                "permissions": [("tdrs_can_admin", "Can Admin Applicable STT")],
+            },
         ),
         migrations.CreateModel(
             name="TDRSEdit",
@@ -38,7 +40,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"permissions": [("tdrs_can_edit_data", "Can Prepare STT Data")],},
+            options={
+                "permissions": [("tdrs_can_edit_data", "Can Prepare STT Data")],
+            },
         ),
         migrations.CreateModel(
             name="TDRSRead",
@@ -53,6 +57,8 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"permissions": [("tdrs_can_read_data", "Can Read STT Data")],},
+            options={
+                "permissions": [("tdrs_can_read_data", "Can Read STT Data")],
+            },
         ),
     ]

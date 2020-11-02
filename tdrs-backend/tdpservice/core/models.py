@@ -27,7 +27,8 @@ class GlobalPermission(Permission):
     def save(self, *args, **kwargs):
         """Save the permission using the global permission content type."""
         content_type, _ = ContentType.objects.get_or_create(
-            model=self._meta.verbose_name, app_label=self._meta.app_label,
+            model=self._meta.verbose_name,
+            app_label=self._meta.app_label,
         )
         self.content_type = content_type
         super().save(*args, **kwargs)

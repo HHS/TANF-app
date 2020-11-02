@@ -2,6 +2,7 @@
 
 import factory
 
+
 class UserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
 

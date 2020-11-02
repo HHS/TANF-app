@@ -8,20 +8,19 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
+        ("auth", "0012_alter_user_first_name_max_length"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='GlobalPermission',
-            fields=[
-            ],
+            name="GlobalPermission",
+            fields=[],
             options={
-                'verbose_name': 'global_permission',
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "verbose_name": "global_permission",
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('auth.permission',),
+            bases=("auth.permission",),
         ),
     ]
