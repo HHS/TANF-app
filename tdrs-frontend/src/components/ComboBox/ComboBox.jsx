@@ -45,13 +45,9 @@ const ComboBox = ({
 
   return (
     <label className="usa-label" htmlFor={name.toUpperCase()}>
-      Associated State, Tribe, or Territory
+      Associated State, Tribe, or Territory (required)
       {error && (
-        <span
-          className="usa-error-message"
-          id={`${name}-error-message`}
-          role="alert"
-        >
+        <span className="usa-error-message" id={`${name}-error-message`}>
           {error}
         </span>
       )}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchStts } from '../../actions/stts'
 import Button from '../Button'
@@ -43,6 +43,7 @@ export const validation = (fieldName, fieldValue) => {
  *  an associated STT.
  */
 function EditProfile() {
+  const errorRef = useRef(null)
   const stts = useSelector((state) => state.stts.stts)
   const dispatch = useDispatch()
 
@@ -105,16 +106,29 @@ function EditProfile() {
     )
     setErrors(formValidation.errors)
     setTouched(formValidation.touched)
+    setTimeout(() => errorRef.current.focus(), 10)
   }
 
   return (
     <div className="grid-container">
       <h1 className="request-access-header font-serif-2xl">Request Access</h1>
       <p className="request-access-secondary">
-        We need to collect some information before an OFA Admin can grant you
-        access
+        Please enter your information to request access from an OFA
+        administrator
       </p>
       <form className="usa-form" onSubmit={handleSubmit}>
+        <div
+          className={`usa-error-message ${
+            !!Object.keys(errors).length && !!Object.keys(touched).length
+              ? 'display-block'
+              : 'display-none'
+          }`}
+          ref={errorRef}
+          tabIndex="-1"
+          role="alert"
+        >
+          There are {Object.keys(errors).length} errors in this form
+        </div>
         <div
           className={`usa-form-group ${
             errors.firstName ? 'usa-form-group--error' : ''
@@ -126,13 +140,9 @@ function EditProfile() {
             }`}
             htmlFor="firstName"
           >
-            First Name
+            First Name (required)
             {errors.firstName && (
-              <span
-                className="usa-error-message"
-                id="first-name-error-message"
-                role="alert"
-              >
+              <span className="usa-error-message" id="first-name-error-message">
                 {errors.firstName}
               </span>
             )}
@@ -161,13 +171,9 @@ function EditProfile() {
             className={`usa-label ${errors.lastName ? 'usa-label--error' : ''}`}
             htmlFor="lastName"
           >
-            Last Name
+            Last Name (required)
             {errors.lastName && (
-              <span
-                className="usa-error-message"
-                id="last-name-error-message"
-                role="alert"
-              >
+              <span className="usa-error-message" id="last-name-error-message">
                 {errors.lastName}
               </span>
             )}
