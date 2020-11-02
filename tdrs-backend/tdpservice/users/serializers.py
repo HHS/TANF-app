@@ -78,4 +78,5 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def get_email(self, obj):
+        """Return the user's email address"""
         return obj.username
