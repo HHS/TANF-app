@@ -26,7 +26,7 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
-    queryset = User.objects.all()
+    queryset = User.objects.select_related("stt")
 
     def get_permissions(self):
         """Get permissions for the viewset."""
@@ -43,7 +43,7 @@ class UserViewSet(
             "set_profile": SetUserProfileSerializer,
         }.get(self.action, UserSerializer)
 
-    @action(methods=["POST"], detail=False)
+    @action(methods=["PATCH"], detail=False)
     def set_profile(self, request, pk=None):
         """Set a user's profile data."""
         serializer = self.get_serializer(self.request.user, request.data)

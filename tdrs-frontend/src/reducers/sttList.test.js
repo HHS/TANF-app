@@ -1,15 +1,15 @@
-import reducer from './stts'
+import reducer from './sttList'
 import {
   FETCH_STTS,
   SET_STTS,
   SET_STTS_ERROR,
   CLEAR_STTS,
-} from '../actions/stts'
+} from '../actions/sttList'
 
 describe('reducers/stts', () => {
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).toEqual({
-      stts: [],
+      sttList: [],
       loading: false,
     })
   })
@@ -20,7 +20,7 @@ describe('reducers/stts', () => {
         type: FETCH_STTS,
       })
     ).toEqual({
-      stts: [],
+      sttList: [],
       loading: true,
     })
   })
@@ -29,7 +29,7 @@ describe('reducers/stts', () => {
     expect(
       reducer(
         {
-          stts: [],
+          sttList: [],
           loading: true,
         },
         {
@@ -40,7 +40,7 @@ describe('reducers/stts', () => {
         }
       )
     ).toEqual({
-      stts: [{ id: 1, type: 'state', code: 'AL', name: 'Alabama' }],
+      sttList: [{ id: 1, type: 'state', code: 'AL', name: 'Alabama' }],
       loading: false,
     })
   })
@@ -49,7 +49,7 @@ describe('reducers/stts', () => {
     expect(
       reducer(
         {
-          stts: [{ value: 'alabama', label: 'Alabama' }],
+          sttList: [{ value: 'alabama', label: 'Alabama' }],
           loading: false,
         },
         {
@@ -57,7 +57,7 @@ describe('reducers/stts', () => {
         }
       )
     ).toEqual({
-      stts: [],
+      sttList: [],
       loading: false,
     })
   })
@@ -69,7 +69,7 @@ describe('reducers/stts', () => {
         payload: { error: 'something went wrong' },
       })
     ).toEqual({
-      stts: [],
+      sttList: [],
       loading: false,
       error: 'something went wrong',
     })

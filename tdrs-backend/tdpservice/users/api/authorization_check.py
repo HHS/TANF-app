@@ -3,6 +3,7 @@ import logging
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from django.utils import timezone
 
 logger = logging.getLogger()
@@ -14,6 +15,7 @@ class AuthorizationCheck(APIView):
 
     query_string = False
     pattern_name = "authorization-check"
+    permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
         """Handle get request and authenticate user."""
