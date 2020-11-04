@@ -20,7 +20,7 @@ describe('EditProfile', () => {
   }
   const mockStore = configureStore([thunk])
 
-    // testing in private template now
+  // testing in private template now
   // it('should have a card with header Request Access', () => {
   //   const store = mockStore(initialState)
   //   const wrapper = mount(
@@ -34,7 +34,7 @@ describe('EditProfile', () => {
   //   expect(h1.text()).toEqual('Request Access')
   // })
 
-    // testing in private template now
+  // testing in private template now
   // it('should have a page title with Request Access in it', () => {
   //   const store = mockStore(initialState)
   //   const { container } = render(
