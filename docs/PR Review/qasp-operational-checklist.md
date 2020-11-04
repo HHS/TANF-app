@@ -4,12 +4,8 @@
 
 > *Acceptable Quality Level: Delivered code meets the acceptance criteria for each user story. Incomplete stories will be assessed and considered for inclusion in the next sprint.*
 
-How to check:
-
-+ [ ] Look up the acceptance criteria in the related issue
++ [ ] Look up the acceptance criteria in the related issue; paste ACs below in checklist format.
 + [ ] Check against the criteria:
-
-_Paste ACs below in checklist format._
 
 As Product Owner, @lfrohlich will decide if ACs are met.
 
@@ -18,8 +14,6 @@ As Product Owner, @lfrohlich will decide if ACs are met.
 > *Performance Standard(s): Code delivered under the order must have substantial test code coverage. Version-controlled HHS GitHub repository of code that comprises products that will remain in the government domain.*
 
 > *Acceptable Quality Level: Minimum of 90% test coverage of all code. All areas of code are meaningfully tested.*
-
-How to check:
 
 + Are all areas of code introduced in this PR meaningfully tested?
   + [ ] If this PR introduces backend code changes, are they meaningfully tested?
@@ -34,8 +28,6 @@ How to check:
 
 > *Acceptable Quality Level: 0 linting errors and 0 warnings*
 
-How to check:
-
 + [ ] Are backend code style checks passing on CircleCI?
 + [ ] Are frontend code style checks passing on CircleCI?
 + [ ] Does this PR change any linting or CI settings?
@@ -46,17 +38,14 @@ How to check:
 
 > *Acceptable Quality Level: 0 errors reported using an automated scanner and 0 errors reported in manual testing*
 
-How to check:
-
 + [ ] Did automated and manual testing with @iamjolly and @ttran-hub using Accessibility Insights reveal any errors introduced in this PR?
+    + [See the full Accessibility Assessment plan here.](https://github.com/HHS/TANF-app/blob/main/docs/a11y/how-18f-will-test-a11y.md)
 
 ### Deliverable 5: Deployed
 
 > *Performance Standard(s): Code must successfully build and deploy into the staging environment.*
 
 > *Acceptable Quality Level: Successful build with a single command*
-
-How to check:
 
 + [ ] Was the code successfully deployed via automated CircleCI process to development on Cloud.gov?
 
@@ -66,10 +55,9 @@ How to check:
 
 > *Acceptable Quality Level: Combination of manual review and automated testing, if available*
 
-How to check:
-
 + [ ] If this PR introduces backend code, is that code documented both inline and overall?
 + [ ] If this PR introduces frontend code, is that code documented both inline and overall?
++ [ ] If this PR introduces dependencies, are their licenses documented?
 
 ### Deliverable 7: Secure
 
@@ -77,7 +65,5 @@ How to check:
 
 > *Acceptable Quality Level: Code submitted must be free of medium- and high-level static and dynamic security vulnerabilities*
 
-How to check:
-
 + [ ] Does the OWASP Scan pass on CircleCI?
-+ [ ] Does manual code review and testing detect any security issues?
++ [ ] Do manual code review and manual testing detect any security issues?
