@@ -47,7 +47,7 @@ have been working together to get core technical infrastructure approved and set
 when the contractor joins the team they can immediately begin to contribute code and have
 it automatically roll out to their development environment.
 
-The application environment is roughly: 
+The application environment is roughly:
 
 ![diagram of prototype apps and services](docs/updated-tanf-prototype-diagram-system.png)
 
@@ -73,7 +73,7 @@ the vendor's application, it's technology, and it's processes and procedures.
   then check out [Running the TANF Data Reporting Prototype](docs/Running.md)
 * Compliance documentation and information about how to approach
   the ATO process can be found in [Compliance.md](docs/Compliance.md).
-* Operational procedures and workflows can be found in the 
+* Operational procedures and workflows can be found in the
   [Workflows documentation](docs/Workflows.md).  This is an overview of how you
   should do development using a modified gitops system, how to find logs,
   update the infrastructure, rotate secrets, etc.
