@@ -106,7 +106,7 @@ function EditProfile() {
     )
     setErrors(formValidation.errors)
     setTouched(formValidation.touched)
-    setTimeout(() => errorRef.current.focus(), 10)
+    setTimeout(() => errorRef.current.focus(), 0)
   }
 
   return (
