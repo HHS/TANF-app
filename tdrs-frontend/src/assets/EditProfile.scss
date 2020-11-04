@@ -1,5 +1,11 @@
-.request-access-button {
+.usa-combo-box__input--error {
+  border: .25rem solid #b50909;
+}
+
+.request-access-button,
+.request-access-button:hover {
   font-size: 1rem;
+  background-color: $primary-medium-blue;
 }
 
 .request-access-button:disabled {
