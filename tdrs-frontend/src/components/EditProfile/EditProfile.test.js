@@ -20,29 +20,31 @@ describe('EditProfile', () => {
   }
   const mockStore = configureStore([thunk])
 
-  it('should have a card with header Request Access', () => {
-    const store = mockStore(initialState)
-    const wrapper = mount(
-      <Provider store={store}>
-        <EditProfile />
-      </Provider>
-    )
+    // testing in private template now
+  // it('should have a card with header Request Access', () => {
+  //   const store = mockStore(initialState)
+  //   const wrapper = mount(
+  //     <Provider store={store}>
+  //       <EditProfile />
+  //     </Provider>
+  //   )
 
-    const h1 = wrapper.find('h1')
-    expect(h1).toExist()
-    expect(h1.text()).toEqual('Request Access')
-  })
+  //   const h1 = wrapper.find('h1')
+  //   expect(h1).toExist()
+  //   expect(h1.text()).toEqual('Request Access')
+  // })
 
-  it('should have a page title with Request Access in it', () => {
-    const store = mockStore(initialState)
-    const { container } = render(
-      <Provider store={store}>
-        <EditProfile />
-      </Provider>
-    )
+    // testing in private template now
+  // it('should have a page title with Request Access in it', () => {
+  //   const store = mockStore(initialState)
+  //   const { container } = render(
+  //     <Provider store={store}>
+  //       <EditProfile />
+  //     </Provider>
+  //   )
 
-    expect(document.title).toEqual('Request Access - TDP - TANF Data Portal')
-  })
+  //   expect(document.title).toEqual('Request Access - TDP - TANF Data Portal')
+  // })
 
   it('should have a first name input', () => {
     const store = mockStore(initialState)
