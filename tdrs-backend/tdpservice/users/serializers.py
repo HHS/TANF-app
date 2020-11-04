@@ -54,7 +54,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
 
-class SetUserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for setting a user's profile."""
 
     stt = STTUpdateSerializer(required=True)

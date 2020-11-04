@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
-from ..serializers import SetUserProfileSerializer
+from ..serializers import UserProfileSerializer
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -21,7 +21,7 @@ class AuthorizationCheck(APIView):
     def get(self, request, *args, **kwargs):
         """Handle get request and authenticate user."""
         user = request.user
-        serializer = SetUserProfileSerializer(user)
+        serializer = UserProfileSerializer(user)
         if user.is_authenticated:
             auth_params = {
                 "authenticated": True,
