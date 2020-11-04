@@ -4,7 +4,6 @@ import { Route, withRouter } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
-import PrivateTemplate from '../PrivateTemplate/PrivateTemplate'
 
 /**
  *
@@ -14,7 +13,7 @@ import PrivateTemplate from '../PrivateTemplate/PrivateTemplate'
  * @param {object} history - the window's history object,
  * which is automatically passed via withRouter
  */
-function PrivateRoute({ children, title, history, path }) {
+function PrivateRoute({ children, history, path }) {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)
   const dispatch = useDispatch()
@@ -34,11 +33,7 @@ function PrivateRoute({ children, title, history, path }) {
     }
   }, [authenticated, authLoading, dispatch, history])
 
-  return authenticated ? (
-    <Route path={path}>
-      <PrivateTemplate title={title}>{children}</PrivateTemplate>
-    </Route>
-  ) : null
+  return authenticated ? <Route path={path}>{children}</Route> : null
 }
 
 PrivateRoute.propTypes = {
