@@ -72,20 +72,23 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
 class PermissionSerializer(serializers.ModelSerializer):
     """Permission serializer."""
 
+    content_type = serializers.CharField(required=False, allow_none=True)
     class Meta:
         """Metadata."""
 
         model = Permission
-        fields = ["id", "codename", "name", "content_type", "object"]
+        fields = ["id", "codename", "name", "content_type"]
         extra_kwargs = {
             "content_type": {"allow_null": True},
-            "object": {"allow_null": True},
         }
 
     def validate_content_type(self, value):
         """If no content type is set, use the one for global permissions."""
         if not value:
             value = ContentType.objects.get_for_model(GlobalPermission)
+            
+        model = AppConfig.get_model(value, require_ready=True)
+        value = ContentType.objects.get_for_model(model)
         return value
 
 

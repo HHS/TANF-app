@@ -72,27 +72,6 @@ class PermissionViewSet(viewsets.ModelViewSet):
         queryset = Permission.objects.all()
         return queryset
 
-    @action(methods=["POST"], detail=False)
-    def create_permission(self, request, pk=None):
-        """Create a permission based on an object."""
-        serializer = PermissionSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        model = AppConfig.get_model(serializer.data["object"], require_ready=True)
-        content_type = ContentType.objects.get_for_model(model)
-        permission = Permission.objects.create(
-            codename=serializer.data["codename"],
-            name=serializer.data["name"],
-            content_type=content_type,
-        )
-        permission.save()
-        logger.info(
-            "Permission created: %s for %s on %s",
-            permission.name,
-            serializer.data["object"].title(),
-            timezone.now(),
-        )
-        return Response(serializer.data)
-
 
 class GroupViewSet(viewsets.ModelViewSet):
     """CRUD for groups (roles)."""
