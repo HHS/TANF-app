@@ -20,10 +20,10 @@ const Routes = () => {
       <Route exact path="/login">
         <LoginCallback />
       </Route>
-      <PrivateRoute exact path="/edit-profile">
+      <PrivateRoute exact title="Request Access" path="/edit-profile">
         <EditProfile />
       </PrivateRoute>
-      <PrivateRoute exact path="/unassigned">
+      <PrivateRoute exact title="Request Submitted" path="/unassigned">
         <Unassigned />
       </PrivateRoute>
     </Switch>
