@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchStts } from '../../actions/stts'
+import { Redirect } from 'react-router-dom'
+
+import { fetchSttList } from '../../actions/sttList'
+import { requestAccess } from '../../actions/requestAccess'
 import Button from '../Button'
+import FormGroup from '../FormGroup'
 import ComboBox from '../ComboBox'
 
 /**
@@ -56,7 +60,12 @@ export const validation = (fieldName, fieldValue) => {
 // }
 
 function EditProfile() {
-  const stts = useSelector((state) => state.stts.stts)
+  const errorRef = useRef(null)
+  const sttList = useSelector((state) => state.stts.sttList)
+  const requestedAccess = useSelector(
+    (state) => state.requestAccess.requestAccess
+  )
+
   const dispatch = useDispatch()
 
   const [profileInfo, setProfileInfo] = useState({
@@ -70,13 +79,17 @@ function EditProfile() {
   const [touched, setTouched] = useState({})
 
   useEffect(() => {
-    dispatch(fetchStts())
+    dispatch(fetchSttList())
   }, [dispatch])
 
   const setStt = (sttName) => {
-    let selectedStt = stts.find((stt) => sttName === stt.name.toLowerCase())
+    let selectedStt = sttList.find((stt) => sttName === stt.name.toLowerCase())
     if (!selectedStt) selectedStt = ''
     setProfileInfo({ ...profileInfo, stt: selectedStt })
+  }
+
+  const handleChange = ({ name, value }) => {
+    setProfileInfo({ ...profileInfo, [name]: value })
   }
 
   const handleBlur = (evt) => {
@@ -91,7 +104,6 @@ function EditProfile() {
       ...(error && { [name]: touched[name] && error }),
     })
   }
-
   const handleSubmit = (evt) => {
     evt.preventDefault()
 
@@ -118,6 +130,15 @@ function EditProfile() {
     )
     setErrors(formValidation.errors)
     setTouched(formValidation.touched)
+
+    if (!Object.values(formValidation.errors).length) {
+      return dispatch(requestAccess(profileInfo))
+    }
+    return setTimeout(() => errorRef.current.focus(), 10)
+  }
+
+  if (requestedAccess) {
+    return <Redirect to="/unassigned" />
   }
     useEffect(() => {
         document.title = "Request Access - TDP - TANF Data Portal"
@@ -125,84 +146,42 @@ function EditProfile() {
 
   return (
     <div className="grid-container">
-      <h1 className="request-access-header font-serif-2xl">Request Access</h1>
-      <p className="request-access-secondary">
-        We need to collect some information before an OFA Admin can grant you
-        access
+      <h1 className="font-serif-2xl margin-bottom-0 text-normal">
+        Request Access
+      </h1>
+      <p className="margin-top-1 margin-bottom-4">
+        Please enter your information to request access from an OFA
+        administrator
       </p>
       <form className="usa-form" onSubmit={handleSubmit}>
         <div
-          className={`usa-form-group ${
-            errors.firstName ? 'usa-form-group--error' : ''
+          className={`usa-error-message ${
+            !!Object.keys(errors).length && !!Object.keys(touched).length
+              ? 'display-block'
+              : 'display-none'
           }`}
+          ref={errorRef}
+          tabIndex="-1"
+          role="alert"
         >
-          <label
-            className={`usa-label ${
-              errors.firstName ? 'usa-label--error' : ''
-            }`}
-            htmlFor="firstName"
-          >
-            First name
-            {errors.firstName && (
-              <span
-                className="usa-error-message"
-                id="input-error-message"
-                role="alert"
-              >
-                {errors.firstName}
-              </span>
-            )}
-            <input
-              className={`usa-input ${
-                errors.firstName ? 'usa-input--error' : ''
-              }`}
-              id="firstName"
-              name="firstName"
-              type="text"
-              aria-required="true"
-              value={profileInfo.firstName}
-              onChange={({ target: { value } }) => {
-                setProfileInfo({ ...profileInfo, firstName: value })
-              }}
-              onBlur={handleBlur}
-            />
-          </label>
+          There are {Object.keys(errors).length} errors in this form
         </div>
-        <div
-          className={`usa-form-group ${
-            errors.lastName ? 'usa-form-group--error' : ''
-          }`}
-        >
-          <label
-            className={`usa-label ${errors.lastName ? 'usa-label--error' : ''}`}
-            htmlFor="lastName"
-          >
-            Last name
-            {errors.lastName && (
-              <span
-                className="usa-error-message"
-                id="input-error-message"
-                role="alert"
-              >
-                {errors.lastName}
-              </span>
-            )}
-            <input
-              className={`usa-input ${
-                errors.lastName ? 'usa-input--error' : ''
-              }`}
-              id="lastName"
-              name="lastName"
-              type="text"
-              aria-required="true"
-              value={profileInfo.lastName}
-              onChange={({ target: { value } }) => {
-                setProfileInfo({ ...profileInfo, lastName: value })
-              }}
-              onBlur={handleBlur}
-            />
-          </label>
-        </div>
+        <FormGroup
+          error={errors.firstName}
+          name="firstName"
+          label="First Name"
+          inputValue={profileInfo.firstName}
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+        />
+        <FormGroup
+          error={errors.lastName}
+          name="lastName"
+          label="Last Name"
+          inputValue={profileInfo.lastName}
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+        />
         <div
           className={`usa-form-group ${
             errors.stt ? 'usa-form-group--error' : ''
@@ -221,7 +200,7 @@ function EditProfile() {
             placeholder="- Select or Search -"
           >
             <option value="">Select an STT</option>
-            {stts.map((stt) => (
+            {sttList.map((stt) => (
               <option
                 className="sttOption"
                 key={stt.id}

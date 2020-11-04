@@ -4,6 +4,7 @@ import SplashPage from '../SplashPage/SplashPage'
 import EditProfile from '../EditProfile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
+import Unassigned from '../Unassigned'
 
 /**
  * This component renters the routes for the app.
@@ -21,6 +22,9 @@ const Routes = () => {
       </Route>
       <PrivateRoute exact path="/edit-profile">
         <EditProfile />
+      </PrivateRoute>
+      <PrivateRoute exact path="/unassigned">
+        <Unassigned />
       </PrivateRoute>
     </Switch>
   )

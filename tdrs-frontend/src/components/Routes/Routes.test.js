@@ -15,7 +15,12 @@ describe('Routes.js', () => {
   it('routes "/" to the SplashPage page when user not authenticated', () => {
     const store = mockStore({
       auth: { authenticated: false },
-      stts: { stts: [], loading: false },
+      stts: { sttList: [], loading: false },
+      requestAccess: {
+        requestAccess: false,
+        loading: false,
+        user: {},
+      },
     })
     const wrapper = mount(
       <Provider store={store}>
@@ -31,7 +36,12 @@ describe('Routes.js', () => {
   it('routes "/" to the Edit-Profile page when user is authenticated', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
-      stts: { stts: [], loading: false },
+      stts: { sttList: [], loading: false },
+      requestAccess: {
+        requestAccess: false,
+        loading: false,
+        user: {},
+      },
     })
     const wrapper = mount(
       <Provider store={store}>

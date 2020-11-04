@@ -5,10 +5,20 @@ import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { fireEvent, render } from '@testing-library/react'
 
+import { MemoryRouter, Redirect } from 'react-router-dom'
 import EditProfile, { validation } from './EditProfile'
+import { fetchSttList } from '../../actions/sttList'
 
 describe('EditProfile', () => {
-  const initialState = { stts: { stts: [], loading: false } }
+  const initialState = {
+    auth: { authenticated: true, user: { email: 'hi@bye.com' } },
+    stts: { sttList: [], loading: false },
+    requestAccess: {
+      requestAccess: false,
+      loading: false,
+      user: {},
+    },
+  }
   const mockStore = configureStore([thunk])
 
   it('should have a card with header Request Access', () => {
@@ -112,7 +122,7 @@ describe('EditProfile', () => {
     const store = mockStore({
       ...initialState,
       stts: {
-        stts: [
+        sttList: [
           {
             id: 1,
             type: 'state',
@@ -149,7 +159,7 @@ describe('EditProfile', () => {
     const store = mockStore({
       ...initialState,
       stts: {
-        stts: [
+        sttList: [
           {
             id: 1,
             type: 'state',
@@ -185,9 +195,9 @@ describe('EditProfile', () => {
 
     const errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
-    expect(errorMessages.first().text()).toEqual('First Name is required')
-    expect(errorMessages.at(1).text()).toEqual('Last Name is required')
+    expect(errorMessages.length).toEqual(4)
+    expect(errorMessages.at(1).text()).toEqual('First Name is required')
+    expect(errorMessages.at(2).text()).toEqual('Last Name is required')
     expect(errorMessages.last().text()).toEqual(
       'A state, tribe, or territory is required'
     )
@@ -197,7 +207,7 @@ describe('EditProfile', () => {
     const store = mockStore({
       ...initialState,
       stts: {
-        stts: [
+        sttList: [
           {
             id: 1,
             type: 'state',
@@ -233,7 +243,7 @@ describe('EditProfile', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
 
     const firstNameInput = wrapper.find('#firstName')
 
@@ -248,7 +258,7 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(2)
+    expect(errorMessages.length).toEqual(3)
 
     const lastNameInput = wrapper.find('#lastName')
 
@@ -263,7 +273,8 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(1)
+    expect(errorMessages.length).toEqual(2)
+    expect(errorMessages.first().hasClass('display-none')).toEqual(false)
 
     const select = wrapper.find('.usa-select')
 
@@ -276,7 +287,8 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(0)
+    expect(errorMessages.length).toEqual(1)
+    expect(errorMessages.first().hasClass('display-none')).toEqual(true)
   })
 
   it("should return 'First Name is required' if fieldName is firstName and fieldValue is empty", () => {
@@ -309,11 +321,11 @@ describe('EditProfile', () => {
     expect(error).toEqual(null)
   })
 
-  it('should display an error message when the input has` been touched', () => {
+  it('should display an error message when the input has been touched', () => {
     const store = mockStore({
       ...initialState,
       stts: {
-        stts: [
+        sttList: [
           {
             id: 1,
             type: 'state',
@@ -349,7 +361,7 @@ describe('EditProfile', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
 
     const firstNameInput = wrapper.find('#firstName')
 
@@ -364,7 +376,7 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(2)
+    expect(errorMessages.length).toEqual(3)
 
     firstNameInput.simulate('change', {
       target: {
@@ -377,14 +389,14 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
   })
 
   it('should set the Select element value to the value of the event when there is a selected stt', () => {
     const store = mockStore({
       ...initialState,
       stts: {
-        stts: [
+        sttList: [
           {
             id: 1,
             type: 'state',
@@ -425,7 +437,7 @@ describe('EditProfile', () => {
     const store = mockStore({
       ...initialState,
       stts: {
-        stts: [
+        sttList: [
           {
             id: 1,
             type: 'state',
@@ -466,7 +478,7 @@ describe('EditProfile', () => {
     const store = mockStore({
       ...initialState,
       stts: {
-        stts: [
+        sttList: [
           {
             id: 1,
             type: 'state',
@@ -501,5 +513,105 @@ describe('EditProfile', () => {
     })
 
     expect(select.instance().value).toEqual('')
+  })
+
+  it('routes "/edit-profile" to the Unassigned page when user has requested access', () => {
+    const store = mockStore({
+      ...initialState,
+      requestAccess: {
+        ...initialState.requestAccess,
+        requestAccess: true,
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <MemoryRouter>
+          <EditProfile />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    expect(wrapper).toContainReact(<Redirect to="/unassigned" />)
+  })
+
+  it('should dispatch "requestAccess" when form is submitted', () => {
+    const store = mockStore({
+      ...initialState,
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
+
+    const firstNameInput = wrapper.find('#firstName')
+    firstNameInput.simulate('change', {
+      target: { value: 'harry', name: 'firstName' },
+    })
+
+    const lastNameInput = wrapper.find('#lastName')
+    lastNameInput.simulate('change', {
+      target: { name: 'lastName', value: 'potter' },
+    })
+
+    const select = wrapper.find('.usa-select')
+    select.simulate('change', {
+      target: { name: 'stt', value: 'alaska' },
+    })
+
+    expect(store.dispatch).toHaveBeenCalledTimes(1)
+
+    const form = wrapper.find('.usa-form').hostNodes()
+    form.simulate('submit', {
+      preventDefault: () => {},
+    })
+
+    expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
 })
