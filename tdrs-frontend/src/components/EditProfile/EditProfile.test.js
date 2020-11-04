@@ -7,7 +7,6 @@ import { fireEvent, render } from '@testing-library/react'
 
 import { MemoryRouter, Redirect } from 'react-router-dom'
 import EditProfile, { validation } from './EditProfile'
-import { fetchSttList } from '../../actions/sttList'
 
 describe('EditProfile', () => {
   const initialState = {
