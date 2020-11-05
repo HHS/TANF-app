@@ -126,6 +126,7 @@ function EditProfile() {
   }
 
   if (requestedAccess) {
+    setTimeout(() => errorRef.current.focus(), 0)
     return <Redirect to="/unassigned" />
   }
 
