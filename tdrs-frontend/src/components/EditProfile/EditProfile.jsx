@@ -123,7 +123,7 @@ function EditProfile() {
     if (!Object.values(formValidation.errors).length) {
       return dispatch(requestAccess(profileInfo))
     }
-    return setTimeout(() => errorRef.current.focus(), 10)
+    return setTimeout(() => errorRef.current.focus(), 0)
   }
 
   if (requestedAccess && sttAssigned) {
