@@ -1,12 +1,12 @@
 import React from 'react'
 import { shallow } from 'enzyme'
 
-import Unassigned from '.'
+import Request from '.'
 import Button from '../Button'
 
-describe('Unassigned', () => {
+describe('Request', () => {
   it('should have an h1 with "Request Submitted"', () => {
-    const wrapper = shallow(<Unassigned />)
+    const wrapper = shallow(<Request />)
 
     const h1 = wrapper.find('h1')
 
@@ -15,7 +15,7 @@ describe('Unassigned', () => {
   })
 
   it('should have a subheading with "An administrator will be in touch soon to confirm your access!"', () => {
-    const wrapper = shallow(<Unassigned />)
+    const wrapper = shallow(<Request />)
 
     const p = wrapper.find('p')
 
@@ -26,7 +26,7 @@ describe('Unassigned', () => {
   })
 
   it('should have a sign out button', () => {
-    const wrapper = shallow(<Unassigned />)
+    const wrapper = shallow(<Request />)
 
     const button = wrapper.find(Button)
 

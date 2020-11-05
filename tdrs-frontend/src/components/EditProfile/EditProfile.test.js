@@ -7,7 +7,6 @@ import { fireEvent, render } from '@testing-library/react'
 
 import { MemoryRouter, Redirect } from 'react-router-dom'
 import EditProfile, { validation } from './EditProfile'
-import { fetchSttList } from '../../actions/sttList'
 
 describe('EditProfile', () => {
   const initialState = {
@@ -16,7 +15,6 @@ describe('EditProfile', () => {
     requestAccess: {
       requestAccess: false,
       loading: false,
-      user: {},
     },
   }
   const mockStore = configureStore([thunk])
@@ -507,6 +505,17 @@ describe('EditProfile', () => {
   it('routes "/edit-profile" to the Unassigned page when user has requested access', () => {
     const store = mockStore({
       ...initialState,
+      auth: {
+        ...initialState.auth,
+        user: {
+          stt: {
+            id: 6,
+            type: 'state',
+            code: 'CO',
+            name: 'Colorado',
+          },
+        },
+      },
       requestAccess: {
         ...initialState.requestAccess,
         requestAccess: true,
@@ -542,7 +551,7 @@ describe('EditProfile', () => {
       </Provider>
     )
 
-    expect(wrapper).toContainReact(<Redirect to="/unassigned" />)
+    expect(wrapper).toContainReact(<Redirect to="/request" />)
   })
 
   it('should dispatch "requestAccess" when form is submitted', () => {

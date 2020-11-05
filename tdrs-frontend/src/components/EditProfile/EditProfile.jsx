@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom'
 
 import { fetchSttList } from '../../actions/sttList'
 import { requestAccess } from '../../actions/requestAccess'
+
 import Button from '../Button'
 import FormGroup from '../FormGroup'
 import ComboBox from '../ComboBox'
@@ -52,6 +53,7 @@ function EditProfile() {
   const requestedAccess = useSelector(
     (state) => state.requestAccess.requestAccess
   )
+  const sttAssigned = useSelector((state) => state.auth.user.stt)
 
   const dispatch = useDispatch()
 
@@ -124,8 +126,8 @@ function EditProfile() {
     return setTimeout(() => errorRef.current.focus(), 10)
   }
 
-  if (requestedAccess) {
-    return <Redirect to="/unassigned" />
+  if (requestedAccess && sttAssigned) {
+    return <Redirect to="/request" />
   }
 
   return (
