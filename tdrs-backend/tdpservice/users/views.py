@@ -11,7 +11,7 @@ from .permissions import IsUserOrReadOnly
 from django.utils import timezone
 from .serializers import (
     CreateUserSerializer,
-    SetUserProfileSerializer,
+    UserProfileSerializer,
     UserSerializer,
 )
 
@@ -40,7 +40,7 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "create": CreateUserSerializer,
-            "set_profile": SetUserProfileSerializer,
+            "set_profile": UserProfileSerializer,
         }.get(self.action, UserSerializer)
 
     @action(methods=["PATCH"], detail=False)
