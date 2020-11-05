@@ -15,7 +15,7 @@ function FormGroup({
         className={`usa-label ${error ? 'usa-label--error' : ''}`}
         htmlFor={name}
       >
-        {label}
+        {label} (required)
         {error && (
           <span
             className="usa-error-message"

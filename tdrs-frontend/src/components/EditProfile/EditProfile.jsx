@@ -4,6 +4,8 @@ import { Redirect } from 'react-router-dom'
 
 import { fetchSttList } from '../../actions/sttList'
 import { requestAccess } from '../../actions/requestAccess'
+import { setAlert } from '../../actions/alert'
+import { ALERT_ERROR } from '../Alert'
 
 import Button from '../Button'
 import FormGroup from '../FormGroup'
@@ -53,6 +55,7 @@ function EditProfile() {
   const requestedAccess = useSelector(
     (state) => state.requestAccess.requestAccess
   )
+  const requestAccessError = useSelector((state) => state.requestAccess.error)
   const sttAssigned = useSelector((state) => state.auth.user.stt)
 
   const dispatch = useDispatch()
@@ -68,8 +71,13 @@ function EditProfile() {
   const [touched, setTouched] = useState({})
 
   useEffect(() => {
+    if (requestAccessError) {
+      dispatch(
+        setAlert({ heading: requestAccessError.message, type: ALERT_ERROR })
+      )
+    }
     dispatch(fetchSttList())
-  }, [dispatch])
+  }, [dispatch, requestAccessError])
 
   const setStt = (sttName) => {
     let selectedStt = sttList.find((stt) => sttName === stt.name.toLowerCase())

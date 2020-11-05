@@ -7,6 +7,7 @@ import { fireEvent, render } from '@testing-library/react'
 
 import { MemoryRouter, Redirect } from 'react-router-dom'
 import EditProfile, { validation } from './EditProfile'
+import { setAlert } from '../../actions/alert'
 
 describe('EditProfile', () => {
   const initialState = {
@@ -610,6 +611,47 @@ describe('EditProfile', () => {
       preventDefault: () => {},
     })
 
+    expect(store.dispatch).toHaveBeenCalledTimes(2)
+  })
+
+  it('should dispatch "setAlert" when form is submitted and there is an error', () => {
+    const store = mockStore({
+      ...initialState,
+      requestAccess: {
+        ...initialState.requestAccess,
+        error: { message: 'This request failed' },
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const wrapper = mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
     expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
 })
