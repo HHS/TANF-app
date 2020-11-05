@@ -502,7 +502,7 @@ describe('EditProfile', () => {
     expect(select.instance().value).toEqual('')
   })
 
-  it('routes "/edit-profile" to the Unassigned page when user has requested access', () => {
+  it('routes "/edit-profile" to the Request page when user has requested access', () => {
     const store = mockStore({
       ...initialState,
       auth: {
