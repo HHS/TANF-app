@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import Button from '../Button'
 
-function Unassigned() {
+function Request() {
   return (
     <div className="grid-container margin-top-3">
       <div className="maxw-mobile-lg">
@@ -22,4 +22,4 @@ function Unassigned() {
   )
 }
 
-export default Unassigned
+export default Request
