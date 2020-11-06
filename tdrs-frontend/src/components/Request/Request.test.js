@@ -32,4 +32,23 @@ describe('Request', () => {
 
     expect(button).toExist()
   })
+
+  it('should sign out when the sign out button is clicked', () => {
+    const url = 'http://localhost:8080/v1/logout/oidc'
+    global.window = Object.create(window)
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: url,
+      },
+    })
+    const wrapper = shallow(<Request />)
+
+    const button = wrapper.find(Button)
+
+    button.simulate('click', {
+      preventDefault: () => {},
+    })
+
+    expect(window.location.href).toEqual(url)
+  })
 })
