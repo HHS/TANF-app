@@ -7,7 +7,6 @@ import { fireEvent, render } from '@testing-library/react'
 
 import { MemoryRouter, Redirect } from 'react-router-dom'
 import EditProfile, { validation } from './EditProfile'
-import { setAlert } from '../../actions/alert'
 
 describe('EditProfile', () => {
   const initialState = {
@@ -647,7 +646,7 @@ describe('EditProfile', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const wrapper = mount(
+    mount(
       <Provider store={store}>
         <EditProfile />
       </Provider>
