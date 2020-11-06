@@ -341,12 +341,15 @@ def test_permission_create_with_content_type(api_client, generate_groups):
     api_client.login(username="test__admin", password="test_password")
     response = api_client.post(
         "/v1/permissions/",
-        {"codename": "foo", "name": "Foo", "content_type": content_type.id},
+        {
+            "codename": "foo",
+            "name": "Foo",
+            "content_type": f"{content_type.app_label}.{content_type.model}",
+        },
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["codename"] == "foo"
     assert response.data["name"] == "Foo"
-    assert response.data["content_type"] == content_type.id
     assert Permission.objects.filter(codename="foo").exists()
 
 

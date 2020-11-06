@@ -72,7 +72,10 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
 class PermissionSerializer(serializers.ModelSerializer):
     """Permission serializer."""
 
-    content_type = serializers.CharField(required=False, allow_none=True, write_only=True)
+    content_type = serializers.CharField(
+        required=False, allow_null=True, write_only=True
+    )
+
     class Meta:
         """Metadata."""
 
@@ -85,7 +88,8 @@ class PermissionSerializer(serializers.ModelSerializer):
     def validate_content_type(self, value):
         """If no content type is set, use the one for global permissions."""
         if not value:
-            value = ContentType.objects.get_for_model(GlobalPermission)
+            content_type = ContentType.objects.get_for_model(GlobalPermission)
+            return content_type
 
         return ContentType.objects.get_by_natural_key(*value.split("."))
 

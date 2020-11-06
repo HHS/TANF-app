@@ -44,7 +44,7 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "create": CreateUserSerializer,
-            "set_profile": SetUserProfileSerializer
+            "set_profile": SetUserProfileSerializer,
         }.get(self.action, UserSerializer)
 
     @action(methods=["POST"], detail=False)
