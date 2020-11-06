@@ -2,9 +2,11 @@ import axios from 'axios'
 import axiosCookieJarSupport from 'axios-cookiejar-support'
 import tough from 'tough-cookie'
 
-axiosCookieJarSupport(axios)
+if(process.env.NODE_ENV !== "test") {
+    axiosCookieJarSupport(axios)
 
-const cookieJar = new tough.CookieJar()
+    const cookieJar = new tough.CookieJar()
+}
 
 let memo = null
 
