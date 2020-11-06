@@ -26,6 +26,7 @@ class AuthorizationCheck(APIView):
             auth_params = {
                 "authenticated": True,
                 "user": serializer.data,
+                "csrf":request.META['CSRF_COOKIE'],
             }
             logger.info(
                 "Auth check PASS for user: %s on %s", user.username, timezone.now()

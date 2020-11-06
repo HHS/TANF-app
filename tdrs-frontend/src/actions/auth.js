@@ -1,4 +1,7 @@
-import axios from 'axios'
+import hack from '../utils'
+
+// HACK
+const { axiosInstance, cookieJar } = hack
 
 export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
@@ -35,20 +38,34 @@ export const CLEAR_AUTH = 'CLEAR_AUTH'
  * the authentication data in the Redux store is cleared, and the user
  * is considered 'logged out', and can no longer access private routes.
  */
+
 export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
+    const instance = await axiosInstance
     const {
-      data: { user },
-    } = await axios.get(URL, {
+      data: { user ,csrf },
+    } = await instance.get(URL, {
       withCredentials: true,
     })
+
+    instance.defaults.headers['x-csrf-token'] = csrf
+
     if (user) {
       dispatch({ type: SET_AUTH, payload: { user } })
     } else {
       dispatch({ type: CLEAR_AUTH })
     }
+    // cookieJar.getCookies(URL, (err, cookies) => {
+    //   if (err) return console.error(err)
+
+    //   // const cookieValue = document.cookie
+    //   //   .split('; ')
+    //   //   .find((row) => row.startsWith('csrftoken'))
+    //   //   .split('=')[1]
+
+    // })
   } catch (error) {
     dispatch({ type: SET_AUTH_ERROR, payload: { error } })
   }
