@@ -31,7 +31,9 @@ class AuthorizationCheck(APIView):
             logger.info(
                 "Auth check PASS for user: %s on %s", user.username, timezone.now()
             )
-            return Response(auth_params)
+            res = Response(auth_params)
+            res['Access-Control-Allow-Headers'] = "X-CSRFToken"
+            return res
         else:
             logger.info("Auth check FAIL for user on %s", timezone.now())
             return Response({"authenticated": False})

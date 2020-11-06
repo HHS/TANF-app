@@ -50,7 +50,7 @@ export const fetchAuth = () => async (dispatch) => {
       withCredentials: true,
     })
 
-    instance.defaults.headers['x-csrf-token'] = csrf
+    instance.defaults.headers['X-CSRFToken'] = csrf
 
     if (user) {
       dispatch({ type: SET_AUTH, payload: { user } })
