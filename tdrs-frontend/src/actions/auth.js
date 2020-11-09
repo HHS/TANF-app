@@ -1,6 +1,4 @@
-import hack from '../utils'
-
-// HACK
+import utils from '../utils'
 
 export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
@@ -42,7 +40,7 @@ export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
-    const instance = hack.axiosInstance
+    const instance = utils.axiosInstance
     const {
       data: { user, csrf },
     } = await instance.get(URL, {

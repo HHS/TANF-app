@@ -2,7 +2,6 @@ import axios from 'axios'
 import axiosCookieJarSupport from 'axios-cookiejar-support'
 import tough from 'tough-cookie'
 
-
 let memo = null
 
 const exports = {
