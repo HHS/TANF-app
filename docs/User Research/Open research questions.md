@@ -32,7 +32,7 @@ This is a place to document questions for future research.
 
 ## Reports and feedback
 
-- What information is most important to STTs when submitting a report and tracking data? What information do STT use from [the different reports currently produced by OFA](https://teams.microsoft.com/l/file/480F7EF9-C6B1-40C2-8EC8-FDDB919356B1?tenantId=d58addea-5053-4a80-8499-ba4d944910df&fileType=docx&objectUrl=https%3A%2F%2Fhhsgov.sharepoint.com%2Fsites%2FTANFDataPortalOFA%2FShared Documents%2FGeneral%2FLegacy System%2FTANF and SSP Feedback Reports.docx&baseUrl=https%3A%2F%2Fhhsgov.sharepoint.com%2Fsites%2FTANFDataPortalOFA&serviceName=teams&threadId=19:f769bbcb029f4f02b55ae7fad90e310d@thread.skype&groupId=41f194a6-c1d3-4680-933e-c8ee7d17e287)🔒? What is missing?
+- What information is most important to STTs when submitting a report and tracking data? What information do STT use from [the different reports currently produced by OFA](<https://teams.microsoft.com/l/file/480F7EF9-C6B1-40C2-8EC8-FDDB919356B1?tenantId=d58addea-5053-4a80-8499-ba4d944910df&fileType=docx&objectUrl=https%3A%2F%2Fhhsgov.sharepoint.com%2Fsites%2FTANFDataPortalOFA%2FShared Documents%2FGeneral%2FLegacy System%2FTANF and SSP Feedback Reports.docx&baseUrl=https%3A%2F%2Fhhsgov.sharepoint.com%2Fsites%2FTANFDataPortalOFA&serviceName=teams&threadId=19:f769bbcb029f4f02b55ae7fad90e310d@thread.skype&groupId=41f194a6-c1d3-4680-933e-c8ee7d17e287>)🔒? What is missing?
 
 ## Data validation
 
