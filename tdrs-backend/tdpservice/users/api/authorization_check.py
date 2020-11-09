@@ -4,6 +4,7 @@ import logging
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from django.middleware import csrf
 from django.utils import timezone
 from ..serializers import UserProfileSerializer
 
@@ -26,11 +27,14 @@ class AuthorizationCheck(APIView):
             auth_params = {
                 "authenticated": True,
                 "user": serializer.data,
+                "csrf": csrf.get_token(request),
             }
             logger.info(
                 "Auth check PASS for user: %s on %s", user.username, timezone.now()
             )
-            return Response(auth_params)
+            res = Response(auth_params)
+            res['Access-Control-Allow-Headers'] = "X-CSRFToken"
+            return res
         else:
             logger.info("Auth check FAIL for user on %s", timezone.now())
             return Response({"authenticated": False})
