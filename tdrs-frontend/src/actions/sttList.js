@@ -39,7 +39,7 @@ export const fetchSttList = () => async (dispatch) => {
 
     if (data) {
       data.forEach((item, i) => {
-        if (item.id === 57) {
+        if (item.name === 'Federal Government') {
           data.splice(i, 1)
           data.unshift(item)
         }
