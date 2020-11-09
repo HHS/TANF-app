@@ -19,15 +19,7 @@ This is a place to document questions for future research.
 
 ## Tribal TANF
 
-- What does the data transmission experience for
-
-   
-
-  tribes with a 477 plan
-
-   
-
-  look like?
+- What does the data transmission experience for tribes with a 477 plan look like?
 
   - Is it different from other tribal data preppers?
   - How do 477 tribes navigate quarterly TANF reporting?
