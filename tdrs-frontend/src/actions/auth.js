@@ -44,7 +44,7 @@ export const fetchAuth = () => async (dispatch) => {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
     const instance = hack.axiosInstance
     const {
-      data: { user ,csrf },
+      data: { user, csrf },
     } = await instance.get(URL, {
       withCredentials: true,
     })

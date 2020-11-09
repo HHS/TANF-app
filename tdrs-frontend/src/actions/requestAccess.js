@@ -2,8 +2,6 @@
 import { SET_AUTH } from './auth'
 import hack from '../utils'
 
-// HACK
-//const { axiosInstance } = hack
 
 export const PATCH_REQUEST_ACCESS = 'PATCH_REQUEST_ACCESS'
 export const SET_REQUEST_ACCESS = 'SET_REQUEST_ACCESS'
@@ -31,7 +29,6 @@ export const requestAccess = ({ firstName, lastName, stt: { id } }) => async (
       dispatch({ type: CLEAR_REQUEST_ACCESS })
     }
   } catch (error) {
-      console.log(error)
     dispatch({ type: SET_REQUEST_ACCESS_ERROR, payload: { error } })
   }
 }
