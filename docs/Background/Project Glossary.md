@@ -1,4 +1,4 @@
-**477 tribes** - Tribes can enroll in a [477 plan](https://www.bia.gov/sites/bia.gov/files/assets/as-ia/ieed/Primer on Economic Development and 477 508 Compliant_508.pdf) to streamline their federal reporting requirements.
+**477 tribes** - Tribes can enroll in a [477 plan](https://www.bia.gov/sites/bia.gov/files/assets/as-ia/ieed/Primer%20on%20Economic%20Development%20and%20477%20508%20Compliant_508.pdf) to streamline their federal reporting requirements.
 
 **Administration for Children and Families (ACH)** - An operating division of the Department of Health & Human Services.
 
