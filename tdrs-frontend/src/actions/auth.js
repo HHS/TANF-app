@@ -54,15 +54,6 @@ export const fetchAuth = () => async (dispatch) => {
     } else {
       dispatch({ type: CLEAR_AUTH })
     }
-    // cookieJar.getCookies(URL, (err, cookies) => {
-    //   if (err) return console.error(err)
-
-    //   // const cookieValue = document.cookie
-    //   //   .split('; ')
-    //   //   .find((row) => row.startsWith('csrftoken'))
-    //   //   .split('=')[1]
-
-    // })
   } catch (error) {
     dispatch({ type: SET_AUTH_ERROR, payload: { error } })
   }
