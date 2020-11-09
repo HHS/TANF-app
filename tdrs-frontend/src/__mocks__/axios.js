@@ -1,10 +1,14 @@
 /**
  * Mocks axios GET requests.
  */
-export default {
-  get: jest.fn(() =>
-    Promise.resolve({
-      data: {},
-    })
-  ),
-}
+
+const mockAxios = jest.genMockFromModule('axios')
+mockAxios.create = jest.fn(() => mockAxios)
+mockAxios.get = jest.fn(() =>
+  Promise.resolve({
+    data: {},
+  })
+)
+
+
+export default mockAxios;

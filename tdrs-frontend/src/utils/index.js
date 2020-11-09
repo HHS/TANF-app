@@ -2,20 +2,13 @@ import axios from 'axios'
 import axiosCookieJarSupport from 'axios-cookiejar-support'
 import tough from 'tough-cookie'
 
-if(process.env.NODE_ENV !== "test") {
-    axiosCookieJarSupport(axios)
-
-    const cookieJar = new tough.CookieJar()
-}
 
 let memo = null
 
 const exports = {
-  cookieJar,
   get axiosInstance() {
     if (memo) return memo
     return (memo = axios.create({
-      jar: cookieJar,
       withCredentials: true,
       // httpsAgent: new https.Agent({
       //     rejectUnauthorized: false,

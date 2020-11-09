@@ -1,7 +1,6 @@
 import hack from '../utils'
 
 // HACK
-const { axiosInstance, cookieJar } = hack
 
 export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
@@ -43,7 +42,7 @@ export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
-    const instance = await axiosInstance
+    const instance = hack.axiosInstance
     const {
       data: { user ,csrf },
     } = await instance.get(URL, {

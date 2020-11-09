@@ -3,7 +3,7 @@ import { SET_AUTH } from './auth'
 import hack from '../utils'
 
 // HACK
-const { axiosInstance } = hack
+//const { axiosInstance } = hack
 
 export const PATCH_REQUEST_ACCESS = 'PATCH_REQUEST_ACCESS'
 export const SET_REQUEST_ACCESS = 'SET_REQUEST_ACCESS'
@@ -17,7 +17,7 @@ export const requestAccess = ({ firstName, lastName, stt: { id } }) => async (
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/users/set_profile/`
     const user = { first_name: firstName, last_name: lastName, stt: { id } }
-    const { data } = await (await axiosInstance).patch(URL, user, {
+    const { data } = await (await hack.axiosInstance).patch(URL, user, {
       withCredentials: true,
     })
 
@@ -31,6 +31,7 @@ export const requestAccess = ({ firstName, lastName, stt: { id } }) => async (
       dispatch({ type: CLEAR_REQUEST_ACCESS })
     }
   } catch (error) {
+      console.log(error)
     dispatch({ type: SET_REQUEST_ACCESS_ERROR, payload: { error } })
   }
 }
