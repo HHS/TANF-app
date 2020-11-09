@@ -4,6 +4,7 @@ import logging
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from django.middleware import csrf
 from django.utils import timezone
 from ..serializers import UserProfileSerializer
 
@@ -26,7 +27,7 @@ class AuthorizationCheck(APIView):
             auth_params = {
                 "authenticated": True,
                 "user": serializer.data,
-                "csrf":request.META['CSRF_COOKIE'],
+                "csrf": csrf.get_token(request),
             }
             logger.info(
                 "Auth check PASS for user: %s on %s", user.username, timezone.now()
