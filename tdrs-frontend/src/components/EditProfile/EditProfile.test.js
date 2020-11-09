@@ -174,9 +174,9 @@ describe('EditProfile', () => {
 
     const errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
-    expect(errorMessages.first().text()).toEqual('First Name is required')
-    expect(errorMessages.at(1).text()).toEqual('Last Name is required')
+    expect(errorMessages.length).toEqual(4)
+    expect(errorMessages.at(1).text()).toEqual('First Name is required')
+    expect(errorMessages.at(2).text()).toEqual('Last Name is required')
     expect(errorMessages.last().text()).toEqual(
       'A state, tribe, or territory is required'
     )
@@ -222,7 +222,7 @@ describe('EditProfile', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
 
     const firstNameInput = wrapper.find('#firstName')
 
@@ -237,7 +237,7 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(2)
+    expect(errorMessages.length).toEqual(3)
 
     const lastNameInput = wrapper.find('#lastName')
 
@@ -252,7 +252,8 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(1)
+    expect(errorMessages.length).toEqual(2)
+    expect(errorMessages.first().hasClass('display-none')).toEqual(false)
 
     const select = wrapper.find('.usa-select')
 
@@ -265,7 +266,8 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(0)
+    expect(errorMessages.length).toEqual(1)
+    expect(errorMessages.first().hasClass('display-none')).toEqual(true)
   })
 
   it("should return 'First Name is required' if fieldName is firstName and fieldValue is empty", () => {
@@ -298,7 +300,7 @@ describe('EditProfile', () => {
     expect(error).toEqual(null)
   })
 
-  it('should display an error message when the input has` been touched', () => {
+  it('should display an error message when the input has been touched', () => {
     const store = mockStore({
       ...initialState,
       stts: {
@@ -338,7 +340,7 @@ describe('EditProfile', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
 
     const firstNameInput = wrapper.find('#firstName')
 
@@ -353,7 +355,7 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(2)
+    expect(errorMessages.length).toEqual(3)
 
     firstNameInput.simulate('change', {
       target: {
@@ -366,7 +368,7 @@ describe('EditProfile', () => {
 
     errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
   })
 
   it('should set the Select element value to the value of the event when there is a selected stt', () => {
