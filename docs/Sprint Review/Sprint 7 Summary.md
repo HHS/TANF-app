@@ -7,10 +7,11 @@
 - Complete user interviews and begin to synthesize and apply findings
 
 ## We successfully completed
-- Updated product roadmap to deliver OFA MVP and shared with product team, OFA data team, and OCIO.  
+- Updated product roadmap to deliver OFA MVP and shared with product team, OFA data team, and OCIO 
+- Delivered feature to validate user inputs when creating a new user profile 
 - Completed user interviews for round 3 research
 - Discussed with OCIO to move ACF AMS implementation post OFA MVP
-- Delivered artifacts for Technical Review Board (TRB)  
+- Delivered accessiblity plan - Section 508 PAT - for Technical Review Board (TRB) 
 
 ### User Stories Delivered for QASP Review
 - [As a user, I can fill out and submit a form to create my profile](https://github.com/raft-tech/TANF-app/issues/231)
@@ -24,6 +25,7 @@
 - [(Internal) Migrate items from wiki to Code<> doc](https://github.com/raft-tech/TANF-app/issues/321)
 - [(Internal) Update product board and roadmap with outcome of user story workshop](https://github.com/raft-tech/TANF-app/issues/372)
 - [(Internal) Define the scope and timeline for MVP](https://github.com/raft-tech/TANF-app/issues/312)
+
 ### User Research Artifacts Delivered for QASP Review
 - [ [Design] Update #164 mockup with design change to meet OFA MVP](https://github.com/raft-tech/TANF-app/issues/376)
 - [As an admin, I want to see dev-ready mockups of deactivating users from the TDP system](https://github.com/raft-tech/TANF-app/issues/231)
