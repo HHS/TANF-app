@@ -1,4 +1,4 @@
-import utils from '../utils'
+import {axiosInstance} from '../utils'
 
 export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
@@ -40,14 +40,14 @@ export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
-    const instance = utils.axiosInstance
     const {
       data: { user, csrf },
-    } = await instance.get(URL, {
+    } = await axiosInstance.get(URL, {
       withCredentials: true,
     })
 
-    instance.defaults.headers['X-CSRFToken'] = csrf
+    // Work around for csrf cookie issue we encountered in production.
+    axiosInstance.defaults.headers['X-CSRFToken'] = csrf
 
     if (user) {
       dispatch({ type: SET_AUTH, payload: { user } })

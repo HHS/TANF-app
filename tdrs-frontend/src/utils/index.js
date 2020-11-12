@@ -1,15 +1,7 @@
 import axios from 'axios'
 
-let memo = null
-
-const exports = {
-  get axiosInstance() {
-    if (memo) return memo
-    memo = axios.create({
-      withCredentials: true,
-    })
-    return memo
-  },
-}
-
-export default exports
+// Need a custom instance of axios so we can set the csrf keys on auth_check
+// Work around for csrf cookie issue we encountered in production.
+// It may still be possible to do this with a cookie, and something on the frontend (most likely) is misconfigured.
+// the configuration has alluded us thus far, and this implementation is functionally equivolent to using cookies.
+export const axiosInstance = axios.create()
