@@ -35,11 +35,7 @@ function FormGroup({
       >
         {label} (required)
         {error && (
-          <span
-            className="usa-error-message"
-            id={`${name}-error-message`}
-            role="alert"
-          >
+          <span className="usa-error-message" id={`${name}-error-message`}>
             {error}
           </span>
         )}
