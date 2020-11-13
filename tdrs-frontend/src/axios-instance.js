@@ -4,4 +4,4 @@ import axios from 'axios'
 // Work around for csrf cookie issue we encountered in production.
 // It may still be possible to do this with a cookie, and something on the frontend (most likely) is misconfigured.
 // the configuration has alluded us thus far, and this implementation is functionally equivolent to using cookies.
-export const axiosInstance = axios.create()
+export default axios.create()

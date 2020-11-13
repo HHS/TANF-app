@@ -1,6 +1,6 @@
 // import axios from 'axios'
 import { SET_AUTH } from './auth'
-import {axiosInstance} from '../utils'
+import axiosInstance from '../axios-instance'
 
 export const PATCH_REQUEST_ACCESS = 'PATCH_REQUEST_ACCESS'
 export const SET_REQUEST_ACCESS = 'SET_REQUEST_ACCESS'

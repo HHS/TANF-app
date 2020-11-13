@@ -1,4 +1,4 @@
-import {axiosInstance} from '../utils'
+import axiosInstance from '../axios-instance'
 
 export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
