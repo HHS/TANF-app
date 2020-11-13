@@ -1,4 +1,4 @@
-"""Handle logout requests."""
+"""Check if user is authorized."""
 import logging
 
 from rest_framework.response import Response
@@ -13,14 +13,14 @@ logger.setLevel(logging.INFO)
 
 
 class AuthorizationCheck(APIView):
-    """Handle logout requests."""
+    """Check if user is authorized."""
 
     query_string = False
     pattern_name = "authorization-check"
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
-        """Handle get request and authenticate user."""
+        """Handle get request and verify user is authorized."""
         user = request.user
         serializer = UserProfileSerializer(user)
         if user.is_authenticated:
