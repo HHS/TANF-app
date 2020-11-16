@@ -20,6 +20,7 @@ describe('Header', () => {
         <Header />
       </Provider>
     )
+
     const title = wrapper.find('a[title="Home"]')
     expect(title).toExist()
     expect(title).toIncludeText('TANF Data Portal')
