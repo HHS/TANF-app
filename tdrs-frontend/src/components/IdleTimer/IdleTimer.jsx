@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useIdleTimer } from 'react-idle-timer'
-// import { useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import Button from '../Button'
 import { fetchAuth } from '../../actions/auth'
 
 function IdleTimer() {
   const [isModalVisible, setIsModalVisible] = useState(false)
-  // const dispatch = useDispatch()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     function keyListener(e) {
@@ -23,12 +23,8 @@ function IdleTimer() {
   }
 
   const onRenewSession = () => {
-    try {
-      // dispatch(fetchAuth())
-      setIsModalVisible(false)
-    } catch (err) {
-      console.error(err)
-    }
+    dispatch(fetchAuth())
+    setIsModalVisible(false)
   }
 
   const modalRef = useRef()
