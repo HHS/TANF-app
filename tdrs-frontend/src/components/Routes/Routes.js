@@ -23,7 +23,7 @@ const Routes = () => {
       <PrivateRoute exact title="Request Access" path="/edit-profile">
         <EditProfile />
       </PrivateRoute>
-      <PrivateRoute exact path="/request">
+      <PrivateRoute exact title="Request Submitted" path="/request">
         <Request />
       </PrivateRoute>
     </Switch>
