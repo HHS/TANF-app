@@ -18,14 +18,14 @@ function IdleTimer() {
     return () => document.removeEventListener('keydown', keyListener)
   })
 
-  useEffect(() => {
-    let timer
-    if (isModalVisible) {
-      timer = setTimeout(onSignOut, 5000)
-    }
+  // useEffect(() => {
+  //   let timer
+  //   if (isModalVisible) {
+  //     timer = setTimeout(onSignOut, 5000)
+  //   }
 
-    return () => clearTimeout(timer)
-  })
+  //   return () => clearTimeout(timer)
+  // })
 
   const onSignOut = () => {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
@@ -78,7 +78,7 @@ function IdleTimer() {
         <h1 className="font-serif-xl margin-4 margin-bottom-0 text-normal">
           Your session is about to expire!
         </h1>
-        <p className="margin-x-4 margin-top-1">
+        <p className="margin-x-4 margin-top-1 margin-bottom-3">
           You will be signed out due to inactivity in three minutes. Any unsaved
           data will be lost if you allow your session to expire.
         </p>
