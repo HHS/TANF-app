@@ -2,7 +2,7 @@
 import datetime
 
 now = datetime.datetime.now()
-timeout = now + datetime.timedelta(minutes=10)
+timeout = now + datetime.timedelta(minutes=30)
 
 class AuthUpdateMiddleware:
     """Update authorization cookie with new requests."""
