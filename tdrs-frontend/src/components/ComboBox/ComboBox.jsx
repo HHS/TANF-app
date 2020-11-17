@@ -44,14 +44,13 @@ const ComboBox = ({
   })
 
   return (
-    <label className="usa-label" htmlFor={name.toUpperCase()}>
-      Associated State, Tribe, or Territory
+    <label
+      className={`usa-label ${error ? 'usa-label--error' : ''}`}
+      htmlFor={name.toUpperCase()}
+    >
+      Associated State, Tribe, or Territory (required)
       {error && (
-        <span
-          className="usa-error-message"
-          id="input-error-message"
-          role="alert"
-        >
+        <span className="usa-error-message" id={`${name}-error-message`}>
           {error}
         </span>
       )}
