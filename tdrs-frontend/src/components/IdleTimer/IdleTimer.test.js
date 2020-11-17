@@ -1,6 +1,5 @@
 import React from 'react'
 import thunk from 'redux-thunk'
-import axios from 'axios'
 import { Provider } from 'react-redux'
 import { mount } from 'enzyme'
 import { fireEvent, render } from '@testing-library/react'
@@ -43,6 +42,13 @@ describe('IdleTimer', () => {
   })
 
   it('should change to a className of display-block after 2 seconds', () => {
+    const url = 'http://localhost:8080/v1/logout/oidc'
+    global.window = Object.create(window)
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: url,
+      },
+    })
     jest.useFakeTimers()
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
@@ -127,7 +133,7 @@ describe('IdleTimer', () => {
     expect(document.activeElement).toEqual(signOutButton)
   })
 
-  it('should focus `Stay Signed In` button if tab is pressed when modal is open', () => {
+  it('should focus `Stay Signed In` button if tab and shift are pressed when modal is open', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })

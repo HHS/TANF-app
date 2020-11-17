@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useIdleTimer } from 'react-idle-timer'
 import { useDispatch } from 'react-redux'
 import Button from '../Button'
@@ -16,6 +16,15 @@ function IdleTimer() {
     document.addEventListener('keydown', keyListener)
 
     return () => document.removeEventListener('keydown', keyListener)
+  })
+
+  useEffect(() => {
+    let timer
+    if (isModalVisible) {
+      timer = setTimeout(onSignOut, 5000)
+    }
+
+    return () => clearTimeout(timer)
   })
 
   const onSignOut = () => {
