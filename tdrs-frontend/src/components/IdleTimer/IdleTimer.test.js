@@ -115,25 +115,7 @@ describe('IdleTimer', () => {
     expect(store.dispatch).toHaveBeenCalledTimes(1)
   })
 
-  it('should focus `Sign Out` button if tab is pressed when modal is open', () => {
-    const store = mockStore({
-      auth: { authenticated: true, user: { email: 'hi@bye.com' } },
-    })
-    const { container } = render(
-      <Provider store={store}>
-        <IdleTimer />
-      </Provider>
-    )
-
-    const modal = container.querySelector('#myModal')
-    const signOutButton = container.querySelector('.sign-out')
-
-    fireEvent.keyDown(modal, { keyCode: 9 })
-
-    expect(document.activeElement).toEqual(signOutButton)
-  })
-
-  it('should focus `Stay Signed In` button if tab and shift are pressed when modal is open', () => {
+  it('should focus `Stay Signed In` button if tab is pressed when modal is open', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -146,8 +128,26 @@ describe('IdleTimer', () => {
     const modal = container.querySelector('#myModal')
     const staySignedInButton = container.querySelector('.renew-session')
 
-    fireEvent.keyDown(modal, { shiftKey: true, keyCode: 9 })
+    fireEvent.keyDown(modal, { keyCode: 9 })
 
     expect(document.activeElement).toEqual(staySignedInButton)
+  })
+
+  it('should focus `Sign Out Now` button if tab and shift are pressed when modal is open', () => {
+    const store = mockStore({
+      auth: { authenticated: true, user: { email: 'hi@bye.com' } },
+    })
+    const { container } = render(
+      <Provider store={store}>
+        <IdleTimer />
+      </Provider>
+    )
+
+    const modal = container.querySelector('#myModal')
+    const signOutButton = container.querySelector('.sign-out')
+
+    fireEvent.keyDown(modal, { shiftKey: true, keyCode: 9 })
+
+    expect(document.activeElement).toEqual(signOutButton)
   })
 })

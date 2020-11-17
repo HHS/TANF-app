@@ -18,14 +18,14 @@ function IdleTimer() {
     return () => document.removeEventListener('keydown', keyListener)
   })
 
-  useEffect(() => {
-    let timer
-    if (isModalVisible) {
-      timer = setTimeout(onSignOut, 5000)
-    }
+  // useEffect(() => {
+  //   let timer
+  //   if (isModalVisible) {
+  //     timer = setTimeout(onSignOut, 5000)
+  //   }
 
-    return () => clearTimeout(timer)
-  })
+  //   return () => clearTimeout(timer)
+  // })
 
   const onSignOut = () => {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
@@ -75,32 +75,27 @@ function IdleTimer() {
       className={`modal ${isModalVisible ? 'display-block' : 'display-none'}`}
     >
       <div className="modal-content" ref={modalRef}>
-        <div className="modal-header">
-          <h1 className="font-serif-2xl margin-bottom-0 text-normal">
-            Your session is about to expire!
-          </h1>
-        </div>
-        <div className="modal-body">
-          <p>
-            Your TANF Data Portal session will expire due to inactivity in three
-            minutes. Any unsaved data will be lost if you allow the session to
-            expire. Click the button below to continue your session.
-          </p>
-        </div>
-        <div className="modal-footer">
+        {/* <div className="modal-header"> */}
+        <h1 className="font-serif-xl margin-4 margin-bottom-0 text-normal">
+          Your session is about to expire!
+        </h1>
+        {/* </div> */}
+        {/* <div className="modal-body"> */}
+        <p className="margin-4 margin-bottom-0">
+          You will be signed out due to inactivity in three minutes. Any unsaved
+          data will be lost if you allow your session to expire.
+        </p>
+        {/* </div> */}
+        <div className="margin-4">
           <Button
             type="button"
-            className="margin-1 sign-out"
-            onClick={onSignOut}
-          >
-            Sign Out
-          </Button>
-          <Button
-            type="button"
-            className="margin-1 renew-session"
+            className="renew-session"
             onClick={onRenewSession}
           >
             Stay Signed In
+          </Button>
+          <Button type="button" className="sign-out" onClick={onSignOut}>
+            Sign Out Now
           </Button>
         </div>
       </div>
