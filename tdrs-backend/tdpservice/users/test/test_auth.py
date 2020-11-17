@@ -6,6 +6,7 @@ import time
 import secrets
 import pytest
 import jwt
+import datetime
 from rest_framework import status
 from django.core.exceptions import SuspiciousOperation
 from rest_framework.test import APIRequestFactory
@@ -85,16 +86,21 @@ def test_oidc_logout_with_token(api_client):
 
 @pytest.mark.django_db
 def test_auth_update(api_client, user):
+    """Test session update."""
     api_client.login(username=user.username, password="test_password")
 
-    r1 = api_client.get("/v1/auth_check")
+    api_client.get("/v1/auth_check")
     c1 = api_client.cookies.get('id_token')
     e1 = datetime.datetime.strptime(c1["expires"], "%a, %d %b %Y %H:%M:%S %Z")
     time.sleep(1)
 
-    r2 = api_client.get("/v1/auth_check")
+    api_client.get("/v1/auth_check")
     c2 = api_client.cookies.get('id_token')
     e2 = datetime.datetime.strptime(c2["expires"], "%a, %d %b %Y %H:%M:%S %Z")
+    
+    assert e1 < e2
+
+
 @pytest.mark.django_db
 def test_logout(api_client, user):
     """Test logout."""
