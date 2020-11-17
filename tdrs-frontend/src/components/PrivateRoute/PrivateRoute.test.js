@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import React from 'react'
 import thunk from 'redux-thunk'
-import { mount } from 'enzyme'
+import { mount,shallow } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -12,46 +12,47 @@ import PrivateRoute from '.'
 describe('PrivateRoute.js', () => {
   const mockStore = configureStore([thunk])
 
-  it('does not return children when user is not authenticated', () => {
-    const store = mockStore({ auth: { authenticated: false } })
-    const wrapper = mount(
-      <Provider store={store}>
-        <MemoryRouter>
-          <PrivateRoute path="/very-secret-route">
-            <Route>Hello Private Content</Route>
-          </PrivateRoute>
-        </MemoryRouter>
-      </Provider>
+    const createWrapper = storeOptions => mount(
+        <Provider store={mockStore(storeOptions)}>
+          <MemoryRouter>
+            <PrivateRoute title='Test' path="/very-secret-route">
+              <Route>Hello Private Content</Route>
+            </PrivateRoute>
+          </MemoryRouter>
+        </Provider>
     )
+
+  it('does not return children when user is not authenticated', () => {
+
+    const wrapper = createWrapper({ auth: { authenticated: false } })
     expect(wrapper.find(Route).exists()).toBeFalsy()
   })
 
   it('returns children when user is authenticated', () => {
-    const store = mockStore({ auth: { authenticated: true } })
-    const wrapper = mount(
-      <Provider store={store}>
-        <MemoryRouter>
-          <PrivateRoute path="/very-secret-route">
-            <Route>Hello Private Content</Route>
-          </PrivateRoute>
-        </MemoryRouter>
-      </Provider>
-    )
+    const wrapper = createWrapper({ auth: { authenticated: true } })
     expect(wrapper.find(Route)).toExist()
   })
 
+  it('should should not render h1 if not authenticated', () => {
+    const store = mockStore()
+
+    const wrapper = createWrapper({ auth: { authenticated: false } })
+
+    const h1 = wrapper.find('h1')
+    expect(h1.exists()).toBeFalsy()
+  })
+
+  it('should render an h1 with the title if user is authenticated', () => {
+    const wrapper = createWrapper({ auth: { authenticated: true } })
+    const h1 = wrapper.find('h1')
+
+    expect(h1).toExist()
+    expect(h1.text()).toEqual('Test')
+  })
+
   it('alerts a loading message when log-in is in process, does not render child content', () => {
-    const store = mockStore({ auth: { loading: true } })
     const spy = jest.spyOn(Alert, 'setAlert')
-    const wrapper = mount(
-      <Provider store={store}>
-        <MemoryRouter>
-          <PrivateRoute path="/very-secret-route">
-            <Route>Hello Private Content</Route>
-          </PrivateRoute>
-        </MemoryRouter>
-      </Provider>
-    )
+    const wrapper = createWrapper({ auth: { loading: true } })
     expect(wrapper.find(Route).exists()).toBeFalsy()
     expect(spy).toHaveBeenCalledWith({
       heading: 'Please wait...',
