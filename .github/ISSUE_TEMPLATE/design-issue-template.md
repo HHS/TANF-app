@@ -19,6 +19,7 @@ AC:
    - [ ] Language is intentional and [plain](https://plainlanguage.gov/guidelines/); placeholders are clearly documented 
    - [ ] It follows [accessibility guidelines](https://accessibility.digital.gov/) (e.g. clear information hierarchy, color is not the only way meaning is communicated, etc.) 
    - [ ] If feedback identifies bigger questions or unknowns, create additional issues to investigate 
+- [ ] [User flow is updated](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=2441%3A12231)
 
 Tasks
 - [ ] 
@@ -26,5 +27,4 @@ Tasks
 
 DD
 - [ ] Documentation: Design has been shared with the PO and team for feedback
-- [ ] @cmajel has reviewed and signed off
 - [ ] @lfrohlich has reviewed and signed off

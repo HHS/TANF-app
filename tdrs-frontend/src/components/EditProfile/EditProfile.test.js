@@ -15,7 +15,6 @@ describe('EditProfile', () => {
     requestAccess: {
       requestAccess: false,
       loading: false,
-      user: {},
     },
   }
   const mockStore = configureStore([thunk])
@@ -516,9 +515,20 @@ describe('EditProfile', () => {
     expect(select.instance().value).toEqual('')
   })
 
-  it('routes "/edit-profile" to the Unassigned page when user has requested access', () => {
+  it('routes "/edit-profile" to the Request page when user has requested access', () => {
     const store = mockStore({
       ...initialState,
+      auth: {
+        ...initialState.auth,
+        user: {
+          stt: {
+            id: 6,
+            type: 'state',
+            code: 'CO',
+            name: 'Colorado',
+          },
+        },
+      },
       requestAccess: {
         ...initialState.requestAccess,
         requestAccess: true,
@@ -554,7 +564,7 @@ describe('EditProfile', () => {
       </Provider>
     )
 
-    expect(wrapper).toContainReact(<Redirect to="/unassigned" />)
+    expect(wrapper).toContainReact(<Redirect to="/request" />)
   })
 
   it('should dispatch "requestAccess" when form is submitted', () => {
@@ -613,6 +623,47 @@ describe('EditProfile', () => {
       preventDefault: () => {},
     })
 
+    expect(store.dispatch).toHaveBeenCalledTimes(2)
+  })
+
+  it('should dispatch "setAlert" when form is submitted and there is an error', () => {
+    const store = mockStore({
+      ...initialState,
+      requestAccess: {
+        ...initialState.requestAccess,
+        error: { message: 'This request failed' },
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
+    })
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    mount(
+      <Provider store={store}>
+        <EditProfile />
+      </Provider>
+    )
     expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
 })

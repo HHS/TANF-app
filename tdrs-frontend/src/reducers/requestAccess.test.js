@@ -11,7 +11,6 @@ describe('reducers/requestAccess', () => {
     expect(reducer(undefined, {})).toEqual({
       requestAccess: false,
       loading: false,
-      user: {},
     })
   })
 
@@ -21,7 +20,6 @@ describe('reducers/requestAccess', () => {
         type: PATCH_REQUEST_ACCESS,
       })
     ).toEqual({
-      user: {},
       loading: true,
       requestAccess: false,
     })
@@ -33,37 +31,14 @@ describe('reducers/requestAccess', () => {
         {
           requestAccess: false,
           loading: true,
-          user: {},
         },
         {
           type: SET_REQUEST_ACCESS,
-          payload: {
-            user: {
-              first_name: 'harry',
-              last_name: 'potter',
-              stt: {
-                code: 'AK',
-                id: 2,
-                name: 'Alaska',
-                type: 'state',
-              },
-            },
-          },
         }
       )
     ).toEqual({
       requestAccess: true,
       loading: false,
-      user: {
-        first_name: 'harry',
-        last_name: 'potter',
-        stt: {
-          code: 'AK',
-          id: 2,
-          name: 'Alaska',
-          type: 'state',
-        },
-      },
     })
   })
 
@@ -71,16 +46,6 @@ describe('reducers/requestAccess', () => {
     expect(
       reducer(
         {
-          user: {
-            first_name: 'harry',
-            last_name: 'potter',
-            stt: {
-              code: 'AK',
-              id: 2,
-              name: 'Alaska',
-              type: 'state',
-            },
-          },
           loading: false,
           requestAccess: true,
         },
@@ -89,7 +54,6 @@ describe('reducers/requestAccess', () => {
         }
       )
     ).toEqual({
-      user: {},
       loading: false,
       requestAccess: false,
     })
@@ -99,7 +63,6 @@ describe('reducers/requestAccess', () => {
     expect(
       reducer(
         {
-          user: {},
           loading: false,
           requestAccess: true,
         },
@@ -109,7 +72,6 @@ describe('reducers/requestAccess', () => {
         }
       )
     ).toEqual({
-      user: {},
       loading: false,
       requestAccess: false,
       error: 'something went wrong',

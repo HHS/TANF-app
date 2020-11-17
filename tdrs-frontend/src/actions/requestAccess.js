@@ -1,4 +1,6 @@
-import axios from 'axios'
+// import axios from 'axios'
+import { SET_AUTH } from './auth'
+import axiosInstance from '../axios-instance'
 
 export const PATCH_REQUEST_ACCESS = 'PATCH_REQUEST_ACCESS'
 export const SET_REQUEST_ACCESS = 'SET_REQUEST_ACCESS'
@@ -12,13 +14,14 @@ export const requestAccess = ({ firstName, lastName, stt: { id } }) => async (
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/users/set_profile/`
     const user = { first_name: firstName, last_name: lastName, stt: { id } }
-    const { data } = await axios.patch(URL, user, {
+    const { data } = await (await axiosInstance).patch(URL, user, {
       withCredentials: true,
     })
 
     if (data) {
+      dispatch({ type: SET_REQUEST_ACCESS })
       dispatch({
-        type: SET_REQUEST_ACCESS,
+        type: SET_AUTH,
         payload: { user: data },
       })
     } else {

@@ -39,16 +39,6 @@ describe('actions/requestAccess.js', () => {
     const actions = store.getActions()
     expect(actions[0].type).toBe(PATCH_REQUEST_ACCESS)
     expect(actions[1].type).toBe(SET_REQUEST_ACCESS)
-    expect(actions[1].payload.user).toStrictEqual({
-      first_name: 'harry',
-      last_name: 'potter',
-      stt: {
-        code: 'AK',
-        id: 2,
-        name: 'Alaska',
-        type: 'state',
-      },
-    })
   })
 
   it('clears the request access state if there is no data returned from the API', async () => {

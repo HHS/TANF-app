@@ -8,7 +8,6 @@ import {
 const initialState = {
   requestAccess: false,
   loading: false,
-  user: {},
 }
 
 const requestAccess = (state = initialState, action) => {
@@ -16,15 +15,12 @@ const requestAccess = (state = initialState, action) => {
   switch (type) {
     case PATCH_REQUEST_ACCESS:
       return { ...state, loading: true }
-    case SET_REQUEST_ACCESS: {
-      const { user } = payload
+    case SET_REQUEST_ACCESS:
       return {
         ...state,
         loading: false,
         requestAccess: true,
-        user: { ...state.user, ...user },
       }
-    }
     case SET_REQUEST_ACCESS_ERROR: {
       const { error } = payload
       return {
