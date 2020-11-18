@@ -21,7 +21,7 @@ function IdleTimer() {
   useEffect(() => {
     let timer
     if (isModalVisible) {
-      timer = setTimeout(onSignOut, 1000 * 60)
+      timer = setTimeout(onSignOut, 1000 * 5)
     }
 
     return () => clearTimeout(timer)
@@ -38,19 +38,21 @@ function IdleTimer() {
 
   const modalRef = useRef()
   const handleTabKey = (e) => {
-    const focusableModalElements = modalRef.current.querySelectorAll('button')
-    const firstElement = focusableModalElements[0]
-    const lastElement =
-      focusableModalElements[focusableModalElements.length - 1]
+    if (isModalVisible) {
+      const focusableModalElements = modalRef.current.querySelectorAll('button')
+      const firstElement = focusableModalElements[0]
+      const lastElement =
+        focusableModalElements[focusableModalElements.length - 1]
 
-    if (!e.shiftKey && document.activeElement !== firstElement) {
-      firstElement.focus()
-      return e.preventDefault()
-    }
+      if (!e.shiftKey && document.activeElement !== firstElement) {
+        firstElement.focus()
+        return e.preventDefault()
+      }
 
-    if (e.shiftKey && document.activeElement !== lastElement) {
-      lastElement.focus()
-      e.preventDefault()
+      if (e.shiftKey && document.activeElement !== lastElement) {
+        lastElement.focus()
+        e.preventDefault()
+      }
     }
 
     return null
@@ -62,14 +64,16 @@ function IdleTimer() {
   ])
 
   useIdleTimer({
-    timeout: 1000 * 60,
+    timeout: 1000 * 5,
     onIdle: () => {
       setIsModalVisible(true)
     },
     onAction: () => {
-      dispatch(fetchAuth())
+      if (!isModalVisible) {
+        dispatch(fetchAuth())
+      }
     },
-    throttle: 1000 * 30,
+    debounce: 1000 * 3,
   })
 
   return (

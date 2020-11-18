@@ -8,6 +8,7 @@ import { act } from 'react-dom/test-utils'
 
 import configureStore from 'redux-mock-store'
 import IdleTimer from './IdleTimer'
+import { FETCH_AUTH } from '../../actions/auth'
 
 describe('IdleTimer', () => {
   const mockStore = configureStore([thunk])
@@ -42,13 +43,6 @@ describe('IdleTimer', () => {
   })
 
   it('should change to a className of display-block after 2 seconds', () => {
-    const url = 'http://localhost:8080/v1/logout/oidc'
-    global.window = Object.create(window)
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-      },
-    })
     jest.useFakeTimers()
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
@@ -149,5 +143,54 @@ describe('IdleTimer', () => {
     fireEvent.keyDown(modal, { shiftKey: true, keyCode: 9 })
 
     expect(document.activeElement).toEqual(signOutButton)
+  })
+
+  it('should dispatch fetchAuth 3 seconds after an action', () => {
+    jest.useFakeTimers()
+    const store = mockStore({
+      auth: { authenticated: true, user: { email: 'hi@bye.com' } },
+    })
+
+    const { container } = render(
+      <Provider store={store}>
+        <IdleTimer />
+      </Provider>
+    )
+
+    fireEvent.mouseMove(container)
+
+    act(() => {
+      jest.runAllTimers()
+    })
+
+    const actions = store.getActions()
+
+    expect(actions[0].type).toBe(FETCH_AUTH)
+  })
+
+  it('should not dispatch fetchAuth if the modal is open', () => {
+    jest.useFakeTimers()
+    const store = mockStore({
+      auth: { authenticated: true, user: { email: 'hi@bye.com' } },
+    })
+    const { container } = render(
+      <Provider store={store}>
+        <IdleTimer />
+      </Provider>
+    )
+
+    const modal = container.querySelector('#myModal')
+
+    act(() => {
+      jest.runAllTimers()
+    })
+
+    expect(modal.classList.contains('display-block')).toBeTruthy()
+
+    fireEvent.mouseMove(container)
+
+    const actions = store.getActions()
+
+    expect(actions[0]).toBeFalsy()
   })
 })
