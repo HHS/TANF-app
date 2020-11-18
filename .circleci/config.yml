@@ -1,7 +1,8 @@
 version: 2.1
 jobs:
   test-backend:
-    machine: true
+    machine:
+      docker_layer_caching: false
     branches:
     steps:
       - checkout
@@ -38,7 +39,7 @@ jobs:
         user : root
     steps:
       - setup_remote_docker:
-         docker_layer_caching: true
+         docker_layer_caching: false
       - checkout
       - run:
           name: 'Ensure docker exists,otherwise install it.'
@@ -79,7 +80,7 @@ jobs:
         user : root
     steps:
       - setup_remote_docker:
-         docker_layer_caching: true
+         docker_layer_caching: false
       - checkout
       - run:
           name: 'Ensure sudo is installed, otherwise install it.'
