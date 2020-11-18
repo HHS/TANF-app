@@ -21,6 +21,13 @@ class User(AbstractUser):
         """Return the username as the string representation of the object."""
         return self.username
 
+    @staticmethod
+    def get_groupless(self):
+        """Get a list of all users who do not belong to a group."""
+        return User.objects.filter(groups=None).map(lambda u: u.id).sort()
+
+
+
     @property
     def is_admin(self):
         """Check if the user is an admin."""
