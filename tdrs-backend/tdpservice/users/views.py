@@ -11,7 +11,7 @@ from .permissions import IsUserOrReadOnly
 from django.utils import timezone
 from .serializers import (
     CreateUserSerializer,
-    SetUserProfileSerializer,
+    UserProfileSerializer,
     UserSerializer,
 )
 
@@ -26,7 +26,7 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
-    queryset = User.objects.all()
+    queryset = User.objects.select_related("stt")
 
     def get_permissions(self):
         """Get permissions for the viewset."""
@@ -40,10 +40,10 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "create": CreateUserSerializer,
-            "set_profile": SetUserProfileSerializer,
+            "set_profile": UserProfileSerializer,
         }.get(self.action, UserSerializer)
 
-    @action(methods=["POST"], detail=False)
+    @action(methods=["PATCH"], detail=False)
     def set_profile(self, request, pk=None):
         """Set a user's profile data."""
         serializer = self.get_serializer(self.request.user, request.data)

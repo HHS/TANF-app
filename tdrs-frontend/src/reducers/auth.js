@@ -32,7 +32,7 @@ const auth = (state = initialState, action) => {
         ...state,
         loading: false,
         authenticated: true,
-        user,
+        user: { ...state.user, ...user },
       }
     }
     case SET_AUTH_ERROR: {

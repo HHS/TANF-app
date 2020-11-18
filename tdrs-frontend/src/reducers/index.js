@@ -2,7 +2,8 @@ import { combineReducers } from 'redux'
 import { connectRouter } from 'connected-react-router'
 import alert from './alert'
 import auth from './auth'
-import stts from './stts'
+import stts from './sttList'
+import requestAccess from './requestAccess'
 
 /**
  * Combines all store reducers
@@ -14,6 +15,7 @@ const rootReducer = (history) =>
     alert,
     auth,
     stts,
+    requestAccess,
   })
 
 export default rootReducer

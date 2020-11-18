@@ -3,10 +3,10 @@ import {
   SET_STTS,
   SET_STTS_ERROR,
   CLEAR_STTS,
-} from '../actions/stts'
+} from '../actions/sttList'
 
 const initialState = {
-  stts: [],
+  sttList: [],
   loading: false,
 }
 
@@ -24,7 +24,7 @@ const initialState = {
  * @param {object} action - An object with a type and a payload
  * used in the switch statement to set information on the store.
  */
-const stts = (state = initialState, action) => {
+const sttList = (state = initialState, action) => {
   const { type, payload = {} } = action
   switch (type) {
     case FETCH_STTS:
@@ -34,7 +34,7 @@ const stts = (state = initialState, action) => {
       return {
         ...state,
         loading: false,
-        stts: data,
+        sttList: data,
       }
     }
     case SET_STTS_ERROR: {
@@ -51,4 +51,4 @@ const stts = (state = initialState, action) => {
   }
 }
 
-export default stts
+export default sttList
