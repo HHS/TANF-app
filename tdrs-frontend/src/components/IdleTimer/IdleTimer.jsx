@@ -18,14 +18,14 @@ function IdleTimer() {
     return () => document.removeEventListener('keydown', keyListener)
   })
 
-  // useEffect(() => {
-  //   let timer
-  //   if (isModalVisible) {
-  //     timer = setTimeout(onSignOut, 5000)
-  //   }
+  useEffect(() => {
+    let timer
+    if (isModalVisible) {
+      timer = setTimeout(onSignOut, 5000)
+    }
 
-  //   return () => clearTimeout(timer)
-  // })
+    return () => clearTimeout(timer)
+  })
 
   const onSignOut = () => {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
@@ -85,7 +85,7 @@ function IdleTimer() {
         <div className="margin-x-4 margin-bottom-4">
           <Button
             type="button"
-            className="renew-session"
+            className="renew-session mobile:margin-bottom-1 mobile-lg:margin-bottom-0"
             onClick={onRenewSession}
           >
             Stay Signed In
