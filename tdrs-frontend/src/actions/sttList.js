@@ -29,7 +29,7 @@ export const CLEAR_STTS = 'CLEAR_STTS'
  * If an API error occurs, SET_STTS_ERROR is dispatched
  * and the error is set in the Redux store.
  */
-export const fetchStts = () => async (dispatch) => {
+export const fetchSttList = () => async (dispatch) => {
   dispatch({ type: FETCH_STTS })
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/alpha`
@@ -38,6 +38,12 @@ export const fetchStts = () => async (dispatch) => {
     })
 
     if (data) {
+      data.forEach((item, i) => {
+        if (item.name === 'Federal Government') {
+          data.splice(i, 1)
+          data.unshift(item)
+        }
+      })
       dispatch({ type: SET_STTS, payload: { data } })
     } else {
       dispatch({ type: CLEAR_STTS })
