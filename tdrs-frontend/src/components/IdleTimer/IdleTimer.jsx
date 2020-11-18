@@ -21,7 +21,7 @@ function IdleTimer() {
   useEffect(() => {
     let timer
     if (isModalVisible) {
-      timer = setTimeout(onSignOut, 5000)
+      timer = setTimeout(onSignOut, 1000 * 60)
     }
 
     return () => clearTimeout(timer)
@@ -62,11 +62,14 @@ function IdleTimer() {
   ])
 
   useIdleTimer({
-    // timeout: 1000 * 60 * 20,
-    timeout: 1000 * 3,
+    timeout: 1000 * 60,
     onIdle: () => {
       setIsModalVisible(true)
     },
+    onAction: () => {
+      dispatch(fetchAuth())
+    },
+    throttle: 1000 * 30,
   })
 
   return (
