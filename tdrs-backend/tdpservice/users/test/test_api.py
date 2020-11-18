@@ -379,7 +379,7 @@ def test_permission_delete(api_client, generate_groups):
 def test_user_no_roles_list(api_client):
     """Test endpoint listing users with no roles."""
     api_client.login(username="test__admin", password="test_password")
-    response = api_client.get('/v1/users/no-roles')
+    response = api_client.get('/v1/users/no_roles')
     groupless_users = User.objects.filter(groups=None).map(lambda u: u.id).sort()
     response_users = response.data.map(lambda u: u.id).sort()
     all(map(lambda groupless_id, response_id: groupless_id == response_id,
