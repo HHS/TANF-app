@@ -1,19 +1,13 @@
--i https://pypi.org/simple
+-i https://pypi.org/simple/
 appdirs==1.4.4
-appnope==0.1.0; sys_platform == 'darwin'
-asgiref==3.2.10; python_version >= '3.5'
-attrs==20.2.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+asgiref==3.2.10
 backcall==0.2.0
-black==19.10b0
-blessings==1.7; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-boto3==1.15.15
-botocore==1.18.15
+boto3==1.15.0
+botocore==1.18.18
 certifi==2020.6.20
 cffi==1.14.3
 chardet==3.0.4
-click==7.1.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
-coverage==5.3; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'
-cryptography==3.1.1
+cryptography==3.2
 decorator==4.4.2
 dj-database-url==0.5.0
 django-configurations==2.2
@@ -31,64 +25,33 @@ flake8-docstrings==1.5.0
 flake8==3.8.4
 future==0.18.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
 gunicorn==20.0.4
-idna==2.10; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-iniconfig==1.0.1
-ipdb==0.13.4
+idna==2.10
+ipdb==0.13.3
 ipython-genutils==0.2.0
 ipython==7.18.1
-isort==5.6.1
-jedi==0.17.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
-jinja2==2.11.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
-jmespath==0.10.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
-joblib==0.17.0; python_version >= '3.6'
+jedi==0.17.2
+jmespath==0.10.0
 jwcrypto==0.8
-livereload==2.6.3
-lunr[languages]==0.5.8
-markdown==3.3
-markupsafe==1.1.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-mccabe==0.6.1
-mkdocs==1.1.2
-nltk==3.5
-nose-progressive==1.5.2
-nose==1.3.7
-packaging==20.4; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-parso==0.7.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-pathspec==0.8.0
-pexpect==4.8.0; sys_platform != 'win32'
+markdown==3.2.2
+parso==0.7.1
+pexpect==4.8.0 ; sys_platform != 'win32'
 pickleshare==0.7.5
-pluggy==0.13.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-prompt-toolkit==3.0.7; python_full_version >= '3.6.1'
+prompt-toolkit==3.0.8
 psycopg2-binary==2.8.6
 ptpython==3.0.7
 ptyprocess==0.6.0
-py==1.9.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-pycodestyle==2.6.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-pycparser==2.20; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-pydocstyle==5.1.1; python_version >= '3.5'
-pyflakes==2.2.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-pygments==2.7.1; python_version >= '3.5'
-pygraphviz==1.6
+pycparser==2.20
+pygments==2.7.2
 pyjwt==1.7.1
-pyparsing==2.4.7
-pytest-cov==2.10.1
-pytest-django==3.10.0
-pytest-mock==3.3.1
-pytest==6.1.1
-python-dateutil==2.8.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+python-dateutil==2.8.1
 python-dotenv==0.14.0
 pytz==2020.1
 pyyaml==5.3.1
 regex==2020.9.27
 requests==2.24.0
 s3transfer==0.3.3
-six==1.15.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-snowballstemmer==2.0.0
-sqlparse==0.4.1; python_version >= '3.5'
-text-unidecode==1.3
-toml==0.10.1
-tornado==6.0.4; python_version >= '3.5'
-tqdm==4.50.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
-traitlets==5.0.4; python_version >= '3.7'
-typed-ast==1.4.1
-urllib3==1.25.10; python_version != '3.4'
+six==1.15.0
+sqlparse==0.4.1
+traitlets==5.0.5
+urllib3==1.25.11 ; python_version != '3.4'
 wcwidth==0.2.5
