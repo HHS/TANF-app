@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import React from 'react'
 import thunk from 'redux-thunk'
-import { mount,shallow } from 'enzyme'
+import { mount, shallow } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter, Route } from 'react-router-dom'
@@ -12,18 +12,18 @@ import PrivateRoute from '.'
 describe('PrivateRoute.js', () => {
   const mockStore = configureStore([thunk])
 
-    const createWrapper = storeOptions => mount(
-        <Provider store={mockStore(storeOptions)}>
-          <MemoryRouter>
-            <PrivateRoute title='Test' path="/very-secret-route">
-              <Route>Hello Private Content</Route>
-            </PrivateRoute>
-          </MemoryRouter>
-        </Provider>
+  const createWrapper = (storeOptions) =>
+    mount(
+      <Provider store={mockStore(storeOptions)}>
+        <MemoryRouter initialEntries={['/very-secret-route']}>
+          <PrivateRoute title="Test" path="/very-secret-route">
+            <Route>Hello Private Content</Route>
+          </PrivateRoute>
+        </MemoryRouter>
+      </Provider>
     )
 
   it('does not return children when user is not authenticated', () => {
-
     const wrapper = createWrapper({ auth: { authenticated: false } })
     expect(wrapper.find(Route).exists()).toBeFalsy()
   })
@@ -34,8 +34,6 @@ describe('PrivateRoute.js', () => {
   })
 
   it('should should not render h1 if not authenticated', () => {
-    const store = mockStore()
-
     const wrapper = createWrapper({ auth: { authenticated: false } })
 
     const h1 = wrapper.find('h1')
