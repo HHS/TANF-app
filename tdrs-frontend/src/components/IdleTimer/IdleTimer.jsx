@@ -8,9 +8,6 @@ function IdleTimer() {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const dispatch = useDispatch()
 
-  console.log('TIMEOUT', process.env.REACT_APP_TIMEOUT_TIME)
-  console.log('DEBOUNCE', process.env.REACT_APP_DEBOUNCE_TIME)
-
   useEffect(() => {
     function keyListener(e) {
       const listener = keyListenersMap.get(e.keyCode)
