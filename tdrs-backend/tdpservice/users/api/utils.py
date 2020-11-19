@@ -15,11 +15,12 @@ import requests
 from jwcrypto import jwk
 from rest_framework import status
 from rest_framework.response import Response
+from django.conf import settings
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 now = datetime.datetime.now()
-timeout = now + datetime.timedelta(minutes=30)
+timeout = now + datetime.timedelta(minutes=settings.SESSION_TIMEOUT)
 
 """
 Validate the nonce and state returned by login.gov API calls match those
