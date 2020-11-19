@@ -21,7 +21,7 @@ function IdleTimer() {
   useEffect(() => {
     let timer
     if (isModalVisible) {
-      modalRef.current.focus()
+      headerRef.current.focus()
       timer = setTimeout(onSignOut, 1000 * 5)
     }
 
@@ -38,6 +38,7 @@ function IdleTimer() {
   }
 
   const modalRef = useRef()
+  const headerRef = useRef()
   const handleTabKey = (e) => {
     if (isModalVisible) {
       const focusableModalElements = modalRef.current.querySelectorAll('button')
@@ -82,8 +83,12 @@ function IdleTimer() {
       id="myModal"
       className={`modal ${isModalVisible ? 'display-block' : 'display-none'}`}
     >
-      <div className="modal-content" ref={modalRef} tabIndex="-1">
-        <h1 className="font-serif-xl margin-4 margin-bottom-0 text-normal">
+      <div className="modal-content" ref={modalRef}>
+        <h1
+          className="font-serif-xl margin-4 margin-bottom-0 text-normal"
+          tabIndex="-1"
+          ref={headerRef}
+        >
           Your session is about to expire!
         </h1>
         <p className="margin-4 margin-top-1">
