@@ -1,5 +1,6 @@
 """Handle authorization calls globally."""
 import datetime
+from django.conf import settings
 
 
 class AuthUpdateMiddleware:
@@ -12,7 +13,7 @@ class AuthUpdateMiddleware:
         """Update cookie."""
         response = self.get_response(request)
         now = datetime.datetime.now()
-        timeout = now + datetime.timedelta(minutes=30)
+        timeout = now + datetime.timedelta(minutes=settings.SESSION_TIMEOUT)
 
         # if there is no user, the user is currently
         # in the authentication process so we can't
