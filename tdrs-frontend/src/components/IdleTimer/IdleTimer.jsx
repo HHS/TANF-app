@@ -4,6 +4,14 @@ import { useDispatch } from 'react-redux'
 import Button from '../Button'
 import { fetchAuth } from '../../actions/auth'
 
+/**
+ * IdleTimer uses the `react-idle-timer` package to watch for user inactivity.
+ * There are environment variables set for the timeout time (how long before the
+ * inactivity modal pops up) and the time between when the modal pops up and the
+ * user is automatically logged out.
+ * There is a second variable for the debounce time to minimize calls to
+ * `/v1/auth_check` on user activity.
+ */
 function IdleTimer() {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const dispatch = useDispatch()
