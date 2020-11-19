@@ -53,33 +53,40 @@ function HeaderComp() {
                 </a>
               </li>
             </ul>
-            {user && user.email && (
-              <div className="usa-nav__secondary">
-                <ul className="usa-nav__secondary-links">
-                  <li className="usa-nav__secondary-item">
-                    <a href="/">
-                      <FontAwesomeIcon
-                        className="margin-right-1"
-                        icon={faUserCircle}
-                      />
-                      {user.email}
-                    </a>
-                  </li>
-                  <li className="usa-nav__secondary-item">
-                    <a
-                      className="sign-out-link"
-                      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
-                    >
-                      <FontAwesomeIcon
-                        className="margin-right-1"
-                        icon={faSignOutAlt}
-                      />
-                      Sign Out
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            )}
+            <div className="usa-nav__secondary">
+              <ul className="usa-nav__secondary-links">
+                <li
+                  style={{
+                    display: user && user.email ? 'block' : 'none',
+                  }}
+                  className="usa-nav__secondary-item"
+                >
+                  <a href="/">
+                    <FontAwesomeIcon
+                      className="margin-right-1"
+                      icon={faUserCircle}
+                    />
+                    {user?.email}
+                  </a>
+                </li>
+                <li className="usa-nav__secondary-item">
+                  <a
+                    className="sign-out-link"
+                    href={
+                      user && user.email
+                        ? `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
+                        : `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+                    }
+                  >
+                    <FontAwesomeIcon
+                      className="margin-right-1"
+                      icon={faSignOutAlt}
+                    />
+                    {user && user.email ? 'Sign Out' : 'Sign In'}
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </nav>
       </header>
