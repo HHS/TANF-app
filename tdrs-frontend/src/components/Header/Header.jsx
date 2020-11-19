@@ -56,17 +56,19 @@ function HeaderComp() {
             <div className="usa-nav__secondary">
               <ul className="usa-nav__secondary-links">
                 <li
-                  className={`usa-nav__secondary-item ${
+                  className={`${
                     user && user.email ? 'display-block' : 'display-none'
-                  }`}
+                  } usa-nav__secondary-item`}
                 >
-                  <a href="/">
-                    <FontAwesomeIcon
-                      className="margin-right-1"
-                      icon={faUserCircle}
-                    />
-                    {user?.email}
-                  </a>
+                  {user && user.email && (
+                    <a href="/">
+                      <FontAwesomeIcon
+                        className="margin-right-1"
+                        icon={faUserCircle}
+                      />
+                      {user && user.email}
+                    </a>
+                  )}
                 </li>
                 <li className="usa-nav__secondary-item">
                   <a
