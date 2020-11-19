@@ -10,13 +10,6 @@ from .users.api.login import TokenAuthorizationOIDC
 from .users.api.login_redirect_oidc import LoginRedirectOIDC
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
-from .users import views
-
-router = DefaultRouter()
-router.register("users", views.UserViewSet)
-router.register("roles", views.GroupViewSet)
-router.register("permissions", views.PermissionViewSet)
-
 
 urlpatterns = [
     path("admin/", admin.site.urls),
