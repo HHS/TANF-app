@@ -56,10 +56,9 @@ function HeaderComp() {
             <div className="usa-nav__secondary">
               <ul className="usa-nav__secondary-links">
                 <li
-                  style={{
-                    display: user && user.email ? 'block' : 'none',
-                  }}
-                  className="usa-nav__secondary-item"
+                  className={`usa-nav__secondary-item ${
+                    user && user.email ? 'display-block' : 'display-none'
+                  }`}
                 >
                   <a href="/">
                     <FontAwesomeIcon
