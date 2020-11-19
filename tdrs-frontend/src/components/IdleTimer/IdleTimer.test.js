@@ -43,6 +43,13 @@ describe('IdleTimer', () => {
   })
 
   it('should change to a className of display-block after 2 seconds', () => {
+    const url = 'http://localhost:8080/v1/logout/oidc'
+    global.window = Object.create(window)
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: url,
+      },
+    })
     jest.useFakeTimers()
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
@@ -110,6 +117,7 @@ describe('IdleTimer', () => {
   })
 
   it('should focus `Stay Signed In` button if tab is pressed when modal is open', () => {
+    jest.useFakeTimers()
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -122,12 +130,17 @@ describe('IdleTimer', () => {
     const modal = container.querySelector('#myModal')
     const staySignedInButton = container.querySelector('.renew-session')
 
+    act(() => {
+      jest.runAllTimers()
+    })
+
     fireEvent.keyDown(modal, { keyCode: 9 })
 
     expect(document.activeElement).toEqual(staySignedInButton)
   })
 
   it('should focus `Sign Out Now` button if tab and shift are pressed when modal is open', () => {
+    jest.useFakeTimers()
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -139,6 +152,10 @@ describe('IdleTimer', () => {
 
     const modal = container.querySelector('#myModal')
     const signOutButton = container.querySelector('.sign-out')
+
+    act(() => {
+      jest.runAllTimers()
+    })
 
     fireEvent.keyDown(modal, { shiftKey: true, keyCode: 9 })
 
