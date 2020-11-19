@@ -1,12 +1,15 @@
 """Serialize user data."""
 
-from django.contrib.auth.models import Group, Permission
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from tdpservice.core.models import GlobalPermission
 
 
 from .models import User
+from tdpservice.stts.serializers import STTUpdateSerializer
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -52,14 +55,17 @@ class CreateUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
 
-class SetUserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for setting a user's profile."""
+
+    stt = STTUpdateSerializer(required=True)
+    email = serializers.SerializerMethodField("get_email")
 
     class Meta:
         """Metadata."""
 
         model = User
-        fields = ["first_name", "last_name"]
+        fields = ["first_name", "last_name", "stt", "email"]
 
         """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {
@@ -67,6 +73,15 @@ class SetUserProfileSerializer(serializers.ModelSerializer):
             "last_name": {"allow_blank": False, "required": True},
             "requested_roles": {"allow_empty": True, "required": False},
         }
+
+    def update(self, instance, validated_data):
+        """Update the user with the STT."""
+        instance.stt_id = validated_data.pop("stt")["id"]
+        return super().update(instance, validated_data)
+
+    def get_email(self, obj):
+        """Return the user's email address."""
+        return obj.username
 
 
 class PermissionSerializer(serializers.ModelSerializer):
