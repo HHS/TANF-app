@@ -8,6 +8,9 @@ function IdleTimer() {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const dispatch = useDispatch()
 
+  console.log('TIMEOUT', process.env.REACT_APP_TIMEOUT_TIME)
+  console.log('DEBOUNCE', process.env.REACT_APP_DEBOUNCE_TIME)
+
   useEffect(() => {
     function keyListener(e) {
       const listener = keyListenersMap.get(e.keyCode)
@@ -22,7 +25,7 @@ function IdleTimer() {
     let timer
     if (isModalVisible) {
       headerRef.current.focus()
-      timer = setTimeout(onSignOut, 1000 * 5)
+      timer = setTimeout(onSignOut, process.env.REACT_APP_TIMEOUT_TIME)
     }
 
     return () => clearTimeout(timer)
@@ -66,7 +69,7 @@ function IdleTimer() {
   ])
 
   useIdleTimer({
-    timeout: 1000 * 5,
+    timeout: process.env.REACT_APP_TIMEOUT_TIME,
     onIdle: () => {
       setIsModalVisible(true)
     },
@@ -75,7 +78,7 @@ function IdleTimer() {
         dispatch(fetchAuth())
       }
     },
-    debounce: 1000 * 3,
+    debounce: process.env.REACT_APP_DEBOUNCE_TIME,
   })
 
   return (
