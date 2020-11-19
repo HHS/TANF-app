@@ -432,7 +432,7 @@ def test_role_list(api_client, generate_groups):
     """Test role list."""
     # Groups are populated in a data migrations, so are already available.
     api_client.login(username="test__admin", password="test_password")
-    response = api_client.get("/v1/roles/")
+    response = api_client.get("/v1/users/roles/")
     assert response.status_code == status.HTTP_200_OK
     role_names = {group["name"] for group in response.data}
     assert role_names == {"admin", "OFA analyst", "data prepper"}
@@ -442,7 +442,7 @@ def test_role_list(api_client, generate_groups):
 def test_role_create(api_client, generate_groups):
     """Test creating a role."""
     api_client.login(username="test__admin", password="test_password")
-    response = api_client.post("/v1/roles/", {"name": "Test Role"})
+    response = api_client.post("/v1/users/roles/", {"name": "Test Role"})
     assert response.status_code == status.HTTP_201_CREATED
     assert Group.objects.filter(name="Test Role").exists()
 
@@ -453,7 +453,7 @@ def test_role_create_with_permission(api_client, generate_groups):
     permission = Permission.objects.first()
     api_client.login(username="test__admin", password="test_password")
     response = api_client.post(
-        "/v1/roles/", {"name": "Test Role", "permissions": [permission.id]}
+        "/v1/users/roles/", {"name": "Test Role", "permissions": [permission.id]}
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert Group.objects.filter(name="Test Role").exists()
@@ -465,7 +465,7 @@ def test_role_update(api_client, generate_groups):
     """Test role update."""
     group = Group.objects.get(name="admin")
     api_client.login(username="test__admin", password="test_password")
-    response = api_client.patch(f"/v1/roles/{group.id}/", {"name": "staff"})
+    response = api_client.patch(f"/v1/users/roles/{group.id}/", {"name": "staff"})
     assert response.status_code == status.HTTP_200_OK
     assert Group.objects.filter(name="staff").exists()
     assert not Group.objects.filter(name="admin").exists()
@@ -476,7 +476,7 @@ def test_role_delete(api_client, generate_groups):
     """Test role deletion."""
     group = Group.objects.get(name="admin")
     api_client.login(username="test__admin", password="test_password")
-    response = api_client.delete(f"/v1/roles/{group.id}/")
+    response = api_client.delete(f"/v1/users/roles/{group.id}/")
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not Group.objects.filter(name="admin").exists()
 
@@ -486,7 +486,7 @@ def test_permission_list(api_client, generate_groups):
     """Test permission list."""
     # Django comes with some permissions, so we'll just test those.
     api_client.login(username="test__admin", password="test_password")
-    response = api_client.get("/v1/permissions/")
+    response = api_client.get("/v1/users/permissions/")
     assert response.status_code == status.HTTP_200_OK
     assert len(response.data) > 0  # Just check there's something here.
 
@@ -496,7 +496,7 @@ def test_permission_create(api_client, generate_groups):
     """Test permission creation."""
     api_client.login(username="test__admin", password="test_password")
     response = api_client.post(
-        "/v1/permissions/", {"codename": "foo", "name": "Foo", "content_type": None}
+        "/v1/users/permissions/", {"codename": "foo", "name": "Foo", "content_type": None}
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["codename"] == "foo"
@@ -510,7 +510,7 @@ def test_permission_create_with_content_type(api_client, generate_groups):
     content_type = ContentType.objects.get_for_model(User)
     api_client.login(username="test__admin", password="test_password")
     response = api_client.post(
-        "/v1/permissions/",
+        "/v1/users/permissions/",
         {
             "codename": "foo",
             "name": "Foo",
@@ -529,7 +529,7 @@ def test_permission_update(api_client, generate_groups):
     permission = Permission.objects.first()
     api_client.login(username="test__admin", password="test_password")
     response = api_client.patch(
-        f"/v1/permissions/{permission.id}/", {"codename": "foo"}
+        f"/v1/users/permissions/{permission.id}/", {"codename": "foo"}
     )
     assert response.status_code == status.HTTP_200_OK
     assert not Permission.objects.filter(codename=permission.codename).exists()
@@ -541,6 +541,6 @@ def test_permission_delete(api_client, generate_groups):
     """Test permission deletion."""
     permission = Permission.objects.first()
     api_client.login(username="test__admin", password="test_password")
-    response = api_client.delete(f"/v1/permissions/{permission.id}/")
+    response = api_client.delete(f"/v1/users/permissions/{permission.id}/")
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not Permission.objects.filter(codename=permission.codename).exists()

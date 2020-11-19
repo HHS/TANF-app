@@ -27,6 +27,3 @@ urlpatterns = [
 
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 urlpatterns = [path("v1/", include(urlpatterns))]
-urlpatterns += [
-    path("admin/", admin.site.urls),
-]
