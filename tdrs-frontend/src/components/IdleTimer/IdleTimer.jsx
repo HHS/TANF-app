@@ -30,7 +30,7 @@ function IdleTimer() {
     let timer
     if (isModalVisible) {
       headerRef.current.focus()
-      timer = setTimeout(onSignOut, process.env.REACT_APP_TIMEOUT_TIME)
+      timer = setTimeout(onSignOut, process.env.REACT_APP_LOGOUT_TIME)
     }
 
     return () => clearTimeout(timer)
