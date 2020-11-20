@@ -22,7 +22,7 @@ class User(AbstractUser):
         return self.username
 
     @staticmethod
-    def get_groupless(self):
+    def get_groupless():
         """Get a list of all users who do not belong to a group."""
         return User.objects.filter(groups=None)
 
