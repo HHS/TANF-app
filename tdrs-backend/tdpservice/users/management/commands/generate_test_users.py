@@ -9,7 +9,7 @@ import factory
 
 User = get_user_model()
 
-group_names = ["admin", "Data Prepper", "OFA Analyst", "OFA Admin"]
+group_names = ["Data Prepper", "OFA Analyst", "OFA Admin"]
 
 
 class Command(BaseCommand):
