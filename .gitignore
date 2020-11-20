@@ -15,9 +15,6 @@ tdrs-frontend/.env*
  
 
 #BACKEND
-tdrs-backend/*/env_vars/*.env*
-tdrs-backend/*/env_vars/*.env*.*
-tdrs-backend/*/*/env_vars/.env.local
 tdrs-backend/vars-backend.yml
 tdrs-backend/coverage.xml
 tdrs-backend/htmlcov/*

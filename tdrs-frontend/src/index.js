@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import axios from 'axios'
 
 import { ConnectedRouter as Router } from 'connected-react-router'
 import { Provider } from 'react-redux'
@@ -10,6 +11,10 @@ import App from './App'
 
 import 'uswds/dist/js/uswds'
 import './index.scss'
+
+axios.defaults.xsrfCookieName = 'csrftoken'
+axios.defaults.xsrfHeaderName = 'X-CSRFToken'
+axios.defaults.withCredentials = true
 
 const store = configureStore()
 store.dispatch(fetchAuth())
