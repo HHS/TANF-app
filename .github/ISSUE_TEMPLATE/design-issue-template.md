@@ -22,8 +22,8 @@ AC:
 - [ ] [User flow is updated](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=2441%3A12231)
 
 Tasks
-- [ ] 
-- [ ] Check for accessibility 
+- [ ]
+- [ ] Check for accessibility
 
 DD
 - [ ] Documentation: Design has been shared with the PO and team for feedback
