@@ -24,7 +24,7 @@ class User(AbstractUser):
     @staticmethod
     def get_groupless(self):
         """Get a list of all users who do not belong to a group."""
-        return User.objects.filter(groups=None).map(lambda u: u.id).sort()
+        return User.objects.filter(groups=None)
 
 
 
