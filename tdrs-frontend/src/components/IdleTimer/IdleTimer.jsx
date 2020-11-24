@@ -11,6 +11,19 @@ import { fetchAuth } from '../../actions/auth'
  * user is automatically logged out.
  * There is a second variable for the debounce time to minimize calls to
  * `/v1/auth_check` on user activity.
+ *
+ * @param {number} REACT_APP_LOGOUT_TIME - Once the session timeout modal is
+ * opened, this variable sets the amount of time before the user is
+ * automatically signed out (in ms).
+ * @param {number} REACT_APP_TIMEOUT_TIME - Once the user is idle,
+ * this is the amount of time (in ms) before the timeout modal opens.
+ * @param {number} REACT_APP_DEBOUNCE_TIME - When a user is idle and then
+ * active again, this variable set the debounce time
+ * (in ms) for the call to `/v1/auth_check`.
+ *
+ * For local development these variables are set in the `.env.local` file.
+ * For the development environment these variables are set
+ * in the `.env.development` file.
  */
 function IdleTimer() {
   const [isModalVisible, setIsModalVisible] = useState(false)
