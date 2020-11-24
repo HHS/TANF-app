@@ -33,6 +33,7 @@
 
 ## Agenda for Sprint 8 Review 
 - Mockups for deactivating and reactivating users (Raft)
+- New user can submit profile to request access to the TDP system
 - OCIO (security review of Raft's PR)
     - Demo of session timeout functionality (Raft) 
     - QASP review (Alex)
