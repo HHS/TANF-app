@@ -40,14 +40,6 @@ describe('PrivateRoute.js', () => {
     expect(h1.exists()).toBeFalsy()
   })
 
-  it('should render an h1 with the title if user is authenticated', () => {
-    const wrapper = createWrapper({ auth: { authenticated: true } })
-    const h1 = wrapper.find('h1')
-
-    expect(h1).toExist()
-    expect(h1.text()).toEqual('Test')
-  })
-
   it('alerts a loading message when log-in is in process, does not render child content', () => {
     const spy = jest.spyOn(Alert, 'setAlert')
     const wrapper = createWrapper({ auth: { loading: true } })
