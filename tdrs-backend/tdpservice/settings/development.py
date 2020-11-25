@@ -49,6 +49,3 @@ class Development(Common):
         "all_applications": True,
         "group_models": True,
     }
-
-    # Session Timeout
-    SESSION_TIMEOUT = 5
