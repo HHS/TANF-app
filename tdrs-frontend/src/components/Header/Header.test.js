@@ -20,6 +20,7 @@ describe('Header', () => {
         <Header />
       </Provider>
     )
+
     const title = wrapper.find('a[title="Home"]')
     expect(title).toExist()
     expect(title).toIncludeText('TANF Data Portal')
@@ -108,9 +109,11 @@ describe('Header', () => {
     const secondaryLinks = wrapper.find('.usa-nav__secondary-item')
 
     expect(secondaryLinks.length).toEqual(2)
+    expect(secondaryLinks.first().text()).toEqual('test@test.com')
+    expect(secondaryLinks.last().text()).toEqual('Sign Out')
   })
 
-  it('should not have secondaryItems when user is logged out', () => {
+  it('should have one visible secondaryItem when user is logged out', () => {
     initialState = {
       ...initialState,
       auth: { user: {}, authenticated: false },
@@ -124,6 +127,7 @@ describe('Header', () => {
 
     const secondaryLinks = wrapper.find('.usa-nav__secondary-item')
 
-    expect(secondaryLinks.length).toEqual(0)
+    expect(secondaryLinks.first().hasClass('display-none')).toBeTruthy()
+    expect(secondaryLinks.last().text()).toEqual('Sign In')
   })
 })
