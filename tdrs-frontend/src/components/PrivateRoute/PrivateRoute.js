@@ -37,8 +37,8 @@ function PrivateRoute({ children, title, history, path }) {
 
   return authenticated ? (
     <Route path={path}>
-      <PrivateTemplate title={title}> 
-        {children} 
+      <PrivateTemplate title={title}>
+        {children}
         <IdleTimer />
       </PrivateTemplate>
     </Route>

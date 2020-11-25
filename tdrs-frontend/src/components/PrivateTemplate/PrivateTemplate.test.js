@@ -22,7 +22,7 @@ describe('PrivateTemplate', () => {
   })
 
   it('should have a page title with title contents in it', () => {
-    const { container } = render(
+    render(
       <PrivateTemplate title={title}>
         <div>Test</div>
       </PrivateTemplate>

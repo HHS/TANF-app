@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import React from 'react'
 import thunk from 'redux-thunk'
-import { mount, shallow } from 'enzyme'
+import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { MemoryRouter, Route } from 'react-router-dom'
