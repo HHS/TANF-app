@@ -22,6 +22,3 @@ class Local(Common):
     EMAIL_HOST = "localhost"
     EMAIL_PORT = 1025
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-    # Session Timeout
-    SESSION_TIMEOUT = 5
