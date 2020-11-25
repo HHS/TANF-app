@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
 import PrivateTemplate from '../PrivateTemplate'
+import IdleTimer from '../IdleTimer/IdleTimer'
 
 /**
  *
@@ -36,7 +37,10 @@ function PrivateRoute({ children, title, history, path }) {
 
   return authenticated ? (
     <Route path={path}>
-      <PrivateTemplate title={title}> {children} </PrivateTemplate>
+      <PrivateTemplate title={title}> 
+        {children} 
+        <IdleTimer />
+      </PrivateTemplate>
     </Route>
   ) : null
 }
