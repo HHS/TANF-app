@@ -16,7 +16,7 @@ Our vision is to build a new, secure, web-based data reporting system to improve
 + **[Technical-Documentation](./Technical-Documentation)**: System documentation; technical workflows
 + **[User-Research](./User-Research)**: User research goals, questions, outcomes, and user research guide
 
-## Guidelines
+# Guidelines
 This is a place for...
 
 * Information regarding how this project operates
