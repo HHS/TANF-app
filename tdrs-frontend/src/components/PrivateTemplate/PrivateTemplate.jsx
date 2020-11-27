@@ -10,7 +10,7 @@ export default function PrivateTemplate({ title, children }) {
 
     return (
         <div className="grid-container margin-top-3" >
-            <h1 className="request-access-header font-serif-2xl">{title}</h1>
+          <h1 className="font-serif-2xl margin-bottom-0 text-normal">{title}</h1>
             {children}
         </div>
     )
