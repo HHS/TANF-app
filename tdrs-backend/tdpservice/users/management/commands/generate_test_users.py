@@ -9,8 +9,6 @@ import factory
 
 User = get_user_model()
 
-group_names = ["Data Prepper", "OFA Analyst", "OFA Admin"]
-
 
 class Command(BaseCommand):
     """Command class."""
@@ -19,8 +17,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Generate a test user for each role."""
-        groups = [Group(name=group_name) for group_name in group_names]
-        Group.objects.bulk_create(groups, ignore_conflicts=True)
         first_name = factory.Faker("first_name")
         last_name = factory.Faker("last_name")
         password = "test_password"  # Static password so we can login.
@@ -33,15 +29,23 @@ class Command(BaseCommand):
                 first_name=first_name,
                 last_name=last_name,
             )
-        except IntegrityError as ie:  # pragma: nocover
-            print("Integrity Error: ", ie)
+            superuser = User.objects.create_superuser(
+                username="test__superuser",
+                email="test+superuser@example.com",
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+        except IntegrityError:  # pragma: nocover
             # User already exists.
             pass
         else:
-            user_count += 1
+            user_count += 2
             self.stdout.write(f"Username: {user.username}")
             self.stdout.write(f"Password: {password}")
             self.stdout.write()
+            self.stdout.write(f"Username: {superuser.username}")
+            self.stdout.write(f"Password: {password}")
         for group in Group.objects.all():
             username = f"test__{group.name.replace(' ', '_').lower()}"
             email = f"test_{group.name.replace(' ', '_').lower()}" + "@example.com"
@@ -56,7 +60,6 @@ class Command(BaseCommand):
                         last_name=last_name,
                     )
                     user.groups.add(group)
-                    user.groups
             except IntegrityError:  # pragma: nocover
                 # User already exists.
                 pass
@@ -64,7 +67,6 @@ class Command(BaseCommand):
                 user_count += 1
                 self.stdout.write(f"Username: {user.username}")
                 self.stdout.write(f"Password: {password}")
-                self.stdout.write(f"email: {email}")
                 self.stdout.write()
 
         self.stdout.write(f"Created {user_count} users.")

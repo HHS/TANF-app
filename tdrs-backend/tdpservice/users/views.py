@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .models import User
-from .permissions import IsAdmin, IsUserOrReadOnly
+from .permissions import IsAdmin, IsUserOrAdmin
 from django.utils import timezone
 from .serializers import (
     CreateUserSerializer,
@@ -32,10 +32,9 @@ class UserViewSet(
 
     def get_permissions(self):
         """Get permissions for the viewset."""
-        if self.action == "create":
-            permission_classes = [AllowAny]
-        else:
-            permission_classes = [IsUserOrReadOnly]
+        permission_classes = {"create": [AllowAny], "list": [IsAdmin]}.get(
+            self.action, [IsUserOrAdmin]
+        )
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
@@ -64,11 +63,6 @@ class PermissionViewSet(viewsets.ModelViewSet):
     queryset = Permission.objects.all()
     permission_classes = [IsAdmin]
     serializer_class = PermissionSerializer
-
-    def get_queryset(self):
-        """Get list of custom permissions."""
-        queryset = Permission.objects.all()
-        return queryset
 
 
 class GroupViewSet(viewsets.ModelViewSet):

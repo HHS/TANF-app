@@ -27,6 +27,5 @@ class User(AbstractUser):
         # TODO: Probably better to change this to check for a permission
         # rather than the admin group directly.
         return (
-            self.is_superuser
-            or Group.objects.get(name="OFA Admin") in self.groups.all()
+            self.is_superuser or Group.objects.get(name="OFA Admin") in self.groups.all()
         )
