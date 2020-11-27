@@ -11,15 +11,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.DeleteModel(
-            name="TDRSAdmin",
-        ),
-        migrations.DeleteModel(
-            name="TDRSEdit",
-        ),
-        migrations.DeleteModel(
-            name="TDRSRead",
-        ),
+        migrations.DeleteModel(name="TDRSAdmin",),
+        migrations.DeleteModel(name="TDRSEdit",),
+        migrations.DeleteModel(name="TDRSRead",),
         migrations.AddField(
             model_name="user",
             name="requested_roles",
