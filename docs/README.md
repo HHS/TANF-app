@@ -20,8 +20,8 @@ This is not a place for...
 
 + [Acquisition](./Acquisition)
 + [Background](./Background)
-+ [How we work](./How we work)
++ [How-We-Work](./How-We-Work)
 + [Prototype](./Prototype)
-+ [Sprint Review](./Sprint Review)
-+ [Technical Documentation](./Technical Documentation)
-+ [User Research](./User Research)
++ [Sprint-Review](./Sprint-Review)
++ [Technical-Documentation](./Technical-Documentation)
++ [User-Research](./User-Research)
