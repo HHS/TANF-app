@@ -10,7 +10,7 @@ function Request() {
   }
 
   return (
-    <div className="grid-container margin-top-3">
+    <>
       <div className="maxw-mobile-lg">
         <p className="margin-top-1 margin-bottom-4">
           An administrator will be in touch soon to confirm your access!
@@ -20,7 +20,7 @@ function Request() {
           Sign Out
         </Button>
       </div>
-    </div>
+    </>
   )
 }
 
