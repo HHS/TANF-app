@@ -11,7 +11,7 @@
 ## Contracting Officer's Representative (COR)
 
 ### OFA COR
-[OFA COR Delegation Letter](https://github.com/HHS/TANF-app/blob/main/docs/Acquisition/COR_Delegation_Dvora_Wilensky.pdf)
+[OFA COR Delegation Letter](docs/Acquisition/COR_Delegation_Dvora_Wilensky.pdf)
 
 - Inspect deliverables against QASP (with the Product Owner and Tech Lead)
 - Monitor contractor performance (with the Product Owner and Tech Lead)
@@ -24,7 +24,7 @@
 
 
 ### 18F COR
-[18F COR Delegation Letter](https://github.com/HHS/TANF-app/blob/main/docs/Acquisition/COR%20Delegation%20Robert%20Jolly.pdf)
+[18F COR Delegation Letter](docs/Acquisition/COR%20Delegation%20Robert%20Jolly.pdf)
 
 - Approve invoices
 - Initiate and finalize the annual contractor performance assessment
