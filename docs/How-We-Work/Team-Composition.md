@@ -3,12 +3,10 @@
 * Lauren Frohlich, OFA, product owner
 
 **18F**
-* Ryan Ahearn, 18F, compliance consultant
 * Alex Soble, 18F, consulting engineer
 
 **Raft**
 * Patrick Asata, Raft, tech lead
-* Matthew Doty, Raft, user researcher
 * Spencer Hilvitz, Raft frontend engineer
 * Dimitri Knapp, Raft, visual designer
 * Shubhi Mishra, Raft, design lead + facilitator
@@ -45,6 +43,8 @@
 
 ## Past Product Team Members
 (most recent first)
+* Ryan Ahearn, 18F, compliance consultant
+* Matthew Doty, Raft, user researcher
 * Selena Juneau-Vogel, 18F, team lead & product management consultant
 * Christine Bath, 18F, user research + design consultant
 * Laura Gerhardt, 18F, consulting engineer
