@@ -81,7 +81,7 @@ Raw notes from interviews were synthesized in Mural with the OFA data division. 
 
 **About case management systems and other tools**
 
-- [Some case management systems are multipurpose with some degree of customization for TANF.](#Some case management systems are multipurpose with some degree of customization for TANF)
+- [Some case management systems are multipurpose with some degree of customization for TANF.](<#Some case management systems are multipurpose with some degree of customization for TANF>)
 - TANF staff are navigating multiple software products from data collection through report submission.
 - Editing often happens in case management tools, but a few tasks are completed directly in the flat file (in a text editor).
 
