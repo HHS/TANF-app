@@ -12,7 +12,7 @@ tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
 tdrs-frontend/pa11y-screenshots/*
 tdrs-frontend/.env*
- 
+
 
 #BACKEND
 tdrs-backend/*/env_vars/*.env*
@@ -41,8 +41,6 @@ compliance/exports/
 
 # don't ignore requirements.txt
 !requirements.txt
-# Graph Models ERD
-tdrs-backend/tdp-erd.png
 
 # coverage result
 .coverage
