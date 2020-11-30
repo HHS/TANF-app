@@ -44,10 +44,10 @@ From here, we use our understanding of the considerations to develop a plan for 
 
 "Strategy without tactics is just a pipe dream. Tactics without strategy is a nightmare."
 
-* For us, the highest level of the plan is the TANF program goals--what the TANF program is ultimately trying to achieve. We developed the [TANF Program Theory of Change](https://github.com/HHS/TANF-app/wiki/Vision-and-Stakeholders#tanf-program-theory-of-change) at this level of the plan to help us understand how the new TDRS fits into the program's larger goals.
-* The next level down is our [Product Vision](https://github.com/HHS/TANF-app/wiki/Vision-and-Stakeholders#product-vision). This level is slightly more defined and narrowly focused. The vision about what we're trying to achieve within the scope of this specific project. It answers: What’s the problem? Who’s affected? How are we helping? What’s the outcome?
-* Below that is our [Product Roadmap](https://github.com/HHS/TANF-app/wiki/Roadmap-and-backlog#product-roadmap) which represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem. The roadmap is not a promise--it is just a plan to bridge the strategic vision and to the tackle tasks.
-* And finally, at the bottom and on the ground is the [Product Backlog](https://github.com/HHS/TANF-app/wiki/Roadmap-and-backlog#backlog). That’s the most defined and tangible part of our plan--an ever-evolving list of bite-sized pieces of work that deliver value to our users.
+* For us, the highest level of the plan is the TANF program goals--what the TANF program is ultimately trying to achieve. We developed the [TANF Program Theory of Change](./Vision-and-Stakeholders.md#tanf-program-theory-of-change) at this level of the plan to help us understand how the new TDRS fits into the program's larger goals.
+* The next level down is our [Product Vision](./Vision-and-Stakeholders.md#product-vision). This level is slightly more defined and narrowly focused. The vision about what we're trying to achieve within the scope of this specific project. It answers: What’s the problem? Who’s affected? How are we helping? What’s the outcome?
+* Below that is our [Product Roadmap](./Roadmap-and-Backlog.md#product-roadmap) which represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem. The roadmap is not a promise--it is just a plan to bridge the strategic vision and to the tackle tasks.
+* And finally, at the bottom and on the ground is the [Product Backlog](Roadmap-and-Backlog.md#backlog). That’s the most defined and tangible part of our plan--an ever-evolving list of bite-sized pieces of work that deliver value to our users.
 
 ![TDRS product four levels of plan](https://github.com/HHS/TANF-app/blob/master/design-assets/research-artifacts/TDRS%20product%20plan%20at%20four%20levels.png?raw=true)
 
