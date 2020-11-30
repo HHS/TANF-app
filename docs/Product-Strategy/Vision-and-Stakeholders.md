@@ -15,4 +15,4 @@ We've developed a [stakeholder map](https://app.mural.co/t/officeoffamilyassista
 
 ![A map of the different stakeholders who are affected by TDRS](https://github.com/HHS/TANF-app/blob/master/design-assets/research-artifacts/TDRS-stakeholder-map.png)
 
-We've included more detail about TDRS audiences in on our [user types page](https://github.com/HHS/TANF-app/wiki/User-types).
+We've included more detail about TDRS audiences in on our [user types page](../User-Research/User-Types.md).
