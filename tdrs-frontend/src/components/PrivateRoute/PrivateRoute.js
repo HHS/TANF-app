@@ -4,6 +4,7 @@ import { Route, withRouter } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
+import IdleTimer from '../IdleTimer/IdleTimer'
 
 /**
  *
@@ -33,7 +34,12 @@ function PrivateRoute({ children, history, path }) {
     }
   }, [authenticated, authLoading, dispatch, history])
 
-  return authenticated ? <Route path={path}>{children}</Route> : null
+  return authenticated ? (
+    <Route path={path}>
+      <IdleTimer />
+      {children}
+    </Route>
+  ) : null
 }
 
 PrivateRoute.propTypes = {

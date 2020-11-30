@@ -18,11 +18,7 @@ function Request() {
         <p className="margin-top-1 margin-bottom-4">
           An administrator will be in touch soon to confirm your access!
         </p>
-        <Button
-          className="width-full request-access-button"
-          type="button"
-          onClick={signOut}
-        >
+        <Button className="width-full" type="button" onClick={signOut}>
           <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
           Sign Out
         </Button>
