@@ -5,7 +5,6 @@ import Request from '.'
 import Button from '../Button'
 
 describe('Request', () => {
-
   it('should have a subheading with "An administrator will be in touch soon to confirm your access!"', () => {
     const wrapper = shallow(<Request />)
 
