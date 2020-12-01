@@ -25,13 +25,17 @@ After that, upload them to a development environment where either manual or auto
 
 1. All configuration changes must flow through a git repository, centrally managed through GitHub, unless they contain sensitive information.
 1. A change is initiated and discussed, following the steps in our [Workflow](../How-We-Work/team-charter/our-workflow.md#workflow).
-1. In the appropriate GitHub repository for the component, a pull request (PR) against the `main` branch is created that addresses the change.
-1. The PR is reviewed by someone other than the committer. Pairing via screen-sharing is encouraged and qualifies as a review. Review should include assessment of architectural design, DRY principles, security and code quality. The reviewer approves the PR via GitHub.
-1. The reviewer merges the approved PR. The committer may merge an approved PR if the changes made are time-sensitive.
-1. A continuous integration (CI) server handles automated tests and continuous deployment (CD) of the merged changes.
-    - All changes are deployed to a testing environment, such as development.
-    - Any and all automated tests are run.
-    - If all tests pass, changes can be promoted for deployment to production in the pipeline.
+1. The review process described in our Workflow includes:
+    - Development team review.
+    - A [QASP Review Process](./qasp-operational-checklist.md), which includes:
+        - Automated testing
+        - Manual review of test suite additions and changes
+        - Code coverage reports
+        - Manual review of code coverage report output
+        - Automated and manual accessibility testing
+        - Documenation review
+        - Automated and manual security scanning
+    - Review and approval by government Product Owner or Tech Lead.
 
 ## Roles and responsibilities
 
