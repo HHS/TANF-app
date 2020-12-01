@@ -26,5 +26,9 @@ For information about the data files intended for upload, see [Background/Curren
 
 * **Format**: .txt, .csv, .pdf, or .xls/.xlsx
 * **Update frequency**: Quarterly
-* **Record structure**: TK
-* **File size**: TK
+* **Record structure**: See [Data Layouts](../../Background/Current-TDRS.md#data-layouts).
+* **File sizes**: File size ranges for 199/209 data files are as follows:
+  * Section 1: 123kb - 50,000kb
+  * Section 2: 14kb - 2,000kb
+  * Section 3: 1kb - 2kb
+  * Section 4: 1kb - 2kb
