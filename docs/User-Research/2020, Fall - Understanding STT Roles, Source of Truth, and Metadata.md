@@ -21,7 +21,7 @@
    - Document how grantees manage their data (e.g. any case management systems, excel files, etc.) and compare TANF reports to how grantees structure and store their data.  
      - The spring research helped us understand how grantees code data from a variety of local or regional resources but we hope to uncover the pain points that might be outside the flow of submitting to OFA but still have an impact on data quality and data management practices relevant to resubmission. 
    - Document the process of coding information from grantee case management systems into TANF report metadata.
-     - While the spring research documented coding fixes (and the difficulty of making those fixes), we want to deepen our understanding the circumstances that lead to the need for these coding fixes. 
+     - While the spring research documented coding fixes (and the difficulty of making those fixes), we want to deepen our understanding the circumstances that lead to the need for these coding fixes.
 
 
 
