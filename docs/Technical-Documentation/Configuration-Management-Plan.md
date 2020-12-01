@@ -27,14 +27,14 @@ After that, upload them to a development environment where either manual or auto
 1. A change is initiated and discussed, following the steps in our [Workflow](../How-We-Work/team-charter/our-workflow.md#workflow).
 1. The review process described in our Workflow includes:
     - Development team review.
-    - A [QASP Review Process](./qasp-operational-checklist.md), which includes:
-        - Automated testing
-        - Manual review of test suite additions and changes
-        - Code coverage reports
-        - Manual review of code coverage report output
-        - Automated and manual accessibility testing
-        - Documenation review
-        - Automated and manual security scanning
+    - A [QASP Review Process](./qasp-operational-checklist.md), including:
+        - Automated testing.
+        - Manual review of test suite additions and changes.
+        - Code coverage reports.
+        - Manual review of code coverage report output.
+        - Automated and manual accessibility testing.
+        - Documenation review.
+        - Automated and manual security scanning.
     - Review and approval by government Product Owner or Tech Lead.
 
 ## Roles and responsibilities
