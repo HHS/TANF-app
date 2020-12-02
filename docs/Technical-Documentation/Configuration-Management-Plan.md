@@ -3,7 +3,7 @@
 This document describes how the team approaches configuration management of the core platform. Before configuration changes go into production, they need to pass through **[our Workflow](../How-We-Work/team-charter/our-workflow.md#workflow)**.
 
 ## What goes into configuration management?
-In short, everything needed to run and operate the platform that is not a _secret_.
+In short, everything needed to run and operate the platform that is not a [_secret_](https://cloud.gov/docs/ops/secrets/).
 
 Here are some examples that should be in configuration management:
 
