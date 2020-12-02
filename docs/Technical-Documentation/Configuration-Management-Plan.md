@@ -43,7 +43,7 @@ After that, upload them to a development environment where either manual or auto
   * Follow the configuration management plan.
   * Make suggestions (such as in PRs) if you have ideas for improving the plan.
 * **Product Owner**
-  * Ensure the team follows the Feature Lifecycle, Story Lifecycle, and other operational aspects of the plan.
+  * Ensure the team follows the Workflow as well as other operational aspects of the plan.
   * Ensure that team members uphold their responsibilities.
   * Approve any major changes to the plan.
 
