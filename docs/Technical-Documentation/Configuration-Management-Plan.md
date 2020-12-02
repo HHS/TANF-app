@@ -47,6 +47,8 @@ After that, upload them to a development environment where either manual or auto
   * Ensure that team members uphold their responsibilities.
   * Approve any major changes to the plan.
 
+## Git flow
+
 ### Squashing commits
 
 [Squashing commits](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History#Squashing-Commits) is allowed but discouraged, except in rare instances.
@@ -65,6 +67,6 @@ PRs are typically not assigned in GitHub, unless someone specifically needs to s
 
 You can request a review using GitHub's built-in tools, mention someone in the PR with the `@` notation, or contact them outside the GitHub context to request a review.
 
-#### Acknowledgement
+## Acknowledgement
 
 Portions of this plan were adapted from the [Cloud.gov Configuration Management Plan](https://cloud.gov/docs/ops/configuration-management/); thank you to the authors and the Cloud.gov team for this terrific modern security and compliance work!
