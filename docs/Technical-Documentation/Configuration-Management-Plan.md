@@ -27,7 +27,7 @@ After that, upload them to a development environment where either manual or auto
 1. A change is initiated and discussed, following the steps in our [Workflow](../How-We-Work/team-charter/our-workflow.md#workflow).
 1. The review process described in our Workflow includes:
     - Development team review.
-    - A [QASP Review Process](./qasp-operational-checklist.md), including:
+    - A government [QASP Review Process](./qasp-operational-checklist.md), including:
         - Automated testing.
         - Manual review of test suite additions and changes.
         - Code coverage reports.
@@ -59,7 +59,7 @@ This team has a preference for merging over rebasing.
 
 ### When should a PR be created?
 
-The use of work-in-progress or [Draft PRs](https://github.blog/2019-02-14-introducing-draft-pull-requests/) PRs is encouraged. If you create a work-in-progress PR, you might also make it plain in the PR name with a `[WIP]` prefix.
+The use of work-in-progress or [Draft PRs](https://github.blog/2019-02-14-introducing-draft-pull-requests/) is encouraged. If you create a work-in-progress PR, you might also make it plain in the PR name with a `[WIP]` prefix.
 
 ### Should PRs be assigned?
 
