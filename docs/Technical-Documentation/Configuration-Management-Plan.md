@@ -47,7 +47,7 @@ After that, upload them to a development environment where either manual or auto
   * Ensure that team members uphold their responsibilities.
   * Approve any major changes to the plan.
 
-## Git flow
+## GitHub workflows
 
 ### Squashing commits
 
