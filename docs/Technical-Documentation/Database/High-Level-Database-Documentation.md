@@ -24,8 +24,8 @@ For more information on Cloud.gov's S3 object storage, see: https://cloud.gov/do
 
 For information about the data files intended for upload, see [Background/Current-TDRS.md](../../Background/Current-TDRS.md).
 
-* **Format**: .txt, .csv, .pdf, or .xls/.xlsx
-* **Update frequency**: Quarterly
+* **Format**: .txt
+* **Update frequency**: Quarterly (with revisions)
 * **Record structure**: See [Data Layouts](../../Background/Current-TDRS.md#data-layouts).
 * **File sizes**: File size ranges for 199/209 data files are as follows:
   * Section 1: 123kb - 50,000kb
