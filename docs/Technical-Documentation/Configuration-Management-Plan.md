@@ -55,7 +55,7 @@ After that, upload them to a development environment where either manual or auto
 
 ### Rebase or merge
 
-Does the team prefer [rebasing or merging](https://www.atlassian.com/git/tutorials/merging-vs-rebasing/)?
+This team has a preference for merging over rebasing.
 
 ### When should a PR be created?
 
