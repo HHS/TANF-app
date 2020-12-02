@@ -124,7 +124,7 @@ The following evaluate AC and DoD to close issues and/or PR:
 
 AC: Lauren or Alex S (Tech lead)
 
-DoD: Alex S (Tech lead) for dev issues; Design and research - Lauren and Christine (design lead)
+DoD: Alex S (Tech lead) for dev issues; Design and research - Lauren
 
 
 ## The issue is considered ‘sprint done’ when
