@@ -76,58 +76,35 @@ Based on the September 2020 iron triangle conversations, the product team commit
 - When an issue can’t be resolved due to other issues or is dependent on completion of other issues document those dependencies within the issue. [See how to utilize dependencies.](https://help.zenhub.com/support/solutions/articles/43000010349-create-github-issue-dependencies)
 - If no progress can be made, move the issue to the “Blocked” column/pipeline.
 - Assignee should discuss any blocked issue in standup.
-- Long-standing blocked issues will also be reviewed as part of Sprint Planning.
 
 
 ## The issue is ready for Raft review
 - Once the assignee feels the issue is ready for review, they should check the following:
-  - All tasks complete
-  - Acceptance criteria is met or a note is added in GitHub if AC is not being to be met and why
+  - All tasks are complete or a note is added or a new issue is created if a task will not be completed 
+  - Acceptance criteria is met or a note is added or a new issue is created if AC will not be completed 
   - Issue contains links to documents or environments necessary to review the work
   - If dev issue, create a PR for the issue using the PR template
   - See docs/team-charter/reviewing-work.md
-- If all this is in place, the assignee should move the card to “Raft Review” column/pipeline and ping the appropriate reviewer/s.
-
-
+- If all this is in place, the assignee should move the card to “Raft Review” pipeline in ZenHub and ping the appropriate reviewer(s).
 
 ## The issue is reviewed by Raft
 - If changes are needed, reviewer moves the issue back to ‘In Progress’ and notes the comments and pings the assignee for revision.
-- For dev issues, if issue meets the acceptance criteria and all tasks are done, the reviewer
-  - closes PR to merge it into the Raft dev environment
-  - creates a new PR for all the issues to be reviewed during QASP review using the ‘Sprint Summary Report’ template (page 16) with a WIP label/note until it is ready to be reviewed
-  - moves the issues to ‘Government Review’ pipeline and assign Laura (gov tech lead) and Lauren to review the PR
-  - Once the WIP label is removed from the PR created in the HHS repo, no work is to be done against the branch submitted for review unless changes are requested and/or the branch has been approved and merged.
-- For design or research issues, if issue meets the acceptance criteria and all tasks are done, the reviewer
-  - moves the issue to ‘Government Review’ pipeline and tags Lauren for review
+- For dev issues, if an issue meets the acceptance criteria and all tasks are done, the Raft tech lead creates a new PR in HHS main using [ pull request template](https://github.com/HHS/TANF-app/blob/main/.github/pull_request_template.md).
+- For design or research issues, if issue meets the acceptance criteria and all tasks are done, the reviewer moves the issue to ‘QASP Review’ pipeline and tags Lauren for review
 
+## The issue is complete and ready for QASP review by government
+- Issues are submitted for QASP review on a rolling basis. QASP review of features happens when a PR is created in the HHS main repo and issue is moved to the QASP review pipeline in ZenHub. Design and research issues are reviewed when an issue is moved to the QASP review pipeline in ZenHub. 
+   - For each PR, the product owner (Lauren) reviews the feature against the acceptance criteria (Deliverable 1) and comments acceptance, the tech lead reviews the PR against Deliverables 2-7 and comments acceptance, the COR reviews for accessiblity and comments acceptance, and Lauren merges the PR into main HHS repo. For PRs that impact security, OCIO security team also reviews PR and comments acceptance.
+   - For design and research issues, product owner (Lauren) reviews the issue against AC and DoD.
+- If changes are needed, government reviewer(s) move the issue back to ‘In Progress,’ notes the comments, and tags the assignee. Small tweaks can be sent back to the assignee on the same issue at this stage, but a new issue should be created if the feedback constitutes an significant expansion of scope.
 
-## The issue is reviewed by government
-- Lauren verifies that all the acceptance criteria and the relevant QASP elements have been met.
-- If issues meet the acceptance criteria, reviewers move the issue to “Done and ready for demo.” Only issues in “Done and ready for demo” will be demoed. (So keep issues small!)
-- If changes are needed, government reviewer/s move the issue back to ‘In Progress,’ notes the comments, and tags the assignee. Small tweaks can be sent back to the assignee on the same issue at this stage, but a new issue should be created if the feedback constitutes an significant expansion of scope.
-- When issues are being reviewed by QASP review day (Day 13), Raft team can continue to work on issues that are ‘In progress’ or ‘To Do’ pipeline. If all issues in these columns have been addressed, then Raft team can pull from prioritized product backlog 'Ready to go for Next Sprint'
+At the end of each Sprint, Raft creates a PR to add the sprint summary report to the [sprint review folder](https://github.com/HHS/TANF-app/tree/main/docs/Sprint-Review) 
 
 
 ## The issue is ready for demo
-- When QASP reviewers have signed off and the team is ready for feedback from OFA stakeholders, then the feature is demonstrated in Sprint Demo meeting.
+- When the product owner (Lauren) has signed off to demo an issue and the product team is ready for feedback from OFA stakeholders, then the feature is demonstrated in Sprint Demo meeting.
 - Feedback from stakeholders is discussed and, if necessary, new issues are created to address feedback.
 
-
-## The issue is complete and ready for final QASP review
-- Raft creates a PR and a Sprint Summary Report (see Page 11), which is included in the PR notes.
-- Tech lead reviews the PR, the COR comments acceptance, and Lauren merges the PR into main HHS repo
-- QASP reviewer reviews the PR against the contract QASP, DoD, and provides feedback by Monday (Day 13). Raft address any small feedback (one/two pointer) prior to 12pm Day 15 deadline. Larger feedback is added as an issue for backlog refinement and PR is updated with a note on the ‘issue # has been created to address the specific feedback.’
-- Dev issues: DoD for dev issues is reviewed at the QASP level and is met when the PR: (1) note contains sprint report, (2) meets the QASP, (3) Raft has addressed small feedback (by 12pm on Wednesday, which is Day 15 of the last sprint/Day 1 of next sprint), and (4) has received a signed off from QASP reviewer.
-- Design issues: DoD for design issues is stated in the actual issues
-
-The following evaluate AC and DoD to close issues and/or PR:
-
-AC: Lauren or Alex S (Tech lead)
-
-DoD: Alex S (Tech lead) for dev issues; Design and research - Lauren
-
-
 ## The issue is considered ‘sprint done’ when
-  - Issue is closed
-  - Issues in sprint meet the QASP
-  - PR is merged in main HHS repo
+  - Design and research issue meets AC and DoD and is closed
+  - Dev issue meets QASP and is merged in HHS main repo
