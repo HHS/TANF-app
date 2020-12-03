@@ -94,8 +94,8 @@ Based on the September 2020 iron triangle conversations, the product team commit
 
 ## The issue is complete and ready for QASP review by government
 - Issues are submitted for QASP review on a rolling basis. QASP review of features happens when a PR is created in the HHS main repo and issue is moved to the QASP review pipeline in ZenHub. Design and research issues are reviewed when an issue is moved to the QASP review pipeline in ZenHub. 
-   - For each PR, the product owner (Lauren) reviews the feature against the acceptance criteria (Deliverable 1) and comments acceptance, the tech lead reviews the PR against Deliverables 2-7 and comments acceptance, the COR reviews for accessiblity and comments acceptance, and Lauren merges the PR into main HHS repo. For PRs that impact security, security team also reviews PR and comments acceptance.
-   - For design and research issue, product owner (Lauren) reviews the issue against AC and DoD.
+   - For each PR, the product owner (Lauren) reviews the feature against the acceptance criteria (Deliverable 1) and comments acceptance, the tech lead reviews the PR against Deliverables 2-7 and comments acceptance, the COR reviews for accessiblity and comments acceptance, and Lauren merges the PR into main HHS repo. For PRs that impact security, OCIO security team also reviews PR and comments acceptance.
+   - For design and research issues, product owner (Lauren) reviews the issue against AC and DoD.
 - If changes are needed, government reviewer(s) move the issue back to ‘In Progress,’ notes the comments, and tags the assignee. Small tweaks can be sent back to the assignee on the same issue at this stage, but a new issue should be created if the feedback constitutes an significant expansion of scope.
 
 At the end of each Sprint, Raft creates a PR to add the sprint summary report to the [sprint review folder](https://github.com/HHS/TANF-app/tree/main/docs/Sprint-Review) 
