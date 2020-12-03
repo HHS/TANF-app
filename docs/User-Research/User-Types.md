@@ -1,14 +1,15 @@
 # Who are our users?
 
-[We've identified a number of groups who are affected by this project](https://github.com/HHS/TANF-app/wiki/Vision-and-Stakeholders#project-stakeholders). Some of them interact with TDRS directly, and some are impacted indirectly.
+[We've identified a number of groups who are affected by this project](https://github.com/HHS/TANF-app/blob/main/docs/Product-Strategy/Vision-and-Stakeholders.md). Some of them interact with TDRS directly, and some are impacted indirectly.
 
 The initial TDRS personas we've identified are outlined below.
 
 More detail about each group's goals, tools, responsibilities, and pain points can be found in our [working personas mural](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592254280716/2ae8293a3233a95941d548cda4f373faab96b40b).
 
 We expect that there will be a couple hundred users who interact with the TDRS system, and it will be a mix of STT and OFA staff.
+For the purposes of the OFA MVP, the only users who will have access to the application will be OFA Admin and STT (test) users.  Raft team or OFA will be acting as STT users for the OFA MVP.
 
-### STT data preppers
+### STT data preppers (STT users)
 
 STT data preppers are in-house STT staff who collect the TANF data and get it ready for submission. Sometimes, they handle transmitting the final data to OFA, but they may also pass data on to another team member (like a supervisor or IT department) for transmission.
 
@@ -34,7 +35,7 @@ We suspect that some STTs have access to systems or hire third party teams that 
 
 OFA analysts review, analyze, and report on STT’s TANF data that’s submitted through TDRS. They also help STTs through the transmission process.
 
-### OFA program directors
+### OFA program directors (OFA admin)
 
 OFA program directors oversee the collection and processing of TANF data and ensure OFA analysts have what they need to do their work.
 
