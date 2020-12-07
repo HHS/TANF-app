@@ -12,32 +12,31 @@
 **Our goals for this research were to:**
 
 1. Evaluate how grantees react to concept prototypes simulating TANF report creation (e.g. capturing metadata) and the uploading of associated flat files
-    
+   
     [Jump to Section](#About-error-validation--correction)
     
-    
-2. Identify how grantees track the status (e.g., drafted, edited, submitted, resubmitted) of their data reports and maintain transparency of that status across their teams.
-    
+2. Identify how grantees track the status (e.g., drafted, edited, submitted, re-submitted) of their data reports and maintain transparency of that status across their teams.
+   
     [Jump to Section](#About-the-data-transmission-process)
     - Document how grantees confirm that a report has any given status. 
     - Identify if/how grantees maintain a log of what reports they submitted to OFA. 
-    - Identify if/how grantees maintain a version history of resubmitted TANF reports (e.g. what was added, updated or deleted) as if/how they save older versions. 
+    - Identify if/how grantees maintain a version history of re-submitted TANF reports (e.g. what was added, updated or deleted) as if/how they save older versions. 
 
 
 3. Document the makeup of grantee teams involved with data preparation and data submission
-    
+   
     [Jump to Section](#About-grantee-teams)
-    - Identify if/how grantees maintain a version history of resubmitted TANF reports (e.g. what was added, updated or deleted) as if/how they save older versions. 
+    - Identify if/how grantees maintain a version history of re-submitted TANF reports (e.g. what was added, updated or deleted) as if/how they save older versions. 
       - The spring research gave us an understanding of what data-preppers do but we hope to dig deeper into how teams of data preppers (when they exist) divide responsibilities and interact with each other.
     - Identify any common roles aligned to admin tasks (e.g. User Management or onboarding new users to data-prep or case management tools) and document how these tasks are managed.
     - Identify team grantees turnover rates and any associated pain points.
 
 
 4. Deepen our understanding of how grantees create flat files and what causes metadata issues (including title, header, and trailer)
-    
+   
     [Jump to Section](#About-case-management-systems-and-other-tools)
     - Document how grantees manage their data (e.g. any case management systems, excel files, etc.) and compare TANF reports to how grantees structure and store their data.  
-      - The spring research helped us understand how grantees code data from a variety of local or regional resources but we hope to uncover the pain points that might be outside the flow of submitting to OFA but still have an impact on data quality and data management practices relevant to resubmission. 
+      - The spring research helped us understand how grantees code data from a variety of local or regional resources but we hope to uncover the pain points that might be outside the flow of submitting to OFA but still have an impact on data quality and data management practices relevant to re-submission. 
     - Document the process of coding information from grantee case management systems into TANF report metadata.
       - While the spring research documented coding fixes (and the difficulty of making those fixes), we want to deepen our understanding the circumstances that lead to the need for these coding fixes.
 
@@ -58,7 +57,7 @@ Given the largely generative focus of this research we wanted to talk to 5-9 par
 - At least one state that submits sample data
 - At least one tribe
 - At least one territory
-- Preferance toward participants who have no been interviewed in past research
+- Preference toward participants who have no been interviewed in past research
 
 We ended up talking to a total of six participants who fulfilled all of the above criteria. Those participants represented one tribe, one territory, and four states. Sessions ranged from 1 hour to 1 hour and 25 minutes and was equally divided into one half focused on generative interview questions regarding research goals 2-4 and one half moving through the conceptual prototypes.
 
@@ -77,7 +76,7 @@ We ended up talking to a total of six participants who fulfilled all of the abov
 
 Concept testing was focused around a flow depicting the process of report creation. It started from a screen collecting report metadata (e.g. Reporting Year/Quarter, whether the report is TANF or SSP-MOE, etc...), went through flat file upload, metadata validation, and a summary of successfully validated files. Concepts and areas that we wanted to investigate included:
 
-- Participant familiary with data points that make up the Header of a flat file, particularly around encryption of Social Security Numbers.
+- Participant familiarity with data points that make up the Header of a flat file, particularly around encryption of Social Security Numbers.
 - Whether participants could correctly identify the names of TANF report sections despite the known variation in what different grantees call them.
 - Whether validation error copy was understood by participants and successful in suggesting an actionable next step.
 - Contextualizing questions around whether participants currently maintain a revision history of their TANF reporting. 
@@ -162,30 +161,34 @@ Raw notes from interviews were synthesized in Mural with the OFA data division. 
 Processes for correcting errors varied widely from grantee to grantee. These included splitting up error corrections among multiple people, identifying errors based on memory and experience, and decoding errors from physical reference material.
 
 - "What can be a little challenging is  it's going to give you the element number. It's going to say parents with minor child and the family. Then it says if item 14 equals one to two item 22 must equal one to two. So what I have to do is on our ACF instructional guide, look for what is item 14. So I have to go to my book. "
-- "STT data analyst sends us a file with all the errors. We assimilate them to each worker, there are three people under me and myself. So it's four of us. We can't do each other's work. We have our own ID. So she (STT data analyst) sends us the information. We separate to who it (the erros) goes to (other data preppers), make the corrections, retransmit it back to her (STT data analyst). And then she sends it off, back off to the feds (ACF/OFA)"
+
+- "STT data analyst sends us a file with all the errors. We assimilate them to each worker, there are three people under me and myself. So it's four of us. We can't do each other's work. We have our own ID. So she (STT data analyst) sends us the information. We separate to who it (the errors) goes to (other data preppers), make the corrections, retransmit it back to her (STT data analyst). And then she sends it off, back off to the feds (ACF/OFA)"
+
 - "I'm able to review these documents that have all the numbers for our federal statistics and say something looks unusual"8
-- [Review and report by month can take 2-3 weeks to make sure we didn't forget anything.]
+
+  
 
 **Project Impacts**
+
 - Explore how STT teams can assign and task out errors to different types of roles.
-- The "Data Prepper" role should be updated so as to better accomodate the breadth of those involved with data at the grantee level.
+- The "Data Prepper" role should be updated so as to better accommodate the breadth of those involved with data at the grantee level.
 
 ### Grantees want more efficient and more actionable ways to understand the errors (validation, transmission, etc.) and how to fix them 
 
-Most of the grantees we spoke to had relatively low rates of fatal errors when submitting their data, but all dealt on some level with either reviewing files for data quality issues, or navigating corrections of files when issuess ocurred. One participant gave us a great view into the sheer scale of possible errors & edits by pulling out their "book", a large binder containing printed versions of ACF error codes, they told us:
+Most of the grantees we spoke to had relatively low rates of fatal errors when submitting their data, but all dealt on some level with either reviewing files for data quality issues, or navigating corrections of files when issues occurred. One participant gave us a great view into the sheer scale of possible errors & edits by pulling out their "book", a large binder containing printed versions of ACF error codes, they told us:
 
 - "So after [ACF has the data] this is how the feedback comes up to us. The cases are here and here [folder of a variety of PDF reports], it says error flag. So it tells me this case has an error and what the error flag is. So again, I kind of go, you know, try the little book."
 - "...it'd be good if instead of looking through a book, you know, something will pop up and say, this is what's what's missing, or this is what you need to correct. Because if not, then I have to kind of go through my little binder and I go to the federal edits guide"
 
-They expanded with an example of how this process isn't always as simple as looking up a single code, but rather crossreferencing multiple data points against multiple error codes and/or data coding instructions:
+They expanded with an example of how this process isn't always as simple as looking up a single code, but rather cross-referencing multiple data points against multiple error codes and/or data coding instructions:
 
 - "What can be a little challenging is it's going to give you the element number. It's going to say parents with minor child and the family. Then it says if item 14 equals one to two item 22 must equal one to two. So what I have to do is on our ACF instructional guide, look for what is item 14. So I have to go to my book."
 
 
 
 **Project Impacts**
-- Consider how we might lean *more* into making errors highly understandable and highly actionable—Participants we tested the concept prototype were able to rephrase what was being conveyed by our error copy in their own words, but it was a pretty simplistic error. We should think about how we'll scale writing easy-to-interperet error copy for the broader picture of errors possible for any given report. 
-- The "in your own words" explainations from participants of what our error copy meant could be helpful for our iteration on it. 
+- Consider how we might lean *more* into making errors highly understandable and highly actionable—Participants we tested the concept prototype were able to rephrase what was being conveyed by our error copy in their own words, but it was a pretty simplistic error. We should think about how we'll scale writing easy-to-interpret error copy for the broader picture of errors possible for any given report. 
+- The "in your own words" explanations from participants of what our error copy meant could be helpful for our iteration on it. 
 - Further understand how case data relates to errors and how we might combine like errors for easier case lookup.
 
 ### There is confusion about fiscal year and calendar year reporting.
@@ -212,7 +215,7 @@ Some grantees talked about how the quarters they submit do not line up with the 
 ## About the data transmission process
 
 > Primarily related to [Goal 2:](#What-we-wanted-to-learn) 
-> Identify how grantees track the status (e.g., drafted, edited, submitted, resubmitted) of their data reports and maintain transparency of that status across their teams. 
+> Identify how grantees track the status (e.g., drafted, edited, submitted, re-submitted) of their data reports and maintain transparency of that status across their teams. 
 
 ### Different grantees treat version & transmission history in different ways
 
@@ -229,7 +232,7 @@ Some maintain copies of the files they transmit to OFA, others primarily care ab
 
 We heard from several grantees that achieving "final" data quality/completeness can be a very extended process that happens over the course of whole years, not just quarters.
 
-- "That's how we basically fix the errors. So, so ACF will sort of give us a timeline, they'll say, okay, we're going to close out 2020 files on March, 2021. So you have to make sure you kind of clean up all your data because after that we can't retransmit "
+- "That's how we basically fix the errors. So, so ACF will sort of give us a timeline, they'll say, okay, we're going to close out 2020 files on March, 2021. So you have to make sure you kind of clean up all your data because after that we can't re-transmit "
 - "...we're trying to clean stuff up over the year. [As] the end of the fiscal year approaches... we do like an overwrite to ACF for a particular quarter"
 - "The data may have been inputted or the correction we have done after the report was sent, which sometimes happens because it does depend on the client submits to us, their attendance, you know or their hours"
 
@@ -240,8 +243,8 @@ Whether data is coming in near the beginning of a quarter or closer to its end c
 
 **Project Impacts**
 - Evaluate whether communication around final reporting deadlines could be delivered automatically by the TANF Data Portal.
-- Update the current process map to include steps for resubmitting TANF reports after deadlines have passed. 
-- Explore whether there's value in automating some predictable communications from OFA to grantees that concern data submission deadlines. Could these be conveyed directly in the conext of a drafted report? In some sort of calendar functionality?
+- Update the current process map to include steps for re-submitting TANF reports after deadlines have passed. 
+- Explore whether there's value in automating some predictable communications from OFA to grantees that concern data submission deadlines. Could these be conveyed directly in the context of a drafted report? In some sort of calendar functionality?
 
 ### Grantees sometimes have to communicate with ACF to determine transmission status
 
@@ -250,13 +253,13 @@ The norm among grantees that we have data for indicates that most expect and rec
 - "...they had somebody at ACF that would send those to [us] on a regular basis. Now we have to actually call up and have [OFA statisticians], go ahead and, and send that to us."
 
 Some types of flat file issues may result in transmission reports not being sent to grantees:
-- "I submitted a blank report once and I didn’t hear back for a couple of months saying that the report needs resubmission"
+- "I submitted a blank report once and I didn’t hear back for a couple of months saying that the report needs re-submission"
 
 Grantees look for clear, timely confirmation that a file was received: 
 -  "I [currently] get a delayed response in regard to any errors that it found, I would I would get an immediate response saying that that my one hundred and fifty five thousand was successfully submitted....And that's that's gratifying. That's a cookie. I like that"
 
 **Project Impacts**
-- The new TANF Data Portal will have its own notification system indepenedent of the existing OCIO system that sends transmission reports to grantees. An open question that may be important to consider is whether all grantee staffers who currently receive OFA transmission reports will be users of TDP, or whether functionality to notify non-users of various statuses and actions is called for. 
+- The new TANF Data Portal will have its own notification system independent of the existing OCIO system that sends transmission reports to grantees. An open question that may be important to consider is whether all grantee staffers who currently receive OFA transmission reports will be users of TDP, or whether functionality to notify non-users of various statuses and actions is called for. 
 
 
 
@@ -274,7 +277,7 @@ Some grantees submit monthly reports instead of quarterly
 - "... we've been trying to do now is do [TANF report] each month separately as we finish it, instead of doing the whole quarter at once"
 
 **Project Impacts**
-- Consider how we can make the upload function flexible and generally accomodate differing flows relating to assembling TANF reports.
+- Consider how we can make the upload function flexible and generally accommodate differing flows relating to assembling TANF reports.
 - Include notifications to alert a user of an incomplete report if the upload sections at different times.
 
 
@@ -417,7 +420,7 @@ Some grantees explained how they use internal software and vendor software to cr
 Grantees talked about how their first instinct would be to validate and manage their flat files prior to using our system. Grantees viewed our system's purpose as a submission tool rather than validation.
 
 - Re: Concept Prototype: "since I've already looked at the data I've already corrected the data, everything should be good to go. I'm pulling the file over here to submit it. I mean, to me the next step should be just to end it"
-- Re: Concept Prototype "I would investigate the source of the problem, whether it was a goofy entry by a county worker entering data access or some other thing. And that I would probably make the change, do the fix within my datamart"
+- Re: Concept Prototype "I would investigate the source of the problem, whether it was a goofy entry by a county worker entering data access or some other thing. And that I would probably make the change, do the fix within my data-mart"
 
 One participant we spoke to carries out the responsibility of submitting the final year-end data to ACF leading up to the reporting deadline. This involved assembling a single flat file by copying and pasting the entirety of flat files into a blank text file to combine them into a single one.
 
@@ -427,5 +430,11 @@ One participant we spoke to carries out the responsibility of submitting the fin
 - Consider how we could iterate on how we set up tasks and scenarios for future concept or usability testing so as to place the prototype being tested in an approachable context for the participant.
 - Update current process map to incorporate editing of files via case management tools.
 
+---
 
-## What we did next
+# What's Next?
+
+[Issue #371](https://github.com/raft-tech/TANF-app/issues/371) will deliver updated user research artifacts including personas, the process map and dev-ready mockups based on insights from this round of research. 
+
+[Issue #165](https://github.com/raft-tech/TANF-app/issues/165) will deliver journey maps relating to each of the updated personas and in turn will contribute to identifying knowledge gaps to be investigated in Round 4 (or later rounds) research.
+
