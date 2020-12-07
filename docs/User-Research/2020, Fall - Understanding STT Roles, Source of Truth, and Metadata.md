@@ -12,7 +12,7 @@
 - [Who we talked to](#Who-we-talked-to)
 - [What we tested](#What-we-tested)
 - [What we learned](#What-we-learned)
-- [What's next](#What's Next)
+- [What's next](#What's-next)
 
 ---
 
@@ -115,7 +115,7 @@ Raw notes from interviews were synthesized in Mural with the OFA data division. 
 **About error validation & correction**
 > Primarily related to Goal 1
 
-- [Grantees have different processes to correct errors in a flat file, which may have implications for the long-term quality of the data.](#Grantees-have-different-processes-to-correct-errors-in-a-flat-file,-which-may-have-implications-for-the-long-term-quality-of-the-data)
+- [Grantees have different processes to correct errors in a flat file, which may have implications for the long-term quality of the data.](#grantees-have-different-processes-to-correct-errors-in-a-flat-file-which-may-have-implications-for-the-long-term-quality-of-the-data)
 - [Grantees want more efficient and more actionable ways to understand the errors (validation, transmission, etc.) and how to fix them.](#Grantees-want-more-efficient-and-more-actionable-ways-to-understand-the-errors-validation-transmission-etc-and-how-to-fix-them)
 - [There is confusion about fiscal year and calendar year reporting.](#There-is-confusion-about-fiscal-year-and-calendar-year-reporting) 
 
@@ -123,12 +123,12 @@ Raw notes from interviews were synthesized in Mural with the OFA data division. 
 **About the data transmission process**
 > Primarily related to Goal 2
 
-- [Different grantees treat version & transmission history in different ways](#Different-grantees-treat-version-amp-transmission-history-in-different-ways)
+- [Different grantees treat version & transmission history in different ways](#different-grantees-treat-version--transmission-history-in-different-ways)
 - [Grantees want to submit quality data even if deadlines have passed](#Grantees-want-to-submit-quality-data-even-if-deadlines-have-passed)
 - [Grantees sometimes have to communicate with ACF to determine transmission status](#Grantees-sometimes-have-to-communicate-with-ACF-to-determine-transmission-status)
 - [Grantees have different ways of transmitting files](#Grantees-have-different-ways-of-transmitting-files)
-- [Grantees understood the term 'encryption' differently.](#Grantees-understand-the-term-‘encryption’-differently)
-- [ACF TANF file naming conventions aren't familiar to all those involved in prepping data](#ACF-TANF-file-naming-conventions-aren’t-familiar-to-all-those-involved-in-prepping-data)
+- [Grantees understood the term 'encryption' differently.](#grantees-understand-the-term-encryption-differently)
+- [ACF TANF file naming conventions aren't familiar to all those involved in prepping data](#acf-tanf-file-naming-conventions-arent-familiar-to-all-those-involved-in-prepping-data)
 
 
 **About grantee teams**
@@ -442,7 +442,7 @@ One participant we spoke to carries out the responsibility of submitting the fin
 
 ---
 
-# What's Next
+# What's next
 
 [Issue #371](https://github.com/raft-tech/TANF-app/issues/371) will deliver updated user research artifacts including personas, the process map and dev-ready mockups based on insights from this round of research. 
 
