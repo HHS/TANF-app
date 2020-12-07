@@ -12,7 +12,7 @@
 - [Who we talked to](#Who-we-talked-to)
 - [What we tested](#What-we-tested)
 - [What we learned](#What-we-learned)
-- [What's next](#What's-next)
+- [What's next](#whats-next)
 
 ---
 
