@@ -2,6 +2,7 @@
 
 [![Raft Logo](https://goraft.tech/assets/logo.png "Raft LLC Logo" =180x75)](https://goraft.tech/)
 
+<img src="https://goraft.tech/assets/logo.png" width="15%" height="auto" alt="Raft LLC Logo" style="vertical-align:left;">
 
 [Issue #350](https://github.com/raft-tech/TANF-app/issues/350)
 
@@ -13,7 +14,7 @@
 **Our goals for this research were to:**
 
 1. Evaluate how grantees react to concept prototypes simulating TANF report creation (e.g. capturing metadata) and the uploading of associated flat files. 
-— [Jump to Section](#About-error-validation-amp-correction)
+— [Jump to Section](#About-error-validation--correction)
 
 2. Identify how grantees track the status (e.g., drafted, edited, submitted, resubmitted) of their data reports and maintain transparency of that status across their teams. 
 — [Jump to Section](#About-the-data-transmission-process)
