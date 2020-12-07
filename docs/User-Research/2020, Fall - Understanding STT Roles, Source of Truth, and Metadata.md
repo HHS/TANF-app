@@ -11,17 +11,21 @@
 
 **Our goals for this research were to:**
 
-1. Evaluate how grantees react to concept prototypes simulating TANF report creation (e.g. capturing metadata) and the uploading of associated flat files—[Jump to Section](#About-error-validation--correction)
-2. Identify how grantees track the status (e.g., drafted, edited, submitted, resubmitted) of their data reports and maintain transparency of that status across their teams. —[Jump to Section](#About-the-data-transmission-process)
+1. Evaluate how grantees react to concept prototypes simulating TANF report creation (e.g. capturing metadata) and the uploading of associated flat files
+    [Jump to Section](#About-error-validation--correction)
+2. Identify how grantees track the status (e.g., drafted, edited, submitted, resubmitted) of their data reports and maintain transparency of that status across their teams.
+    [Jump to Section](#About-the-data-transmission-process)
     - Document how grantees confirm that a report has any given status. 
     - Identify if/how grantees maintain a log of what reports they submitted to OFA. 
     - Identify if/how grantees maintain a version history of resubmitted TANF reports (e.g. what was added, updated or deleted) as if/how they save older versions. 
-3. Document the makeup of grantee teams involved with data preparation and data submission—[Jump to Section](#About-grantee-teams)
+3. Document the makeup of grantee teams involved with data preparation and data submission
+    [Jump to Section](#About-grantee-teams)
     - Identify if/how grantees maintain a version history of resubmitted TANF reports (e.g. what was added, updated or deleted) as if/how they save older versions. 
       - The spring research gave us an understanding of what data-preppers do but we hope to dig deeper into how teams of data preppers (when they exist) divide responsibilities and interact with each other.
     - Identify any common roles aligned to admin tasks (e.g. User Management or onboarding new users to data-prep or case management tools) and document how these tasks are managed.
     - Identify team grantees turnover rates and any associated pain points.
-4. Deepen our understanding of how grantees create flat files and what causes metadata issues (including title, header, and trailer)—[Jump to Section](#About-case-management-systems-and-other-tools)
+4. Deepen our understanding of how grantees create flat files and what causes metadata issues (including title, header, and trailer)
+    [Jump to Section](#About-case-management-systems-and-other-tools)
     - Document how grantees manage their data (e.g. any case management systems, excel files, etc.) and compare TANF reports to how grantees structure and store their data.  
       - The spring research helped us understand how grantees code data from a variety of local or regional resources but we hope to uncover the pain points that might be outside the flow of submitting to OFA but still have an impact on data quality and data management practices relevant to resubmission. 
     - Document the process of coding information from grantee case management systems into TANF report metadata.
