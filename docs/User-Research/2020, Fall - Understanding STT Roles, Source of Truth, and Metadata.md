@@ -91,7 +91,7 @@ Concept testing was focused around a flow depicting the process of report creati
 
 [Figma Prototype 2](<https://www.figma.com/proto/y15co5xc7MIZXBnWBOF6hJ/Conceptual-Mockups-for-STT-Feedback?node-id=1%3A1070&viewport=530%2C320%2C0.1293068528175354&scaling=min-zoom>)
 
-[PDF Prototype 1 & 2](<https://github.com/HHS/TANF-app/tree/main/docs/User%20Research/2020%2C%20Fall%20-%20Concept%20Prototypes>)
+[PDF Prototype 1 & 2](<https://github.com/HHS/TANF-app/tree/main/docs/User-Research/2020%2C%20Fall%20-%20Concept%20Prototypes>)
 
 ---
 
@@ -162,7 +162,7 @@ Processes for correcting errors varied widely from grantee to grantee. These inc
 
 - "What can be a little challenging is  it's going to give you the element number. It's going to say parents with minor child and the family. Then it says if item 14 equals one to two item 22 must equal one to two. So what I have to do is on our ACF instructional guide, look for what is item 14. So I have to go to my book. "
 
-- "STT data analyst sends us a file with all the errors. We assimilate them to each worker, there are three people under me and myself. So it's four of us. We can't do each other's work. We have our own ID. So she (STT data analyst) sends us the information. We separate to who it (the errors) goes to (other data preppers), make the corrections, retransmit it back to her (STT data analyst). And then she sends it off, back off to the feds (ACF/OFA)"
+- "STT data analyst sends us a file with all the errors. We assimilate them to each worker, there are three people under me and myself. So it's four of us. We can't do each other's work. We have our own ID. So she (STT data analyst) sends us the information. We separate to who it (the errors) goes to (other data preppers), make the corrections, re-transmit it back to her (STT data analyst). And then she sends it off, back off to the feds (ACF/OFA)"
 
 - "I'm able to review these documents that have all the numbers for our federal statistics and say something looks unusual"8
 
