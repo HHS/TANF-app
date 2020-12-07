@@ -240,8 +240,7 @@ Whether data is coming in near the beginning of a quarter or closer to its end c
 
 **Project Impacts**
 - Evaluate whether communication around final reporting deadlines could be delivered automatically by the TANF Data Portal.
-- Update the current process map to include steps for resubmitting TANF reports after deadlines have past. 
-- Explore if data submission extensions are always in affect or if it is given with an as needed basis.
+- Update the current process map to include steps for resubmitting TANF reports after deadlines have passed. 
 - Explore whether there's value in automating some predictable communications from OFA to grantees that concern data submission deadlines. Could these be conveyed directly in the conext of a drafted report? In some sort of calendar functionality?
 
 ### Grantees sometimes have to communicate with ACF to determine transmission status
