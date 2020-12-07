@@ -1,7 +1,5 @@
 # 2020, Fall - Understanding STT Roles, Source of Truth, and Metadata
 
-[![Raft Logo](https://goraft.tech/assets/logo.png "Raft LLC Logo" =180x75)](https://goraft.tech/)
-
 <img src="https://goraft.tech/assets/logo.png" width="15%" height="auto" alt="Raft LLC Logo">
 
 [Issue #350](https://github.com/raft-tech/TANF-app/issues/350)
