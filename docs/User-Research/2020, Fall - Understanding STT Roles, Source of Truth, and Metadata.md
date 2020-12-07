@@ -6,6 +6,15 @@
 
 ---
 
+**Table of Contents:**
+
+- [What we wanted to learn](#What-we-wanted-to-learn)
+- [Who we talked to](#Who-we-talked-to)
+- [What we tested](#What-we-tested)
+- [What we learned](#What-we-learned)
+- [What's next](#What's Next)
+
+---
 
 # What we wanted to learn
 
@@ -18,6 +27,7 @@
 2. Identify how grantees track the status (e.g., drafted, edited, submitted, re-submitted) of their data reports and maintain transparency of that status across their teams.
    
     [Jump to Section](#About-the-data-transmission-process)
+    
     - Document how grantees confirm that a report has any given status. 
     - Identify if/how grantees maintain a log of what reports they submitted to OFA. 
     - Identify if/how grantees maintain a version history of re-submitted TANF reports (e.g. what was added, updated or deleted) as if/how they save older versions. 
@@ -432,7 +442,7 @@ One participant we spoke to carries out the responsibility of submitting the fin
 
 ---
 
-# What's Next?
+# What's Next
 
 [Issue #371](https://github.com/raft-tech/TANF-app/issues/371) will deliver updated user research artifacts including personas, the process map and dev-ready mockups based on insights from this round of research. 
 
