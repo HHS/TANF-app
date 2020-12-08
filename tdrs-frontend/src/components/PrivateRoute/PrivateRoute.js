@@ -4,6 +4,7 @@ import { Route, withRouter } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
+import PrivateTemplate from '../PrivateTemplate'
 import IdleTimer from '../IdleTimer/IdleTimer'
 
 /**
@@ -14,7 +15,7 @@ import IdleTimer from '../IdleTimer/IdleTimer'
  * @param {object} history - the window's history object,
  * which is automatically passed via withRouter
  */
-function PrivateRoute({ children, history, path }) {
+function PrivateRoute({ children, title, history, path }) {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)
   const dispatch = useDispatch()
@@ -36,13 +37,16 @@ function PrivateRoute({ children, history, path }) {
 
   return authenticated ? (
     <Route path={path}>
-      <IdleTimer />
-      {children}
+      <PrivateTemplate title={title}>
+        {children}
+        <IdleTimer />
+      </PrivateTemplate>
     </Route>
   ) : null
 }
 
 PrivateRoute.propTypes = {
+  title: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
