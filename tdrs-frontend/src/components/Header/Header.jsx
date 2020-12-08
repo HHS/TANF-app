@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+import NavItem from '../NavItem/NavItem'
 
 /**
  * This component is rendered on every page and contains the navigation bar.
@@ -41,17 +42,30 @@ function HeaderComp() {
               <img src={closeIcon} alt="close" />
             </button>
             <ul className="usa-nav__primary usa-accordion">
-              <li className="usa-nav__primary-item">
-                <a
-                  href="/"
-                  key="welcome"
-                  className={`usa-nav__link ${
-                    pathname === '/edit-profile' ? 'usa-current' : ''
-                  }`}
-                >
-                  <span>Welcome</span>
-                </a>
-              </li>
+              <NavItem
+                pathname={pathname}
+                pathnameToMatch="/edit-profile"
+                text="Welcome"
+                href="/edit-profile"
+              />
+              <NavItem
+                pathname={pathname}
+                pathnameToMatch="/reports"
+                text="Reports"
+                href="/reports"
+              />
+              <NavItem
+                pathname={pathname}
+                pathnameToMatch="/edit-profile"
+                text="Profile"
+                href="/edit-profile"
+              />
+              <NavItem
+                pathname={pathname}
+                pathnameToMatch="/admin"
+                text="Admin"
+                href="/admin"
+              />
             </ul>
             <div className="usa-nav__secondary">
               <ul className="usa-nav__secondary-links">
