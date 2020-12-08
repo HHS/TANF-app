@@ -2,7 +2,7 @@
 **11/25/2020 - 12/08/2020**
 
 ## Sprint Goals
-- Continue to review XMS NextGen capability and assess what other access management features need to be build 
+- Continue to review XMS NextGen capability and assess what other access management features need to be built 
 - Start work on feature to upload flat files
 - Share round 3 research findings 
 - Prepare for Section 4 & 5 of System Design Document for upcoming TRB (Dec 10)  
@@ -38,7 +38,7 @@
 - Document security controls in docs on each PR
 - Work with OCIO security team and security control assessment team on reviewing security related features that are submitted for QASP review
 - Shared clarity on whether, when, and how to integrate NextGen XMS with TDRS/TDP
-- Shared clarity which account management features will need a user interface 
+- Shared clarity on which account management features will need a user interface 
 
 ## Agenda for Sprint 9 Demo 
 - Mockups for uploading and downloading flat files - Dmitri
