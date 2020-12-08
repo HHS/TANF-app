@@ -45,25 +45,25 @@ function HeaderComp() {
               <NavItem
                 pathname={pathname}
                 pathnameToMatch="/edit-profile"
-                text="Welcome"
+                tabTitle="Welcome"
                 href="/edit-profile"
               />
               <NavItem
                 pathname={pathname}
                 pathnameToMatch="/reports"
-                text="Reports"
+                tabTitle="Reports"
                 href="/reports"
               />
               <NavItem
                 pathname={pathname}
                 pathnameToMatch="/edit-profile"
-                text="Profile"
+                tabTitle="Profile"
                 href="/edit-profile"
               />
               <NavItem
                 pathname={pathname}
                 pathnameToMatch="/admin"
-                text="Admin"
+                tabTitle="Admin"
                 href="/admin"
               />
             </ul>
