@@ -28,7 +28,7 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
-    queryset = User.objects.select_related("stt")
+    queryset = User.objects.select_related("stt").prefetch_related("groups__permissions")
 
     def get_permissions(self):
         """Get permissions for the viewset."""
@@ -56,17 +56,8 @@ class UserViewSet(
         return Response(serializer.data)
 
 
-class PermissionViewSet(viewsets.ModelViewSet):
-    """CRUD for permissions."""
-
-    pagination_class = None
-    queryset = Permission.objects.all()
-    permission_classes = [IsAdmin]
-    serializer_class = PermissionSerializer
-
-
-class GroupViewSet(viewsets.ModelViewSet):
-    """CRUD for groups (roles)."""
+class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    """GET for groups (roles)."""
 
     pagination_class = None
     queryset = Group.objects.all()

@@ -15,6 +15,16 @@ logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
 
+class GroupSerializer(serializers.ModelSerializer):
+    """Group (role) serializer."""
+
+    class Meta:
+        """Metadata."""
+
+        model = Group
+        fields = ["id", "name", "permissions"]
+
+
 class UserSerializer(serializers.ModelSerializer):
     """Define meta user serializer class."""
 
@@ -110,13 +120,3 @@ class PermissionSerializer(serializers.ModelSerializer):
             return content_type
 
         return ContentType.objects.get_by_natural_key(*value.split("."))
-
-
-class GroupSerializer(serializers.ModelSerializer):
-    """Group (role) serializer."""
-
-    class Meta:
-        """Metadata."""
-
-        model = Group
-        fields = ["id", "name", "permissions"]
