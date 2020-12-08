@@ -4,6 +4,13 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
+"""Global permissions 
+
+Allows for the creation of permissions that are 
+not related to a specific model. This allows us
+broader flexibility is assigning permissions
+where needed."""
+
 
 class GlobalPermissionManager(models.Manager):
     """Manager for global permissions."""
