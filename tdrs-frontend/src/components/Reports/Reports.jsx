@@ -17,35 +17,33 @@ function Reports() {
   }
 
   return (
-    <div className="grid-container">
-      <form>
-        <label
-          className="usa-label text-bold margin-top-4"
-          htmlFor="reportingYears"
-        >
-          Fiscal Year (October - September)
-          {/* eslint-disable-next-line */}
+    <form>
+      <label
+        className="usa-label text-bold margin-top-4"
+        htmlFor="reportingYears"
+      >
+        Fiscal Year (October - September)
+        {/* eslint-disable-next-line */}
         <select
-            className="usa-select maxw-mobile"
-            name="reportingYears"
-            id="reportingYears"
-            onChange={handleSelect}
-            value={selectedYear}
-          >
-            <option value="2020">2020</option>
-            <option value="2021">2021</option>
-          </select>
-        </label>
+          className="usa-select maxw-mobile"
+          name="reportingYears"
+          id="reportingYears"
+          onChange={handleSelect}
+          value={selectedYear}
+        >
+          <option value="2020">2020</option>
+          <option value="2021">2021</option>
+        </select>
+      </label>
 
-        <p className="font-sans-md margin-top-5 margin-bottom-0 text-bold">
-          TANF Report
-        </p>
+      <p className="font-sans-md margin-top-5 margin-bottom-0 text-bold">
+        TANF Report
+      </p>
 
-        <Button className="margin-y-2" type="button" onClick={handleClick}>
-          Begin Report
-        </Button>
-      </form>
-    </div>
+      <Button className="margin-y-2" type="button" onClick={handleClick}>
+        Begin Report
+      </Button>
+    </form>
   )
 }
 
