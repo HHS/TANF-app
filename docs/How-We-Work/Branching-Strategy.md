@@ -18,3 +18,17 @@ All work for an issue will be done on an issue branch, branched from `raft-tdp-m
 * Epics will work the same way, except it will work from a main Epic branch.
 * If the issue is part of an Epic, after passing Raft review it will be merged into the main Epic branch and a PR will be created in HHS.
 * If the issue is not part of an epic, a PR will be created into HHS only after the entire issue has passed Raft review. 
+
+### Part III
+For review purposes, we have also created the protected branch `raft-review`. We will issue Pull Requests to this branch once a working branch is ready for review. Merging to `raft-review` will kick off our automated deployment to our test environment. Approvals are required to merge to `raft-review` but code is not reviewed at this stage as we are deploying for testing purposes. It is required that all CI/CD checks are green before a merge will be accepted.
+
+### Part IV
+**Merging to HHS**
+Once a branch has is in review we will place it in `Raft Review` status in the Raft repository, where we will perform code reviews and check against the QASP checklist. After passing this phase, a Pull request will be issued against the main HHS repository.
+
+Pull requests to the HHS repository must pass three reviews before a merge will be allowed.
+1. The Product Owner will confirm that the branch meets all Acceptance Criteria for the change
+2. The OFA Technical Lead (or proxy) will review the code and check against the QASP checklist
+3. The OFA Technical Lead (or proxy) will check for all a11y requirements
+
+Once all of these reviews are passing and approved, the Product Owner will merge the branch into the `main` branch in the HHS repository.
