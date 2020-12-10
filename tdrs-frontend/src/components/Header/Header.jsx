@@ -42,30 +42,14 @@ function HeaderComp() {
               <img src={closeIcon} alt="close" />
             </button>
             <ul className="usa-nav__primary usa-accordion">
+              <NavItem pathname={pathname} tabTitle="Welcome" href="/welcome" />
+              <NavItem pathname={pathname} tabTitle="Reports" href="/reports" />
               <NavItem
                 pathname={pathname}
-                pathnameToMatch="/edit-profile"
-                tabTitle="Welcome"
-                href="/edit-profile"
-              />
-              <NavItem
-                pathname={pathname}
-                pathnameToMatch="/reports"
-                tabTitle="Reports"
-                href="/reports"
-              />
-              <NavItem
-                pathname={pathname}
-                pathnameToMatch="/edit-profile"
                 tabTitle="Profile"
                 href="/edit-profile"
               />
-              <NavItem
-                pathname={pathname}
-                pathnameToMatch="/admin"
-                tabTitle="Admin"
-                href="/admin"
-              />
+              <NavItem pathname={pathname} tabTitle="Admin" href="/admin" />
             </ul>
             <div className="usa-nav__secondary">
               <ul className="usa-nav__secondary-links">
