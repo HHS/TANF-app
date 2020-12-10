@@ -85,8 +85,11 @@ describe('Header', () => {
     expect(menuBtn).toExist()
   })
 
-  it("should add usa-current class to Welcome tab when on '/edit-profile'", () => {
-    const store = mockStore(initialState)
+  it("should add usa-current class to Welcome tab when on '/welcome'", () => {
+    const store = mockStore({
+      ...initialState,
+      router: { location: { pathname: '/welcome' } },
+    })
     const wrapper = mount(
       <Provider store={store}>
         <Header />
