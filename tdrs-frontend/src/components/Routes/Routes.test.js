@@ -21,9 +21,6 @@ describe('Routes.js', () => {
         loading: false,
         user: {},
       },
-      upload: {
-        year: 2020,
-      },
     })
     const wrapper = mount(
       <Provider store={store}>
@@ -44,9 +41,6 @@ describe('Routes.js', () => {
         requestAccess: false,
         loading: false,
         user: {},
-      },
-      upload: {
-        year: 2020,
       },
     })
     const wrapper = mount(
