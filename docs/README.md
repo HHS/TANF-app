@@ -27,3 +27,14 @@ This is not a place for...
 * Any Personally Identifiable Information (PII)
 * Any information about or from specific states, tribes, or territories
 * Any security or privacy related documentation
+
+# Contributors
+
+Because this `/docs` folder migrated over from a project wiki, it has many terrific contributors whose names you may not see reflected in the git history, including:
+
++ @SelenaJV
++ @lfrohlich
++ @lauraGgit
++ @cmajel
++ @Miatta18F
++ @rahearn
