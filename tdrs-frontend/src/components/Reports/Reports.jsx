@@ -37,7 +37,7 @@ function Reports() {
       </label>
 
       <p className="font-sans-md margin-top-5 margin-bottom-0 text-bold">
-        TANF Report
+        TANF Report {selectedYear}
       </p>
 
       <Button className="margin-y-2" type="button" onClick={handleClick}>
