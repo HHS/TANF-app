@@ -38,3 +38,8 @@ Because this `/docs` folder migrated over from a project wiki, it has many terri
 + @cmajel
 + @Miatta18F
 + @rahearn
+
+Foundational work during the prototyping stage of this project was done by:
+
++ @timothy-spencer
++ Abbey Kos
