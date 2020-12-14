@@ -45,6 +45,7 @@
 4. Deepen our understanding of how grantees create flat files and what causes metadata issues (including title, header, and trailer)
    
     [Jump to Section](#About-case-management-systems-and-other-tools)
+    
     - Document how grantees manage their data (e.g. any case management systems, excel files, etc.) and compare TANF reports to how grantees structure and store their data.  
       - The spring research helped us understand how grantees code data from a variety of local or regional resources but we hope to uncover the pain points that might be outside the flow of submitting to OFA but still have an impact on data quality and data management practices relevant to re-submission. 
     - Document the process of coding information from grantee case management systems into TANF report metadata.
@@ -67,7 +68,7 @@ Given the largely generative focus of this research we wanted to talk to 5-9 par
 - At least one state that submits sample data
 - At least one tribe
 - At least one territory
-- Preference toward participants who have no been interviewed in past research
+- Preference toward participants who have not been interviewed in past research
 
 We ended up talking to a total of six participants who fulfilled all of the above criteria. Those participants represented one tribe, one territory, and four states. Sessions ranged from 1 hour to 1 hour and 25 minutes and was equally divided into one half focused on generative interview questions regarding research goals 2-4 and one half moving through the conceptual prototypes.
 
@@ -288,7 +289,7 @@ Some grantees submit monthly reports instead of quarterly
 
 **Project Impacts**
 - Consider how we can make the upload function flexible and generally accommodate differing flows relating to assembling TANF reports.
-- Include notifications to alert a user of an incomplete report if the upload sections at different times.
+- Include notifications to alert a user to an incomplete report if they upload sections at different times.
 
 
 
@@ -296,7 +297,7 @@ Some grantees submit monthly reports instead of quarterly
 
 ### Grantees understand the term 'encryption' differently. 
 
-Some grantees seemed to understood encryption as being something roughly equivalent to 'non human-readable'. Others did connect our question about encryption with the TANF header data point regarding social security numbers (SSN). However not all grantees encrypt those, instead relying on security inherent to the SFTP transfer processes (this includes managed SFTP vendor services like Cyberfusion):
+Some grantees seemed to understand encryption as being something roughly equivalent to 'non human-readable'. Others did connect our question about encryption with the TANF header data point regarding social security numbers (SSN). However not all grantees encrypt those, instead relying on security inherent to the SFTP transfer processes (this includes managed SFTP vendor services like Cyberfusion):
 
 - "We count on the TIBCO [Cyberfusion] process to make the data secure...We don't bother encrypting the SSNs"
 
@@ -372,7 +373,7 @@ Some TANF teams are a mix of government employees and vendors.
 
 - "Some of the people, like the business analysts on the team, might be contractors who have signed confidentiality agreements and stuff."
 - "... [Consultants] put all of that together into a file."
-- "Deloitte is our primary contractor for the computer side of our programs. OK, so we do have merit staff that are primarily responsible at their jobs for handling the data... They do employ contractors to help with the staffing issues... And so I don't want to speak out of turn because I don't know what their structure is. Everybody in my department is state merit, but over at Oats (Deloitte) they have a combination of state merit and contractors.
+- "[large vendor] is our primary contractor for the computer side of our programs. OK, so we do have merit staff that are primarily responsible at their jobs for handling the data... They do employ contractors to help with the staffing issues... And so I don't want to speak out of turn because I don't know what their structure is. Everybody in my department is state merit, but over at [grantee level technology office] they have a combination of state merit and contractors.
 
 Report generation is often a manual process, both for quarterly TANF reports and for a variety of other reports generated at the grantee level.
 
