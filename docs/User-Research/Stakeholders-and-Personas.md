@@ -2,6 +2,8 @@
 
 <img src="https://goraft.tech/assets/logo.png" width="15%" height="auto" alt="Raft LLC Logo">
 
+Last updated for [Issue #371](https://github.com/raft-tech/TANF-app/issues/371)
+
 ---
 
 **Table of Contents:**
