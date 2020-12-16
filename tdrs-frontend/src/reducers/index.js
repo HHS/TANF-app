@@ -4,6 +4,7 @@ import alert from './alert'
 import auth from './auth'
 import stts from './sttList'
 import requestAccess from './requestAccess'
+import upload from './upload'
 
 /**
  * Combines all store reducers
@@ -16,6 +17,7 @@ const rootReducer = (history) =>
     auth,
     stts,
     requestAccess,
+    upload,
   })
 
 export default rootReducer
