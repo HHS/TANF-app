@@ -106,3 +106,25 @@ OPRE studies ACF programs and the populations they serve through rigorous resear
 ### OCIO staff
 
 OCIO staff oversees tech projects within ACF. They provide technical and security support to ACF's tech products.
+
+
+
+---
+
+## Vendor Stakeholders
+
+[Type of vendors]
+
+
+
+---
+
+## Personas
+
+<img src="https://goraft.tech/assets/logo.png" width="15%" height="auto" alt="Raft LLC Logo">
+
+Name
+
+Goals
+
+....
