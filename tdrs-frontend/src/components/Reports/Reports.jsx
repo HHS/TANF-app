@@ -4,6 +4,15 @@ import Button from '../Button'
 import { history } from '../../configureStore'
 import { setYear } from '../../actions/upload'
 
+/**
+ * @param {string} selectedYear = The year that the user has chosen from the
+ * Select component.
+ *
+ * Reports is the home page for users to file a report.
+ * The user can select a year
+ * for the report that they would like to upload and then click on
+ * `Begin Report` to begin uploading files for that year.
+ */
 function Reports() {
   const selectedYear = useSelector((state) => state.upload.year)
   const dispatch = useDispatch()
