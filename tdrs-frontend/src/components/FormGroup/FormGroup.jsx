@@ -30,7 +30,7 @@ function FormGroup({
   return (
     <div className={`usa-form-group ${error ? 'usa-form-group--error' : ''}`}>
       <label
-        className={`usa-label ${error ? 'usa-label--error' : ''}`}
+        className={`usa-label text-bold ${error ? 'usa-label--error' : ''}`}
         htmlFor={name}
       >
         {label} (required)

@@ -1,4 +1,4 @@
-"""Module for testing the user model."""
+"""Module for testing the stt and region models."""
 import pytest
 
 from ..models import Region, STT
