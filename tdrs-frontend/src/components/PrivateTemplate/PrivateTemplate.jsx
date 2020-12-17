@@ -17,7 +17,7 @@ export default function PrivateTemplate({ title, children }) {
   useEffect(() => {
     document.title = `${title} - TDP - TANF Data Portal`
     headerRef.current.focus()
-  })
+  }, [title])
 
   return (
     <div className="grid-container margin-top-3">
