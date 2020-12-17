@@ -118,15 +118,11 @@ We've identified a range of vendors who deliver a range of different services an
 
 ### Software Vendors
 
-
+IES, case management tools, database/mainframe []
 
 ### Services & Consulting Vendors
 
-
-
-### Integrated Eligibility System (IES) & Case Management Vendors
-
-
+Hybrid teams, data/business analysts,
 
 ---
 
