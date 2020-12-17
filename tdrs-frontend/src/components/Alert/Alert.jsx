@@ -29,7 +29,7 @@ export function Alert() {
         !body ? 'usa-alert--slim' : ''
       }`}
     >
-      <div className="usa-alert__body">
+      <div className="usa-alert__body" role="alert">
         <h3 className="usa-alert__heading">{heading}</h3>
         <p className="usa-alert__text">{body}</p>
       </div>
