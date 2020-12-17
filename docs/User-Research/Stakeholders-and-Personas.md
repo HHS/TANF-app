@@ -11,6 +11,7 @@ Last updated for [Issue #371](https://github.com/raft-tech/TANF-app/issues/371)
 - [Background](#background)
 - [Grantee-level Stakeholders](#grantee-level-stakeholders)
 - [OFA Stakeholders](#ofa-stakeholders)
+- [Vendor Stakeholders](#vendor-stakeholders)
 - [What's Next](#whats-next)
 
 ---
