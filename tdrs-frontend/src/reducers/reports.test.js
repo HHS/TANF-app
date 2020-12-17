@@ -1,5 +1,5 @@
-import reducer from './upload'
-import { SET_YEAR } from '../actions/upload'
+import reducer from './reports'
+import { SET_YEAR } from '../actions/reports'
 
 describe('reducers/upload', () => {
   it('should return the initial state', () => {
