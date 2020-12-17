@@ -9,8 +9,9 @@ Last updated for [Issue #371](https://github.com/raft-tech/TANF-app/issues/371)
 **Table of Contents:**
 
 - [Background](#background)
-- [STT Stakeholders](#stt-stakeholders)
+- [Grantee-level Stakeholders](#grantee-level-stakeholders)
 - [OFA Stakeholders](#ofa-stakeholders)
+- [What's Next](#whats-next)
 
 ---
 
@@ -113,18 +114,28 @@ OCIO staff oversees tech projects within ACF. They provide technical and securit
 
 ## Vendor Stakeholders
 
-[Type of vendors]
+We've identified a range of vendors who deliver a range of different services and tools to grantees. 
+
+### Software Vendors
+
+
+
+### Services & Consulting Vendors
+
+
+
+### Integrated Eligibility System (IES) & Case Management Vendors
 
 
 
 ---
 
-## Personas
+## What's Next
 
-<img src="https://goraft.tech/assets/logo.png" width="15%" height="auto" alt="Raft LLC Logo">
+An immediate next step will be synthesizing research findings into full-fledged personas—fictional people based on real research findings. These personas will have names, demographic & psychographic details, and offer us a way to contextualize stakeholder needs, pain points, and behaviors into a format that will help drive detailed user stories as we continue developing the roadmap. These personas will be living artifacts, always kept up to date with ongoing research efforts.
 
-Name
+[Insert current state information, persona slicing, definition of proto personas, details of proto personas]
 
-Goals
+**Supporting Documentation**
 
-....
+- [Insert Persona Slicing Mural]
