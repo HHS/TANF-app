@@ -139,76 +139,76 @@ function EditProfile() {
     return <Redirect to="/request" />
   }
 
-    return (
-        <>
-          <p className="margin-top-1 margin-bottom-4">
-            Please enter your information to request access from an OFA
-            administrator
-          </p>
-          <form className="usa-form" onSubmit={handleSubmit}>
-            <div
-              className={`usa-error-message ${
+  return (
+    <>
+      <p className="margin-top-1 margin-bottom-4">
+        Please enter your information to request access from an OFA
+        administrator
+      </p>
+      <form className="usa-form" onSubmit={handleSubmit}>
+        <div
+          className={`usa-error-message ${
             !!Object.keys(errors).length && !!Object.keys(touched).length
               ? 'display-block'
               : 'display-none'
           }`}
-              ref={errorRef}
-              tabIndex="-1"
-              role="alert"
-            >
-              There are {Object.keys(errors).length} errors in this form
-            </div>
-            <FormGroup
-              error={errors.firstName}
-              name="firstName"
-              label="First Name"
-              inputValue={profileInfo.firstName}
-              handleChange={handleChange}
-              handleBlur={handleBlur}
-            />
-            <FormGroup
-              error={errors.lastName}
-              name="lastName"
-              label="Last Name"
-              inputValue={profileInfo.lastName}
-              handleChange={handleChange}
-              handleBlur={handleBlur}
-            />
-            <div
-              className={`usa-form-group ${
+          ref={errorRef}
+          tabIndex="-1"
+          role="alert"
+        >
+          There are {Object.keys(errors).length} errors in this form
+        </div>
+        <FormGroup
+          error={errors.firstName}
+          name="firstName"
+          label="First Name"
+          inputValue={profileInfo.firstName}
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+        />
+        <FormGroup
+          error={errors.lastName}
+          name="lastName"
+          label="Last Name"
+          inputValue={profileInfo.lastName}
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+        />
+        <div
+          className={`usa-form-group ${
             errors.stt ? 'usa-form-group--error' : ''
           }`}
-            >
-              <ComboBox
-                name="stt"
-                error={errors.stt}
-                handleSelect={setStt}
-                selected={
-                    profileInfo.stt &&
-                        profileInfo.stt.name &&
-                        profileInfo.stt.name.toLowerCase()
-                }
-                handleBlur={handleBlur}
-                placeholder="- Select or Search -"
+        >
+          <ComboBox
+            name="stt"
+            error={errors.stt}
+            handleSelect={setStt}
+            selected={
+              profileInfo.stt &&
+              profileInfo.stt.name &&
+              profileInfo.stt.name.toLowerCase()
+            }
+            handleBlur={handleBlur}
+            placeholder="- Select or Search -"
+          >
+            <option value="">Select an STT</option>
+            {sttList.map((stt) => (
+              <option
+                className="sttOption"
+                key={stt.id}
+                value={stt.name.toLowerCase()}
               >
-                <option value="">Select an STT</option>
-                {sttList.map((stt) => (
-                    <option
-                      className="sttOption"
-                      key={stt.id}
-                      value={stt.name.toLowerCase()}
-                    >
-                      {stt.name}
-                    </option>
-                ))}
-              </ComboBox>
-            </div>
-            <Button type="submit" className="width-full request-access-button">
-              Request Access
-            </Button>
-          </form>
-        </>
-    )
+                {stt.name}
+              </option>
+            ))}
+          </ComboBox>
+        </div>
+        <Button type="submit" className="width-full request-access-button">
+          Request Access
+        </Button>
+      </form>
+    </>
+  )
 }
 
 export default EditProfile
