@@ -33,45 +33,47 @@ For the purposes of the OFA MVP, the only users who will have access to the appl
 
 ## Grantee-level Stakeholders
 
-### In-house data preppers 
+### Data Preppers
 
-STT data preppers are in-house STT staff who collect the TANF data and get it ready for submission. 
+Data Preppers are staffers who collect TANF data and get it ready for submission to OFA. This process can range from manually following OFA data coding instructions to utilizing a software tool to automate some of that coding.
 
-They may be the only person who works on reporting and have competing responsibilities like program management or administrative duties. Or, they could work on a team where there are multiple data preppers to help with reporting.
+A number of factors affect what that process looks like including:
 
-There are a number of factors that affect the experience of a STT data prepper (and may become sub personas with more research):
+- If TANF is administered by counties or the state
+- If they have an integrated eligibility system, or other software tools that aid in data management / TANF data prepping
+- Other details of software tools that impact who can interact with them and what they can be used for. e.g. Some systems allow data preppers to generate flat files themselves directly from a case management system. Others require more assembly or more cross-functional collaboration with technical staff.
+
+**In-house Data Preppers**
+
+In-house Data Preppers may be the only person who works on reporting and have competing responsibilities like program management or administrative duties. Or, they could work on a team where there are multiple data preppers to help with reporting.
+
+There are a number of factors that affect the experience of a STT data prepper and the specific actions required of them including:
 
 - If they're a tribal grantee
-- If they submit sample or universal data
-- If TANF is administered by counties or the state
-- If they have an integrated eligibility system
-- Their availability of staff and technical resources
+- If they submit sample or universe data
+- Team size and availability of technical resources
 
+**Third-party Data Preppers**
 
-
-### Third-party data preppers
-
-We suspect that some STTs have access to systems or hire third party teams that manage their TANF data transmission for them. More research is needed in this area.
+We suspect that some STTs hire third party teams that manage their TANF data transmission for them. More research is needed in this area. This could range from managed file transfer (MFT) services such as TIBCO (Cyberfusion) to third party staffers playing a much more hands-on role in coding the data as well as transferring it.
 
 
 
 ### Third-party analysts
 
-In Round 3 research we encountered a data prepper working at an STT with a team structure made up of contract workers as well as government employees. The participant told us that these contract workers sat on the team in the role of Business Analysts. Brief secondary research indicates that Business Analysts exist at several other STTs as well working on or alongside TANF programs.
+In Round 3 research we encountered a data prepper working at an STT with a team structure made up of contract workers as well as government employees. The participant told us that these contract workers sat on the team in the role of Business Analysts. Brief secondary research indicates that Business Analysts exist at several other STTs as well working on or alongside TANF programs. 
 
 
 
 ### Program directors
 
-STT program directors manage data preppers and ensure that their STT is staffed and trained to meet federal reporting requirements. They are typically less involved with data collection details and formatting, but want to make sure their teams have the tools they need to get the job done.
+STT program directors manage data preppers and ensure that their STT is staffed and trained to meet federal reporting requirements. They are typically less involved with data collection details and formatting, but want to make sure their teams have the tools they need to get the job done. However we have spoken to program directors of smaller teams who play a larger role in data prepping responsibilities as well.
 
 
 
 ### Technical staff
 
-Some STTs segment data preparation and data transmission into two distinct roles. We've encountered references to (SFTP) transmission being handled by IT workers or by technical offices at the STT level who work with other STT agencies and departments, not just those dealing with TANF. 
-
-We believe some 
+Some STTs segment data preparation and data transmission into two distinct roles. We've encountered references to (SFTP) transmission being handled by IT workers or by technical offices at the STT level who work with other STT agencies and departments, not just those dealing with TANF. Technical staff can also play a role in generating coded reports 
 
 ---
 
@@ -113,26 +115,11 @@ OCIO staff oversees tech projects within ACF. They provide technical and securit
 
 ---
 
-## Vendor Stakeholders
-
-We've identified a range of vendors who deliver a range of different services and tools to grantees. 
-
-### Software Vendors
-
-IES, case management tools, database/mainframe []
-
-### Services & Consulting Vendors
-
-Hybrid teams, data/business analysts,
-
----
-
 ## What's Next
 
-An immediate next step will be synthesizing research findings into full-fledged personas—fictional people based on real research findings. These personas will have names, demographic & psychographic details, and offer us a way to contextualize stakeholder needs, pain points, and behaviors into a format that will help drive detailed user stories as we continue developing the roadmap. These personas will be living artifacts, always kept up to date with ongoing research efforts.
-
-[Insert current state information, persona slicing, definition of proto personas, details of proto personas]
+An immediate next step will be synthesizing research findings and existing details about stakeholder types & attributes into full-fledged personas—fictional people based on real research findings. These personas will have names, demographic & psychographic details, and offer us a way to channel stakeholder needs, pain points, and behaviors into a format that will help drive detailed user stories as design and development continue. These personas will be living artifacts, always kept up to date with ongoing research efforts. They'll also drive the creation of more focused Journey Maps and other artifacts that help bridge the gap between the current state of TANF reporting and the ideal state we want to move toward.
 
 **Supporting Documentation**
 
-- [Insert Persona Slicing Mural]
+- [Grantee Attributes](<https://hhsgov.sharepoint.com/:x:/r/sites/TANFDataPortalOFA-UserResearch/_layouts/15/WopiFrame2.aspx?sourcedoc=%7Be83f84f1-71a0-459f-80a4-0d39bc250be9%7D&action=view&cid=f2e656cb-9245-4f02-af6d-2d7e1db6573d>) 🔒
+- [Proto Journey Maps](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1608238114372/191c53b8ef538838bc8c179daa238dd5c5dcc9e8) :lock:
