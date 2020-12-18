@@ -85,5 +85,8 @@ describe('actions/stts.js', () => {
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_STTS)
     expect(actions[1].type).toBe(SET_STTS_ERROR)
+    expect(actions[1].payload).toStrictEqual({
+      error: Error({ message: 'something went wrong' }),
+    })
   })
 })
