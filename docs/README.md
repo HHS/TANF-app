@@ -12,6 +12,7 @@ Our vision is to build a new, secure, web-based data reporting system to improve
 + **[How-We-Work](./How-We-Work)**: Team composition, charter, and workflows
 + **[Product-Strategy](./Product-Strategy)**: Vision, roadmap, planning, and product resources
 + **[Prototype](./Prototype)**: Documentation for the initial prototype
++ **[Security-Compliance](./Security-Compliance)**: Supplementary information in support of the ATO process
 + **[Sprint-Review](./Sprint-Review)**: Summaries of delivered stories per sprint
 + **[Technical-Documentation](./Technical-Documentation)**: System documentation; technical workflows
 + **[User-Research](./User-Research)**: User research goals, questions, outcomes, and user research guide
