@@ -133,7 +133,7 @@ describe('Header', () => {
     expect(reportsTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should add usa-current class to Profile tab when on '/reports'", () => {
+  it("should add usa-current class to Profile tab when on '/edit-profile'", () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
@@ -146,7 +146,7 @@ describe('Header', () => {
     expect(profileTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should add usa-current class to Admin tab when on '/reports'", () => {
+  it("should add usa-current class to Admin tab when on '/admin'", () => {
     const store = mockStore({
       ...initialState,
       router: { location: { pathname: '/admin' } },
@@ -162,7 +162,7 @@ describe('Header', () => {
     expect(adminTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should not add usa-current class to Welcome tab when not on '/edit-profile'", () => {
+  it("should not add usa-current class to Welcome tab when not on '/'", () => {
     initialState = { ...initialState, router: { location: { pathname: '/' } } }
     const store = mockStore(initialState)
     const wrapper = mount(
