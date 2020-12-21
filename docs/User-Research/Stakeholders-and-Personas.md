@@ -34,13 +34,13 @@ For the purposes of the OFA MVP, the only users who will have access to the appl
 
 ### Data Preppers
 
-Data Preppers are staffers who collect TANF data and get it ready for submission to OFA. This process can range from manually following OFA data coding instructions to utilizing a software tool to automate some of that coding.
+Data Preppers are staffers who collect TANF data and get it ready for submission to OFA. This process can range from manually following OFA data coding instructions to utilizing a software tool to automate some of that work.
 
 A number of factors affect what that process looks like including:
 
-- If TANF is administered by counties or the state
+- If TANF is administered by counties or the state/tribe/territory
 - If they have an integrated eligibility system, or other software tools that aid in data management / TANF data prepping
-- Other details of software tools that impact who can interact with them and what they can be used for. e.g. Some systems allow data preppers to generate flat files themselves directly from a case management system. Others require more assembly or more cross-functional collaboration with technical staff.
+- Other details of software tools that impact who can interact with them and what they can be used for. e.g. Some systems allow data preppers to generate flat files themselves directly from a case management system. Others require more assembly or more cross-functional collaboration with technical staff
 
 **In-house Data Preppers**
 
@@ -51,22 +51,27 @@ There are a number of factors that affect the experience of a STT data prepper a
 - If they're a tribal grantee
 - If they submit sample or universe data
 - Team size and availability of technical resources
+- Whether a Managed File Transfer (MFT) solution such as TIBCO (Cyberfusion) is used to transmit data.
 
 **Third-party Data Preppers**
 
-We suspect that some STTs hire third party teams that manage their TANF data transmission for them. More research is needed in this area. This could range from managed file transfer (MFT) services such as TIBCO (Cyberfusion) to third party staffers playing a much more hands-on role in coding the data as well as transferring it.
+We suspect that some STTs hire third party teams that manage their TANF data transmission for them. Some third party contractors playing a much more hands-on role in coding the data as well as transferring it. More research is needed in this area. 
 
 
 
 ### Third-party analysts
 
-In Round 3 research we encountered a data prepper working at an STT with a team structure made up of contract workers as well as government employees. The participant told us that these contract workers sat on the team in the role of Business Analysts. Brief secondary research indicates that Business Analysts exist at several other STTs as well working on or alongside TANF programs. 
+In Round 3 research we encountered a data prepper working at an STT with a team structure made up of contract workers as well as government employees. The participant told us that these contract workers sat on the team in the role of Business Analysts, but more research is needed to better understand the details of their role. Brief secondary research indicates that Business Analysts exist at several other STTs as well working on or alongside TANF programs.
+
+**Supporting Documentation**
+
+- Example job postings for TANF-related Business Analysts ([Example 1](https://agency.governmentjobs.com/dhsgeorgia/job_bulletin.cfm?jobID=2165694&sharedWindow=0), [Example 2](https://jobs.accaglobal.com/job/7832579/medicaid-business-analyst-snap-tanf-/))
 
 
 
 ### Program directors
 
-STT program directors manage data preppers and ensure that their STT is staffed and trained to meet federal reporting requirements. They are typically less involved with data collection details and formatting, but want to make sure their teams have the tools they need to get the job done. However we have spoken to program directors of smaller teams who play a larger role in data prepping responsibilities as well.
+STT program directors manage data preppers and ensure that their STT is staffed and trained to meet federal reporting requirements. We've encountered several directors who are responsible for other programs like SNAP in addition to TANF. They are typically less involved with data collection details and formatting, but want to make sure their teams have the tools they need to get the job done. However, we have spoken to program directors of smaller teams who play a larger role in data prepping responsibilities as well.
 
 
 
@@ -76,7 +81,7 @@ Some STTs segment data preparation and data transmission into two distinct roles
 
 ---
 
-## OFA Stakeholders
+## ACF Stakeholders
 
 ### OFA analysts
 
@@ -88,9 +93,9 @@ OFA analysts review, analyze, and report on STT’s TANF data that’s submitted
 
 
 
-### OFA program directors (OFA admin)
+### OFA admins
 
-OFA program directors oversee the collection and processing of TANF data and ensure OFA analysts have what they need to do their work.
+OFA admins are members of the TANF Data Division. They oversee the collection and processing of TANF data and ensure OFA analysts have what they need to do their work.
 
 
 
@@ -102,7 +107,7 @@ Regional program specialists are STTs primary OFA point of contact. They track T
 
 ### OPRE analysts
 
-OPRE studies ACF programs and the populations they serve through rigorous research and evaluation projects. They use TANF data in their analyses. More research is needed in this area, especially on where overlaps exist with OFA analysts.
+OPRE studies ACF programs and the populations they serve through rigorous research and evaluation projects. They use TANF data in their analyses. More research is needed in this area, especially on where duties and responsibilities overlap with OFA analysts.
 
 
 
