@@ -73,6 +73,12 @@ In Round 3 research we encountered a data prepper working at an STT with a team 
 
 STT program directors manage data preppers and ensure that their STT is staffed and trained to meet federal reporting requirements. We've encountered several directors who are responsible for other programs like SNAP in addition to TANF. They are typically less involved with data collection details and formatting, but want to make sure their teams have the tools they need to get the job done. However, we have spoken to program directors of smaller teams who play a larger role in data prepping responsibilities as well.
 
+It's important to note that "Program Director" might not be the actual title of people in this role. We've encountered a lot of variation in what those with these responsibilities are called including:
+
+- Social Service Supervisor
+- State Program administrator coordinator
+- Public Assistance Program Specialist
+
 
 
 ### Technical staff
@@ -127,3 +133,8 @@ An immediate next step will be synthesizing research findings and existing detai
 
 - [Grantee Attributes](<https://hhsgov.sharepoint.com/:x:/r/sites/TANFDataPortalOFA-UserResearch/_layouts/15/WopiFrame2.aspx?sourcedoc=%7Be83f84f1-71a0-459f-80a4-0d39bc250be9%7D&action=view&cid=f2e656cb-9245-4f02-af6d-2d7e1db6573d>) 🔒
 - [Proto Journey Maps](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1608238114372/191c53b8ef538838bc8c179daa238dd5c5dcc9e8) :lock:
+
+
+
+
+
