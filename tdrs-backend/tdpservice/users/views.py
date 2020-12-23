@@ -13,8 +13,7 @@ from .serializers import (
     CreateUserSerializer,
     UserProfileSerializer,
     UserSerializer,
-    GroupSerializer,
-    PermissionSerializer,
+    GroupSerializer
 )
 
 logger = logging.getLogger(__name__)

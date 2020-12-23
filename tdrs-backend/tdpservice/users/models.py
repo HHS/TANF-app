@@ -11,7 +11,7 @@ class User(AbstractUser):
     """Define user fields and methods."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    requested_roles = models.ManyToManyField(
+    roles = models.ManyToManyField(
         "auth.Group", related_name="users_requested"
     )
     stt = models.ForeignKey(STT, on_delete=models.CASCADE, blank=True, null=True)
