@@ -2,9 +2,7 @@
 
 import logging
 from django.contrib.auth.models import Group, Permission
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
-from tdpservice.core.models import GlobalPermission
 
 
 from .models import User
