@@ -1,5 +1,5 @@
 # Boundary diagram
-![Boundary diagram](diagram-2020-12-17.png)
+![Boundary diagram](diagram.png)
 
 ## Description
 ### Data flow
@@ -18,6 +18,6 @@ Beyond web based authentication through Login.gov, and developer SSH access to t
 Application configuration will be handled by environment variables stored securely within cloud.gov.
 
 ## Updating
-* [Download latest version](diagram-2020-12-17.drawio) of diagram
+* [Download latest version](diagram.drawio) of diagram
 * Edit this diagram with [draw.io](https://app.diagrams.net/)
 * Update the image and point download link to correct file
