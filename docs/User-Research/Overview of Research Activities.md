@@ -2,11 +2,11 @@
 
 **Table of Contents:**
 
-- [2020 Fall - Understanding STT Roles, Source of Truth, and Metadata](#2020-fall-understanding-stt-roles-source-of-truth-and-metadata)
-- [2020 Summer - Understanding OFA's experience](#2020-summer-understanding-ofas-experience)
-- [2020 Spring - Digging into the local experience](#2020-spring-digging-into-the-local-experience)
-- [2020 March - Data Entry Design Studio](#2020-march-data-entry-design-studio)
-- [2019 Fall - Discovery](#2019-fall-discovery)
+- [2020 Fall - Understanding STT Roles, Source of Truth, and Metadata](#2020-fall---understanding-stt-roles-source-of-truth-and-metadata)
+- [2020 Summer - Understanding OFA's experience](#2020-summer---understanding-ofas-experience)
+- [2020 Spring - Digging into the local experience](#2020-spring---digging-into-the-local-experience)
+- [2020 March - Data Entry Design Studio](#2020-march---data-entry-design-studio)
+- [2019 Fall - Discovery](#2019-fall---discovery)
 
 ---
 
