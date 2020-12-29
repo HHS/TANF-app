@@ -2,8 +2,8 @@
 
 from django.contrib import admin
 from .models import User
-from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.models import TokenProxy
 
 
 admin.site.register(User)
-admin.site.unregister(Token)
+admin.site.unregister(TokenProxy)
