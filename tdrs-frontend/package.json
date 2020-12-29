@@ -90,7 +90,6 @@
     "eslint-plugin-react": "^7.20.3",
     "eslint-plugin-react-hooks": "^4.0.8",
     "http-get": "^0.5.10",
-    "jest": "24.9.0",
     "jest-enzyme": "^7.1.2",
     "jsdoc": "^3.6.5",
     "node-sass": "^4.14.1",
