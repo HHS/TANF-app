@@ -23,6 +23,21 @@ class STTSerializer(serializers.ModelSerializer):
         return obj.code
 
 
+class STTUpdateSerializer(serializers.ModelSerializer):
+    """STT serializer."""
+
+    class Meta:
+        """Metadata."""
+
+        model = STT
+        fields = ["id"]
+        extra_kwargs = {"id": {"read_only": False}}
+
+    def to_representation(self, instance):
+        """Allow update with only the ID field."""
+        return STTSerializer(instance).data
+
+
 class RegionSerializer(serializers.ModelSerializer):
     """Region serializer."""
 

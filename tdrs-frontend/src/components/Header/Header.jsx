@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+import NavItem from '../NavItem/NavItem'
 
 /**
  * This component is rendered on every page and contains the navigation bar.
@@ -41,45 +42,50 @@ function HeaderComp() {
               <img src={closeIcon} alt="close" />
             </button>
             <ul className="usa-nav__primary usa-accordion">
-              <li className="usa-nav__primary-item">
-                <a
-                  href="/"
-                  key="welcome"
-                  className={`usa-nav__link ${
-                    pathname === '/edit-profile' ? 'usa-current' : ''
-                  }`}
-                >
-                  <span>Welcome</span>
-                </a>
-              </li>
+              <NavItem pathname={pathname} tabTitle="Welcome" href="/welcome" />
+              <NavItem pathname={pathname} tabTitle="Reports" href="/reports" />
+              <NavItem
+                pathname={pathname}
+                tabTitle="Profile"
+                href="/edit-profile"
+              />
+              <NavItem pathname={pathname} tabTitle="Admin" href="/admin" />
             </ul>
-            {user && user.email && (
-              <div className="usa-nav__secondary">
-                <ul className="usa-nav__secondary-links">
-                  <li className="usa-nav__secondary-item">
+            <div className="usa-nav__secondary">
+              <ul className="usa-nav__secondary-links">
+                <li
+                  className={`${
+                    user && user.email ? 'display-block' : 'display-none'
+                  } usa-nav__secondary-item`}
+                >
+                  {user && user.email && (
                     <a href="/">
                       <FontAwesomeIcon
                         className="margin-right-1"
                         icon={faUserCircle}
                       />
-                      {user.email}
+                      {user && user.email}
                     </a>
-                  </li>
-                  <li className="usa-nav__secondary-item">
-                    <a
-                      className="sign-out-link"
-                      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
-                    >
-                      <FontAwesomeIcon
-                        className="margin-right-1"
-                        icon={faSignOutAlt}
-                      />
-                      Sign Out
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            )}
+                  )}
+                </li>
+                <li className="usa-nav__secondary-item">
+                  <a
+                    className="sign-out-link"
+                    href={
+                      user && user.email
+                        ? `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
+                        : `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+                    }
+                  >
+                    <FontAwesomeIcon
+                      className="margin-right-1"
+                      icon={faSignOutAlt}
+                    />
+                    {user && user.email ? 'Sign Out' : 'Sign In'}
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </nav>
       </header>
