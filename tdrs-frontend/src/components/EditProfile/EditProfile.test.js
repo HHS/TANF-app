@@ -19,19 +19,6 @@ describe('EditProfile', () => {
   }
   const mockStore = configureStore([thunk])
 
-  it('should have a card with header Request Access', () => {
-    const store = mockStore(initialState)
-    const wrapper = mount(
-      <Provider store={store}>
-        <EditProfile />
-      </Provider>
-    )
-
-    const h1 = wrapper.find('h1')
-    expect(h1).toExist()
-    expect(h1.text()).toEqual('Request Access')
-  })
-
   it('should have a first name input', () => {
     const store = mockStore(initialState)
     const wrapper = mount(

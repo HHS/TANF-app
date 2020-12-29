@@ -49,6 +49,7 @@ export const validation = (fieldName, fieldValue) => {
  * There is an input for first and last name and a combo box to select
  *  an associated STT.
  */
+
 function EditProfile() {
   const errorRef = useRef(null)
   const sttList = useSelector((state) => state.stts.sttList)
@@ -139,10 +140,7 @@ function EditProfile() {
   }
 
   return (
-    <div className="grid-container">
-      <h1 className="font-serif-2xl margin-bottom-0 text-normal">
-        Request Access
-      </h1>
+    <>
       <p className="margin-top-1 margin-bottom-4">
         Please enter your information to request access from an OFA
         administrator
@@ -209,7 +207,7 @@ function EditProfile() {
           Request Access
         </Button>
       </form>
-    </div>
+    </>
   )
 }
 
