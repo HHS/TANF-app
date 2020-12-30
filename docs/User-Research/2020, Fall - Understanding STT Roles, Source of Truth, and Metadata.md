@@ -448,4 +448,3 @@ One participant we spoke to carries out the responsibility of submitting the fin
 [Issue #371](https://github.com/raft-tech/TANF-app/issues/371) will deliver updated user research artifacts including personas, the process map and dev-ready mockups based on insights from this round of research. 
 
 [Issue #165](https://github.com/raft-tech/TANF-app/issues/165) will deliver journey maps relating to each of the updated personas and in turn will contribute to identifying knowledge gaps to be investigated in Round 4 (or later rounds) research.
-
