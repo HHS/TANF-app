@@ -36,7 +36,7 @@ function Button({
 
   return (
     <button
-      type={type}
+      type={type} // eslint-disable-line
       className={classes}
       onClick={onClick}
       data-testid="button"
