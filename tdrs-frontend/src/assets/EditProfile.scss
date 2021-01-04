@@ -1,7 +1,3 @@
-.request-access-button {
-  font-size: 1rem;
-}
-
-.request-access-button:disabled {
-  color: $disabled-button-color;
+.usa-combo-box__input--error {
+  border: .25rem solid #b50909;
 }

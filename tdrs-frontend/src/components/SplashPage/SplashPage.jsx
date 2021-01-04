@@ -5,6 +5,11 @@ import { Redirect } from 'react-router-dom'
 import loginLogo from '../../assets/login-gov-logo.svg'
 import Button from '../Button'
 
+/**
+ * SplashPage renders the Welcome page for the TANF Data Portal
+ * for an unauthenticated user. If a user logs in, they are automatically
+ * redirected to `/edit-profile`.
+ */
 function SplashPage() {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)

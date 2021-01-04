@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axiosInstance from '../axios-instance'
 
 export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
@@ -13,7 +13,7 @@ export const CLEAR_AUTH = 'CLEAR_AUTH'
  * the window is loaded.
  *
  * This call is made with `withCredentials` to include
- * HTTP_ONLY cookies, which contain the encrypted auth token info info.
+ * HTTP_ONLY cookies, which contain the encrypted auth token info.
  *
  * If the API responds with `data` in the body and a `user` object,
  * then SET_AUTH is dispatched, setting the authenticated state
@@ -35,15 +35,20 @@ export const CLEAR_AUTH = 'CLEAR_AUTH'
  * the authentication data in the Redux store is cleared, and the user
  * is considered 'logged out', and can no longer access private routes.
  */
+
 export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
     const {
-      data: { user },
-    } = await axios.get(URL, {
+      data: { user, csrf },
+    } = await axiosInstance.get(URL, {
       withCredentials: true,
     })
+
+    // Work around for csrf cookie issue we encountered in production.
+    axiosInstance.defaults.headers['X-CSRFToken'] = csrf
+
     if (user) {
       dispatch({ type: SET_AUTH, payload: { user } })
     } else {

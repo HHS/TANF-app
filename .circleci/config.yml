@@ -1,7 +1,8 @@
 version: 2.1
 jobs:
   test-backend:
-    machine: true
+    machine:
+      docker_layer_caching: false
     branches:
     steps:
       - checkout
@@ -38,7 +39,7 @@ jobs:
         user : root
     steps:
       - setup_remote_docker:
-         docker_layer_caching: true
+         docker_layer_caching: false
       - checkout
       - run:
           name: 'Ensure docker exists,otherwise install it.'
@@ -71,7 +72,7 @@ jobs:
           command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-frontend; ./zap-scanner.sh"  
+          command: "cd tdrs-frontend; ./zap-scanner.sh"
   deploy:
     working_directory: ~/tdp-deploy
     docker:
@@ -79,7 +80,7 @@ jobs:
         user : root
     steps:
       - setup_remote_docker:
-         docker_layer_caching: true
+         docker_layer_caching: false
       - checkout
       - run:
           name: 'Ensure sudo is installed, otherwise install it.'
@@ -134,6 +135,12 @@ jobs:
               export CF_PASSWORD="$CF_PASSWORD_DEV"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
+            elif [ "$CIRCLE_BRANCH" == "raft-review" ] ; then
+              export CF_SPACE="tanf-dev"
+              export CF_USERNAME="$CF_USERNAME_DEV"
+              export CF_PASSWORD="$CF_PASSWORD_DEV"
+              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
+              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
             else
               export CF_SPACE="$CIRCLE_BRANCH"
             fi
@@ -159,3 +166,4 @@ workflows:
             branches:
               only:
                 - raft-tdp-main
+                - raft-review
