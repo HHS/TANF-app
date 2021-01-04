@@ -90,7 +90,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     stt = STTUpdateSerializer(required=True)
     email = serializers.SerializerMethodField("get_email")
-    roles = GroupSerializer(many=True, required=False, allow_empty=True)
+    roles = GroupSerializer(
+        many=True, required=False, allow_empty=True, source="groups"
+    )
 
     class Meta:
         """Metadata."""
