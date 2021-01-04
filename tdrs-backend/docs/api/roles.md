@@ -1,6 +1,6 @@
 
 # Roles 
-Accepts GET and Post requests from [authenticated](api/authentication.md) Admin users to create and update  roles. 
+Accepts GET and requests from [authenticated](api/authentication.md) Admin users to create and update  roles. 
 
  
 ----

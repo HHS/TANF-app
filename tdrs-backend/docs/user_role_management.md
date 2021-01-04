@@ -1,12 +1,87 @@
-# Updating User Roles through the CLI
+# User Role Managment
+
+## Updating User Roles through the Django Admin Interface
 
 **Description**
-For the OTA MVP, we will need to assign user roles via the Python CLI to the deployed applicataion.
-This method is also required for making a user a `superuser`
 
-There are endpoints provided by the TDRS Backend service which require users to have the role of `superuser`. 
+For the OTA MVP we will be assigning and updating application user roles through the
+Django Admin Interface. This can be accessed via the backend at:
+
+`<backend-domain-name>/admin`
+
+The admin interface requires special privileges which can only be granted via the
+Django CLI [Detailed Below](#cli). 
+
+Once a user has been granted privileges they can go to the admin page described above
+and log in. The admin interface provides links to Users, STTs, Regions and Groups which
+can can be each be modified through the interface.
+
+### Log in to Admin
+
+- Enter your username and password to gain access
+
+![](images/admin_login.png)
+
+### Admin Home
+
+- The admin home page gives you access to all of the objects you can manage
+
+![](images/admin_home.png)
+
+### Group List
+
+- Clicking on "Groups" from the Admin Home page gives you a list of all of the existing groups.
+
+![](images/group_list.png)
+
+### Group Permissions
+
+- When you click on a group in the Group List, you can add/update/remove permissions for each group.
+
+![](images/group_permissions.png)
+
+### Region List
+
+- When you click on "Regions" from the Admin Home page, you can view the regions currently in the system
+
+![](images/region_list.png)
+
+### STT List
+
+- When you click on "STTs" from the Admin Home page, you can view a list of the STTs currently in the system
+
+![](images/stt_list.png)
+
+### STT Edit
+
+- Clicking on an STT allows you to update it's data
+
+![](images/stt_edit.png)
+
+### User List
+
+- When you click on "Users" from the Admin Home page, you can see a list of users currently in the system.
+
+![](images/user_list.png)
+
+### User Edit
+
+- When you click on a user from the User List, you can edit that user's information, including
+first name, last name and username, as well as the user's Active Status, assigned Groups, STT and Region. You can
+also view the date and time the user joined and when they last logged in.
+
+![](images/user_edit.png)
+
+
+## <a id="cli"></a> Updating User Roles through the CLI
+
+**Description**
+
+For the OTA MVP, we will need to assign the Django built-in roles of `superuser` and `staff` to the deployed applicataion.
+This will be needed for users to have access to the Django Admin interface detailed above.
 
 This guide will provide instructions on how to define them in local and deployed environments. 
+Access to the CLI is strictly controlled by the Product Owner.
 
 
 **Local Development**
