@@ -27,11 +27,7 @@
 
 2. To augment existing user stories (and create new ones) that account for designing and developing how the new TDRS will allow grantees track the status of what they submitted to OFA
 3. To augment existing user stories (and create new ones) for designing and developing how the new TDRS will handle and account for additional potential STT needs (e.g. permissions/roles, turnover and external systems
-4. To inform future rounds of research
-5. To enhance our resources for recruiting grantees
-6. To update/enhance existing user flows & process map(s)
-7. To update/enhance existing prototypes
-8. To update/enhance user personas
+4. To inform future rounds of research, enhance recruiting resources, update existing flows, process maps, prototypes, and personas.
 
 ## Who we talked to
 
