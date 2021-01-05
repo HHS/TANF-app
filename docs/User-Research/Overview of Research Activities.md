@@ -108,7 +108,7 @@ We wanted to talk to OFA analysts who had well-rounded experience with and expos
 
 We conducted 3, 90-minute remote interviews with OFA Analysts
 
-- The first 60-70 mins was used as a Q&A.
+- The first 60-70 mins was used as the interview portion of the session.
 - The remaining time was used for concept testing with initial admin UI mockups. 
 - 2 of the three interviews were recorded to fill out notes. (NOTE: the participants had the opportunity to opt out of recording the sessions).
 - The recordings were password protected then made available to the user research team to augment notes.
