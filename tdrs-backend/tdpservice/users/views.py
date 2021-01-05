@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .models import User
-from .permissions import IsAdmin, IsUserOrAdmin
+from .permissions import IsAdmin, IsUser
 from django.utils import timezone
 from .serializers import (
     CreateUserSerializer,
@@ -33,9 +33,14 @@ class UserViewSet(
 
     def get_permissions(self):
         """Get permissions for the viewset."""
-        permission_classes = {"create": [AllowAny], "list": [IsAdmin]}.get(
-            self.action, [IsUserOrAdmin]
-        )
+        permission_classes = {
+            "create": [AllowAny],
+            "retrieve": [IsUser | IsAdmin],
+            "set_profile": [IsUser | IsAdmin],
+            "partial_update": [IsUser | IsAdmin],
+            "update": [IsUser | IsAdmin],
+            "list": [IsAdmin]
+        }.get(self.action, [IsAdmin])
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
