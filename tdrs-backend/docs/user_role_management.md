@@ -1,10 +1,10 @@
-# User Role Managment
+# User Role Management
 
 ## Updating User Roles through the Django Admin Interface
 
 **Description**
 
-For the OTA MVP we will be assigning and updating application user roles through the
+For the OFA MVP we will be assigning and updating application user roles through the
 Django Admin Interface. This can be accessed via the backend at:
 
 `<backend-domain-name>/admin`
@@ -77,7 +77,7 @@ also view the date and time the user joined and when they last logged in.
 
 **Description**
 
-For the OTA MVP, we will need to assign the Django built-in roles of `superuser` and `staff` to the deployed applicataion.
+For the OFA MVP, we will need to assign the Django built-in roles of `superuser` and `staff` to the deployed applicataion.
 This will be needed for users to have access to the Django Admin interface detailed above.
 
 This guide will provide instructions on how to define them in local and deployed environments. 
