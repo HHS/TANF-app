@@ -97,11 +97,26 @@ function IdleTimer() {
       }
     },
     debounce: process.env.REACT_APP_DEBOUNCE_TIME,
+    events: [
+      'mousemove',
+      'keydown',
+      'wheel',
+      'DOMMouseScroll',
+      'mousewheel',
+      'mousedown',
+      'touchstart',
+      'touchmove',
+      'MSPointerDown',
+      'MSPointerMove',
+      'visibilitychange',
+      'focus',
+    ],
+    eventsThrottle: process.env.REACT_APP_EVENT_THROTTLE_TIME,
   })
 
   return (
     <div
-      id="myModal"
+      id="timeoutModal"
       className={`modal ${isModalVisible ? 'display-block' : 'display-none'}`}
     >
       <div className="modal-content" ref={modalRef}>
