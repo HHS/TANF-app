@@ -26,9 +26,8 @@ User stories redelivered for QASP review
 - Continue building upload TANF report feature and start on the download feature
 - Demo updated security controls documentation with OCIO security and SCA as necessary
 - Complete round 4 research planning and create Content and Style guide
-- Continue updating docs 
+- Continue updating docs with delivered and accepted issues, update readme, and archive prototype.
 - Demo product roadmap during standup
-- Update docs to make onboarding easy. This includes updating docs with our most recent work, update readme, and archive prototype.
 
 ## Agenda for Sprint 11 Demo 
 - Synthesis of round 3 user research
