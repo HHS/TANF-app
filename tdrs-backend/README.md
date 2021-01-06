@@ -26,7 +26,7 @@ This project uses a Pipfile for dependency management. However, due to the limit
 
 **Commands are to be executed from within the `tdrs-backend` directory**
 
-1.) For configuration of the `JWT_KEY` and `JWT_CERT_TEST` environment variables for local development/testing please refer to the the [jwt_key_management.md](docs/jwt_key_management.md) document. For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
+1.) For configuration of the `JWT_KEY` and `JWT_CERT_TEST` environment variables for local development/testing documentation is forthcoming. For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
 
 2.) Configure your local environment variables via the  `.env.local` file found in this path:
 
