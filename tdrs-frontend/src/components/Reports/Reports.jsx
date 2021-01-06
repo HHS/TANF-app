@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Button from '../Button'
 import { history } from '../../configureStore'
-import { setYear } from '../../actions/upload'
+import { setYear } from '../../actions/reports'
 
 /**
  * @param {string} selectedYear = The year that the user has chosen from the
@@ -14,7 +14,7 @@ import { setYear } from '../../actions/upload'
  * `Begin Report` to begin uploading files for that year.
  */
 function Reports() {
-  const selectedYear = useSelector((state) => state.upload.year)
+  const selectedYear = useSelector((state) => state.reports.year)
   const dispatch = useDispatch()
 
   const handleClick = () => {

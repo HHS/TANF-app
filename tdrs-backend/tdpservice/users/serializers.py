@@ -2,9 +2,7 @@
 
 import logging
 from django.contrib.auth.models import Group, Permission
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
-from tdpservice.core.models import GlobalPermission
 
 
 from .models import User
@@ -13,6 +11,35 @@ from tdpservice.stts.serializers import STTUpdateSerializer
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
+
+
+class PermissionSerializer(serializers.ModelSerializer):
+    """Permission serializer."""
+
+    content_type = serializers.CharField(
+        required=False, allow_null=True, write_only=True
+    )
+
+    class Meta:
+        """Metadata."""
+
+        model = Permission
+        fields = ["id", "codename", "name", "content_type"]
+        extra_kwargs = {
+            "content_type": {"allow_null": True},
+        }
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    """Group (role) serializer."""
+
+    permissions = PermissionSerializer(many=True)
+
+    class Meta:
+        """Metadata."""
+
+        model = Group
+        fields = ["id", "name", "permissions"]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -63,18 +90,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     stt = STTUpdateSerializer(required=True)
     email = serializers.SerializerMethodField("get_email")
+    roles = GroupSerializer(
+        many=True, required=False, allow_empty=True, source="groups"
+    )
 
     class Meta:
         """Metadata."""
 
         model = User
-        fields = ["first_name", "last_name", "stt", "email"]
+        fields = ["first_name", "last_name", "email", "stt", "roles"]
 
         """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {
             "first_name": {"allow_blank": False, "required": True},
             "last_name": {"allow_blank": False, "required": True},
-            "requested_roles": {"allow_empty": True, "required": False},
         }
 
     def update(self, instance, validated_data):
@@ -85,38 +114,3 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_email(self, obj):
         """Return the user's email address."""
         return obj.username
-
-
-class PermissionSerializer(serializers.ModelSerializer):
-    """Permission serializer."""
-
-    content_type = serializers.CharField(
-        required=False, allow_null=True, write_only=True
-    )
-
-    class Meta:
-        """Metadata."""
-
-        model = Permission
-        fields = ["id", "codename", "name", "content_type"]
-        extra_kwargs = {
-            "content_type": {"allow_null": True},
-        }
-
-    def validate_content_type(self, value):
-        """If no content type is set, use the one for global permissions."""
-        if not value:
-            content_type = ContentType.objects.get_for_model(GlobalPermission)
-            return content_type
-
-        return ContentType.objects.get_by_natural_key(*value.split("."))
-
-
-class GroupSerializer(serializers.ModelSerializer):
-    """Group (role) serializer."""
-
-    class Meta:
-        """Metadata."""
-
-        model = Group
-        fields = ["id", "name", "permissions"]

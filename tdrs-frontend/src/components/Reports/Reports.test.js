@@ -9,7 +9,7 @@ import Button from '../Button'
 
 describe('Reports', () => {
   const initialState = {
-    upload: {
+    reports: {
       file: null,
       error: null,
       year: 2020,

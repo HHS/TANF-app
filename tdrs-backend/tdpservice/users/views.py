@@ -1,20 +1,19 @@
 """Define API views for user class."""
 import logging
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .models import User
-from .permissions import IsAdmin, IsUserOrAdmin
+from .permissions import IsAdmin, IsUser
 from django.utils import timezone
 from .serializers import (
     CreateUserSerializer,
     UserProfileSerializer,
     UserSerializer,
-    GroupSerializer,
-    PermissionSerializer,
+    GroupSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -28,13 +27,20 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
-    queryset = User.objects.select_related("stt")
+    queryset = User.objects\
+        .select_related("stt")\
+        .prefetch_related("groups__permissions")
 
     def get_permissions(self):
         """Get permissions for the viewset."""
-        permission_classes = {"create": [AllowAny], "list": [IsAdmin]}.get(
-            self.action, [IsUserOrAdmin]
-        )
+        permission_classes = {
+            "create": [AllowAny],
+            "retrieve": [IsUser | IsAdmin],
+            "set_profile": [IsUser | IsAdmin],
+            "partial_update": [IsUser | IsAdmin],
+            "update": [IsUser | IsAdmin],
+            "list": [IsAdmin]
+        }.get(self.action, [IsAdmin])
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
@@ -56,17 +62,8 @@ class UserViewSet(
         return Response(serializer.data)
 
 
-class PermissionViewSet(viewsets.ModelViewSet):
-    """CRUD for permissions."""
-
-    pagination_class = None
-    queryset = Permission.objects.all()
-    permission_classes = [IsAdmin]
-    serializer_class = PermissionSerializer
-
-
-class GroupViewSet(viewsets.ModelViewSet):
-    """CRUD for groups (roles)."""
+class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    """GET for groups (roles)."""
 
     pagination_class = None
     queryset = Group.objects.all()

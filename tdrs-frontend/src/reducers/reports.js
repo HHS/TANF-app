@@ -1,10 +1,10 @@
-import { SET_YEAR } from '../actions/upload'
+import { SET_YEAR } from '../actions/reports'
 
 const initialState = {
   year: 2020,
 }
 
-const upload = (state = initialState, action) => {
+const reports = (state = initialState, action) => {
   const { type, payload = {} } = action
   switch (type) {
     case SET_YEAR: {
@@ -16,4 +16,4 @@ const upload = (state = initialState, action) => {
   }
 }
 
-export default upload
+export default reports

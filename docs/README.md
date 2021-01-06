@@ -12,6 +12,7 @@ Our vision is to build a new, secure, web-based data reporting system to improve
 + **[How-We-Work](./How-We-Work)**: Team composition, charter, and workflows
 + **[Product-Strategy](./Product-Strategy)**: Vision, roadmap, planning, and product resources
 + **[Prototype](./Prototype)**: Documentation for the initial prototype
++ **[Security-Compliance](./Security-Compliance)**: Supplementary information in support of the ATO process
 + **[Sprint-Review](./Sprint-Review)**: Summaries of delivered stories per sprint
 + **[Technical-Documentation](./Technical-Documentation)**: System documentation; technical workflows
 + **[User-Research](./User-Research)**: User research goals, questions, outcomes, and user research guide
@@ -27,3 +28,19 @@ This is not a place for...
 * Any Personally Identifiable Information (PII)
 * Any information about or from specific states, tribes, or territories
 * Any security or privacy related documentation
+
+# Contributors
+
+Because this `/docs` folder migrated over from a project wiki, it has many terrific contributors whose names you may not see reflected in the git history, including:
+
++ @SelenaJV
++ @lfrohlich
++ @lauraGgit
++ @cmajel
++ @Miatta18F
++ @rahearn
+
+Foundational work during the prototyping stage of this project was done by:
+
++ @timothy-spencer
++ Abbey Kos

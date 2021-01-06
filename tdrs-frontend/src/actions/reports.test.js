@@ -1,7 +1,7 @@
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 
-import { setYear, SET_YEAR } from './upload'
+import { setYear, SET_YEAR } from './reports'
 
 describe('actions/setYear', () => {
   const mockStore = configureStore([thunk])

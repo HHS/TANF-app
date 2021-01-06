@@ -8,7 +8,6 @@ router = DefaultRouter()
 
 router.register("users", views.UserViewSet)
 router.register("roles", views.GroupViewSet)
-router.register("permissions", views.PermissionViewSet)
 
 urlpatterns = []
 
