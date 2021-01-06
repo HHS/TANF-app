@@ -34,10 +34,6 @@ export default function PrivateTemplate({ title, children }) {
 }
 
 PrivateTemplate.propTypes = {
-<<<<<<< HEAD
-  title: PropTypes.node.isRequired,
-=======
   title: PropTypes.string.isRequired,
->>>>>>> raft-review
   children: PropTypes.node.isRequired,
 }
