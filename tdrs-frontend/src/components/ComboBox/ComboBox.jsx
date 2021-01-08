@@ -44,18 +44,21 @@ const ComboBox = ({
   })
 
   return (
-    <label
-      className={`usa-label ${error ? 'usa-label--error' : ''}`}
-      htmlFor={name.toUpperCase()}
-    >
-      Associated State, Tribe, or Territory (required)
+    <>
+      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+      <label
+        className={`usa-label text-bold ${error ? 'usa-label--error' : ''}`}
+        htmlFor={name}
+      >
+        Associated State, Tribe, or Territory (required)
+      </label>
       {error && (
         <span className="usa-error-message" id={`${name}-error-message`}>
           {error}
         </span>
       )}
       <div className="usa-combo-box" data-placeholder={placeholder}>
-        {/* eslint-disable-next-line */}
+        {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
           className="usa-select"
           name={name}
@@ -69,7 +72,7 @@ const ComboBox = ({
           {children}
         </select>
       </div>
-    </label>
+    </>
   )
 }
 
