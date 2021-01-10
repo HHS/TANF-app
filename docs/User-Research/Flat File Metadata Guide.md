@@ -26,9 +26,7 @@ During OFA research, we discovered that submitted flat files have header and tra
 
 Example header:
 
-<pre>
-`HEADER20152G02000TAN2 N`
-</pre>
+`"HEADER20152G02000TAN2 N"`
 
 | **Header Field**                           | **Excerpt / Decoding**                                       |
 | :----------------------------------------- | :----------------------------------------------------------- |
@@ -50,11 +48,7 @@ Example header:
 
 Example trailer:
 
-<pre>
-`TRAILER0000042‎‎‎‎‎‎‎          `
-</pre>
-
-`TRAILER0000042‎‎‎‎‎‎‎          `
+`"TRAILER0000042         "`
 
 | **Header Field**                           | **Excerpt / Decoding**                                       |
 | :----------------------------------------- | :----------------------------------------------------------- |
