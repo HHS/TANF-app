@@ -95,15 +95,24 @@ For tribes, ### represents their 3 digit Tribe Code
 
 ---
 
-# Other notes on file naming
+# Other notes on flat file conventions
 
-
+- Sections 1-4 of a TANF or SSP-MOE report all have their own flat files. The Header and Trailer are a part of each, but should remain consistent with the exception of the Data Type field.
+- Fiscal-year reports are submitted with multiple headers and trailers in a single text file, each representing their respective quarter. 
 
 ---
 
 # Metadata validation definitions
 
+**Automatic Validation**: Validation that can happen *without* a user manually inputting metadata. This includes values associated to users (e.g. Fips / Tribal codes), user actions inherently tied to metadata (e.g. An action labeled as “Create TANF Report for Q1 of 2020” as opposed to a blank slate style “New Report”), and properties that do not change (e.g. Title fields of the header and trailer). 
 
+ 
+
+**Guardrailed Validation**: Validation driven by comparisons against data manually entered by users (e.g. Dropdowns for selecting Quarter and Year being compared to the Calendar Quarter header field.)
+
+ 
+
+🔍 **Research**: There are open questions and we’d like to base a recommendation on insights from Phase III Research (October STT Research) and continued solutions ideation (Both design and technical).
 
 ---
 
