@@ -26,16 +26,52 @@ describe('Header', () => {
     expect(title).toIncludeText('TANF Data Portal')
   })
 
-  it('should have a primary navigation', () => {
+  it('should have a navigation link for Welcome', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
         <Header />
       </Provider>
     )
-    const welcomeLink = wrapper.find('.usa-nav__link')
+    const welcomeLink = wrapper.find('#welcome')
     expect(welcomeLink).toExist()
     expect(welcomeLink).toIncludeText('Welcome')
+  })
+
+  it('should have a navigation link for Reports', () => {
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+    const reportsLink = wrapper.find('#reports')
+    expect(reportsLink).toExist()
+    expect(reportsLink).toIncludeText('Reports')
+  })
+
+  it('should have a navigation link for Profile', () => {
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+    const profileLink = wrapper.find('#profile')
+    expect(profileLink).toExist()
+    expect(profileLink).toIncludeText('Profile')
+  })
+
+  it('should have a navigation link for Admin', () => {
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+    const adminLink = wrapper.find('#admin')
+    expect(adminLink).toExist()
+    expect(adminLink).toIncludeText('Admin')
   })
 
   it('should find menu button', () => {
@@ -49,21 +85,55 @@ describe('Header', () => {
     expect(menuBtn).toExist()
   })
 
-  it("should add usa-current class to Welcome tab when on '/edit-profile'", () => {
-    const store = mockStore(initialState)
+  it("should add usa-current class to Welcome tab when on '/welcome'", () => {
+    const store = mockStore({
+      ...initialState,
+      router: { location: { pathname: '/welcome' } },
+    })
     const wrapper = mount(
       <Provider store={store}>
         <Header />
       </Provider>
     )
 
-    const welcomeTab = wrapper.find('.usa-nav__link')
+    const welcomeTab = wrapper.find('#welcome')
 
     expect(welcomeTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should not add usa-current class to Welcome tab when not on '/edit-profile'", () => {
-    initialState = { ...initialState, router: { location: '/' } }
+  it("should add usa-current class to Reports tab when on '/reports'", () => {
+    const store = mockStore({
+      ...initialState,
+      router: { location: { pathname: '/reports' } },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+
+    const reportsTab = wrapper.find('#reports')
+
+    expect(reportsTab.hasClass('usa-current')).toEqual(true)
+  })
+
+  it("should add usa-current class to Reports tab when on '/reports/*'", () => {
+    const store = mockStore({
+      ...initialState,
+      router: { location: { pathname: '/reports/upload' } },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+
+    const reportsTab = wrapper.find('#reports')
+
+    expect(reportsTab.hasClass('usa-current')).toEqual(true)
+  })
+
+  it("should add usa-current class to Profile tab when on '/edit-profile'", () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
@@ -71,7 +141,37 @@ describe('Header', () => {
       </Provider>
     )
 
-    const welcomeTab = wrapper.find('.usa-nav__link')
+    const profileTab = wrapper.find('#profile')
+
+    expect(profileTab.hasClass('usa-current')).toEqual(true)
+  })
+
+  it("should add usa-current class to Admin tab when on '/admin'", () => {
+    const store = mockStore({
+      ...initialState,
+      router: { location: { pathname: '/admin' } },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+
+    const adminTab = wrapper.find('#admin')
+
+    expect(adminTab.hasClass('usa-current')).toEqual(true)
+  })
+
+  it("should not add usa-current class to Welcome tab when not on '/'", () => {
+    initialState = { ...initialState, router: { location: { pathname: '/' } } }
+    const store = mockStore(initialState)
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+
+    const welcomeTab = wrapper.find('#welcome')
 
     expect(welcomeTab.hasClass('usa-current')).toEqual(false)
   })
