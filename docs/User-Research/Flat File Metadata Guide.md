@@ -104,7 +104,7 @@ For tribes, ### represents their 3 digit Tribe Code
 
 # Metadata validation definitions
 
-**Automatic Validation**: Validation that can happen *without* a user manually inputting metadata. This includes values associated to users (e.g. Fips / Tribal codes), user actions inherently tied to metadata (e.g. An action labeled as “Create TANF Report for Q1 of 2020” as opposed to a blank slate style “New Report”), and properties that do not change (e.g. Title fields of the header and trailer). 
+**Automatic Validation**: Validation that can happen *without* a user manually inputting metadata. This includes values associated to users (e.g. Fips and Tribal codes), user actions inherently tied to metadata (e.g. An action labeled as “Create TANF Report for Q1 of 2020” as opposed to a blank slate style “New Report”), and properties that do not change (e.g. Title fields of the header and trailer). 
 
  
 
@@ -118,7 +118,27 @@ For tribes, ### represents their 3 digit Tribe Code
 
 # MVP metadata validation
 
+Below is an overview of which Header and Trailer properties will have automatic validation, which will be guardrailed, and which require further research. We’ve differentiated here between what’s currently illustrated in the Concept Prototype* and what we evaluated as being technically feasible.
 
+*Note that the concept prototype may be iterated upon once the Conversation Guide is complete. The delta between what’s feasible and what’s being illustrated in the Concept Prototype *may* narrow. 
+
+| **Header Field**                           | **Automatic (Concept Prototype)** | **Guardrailed (Concept Prototype)** | **Automatic (Technically Feasible)** | **Guardrailed (Technically Feasible)** |
+| :----------------------------------------- | :-------------------------------- | :---------------------------------- | :----------------------------------- | :------------------------------------- |
+| <br />**Title**<br /><br />                | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
+| <br />**Calendar Quarter**<br /><br />     | <br /><br /><br />                | <br />✓ Yes<br /><br />             | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
+| <br />**Data Type**<br /><br />            | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
+| <br />**State Fips Code**<br /><br />      | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
+| <br />**Tribe Code**<br /><br />           | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
+| <br />**Program Type**<br /><br />         | <br /><br /><br />                | <br />✓ Yes<br /><br />             | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
+| <br />**Edit Indicator**<br /><br />       | <br />🔍 Research<br /><br />      | <br />🔍 Research<br /><br />        | <br />🔍 Research<br /><br />         | <br /><br /><br />                     |
+| <br />**Encryption Indicator**<br /><br /> | <br /><br /><br />                | <br /><br /><br />                  | <br />🔍 Research<br /><br />         | <br /><br /><br />                     |
+| <br />**Update Indicator**<br /><br />     | <br />✓ Yes (For New)<br /><br /> | <br /><br /><br />                  | <br />✓ Yes (For New)<br /><br />    | <br />🔍 Research<br /><br />           |
+
+| **Trailer Field**                       | **Automatic (Concept Prototype)** | **Guardrailed (Concept Prototype)** | **Automatic (Technically Feasible)** | **Guardrailed (Technically Feasible)** |
+| :-------------------------------------- | :-------------------------------- | :---------------------------------- | :----------------------------------- | :------------------------------------- |
+| <br />**Title**<br /><br />             | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
+| <br />**Number of Records**<br /><br /> | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
+| <br />**Blank Spaces**<br /><br />      | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
 
 ---
 
