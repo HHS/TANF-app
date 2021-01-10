@@ -48,7 +48,7 @@ Example header:
 
 Example trailer:
 
-`"TRAILER0000042&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"`
+`"TRAILER0000042         "`
 
 | **Header Field**                           | **Excerpt / Decoding**                                       |
 | :----------------------------------------- | :----------------------------------------------------------- |
