@@ -10,7 +10,7 @@
 - [Header structure](#header-structure)
 - [Trailer strcture](#trailer-structure)
 - [Flat file naming conventions](#flat-file-naming-conventions)
-- [Other notes on file conventions](#other-notes-on-file-conventions)
+- [Other notes on flat file conventions](#other-notes-on-flat-file-conventions)
 - [Metadata validation definitions](#metadata-validation-definitions)
 - [MVP metadata validation](#mvp-metadata-validation)
 
