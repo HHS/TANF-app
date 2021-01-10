@@ -25,7 +25,7 @@ During OFA research, we discovered that submitted flat files have header and tra
 # Header structure
 
 | **Header Field**                           | **Excerpt / Decoding**                                       |
-| ------------------------------------------ | ------------------------------------------------------------ |
+| :----------------------------------------- | :----------------------------------------------------------- |
 | <br />**Title**<br /><br />                | <br />`HEADER` <br /><br />                                  |
 | <br />**Calendar Quarter**<br /><br />     | <br />`20152` (Quarter 2 of 2015)<br /><br />                |
 | <br />**Data Type**<br /><br />            | <br />`G` (Aggregate, i.e, TANF or SSP Report Section 3)<br /><br /> |
