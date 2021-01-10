@@ -122,23 +122,23 @@ Below is an overview of which Header and Trailer properties will have automatic 
 
 *Note that the concept prototype may be iterated upon once the Conversation Guide is complete. The delta between what’s feasible and what’s being illustrated in the Concept Prototype *may* narrow. 
 
-| **Header Field**                           | **Automatic (Concept Prototype)** | **Guardrailed (Concept Prototype)** | **Automatic (Technically Feasible)** | **Guardrailed (Technically Feasible)** |
-| :----------------------------------------- | :-------------------------------- | :---------------------------------- | :----------------------------------- | :------------------------------------- |
-| <br />**Title**<br /><br />                | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
-| <br />**Calendar Quarter**<br /><br />     | <br /><br /><br />                | <br />✓ Yes<br /><br />             | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
-| <br />**Data Type**<br /><br />            | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
-| <br />**State Fips Code**<br /><br />      | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
-| <br />**Tribe Code**<br /><br />           | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
-| <br />**Program Type**<br /><br />         | <br /><br /><br />                | <br />✓ Yes<br /><br />             | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
-| <br />**Edit Indicator**<br /><br />       | <br />🔍 Research<br /><br />      | <br />🔍 Research<br /><br />        | <br />🔍 Research<br /><br />         | <br /><br /><br />                     |
-| <br />**Encryption Indicator**<br /><br /> | <br /><br /><br />                | <br /><br /><br />                  | <br />🔍 Research<br /><br />         | <br /><br /><br />                     |
-| <br />**Update Indicator**<br /><br />     | <br />✓ Yes (For New)<br /><br /> | <br /><br /><br />                  | <br />✓ Yes (For New)<br /><br />    | <br />🔍 Research<br /><br />           |
+| **Header Field**                           | **Automatic <br />(Concept Prototype)** | **Guardrailed<br /> (Concept Prototype)** | **Automatic <br />(Technically Feasible)** | **Guardrailed <br />(Technically Feasible)** |
+| :----------------------------------------- | :-------------------------------------- | :---------------------------------------- | :----------------------------------------- | :------------------------------------------- |
+| <br />**Title**<br /><br />                | <br />✓ Yes<br /><br />                 | <br /><br /><br />                        | <br />✓ Yes<br /><br />                    | <br /><br /><br />                           |
+| <br />**Calendar Quarter**<br /><br />     | <br /><br /><br />                      | <br />✓ Yes<br /><br />                   | <br />✓ Yes<br /><br />                    | <br /><br /><br />                           |
+| <br />**Data Type**<br /><br />            | <br />✓ Yes<br /><br />                 | <br /><br /><br />                        | <br />✓ Yes<br /><br />                    | <br /><br /><br />                           |
+| <br />**State Fips Code**<br /><br />      | <br />✓ Yes<br /><br />                 | <br /><br /><br />                        | <br />✓ Yes<br /><br />                    | <br /><br /><br />                           |
+| <br />**Tribe Code**<br /><br />           | <br />✓ Yes<br /><br />                 | <br /><br /><br />                        | <br />✓ Yes<br /><br />                    | <br /><br /><br />                           |
+| <br />**Program Type**<br /><br />         | <br /><br /><br />                      | <br />✓ Yes<br /><br />                   | <br />✓ Yes<br /><br />                    | <br /><br /><br />                           |
+| <br />**Edit Indicator**<br /><br />       | <br />🔍 Research<br /><br />            | <br />🔍 Research<br /><br />              | <br />🔍 Research<br /><br />               | <br /><br /><br />                           |
+| <br />**Encryption Indicator**<br /><br /> | <br /><br /><br />                      | <br /><br /><br />                        | <br />🔍 Research<br /><br />               | <br /><br /><br />                           |
+| <br />**Update Indicator**<br /><br />     | <br />✓ Yes (For New)<br /><br />       | <br /><br /><br />                        | <br />✓ Yes (For New)<br /><br />          | <br />🔍 Research<br /><br />                 |
 
-| **Trailer Field**                       | **Automatic (Concept Prototype)** | **Guardrailed (Concept Prototype)** | **Automatic (Technically Feasible)** | **Guardrailed (Technically Feasible)** |
-| :-------------------------------------- | :-------------------------------- | :---------------------------------- | :----------------------------------- | :------------------------------------- |
-| <br />**Title**<br /><br />             | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
-| <br />**Number of Records**<br /><br /> | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
-| <br />**Blank Spaces**<br /><br />      | <br />✓ Yes<br /><br />           | <br /><br /><br />                  | <br />✓ Yes<br /><br />              | <br /><br /><br />                     |
+| **Trailer Field**                       | **Automatic <br />(Concept Prototype)** | **Guardrailed <br />(Concept Prototype)** | **Automatic <br />(Technically Feasible)** | **Guardrailed <br />(Technically Feasible)** |
+| :-------------------------------------- | :-------------------------------------- | :---------------------------------------- | :----------------------------------------- | :------------------------------------------- |
+| <br />**Title**<br /><br />             | <br />✓ Yes<br /><br />                 | <br /><br /><br />                        | <br />✓ Yes<br /><br />                    | <br /><br /><br />                           |
+| <br />**Number of Records**<br /><br /> | <br />✓ Yes<br /><br />                 | <br /><br /><br />                        | <br />✓ Yes<br /><br />                    | <br /><br /><br />                           |
+| <br />**Blank Spaces**<br /><br />      | <br />✓ Yes<br /><br />                 | <br /><br /><br />                        | <br />✓ Yes<br /><br />                    | <br /><br /><br />                           |
 
 ---
 
