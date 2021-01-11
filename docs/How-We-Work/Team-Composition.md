@@ -47,6 +47,7 @@
 
 ## Past Product Team Members
 (most recent first)
+* Pat Asata, Raft, tech lead
 * Ryan Ahearn, 18F, compliance consultant
 * Matthew Doty, Raft, user researcher
 * Selena Juneau-Vogel, 18F, team lead & product management consultant
