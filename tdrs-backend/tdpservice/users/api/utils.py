@@ -1,4 +1,4 @@
-"""Define utility methods for users api."""
+"""Define utility methods for users test_api."""
 
 import logging
 import os
