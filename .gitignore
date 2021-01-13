@@ -15,8 +15,6 @@ tdrs-frontend/.env*
 
 
 #BACKEND
-tdrs-backend/*/env_vars/*.env*
-tdrs-backend/*/env_vars/*.env*.*
 tdrs-backend/vars-backend.yml
 tdrs-backend/coverage.xml
 tdrs-backend/htmlcov/*
@@ -38,6 +36,7 @@ tmp
 *.txt
 compliance/opencontrols/
 compliance/exports/
+tdrs-backend/tdpservice/static/*
 
 # don't ignore requirements.txt
 !requirements.txt
@@ -87,3 +86,6 @@ htmlcov/*
 
 # Coverage
 tdrs-backend/htmlcov/*
+
+# VIM
+*.swp

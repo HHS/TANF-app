@@ -41,6 +41,7 @@ ptpython = "*"
 pyjwt = "*"
 python-dotenv = "*"
 requests = "*"
+django-admin-logs = "*"
 
 [requires]
 python_version = "3.8"
