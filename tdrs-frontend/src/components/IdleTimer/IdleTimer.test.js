@@ -12,7 +12,7 @@ import { FETCH_AUTH } from '../../actions/auth'
 
 describe('IdleTimer', () => {
   const mockStore = configureStore([thunk])
-  it('should have a modal with an id of "myModal"', () => {
+  it('should have a modal with an id of "timeoutModal"', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -22,7 +22,7 @@ describe('IdleTimer', () => {
       </Provider>
     )
 
-    const modal = wrapper.find('#myModal')
+    const modal = wrapper.find('#timeoutModal')
 
     expect(modal).toExist()
   })
@@ -37,7 +37,7 @@ describe('IdleTimer', () => {
       </Provider>
     )
 
-    const modal = wrapper.find('#myModal')
+    const modal = wrapper.find('#timeoutModal')
 
     expect(modal.hasClass('display-none')).toBeTruthy()
   })
@@ -60,7 +60,7 @@ describe('IdleTimer', () => {
       </Provider>
     )
 
-    const modal = container.querySelector('#myModal')
+    const modal = container.querySelector('#timeoutModal')
 
     act(() => {
       jest.runAllTimers()
@@ -114,6 +114,7 @@ describe('IdleTimer', () => {
     staySignedInButton.simulate('click')
 
     expect(store.dispatch).toHaveBeenCalledTimes(1)
+    expect(store.getActions()[0].type).toEqual(FETCH_AUTH)
   })
 
   it('should focus `Stay Signed In` button if tab is pressed when modal is open', () => {
@@ -127,7 +128,7 @@ describe('IdleTimer', () => {
       </Provider>
     )
 
-    const modal = container.querySelector('#myModal')
+    const modal = container.querySelector('#timeoutModal')
     const staySignedInButton = container.querySelector('.renew-session')
 
     act(() => {
@@ -150,7 +151,7 @@ describe('IdleTimer', () => {
       </Provider>
     )
 
-    const modal = container.querySelector('#myModal')
+    const modal = container.querySelector('#timeoutModal')
     const signOutButton = container.querySelector('.sign-out')
 
     act(() => {
@@ -190,24 +191,17 @@ describe('IdleTimer', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
-    const { container } = render(
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const wrapper = mount(
       <Provider store={store}>
         <IdleTimer />
       </Provider>
     )
 
-    const modal = container.querySelector('#myModal')
+    wrapper.simulate('mousemove')
 
-    act(() => {
-      jest.runAllTimers()
-    })
-
-    expect(modal.classList.contains('display-block')).toBeTruthy()
-
-    fireEvent.mouseMove(container)
-
-    const actions = store.getActions()
-
-    expect(actions[0]).toBeFalsy()
+    expect(store.dispatch).toHaveBeenCalledTimes(0)
   })
 })

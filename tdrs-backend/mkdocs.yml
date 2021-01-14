@@ -7,5 +7,5 @@ dev_addr: 0.0.0.0:8001
 
 nav:
   - API:
-    - Authentication: 'api/authentication.md'
-    - Users: 'api/login.md'
+    - Authentication: 'test_api/authentication.md'
+    - Users: 'test_api/login.md'
