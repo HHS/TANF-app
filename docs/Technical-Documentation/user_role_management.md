@@ -7,7 +7,7 @@
 For the OFA MVP we will be assigning and updating application user roles through the
 Django Admin Interface. This can be accessed via the backend at:
 
-`<backend-domain-name>/admin`
+`<backend-domain-name>/admin/`
 
 The admin interface requires special privileges which can only be granted via the
 Django CLI [Detailed Below](#cli) or a Django Data migration. 
@@ -18,9 +18,17 @@ can can be each be modified through the interface.
 
 ### Log in to Admin
 
-- Enter your username and password to gain access
+- Go to `<backend-domain-name>/admin/`
+- You will be redirected to `login.gov`
+- Use your `login.gov` credentials to login
+- You will be redirected back to the main application
+- Go to `<backend-domain-name>/admin/`
 
-![](images/admin_login.png)
+_Alternatively_
+
+- Go to `<frontend-domain-name>`
+- Sign in through `login.gov`
+- Go to `<backend-domain-name>/admin/`
 
 ### Admin Home
 
