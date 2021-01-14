@@ -172,9 +172,9 @@ Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-a
  (**Please note you need to be logged into docker for these operations**)
 
 ```
-docker build -t goraftdocker/tdp-frontend:local . -f Dockerfile.dev
+docker build -t lfrohlich/tdp-frontend:local . -f Dockerfile.dev
 
-docker push goraftdocker/tdp-frontend:local
+docker push lfrohlich/tdp-frontend:local
 ```
 
 
@@ -208,7 +208,7 @@ Targeted space <SPACE-1>.
 ( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
 
 ```bash
- cf push tdp-frontend -f manifest.yml --var docker-frontend=goraftdocker/tdp-frontend:local
+ cf push tdp-frontend -f manifest.yml --var docker-frontend=lfrohlich/tdp-frontend:local
 ```
 
 4.) To apply any changes made to environment variables you will need to restage the application:
