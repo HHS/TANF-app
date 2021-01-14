@@ -75,7 +75,7 @@ The application is continuously deployed to the dev, staging, or prod environmen
 Environment | URL | Git Branch
 ------------|----|-------------
 Development | https://tdp-frontend.app.cloud.gov/ | [`raft-tdp-main`](https://github.com/raft-tech/TANF-app) in Raft fork
-Staging | https://tdp-frontend-staging.app.cloud.gov/ | [`main`](https://github.com/HHS/TANF-app) in HHS
+Staging | TBD | [`main`](https://github.com/HHS/TANF-app) in HHS
 Production | TBD | `production` in HHS
 
 
