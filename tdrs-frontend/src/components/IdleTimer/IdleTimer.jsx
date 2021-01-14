@@ -21,9 +21,7 @@ import { fetchAuth } from '../../actions/auth'
  * active again, this variable set the debounce time
  * (in ms) for the call to `/v1/auth_check`.
  *
- * For local development these variables are set in the `.env.local` file.
- * For the development environment these variables are set
- * in the `.env.development` file.
+ * For local development these variables are set in the `.env` file.
  */
 function IdleTimer() {
   const [isModalVisible, setIsModalVisible] = useState(false)

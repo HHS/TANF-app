@@ -55,12 +55,13 @@ def generate_client_assertion():
     :param CLIENT_ID: Issuer as defined login.gov application
     """
     private_key = os.environ["JWT_KEY"]
+    print(private_key)
     payload = {
         "iss": os.environ["CLIENT_ID"],
         "aud": os.environ["OIDC_OP_TOKEN_ENDPOINT"],
         "sub": os.environ["CLIENT_ID"],
         "jti": secrets.token_urlsafe(32)[:32],
-        # set token experation to be 1 minute from current time
+        # set token expiration to be 1 minute from current time
         "exp": int(round(time.time() * 1000)) + 60000,
     }
     encoded_jwt = jwt.encode(payload, key=private_key, algorithm="RS256")
