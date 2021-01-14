@@ -96,6 +96,7 @@ class Common(Configuration):
     USE_I18N = False
     USE_L10N = True
     USE_TZ = True
+    LOGIN_URL = "/v1/login/oidc"
     LOGIN_REDIRECT_URL = "/"
 
     # Static files (CSS, JavaScript, Images)

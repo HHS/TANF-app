@@ -10,6 +10,10 @@ from .users.api.login import TokenAuthorizationOIDC
 from .users.api.login_redirect_oidc import LoginRedirectOIDC
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
+from django.contrib.auth.decorators import login_required
+
+admin.autodiscover()
+admin.site.login = login_required(admin.site.login)
 
 urlpatterns = [
     path("login", TokenAuthorizationOIDC.as_view(), name="login"),
