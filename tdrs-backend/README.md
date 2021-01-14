@@ -28,7 +28,7 @@ This project uses a Pipfile for dependency management. However, due to the limit
 
 1.) For configuration of the `JWT_KEY` and `JWT_CERT_TEST` environment variables for local development/testing documentation is forthcoming. For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
 
-2.) Configure your local environment variables via the  [`.env.local`](./tdpservice/settings/.env.local) file found in this path:
+2.) Configure your local environment variables via the  [`.env.local`](./tdpservice/settings/env_vars/.env.local) file found in this path:
 
 3.) Start the backend via docker-compose: 
 
