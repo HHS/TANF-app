@@ -18,16 +18,16 @@ can can be each be modified through the interface.
 
 ### Log in to Admin
 
-- Go to `<backend-domain-name>/admin/`
-- You will be redirected to `login.gov`
-- Use your `login.gov` credentials to login
-- You will be redirected back to the main application
+- Go to `<frontend-domain-name>`
+- Sign in through `login.gov`
 - Go to `<backend-domain-name>/admin/`
 
 _Alternatively_
 
-- Go to `<frontend-domain-name>`
-- Sign in through `login.gov`
+- Go to `<backend-domain-name>/admin/`
+- You will be redirected to `login.gov`
+- Use your `login.gov` credentials to login
+- You will be redirected back to the main application
 - Go to `<backend-domain-name>/admin/`
 
 ### Admin Home
