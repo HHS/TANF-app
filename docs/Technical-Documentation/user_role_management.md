@@ -10,7 +10,7 @@ Django Admin Interface. This can be accessed via the backend at:
 `<backend-domain-name>/admin`
 
 The admin interface requires special privileges which can only be granted via the
-Django CLI [Detailed Below](#cli). 
+Django CLI [Detailed Below](#cli) or a Django Data migration. 
 
 Once a user has been granted privileges they can go to the admin page described above
 and log in. The admin interface provides links to Users, STTs, Regions and Groups which
@@ -31,6 +31,7 @@ can can be each be modified through the interface.
 ### Group List
 
 - Clicking on "Groups" from the Admin Home page gives you a list of all of the existing groups.
+- Current groups listed are "OFA Admin" and "Data Prepper".
 
 ![](images/group_list.png)
 
