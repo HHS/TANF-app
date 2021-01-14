@@ -46,8 +46,8 @@ Below is a GIF of both the frontend and backend running locally
 
 Detailed instructions for running unit and end-to-end integration testing on frontend and backend are available below
 
-- [Front End](https://github.com/HHS/TANF-app/tree/main/tdrs-frontend)
-- [Back End](https://github.com/HHS/TANF-app/tree/main/tdrs-backend)
+- [Frontend](https://github.com/HHS/TANF-app/tree/main/tdrs-frontend)
+- [Backend](https://github.com/HHS/TANF-app/tree/main/tdrs-backend)
 
 
 ## Infrastructure
