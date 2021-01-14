@@ -97,9 +97,9 @@ Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-a
 1.) Build and push a tagged docker image while on the the target Github branch:
 
 ```bash
-$ docker build -t goraftdocker/tdp-backend:local . -f docker/Dockerfile.dev
+$ docker build -t lfrohlich/tdp-backend:local . -f docker/Dockerfile.dev
 
-$ docker push goraftdocker/tdp-backend:local
+$ docker push lfrohlich/tdp-backend:local
 ```
 
 
@@ -130,7 +130,7 @@ Targeted space <SPACE-1>.
 ( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
 
 ```bash
- $ cf push tdp-backend -f manifest.yml --var docker-backend=goraftdocker/tdp-backend:local
+ $ cf push tdp-backend -f manifest.yml --var docker-backend=lfrohlich/tdp-backend:local
 ```
 
 **Steps 4 and 5 are reserved for deployments to new environments**
