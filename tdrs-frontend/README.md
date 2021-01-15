@@ -23,12 +23,6 @@ Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.
 
 ### Local Development:
 
-First setup your local .env files:
-
-```
-$ cp .env.example .env
-```
-
 Execute the command below from `tdrs-frontend/` folder to access the frontend at `http://localhost:3000`
 
 ```

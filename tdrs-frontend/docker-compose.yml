@@ -21,8 +21,6 @@ services:
       - ./:/home/node/app
     networks:
       - local
-    env_file:
-      - .env
 networks:
   local:
     driver: bridge

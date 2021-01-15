@@ -26,13 +26,9 @@ This project uses a Pipfile for dependency management. However, due to the limit
 
 **Commands are to be executed from within the `tdrs-backend` directory**
 
-1.) Configure your local environment by copying over the .env.example file
+1.) For configuration of the `JWT_KEY` and `JWT_CERT_TEST` environment variables for local development/testing documentation is forthcoming. For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
 
-```bash
-$ cp .env.example .env
-```
-
-2.) Replace secrets in .env with those found in the "Development Credentials - TANF.md" file. If you don't have access to this file please reach out to someone in the Raft Mattermost channel.
+2.) Configure your local environment variables via the  [`.env.local`](./tdpservice/settings/env_vars/.env.local) file found in this path:
 
 3.) Start the backend via docker-compose: 
 
@@ -57,9 +53,7 @@ c803336c1f61        tdp                          "bash -c 'python wai…"   3 se
 $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 ```
 
-6.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
-
-7.) Backend project tear down: 
+6.) Backend project tear down: 
 
 ```bash
  $ docker-compose down --remove-orphans
