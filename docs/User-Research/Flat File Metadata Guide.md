@@ -40,7 +40,7 @@ Example header:
 | <br />**Encryption Indicator**<br /><br /> | <br />`Blank Space` (A blank means that social security numbers are NOT encrypted, 'E' in place of the blank would mean that they were encrypted)<br /><br /> |
 | <br />**Update Indicator**<br /><br />     | <br />`N` (New Data, as opposed to Delete and Replace 'D', or Add and Update 'U'. Non 'N' values come into play during resubmission)<br /><br /> |
 
-![tanf guide](https://user-images.githubusercontent.com/22622384/104673247-562d3180-56af-11eb-9930-e6b758b10383.png)
+![Screenshot of OFA header metadata decodimg](https://user-images.githubusercontent.com/22622384/104673247-562d3180-56af-11eb-9930-e6b758b10383.png)
 
 ---
 
