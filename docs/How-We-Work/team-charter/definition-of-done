@@ -1,3 +1,15 @@
-## Team Definition of Done
-
+# **Definition of Done**
 In order to define an issue as done, it needs to have passed a Raft Review and the [QASP Review](https://github.com/HHS/TANF-app/blob/main/docs/How-We-Work/Quality-Expectations.md) and follows [our branching strategy](https://github.com/HHS/TANF-app/blob/main/docs/How-We-Work/Branching-Strategy.md) which results in the code being available in the HHS/TANF-app repo.
+
+The following checklist needs to be completed:
+- [ ] Meets acceptance criteria for the issue
+- [ ] Code is reviewed by someone other than the original author
+- [ ] Code is tested
+- [ ] Experience is approved by UX
+- [ ] Meets [a11y](https://github.com/HHS/TANF-app/blob/main/docs/a11y/how-18f-will-test-a11y.md) checklist
+- [ ] Meets [Raft's Manual QASP Checklist](https://hackmd.io/Hpuhd4evTeyB_H1BS6ppbw) (only applicable for PR to main HHS)
+- [ ] CI pipeline is green
+- [ ] Documentation is updated
+    *  Open API
+    *  Readme
+    *  Entity Relationship Diagram (ERD)
