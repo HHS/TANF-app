@@ -1,6 +1,5 @@
 """Define utility methods for users test_api."""
 
-import binascii
 import logging
 import os
 import secrets
@@ -58,8 +57,9 @@ def generate_client_assertion():
     """
     private_key = os.environ["JWT_KEY"]
 
-    # We allow the JWT_KEY to be passed in as base64 encoded or as the raw PEM format
-    # to support docker-compose env_file where there are issues with newlines in env vars
+    # We allow the JWT_KEY to be passed in as base64 encoded or as the
+    # raw PEM format to support docker-compose env_file where there are
+    # issues with newlines in env vars
     # https://github.com/moby/moby/issues/12997
     if settings.BASE64_DECODE_JWT_KEY:
         private_key = b64decode(private_key)
