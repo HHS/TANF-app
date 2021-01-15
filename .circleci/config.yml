@@ -93,24 +93,24 @@ jobs:
           command: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin"
       - run:
           name:  "Build Backend Docker image"
-          command: "cd tdrs-backend; docker build -t goraftdocker/tdp-backend:$CIRCLE_BRANCH . -f ./docker/Dockerfile.dev"
+          command: "cd tdrs-backend; docker build -t lfrohlich/tdp-backend:$CIRCLE_BRANCH . -f ./docker/Dockerfile.dev"
       - run:
           name:  "Push Backend Image to Docker Hub"
-          command: "docker push goraftdocker/tdp-backend:$CIRCLE_BRANCH"
+          command: "docker push lfrohlich/tdp-backend:$CIRCLE_BRANCH"
       - run:
           name:  "Build Frontend Docker image"
-          command: "cd tdrs-frontend; docker build -t goraftdocker/tdp-frontend:$CIRCLE_BRANCH . -f Dockerfile.dev"
+          command: "cd tdrs-frontend; docker build -t lfrohlich/tdp-frontend:$CIRCLE_BRANCH . -f Dockerfile.dev"
       - run:
           name:  "Push Frontend Image to Docker Hub"
-          command: "docker push goraftdocker/tdp-frontend:$CIRCLE_BRANCH"
+          command: "docker push lfrohlich/tdp-frontend:$CIRCLE_BRANCH"
       - run:
           name: deploy to cloud.gov
           command: |
             # If we do not specify a space, then deploy to the branch that we are on.
             # Also map certain branches to spaces.
             # This lets you have dev/staging/main branches that automatically go to the right place.
-            export DOCKER_IMAGE_BACKEND="goraftdocker/tdp-backend:$CIRCLE_BRANCH"
-            export DOCKER_IMAGE_FRONTEND="goraftdocker/tdp-frontend:$CIRCLE_BRANCH"
+            export DOCKER_IMAGE_BACKEND="lfrohlich/tdp-backend:$CIRCLE_BRANCH"
+            export DOCKER_IMAGE_FRONTEND="lfrohlich/tdp-frontend:$CIRCLE_BRANCH"
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
               export CF_SPACE="tanf-prod"
               export CF_USERNAME="$CF_USERNAME_PROD"
