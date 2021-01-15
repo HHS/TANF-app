@@ -1,4 +1,4 @@
-# Docker compose configuration overrides for local environments
+# Docker compose file intended to be used in CI/CD pipelines
 version: "3"
 
 services:
@@ -22,8 +22,19 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
-    env_file:
-      - .env
+      # The following values get passed in to docker from Circle CI environment variables
+      - ACR_VALUES=${ACR_VALUES}
+      - BASE_URL=${BASE_URL}
+      - CLIENT_ID=${CLIENT_ID}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
+      - JWT_KEY=${JWT_KEY}
+      - JWT_CERT_TEST=${JWT_CERT_TEST}
+      - MOCK_TOKEN=${MOCK_TOKEN}
+      - OIDC_OP_AUTHORIZATION_ENDPOINT=${OIDC_OP_AUTHORIZATION_ENDPOINT}
+      - OIDC_OP_JWKS_ENDPOINT=${OIDC_OP_JWKS_ENDPOINT}
+      - OIDC_OP_LOGOUT_ENDPOINT=${OIDC_OP_LOGOUT_ENDPOINT}
+      - OIDC_OP_TOKEN_ENDPOINT=${OIDC_OP_TOKEN_ENDPOINT}
     volumes:
       - .:/tdpapp
     image: tdp
