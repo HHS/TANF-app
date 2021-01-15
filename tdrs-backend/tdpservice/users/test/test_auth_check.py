@@ -22,6 +22,11 @@ def test_auth_check_endpoint_with_authenticated_user(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert user.is_authenticated is True
     assert response.data["authenticated"] is True
+    assert response.data["user"]["first_name"] == user.first_name
+    assert response.data["user"]["last_name"] == user.last_name
+    assert response.data["user"]["email"] == user.username
+    assert response.data["user"]["stt"]["id"] == user.stt.id
+    assert response.data["user"]["roles"] == []
 
 
 @pytest.mark.django_db
