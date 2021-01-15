@@ -8,7 +8,9 @@ fi
 
 
 docker-compose down
+echo "TEST"
 docker-compose -f docker-compose.ci.yml up -d --build
+echo "GOT HERE"
 	# do an OWASP ZAP scan
 	CONTAINER=$(docker-compose images | awk '/zaproxy/ {print $1}')
  	export ZAP_CONFIG=" \
