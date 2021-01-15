@@ -14,7 +14,6 @@ services:
   web:
     restart: always
     environment:
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - DB_USER=tdpuser
       - DB_PASSWORD=something_secure
       - DB_NAME=tdrs_test
@@ -22,8 +21,14 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
+      - ACR_VALUES=${ACR_VALUES}
+      - BASE_URL=${BASE_URL}
+      - CLIENT_ID=${CLIENT_ID}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
       - JWT_KEY=${JWT_KEY}
       - JWT_CERT_TEST=${JWT_CERT_TEST}
+      - MOCK_TOKEN=${MOCK_TOKEN}
     volumes:
       - .:/tdpapp
     image: tdp
