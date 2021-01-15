@@ -20,8 +20,8 @@ services:
       - DB_NAME=tdrs_test
       - DB_PORT=5432
       - DB_HOST=postgres
-      - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
-      - DJANGO_CONFIGURATION=Local
+      - DJANGO_SETTINGS_MODULE=tdpservice.settings.test
+      - DJANGO_CONFIGURATION=Test
       # The following values get passed in to docker from Circle CI environment variables
       - ACR_VALUES=${ACR_VALUES}
       - BASE_URL=${BASE_URL}
