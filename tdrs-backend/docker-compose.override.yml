@@ -1,3 +1,4 @@
+# Docker compose configuration overrides for local environments
 version: "3"
 
 services:
@@ -21,6 +22,8 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
+    env_file:
+      - .env
     volumes:
       - .:/tdpapp
     image: tdp

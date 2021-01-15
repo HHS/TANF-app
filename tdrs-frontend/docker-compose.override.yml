@@ -1,4 +1,6 @@
+# Docker compose configuration overrides for local environments
 version: "3"
+
 services:
   zaproxy:
     image: owasp/zap2docker-stable
@@ -21,6 +23,8 @@ services:
       - ./:/home/node/app
     networks:
       - local
+    env_file:
+      - .env
 networks:
   local:
     driver: bridge
