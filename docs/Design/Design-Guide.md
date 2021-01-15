@@ -59,7 +59,7 @@ This living document covers actions a user would take, system actions that happe
 
 ## Mockups & prototypes
 
-[Full Site](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=0%3A1>>) - A visual site map page encompassing all reviewed dev-ready mockups that have been delivered.
+[Full Site](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=0%3A1>) - A visual site map page encompassing all reviewed dev-ready mockups that have been delivered.
 
 **Reviewed**
 
