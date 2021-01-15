@@ -7,7 +7,7 @@ The following checklist needs to be completed:
 - [ ] Code is tested
 - [ ] Experience is approved by UX
 - [ ] Meets [a11y](https://github.com/HHS/TANF-app/blob/main/docs/a11y/how-18f-will-test-a11y.md) checklist
-- [ ] Meets [Raft's Manual QASP Checklist](https://hackmd.io/Hpuhd4evTeyB_H1BS6ppbw) (only applicable for PR to main HHS)
+- [ ] Meets [Raft's Manual QASP Checklist](https://github.com/HHS/TANF-app/blob/main/docs/How-We-Work/team-charter/manual-checks.md) (only applicable for PR to main HHS)
 - [ ] CI pipeline is green
 - [ ] Documentation is updated
     *  Open API
