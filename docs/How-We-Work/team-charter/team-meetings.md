@@ -22,21 +22,21 @@
 
 ## Backlog Refinement 
 - Goal: To identify goals for next sprint and create issues to be discussed in Sprint Planning 
-- Attendees: Lauren, Alex, Shubhi, Carl, Matthew. On alternate weeks, Ryan, Penyin, Tijan.
-- Facilitators: Lauren + Shubhi
+- Attendees: Lauren, Alex, Shubhi, Carl, Brian. On alternate weeks, Ryan, Penyin, Tijan.
+- Facilitators: Lauren + Kati/Shubhi
 - When: Every Wednesday 9:30-10:30am EST 
 - Format: The product owner will collaborate with the leads to review the backlog, prioritize issues for the next sprint, and to make sure items are ready for discussion in the upcoming Sprint Planning session. By the end of the session, a set of issues should be selected, acceptance criteria outlined, questions for the team noted within the issue. This set of issues should be sent to the sprint board before Sprint Planning. On alternating weeks, this meeting will focus on security and compliance issues.  
  
 ## Sprint Planning 
 - Goal: To define the work we’re committing to complete in the next two weeks 
 - Attendees: Core team 
-- Facilitators: Lauren + Shubhi
+- Facilitators: Lauren + Kati/Shubhi
 - When: Every other Wednesday 3:30-5:00pm EST 
 - Format: Product owner should come with priority cards prepared and ready to discuss with the rest of the team. Work in progress should be assessed and the team should decide if work should continue into the new sprint. Team will flesh out issues, acceptence criteria, define done, and right-size the amount of work for the sprint.  
 
 ## Sprint Demo Prep  
 - Goal: To plan what will be demoed in Sprint Demo 
-- Attendees: Lauren, Alex, Shubhi, Carl, Matthew 
+- Attendees: Lauren, Alex, Shubhi, Carl, Kati 
 - Facilitator: Lauren 
 - When:  Every other Tuesday 10:00-10:30am EST 
 - Format: The team will start by reviewing/updating the Sprint Board. By the end of the meeting, the team should decide what is ready to be demoed (and label it as “demo”), who will conduct the demo/s, and if special guests should be invited to attend.  
