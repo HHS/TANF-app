@@ -9,7 +9,7 @@ The [QASP](https://github.com/18F/tdrs-app-rfq/blob/main/Final-RFQ/FINAL-TDRS-so
 | Method of Assessment     | Combined approach using automated and manual testing with tools equivalent to [Accessibility Insights](https://accessibilityinsights.io/) and/or the [DHS Trusted Tester process](https://www.dhs.gov/508-testing). |
 | Due Date                 | Every sprint                                                                                                                                                                                                        |
 
-## How do ACF and 18F plan to carry out the Method of Assessment?
+## How does government plan to carry out the Method of Assessment?
 
 Our web testing tool will be [Accessibility Insights](https://accessibilityinsights.io/).
 
@@ -17,12 +17,12 @@ Accessibility Insights includes both a [Fast Pass](https://accessibilityinsights
 
 We will check new pages, features, and interactions added during the course of each sprint using:
 
-* Accessibility Insights Fast Pass tool
-* Accessibility Insights Assessment tool
-* Manual screen reader testing using one or more of the following combinations:
-    * JAWS on Windows
-    * VoiceOver on Safari, Mac OS
-    * VoiceOver on iOS
+- Accessibility Insights Fast Pass tool
+- Accessibility Insights Assessment tool
+- Manual screen reader testing using one or more of the following combinations:
+  - JAWS on Windows
+  - VoiceOver on Safari, Mac OS
+  - VoiceOver on iOS
 
 We won't re-rest pages or elements that have previously been tested and haven't changed since, such as header or footer elements.
 
