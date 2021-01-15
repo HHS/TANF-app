@@ -58,7 +58,7 @@ jobs:
           command: "cd tdrs-frontend; yarn test:accessibility"
       - run:
           name: "Run Jest Unit Tests"
-          command: "cd tdrs-frontend; yarn test:ci"
+          command: "cd tdrs-frontend; SASS_PATH=node_modules:src yarn test:ci"
       - run:
           name: "Upload Frontend Coverage Report to CodeCov If Target Branch"
           command: |
