@@ -5,6 +5,7 @@ import os
 import secrets
 import time
 import datetime
+from base64 import b64decode
 from urllib.parse import quote_plus, urlencode
 
 from django.core.exceptions import SuspiciousOperation
@@ -54,8 +55,8 @@ def generate_client_assertion():
     :param JWT_KEY: private key expected by the login.gov application
     :param CLIENT_ID: Issuer as defined login.gov application
     """
-    private_key = os.environ["JWT_KEY"]
-    print(private_key)
+    # TODO: Handle base64 errors if decoding fails
+    private_key = b64decode(os.environ["JWT_KEY"])
     payload = {
         "iss": os.environ["CLIENT_ID"],
         "aud": os.environ["OIDC_OP_TOKEN_ENDPOINT"],
