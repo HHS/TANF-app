@@ -25,6 +25,7 @@ services:
       # The following values get passed in to docker from Circle CI environment variables
       - ACR_VALUES=${ACR_VALUES}
       - BASE_URL=${BASE_URL}
+      - CLIENT_ASSERTION_TYPE=${CLIENT_ASSERTION_TYPE}
       - CLIENT_ID=${CLIENT_ID}
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
