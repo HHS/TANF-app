@@ -10,9 +10,9 @@
 
 **Due to limitations imposed by Github and occasional slow server response times, some badges may require a page refresh to load.**
 
-## Office of Family Assistance (OFA) & Temporary Assistance for Needy Families (TANF) Data Reporting System.
+## Office of Family Assistance (OFA) & Temporary Assistance for Needy Families (TANF) Data Portal.
 
-Welcome to the home of the TANF Data Portal (TDP).
+Welcome to the home of the TANF Data Portal (TDP), a new software development project from the Office of Family Assistance (OFA), and office within the Administration for Children Families (ACF).
 
 ## What We're Building and Why
 
