@@ -40,7 +40,7 @@ Example header:
 | <br />**Encryption Indicator**<br /><br /> | <br />`Blank Space` (A blank means that social security numbers are NOT encrypted, 'E' in place of the blank would mean that they were encrypted)<br /><br /> |
 | <br />**Update Indicator**<br /><br />     | <br />`N` (New Data, as opposed to Delete and Replace 'D', or Add and Update 'U'. Non 'N' values come into play during resubmission)<br /><br /> |
 
-
+![tanf guide](https://user-images.githubusercontent.com/22622384/104673247-562d3180-56af-11eb-9930-e6b758b10383.png)
 
 ---
 
@@ -120,7 +120,7 @@ For tribes, ### represents their 3 digit Tribe Code
 
 Below is an overview of which Header and Trailer properties will have automatic validation, which will be guardrailed, and which require further research. We’ve differentiated here between what’s currently illustrated in the Concept Prototype* and what we evaluated as being technically feasible.
 
-*Note that the concept prototype may be iterated upon once the Conversation Guide is complete. The delta between what’s feasible and what’s being illustrated in the Concept Prototype *may* narrow. 
+*Note that the [concept prototype](https://www.figma.com/proto/y15co5xc7MIZXBnWBOF6hJ/Conceptual-Mockups-for-STT-Feedback?node-id=9%3A332&viewport=187%2C385%2C0.11285778135061264&scaling=min-zoom) may be iterated upon once the Conversation Guide is complete. The delta between what’s feasible and what’s being illustrated in the Concept Prototype *may* narrow. 
 
 | **Header Field**                           | **Automatic <br />(Concept Prototype)** | **Guardrailed<br /> (Concept Prototype)** | **Automatic <br />(Technically Feasible)** | **Guardrailed <br />(Technically Feasible)** |
 | :----------------------------------------- | :-------------------------------------- | :---------------------------------------- | :----------------------------------------- | :------------------------------------------- |
