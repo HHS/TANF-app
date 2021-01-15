@@ -7,10 +7,8 @@ elif command -v shasum >/dev/null ; then
 fi
 
 
-docker-compose -f docker-compose.ci.yml down
-echo "TEST"
+docker-compose down
 docker-compose -f docker-compose.ci.yml up -d --build
-echo "GOT HERE"
 	# do an OWASP ZAP scan
 	CONTAINER=$(docker-compose images | awk '/zaproxy/ {print $1}')
  	export ZAP_CONFIG=" \
@@ -34,6 +32,6 @@ if [ "$ZAPEXIT" = 1 ] ; then
 	EXIT=1
 fi
 
- docker-compose -f docker-compose.ci.yml down --remove-orphan
+ docker-compose down --remove-orphan
 
 exit $EXIT
