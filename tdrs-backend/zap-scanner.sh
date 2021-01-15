@@ -7,7 +7,7 @@ elif command -v shasum >/dev/null ; then
 fi
 
 
-docker-compose down
+docker-compose -f docker-compose.ci.yml down
 echo "TEST"
 docker-compose -f docker-compose.ci.yml up -d --build
 echo "GOT HERE"
@@ -34,6 +34,6 @@ if [ "$ZAPEXIT" = 1 ] ; then
 	EXIT=1
 fi
 
- docker-compose down --remove-orphan
+ docker-compose -f docker-compose.ci.yml down --remove-orphan
 
 exit $EXIT
