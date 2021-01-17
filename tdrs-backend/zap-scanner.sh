@@ -10,7 +10,7 @@ fi
 docker-compose -f docker-compose.ci.yml down
 docker-compose -f docker-compose.ci.yml up -d --build
 	# do an OWASP ZAP scan
-	CONTAINER=$(docker-compose images | awk '/zaproxy/ {print $1}')
+	CONTAINER=$(docker-compose -f docker-compose.ci.yml images | awk '/zaproxy/ {print $1}')
  	export ZAP_CONFIG=" \
 	  -config globalexcludeurl.url_list.url\(0\).regex='.*/robots\.txt.*' \
 	  -config globalexcludeurl.url_list.url\(0\).description='Exclude robots.txt' \
