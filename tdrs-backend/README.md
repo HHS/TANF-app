@@ -32,7 +32,7 @@ This project uses a Pipfile for dependency management. However, due to the limit
 $ cp .env.example .env
 ```
 
-2.) Replace secrets in .env with those found in the "Development Credentials - TANF.md" file. If you don't have access to this file please reach out to someone in the Raft Mattermost channel.
+2.) Replace secrets in .env with actual values. To obtain the correct values, please contact the Product Manager.
 
 3.) Start the backend via docker-compose: 
 
