@@ -1,3 +1,4 @@
+# Base Docker compose, using environment variables passed in by env file
 version: "3"
 
 services:

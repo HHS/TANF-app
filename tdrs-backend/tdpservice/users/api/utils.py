@@ -55,8 +55,15 @@ def generate_client_assertion():
     :param JWT_KEY: private key expected by the login.gov application
     :param CLIENT_ID: Issuer as defined login.gov application
     """
-    # TODO: Handle base64 errors if decoding fails
-    private_key = b64decode(os.environ["JWT_KEY"])
+    private_key = os.environ["JWT_KEY"]
+
+    # We allow the JWT_KEY to be passed in as base64 encoded or as the
+    # raw PEM format to support docker-compose env_file where there are
+    # issues with newlines in env vars
+    # https://github.com/moby/moby/issues/12997
+    if settings.BASE64_DECODE_JWT_KEY:
+        private_key = b64decode(private_key)
+
     payload = {
         "iss": os.environ["CLIENT_ID"],
         "aud": os.environ["OIDC_OP_TOKEN_ENDPOINT"],
@@ -66,6 +73,7 @@ def generate_client_assertion():
         "exp": int(round(time.time() * 1000)) + 60000,
     }
     encoded_jwt = jwt.encode(payload, key=private_key, algorithm="RS256")
+
     return encoded_jwt.decode("UTF-8")
 
 

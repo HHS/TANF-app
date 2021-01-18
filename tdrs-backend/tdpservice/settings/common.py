@@ -249,3 +249,5 @@ class Common(Configuration):
     # Capture all logging statements across the service in the root handler
     logger = logging.getLogger()
     logger.addHandler(logging.StreamHandler())
+
+    BASE64_DECODE_JWT_KEY = True

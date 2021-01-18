@@ -9,7 +9,7 @@ fi
 
 
 docker-compose down
-docker-compose up -d --build
+docker-compose -f docker-compose.ci.yml up -d --build
 
 	# do an OWASP ZAP scan
  	export ZAP_CONFIG=" \
