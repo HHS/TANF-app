@@ -18,6 +18,7 @@ _Create a list of functional outcomes that must be achieved to complete this iss
 - [ ] _Outcome 2_
 - [ ] _Outcome 3_
 - [ ] Testing Checklist has been run and all tests pass
+- [ ] README is updated, if necessary
 
 **Tasks:**
 _Create a list of granular, specific work items that must be completed to deliver the desired outcomes of this issue_ 
