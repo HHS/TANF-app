@@ -8,11 +8,11 @@
 |**Frontend Coverage**| [![Codecov-Frontend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main/graph/badge.svg?flag=dev-frontend)](https://codecov.io/gh/raft-tech/TANF-app?flag=dev-frontend) | [![Codeco-Frontend-HHS](https://codecov.io/gh/HHS/TANF-app/branch/main/graph/badge.svg?flag=main-frontend)](https://codecov.io/gh/HHS/TANF-app?flag=main-frontend)   |
 |**Backend Coverage**|  [![Codecov-Backend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main/graph/badge.svg?flag=dev-backend)](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main?flag=dev-backend)|   [![Codecov-Backend-HHS]( https://codecov.io/gh/HHS/TANF-app/branch/main/graph/badge.svg?flag=main-backend)](https://codecov.io/gh/HHS/TANF-app/branch/main?flag=main-backend) |
 
-***Due to limitations imposed by Github and occasional slow server response times, some badges may require a page refresh to load.**
+**Due to limitations imposed by Github and occasional slow server response times, some badges may require a page refresh to load.**
 
-## Office of Family Assistance (OFA) & Temporary Assistance for Needy Families (TANF) Data Reporting System.
+## Office of Family Assistance (OFA) & Temporary Assistance for Needy Families (TANF) Data Portal.
 
-Welcome to the home of the TANF Data Portal (TDP).
+Welcome to the home of the TANF Data Portal (TDP), a new software development project from the Office of Family Assistance (OFA), an office within the Administration for Children Families (ACF).
 
 ## What We're Building and Why
 
@@ -45,6 +45,7 @@ $ cp .env.example .env
 
 ```bash
 $ docker-compose up -d
+```
 ```
 
 After the above commands there will be a total of 5 running containers
@@ -95,8 +96,3 @@ Environment | URL | Git Branch
 Development | https://tdp-frontend.app.cloud.gov/ | [`raft-tdp-main`](https://github.com/raft-tech/TANF-app) in Raft fork
 Staging | TBD | [`main`](https://github.com/HHS/TANF-app) in HHS
 Production | TBD | `production` in HHS
-
-
-
-
-

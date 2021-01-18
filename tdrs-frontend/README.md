@@ -43,7 +43,21 @@ CONTAINER ID        IMAGE                        COMMAND                  CREATE
 63f6da197629        tdrs-frontend_tdp-frontend   "/docker-entrypoint.…"   4 seconds ago       Up 3 seconds                      0.0.0.0:3000->80/tcp     tdp-ui
 ```
 
-----
+=======
+Execute the command below from `tdrs-frontend/` folder to access the frontend at `http://localhost:3000`
+
+```
+$ docker-compose up
+```
+
+The above command will bring up two docker containers
+
+```
+CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS                            PORTS                    NAMES
+7fa018dc68d1        owasp/zap2docker-stable      "sleep 3600"             4 seconds ago       Up 3 seconds (health: starting)   0.0.0.0:8090->8090/tcp   zap-scan
+63f6da197629        tdrs-frontend_tdp-frontend   "/docker-entrypoint.…"   4 seconds ago       Up 3 seconds                      0.0.0.0:3000->80/tcp     tdp-ui
+```
+
 ### Code Linting and Formatting
 
 The app is set up with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/), and follows the [Airbnb Style Guide](https://github.com/airbnb/javascript).

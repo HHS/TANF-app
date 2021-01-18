@@ -61,6 +61,7 @@ $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 
 7.) Backend project tear down: 
 
+
 ```bash
  $ docker-compose down --remove-orphans
 ```
