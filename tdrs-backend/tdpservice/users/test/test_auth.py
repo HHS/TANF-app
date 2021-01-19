@@ -1,5 +1,4 @@
 """Test the custom authorization class."""
-import base64
 import os
 import uuid
 import time
