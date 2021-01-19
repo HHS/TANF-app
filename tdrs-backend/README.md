@@ -72,7 +72,7 @@ $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 1. Run local unit tests by executing the following command.
 
 ```bash
-$ docker-compose run web sh -c "DJANGO_SETTINGS_MODULE=tdpservice.settings.test DJANGO_CONFIGURATION=Test pytest"
+$ docker-compose run web sh -c "pytest"
 ```
 
 2. Run local linting tests by executing the following command:

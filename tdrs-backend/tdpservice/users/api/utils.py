@@ -1,5 +1,6 @@
 """Define utility methods for users test_api."""
 
+import binascii
 import logging
 import os
 import secrets
@@ -61,8 +62,12 @@ def generate_client_assertion():
     # raw PEM format to support docker-compose env_file where there are
     # issues with newlines in env vars
     # https://github.com/moby/moby/issues/12997
-    if settings.BASE64_DECODE_JWT_KEY:
-        private_key = b64decode(private_key)
+    try:
+        private_key = b64decode(private_key).decode("utf-8")
+    except binascii.Error:
+        # If the private_key couldn't be Base64 decoded then just try it as
+        # configured, in order to handle PEM format keys.
+        pass
 
     payload = {
         "iss": os.environ["CLIENT_ID"],
