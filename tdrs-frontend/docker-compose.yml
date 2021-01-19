@@ -1,4 +1,4 @@
-# Base Docker compose, using environment variables passed in by env file
+# Base Docker compose for all environments
 version: "3"
 
 services:
@@ -23,8 +23,6 @@ services:
       - ./:/home/node/app
     networks:
       - local
-    env_file:
-      - .env
 networks:
   local:
     driver: bridge
