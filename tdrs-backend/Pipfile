@@ -39,6 +39,7 @@ markdown = "*"
 psycopg2-binary = "*"
 ptpython = "*"
 pyjwt = "*"
+python-dotenv = "*"
 requests = "*"
 django-admin-logs = "*"
 
