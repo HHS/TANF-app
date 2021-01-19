@@ -17,91 +17,47 @@ Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.
 - [Unit and Integration Testing](#Unit-and-Integration-Testing)
 - [Manual Cloud.gov Deployments](#Manual-Cloud.gov-Deployments)
 
-# Testing the local Frontend Service:
+# Running the Frontend locally:
 
-  **Login is now dependent on the [tdrs-backend](../tdrs-backend/README.md) service. You will need a local instance of that application running.**
+  **Login is now dependent on the [tdrs-backend](../tdrs-backend/README.md#testing-the-local-backend-service) service. You will need a local instance of that application running.**
 
+### Local Development:
 
-### Local Development Options
+First setup your local .env files:
 
-**Commands are to be executed from within the `tdrs-frontend` directory**
-
-1.) Create a `.env.local` file for local development configured to reference the backend service:
-
-```bash
-$ touch .env.local && echo "REACT_APP_BACKEND_URL=http://localhost:8080/v1" >> .env.local
 ```
- 
-  - The `REACT_APP_BACKEND_URL` variable in this file points to the backend host. For local testing this value should default to the following :
-  
-   ```
-   http://localhost:8080/v1
-   ```
-
-
-2.) Frontend project spin-up options: 
-
-- Option 1 (Using Yarn directly): We recommend using [NVM](https://github.com/nvm-sh/nvm)
-
-    ```bash
-    $ nvm install 12.18.3 # Install specific node version
-    $ yarn
-    $ yarn build
-    $ yarn start 
-    ```
-
-- Option 2 (Build and start via docker-compose):
-
-    ```bash
-    $ docker-compose up -d --build
-    ```
-    This will start one container named `tdrs-frontend_tdp-frontend` with port `3000`. Any changes made in `tdrs-frontend` folder will be picked up by docker automatically (no stop/run containers each time). 
-
-- Option 3 ( Build and start via docker)
-  ```
-  1.) Build the Docker image locally:
-  docker build --target localdev -t tdp-frontend:local . -f Dockerfile.local
-  
-  2.) Run the app:
-  docker run -it -p 3000:3000 -v $PWD/src/:/home/node/app/src --rm tdp-frontend:local 
-  ```
-    This will start one container `tdp-frontend` with port `3000`. Any changes amde in `src` folder will be picked up by docker automatically (no stop/run containers each time).
-
-   With the project started, you can access the landing page via a web-browser ( we recommend `Chrome`) at the following URL:
-```
-  http://localhost:3000
+$ cp .env.example .env
 ```
 
-3.) This will redirect you to the `TDP Homepage` page with a button labeled `Sign in with Login.gov`.
+Execute the command below from `tdrs-frontend/` folder to access the frontend at `http://localhost:3000`
 
-- Clicking this button will redirect you to the login.gov authentication page.
--  You must agree to associate your account with the `TANF Prototype: Development` application.
--  If you encounter any issues signing in, please ensure you are using a [Login.gov-Sandbox Account](https://idp.int.identitysandbox.gov/) and **NOT** your [Login.gov Account](login.gov).
+```
+$ docker-compose up
+```
 
+The above command will bring up two docker containers
 
-4.) Upon successful authentication you will be redirected to the frontend edit-profile (`/edit-profile`) UI with an option to sign out.
+```
+CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS                            PORTS                    NAMES
+7fa018dc68d1        owasp/zap2docker-stable      "sleep 3600"             4 seconds ago       Up 3 seconds (health: starting)   0.0.0.0:8090->8090/tcp   zap-scan
+63f6da197629        tdrs-frontend_tdp-frontend   "/docker-entrypoint.…"   4 seconds ago       Up 3 seconds                      0.0.0.0:3000->80/tcp     tdp-ui
+```
 
+=======
+Execute the command below from `tdrs-frontend/` folder to access the frontend at `http://localhost:3000`
 
-5.) Clicking the `Sign Out` button will log you out of the application and redirect you to the landing page,
+```
+$ docker-compose up
+```
 
+The above command will bring up two docker containers
 
-6.) Frontend project tear down options: 
+```
+CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS                            PORTS                    NAMES
+7fa018dc68d1        owasp/zap2docker-stable      "sleep 3600"             4 seconds ago       Up 3 seconds (health: starting)   0.0.0.0:8090->8090/tcp   zap-scan
+63f6da197629        tdrs-frontend_tdp-frontend   "/docker-entrypoint.…"   4 seconds ago       Up 3 seconds                      0.0.0.0:3000->80/tcp     tdp-ui
+```
 
-  - If using Option 1 or 3 from above:
-
-    ```
-     Kill the application running in your terminal.
-
-     MacOS Example: control+c
-    ```
-
-  - Option 2 (If you ran the application via docker-compose):
-
-    ```bash
-    $ docker-compose down
-    ```
-
-----
 ### Code Linting and Formatting
 
 The app is set up with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/), and follows the [Airbnb Style Guide](https://github.com/airbnb/javascript).
@@ -163,7 +119,7 @@ The [Cypress guides](https://docs.cypress.io/guides/getting-started/writing-your
 
 ----
 
-### Manual Cloud.gov Deployments:
+### Cloud.gov Deployments:
 
 Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
 

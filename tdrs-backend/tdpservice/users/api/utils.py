@@ -5,6 +5,7 @@ import os
 import secrets
 import time
 import datetime
+from base64 import b64decode
 from urllib.parse import quote_plus, urlencode
 
 from django.core.exceptions import SuspiciousOperation
@@ -55,15 +56,24 @@ def generate_client_assertion():
     :param CLIENT_ID: Issuer as defined login.gov application
     """
     private_key = os.environ["JWT_KEY"]
+
+    # We allow the JWT_KEY to be passed in as base64 encoded or as the
+    # raw PEM format to support docker-compose env_file where there are
+    # issues with newlines in env vars
+    # https://github.com/moby/moby/issues/12997
+    if settings.BASE64_DECODE_JWT_KEY:
+        private_key = b64decode(private_key)
+
     payload = {
         "iss": os.environ["CLIENT_ID"],
         "aud": os.environ["OIDC_OP_TOKEN_ENDPOINT"],
         "sub": os.environ["CLIENT_ID"],
         "jti": secrets.token_urlsafe(32)[:32],
-        # set token experation to be 1 minute from current time
+        # set token expiration to be 1 minute from current time
         "exp": int(round(time.time() * 1000)) + 60000,
     }
     encoded_jwt = jwt.encode(payload, key=private_key, algorithm="RS256")
+
     return encoded_jwt.decode("UTF-8")
 
 
