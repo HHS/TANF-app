@@ -72,7 +72,7 @@ $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 1. Run local unit tests by executing the following command.
 
 ```bash
-$ docker-compose run web sh -c "pytest"
+$ docker-compose run web sh -c "DJANGO_SETTINGS_MODULE=tdpservice.settings.test DJANGO_CONFIGURATION=Test pytest"
 ```
 
 2. Run local linting tests by executing the following command:
@@ -146,7 +146,7 @@ Targeted space <SPACE-1>.
  $ cf set-env tdp-backend JWT_KEY "$(cat key.pem)"
  ```
  
-- **For the list of required environment variables please defer to the `.env.local` file
+- **For the list of required environment variables please defer to the `.env.example` file
 
 5.) After this step you will need to bind the application to a Postgres RDS service if it has not been bound already: 
 ```bash
