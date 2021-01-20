@@ -35,3 +35,34 @@ class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         """Check if a user is admin or superuser."""
         return request.user.is_authenticated and request.user.is_admin
+
+
+class IsOFAAdmin(permissions.BasePermission):
+    """Permission for OFA Analyst only views."""
+
+    def has_permission(self, request, view):
+        """Check if a user is a OFA Admin."""
+        return is_in_group(request.user, "OFA Admin")
+
+
+class IsDataPrepper(permissions.BasePermission):
+    """Permission for Data Prepper only views."""
+
+    def has_permission(self, request, view):
+        """Check if a user is a data prepper."""
+        return is_in_group(request.user, "Data Prepper")
+
+
+class CanUploadReport(permissions.BasePermission):
+    """Permission for report uploads."""
+
+    def has_permission(self, request, view):
+        """
+        Check if a user is a data prepper or an admin.
+
+        If they are a data prepper, ensures the STT is their own.
+        """
+        if is_in_group(request.user, "OFA Admin") or is_own_stt(request, view):
+            return True
+        else:
+            return False
