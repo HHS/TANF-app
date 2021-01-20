@@ -7,13 +7,6 @@ from rest_framework import status
 User = get_user_model()
 
 @pytest.mark.django_db
-@pytest.fixture(scope="function")
-def create_test_users():
-    """Create users for each group."""
-    call_command("generate_test_users")
-
-
-@pytest.mark.django_db
 def test_retrieve_user(api_client, user):
     """Test user retrieval."""
     api_client.login(username=user.username, password="test_password")
@@ -37,11 +30,3 @@ def test_cannot_update_user_anonymously(api_client, user):
     """Test an unauthenticated user cannot update a user."""
     response = api_client.patch(f"/v1/users/{user.pk}/", {"first_name": "Jane"})
     assert response.status_code == status.HTTP_403_FORBIDDEN
-
-
-@pytest.mark.django_db
-def test_create_user(api_client, user_data):
-    """Test user creation."""
-    response = api_client.post("/v1/users/", user_data)
-    assert response.status_code == status.HTTP_201_CREATED
-    assert User.objects.filter(username=user_data["username"]).exists()
