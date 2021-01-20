@@ -10,7 +10,6 @@ from .models import User
 from .permissions import IsAdmin, IsUser
 from django.utils import timezone
 from .serializers import (
-    CreateUserSerializer,
     UserProfileSerializer,
     UserSerializer,
     GroupSerializer
