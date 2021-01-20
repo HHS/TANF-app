@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 class UserViewSet(
-    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
@@ -33,7 +32,6 @@ class UserViewSet(
     def get_permissions(self):
         """Get permissions for the viewset."""
         permission_classes = {
-            "create": [AllowAny],
             "retrieve": [IsUser | IsAdmin],
             "set_profile": [IsUser | IsAdmin],
             "partial_update": [IsUser | IsAdmin],
@@ -45,7 +43,6 @@ class UserViewSet(
     def get_serializer_class(self):
         """Return the serializer class."""
         return {
-            "create": CreateUserSerializer,
             "set_profile": UserProfileSerializer,
         }.get(self.action, UserSerializer)
 
