@@ -28,3 +28,13 @@ class UserFactory(factory.django.DjangoModelFactory):
     def _create(cls, model_class, *args, **kwargs):
         manager = cls._get_manager(model_class)
         return manager.create_user(*args, **kwargs)
+
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        """Add groups to user instance."""
+        if not create:
+            return
+
+        if extracted:
+            for group in extracted:
+                self.groups.add(group)
