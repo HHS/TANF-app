@@ -67,6 +67,25 @@ Detailed instructions for running unit and end-to-end integration testing on fro
 - [Frontend](https://github.com/HHS/TANF-app/tree/main/tdrs-frontend)
 - [Backend](https://github.com/HHS/TANF-app/tree/main/tdrs-backend)
 
+## Troubleshooting
+
+From time to time you may have issues with building and running a docker container. If you have trouble with either the Frontend or Backend, try the following.
+
+**Option 1**
+_This is the quicker option, so try this first. If you still don't succeed, try option 2 below_
+
+```
+docker-compose down && docker-compose build --no-cache && docker-compose up -d
+```
+
+**Option 2**
+
+```
+docker system prune --all
+docker-compose up --build -d
+```
+You may also try to run without the `-d` flag and use the terminal output to help debug.
+
 
 ## Infrastructure
 
