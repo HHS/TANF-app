@@ -1,30 +1,44 @@
 #!/bin/sh
 #
-# This script will attempt to create the services required
-# and then launch everything.
-#
 
-# The deployment strategy you wish to employ ( rolling update or setting up a new environment)
+# WHAT THIS DOES
+
+# This script creates and launches the Cloud.gov services required to run the TDP app.
+
+# DEPENDENCIES
+
+# This script assumes that the user is logged in to Cloud.gov via the Cloud Foundry CLI,
+# and has permissions to provision services in the relevant Cloud.gov spaces and orgs.
+# For more, see: https://cloud.gov/docs/getting-started/setup/.
+
+# ARGUMENTS
+
+# The deployment strategy you wish to employ.
+# One of "rolling" (rolling update; deploy) or "setup" (setting up a new environment).
 DEPLOY_STRATEGY=${1}
 
-# The environment in which you want to execute these commands
+# The environment in which you want to execute these commands.
+# If set to "prod", provisions medium-psql-redundant in Cloud.gov instead of shared-psql.
+# For more, see: https://cloud.gov/docs/services/relational-database/.
+# (TODO: Consider renaming this argument to better reflect what it does.)
 DEPLOY_ENV=${2}
 
-#The application name  defined via the manifest yml for the backend
+# The application name supplied to the manifest yml for the backend.
 CGHOSTNAME_BACKEND=${3}
 
-#The application name  defined via the manifest yml for the frontend
+# The application name supplied to the manifest yml for the frontend.
 CGHOSTNAME_FRONTEND=${4}
 
-#The docker image to beferenced for the backend deployment ( please ensure this
-#is pushed to a public docker repo)
+# The docker image referenced for the backend deployment.
+# Please ensure this is published in a public docker repo.
 DOCKER_IMAGE_BACKEND=${5}
 
-#The docker image to beferenced for the frontend deployment 
-#(please ensure this is pushed to a public docker repo)
+# The docker image referenced for the backend deployment.
+# Please ensure this is published in a public docker repo.
 DOCKER_IMAGE_FRONTEND=${6}
 
-#The Github Branch triggered to execure this script if triggered in circleci
+# The Github branch triggered to execute this script if triggered in CircleCI.
+# (TODO: Consider removing this variable; appears to be unused here.)
 CIRCLE_BRANCH=${7}
 
 echo DEPLOY_STRATEGY: $DEPLOY_STRATEGY
@@ -35,21 +49,29 @@ echo DOCKER_BACKEND_IMAGE: $DOCKER_IMAGE_BACKEND
 echo DOCKER_FRONTEND_IMAGE: $DOCKER_IMAGE_FRONTEND
 echo CIRCLE_BRANCH=$CIRCLE_BRANCH
 
+# EXAMPLES
 
-# function to check if a service exists
+# For an example rolling deploy:
+# See .circleci/config.yml, which calls this script as part of the deploy process.
+
+# Example staging deploy:
+# ./deploy-cloudgov-docker.sh setup test tdp-backend-staging tdp-frontend-staging lfrohlich/tdp-backend lfrohlich/tdp-frontend staging
+
+
+# Helper function to check if a service exists.
 service_exists()
 {
   cf service "$1" >/dev/null 2>&1
 }
 
 
-# Performs a normal deployment unless rolling is specified in the fucntion call
+# Performs a normal deployment unless rolling is specified:
 update_frontend()
 {
 	if [ "$1" = "rolling" ] ; then
-		# Do a zero downtime deploy.  This requires enough memory for
-		# two apps to exist in the org/space at one time.
-		#The `--var` parameter ingest a value into the ((docker-frontend)) environment variable in the manifest.yml**
+		# Do a zero downtime deploy.
+		# This requires enough memory for two apps to exist in the org/space at one time.
+		# The `--var` parameter ingests a value into the ((docker-backend)) environment variable in the manifest.yml.
 		cf push $CGHOSTNAME_FRONTEND --no-route -f tdrs-frontend/manifest.yml --var docker-frontend=$DOCKER_IMAGE_FRONTEND --strategy rolling || exit 1
 	else
 		cf push $CGHOSTNAME_FRONTEND --no-route -f tdrs-frontend/manifest.yml --var docker-frontend=$DOCKER_IMAGE_FRONTEND
@@ -57,18 +79,18 @@ update_frontend()
 	cf map-route $CGHOSTNAME_FRONTEND app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
 }
 
-# Performs a normal deployment unless rolling is specified in the fucntion call
+# Performs a normal deployment unless rolling is specified:
 update_backend()
 {
 	if [ "$1" = "rolling" ] ; then
-		# Do a zero downtime deploy.  This requires enough memory for
-		# two apps to exist in the org/space at one time.
-		#The `--var` parameter ingest a value into the ((docker-backend)) environment variable in the manifest.yml**
+		# Do a zero downtime deploy.
+		# This requires enough memory for two apps to exist in the org/space at one time.
+		# The `--var` parameter ingests a value into the ((docker-backend)) environment variable in the manifest.yml.
 		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND --strategy rolling || exit 1
 
 	else
 		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND
-		# set up JWT key if needed
+		# Set up JWT key if needed:
 		if cf e $CGHOSTNAME_BACKEND | grep -q JWT_KEY ; then
 		   echo jwt cert already created
 		else
@@ -78,8 +100,8 @@ update_backend()
 	cf map-route $CGHOSTNAME_BACKEND app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
 }
 
-# perform a rolling update for the backend and frontend deployments if specifed,
-# otherwise perform a normal deployment 
+# Perform a rolling update for the backend and frontend deployments if specifed,
+# otherwise perform a normal deployment, e.g. for setting up a new app.
 if [ $DEPLOY_STRATEGY = "rolling" ] ; then
 
 	update_backend 'rolling'
@@ -89,13 +111,13 @@ else
 	update_frontend 
 fi
 
-# create a new deployment environment 
-# Setup needed services
-# Deploy the backend
-# Bind the backend to needed services
-# Deploy the frontend
+# 1. Create a new deployment environment.
+# 2. Setup needed services.
+# 3. Deploy the backend.
+# 4. Bind the backend to needed services.
+# 5. Deploy the frontend.
 if [ "$1" = "setup" ] ; then  echo
-	# create services (if needed)
+	# Create services (if needed):
 	if service_exists "tdp-app-deployer" ; then
 	  echo tdp-app-deployer already created
 	else
@@ -120,7 +142,7 @@ if [ "$1" = "setup" ] ; then  echo
 	  fi
 	fi
 
-	# set up backend
+	# Set up backend:
 	if cf app $CGHOSTNAME_BACKEND >/dev/null 2>&1 ; then
 		echo $CGHOSTNAME_BACKEND app already set up
 	else
@@ -129,7 +151,7 @@ if [ "$1" = "setup" ] ; then  echo
 		cf restage $CGHOSTNAME_BACKEND
 	fi
 
-	# set up frontend
+	# Set up frontend:
 	if cf app $CGHOSTNAME_FRONTEND >/dev/null 2>&1 ; then
 		echo $CGHOSTNAME_FRONTEND app already set up
 	else
@@ -137,7 +159,8 @@ if [ "$1" = "setup" ] ; then  echo
 	fi
 fi
 
-#Helper method to generate JWT cert and keys for new environment
+# Generates and sets JWT cert and keys for new environment.
+# Called as part of new environment setup.
 generate_jwt_cert() 
 {
 	echo "regenerating JWT cert/key"
@@ -145,8 +168,7 @@ generate_jwt_cert()
 	cf set-env $CGHOSTNAME_BACKEND JWT_CERT "$(cat cert.pem)"
 	cf set-env $CGHOSTNAME_BACKEND JWT_KEY "$(cat key.pem)"
 
-	# make sure that we have something set that you can later override with the
-	# proper value so that the app can start up
+	# Let user of this script know that they will need to set an OIDC_RP_CLIENT_ID.
 	if cf e $CGHOSTNAME_BACKEND | grep -q OIDC_RP_CLIENT_ID ; then
 		echo OIDC_RP_CLIENT_ID already set up
 	else
@@ -158,7 +180,7 @@ generate_jwt_cert()
 	fi
 }
 
-# Tell people where to go
+# Tell people where to go:
 echo
 echo
 echo "to log into the site, you will want to go to https://${CGHOSTNAME_FRONTEND}.app.cloud.gov/"
