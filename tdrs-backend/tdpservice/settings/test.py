@@ -17,5 +17,3 @@ class Test(Common):
     EMAIL_HOST = "localhost"
     EMAIL_PORT = 1025
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-    BASE64_DECODE_JWT_KEY = False

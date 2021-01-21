@@ -46,7 +46,6 @@ $ cp .env.example .env
 ```bash
 $ docker-compose up -d
 ```
-```
 
 After the above commands there will be a total of 5 running containers
 
