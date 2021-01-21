@@ -16,7 +16,7 @@ export default function PrivateTemplate({ title, children }) {
   const headerRef = useRef()
   useEffect(() => {
     document.title = `${title} - TDP - TANF Data Portal`
-    headerRef.current.focus()
+    if (headerRef.current) headerRef.current.focus()
   }, [title])
 
   return (
