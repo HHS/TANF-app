@@ -1,5 +1,5 @@
 # 5. Application Authentication
-Date: 2021-08-04
+Date: 2020-08-04
 
 ## Status
 
@@ -17,4 +17,3 @@ We will use login.gov for authentication.
 
 ## Consequences
 Inheriting security controls from Login.gov will make the ATO process simpler.
-
