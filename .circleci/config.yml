@@ -11,13 +11,13 @@ jobs:
           command: "./scripts/docker-compose-check.sh"
       - run:
           name: "Test: Build and Spin-up Django API Service"
-          command: "cd tdrs-backend; docker-compose -f docker-compose.yml up -d --build"
+          command: "cd tdrs-backend; docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build"
       - run:
           name: "Tear Down Django API Service"
-          command: "cd tdrs-backend; docker-compose -f docker-compose.yml down "
+          command: "cd tdrs-backend; docker-compose -f docker-compose.yml -f docker-compose.ci.yml down "
       - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
-          command: "cd tdrs-backend; docker-compose -f docker-compose.yml run web sh -c \"pytest && pytest --cov-report=xml\""
+          command: "cd tdrs-backend; docker-compose -f docker-compose.yml -f docker-compose.ci.yml run web sh -c \"pytest && pytest --cov-report=xml\""
       - run:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
@@ -28,7 +28,7 @@ jobs:
             fi
       - run:
           name:  "Test: Execute Python Linting Test"
-          command: "cd tdrs-backend; docker-compose -f docker-compose.yml run --rm web bash -c \"flake8 .\""
+          command: "cd tdrs-backend; docker-compose -f docker-compose.yml -f docker-compose.ci.yml run --rm web bash -c \"flake8 .\""
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
