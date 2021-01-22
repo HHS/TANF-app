@@ -1,4 +1,3 @@
-# Base Docker compose for all environments
 version: "3"
 
 services:
@@ -15,6 +14,7 @@ services:
   web:
     restart: always
     environment:
+      - DJANGO_SECRET_KEY=local
       - DB_USER=tdpuser
       - DB_PASSWORD=something_secure
       - DB_NAME=tdrs_test
@@ -22,6 +22,8 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
+      - JWT_KEY=${JWT_KEY}
+      - JWT_CERT_TEST=${JWT_CERT_TEST}
     volumes:
       - .:/tdpapp
     image: tdp
