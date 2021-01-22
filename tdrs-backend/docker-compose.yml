@@ -1,4 +1,8 @@
-# Base Docker compose for all environments
+# Base docker-compose used for running the application locally, 
+# running tests locally, and running tests in the cloud. 
+
+# Includes some hard-coded values used to run the test suite.
+
 version: "3"
 
 services:
@@ -8,8 +12,6 @@ services:
   postgres:
     image: postgres:11.6
     environment:
-      # Hard-coded values used for running the app locally 
-      # and running the test suite in the cloud:
       - POSTGRES_USER=tdpuser
       - POSTGRES_PASSWORD=something_secure
       - POSTGRES_DB=tdrs_test
@@ -17,8 +19,7 @@ services:
   web:
     restart: always
     environment:
-      # Hard-coded values used for running the app locally 
-      # and running the test suite in the cloud:
+      - DJANGO_SECRET_KEY=local
       - DB_USER=tdpuser
       - DB_PASSWORD=something_secure
       - DB_NAME=tdrs_test
@@ -26,8 +27,8 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
-      - DJANGO_SECRET_KEY=secret_for_testing
-      - SECRET_KEY=secret_for_testing
+      - JWT_KEY=${JWT_KEY}
+      - JWT_CERT_TEST=${JWT_CERT_TEST}
     volumes:
       - .:/tdpapp
     image: tdp
