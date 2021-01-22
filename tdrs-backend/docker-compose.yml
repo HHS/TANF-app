@@ -8,6 +8,8 @@ services:
   postgres:
     image: postgres:11.6
     environment:
+      # Hard-coded values used for running the app locally 
+      # and running the test suite in the cloud:
       - POSTGRES_USER=tdpuser
       - POSTGRES_PASSWORD=something_secure
       - POSTGRES_DB=tdrs_test
@@ -15,6 +17,8 @@ services:
   web:
     restart: always
     environment:
+      # Hard-coded values used for running the app locally 
+      # and running the test suite in the cloud:
       - DB_USER=tdpuser
       - DB_PASSWORD=something_secure
       - DB_NAME=tdrs_test
