@@ -26,6 +26,7 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
+      - DJANGO_SECRET_KEY=secret_for_testing
     volumes:
       - .:/tdpapp
     image: tdp
