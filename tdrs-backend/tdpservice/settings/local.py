@@ -1,6 +1,5 @@
 """Define configuration settings for local environment."""
 import os
-from os.path import dirname
 
 from .common import Common
 
