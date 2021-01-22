@@ -26,9 +26,13 @@ This project uses a Pipfile for dependency management. However, due to the limit
 
 **Commands are to be executed from within the `tdrs-backend` directory**
 
-1.) For configuration of the `JWT_KEY` and `JWT_CERT_TEST` environment variables for local development/testing documentation is forthcoming. For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
+1.) Configure your local environment by copying over the .env.example file
 
-2.) Configure your local environment variables via the  [`.env.local`](./tdpservice/settings/env_vars/.env.local) file found in this path:
+```bash
+$ cp .env.example .env
+```
+
+2.) Replace secrets in .env with actual values. To obtain the correct values, please contact the Product Manager.
 
 3.) Start the backend via docker-compose: 
 
@@ -53,7 +57,10 @@ c803336c1f61        tdp                          "bash -c 'python wai…"   3 se
 $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 ```
 
-6.) Backend project tear down: 
+6.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
+
+7.) Backend project tear down: 
+
 
 ```bash
  $ docker-compose down --remove-orphans
@@ -139,7 +146,7 @@ Targeted space <SPACE-1>.
  $ cf set-env tdp-backend JWT_KEY "$(cat key.pem)"
  ```
  
-- **For the list of required environment variables please defer to the `.env.local` file
+- **For the list of required environment variables please defer to the `.env.example` file
 
 5.) After this step you will need to bind the application to a Postgres RDS service if it has not been bound already: 
 ```bash

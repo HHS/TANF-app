@@ -8,8 +8,8 @@ fi
 
 
 
-docker-compose down
-docker-compose up -d --build
+docker-compose -f docker-compose.yml down
+docker-compose -f docker-compose.yml up -d --build
 
 	# do an OWASP ZAP scan
  	export ZAP_CONFIG=" \
@@ -26,7 +26,7 @@ docker-compose up -d --build
 		ZAPEXIT=1
 	fi
 
- docker-compose down --remove-orphan
+ docker-compose -f docker-compose.yml down --remove-orphan
 
 
 EXIT=0

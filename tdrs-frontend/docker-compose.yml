@@ -1,4 +1,6 @@
+# Base Docker compose for all environments
 version: "3"
+
 services:
   zaproxy:
     image: owasp/zap2docker-stable
