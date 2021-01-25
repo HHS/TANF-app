@@ -6,7 +6,7 @@
 
 - Deliver user roles and permission management 
 - Continue building upload TANF report feature 
-- Complete round 4 research planning 
+- Complete round 4 research plan 
 - Continue updating docs with accepted issues and ADR, update readme, and archive prototype. 
 - Get clarity on NextGen XMS vs. login.gov in advance of Critical Design Review (1/21) 
 - Demo product roadmap during standup 
