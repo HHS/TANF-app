@@ -24,27 +24,9 @@ Welcome to the home of the TANF Data Portal (TDP), a new software development pr
 
 Both the frontend (`http://localhost:3000`) and the backend (`http://localhost:8080`) applications run within Docker.  Instructions for running these containers are below:
 
-Frontend
 ```
-$ cd tdrs-frontend
-$ cp .env.example .env  # Optionally tweak default values as needed
-$ docker-compose up -d
-```
-Backend
-
-1.) Configure your local environment by copying over the .env.example file
-
-```bash
-$ cd tdrs-backend
-$ cp .env.example .env
-```
-
-2.) Replace secrets in .env with actual values. To obtain the correct values, please contact the Product Manager.
-
-3.) Start the backend via docker-compose: 
-
-```bash
-$ docker-compose up -d
+$ cd tdrs-frontend && docker-compose up -d
+$ cd tdrs-backend && docker-compose up -d 
 ```
 
 After the above commands there will be a total of 5 running containers
@@ -95,3 +77,8 @@ Environment | URL | Git Branch
 Development | https://tdp-frontend.app.cloud.gov/ | [`raft-tdp-main`](https://github.com/raft-tech/TANF-app) in Raft fork
 Staging | TBD | [`main`](https://github.com/HHS/TANF-app) in HHS
 Production | TBD | `production` in HHS
+
+
+
+
+

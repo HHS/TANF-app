@@ -78,7 +78,6 @@ def generate_client_assertion():
         "exp": int(round(time.time() * 1000)) + 60000,
     }
     encoded_jwt = jwt.encode(payload, key=private_key, algorithm="RS256")
-
     return encoded_jwt.decode("UTF-8")
 
 

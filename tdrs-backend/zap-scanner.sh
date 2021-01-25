@@ -6,10 +6,11 @@ elif command -v shasum >/dev/null ; then
 	SHASUM=shasum
 fi
 
-docker-compose -f docker-compose.yml -f docker-compose.ci.yml down
-docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
+
+docker-compose down
+docker-compose up -d --build
 	# do an OWASP ZAP scan
-	CONTAINER=$(docker-compose -f docker-compose.yml -f docker-compose.ci.yml images | awk '/zaproxy/ {print $1}')
+	CONTAINER=$(docker-compose images | awk '/zaproxy/ {print $1}')
  	export ZAP_CONFIG=" \
 	  -config globalexcludeurl.url_list.url\(0\).regex='.*/robots\.txt.*' \
 	  -config globalexcludeurl.url_list.url\(0\).description='Exclude robots.txt' \
@@ -31,6 +32,6 @@ if [ "$ZAPEXIT" = 1 ] ; then
 	EXIT=1
 fi
 
-docker-compose -f docker-compose.yml -f docker-compose.ci.yml down --remove-orphan
+ docker-compose down --remove-orphan
 
 exit $EXIT

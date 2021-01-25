@@ -11,6 +11,7 @@ tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
 tdrs-frontend/pa11y-screenshots/*
+tdrs-frontend/.env*
 
 
 #BACKEND
@@ -20,6 +21,7 @@ tdrs-backend/htmlcov/*
 *.pyc
 /backend/db.sqlite3
 .DS_Store
+ .env
 /staticfiles/*
 /mediafiles/*
 __pycache__/
@@ -87,6 +89,3 @@ tdrs-backend/htmlcov/*
 
 # VIM
 *.swp
-
-# dotenv files
-.env
