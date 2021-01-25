@@ -22,7 +22,7 @@ from ..api.utils import (
 )
 from ..authentication import CustomAuthentication
 
-test_private_key = base64.b64decode(os.environ["JWT_CERT_TEST"]).decode("utf-8")
+test_private_key = os.environ["JWT_CERT_TEST"]
 
 
 class MockRequest:
