@@ -28,11 +28,13 @@ Production         | Prod            | Gov                  | Deploy code tested
 
 ### How would this affect #521? "As a developer, I want a staging site..."
 
-Under the proposed deployment flow, instead of setting up a staging site in #521, we would set up another pair of frontend/backend applications in the tanf dev Space, which would form the `experiment` deploy environment.
+Under the proposed deployment flow, instead of setting up a staging environment in #521, we would set up another pair of frontend/backend applications in the tanf dev Space, which would form the `experiment` deploy environment.
 
-Developers would be able to deploy code to `experiment` anytime. The current `development` site would be used to deploy work ready for QASP review.
+Developers would be able to deploy code to `experiment` anytime. 
 
-We would set up a `staging` site at a later time -- for example, once we have an OFA Tech Lead onboarded and able to own and maintain the government-access-only staging and deploy sites.
+The current `development` environment would be used to deploy work ready for QASP review.
+
+We would set up a `staging` environment at a later time -- e.g., once an OFA Tech Lead has onboarded and can own and maintain the staging and deploy sites.
 
 ## Consequences
 
