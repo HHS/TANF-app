@@ -179,7 +179,7 @@ Internally, we also wanted to:
 
 **How we used this research**
 
-- We updated [our stakeholder map](https://github.com/HHS/TANF-app/wiki/Product-Strategy#project-stakeholders) and [user personas](https://github.com/HHS/TANF-app/wiki/User-types).
+- We updated [our stakeholder map](https://github.com/HHS/TANF-app/wiki/Product-Strategy#project-stakeholders) and [user personas](https://github.com/HHS/TANF-app/wiki/Stakeholders-and-Personas).
 - We [created an updated process map](https://github.com/HHS/TANF-app/wiki/current-tdrs-system) to show how STTs submit data to OFA.
 - Research findings contributed to [our roadmap and initial backlog](https://github.com/HHS/TANF-app/wiki/Roadmap-and-backlog).
 
