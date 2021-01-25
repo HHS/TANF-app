@@ -26,6 +26,13 @@ Development        | Dev             | Vendor & Gov         | Deploy code submit
 Staging            | Staging         | Gov                  | Deploy code once gov-approved               | Code merged to `HHS/TANF-app:staging`
 Production         | Prod            | Gov                  | Deploy code tested in staging & ready for prod    | Code merged to `HHS/TANF-app:main`
 
+### How would this affect #521? "As a developer, I want a staging site..."
+
+Under the proposed deployment flow, instead of setting up a staging site in #521, we would set up another pair of frontend/backend applications in the tanf dev Space, which would form the `experiment` deploy environment.
+
+Developers would be able to deploy code to `experiment` anytime. The current `development` site would be used to deploy work ready for QASP review.
+
+We would set up a `staging` site at a later time -- for example, once we have an OFA Tech Lead onboarded and able to own and maintain the government-access-only staging and deploy sites.
 
 ## Consequences
 
