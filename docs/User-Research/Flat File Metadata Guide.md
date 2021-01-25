@@ -112,7 +112,7 @@ For tribes, ### represents their 3 digit Tribe Code
 
  
 
-🔍 **Research**: There are open questions and we’d like to base a recommendation on insights from Phase III Research (October STT Research) and continued solutions ideation (Both design and technical).
+🔍 **Research**: There are open questions and we’d like to base a recommendation on insights from Phase III Research ([October STT Research](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2020%2C%20Fall%20-%20Understanding%20STT%20Roles%2C%20Source%20of%20Truth%2C%20and%20Metadata.md)) and continued solutions ideation (Both design and technical).
 
 ---
 
