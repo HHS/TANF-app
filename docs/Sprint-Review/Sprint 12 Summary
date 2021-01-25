@@ -45,7 +45,7 @@
 - Complete security fixes from [PR for 309](https://github.com/HHS/TANF-app/pull/121) - [#517](https://github.com/raft-tech/TANF-app/issues/517), [#518](https://github.com/raft-tech/TANF-app/issues/518), and [#519](https://github.com/raft-tech/TANF-app/issues/519)
 - Continue building upload TANF report feature 
 - Revist 'how we work' and better distuingish between delivered and accepted for QASP review
-- Start scheduling STT for round 4 
+- Prepare for round 4 STT research
 - Security Control documentation plan 
 - Build staging environment
 - Get clarity on NextGen XMS vs. login.gov 
