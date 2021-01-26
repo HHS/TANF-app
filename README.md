@@ -1,5 +1,4 @@
-
-
+# Temporary Assistance for Needy Families (TANF) Data Portal - TDP
 
 || Raft-Tech(raft-tdp-main) |  HHS(main) |
 |---|---|---|
@@ -9,80 +8,77 @@
 |**Frontend Coverage**| [![Codecov-Frontend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main/graph/badge.svg?flag=dev-frontend)](https://codecov.io/gh/raft-tech/TANF-app?flag=dev-frontend) | [![Codeco-Frontend-HHS](https://codecov.io/gh/HHS/TANF-app/branch/main/graph/badge.svg?flag=main-frontend)](https://codecov.io/gh/HHS/TANF-app?flag=main-frontend)   |
 |**Backend Coverage**|  [![Codecov-Backend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main/graph/badge.svg?flag=dev-backend)](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main?flag=dev-backend)|   [![Codecov-Backend-HHS]( https://codecov.io/gh/HHS/TANF-app/branch/main/graph/badge.svg?flag=main-backend)](https://codecov.io/gh/HHS/TANF-app/branch/main?flag=main-backend) |
 
-***Due to limitations imposed by Github and occasional slow server response times, some badges may require a page refresh to load.**
+**Due to limitations imposed by Github and occasional slow server response times, some badges may require a page refresh to load.**
 
-# TANF Data Reporting Prototype
+## Office of Family Assistance (OFA) & Temporary Assistance for Needy Families (TANF) Data Portal.
 
-This repo has a prototype for a TANF Data Reporting system, where States,
-Territories, and Tribes can upload TANF data and get it validated and stored
-in a database.
+Welcome to the home of the TANF Data Portal (TDP), a new software development project from the Office of Family Assistance (OFA), an office within the Administration for Children Families (ACF).
 
-OFA has partnered with 18F to conduct the initial research, scoping, prototyping,
-and strategy for the new TDRS. 18F has laid the groundwork for a modern and sustainable
-software development process and removed as many barriers as possible for the incoming
-contractor team. This information may highlight important considerations for future
-development team, and should not constrain vendor’s technical approach submissions.
+## What We're Building and Why
 
-The [Wiki](https://github.com/hhs/TANF-app/wiki) includes more information about the vision and working commitments of the team dedicated to building a new TDRS system.
+- [Product planning page]( https://github.com/HHS/TANF-app/blob/main/docs/README.md) includes latest information on our product mission, goals, roadmap, and backlog. 
 
+## Getting Started
 
-## Current TDRS information and prototype.
-The current TDRS is difficult to access that 18F only leveraged the existing data format that grantees use to submit their data to TDRS and did not
-develop any direct access to the system. This data format is not extensible, not
-human-readable, and does not have adequate documentation. However, the data format
-is standardized and does not immediately require the grantees to change their data
-generation processes. Both OFA staff and grantees would like a user interface for
-entering data in the new  system, but developing this will require more user research.
+### Running the Application locally
 
-This TDRS prototype was built to test assumptions about the primary goal of this project.
-The prototype allows users to upload data in the TANF data
-reporting format and view the resulting data. It conducts limited data validation of the
-submissions.  It is a Python/Django app with Login.gov integration, and running in Cloud.gov.
-The OFA team uses SQL with their existing analysis tools, so 18F developed the prototype
-with a Postgres SQL database. The contractor may extend, extract useful parts, or replace
-the prototype application entirely.
+Both the frontend (`http://localhost:3000`) and the backend (`http://localhost:8080`) applications run within Docker.  Instructions for running these containers are below:
 
-The prototype provided an opportunity to develop an application environment. 18F and OFA
-have been working together to get core technical infrastructure approved and set up so
-when the contractor joins the team they can immediately begin to contribute code and have
-it automatically roll out to their development environment.
+```
+$ cd tdrs-frontend && docker-compose up -d
+$ cd tdrs-backend && docker-compose up -d 
+```
 
-The application environment is roughly: 
+After the above commands there will be a total of 5 running containers
 
-![diagram of prototype apps and services](docs/updated-tanf-prototype-diagram-system.png)
+```
+CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS                            PORTS                    NAMES
+c803336c1f61        tdp                          "bash -c 'python wai…"   3 seconds ago       Up 3 seconds                      0.0.0.0:8080->8080/tcp   tdrs-backend_web_1
+20912a347e00        postgres:11.6                "docker-entrypoint.s…"   4 seconds ago       Up 3 seconds                      5432/tcp                 tdrs-backend_postgres_1
+9c3e6c2a88b0        owasp/zap2docker-weekly      "sleep 3600"             4 seconds ago       Up 3 seconds (health: starting)                            tdrs-backend_zaproxy_1
+7fa018dc68d1        owasp/zap2docker-stable      "sleep 3600"             41 seconds ago      Up 40 seconds (unhealthy)         0.0.0.0:8090->8090/tcp   zap-scan
+63f6da197629        tdrs-frontend_tdp-frontend   "/docker-entrypoint.…"   41 seconds ago      Up 40 seconds                     0.0.0.0:3000->80/tcp     tdp-ui
+```
 
-This infrastructure should provide OFA and the contractor with a system that will be easy to get up to speed on, manage, and use. The components are:
-* [Cloud.gov](https://cloud.gov/) This is a GovCloud-based platform-as-a-service that removes almost all of the infrastructure monitoring and maintenance from the system, is already procured for OFA, and has a FedRAMP Joint Authorization Board Provisional Authority to Operate (JAB P-ATO) on file. FedRAMP is a standardized federal security assessment for cloud services, and the FedRAMP ATO helps agencies by providing confidence in the security of cloud solutions and security assessments.    Cloud.gov supports all modern software development frameworks so the contractor team does not need to continue in Python/Django if they prefer another language/framework.
-* [Login.gov](https://www.login.gov/) The TDRS application requires strong multi-factor authentication for the states, tribes, and territories and Personal Identity Verification (PIV) authentication for OFA staff. Login.gov can meet both of these requirements and HHS already has an IAA for this service. Login.gov has a FedRAMP ATO on file.
-* [CircleCI](https://circleci.com/) This is a CI/CD system that is commonly used by 18F. CircleCI has an FedRAMP ATO on file. It is used to automate builds, testing, and deploys from GitHub.
+Below is a GIF of both the frontend and backend running locally
 
-## How to use this prototype
+![GIF of frontend and backend running locally](https://user-images.githubusercontent.com/44377678/104548466-e1022380-55fe-11eb-9a7b-eea7cda395d4.gif)
 
-This template is meant to be a starting point for the vendors.  Code that is
-checked into this repo will be automatically be tested by running `./test.sh`,
-and if it lives on the `dev`, `staging`, or `prod` branches, it will be deployed
-to cloud.gov using the `./deploy_cloudgov.sh` script.  Thus, vendors can
-immediately start writing software rather than building infrastructure.
+Detailed instructions for running unit and end-to-end integration testing on frontend and backend are available below
 
-Probably most of this documentation and application code
-will be gone once the vendor gets up to speed, replaced by the documentation of
-the vendor's application, it's technology, and it's processes and procedures.
-
-* If you would like to test out how to get the prototype running locally
-  or understand how the environments were set up,
-  then check out [Running the TANF Data Reporting Prototype](docs/Running.md)
-* Compliance documentation and information about how to approach
-  the ATO process can be found in [Compliance.md](docs/Compliance.md).
-* Operational procedures and workflows can be found in the 
-  [Workflows documentation](docs/Workflows.md).  This is an overview of how you
-  should do development using a modified gitops system, how to find logs,
-  update the infrastructure, rotate secrets, etc.
+- [Frontend](https://github.com/HHS/TANF-app/tree/main/tdrs-frontend)
+- [Backend](https://github.com/HHS/TANF-app/tree/main/tdrs-backend)
 
 
- ## Public domain
+## Infrastructure
 
-This project is in the worldwide [public domain](LICENSE.md).
+TDP Uses Infrastructure as Code (IaC) and DevSecOps automation
 
-> This project is in the public domain within the United States, and copyright and related rights in the work worldwide are waived through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
->
-> All contributions to this project will be released under the CC0 dedication. By submitting a pull request, you are agreeing to comply with this waiver of copyright interest.
+### Authentication
+
+[Login.gov](https://login.gov/) TDP requires strong multi-factor authentication for the states, tribes, and territories and Personal Identity Verification (PIV) authentication for OFA staff. Login.gov is being used to meet both of these requirements. 
+
+### Cloud Environment
+
+[Cloud.gov](https://cloud.gov/) is being used as the cloud environment. This platform-as-a-service (PaaS) removes almost all of the infrastructure monitoring and maintenance from the system, is already procured for OFA, and has a FedRAMP Joint Authorization Board Provisional Authority to Operate (JAB P-ATO) on file. 
+
+## CI/CD Pipelines with CircleCI
+
+### Continuous Integration (CI)
+
+On each git push and merge, a comprehensive list of automated checks are run: Unit tests ([Jest](https://jestjs.io/), [Cypress](https://www.cypress.io/)), Integration tests (Cypress), Linting tests ([ESLint](https://eslint.org/) and [Black](https://black.readthedocs.io/en/stable/)), Accessibility tests ([Pa11y](https://pa11y.org/)), and Security Scanning ([OWASP ZAP](https://owasp.org/www-project-zap/)). The configurations for CI are kept in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml). 
+
+### Continuous Deployment
+
+The application is continuously deployed to the dev, staging, or prod environments based on the git branch the code is merged in. The configuration for different branches is maintained in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml#L107). The application is deployed to the following environments:
+
+Environment | URL | Git Branch
+------------|----|-------------
+Development | https://tdp-frontend.app.cloud.gov/ | [`raft-tdp-main`](https://github.com/raft-tech/TANF-app) in Raft fork
+Staging | TBD | [`main`](https://github.com/HHS/TANF-app) in HHS
+Production | TBD | `production` in HHS
+
+
+
+
+

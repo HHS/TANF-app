@@ -26,27 +26,26 @@ This project uses a Pipfile for dependency management. However, due to the limit
 
 **Commands are to be executed from within the `tdrs-backend` directory**
 
+1.) For configuration of the `JWT_KEY` and `JWT_CERT_TEST` environment variables for local development/testing documentation is forthcoming. For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
 
-1.) Configure your local environment variables via the  `.env.local` file found in this path:
+2.) Configure your local environment variables via the  [`.env.local`](./tdpservice/settings/env_vars/.env.local) file found in this path:
 
-```tdpservice/settings/env_vars/.env.local```
-
-
-2.)Build and start the backend via docker-compose: 
-
+3.) Start the backend via docker-compose: 
 
 ```bash
-$ docker-compose up -d --build
-```
-This command will start the following containers: `tdrs-backend_web_1` (webserver) on port `8080`, `tdrs-backend_postgres_1` (`postgresql` DB) on port `5432`, and `tdrs-backend_zaproxy_1` (OWASP ZAP).
-
-
-3.) The backend service will now be available via the following URL: 
-```
-http://localhost:8080
+$ docker-compose up -d
 ```
 
-4.) To get an OpenAPI compliant schema of all the API endpoints, do a `GET` on `http://localhost:8080/api-scehma.json` or go to http://localhost:8080/apidocs/ in the browser to view all API endpoints.
+This command will start the following containers: 
+
+```bash
+CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS                            PORTS                    NAMES
+c803336c1f61        tdp                          "bash -c 'python wai…"   3 seconds ago       Up 3 seconds                      0.0.0.0:8080->8080/tcp   tdrs-backend_web_1
+20912a347e00        postgres:11.6                "docker-entrypoint.s…"   4 seconds ago       Up 3 seconds                      5432/tcp                 tdrs-backend_postgres_1
+9c3e6c2a88b0        owasp/zap2docker-weekly      "sleep 3600"             4 seconds ago       Up 3 seconds (health: starting)                            tdrs-backend_zaproxy_1
+```
+
+4.) The backend service will now be available via the following URL: `http://localhost:8080`
 
 5.) To `exec` into the PostgreSQL database in the container. 
 
@@ -54,8 +53,7 @@ http://localhost:8080
 $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 ```
 
-
-5.) Backend project tear down: 
+6.) Backend project tear down: 
 
 ```bash
  $ docker-compose down --remove-orphans
@@ -88,18 +86,17 @@ This will spin up a local instance of the backend service and execute a penetrat
 
 ----
 
-### Manual Cloud.gov Deployments:
+### Cloud.gov Deployments:
 
 Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
 
 
 1.) Build and push a tagged docker image while on the the target Github branch:
 
-
 ```bash
-$ docker build -t goraftdocker/tdp-backend:local . -f docker/Dockerfile.dev
+$ docker build -t lfrohlich/tdp-backend:local . -f docker/Dockerfile.dev
 
-$ docker push goraftdocker/tdp-backend:local
+$ docker push lfrohlich/tdp-backend:local
 ```
 
 
@@ -130,7 +127,7 @@ Targeted space <SPACE-1>.
 ( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
 
 ```bash
- $ cf push tdp-backend -f manifest.yml --var docker-backend=goraftdocker/tdp-backend:local
+ $ cf push tdp-backend -f manifest.yml --var docker-backend=lfrohlich/tdp-backend:local
 ```
 
 **Steps 4 and 5 are reserved for deployments to new environments**
