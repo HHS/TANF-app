@@ -1,5 +1,4 @@
 """Test the custom authorization class."""
-import base64
 import os
 import uuid
 import time
@@ -22,7 +21,7 @@ from ..api.utils import (
 )
 from ..authentication import CustomAuthentication
 
-test_private_key = base64.b64decode(os.environ["JWT_CERT_TEST"]).decode("utf-8")
+test_private_key = os.environ["JWT_CERT_TEST"]
 
 
 class MockRequest:
@@ -460,10 +459,18 @@ def test_validate_nonce_and_state():
 
 
 @pytest.mark.django_db
-def test_generate_client_assertion():
+def test_generate_client_assertion_base64():
     """Test client assertion generation."""
     os.environ["JWT_KEY"] = test_private_key
     assert generate_client_assertion() is not None
+
+@pytest.mark.django_db
+def test_generate_client_assertion_pem():
+    """Test client assertion generation."""
+    from base64 import b64decode
+    os.environ["JWT_KEY"] = b64decode(test_private_key).decode("utf-8")
+    utf8_jwt_key = generate_client_assertion()
+    assert utf8_jwt_key is not None
 
 
 @pytest.mark.django_db
