@@ -49,13 +49,14 @@ Generate the client_assertion parameter needed by the login.gov/token endpoint
 """
 
 
-def generate_client_assertion(private_key = os.environ["JWT_KEY"]):
+def generate_client_assertion():
     """
     Generate client assertion parameters.
 
     :param JWT_KEY: private key expected by the login.gov application
     :param CLIENT_ID: Issuer as defined login.gov application
     """
+    private_key = os.environ["JWT_KEY"]
 
     # We allow the JWT_KEY to be passed in as base64 encoded or as the
     # raw PEM format to support docker-compose env_file where there are
