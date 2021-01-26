@@ -459,10 +459,16 @@ def test_validate_nonce_and_state():
 
 
 @pytest.mark.django_db
-def test_generate_client_assertion():
+def test_generate_client_assertion_base64():
     """Test client assertion generation."""
-    os.environ["JWT_KEY"] = test_private_key
-    assert generate_client_assertion() is not None
+    assert generate_client_assertion(private_key=test_private_key) is not None
+
+@pytest.mark.django_db
+def test_generate_client_assertion_pem():
+    """Test client assertion generation."""
+    from base64 import b64decode
+    utf8_jwt_key = generate_client_assertion(private_key = b64decode(test_private_key).decode("utf-8"))
+    assert utf8_jwt_key is not None
 
 
 @pytest.mark.django_db
