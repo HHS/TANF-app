@@ -22,7 +22,7 @@
 
 ## Backlog Refinement 
 - Goal: To identify goals for next sprint and create issues to be discussed in Sprint Planning 
-- Attendees: Lauren, Alex, Shubhi, Carl, Brian. On alternate weeks, Ryan, Penyin, Tijan.
+- Attendees: Lauren, Alex S., Shubhi, Carl, Brian, Jennifer, Kati. On alternate weeks, Penyin, Tijan, and Patrick.
 - Facilitators: Lauren + Kati/Shubhi
 - When: Every Wednesday 9:30-10:30am EST 
 - Format: The product owner will collaborate with the leads to review the backlog, prioritize issues for the next sprint, and to make sure items are ready for discussion in the upcoming Sprint Planning session. By the end of the session, a set of issues should be selected, acceptance criteria outlined, questions for the team noted within the issue. This set of issues should be sent to the sprint board before Sprint Planning. On alternating weeks, this meeting will focus on security and compliance issues.  
