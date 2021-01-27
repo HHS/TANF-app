@@ -1,4 +1,4 @@
-# 8. Object Storage
+# 7. Object Storage
 Date: 2020-08-04
 
 ## Status
