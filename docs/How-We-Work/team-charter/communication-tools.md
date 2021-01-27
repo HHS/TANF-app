@@ -18,7 +18,7 @@
 - [Mural links can be found here](https://teams.microsoft.com/l/channel/19%3Af769bbcb029f4f02b55ae7fad90e310d%40thread.skype/tab%3A%3Af5bd4b6f-f448-42a9-8437-073c4fbf556c?groupId=41f194a6-c1d3-4680-933e-c8ee7d17e287&tenantId=d58addea-5053-4a80-8499-ba4d944910df)🔒
  
 
-## Weekly Ship Email 
+## Bi-weekly Ship Email 
 
 - [Weekly ship email history lives in 18F’s Drive](https://docs.google.com/document/d/1QHSdnv4E68FBUC3vkHApgJIJ3zP2C5v9RUNszoeyHZk/edit)🔒 
 - Goal: To keep stakeholders’ informed of the team's work 
