@@ -22,7 +22,7 @@
 
 - [Weekly ship email history lives in 18F’s Drive](https://docs.google.com/document/d/1QHSdnv4E68FBUC3vkHApgJIJ3zP2C5v9RUNszoeyHZk/edit)🔒 
 - Goal: To keep stakeholders’ informed of the team's work 
-- Format: Compiled and sent every Monday evening by Selena. Bulleted summary of our team’s. Includes work done by OFA, 18F, and Raft towards our shared goals.  
+- Format: Compiled and sent every every other week by Lauren. Bulleted summary of our team’s work based on Sprint Review summaries. Includes work done by OFA, 18F, and Raft towards our shared goals.  
 - Recipients: see doc 
 
  
