@@ -11,7 +11,6 @@ class ReportFileFactory(factory.django.DjangoModelFactory):
         """Hardcoded meta data for report files."""
         model = "reports.ReportFile"
 
-    id = factory.Faker("uuid4")
     original_filename = "report.txt"
     slug = "report-txt-slug"
     extension = "txt"
