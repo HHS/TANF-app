@@ -1,4 +1,4 @@
-# 6. Deployment Flow
+# 8. Deployment Flow
 Date: 2021-01-25
 
 ## Status
