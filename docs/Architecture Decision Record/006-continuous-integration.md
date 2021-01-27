@@ -7,7 +7,7 @@ Accepted
 
 ## Context
 
-CircleCI has an FedRAMP ATO on file. It is used to automate builds, testing, and deploys from GitHub.
+CircleCI has a FedRAMP ATO on file. It is used to automate builds, testing, and deploys from GitHub.
 
 ## Decision
 
