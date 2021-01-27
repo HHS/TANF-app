@@ -1,4 +1,4 @@
-"""Generate test data for Report files"""
+"""Generate test data for Report files."""
 
 import factory
 from tdpservice.users.test.factories import UserFactory
@@ -9,6 +9,7 @@ class ReportFileFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         """Hardcoded meta data for report files."""
+
         model = "reports.ReportFile"
 
     original_filename = "report.txt"
@@ -20,4 +21,3 @@ class ReportFileFactory(factory.django.DjangoModelFactory):
     version = 1
     user = factory.SubFactory(UserFactory)
     stt = factory.SubFactory(STTFactory)
-
