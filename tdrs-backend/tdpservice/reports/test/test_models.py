@@ -16,5 +16,3 @@ def test_create_new_report_version(report):
         "user": report.user,
     })
     assert new_version.version == report.version + 1
-
-
