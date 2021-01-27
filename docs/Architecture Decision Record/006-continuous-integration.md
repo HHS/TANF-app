@@ -1,4 +1,4 @@
-# 7. Continuous integration
+# 6. Continuous integration
 Date: 2021-08-04
 
 ## Status
