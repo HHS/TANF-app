@@ -1,5 +1,5 @@
 # 8. Deployment Flow
-Date: 2021-01-25
+Date: 2021-01-27
 
 ## Status
 
@@ -31,6 +31,8 @@ Production         | Prod            | Gov                  | Deploy code tested
 ### How would this affect #521? "As a developer, I want a staging site..."
 
 Under the proposed deployment flow, the staging site built in #521 will be the `vendor staging` site. 
+
+Future stories will be built out for `gov staging` and `production`.
 
 ## Consequences
 
