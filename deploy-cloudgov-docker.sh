@@ -95,10 +95,10 @@ update_backend()
 		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND
 		# Set up JWT key if needed:
 		if cf e $CGHOSTNAME_BACKEND | grep -q JWT_KEY ; then
-		   echo jwt cert already created
+			echo "jwt cert already created."
 		else
-		   generate_jwt_cert
-	   fi
+			echo "jwt cert needs to be created and set: see generate_jwt_cert."
+		fi
 	fi
 	cf map-route $CGHOSTNAME_BACKEND app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
 }
