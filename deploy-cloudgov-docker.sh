@@ -54,8 +54,8 @@ echo CIRCLE_BRANCH=$CIRCLE_BRANCH
 # For an example rolling deploy:
 # See .circleci/config.yml, which calls this script as part of the deploy process.
 
-# Example staging deploy:
-# ./deploy-cloudgov-docker.sh setup test tdp-backend-staging tdp-frontend-staging lfrohlich/tdp-backend lfrohlich/tdp-frontend staging
+# Example vendor staging deploy:
+# ./deploy-cloudgov-docker.sh setup test tdp-backend-vendor-staging tdp-frontend-vendor-staging lfrohlich/tdp-backend:raft-tdp-main lfrohlich/tdp-frontend:raft-tdp-main raft-tdp-main
 
 # Remember, the script assumes that the user is logged in to Cloud.gov via the Cloud Foundry CLI.
 
