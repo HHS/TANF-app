@@ -36,7 +36,7 @@
 
 ## Sprint Demo Prep  
 - Goal: To plan what will be demoed in Sprint Demo 
-- Attendees: Lauren, Alex, Shubhi, Carl, Kati 
+- Attendees: Lauren, Alex, Shubhi, Carl, Kati, Jennifer 
 - Facilitator: Lauren 
 - When:  Every other Tuesday 10:00-10:30am EST 
 - Format: The team will start by reviewing/updating the Sprint Board. By the end of the meeting, the team should decide what is ready to be demoed (and label it as “demo”), who will conduct the demo/s, and if special guests should be invited to attend.  
