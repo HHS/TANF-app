@@ -13,7 +13,9 @@ This poses challenges to the vendor development team. The team works on multiple
 
 Our Cloud.gov organization currently has three Spaces -- dev, staging, and prod. Staging and prod are currently empty as of January 2021. The vendor team currently has access to the dev Space only. 
 
-The proposed deploy solution below adds a second Cloud.gov deploy environment to the dev Space, called `vendor staging`. (Each deploy environment is really a pair of applications, one frontend and one backend.) The `development` environment will be used for internal vendor team review. The `vendor staging` environment will be used for government review. This aims to solve the "crowding" problem by allowing the vendor team two separate places to deploy code.
+The proposed deploy solution below adds a second Cloud.gov deploy environment to the dev Space, called `vendor staging`. (Each deploy environment consists of a pair of applications, one frontend and one backend.)
+
+The `development` environment will be used for internal vendor team review. The `vendor staging` environment will be used for government review. This aims to solve the "crowding" problem by allowing the vendor team two separate places to deploy code, within one Space.
 
 ## Proposed Decision
 
@@ -34,6 +36,6 @@ Under the proposed deployment flow, the staging site built in #521 will be the `
 
 * Good: Vendor dev team "crowding" should be reduced through this solution.
 * Good: Only need to maintain/monitor vendor dev access to a single Cloud.gov Space using this solution -- least privilege, simplified account management.
-* Good: Code deploys automatically upon gov approval, but does not deploy immediately to prod, leaving room for further gov testing.
+* Good: Code deploys automatically upon gov approval, but does not deploy immediately to prod, leaving room for further gov testing. Any mistakes that make it past gov review will not deploy immediately to prod.
 * Tradeoff: A four-environment setup has more complexity than a three-environment setup.
 * Alternative: An alternative would be to have a single gov-only Space in Cloud.gov, prod. Gov-approved code would deploy directly to prod on merge. However, this leaves no room for testing code after it has been gov-approved. In this alternative flow, mistakes would deploy immediately to prod.
