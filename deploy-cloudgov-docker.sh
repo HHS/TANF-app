@@ -57,6 +57,9 @@ echo CIRCLE_BRANCH=$CIRCLE_BRANCH
 # Example staging deploy:
 # ./deploy-cloudgov-docker.sh setup test tdp-backend-staging tdp-frontend-staging lfrohlich/tdp-backend lfrohlich/tdp-frontend staging
 
+# Remember, the script assumes that the user is logged in to Cloud.gov via the Cloud Foundry CLI.
+
+# SCRIPT HELPERS AND TASKS
 
 # Helper function to check if a service exists.
 service_exists()
