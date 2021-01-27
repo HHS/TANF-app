@@ -30,21 +30,10 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "section",
         ]
 
+
     def create(self, validated_data):
         """Create a new entry with a new version number."""
-        # EDGE CASE
-        # We may need to try to get this all in one sql query
-        # if we ever encounter race conditions.
-        version = 1
-        latest_report = ReportFile.objects.filter(
-            slug__exact=validated_data["slug"],
-        ).aggregate(Max("version"))
-
-        if latest_report["version__max"] is not None:
-            version = latest_report["version__max"] + 1
-
-        return ReportFile.objects.create(version=version, **validated_data,)
-        # I think I should have this here?
+        return ReportFile.create_new_version(validated_data)
 
     def update():
         """Throw an error if a user tries to update a report."""
