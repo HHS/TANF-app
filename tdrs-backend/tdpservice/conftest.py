@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 
 from tdpservice.users.test.factories import UserFactory
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
-from tdpservice.reports.test.factoriesw import ReportFileFactory
+from tdpservice.reports.test.factories import ReportFileFactory
 
 @pytest.fixture(scope="function")
 def api_client():
