@@ -156,7 +156,7 @@ Internally, we also wanted to:
 
 ## Findings
 
-[Research plan and full findings here](./User-Research/2020,-Spring:-Understanding-the-local-experience)
+[Research plan and full findings here](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2020%2C%20Summer%20-%20Understanding%20the%20OFA%20Experience.md)
 
 **About the data submission process**
 
@@ -179,9 +179,9 @@ Internally, we also wanted to:
 
 **How we used this research**
 
-- We updated [our stakeholder map]((./Product-Strategy/Vision-and-Stakeholders.md) and [user personas]((./User-Research/Stakeholders-and-Personas.md).
-- We [created an updated process map](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1593114727729/906879aaeb5467c27f0ae3dfbcf5fcfd9cf8ca89) to show how STTs submit data to OFA.
-- Research findings contributed to [our roadmap and initial backlog](./Product-Strategy/Roadmap-and-Backlog.md).
+- We updated [our stakeholder map](https://github.com/HHS/TANF-app/blob/main/docs/Product-Strategy/Vision-and-Stakeholders.md) and [user personas](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/Stakeholders-and-Personas.md).
+- We [created an updated process map :lock:](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1593114727729/906879aaeb5467c27f0ae3dfbcf5fcfd9cf8ca89) to show how STTs submit data to OFA.
+- Research findings contributed to [our roadmap and initial backlog](https://github.com/HHS/TANF-app/blob/main/docs/Product-Strategy/Roadmap-and-Backlog.md).
 
 # 2020 March - Data entry design studio
 
