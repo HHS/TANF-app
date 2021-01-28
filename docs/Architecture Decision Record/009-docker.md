@@ -1,10 +1,8 @@
 # 8. Docker
 
-Date: 2020-08-04
+Date:
 
 ## Status
-
-Accepted
 
 ## Context
 
