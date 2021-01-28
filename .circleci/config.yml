@@ -106,44 +106,24 @@ jobs:
       - run:
           name: deploy to cloud.gov
           command: |
-            # If we do not specify a space, then deploy to the branch that we are on.
-            # Also map certain branches to spaces.
-            # This lets you have dev/staging/main branches that automatically go to the right place.
             export DOCKER_IMAGE_BACKEND="lfrohlich/tdp-backend:$CIRCLE_BRANCH"
             export DOCKER_IMAGE_FRONTEND="lfrohlich/tdp-frontend:$CIRCLE_BRANCH"
-            if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              export CF_SPACE="tanf-prod"
-              export CF_USERNAME="$CF_USERNAME_PROD"
-              export CF_PASSWORD="$CF_PASSWORD_PROD"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_PROD"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_PROD"
-            elif [ "$CIRCLE_BRANCH" == "staging" ] ; then
-              export CF_SPACE="tanf-staging"
-              export CF_USERNAME="$CF_USERNAME_STAGING"
-              export CF_PASSWORD="$CF_PASSWORD_STAGING"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_STAGING"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_STAGING"
-            elif [ "$CIRCLE_BRANCH" == "dev" ] ; then
-              export CF_SPACE="tanf-dev"
-              export CF_USERNAME="$CF_USERNAME_DEV"
-              export CF_PASSWORD="$CF_PASSWORD_DEV"
+            
+            # Both environments we have set up are in dev Cloud.gov Space right now.
+            export CF_SPACE="tanf-dev"
+            export CF_USERNAME="$CF_USERNAME_DEV"
+            export CF_PASSWORD="$CF_PASSWORD_DEV"
+
+            if [ "$CIRCLE_BRANCH" == "raft-tdp-main" || "$CIRCLE_BRANCH" == "raft-review" ] ; then
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              export CF_SPACE="tanf-dev"
-              export CF_USERNAME="$CF_USERNAME_DEV"
-              export CF_PASSWORD="$CF_PASSWORD_DEV"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
-            elif [ "$CIRCLE_BRANCH" == "raft-review" ] ; then
-              export CF_SPACE="tanf-dev"
-              export CF_USERNAME="$CF_USERNAME_DEV"
-              export CF_PASSWORD="$CF_PASSWORD_DEV"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
+            elif [ "$CIRCLE_BRANCH" == "raft-staging" ] ; then
+              export CGHOSTNAME_BACKEND="tdp-backend-vendor-staging"
+              export CGHOSTNAME_FRONTEND="tdp-frontend-vendor-staging"
             else
               export CF_SPACE="$CIRCLE_BRANCH"
             fi
+
             if [ -z "$CF_ORG" ] ; then
               echo CF_ORG not set, aborting
               exit 1
@@ -167,3 +147,4 @@ workflows:
               only:
                 - raft-tdp-main
                 - raft-review
+                - raft-staging
