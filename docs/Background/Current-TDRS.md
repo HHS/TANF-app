@@ -96,7 +96,7 @@ If sending sample data, a report on the stratum totals for SSP-MOE reporting.
 ## Additional resources:
 * [Instructions and form templates for all sections](https://www.acf.hhs.gov/ofa/resource/policy/pi-ofa/2008/200809/tanf-acf-pi-2008-07)
 * [Legacy screenshots are in the process map](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1593114727729/906879aaeb5467c27f0ae3dfbcf5fcfd9cf8ca89)
-* [More about TDRS users](../User-Research/User-Types.md)
+* [More about TDRS users](../User-Research/Stakeholders-and-Personas.md)
 * [Tribal TANF Data Coding Instructions](https://www.acf.hhs.gov/ofa/resource/tribal-tanf-data-coding-instructions)
 
 
