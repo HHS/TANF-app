@@ -144,22 +144,6 @@ if [ "$1" = "setup" ] ; then  echo
 	    sleep 2
 	  fi
 	fi
-
-	# Set up backend:
-	if cf app $CGHOSTNAME_BACKEND >/dev/null 2>&1 ; then
-		echo $CGHOSTNAME_BACKEND app already set up
-	else
-	    update_backend
-		cf bind-service $CGHOSTNAME_BACKEND tdp-db
-		cf restage $CGHOSTNAME_BACKEND
-	fi
-
-	# Set up frontend:
-	if cf app $CGHOSTNAME_FRONTEND >/dev/null 2>&1 ; then
-		echo $CGHOSTNAME_FRONTEND app already set up
-	else
-	    update_frontend
-	fi
 fi
 
 # Generates and sets JWT cert and keys for new environment.
