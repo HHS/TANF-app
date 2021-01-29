@@ -1,5 +1,3 @@
-
-
 # Overview of Research Activities
 
 **Table of Contents:**
@@ -134,6 +132,7 @@ After drafting a top-level synthesis of our observations, we conducted a worksho
 - [High level findings synthesis](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2020%2C%20Summer%20-%20Understanding%20the%20OFA%20Experience.md) 
 
 ---
+
 # 2020 Spring - Digging into the local experience
 
 ## Approach
@@ -157,7 +156,7 @@ Internally, we also wanted to:
 
 ## Findings
 
-[Research plan and full findings here](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience)
+[Research plan and full findings here](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2020%2C%20Summer%20-%20Understanding%20the%20OFA%20Experience.md)
 
 **About the data submission process**
 
@@ -180,9 +179,9 @@ Internally, we also wanted to:
 
 **How we used this research**
 
-- We updated [our stakeholder map](https://github.com/HHS/TANF-app/wiki/Product-Strategy#project-stakeholders) and [user personas](https://github.com/HHS/TANF-app/wiki/User-types).
-- We [created an updated process map](https://github.com/HHS/TANF-app/wiki/current-tdrs-system) to show how STTs submit data to OFA.
-- Research findings contributed to [our roadmap and initial backlog](https://github.com/HHS/TANF-app/wiki/Roadmap-and-backlog).
+- We updated [our stakeholder map](https://github.com/HHS/TANF-app/blob/main/docs/Product-Strategy/Vision-and-Stakeholders.md) and [user personas](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/Stakeholders-and-Personas.md).
+- We [created an updated process map :lock:](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1593114727729/906879aaeb5467c27f0ae3dfbcf5fcfd9cf8ca89) to show how STTs submit data to OFA.
+- Research findings contributed to [our roadmap and initial backlog](https://github.com/HHS/TANF-app/blob/main/docs/Product-Strategy/Roadmap-and-Backlog.md).
 
 # 2020 March - Data entry design studio
 
@@ -195,7 +194,7 @@ We wanted to capture the OFA data team's ideas about what a future TDRS could lo
 
 ## Findings
 
-[Design studio mural](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1585075302847/de1a9c20cd83c7f67c621694a736ba788eda5a97)
+[Design studio mural](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1585075302847/de1a9c20cd83c7f67c621694a736ba788eda5a97) :lock:
 
 Insights included:
 
