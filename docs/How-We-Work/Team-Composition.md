@@ -13,7 +13,7 @@
 * Dmitri Knapp, Raft, visual designer
 * Shubhi Mishra, Raft, design lead + facilitator
 * Miles Reiter, Raft, user researcher
-* Jennifer Price, Raft, senior user researcher
+* Jennifer Pierce, Raft, senior user researcher
 * Romelo Nafarrete, Raft, security SME 
 * Kati Nizzi, Raft, product manager
 
