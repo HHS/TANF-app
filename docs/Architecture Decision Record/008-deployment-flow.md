@@ -3,7 +3,7 @@ Date: 2021-01-27
 
 ## Status
 
-Proposed.
+Accepted.
 
 ## Context
 
