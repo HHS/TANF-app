@@ -64,7 +64,7 @@ def generate_client_assertion():
     # https://github.com/moby/moby/issues/12997
     try:
         private_key = b64decode(private_key).decode("utf-8")
-    except binascii.Error:
+    except (UnicodeDecodeError, binascii.Error):
         # If the private_key couldn't be Base64 decoded then just try it as
         # configured, in order to handle PEM format keys.
         pass
