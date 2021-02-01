@@ -26,7 +26,6 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "section",
         ]
 
-
     def create(self, validated_data):
         """Create a new entry with a new version number."""
         return ReportFile.create_new_version(validated_data)
