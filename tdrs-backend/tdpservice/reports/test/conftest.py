@@ -1,6 +1,5 @@
 """Report file fixtures."""
 
-import uuid
 import pytest
 
 @pytest.fixture
