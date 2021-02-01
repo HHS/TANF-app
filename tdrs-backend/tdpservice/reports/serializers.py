@@ -3,11 +3,9 @@
 from django.db.models import Max
 
 from rest_framework import serializers
-
 from ..stts.models import STT
 from ..users.models import User
 from .models import ReportFile
-
 
 class ReportFileSerializer(serializers.ModelSerializer):
     """Serializer for Report files."""
