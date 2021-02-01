@@ -5,9 +5,6 @@ import pytest
 @pytest.fixture
 def report_data(user):
     """Return report creation data."""
-    print("creating report data fixture")
-    print("using user")
-    print(user.id)
     return {
         "original_filename": "report.txt",
         "slug": "report-txt-slug",
