@@ -23,4 +23,3 @@ def test_serializer_increment_create(report):
     report_2 = serializer_2.save()
 
     assert report_2.version == report_1.version + 1
-
