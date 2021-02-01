@@ -12,8 +12,7 @@ def test_serializer_with_valid_date(report):
 
 @pytest.mark.django_db
 def test_serializer_increment_create(report):
-    """Test serializer produces reports with correct version"""
-
+    """Test serializer produces reports with correct version."""
     get_serializer = ReportFileSerializer(report)
     serializer_1 = ReportFileSerializer(data=get_serializer.data)
     assert serializer_1.is_valid() is True
