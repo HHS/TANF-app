@@ -59,24 +59,24 @@ We'll be using  [USWDS](https://designsystem.digital.gov/), a design system for 
 
 To improve our workflow in ideating and supporting development, we created a [user flows page](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=1277%3A8087>) in Figma to map and explore user actions and outcomes in a modular environment that can be easily changed and extended. 
 
-This living document covers actions a user would take, system actions that happen on the backend, and destinations that are reached after actions are executed. To communicate how these actions and outcomes intertwine, we included primary and secondary paths that a user can take within the flow. These flows have also proven useful for certain security / compliance workflow documentation needs.
+This living document covers actions a user would take, system actions that happen on the backend, and destinations that are reached after actions are executed. To communicate how these actions and outcomes intertwine, we included primary and secondary paths that a user can take within the flow. These flows have also proven useful for certain security/compliance workflow documentation needs.
 
 ## Mockups & prototypes
 
-[Full Site](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=0%3A1>) - A visual site map page encompassing all reviewed dev-ready mockups that have been delivered.
+[Full Site](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=0%3A1>) - A visual site map page encompassing all reviewed dev-ready mockups that responsible parties deliver.
 
 **Reviewed**
 
--  [Upload and Download Data Reports](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=2933%3A0>) associated to issues [#427](https://github.com/raft-tech/TANF-app/issues/427) and [#415](https://github.com/raft-tech/TANF-app/issues/415)
--  [User Management (Admin tools)](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=2441%3A12231>) associated to issues [#404](https://github.com/raft-tech/TANF-app/issues/404), [#327](https://github.com/raft-tech/TANF-app/issues/327), and [#164](https://github.com/raft-tech/TANF-app/issues/164)
--  [Reset Password](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=2933%3A0>) associated to issue [#318](https://github.com/raft-tech/TANF-app/issues/318)
--  [Concept Prototype (For round 3 research)](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=1381%3A0>) associated to issues [#275](https://github.com/raft-tech/TANF-app/issues/275) and [#115](https://github.com/raft-tech/TANF-app/issues/115)
--  [Responsive Mobile Designs (Admin pages)](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=618%3A14>) associated to issue [#178](https://github.com/raft-tech/TANF-app/issues/178)
--  [Request Access (New user)](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=628%3A468>) associated to issue [#166](https://github.com/raft-tech/TANF-app/issues/166)
+-  [Upload and Download Data Reports](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=2933%3A0>) associated with issues [#427](https://github.com/raft-tech/TANF-app/issues/427) and [#415](https://github.com/raft-tech/TANF-app/issues/415)
+-  [User Management (Admin tools)](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=2441%3A12231>) associated with issues [#404](https://github.com/raft-tech/TANF-app/issues/404), [#327](https://github.com/raft-tech/TANF-app/issues/327), and [#164](https://github.com/raft-tech/TANF-app/issues/164)
+-  [Reset Password](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=2933%3A0>) associated with issue [#318](https://github.com/raft-tech/TANF-app/issues/318)
+-  [Concept Prototype (For round 3 research)](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=1381%3A0>) associated with issues [#275](https://github.com/raft-tech/TANF-app/issues/275) and [#115](https://github.com/raft-tech/TANF-app/issues/115)
+-  [Responsive Mobile Designs (Admin pages)](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=618%3A14>) associated with issue [#178](https://github.com/raft-tech/TANF-app/issues/178)
+-  [Request Access (New user)](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=628%3A468>) associated with issue [#166](https://github.com/raft-tech/TANF-app/issues/166)
 
 **In Backlog**
 
-- [Ideas on Validation](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=1412%3A9795>) associated to issue [#295](https://github.com/raft-tech/TANF-app/issues/295)
+- [Ideas on Validation](<https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=1412%3A9795>) associated with issue [#295](https://github.com/raft-tech/TANF-app/issues/295)
 
 ---
 
@@ -126,7 +126,7 @@ At least one top-level (H1) heading that provides an accurate description of the
 
 **Table of contents**
 
-Any document organized into different sections by heading should also include a table of contents that utilizes anchor links and provides a descriptive overview of the content the reader can expect to find. 
+Any document organized into different sections by heading should include a table of contents that utilizes anchor links and provides a descriptive overview of the content the reader can expect to find. 
 
 Ex. 
 
