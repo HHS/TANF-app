@@ -8,7 +8,10 @@ COPY --chown=node:node package.json yarn.lock ./
 USER node
 RUN yarn install && yarn cache clean
 RUN touch .env.production && echo "REACT_APP_BACKEND_URL=https://tdp-backend.app.cloud.gov/v1" >> .env.production
-RUN echo "REACT_APP_BACKEND_URL=https://tdp-backend.app.cloud.gov/v1" >> .env.production
+RUN echo "REACT_APP_TIMEOUT_TIME=1200000" >> .env.production
+RUN echo "REACT_APP_LOGOUT_TIME=180000" >> .env.production
+RUN echo "REACT_APP_DEBOUNCE_TIME=30000" >> .env.production
+RUN echo "REACT_APP_EVENT_THROTTLE_TIME=60000" >> .env.production
 
 COPY --chown=node:node . .
 
