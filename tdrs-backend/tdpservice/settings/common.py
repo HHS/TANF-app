@@ -25,13 +25,14 @@ class Common(Configuration):
         "rest_framework",  # Utilities for rest apis
         "rest_framework.authtoken",  # Token authentication
         "django_filters",
-        'django_admin_logs',  # logs for admin site
+        "django_admin_logs",  # logs for admin site
         "corsheaders",
         "django_extensions",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
         "tdpservice.stts",
+        "tdpservice.reports",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/

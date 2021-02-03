@@ -12,7 +12,11 @@ Additionally, a more secure system with an Authority-to-Operate will ensure that
 
 # Assumptions
 
-No assumptions are identified at this time.
+- The research we have done to date will inform the MVP and allow the vendor to meet the constraints mentioned below.
+- Every user story follows our documented [workflow](https://github.com/HHS/TANF-app/blob/main/docs/How-We-Work/team-charter/our-workflow.md#workflow) which ensures everyone is clear on what it means for the story to be finished and acceptable to the government.
+- User research with real end users results in both better usability (when testing features already built) and is a powerful source of new user stories that reflect real user needs to be added to the product backlog.
+- Close collaboration with the ISSO and wider IPT through participation in sprint ceremonies will ensure that security controls are accurately and completely implemented from the beginning alongside our user-facing features.
+- An empowered Government Product Owner can select the highest value work to be completed by the team at the beginning of each Sprint, to ensure we're always working on the most important things.
 
 # Constraints
 
