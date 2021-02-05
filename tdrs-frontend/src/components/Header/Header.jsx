@@ -19,6 +19,8 @@ import NavItem from '../NavItem/NavItem'
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
+  let role
+  if (user) role = user.roles
 
   return (
     <>
@@ -49,7 +51,13 @@ function HeaderComp() {
                 tabTitle="Profile"
                 href="/edit-profile"
               />
-              <NavItem pathname={pathname} tabTitle="Admin" href="/admin" />
+              {role && role[0].id === 1 && (
+                <NavItem
+                  pathname={pathname}
+                  tabTitle="Admin"
+                  href={`${process.env.REACT_APP_BACKEND_URL}/admin`}
+                />
+              )}
             </ul>
             <div className="usa-nav__secondary">
               <ul className="usa-nav__secondary-links">
