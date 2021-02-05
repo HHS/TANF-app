@@ -19,8 +19,14 @@ import NavItem from '../NavItem/NavItem'
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
-  let role
-  if (user) role = user.roles
+
+  const isOFAAdmin = () => {
+    if (user && user.roles) {
+      return user.roles.some((role) => role.id === 1)
+    }
+
+    return null
+  }
 
   return (
     <>
@@ -51,11 +57,11 @@ function HeaderComp() {
                 tabTitle="Profile"
                 href="/edit-profile"
               />
-              {role && role[0].id === 1 && (
+              {isOFAAdmin() && (
                 <NavItem
                   pathname={pathname}
                   tabTitle="Admin"
-                  href={`${process.env.REACT_APP_BACKEND_URL}/admin`}
+                  href={`${process.env.REACT_APP_BACKEND_URL}/admin/`}
                 />
               )}
             </ul>
