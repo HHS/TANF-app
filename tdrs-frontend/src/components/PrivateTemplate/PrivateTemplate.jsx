@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 /**
@@ -13,19 +13,27 @@ import PropTypes from 'prop-types'
  * @returns {React.Component} A page to be used in an authenticacted context
  */
 export default function PrivateTemplate({ title, children }) {
+  const headerRef = useRef()
   useEffect(() => {
     document.title = `${title} - TDP - TANF Data Portal`
-  })
+    if (headerRef.current) headerRef.current.focus()
+  }, [title])
 
   return (
     <div className="grid-container margin-top-3">
-      <h1 className="font-serif-2xl margin-bottom-0 text-normal">{title}</h1>
+      <h1
+        className="font-serif-2xl margin-bottom-0 text-normal"
+        ref={headerRef}
+        tabIndex={-1}
+      >
+        {title}
+      </h1>
       {children}
     </div>
   )
 }
 
 PrivateTemplate.propTypes = {
-  title: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
 }
