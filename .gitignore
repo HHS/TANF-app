@@ -12,6 +12,7 @@ tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
 tdrs-frontend/pa11y-screenshots/*
 tdrs-frontend/.env*
+tdrs-frontend/.eslintcache
 
 
 #BACKEND
