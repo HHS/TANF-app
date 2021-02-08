@@ -87,8 +87,8 @@ function HeaderComp() {
                     className="sign-out-link"
                     href={
                       user && user.email
-                        ? `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
-                        : `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+                        ? `${process.env.REACT_APP_BACKEND_URL}/v1/logout/oidc`
+                        : `${process.env.REACT_APP_BACKEND_URL}/v1/login/oidc`
                     }
                   >
                     <FontAwesomeIcon
