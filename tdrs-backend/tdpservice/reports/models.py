@@ -63,7 +63,7 @@ class ReportFile(File):
                                blank=False,
                                null=False,
                                choices=Quarter.choices)
-    year = models.IntegerField()
+    year = models.CharField(max_length=16, blank=False, null=False)
     section = models.CharField(max_length=32,
                                blank=False,
                                null=False,
