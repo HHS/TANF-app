@@ -36,7 +36,9 @@ $ cp .env.example .env
 3.) Start the backend via docker-compose: 
 
 ```bash
-$ docker-compose up -d
+# Merge in local overrides for docker-compose by using -f flag and specifying both
+# This allows environment variables to be passed in from .env files locally.
+$ docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d
 ```
 
 This command will start the following containers: 
@@ -63,6 +65,21 @@ $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 ```bash
  $ docker-compose down --remove-orphans
 ```
+
+----
+### Environment Variable Inheritance
+#### Local
+When run locally with `docker-compose.local.yml` the following order of inheritance will be in place:
+* Variables defined in `tdrs-backend/.env` file
+* Variables defined directly in `docker-compose.yml`
+* Defaults supplied in `tdrs-backend/tdpservice/settings/common.py` (Only **non secret** environment variables, do not commit defaults for any secrets!) 
+
+#### CircleCI
+When run within CI context the follow order of inheritance will define environment variables:
+* For **secrets** only - Variables defined in CircleCI Project Settings (`JWT_KEY`, `JWT_CERT_TEST`, etc)
+  * These must be manually passed in via docker-compose under the `environment` directive, ie. `MY_VAR=${MY_VAR}`
+* Variables defined directly in `docker-compose.yml`
+* Defaults supplied in `tdrs-backend/tdpservice/settings/common.py` (Only **non secret** environment variables, do not commit defaults for any secrets!) 
 
 ----
 ### Code Unit Test, Linting Test, and Vulnerability Scan
