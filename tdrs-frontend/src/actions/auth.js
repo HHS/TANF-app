@@ -39,7 +39,7 @@ export const CLEAR_AUTH = 'CLEAR_AUTH'
 export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
   try {
-    const URL = `${process.env.REACT_APP_BACKEND_URL}/v1/auth_check`
+    const URL = `${process.env.REACT_APP_BACKEND}/v1/auth_check`
     const {
       data: { user, csrf },
     } = await axiosInstance.get(URL, {

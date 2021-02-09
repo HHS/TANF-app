@@ -13,7 +13,7 @@ function Dashboard() {
   const user = useSelector((state) => state.auth.user.email)
   const handleClick = (event) => {
     event.preventDefault()
-    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/v1/logout/oidc`
+    window.location.href = `${process.env.REACT_APP_BACKEND}/v1/logout/oidc`
   }
   return (
     <div className="grid-container welcome">

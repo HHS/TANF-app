@@ -61,7 +61,7 @@ function HeaderComp() {
                 <NavItem
                   pathname={pathname}
                   tabTitle="Admin"
-                  href={`${process.env.REACT_APP_BACKEND_URL}/admin/`}
+                  href={`${process.env.REACT_APP_BACKEND}/admin/`}
                 />
               )}
             </ul>
@@ -87,8 +87,8 @@ function HeaderComp() {
                     className="sign-out-link"
                     href={
                       user && user.email
-                        ? `${process.env.REACT_APP_BACKEND_URL}/v1/logout/oidc`
-                        : `${process.env.REACT_APP_BACKEND_URL}/v1/login/oidc`
+                        ? `${process.env.REACT_APP_BACKEND}/v1/logout/oidc`
+                        : `${process.env.REACT_APP_BACKEND}/v1/login/oidc`
                     }
                   >
                     <FontAwesomeIcon
