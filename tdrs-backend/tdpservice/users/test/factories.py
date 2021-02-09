@@ -5,7 +5,7 @@ import factory
 from tdpservice.stts.test.factories import STTFactory
 
 
-class UserFactory(factory.django.DjangoModelFactory):
+class BaseUserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
 
     class Meta:
@@ -22,7 +22,6 @@ class UserFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker("last_name")
     is_active = True
     is_staff = False
-    stt = factory.SubFactory(STTFactory)
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -38,3 +37,13 @@ class UserFactory(factory.django.DjangoModelFactory):
         if extracted:
             for group in extracted:
                 self.groups.add(group)
+
+
+
+class UserFactory(BaseUserFactory):
+    """General purpose user factory used through out most tests."""
+    stt = factory.SubFactory(STTFactory)
+
+class STTUserFactory(BaseUserFactory):
+    """User factory for use in STT tests."""
+    stt = None
