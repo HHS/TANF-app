@@ -2,7 +2,7 @@
 import pytest
 from rest_framework.test import APIClient
 
-from tdpservice.users.test.factories import UserFactory
+from tdpservice.users.test.factories import UserFactory,STTUserFactory
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from django.contrib.auth.models import Group
 from tdpservice.reports.test.factories import ReportFileFactory
@@ -18,6 +18,10 @@ def user():
     """Return a basic, non-admin user."""
     return UserFactory.create()
 
+@pytest.fixture
+def stt_user():
+    """Return a user without an STT for STT tests."""
+    return STTUserFactory.create()
 
 @pytest.fixture
 def ofa_admin():
