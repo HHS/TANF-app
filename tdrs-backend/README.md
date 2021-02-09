@@ -31,7 +31,8 @@ This project uses a Pipfile for dependency management. However, due to the limit
 $ cp .env.example .env
 ```
 
-2.) Replace secrets in .env with actual values. To obtain the correct values, please contact the Product Manager.
+2.) Replace secrets in .env with actual values. To obtain the correct values, 
+please pull from [cloud.gov](https://cloud.gov) or contact the Product Manager.
 
 3.) Start the backend via docker-compose: 
 
