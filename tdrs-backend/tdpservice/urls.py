@@ -33,5 +33,5 @@ urlpatterns = [
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 urlpatterns = [
     path("v1/", include(urlpatterns)),
-    path("admin/", admin.site.urls),
+    path("admin/", admin.site.urls, name="admin"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
