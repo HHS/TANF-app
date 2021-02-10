@@ -71,7 +71,7 @@ def test_cant_access_admin(client, user):
 
 
 @pytest.mark.django_db
-def test_unauth_cant_access_admin(client, user):
+def test_unauth_cant_access_admin(client):
     """Can't access admin.
 
     Test an unauthenticated user is redirected when attempting
