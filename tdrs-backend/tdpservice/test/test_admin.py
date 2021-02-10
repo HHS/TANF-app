@@ -6,6 +6,7 @@ set to false, while the admin_user has both set to true.
 """
 
 import pytest
+from django.contrib import admin
 from django.urls import reverse
 from rest_framework import status
 
@@ -17,7 +18,7 @@ def test_can_access_admin(client, admin_user):
     url = reverse('admin:index')
     response = client.get(url)
     assert response.status_code == status.HTTP_200_OK
-    assert "Django administration" in response.rendered_content
+    assert admin.site.site_header in response.rendered_content
     assert "Log entries" in response.rendered_content
     assert "Users" in response.rendered_content
 

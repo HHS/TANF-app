@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
+admin.site.site_header = "Django administration"
 
 urlpatterns = [
     path("login", TokenAuthorizationOIDC.as_view(), name="login"),

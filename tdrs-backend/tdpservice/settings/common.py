@@ -7,6 +7,7 @@ from distutils.util import strtobool
 from os.path import join
 
 from configurations import Configuration
+from django.contrib import admin
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
