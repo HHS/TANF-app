@@ -19,7 +19,7 @@ def test_create_new_report_version(report):
 
 @pytest.mark.django_db
 def test_find_latest_version(report):
-    """Test method to find latest version"""
+    """Test method to find latest version."""
     new_report = ReportFile.create_new_version({
         "year": report.year,
         "quarter": report.quarter,
@@ -59,4 +59,3 @@ def test_find_latest_version_number(report):
         stt=report.stt.id
     )
     assert latest_version == new_report.version
-
