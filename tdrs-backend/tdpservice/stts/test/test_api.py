@@ -54,7 +54,7 @@ def test_stts_by_region_blocks_unauthorized(api_client, stt_user):
 
 
 @pytest.mark.django_db
-def test_can_get_stts(api_client, stt_user):
+def test_can_get_stts(api_client, stt_user, stts):
     """Test endpoint returns a listing of states, tribes and territories."""
     api_client.login(username=stt_user.username, password="test_password")
     response = api_client.get(reverse("stts"))
