@@ -16,12 +16,17 @@ class File(models.Model):
         """Metadata."""
 
         abstract = True
-
+    # Keep the file name because it will be different in s3,
+    # but the interface will still want to present the file with its
+    # original name.
     original_filename = models.CharField(max_length=256,
                                          blank=False,
                                          null=False)
-
+    # Slug is the name of the file in S3
     slug = models.CharField(max_length=256, blank=False, null=False)
+    # Not all files will have the correct extension,
+    # or even have one at all. The UI will provide this information
+    # seperately
     extension = models.CharField(max_length=8, default="txt")
 
 
@@ -58,7 +63,7 @@ class ReportFile(File):
                                blank=False,
                                null=False,
                                choices=Quarter.choices)
-    year = models.CharField(max_length=16, blank=False, null=False)
+    year = models.IntegerField()
     section = models.CharField(max_length=32,
                                blank=False,
                                null=False,
