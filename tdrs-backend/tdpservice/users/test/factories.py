@@ -22,6 +22,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker("last_name")
     is_active = True
     is_staff = False
+    is_superuser = False
     stt = factory.SubFactory(STTFactory)
 
     @classmethod
@@ -35,3 +36,9 @@ class AdminUserFactory(UserFactory):
 
     is_staff = True
     is_superuser = True
+
+
+class StaffUserFactory(UserFactory):
+    """Generate Staff User."""
+
+    is_staff = True
