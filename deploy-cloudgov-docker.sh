@@ -109,9 +109,9 @@ if [ $DEPLOY_STRATEGY = "rolling" ] ; then
 
 	update_backend 'rolling'
 	update_frontend 'rolling'
-else 
-    update_backend 
-	update_frontend 
+else
+    update_backend
+	update_frontend
 fi
 
 # 1. Create a new deployment environment.
@@ -134,6 +134,9 @@ if [ "$1" = "setup" ] ; then  echo
 	else
 	  if [ $DEPLOY_ENV = "prod" ] ; then
 	    cf create-service aws-rds medium-psql-redundant tdp-db
+			cf bind-service $CGHOSTNAME_BACKEND tdp-db
+			cf restage $CGHOSTNAME_BACKEND
+
 		  echo sleeping until db is awake
 		  for i in 1 2 3 ; do
 		  	sleep 60
@@ -141,6 +144,9 @@ if [ "$1" = "setup" ] ; then  echo
 		  done
 	  else
 	    cf create-service aws-rds shared-psql tdp-db
+			cf bind-service $CGHOSTNAME_BACKEND tdp-db
+			cf restage $CGHOSTNAME_BACKEND
+
 	    sleep 2
 	  fi
 	fi
@@ -148,14 +154,14 @@ fi
 
 # Generates and sets JWT cert and keys for new environment.
 # Called as part of new environment setup.
-generate_jwt_cert() 
+generate_jwt_cert()
 {
 	echo "regenerating JWT cert/key"
 	yes 'XX' | openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -sha256
 	cf set-env $CGHOSTNAME_BACKEND JWT_CERT "$(cat cert.pem)"
 	cf set-env $CGHOSTNAME_BACKEND JWT_KEY "$(cat key.pem)"
 
-	# Let user of this script know that they will need to set an OIDC_RP_CLIENT_ID.
+	# Let user of this script know that they will need fto set an OIDC_RP_CLIENT_ID.
 	if cf e $CGHOSTNAME_BACKEND | grep -q OIDC_RP_CLIENT_ID ; then
 		echo OIDC_RP_CLIENT_ID already set up
 	else
