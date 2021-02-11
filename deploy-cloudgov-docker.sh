@@ -37,17 +37,12 @@ DOCKER_IMAGE_BACKEND=${5}
 # Please ensure this is published in a public docker repo.
 DOCKER_IMAGE_FRONTEND=${6}
 
-# The Github branch triggered to execute this script if triggered in CircleCI.
-# (TODO: Consider removing this variable; appears to be unused here.)
-CIRCLE_BRANCH=${7}
-
 echo DEPLOY_STRATEGY: $DEPLOY_STRATEGY
 echo DEPLOY_ENV=$DEPLOY_ENV
 echo BACKEND_HOST: $CGHOSTNAME_BACKEND
 echo FRONTEND_HOST: $CGHOSTNAME_FRONTEND
 echo DOCKER_BACKEND_IMAGE: $DOCKER_IMAGE_BACKEND
 echo DOCKER_FRONTEND_IMAGE: $DOCKER_IMAGE_FRONTEND
-echo CIRCLE_BRANCH=$CIRCLE_BRANCH
 
 # EXAMPLES
 
@@ -55,7 +50,7 @@ echo CIRCLE_BRANCH=$CIRCLE_BRANCH
 # See .circleci/config.yml, which calls this script as part of the deploy process.
 
 # Example vendor staging deploy:
-# ./deploy-cloudgov-docker.sh setup test tdp-backend-vendor-staging tdp-frontend-vendor-staging lfrohlich/tdp-backend:raft-tdp-main lfrohlich/tdp-frontend:raft-tdp-main raft-tdp-main
+# ./deploy-cloudgov-docker.sh setup test tdp-backend-vendor-staging tdp-frontend-vendor-staging lfrohlich/tdp-backend:raft-tdp-main lfrohlich/tdp-frontend:raft-tdp-main
 
 # Remember, the script assumes that the user is logged in to Cloud.gov via the Cloud Foundry CLI.
 
@@ -67,7 +62,6 @@ service_exists()
 	cf service "$1" >/dev/null 2>&1
 }
 
-
 # Performs a normal deployment unless rolling is specified:
 update_frontend()
 {
@@ -78,6 +72,7 @@ update_frontend()
 		cf push $CGHOSTNAME_FRONTEND --no-route -f tdrs-frontend/manifest.yml --var docker-frontend=$DOCKER_IMAGE_FRONTEND --strategy rolling || exit 1
 	else
 		cf push $CGHOSTNAME_FRONTEND --no-route -f tdrs-frontend/manifest.yml --var docker-frontend=$DOCKER_IMAGE_FRONTEND
+		echo "Set REACT_APP_BACKEND_URL ENV variable for the frontend if not already set."
 	fi
 	cf map-route $CGHOSTNAME_FRONTEND app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
 }
@@ -106,7 +101,6 @@ update_backend()
 # Perform a rolling update for the backend and frontend deployments if specifed,
 # otherwise perform a normal deployment, e.g. for setting up a new app.
 if [ $DEPLOY_STRATEGY = "rolling" ] ; then
-
 	update_backend 'rolling'
 	update_frontend 'rolling'
 else
