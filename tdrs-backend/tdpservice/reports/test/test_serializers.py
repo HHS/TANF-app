@@ -2,6 +2,7 @@
 
 import pytest
 from ..serializers import ReportFileSerializer
+from ..errors import ImmutabilityError
 
 @pytest.mark.django_db
 def test_serializer_with_valid_date(report):
