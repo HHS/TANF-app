@@ -23,3 +23,20 @@ def test_serializer_increment_create(report):
     report_2 = serializer_2.save()
 
     assert report_2.version == report_1.version + 1
+
+@pytest.mark.django_db
+def test_immutability_of_report(report):
+    """Test that report can only be created."""
+    try:
+        serializer = ReportFileSerializer(
+            report, data={
+                "original_filename": "BadGuy.js"
+            },
+            partial=True)
+
+        serializer.is_valid()
+        serializer.save()
+        raise Exception("Should not be able to update reports.")
+    except ImmutabilityError as err:
+        expected = "Cannot update, reports are immutable. Create a new one instead."
+        assert str(err) == expected
