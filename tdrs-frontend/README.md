@@ -58,6 +58,7 @@ Currently the Dockerfile.local utilizes `yarn build` and serves the React app ov
 
 #### `npm start` / `yarn start`
 When running this app directly on localhost React will assign `NODE_ENV=development` and use this inheritance order:
+* Any variables set directly on host machine (ie. export MY_VAR=...)
 * .env.development.local
 * .env.local
 * .env.development
