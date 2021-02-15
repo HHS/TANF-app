@@ -30,4 +30,30 @@ describe('PrivateTemplate', () => {
 
     expect(document.title).toEqual('Test - TDP - TANF Data Portal')
   })
+
+  it('should focus the h1 when the page is loaded', () => {
+    const { container } = render(
+      <PrivateTemplate title={title}>
+        <div>Test</div>
+      </PrivateTemplate>
+    )
+
+    const h1 = container.querySelector('h1')
+
+    expect(document.activeElement).toEqual(h1)
+  })
+
+  it('should focus the h1 when the page is loaded', () => {
+    const { container } = render(
+      <PrivateTemplate title={title}>
+        <div>Test</div>
+      </PrivateTemplate>
+    )
+
+    const h1 = container.querySelector('h1')
+
+    h1.parentNode.removeChild(h1)
+
+    expect(document.activeElement).not.toEqual(h1)
+  })
 })

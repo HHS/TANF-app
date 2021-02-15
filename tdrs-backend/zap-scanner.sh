@@ -6,7 +6,6 @@ elif command -v shasum >/dev/null ; then
 	SHASUM=shasum
 fi
 
-
 docker-compose down
 docker-compose up -d --build
 	# do an OWASP ZAP scan
@@ -32,6 +31,6 @@ if [ "$ZAPEXIT" = 1 ] ; then
 	EXIT=1
 fi
 
- docker-compose down --remove-orphan
+docker-compose down --remove-orphan
 
 exit $EXIT
