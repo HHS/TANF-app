@@ -80,3 +80,13 @@ def test_unauth_cant_access_admin(client):
     url = reverse("admin:index")
     response = client.get(url)
     assert response.status_code == status.HTTP_302_FOUND
+
+
+@pytest.mark.django_db
+def test_admin_users_displays_keys(client, admin_user):
+    """Test an authenticated admin_user sees the appropriate content."""
+    client.login(username=admin_user.username, password="test_password")
+    url = reverse("admin:users_user_change", args=(admin_user.id,))
+    response = client.get(url)
+    assert "Staff status" in response.rendered_content
+    assert "Superuser status" in response.rendered_content
