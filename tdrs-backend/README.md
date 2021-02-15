@@ -42,7 +42,7 @@ with the email you use to login to [login.gov](https://login.gov)
 ```bash
 # Merge in local overrides for docker-compose by using -f flag and specifying both
 # This allows environment variables to be passed in from .env files locally.
-$ docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d
+$ docker-compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
 ```
 
 This command will start the following containers: 
