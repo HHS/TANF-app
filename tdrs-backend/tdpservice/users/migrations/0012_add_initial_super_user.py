@@ -9,15 +9,14 @@ class Migration(migrations.Migration):
     def generate_superuser(apps, schema_editor):
         from ..models import User
 
-        # DJANGO_DB_NAME = os.environ.get('DJANGO_DB_NAME', "default")
-        DJANGO_SU_NAME = os.environ.get('DJANGO_SU_NAME','admin')
-        DJANGO_SU_EMAIL = os.environ.get('DJANGO_SU_EMAIL','admin@example.com')
-        DJANGO_SU_PASSWORD = os.environ.get('DJANGO_SU_PASSWORD','StrongPassword') # only use the default case for password in development
+        # set the environment variable to the username of the
+        # initial superuser
+        su_username = os.environ.get('DJANGO_SU_NAME', 'admin')
 
         superuser = User.objects.create_superuser(
-            username=DJANGO_SU_NAME,
-            email=DJANGO_SU_EMAIL,
-            password=DJANGO_SU_PASSWORD)
+            username=su_username,
+            email=su_username)
+        superuser.set_unusable_password()
 
         superuser.save()
 
