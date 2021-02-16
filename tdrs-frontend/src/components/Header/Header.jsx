@@ -20,12 +20,12 @@ function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
 
-  const isOFAAdmin = () => {
+  const isSystemAdmin = () => {
     if (user && user.roles) {
-      return user.roles.some((role) => role.id === 1)
+      return user.roles.some((role) => role.name === 'System Admin')
     }
 
-    return null
+    return false
   }
 
   return (
@@ -57,7 +57,7 @@ function HeaderComp() {
                 tabTitle="Profile"
                 href="/edit-profile"
               />
-              {isOFAAdmin() && (
+              {isSystemAdmin() && (
                 <NavItem
                   pathname={pathname}
                   tabTitle="Admin"

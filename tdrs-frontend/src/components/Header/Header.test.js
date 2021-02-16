@@ -13,7 +13,7 @@ describe('Header', () => {
     auth: {
       user: {
         email: 'test@test.com',
-        roles: [{ id: 1, name: 'OFA Admin', permissions: [] }],
+        roles: [{ id: 1, name: 'System Admin', permissions: [] }],
       },
       authenticated: true,
     },
@@ -69,7 +69,7 @@ describe('Header', () => {
     expect(profileLink).toIncludeText('Profile')
   })
 
-  it('should have a navigation link for Admin when user is an OFA Admin', () => {
+  it('should have a navigation link for Admin when user is a System Admin', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
@@ -81,7 +81,7 @@ describe('Header', () => {
     expect(adminLink).toIncludeText('Admin')
   })
 
-  it('should NOT have a navigation link for Admin when user is NOT an OFA Admin', () => {
+  it('should NOT have a navigation link for Admin when user is NOT as System Admin', () => {
     const store = mockStore({
       ...initialState,
       auth: {
