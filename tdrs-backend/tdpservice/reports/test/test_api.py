@@ -23,7 +23,6 @@ def test_create_report_file_entry(api_client, ofa_admin):
         "section": "Active Case Data",
     }
     response = api_client.post("/v1/reports/", data)
-    # assert response.data == {}
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["slug"] == str(data["slug"])
 
