@@ -69,7 +69,21 @@ def test_report_file_version_increment(api_client, ofa_admin):
     assert response2.status_code == status.HTTP_201_CREATED
     assert response2.data["slug"] == data2["slug"]
 
-    assert response1.data["version"] + 1 == response2.data["version"]
+    assert ReportFile.objects.filter(
+        slug=data1["slug"],
+        year=data1["year"],
+        section=data1["section"],
+        version=1,
+        user=user,
+    ).exists()
+
+    assert ReportFile.objects.filter(
+        slug=data1["slug"],
+        year=data1["year"],
+        section=data1["section"],
+        version=2,
+        user=user,
+    ).exists()
 
 
 @pytest.mark.django_db
