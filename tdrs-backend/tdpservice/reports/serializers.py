@@ -5,6 +5,8 @@ from ..stts.models import STT
 from ..users.models import User
 from .models import ReportFile
 
+from .errors import ImmutabilityError
+
 class ReportFileSerializer(serializers.ModelSerializer):
     """Serializer for Report files."""
 
@@ -31,6 +33,6 @@ class ReportFileSerializer(serializers.ModelSerializer):
         """Create a new entry with a new version number."""
         return ReportFile.create_new_version(validated_data)
 
-    def update():
+    def update(self, instance, validated_data):
         """Throw an error if a user tries to update a report."""
-        raise "Cannot update, reports are immutable. Create a new one instead."
+        raise ImmutabilityError(instance, validated_data)
