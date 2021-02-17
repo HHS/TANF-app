@@ -63,9 +63,6 @@ def test_report_file_version_increment(api_client, ofa_admin):
     response1 = api_client.post("/v1/reports/", data1)
     response2 = api_client.post("/v1/reports/", data2)
 
-    print(response2.data)
-    print(response1.data)
-
     assert response1.status_code == status.HTTP_201_CREATED
     assert response1.data["slug"] == data1["slug"]
 
