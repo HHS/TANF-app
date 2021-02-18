@@ -2,7 +2,7 @@
 import pytest
 from rest_framework.test import APIClient
 
-from tdpservice.users.test.factories import UserFactory,STTUserFactory
+from tdpservice.users.test.factories import UserFactory, STTUserFactory
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from django.contrib.auth.models import Group
 from tdpservice.reports.test.factories import ReportFileFactory

@@ -38,12 +38,12 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
             for group in extracted:
                 self.groups.add(group)
 
-
-
 class UserFactory(BaseUserFactory):
     """General purpose user factory used through out most tests."""
+
     stt = factory.SubFactory(STTFactory)
 
 class STTUserFactory(BaseUserFactory):
     """User factory for use in STT tests."""
+
     stt = None
