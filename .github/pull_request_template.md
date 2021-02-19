@@ -1,3 +1,11 @@
+### Summary of Changes
+_Provide a brief summary of changes_
+_Addresses issue #_
+_Acceptance criteria as stated in the issue_
+
+### How to Test
+_List the steps to test the PR_
+
 ### Deliverable 1: Accepted Features
 
 > *Performance Standard(s): At the beginning of each sprint, the Product Owner and development team will collaborate to define a set of user stories to be completed during the sprint. Acceptance criteria for each story will also be defined. The development team will deliver code and functionality to satisfy these user stories.*
@@ -7,7 +15,7 @@
 + [ ] Look up the acceptance criteria in the related issue; paste ACs below in checklist format.
 + [ ] Check against the criteria:
 
-As Product Owner, @lfrohlich will decide if ACs are met.
+As facilitator/product manager, @kniz-raft will decide if ACs are met.
 
 ### Deliverable 2: Tested Code
 
