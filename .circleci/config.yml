@@ -155,8 +155,8 @@ jobs:
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
               export CF_PASSWORD="$CF_PASSWORD_DEV"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
+              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_VENDOR_STAGING"
+              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_VENDOR_STAGING"
             else
               export CF_SPACE="$CIRCLE_BRANCH"
             fi
