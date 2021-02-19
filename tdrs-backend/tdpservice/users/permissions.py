@@ -1,7 +1,6 @@
 """Set permissions for users."""
 
 from rest_framework import permissions
-from django.contrib.auth.models import Group
 
 
 def is_own_stt(request, view):
