@@ -55,6 +55,8 @@ As facilitator/product manager, @kniz-raft will decide if ACs are met.
 
 > *Acceptable Quality Level: Successful build with a single command*
 
+> NOTE: until we have a proper staging environment this may not be satisfiable prior to merging
+
 + [ ] Was the code successfully deployed via automated CircleCI process to development on Cloud.gov?
 
 ### Deliverable 6: Documented
