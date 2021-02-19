@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     ]
 
     def generate_superuser(apps, schema_editor):
-        from ..models import User
+        User = apps.get_model('users', 'User')
 
         # set the environment variable to the username of the
         # initial superuser
