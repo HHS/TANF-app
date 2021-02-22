@@ -6,7 +6,7 @@ import Button from '../Button'
 function Request() {
   const signOut = (e) => {
     e.preventDefault()
-    window.location.href = `${process.env.REACT_APP_BACKEND}/v1/logout/oidc`
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
   }
 
   return (

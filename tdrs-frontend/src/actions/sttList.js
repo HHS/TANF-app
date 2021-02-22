@@ -32,7 +32,7 @@ export const CLEAR_STTS = 'CLEAR_STTS'
 export const fetchSttList = () => async (dispatch) => {
   dispatch({ type: FETCH_STTS })
   try {
-    const URL = `${process.env.REACT_APP_BACKEND}/v1/stts/alpha`
+    const URL = `${process.env.REACT_APP_BACKEND_URL}/stts/alpha`
     const { data } = await axios.get(URL, {
       withCredentials: true,
     })
