@@ -3,14 +3,12 @@ import logging
 from django.contrib.auth.models import Group
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .models import User
 from .permissions import IsAdmin, IsUser
 from django.utils import timezone
 from .serializers import (
-    CreateUserSerializer,
     UserProfileSerializer,
     UserSerializer,
     GroupSerializer
@@ -20,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class UserViewSet(
-    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
@@ -34,7 +31,6 @@ class UserViewSet(
     def get_permissions(self):
         """Get permissions for the viewset."""
         permission_classes = {
-            "create": [AllowAny],
             "retrieve": [IsUser | IsAdmin],
             "set_profile": [IsUser | IsAdmin],
             "partial_update": [IsUser | IsAdmin],
@@ -46,7 +42,6 @@ class UserViewSet(
     def get_serializer_class(self):
         """Return the serializer class."""
         return {
-            "create": CreateUserSerializer,
             "set_profile": UserProfileSerializer,
         }.get(self.action, UserSerializer)
 
