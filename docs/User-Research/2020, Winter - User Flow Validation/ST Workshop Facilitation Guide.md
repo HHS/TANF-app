@@ -1,6 +1,6 @@
 # Workshop Facilitation Guide for Round 4 Research
 
-We will use the [facilitation guide]((https://app.zenhub.com/files/281707402/8b6beb37-9f66-4526-a6a7-97707f1146ec/download)) to conduct the States and Territories (ST) workshop. The objective of this collaborative design workshop to involve grantees in: 
+We will use the [facilitation guide]((https://app.zenhub.com/files/281707402/8b6beb37-9f66-4526-a6a7-97707f1146ec/download)) to conduct the States and Territories (ST) workshop. The objective of this collaborative design workshop is to involve grantees in: 
 - Solution space validation
 - Journey map validation 
 - User flow ideation 
@@ -24,4 +24,3 @@ In this step we will narrate the journey as we currently understand it, ask for 
   - User Flow Ideation Session 
 
 The [mural board](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1613491508274/7cf6d22e727671899d3d1417c2b7e9505eee7f38):lock: contains detailed information on each step of the workshop. 
-
