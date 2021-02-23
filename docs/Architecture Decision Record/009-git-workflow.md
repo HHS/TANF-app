@@ -41,7 +41,7 @@ A contributor to the TDP project would always use the following steps to propose
     * For research and design assign `shubhi-raft` and `jenewingpierce`
     * For security controls assign `carltonsmith`
     * For documentation submitted by OFA and 18F tag `lfrohlich` and `adpennington` and remove label `raft-review`
-    * For documentation submissions and updates by raft assign `kniz-raft`
+    * For documentation submissions and updates by raft assign `lfrohlich` and `adpennington` and add label `QASP review`
 14. For PRs with `raft-review` label, the appropriate reviewer performs the review and/or requests changes. **SLA** 3 days: 2 days to perform the review and 1 day to implement the requested changes. 
     * When changes are asked for, the changes are made by the contributor
 15. When satisfied, the reviewer 
