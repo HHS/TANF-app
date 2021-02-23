@@ -53,7 +53,7 @@ A contributor to the TDP project would always use the following steps to propose
         * For frontend work, assign the same as backend work but also include `iamjolly` for a11y review
         * For research and design work assign `lfrohlich`
         * For security controls assign `hursey013` and `lforhlich`
-18. For PRs with `qasp-review` label, the appropriate reviewer performs the review and/or requests changes. **SLA** 5 days: 3 dayes to perform the review and 2 days to implement the requested changes.
+18. For PRs with `qasp-review` label, the appropriate reviewer performs the review and/or requests changes. **SLA** 5 days: 3 days to perform the review and 2 days to implement the requested changes.
     * When changes are asked for, the changes are made by the contributor. Raft reviewers should internalize the changes asked by 18F/HHS such that the same feedback is already incorporated and/or caught in future (continuous improvement)
     * When security controls are approved, additional reviews are asked for by OCIO
 19. When satisfied, the 18F/HHS/OCIO reviewer `approves` the PR
