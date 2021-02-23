@@ -18,7 +18,7 @@ In this step, we briefly revisit the problem we are solving and why it is import
   - User validation of solution space
   
 #### Journey Map to User Flow: 45 minutes  
-In this step we will narrate the journey as we currently understand it, ask for ST input on any thing we may have missed, and prioritize pain points.  Then we will present a solution user flow and ask for ST and OFA input .  
+In this step we will narrate the journey as we currently understand it, ask for ST input on any thing we may have missed, and prioritize pain points.  Then we will present a solution user flow and ask for ST input .  
   - Presentation of Current Journey
   - Pain Point Validation --> Prioritization
   - User Flow Ideation Session 
