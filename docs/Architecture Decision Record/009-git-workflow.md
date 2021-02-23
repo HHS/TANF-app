@@ -87,6 +87,7 @@ A contributor to the TDP project would always use the following steps to propose
 
 **Cons**
 - Only one pull request at a time will be able to go to `HHS:main`, but this won't be a problem since they will only be issued once approved and therefore can be merged immediately
+- All PR comments will be on the vendor repo rather than the government repo
 
 **Recommendations for how to get there**
 - Merge/Close all [HHS PRs](https://github.com/HHS/TANF-app/pulls) by **figuring out when all can be merged** so that we can start with the process described above
