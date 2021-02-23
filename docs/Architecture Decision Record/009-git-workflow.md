@@ -35,13 +35,13 @@ A contributor to the TDP project would always use the following steps to propose
     * Ensure there are no merge conflicts 
     * Ensure CI/CD pipelines are green
     * Update the title to remove `WIP`, change the PR to [Ready for Review](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/changing-the-stage-of-a-pull-request), assign label `raft-review`.
-    * If your PR is against a branch other than `raft-tdp-main` keep it as a draft PR until the other branch is merged. 
+    * If your PR is against a branch other than `raft-tdp-main` keep it as a draft PR and add the tag `blocked` until the other branch is merged. 
 13. Assign a reviewer: 
     * For development work, assign **at least two** Raft developers with one of them being `carltonsmith` or `jtwillis92` (**but not both**).
     * For research and design assign `shubhi-raft` and `jenewingpierce`
     * For security controls assign `carltonsmith`
     * For documentation submitted by OFA and 18F tag `lfrohlich` and `adpennington` and remove label `raft-review`
-    * For documentation submissions and updates by raft assign `lfrohlich` and `adpennington`
+    * For documentation submissions and updates by raft assign `kniz-raft`
 14. For PRs with `raft-review` label, the appropriate reviewer performs the review and/or requests changes. **SLA** 3 days: 2 days to perform the review and 1 day to implement the requested changes. 
     * When changes are asked for, the changes are made by the contributor
 15. When satisfied, the reviewer 
