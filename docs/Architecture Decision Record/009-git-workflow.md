@@ -1,4 +1,4 @@
-# 1. Record architecture decisions
+# 9. Git Workflow
 
 Date: 2021-02-23
 
@@ -10,7 +10,7 @@ Pending
 
 In order to maintain the principal of Least Privilege, it was decided at the onset of this project that the vendor (Raft) would work from a fork of the government repo and issue pull requests to the government repo from the fork. The vendor would not have write access to the government repository or the government's CircleCI account.
 
-Throughout the project all vendor development work has been done in the vendor's forked repository, while pull requests from the government (OFA and 18F) and even some documentation pull requests from the vendor were made directly to the government repository.
+Throughout the project all vendor development work has been done in the vendor's forked repository, while pull requests from the government and even some documentation pull requests from the vendor were made directly to the government repository.
 
 This has created a situation where the vendor has needed to continuously rebase with the government repository to make sure the vendor's repository was up to date. As a result, problems with the Git history have arisen that make it confusing for both the government and the vendor to track the history of the work.
 
@@ -40,30 +40,30 @@ A contributor to the TDP project would always use the following steps to propose
     * For development work, assign **at least two** Raft developers with one of them being `carltonsmith` or `jtwillis92` (**but not both**).
     * For research and design assign `shubhi-raft` and `jenewingpierce`
     * For security controls assign `carltonsmith`
-    * For documentation submitted by OFA and 18F tag `lfrohlich` and `adpennington` and remove label `raft-review`
+    * For documentation submitted by the Government tag `lfrohlich` and `adpennington` and remove label `raft-review`
     * For documentation submissions and updates by raft assign `lfrohlich` and `adpennington` and add label `QASP review`
-14. For PRs with `raft-review` label, the appropriate reviewer performs the review and/or requests changes. **SLA** 3 days: 2 days to perform the review and 1 day to implement the requested changes. 
+14. For PRs with `raft-review` label, the appropriate reviewer performs the review and/or requests changes. **GOAL** 3 days: 2 days to perform the review and 1 day to implement the requested changes. 
     * When changes are asked for, the changes are made by the contributor
 15. When satisfied, the reviewer 
     * `approves` the PR
     * removes `raft-review` label
     * adds `qasp-review` label
-    * assigns 18F/HHS as the reviewer:
+    * assigns the Government as the reviewer:
         * For backend development work assign `alexsoble`, `adpennington` and `lfrohlich`
         * For frontend work, assign the same as backend work but also include `iamjolly` for a11y review
         * For research and design work assign `lfrohlich`
-        * For security controls assign `hursey013` and `lforhlich`
-18. For PRs with `qasp-review` label, the appropriate reviewer performs the review and/or requests changes. **SLA** 5 days: 3 days to perform the review and 2 days to implement the requested changes.
-    * When changes are asked for, the changes are made by the contributor. Raft reviewers should internalize the changes asked by 18F/HHS such that the same feedback is already incorporated and/or caught in future (continuous improvement)
+        * For security controls assign `lforhlich`
+18. For PRs with `qasp-review` label, the appropriate reviewer performs the review and/or requests changes. **GOAL** 5 days: 3 days to perform the review and 2 days to implement the requested changes.
+    * When changes are asked for, the changes are made by the contributor. Raft reviewers should internalize the changes asked by the Government such that the same feedback is already incorporated and/or caught in future (continuous improvement)
     * When security controls are approved, additional reviews are asked for by OCIO
-19. When satisfied, the 18F/HHS/OCIO reviewer `approves` the PR
+19. When satisfied, the Government reviewer `approves` the PR
 20. The contributor clicks Merge into `raft-tdp-main`
 21. The contributor:
     * opens a PR from `raft-tdp-main` to `HHS:main`
-    * Updates the PR template to change `addresses` to `closes` so that issue [can be automatically closed when 18F/HHS merge](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
+    * Updates the PR template to change `addresses` to `closes` so that issue [can be automatically closed when the Government merges](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
     * Ensures the CI/CD pipelines are green
-    * Assigns 18F/HHS as reviewers and pings them on Teams to review/merge
-26. PR is approved and merged to `HHS:main` by `adpennington` or `lfrohlich` **SLA** 1 day from open date (by now the code is already approved by 18F/HHS)
+    * Assigns the Government as reviewers and pings them on Teams to review/merge
+26. PR is approved and merged to `HHS:main` by `adpennington` or `lfrohlich` **GOAL** 1 day from open date (by now the code is already approved by the Government)
 
 ## Consequences
 
@@ -73,7 +73,7 @@ A contributor to the TDP project would always use the following steps to propose
   - ie. `my_branch_1` depends on `my_branch_0` and there is an open PR from `my_branch_0` to `raft-tdp-main`. Can open a PR in raft-tech from `my_branch_1` to `my_branch_0` and only the changes from the latest branch will be shown to reviewers, but the dependent code will still be present and kept up to date by GitHub exposing a button to update with upstream branch
   - Because of this, we can more easily submit smaller PRs since this removes much of the maintenance work currently involved to achieve that goal
 - Less complexity for developers, reviewers
-- No need to rebase from HHS back to `raft-tdp-main`
+- No need to rebase from `HHS:main` back to `raft-tdp-main`
 - Much smaller chance of needing to revert commits to `HHS:main`
 - Git history will be much cleaner
 - Much less time managing git history
