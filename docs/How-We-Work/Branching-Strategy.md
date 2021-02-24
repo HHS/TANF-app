@@ -24,11 +24,7 @@ For review purposes, we have also created the protected branch `raft-review`. We
 
 ### Part IV
 **Merging to HHS**
-Once a branch has is in review we will place it in `Raft Review` status in the Raft repository, where we will perform code reviews and check against the QASP checklist. After passing this phase, a Pull request will be issued against the main HHS repository.
-
-Pull requests to the HHS repository must pass three reviews before a merge will be allowed.
-1. The Product Owner will confirm that the branch meets all Acceptance Criteria for the change
-2. The OFA Technical Lead (or proxy) will review the code and check against the QASP checklist
-3. The OFA Technical Lead (or proxy) will check for all a11y requirements
+Once a branch has is in review we will place it in `Raft Review` status in the Raft repository, where we will perform code reviews and check against the QASP checklist. After passing this phase, the `Raft Review` label will be removed and the `QASP Review` label will be added. Once it passes `QASP Review` it will be merged to `raft-tdp-main` and a PR will be issued from `raft-tech:raft-tdp-main` to `HHS:main`. As it has already gone through approval, assuming the automated
+deploy works correctly, it can be merged immediately.
 
 Once all of these reviews are passing and approved, the Product Owner will merge the branch into the `main` branch in the HHS repository.
