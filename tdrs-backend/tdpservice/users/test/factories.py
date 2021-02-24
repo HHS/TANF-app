@@ -45,6 +45,7 @@ class UserFactory(BaseUserFactory):
 
 class STTUserFactory(BaseUserFactory):
     """User factory for use in STT tests."""
+
     # To prevent an error that happens when calling the `populate_stt` command.
     # The stt factory and the command were competing over the right to set the stt.
     # Our solution was to not set the STT specificly for the STT tests that
