@@ -70,15 +70,15 @@ On each git push and merge, a comprehensive list of automated checks are run: Un
 
 ### Continuous Deployment
 
-The application is continuously deployed to the dev, staging, or prod environments based on the git branch the code is merged in. The configuration for different branches is maintained in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml#L107). The application is deployed to the following environments:
+The application is continuously deployed to the dev, staging, or prod environments based on the git branch the code is merged in. The configuration for different branches is maintained in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml#L107).
+
+See [Architecture Decision Record 008 - Deployment Flow](docs/Architecture%20Decision%20Record/008-deployment-flow.md) - for more.
+
+The application is deployed to the following environments:
 
 Environment | URL | Git Branch
 ------------|----|-------------
-Development | https://tdp-frontend.app.cloud.gov/ | [`raft-tdp-main`](https://github.com/raft-tech/TANF-app) in Raft fork
-Staging | TBD | [`main`](https://github.com/HHS/TANF-app) in HHS
-Production | TBD | `production` in HHS
-
-
-
-
-
+Development | https://tdp-frontend.app.cloud.gov/ | `raft-tdp-main` in [Raft fork](https://github.com/raft-tech/TANF-app)
+Vendor staging | https://tdp-frontend-vendor-staging.app.cloud.gov/ | `raft-staging` in [Raft fork](https://github.com/raft-tech/TANF-app)
+Gov staging | TBD | TBD
+Production | TBD | TBD
