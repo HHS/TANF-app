@@ -26,7 +26,7 @@ Both the frontend (`http://localhost:3000`) and the backend (`http://localhost:8
 
 ```
 $ cd tdrs-frontend && docker-compose up -d
-$ cd tdrs-backend && docker-compose up -d 
+$ cd tdrs-backend && docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d 
 ```
 
 After the above commands there will be a total of 5 running containers
