@@ -11,17 +11,15 @@ tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
 tdrs-frontend/pa11y-screenshots/*
-tdrs-frontend/.env*
-
 
 #BACKEND
 tdrs-backend/vars-backend.yml
 tdrs-backend/coverage.xml
 tdrs-backend/htmlcov/*
+tdrs-backend/.env
 *.pyc
 /backend/db.sqlite3
 .DS_Store
- .env
 /staticfiles/*
 /mediafiles/*
 __pycache__/
