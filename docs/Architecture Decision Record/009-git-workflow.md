@@ -92,3 +92,6 @@ A contributor to the TDP project would always use the following steps to propose
 **Recommendations for how to get there**
 - Merge/Close all [HHS PRs](https://github.com/HHS/TANF-app/pulls) by **figuring out when all can be merged** so that we can start with the process described above
 - Do not merge anything directly to HHS:main. All PRs into HHS:main should come from raft-tech/raft-tdp-main unless absolutely needed.
+
+## Notes
+- All Pull Requests with the `QASP Review` label will be approved against the QASP Checklist
