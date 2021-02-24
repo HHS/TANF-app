@@ -64,7 +64,7 @@ When running this app directly on localhost React will assign `NODE_ENV=developm
 * .env.development
 * .env
 
-#### `npm test`
+#### `npm test` / `yarn test`
 During tests, the env files are loaded in this order:
 * .env.test.local
 * .env.test
