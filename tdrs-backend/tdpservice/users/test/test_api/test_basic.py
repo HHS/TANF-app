@@ -1,17 +1,9 @@
 """Basic API User Tests."""
 from django.contrib.auth import get_user_model
-from django.core.management import call_command
 import pytest
 from rest_framework import status
 
 User = get_user_model()
-
-@pytest.mark.django_db
-@pytest.fixture(scope="function")
-def create_test_users():
-    """Create users for each group."""
-    call_command("generate_test_users")
-
 
 @pytest.mark.django_db
 def test_retrieve_user(api_client, user):
@@ -40,8 +32,7 @@ def test_cannot_update_user_anonymously(api_client, user):
 
 
 @pytest.mark.django_db
-def test_create_user(api_client, user_data):
-    """Test user creation."""
+def test_create_user_endpoint_not_present(api_client, user_data):
+    """Test removed endpoint is no longer there."""
     response = api_client.post("/v1/users/", user_data)
-    assert response.status_code == status.HTTP_201_CREATED
-    assert User.objects.filter(username=user_data["username"]).exists()
+    assert response.status_code == status.HTTP_404_NOT_FOUND
