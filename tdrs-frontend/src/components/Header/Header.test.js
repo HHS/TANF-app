@@ -5,11 +5,18 @@ import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 
 import Header from './Header'
+import auth from '../../reducers/auth'
 
 describe('Header', () => {
   let initialState = {
     router: { location: { pathname: '/edit-profile' } },
-    auth: { user: { email: 'test@test.com' }, authenticated: true },
+    auth: {
+      user: {
+        email: 'test@test.com',
+        roles: [{ id: 1, name: 'System Admin', permissions: [] }],
+      },
+      authenticated: true,
+    },
   }
   const mockStore = configureStore([thunk])
 
@@ -62,7 +69,7 @@ describe('Header', () => {
     expect(profileLink).toIncludeText('Profile')
   })
 
-  it('should have a navigation link for Admin', () => {
+  it('should have a navigation link for Admin when user is a System Admin', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
@@ -72,6 +79,28 @@ describe('Header', () => {
     const adminLink = wrapper.find('#admin')
     expect(adminLink).toExist()
     expect(adminLink).toIncludeText('Admin')
+  })
+
+  it('should NOT have a navigation link for Admin when user is NOT as System Admin', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        ...initialState.auth,
+        user: {
+          ...initialState.user,
+          roles: [{ id: 2, name: 'Data Prepper', permissions: [] }],
+        },
+      },
+    })
+
+    const wrapper = mount(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+    const adminLink = wrapper.find('#admin')
+    expect(adminLink).not.toExist()
+    expect(adminLink).not.toIncludeText('Admin')
   })
 
   it('should find menu button', () => {
@@ -144,22 +173,6 @@ describe('Header', () => {
     const profileTab = wrapper.find('#profile')
 
     expect(profileTab.hasClass('usa-current')).toEqual(true)
-  })
-
-  it("should add usa-current class to Admin tab when on '/admin'", () => {
-    const store = mockStore({
-      ...initialState,
-      router: { location: { pathname: '/admin' } },
-    })
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-
-    const adminTab = wrapper.find('#admin')
-
-    expect(adminTab.hasClass('usa-current')).toEqual(true)
   })
 
   it("should not add usa-current class to Welcome tab when not on '/'", () => {
