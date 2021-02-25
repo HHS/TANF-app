@@ -61,7 +61,7 @@ function HeaderComp() {
                 <NavItem
                   pathname={pathname}
                   tabTitle="Admin"
-                  href={`${process.env.REACT_APP_BACKEND}/admin/`}
+                  href={`${process.env.REACT_APP_BACKEND_URL}/admin/`}
                 />
               )}
             </ul>
