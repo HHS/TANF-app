@@ -18,10 +18,10 @@ tdrs-frontend/pa11y-screenshots/*
 tdrs-backend/vars-backend.yml
 tdrs-backend/coverage.xml
 tdrs-backend/htmlcov/*
+tdrs-backend/.env
 *.pyc
 /backend/db.sqlite3
 .DS_Store
-*/.env
 /staticfiles/*
 /mediafiles/*
 __pycache__/
