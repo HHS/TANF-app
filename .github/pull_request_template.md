@@ -15,7 +15,7 @@ _List the steps to test the PR_
 + [ ] Look up the acceptance criteria in the related issue; paste ACs below in checklist format.
 + [ ] Check against the criteria:
 
-As facilitator/product manager, @kniz-raft will decide if ACs are met.
+As facilitator/product manager, @kniz-raft will decide if ACs are met from Raft's perspective.
 
 ### Deliverable 2: Tested Code
 
