@@ -70,7 +70,7 @@ On each git push and merge, a comprehensive list of automated checks are run: Un
 
 ### Continuous Deployment
 
-The application is continuously deployed to the dev, staging, or prod environments based on the git branch the code is merged in. The configuration for different branches is maintained in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml#L107).
+The application is continuously deployed to the dev, vendor staging, gov staging or prod environments based on the git branch the code is merged in. The configuration for different branches is maintained in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml#L107).
 
 See [Architecture Decision Record 008 - Deployment Flow](docs/Architecture%20Decision%20Record/008-deployment-flow.md) - for more.
 
