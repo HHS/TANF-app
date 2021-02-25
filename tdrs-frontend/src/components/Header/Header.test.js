@@ -81,7 +81,7 @@ describe('Header', () => {
     expect(adminLink).toIncludeText('Admin')
   })
 
-  it('should NOT have a navigation link for Admin when user is NOT as System Admin', () => {
+  it('should NOT have a navigation link for Admin when user is NOT a System Admin', () => {
     const store = mockStore({
       ...initialState,
       auth: {
