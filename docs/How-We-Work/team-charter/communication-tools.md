@@ -32,10 +32,12 @@
 - Goal: To document the vendor’s work and satisfy OCIO’s requirements 
 - Format:  
   - Raft creates PR with all the sprint’s work. Adds PR notes including: 
-  - List of completed user stories issues (with #s and URLs)  
+  - Contains sprint goals, accomplishments, and issues by status (with #s and URLs)
+      - Closed/merged (Done/Demo, Closed) 
+      - Submitted (QASP Review)
+      - Moving to next sprint (Raft Review, In progress, Current Sprint Backlog)  
   - Note on why those were not completed and what is the plan to complete them if necessary 
   - If issues do not meet DOD/AC, then a note on what is the mitigation plan  
-  - List of user stories moving to next sprint 
   - Link to user research and design documents 
   - Government reviews the PR 
   - Checks all items against QASP 
