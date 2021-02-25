@@ -9,7 +9,7 @@
 
 **Raft**
 * Carlton Smith, Raft, tech lead
-* Jorge Gonzalez, Raft frontend engineer
+* Jorge Gonzalez, Raft, frontend engineer
 * Aaron Beavers, Raft, backend engineer
 * Dmitri Knapp, Raft, visual designer
 * Shubhi Mishra, Raft, design lead + facilitator
@@ -57,5 +57,5 @@
 * Timothy Spencer, 18F, consulting engineer
 * Abbey Kos, 18F, research consultant
 * Randy Hart, 18F, acquisition consultant
-* Spencer Hiltvitz, Raft, front end engineer
+* Spencer Hilvitz, Raft, front end engineer
 * Romelo Nafarette, Raft consultant, security controls subject matter expert
