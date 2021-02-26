@@ -13,6 +13,8 @@ tdrs-frontend/vars-frontend.yml
 tdrs-frontend/pa11y-screenshots/*
 .eslintcache
 
+# Don't commit local environment override files
+tdrs-frontend/.env*.local
 
 #BACKEND
 tdrs-backend/vars-backend.yml
