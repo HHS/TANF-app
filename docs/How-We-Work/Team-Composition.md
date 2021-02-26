@@ -16,6 +16,7 @@
 * Miles Reiter, Raft, user researcher
 * Jennifer Pierce, Raft, senior user researcher
 * Kati Nizzi, Raft, product manager
+* John Willis, Raft, technical oversight support
 
 ## Subject Matter Experts
 **OFA Data Team**
@@ -46,6 +47,8 @@
 
 ## Past Product Team Members
 (most recent first)
+* Spencer Hilvitz, Raft, front end engineer
+* Romelo Nafarette, Raft consultant, security controls subject matter expert
 * Pat Asata, Raft, tech lead
 * Ryan Ahearn, 18F, compliance consultant
 * Matthew Doty, Raft, user researcher
@@ -57,5 +60,4 @@
 * Timothy Spencer, 18F, consulting engineer
 * Abbey Kos, 18F, research consultant
 * Randy Hart, 18F, acquisition consultant
-* Spencer Hilvitz, Raft, front end engineer
-* Romelo Nafarette, Raft consultant, security controls subject matter expert
+
