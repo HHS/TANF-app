@@ -24,7 +24,7 @@ _Note that this represents a planned future state, not the current state._
 Deploy Environment | Cloud.gov Space | Cloud.gov Dev Access | Role                                              | Deploys when ...  |
 -------------------|-----------------|----------------------|---------------------------------------------------|-------------------|
 Development         | Dev             | Vendor & Gov         | Deploy code for vendor internal testing & review  | Anytime           |
-Vendor Staging        | Dev             | Vendor & Gov         | Deploy code submitted for gov review             | Anytime work is ready for QASP review |
+Vendor Staging        | Dev             | Vendor & Gov         | Deploy code submitted for gov review             | Code merged to `raft-tech/TANF-app:raft-tdp-main` |
 Gov Staging            | Staging         | Gov                  | Deploy code once gov-approved               | Code merged to `HHS/TANF-app:staging`
 Production         | Prod            | Gov                  | Deploy code tested in staging & ready for prod    | Code merged to `HHS/TANF-app:main`
 

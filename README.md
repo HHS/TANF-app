@@ -78,7 +78,7 @@ The application is deployed to the following environments:
 
 Environment | URL | Git Branch
 ------------|----|-------------
-Development | https://tdp-frontend.app.cloud.gov/ | `raft-tdp-main` in [Raft fork](https://github.com/raft-tech/TANF-app)
-Vendor staging | https://tdp-frontend-vendor-staging.app.cloud.gov/ | `raft-staging` in [Raft fork](https://github.com/raft-tech/TANF-app)
+Development | https://tdp-frontend.app.cloud.gov/ | `raft-review` in [Raft fork](https://github.com/raft-tech/TANF-app)
+Vendor staging | https://tdp-frontend-vendor-staging.app.cloud.gov/ | `raft-tdp-main` in [Raft fork](https://github.com/raft-tech/TANF-app)
 Gov staging | TBD | TBD
 Production | TBD | TBD
