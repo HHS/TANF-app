@@ -23,6 +23,17 @@ Minor changes to manifest and a new, similar script to the ones we already have.
 
 We want to make it explicit in the mainifest file that we want a build pack
 
+### Tasks
+
+- [] update manifest.yml
+- [] Add new script for build pack deploy
+- [] Test deployment on a live server using a build pack
+
+### Story Estimates
+
+Points: 5
+Time: 3-5 days
+
 https://docs.cloudfoundry.org/devguide/deploy-apps/manifest-attributes.html#buildpack
 
 https://direnv.net/
