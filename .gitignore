@@ -19,7 +19,6 @@ tdrs-backend/vars-backend.yml
 tdrs-backend/coverage.xml
 tdrs-backend/htmlcov/*
 tdrs-backend/.env
-tdrs-backend/cors.json
 *.pyc
 /backend/db.sqlite3
 .DS_Store
