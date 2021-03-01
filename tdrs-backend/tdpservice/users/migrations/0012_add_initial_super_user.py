@@ -1,7 +1,12 @@
 import os
+import logging
 from django.contrib.auth.hashers import make_password
 from django.db import migrations
 from django.utils import timezone
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 class Migration(migrations.Migration):
     dependencies = [
@@ -24,10 +29,12 @@ class Migration(migrations.Migration):
         # Use the historical model to prevent this from failing on clean
         # builds if the User model changes in the future
         # https://docs.djangoproject.com/en/3.1/topics/migrations/#historical-models  noqa
-        superuser = apps.get_model('users', 'User').objects.get_or_create(
+        superuser, success = apps.get_model('users', 'User').objects.get_or_create(
             username=su_username,
             defaults={'email': su_username, 'date_joined': now, 'password': unusable_password},
         )
+        # log the success of the operation
+        logger.info(f"SUPERUSER MIGRATION OPERATION: {success}")
         # if the user already exists we need to make sure they have the correct
         # flags set. This can't be updated in `get_or_create()`
         superuser.is_active = True
