@@ -43,5 +43,5 @@ class Migration(migrations.Migration):
         superuser.save()
 
     operations = [
-        migrations.RunPython(generate_superuser),
+        migrations.RunPython(generate_superuser, reverse_code=migrations.RunPython.noop),
     ]
