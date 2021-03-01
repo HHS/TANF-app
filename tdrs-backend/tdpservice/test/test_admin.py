@@ -6,6 +6,8 @@ set to false, while the admin_user has both set to true.
 """
 
 import pytest
+import re
+import os
 from django.contrib import admin
 from django.urls import reverse
 from rest_framework import status
@@ -90,3 +92,11 @@ def test_admin_users_displays_keys(client, admin_user):
     response = client.get(url)
     assert "Staff status" in response.rendered_content
     assert "Superuser status" in response.rendered_content
+
+
+@pytest.mark.django_db
+def test_superuser_env_var_is_set():
+    """Test to make sure a valid superuser is in the env."""
+    superuser = os.environ.get('DJANGO_SU_NAME')
+    assert superuser is not None
+    assert re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", superuser)
