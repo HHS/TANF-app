@@ -54,7 +54,6 @@ class STTUserFactory(BaseUserFactory):
     # were calling the `populate_stt` command.
     stt = None
 
-
 class AdminUserFactory(UserFactory):
     """Generate Admin User."""
 
@@ -66,5 +65,3 @@ class StaffUserFactory(UserFactory):
     """Generate Staff User."""
 
     is_staff = True
-
->>>>>>>

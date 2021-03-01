@@ -7,7 +7,9 @@ from tdpservice.users.test.factories import (
     STTUserFactory,
     AdminUserFactory,
     StaffUserFactory,
+    STTUserFactory
 )
+
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from django.contrib.auth.models import Group
 from tdpservice.reports.test.factories import ReportFileFactory
