@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
     def generate_superuser(apps, schema_editor):
         # set the environment variable to the username of the
         # initial superuser
-        su_username = os.environ.get('DJANGO_SU_NAME', 'admin')
+        su_username = os.environ.get('DJANGO_SU_NAME')
 
         # Get current time for date_joined
         now = timezone.now()
