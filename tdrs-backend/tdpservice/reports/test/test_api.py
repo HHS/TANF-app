@@ -7,7 +7,6 @@ from rest_framework import status
 from ..models import ReportFile
 
 
-# Create your tests here.
 @pytest.mark.django_db
 def test_create_report_file_entry(api_client, ofa_admin):
     """Test report file metadata registry."""
@@ -16,7 +15,7 @@ def test_create_report_file_entry(api_client, ofa_admin):
     data = {
         "original_filename": "report.txt",
         "quarter": "Q1",
-        "slug": uuid.uuid4(),
+        "slug": str(uuid.uuid4()),
         "user": user.id,
         "stt": user.stt.id,
         "year": 2020,

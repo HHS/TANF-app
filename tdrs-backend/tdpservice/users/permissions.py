@@ -6,12 +6,14 @@ from rest_framework import permissions
 def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
     return is_in_group(request.user, "Data Prepper") and (
-        request.user.stt.id == request.data['stt']
+        request.user.stt.id == view.kwargs.get("stt", request.data.get("stt"))
     )
+
 
 def is_in_group(user, group_name):
     """Take a user and a group name, and returns `True` if the user is in that group."""
     return user.groups.filter(name=group_name).exists()
+
 
 class IsUser(permissions.BasePermission):
     """Object-level permission to only allow owners of an object to edit it."""
@@ -47,6 +49,19 @@ class IsDataPrepper(permissions.BasePermission):
     def has_permission(self, request, view):
         """Check if a user is a data prepper."""
         return is_in_group(request.user, "Data Prepper")
+
+
+class CanDownloadReport(permissions.BasePermission):
+    """Permission for report download."""
+
+    def has_permission(self, request, view):
+        """Check if a user can download file."""
+        if is_in_group(request.user, "OFA Admin") and "stt" in request.kwargs:
+            return True
+        elif request.user.is_authenticated:
+            return True
+        else:
+            return False
 
 
 class CanUploadReport(permissions.BasePermission):

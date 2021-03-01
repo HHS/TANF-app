@@ -2,6 +2,7 @@
 
 import pytest
 
+
 @pytest.fixture
 def report_data(user):
     """Return report creation data."""

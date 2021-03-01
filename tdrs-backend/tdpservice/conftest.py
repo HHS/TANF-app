@@ -2,18 +2,16 @@
 import pytest
 from rest_framework.test import APIClient
 
-<<<<<<<
-from tdpservice.users.test.factories import UserFactory, STTUserFactory
-=======
 from tdpservice.users.test.factories import (
     UserFactory,
+    STTUserFactory,
     AdminUserFactory,
     StaffUserFactory,
 )
->>>>>>>
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from django.contrib.auth.models import Group
 from tdpservice.reports.test.factories import ReportFileFactory
+
 
 @pytest.fixture(scope="function")
 def api_client():
@@ -32,7 +30,6 @@ def stt_user():
     return STTUserFactory.create()
 
 @pytest.fixture
-<<<<<<<
 def ofa_admin():
     """Return an ofa admin user."""
     return UserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
@@ -43,7 +40,6 @@ def data_prepper():
     return UserFactory.create(groups=(Group.objects.get(name="Data Prepper"),))
 
 @pytest.fixture
-=======
 def admin_user():
     """Return an admin user."""
     return AdminUserFactory.create()
@@ -56,7 +52,6 @@ def staff_user():
 
 
 @pytest.fixture
->>>>>>>
 def stt():
     """Return an STT."""
     return STTFactory.create()
@@ -65,6 +60,7 @@ def stt():
 def region():
     """Return a region."""
     return RegionFactory.create()
+
 
 @pytest.fixture
 def report():
