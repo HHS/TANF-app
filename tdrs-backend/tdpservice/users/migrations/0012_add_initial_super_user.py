@@ -28,6 +28,8 @@ class Migration(migrations.Migration):
             username=su_username,
             defaults={'email': su_username, 'date_joined': now, 'password': unusable_password},
         )
+        # if the user already exists we need to make sure they have the correct
+        # flags set. This can't be updated in `get_or_create()`
         superuser.is_active = True
         superuser.is_staff = True
         superuser.is_superuser = True
