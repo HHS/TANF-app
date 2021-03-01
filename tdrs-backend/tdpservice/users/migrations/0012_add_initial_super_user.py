@@ -29,12 +29,12 @@ class Migration(migrations.Migration):
         # Use the historical model to prevent this from failing on clean
         # builds if the User model changes in the future
         # https://docs.djangoproject.com/en/3.1/topics/migrations/#historical-models  noqa
-        superuser, success = apps.get_model('users', 'User').objects.get_or_create(
+        superuser, was_created = apps.get_model('users', 'User').objects.get_or_create(
             username=su_username,
             defaults={'email': su_username, 'date_joined': now, 'password': unusable_password},
         )
         # log the success of the operation
-        logger.info(f"SUPERUSER MIGRATION OPERATION: {success}")
+        logger.info(f"SUPERUSER CREATED: {was_created}")
         # if the user already exists we need to make sure they have the correct
         # flags set. This can't be updated in `get_or_create()`
         superuser.is_active = True
