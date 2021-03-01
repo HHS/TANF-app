@@ -9,10 +9,6 @@ class Migration(migrations.Migration):
     ]
 
     def generate_superuser(apps, schema_editor):
-        # Use the historical model to prevent this from failing on clean
-        # builds if the User model changes in the future
-        User = apps.get_model('users', 'User')
-
         # set the environment variable to the username of the
         # initial superuser
         su_username = os.environ.get('DJANGO_SU_NAME', 'admin')
@@ -25,19 +21,17 @@ class Migration(migrations.Migration):
         # and users mustn't be allowed to login directly.
         unusable_password = make_password(None)
 
-        # Note we manually call `create` instead of `create_superuser`
-        # This allows us to operate on Historical Models, which
-        # do not have access to arbitrary model methods.
+        # Use the historical model to prevent this from failing on clean
+        # builds if the User model changes in the future
         # https://docs.djangoproject.com/en/3.1/topics/migrations/#historical-models  noqa
-        User.objects.create(
+        superuser = apps.get_model('users', 'User').objects.get_or_create(
             username=su_username,
-            email=su_username,
-            date_joined=now,
-            is_active=True,
-            is_staff=True,
-            is_superuser=True,
-            password=unusable_password
+            defaults={'email': su_username, 'date_joined': now, 'password': unusable_password},
         )
+        superuser.is_active = True
+        superuser.is_staff = True
+        superuser.is_superuser = True
+        superuser.save()
 
     operations = [
         migrations.RunPython(generate_superuser),
