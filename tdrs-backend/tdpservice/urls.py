@@ -14,6 +14,11 @@ from .users.api.login import TokenAuthorizationOIDC
 from .users.api.login_redirect_oidc import LoginRedirectOIDC
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
+from django.contrib.auth.decorators import login_required
+
+admin.autodiscover()
+admin.site.login = login_required(admin.site.login)
+admin.site.site_header = "Django administration"
 
 urlpatterns = [
     path("login", TokenAuthorizationOIDC.as_view(), name="login"),
@@ -33,7 +38,7 @@ urlpatterns = [
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 urlpatterns = [
     path("v1/", include(urlpatterns)),
-    path("admin/", admin.site.urls),
+    path("admin/", admin.site.urls, name="admin"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 
