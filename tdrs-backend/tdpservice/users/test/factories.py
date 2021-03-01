@@ -22,12 +22,19 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker("last_name")
     is_active = True
     is_staff = False
+<<<<<<<
+
+=======
+    is_superuser = False
+    stt = factory.SubFactory(STTFactory)
+>>>>>>>
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         manager = cls._get_manager(model_class)
         return manager.create_user(*args, **kwargs)
 
+<<<<<<<
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
         """Add groups to user instance."""
@@ -51,3 +58,19 @@ class STTUserFactory(BaseUserFactory):
     # Our solution was to not set the STT specificly for the STT tests that
     # were calling the `populate_stt` command.
     stt = None
+
+=======
+
+class AdminUserFactory(UserFactory):
+    """Generate Admin User."""
+
+    is_staff = True
+    is_superuser = True
+
+
+class StaffUserFactory(UserFactory):
+    """Generate Staff User."""
+
+    is_staff = True
+
+>>>>>>>
