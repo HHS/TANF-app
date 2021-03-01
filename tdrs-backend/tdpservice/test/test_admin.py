@@ -81,7 +81,6 @@ def test_unauth_cant_access_admin(client):
     response = client.get(url)
     assert response.status_code == status.HTTP_302_FOUND
 
-
 @pytest.mark.django_db
 def test_admin_users_displays_keys(client, admin_user):
     """Test an authenticated admin_user sees the appropriate content."""
