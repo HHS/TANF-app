@@ -12,6 +12,7 @@ from django.contrib import admin
 from django.urls import reverse
 from rest_framework import status
 from django.utils.text import capfirst
+from tdpservice.users.models import User
 
 
 @pytest.mark.django_db
@@ -99,4 +100,5 @@ def test_superuser_env_var_is_set():
     """Test to make sure a valid superuser is in the env."""
     superuser = os.environ.get('DJANGO_SU_NAME')
     assert superuser is not None
+    assert User.objects.filter(username=superuser).exists()
     assert re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", superuser)
