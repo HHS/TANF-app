@@ -2,7 +2,11 @@
 import pytest
 from rest_framework.test import APIClient
 
-from tdpservice.users.test.factories import UserFactory
+from tdpservice.users.test.factories import (
+    UserFactory,
+    AdminUserFactory,
+    StaffUserFactory,
+)
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from tdpservice.reports.test.factories import ReportFileFactory
 
@@ -16,6 +20,18 @@ def api_client():
 def user():
     """Return a basic, non-admin user."""
     return UserFactory.create()
+
+
+@pytest.fixture
+def admin_user():
+    """Return an admin user."""
+    return AdminUserFactory.create()
+
+
+@pytest.fixture
+def staff_user():
+    """Return a staff user."""
+    return StaffUserFactory.create()
 
 
 @pytest.fixture
