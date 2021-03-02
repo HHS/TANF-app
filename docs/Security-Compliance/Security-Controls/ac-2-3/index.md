@@ -16,3 +16,4 @@ The Django Admin interface tells us when a user last logged in to the TDP Applic
 Because most of the users of the TDP application will only need to log in every 90 days, we will disable inactive accounts after 180 days.
 
 #### Related Files  
+![](user_profile_last_login.png)
