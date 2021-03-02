@@ -8,12 +8,20 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+class NoSuperUser(Exception):
+    pass
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ('users', '0011_auto_20210108_1741'),
     ]
 
     def generate_superuser(apps, schema_editor):
+        # raise an exception if the environment variable isn't set
+        if os.environ.get('DJANGO_SU_NAME') is None:
+            raise NoSuperUser("DJANGO_SU_NAME does not have a value set.")
+
         # set the environment variable to the username of the
         # initial superuser
         su_username = os.environ.get('DJANGO_SU_NAME')
