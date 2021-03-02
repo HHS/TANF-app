@@ -41,14 +41,12 @@ urlpatterns = [
     path("admin/", admin.site.urls, name="admin"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-# Terms of service will result in a broken link until we implement our terms of service
-# and replace TODO with the link
+# TODO: Supply `terms_of_service` argument in OpenAPI Info once implemented
 schema_view = get_schema_view(
     openapi.Info(
         title="TDP API",
         default_version='v1',
         description="TANF Data Portal API documentation",
-        terms_of_service="TODO",
         contact=openapi.Contact(email="tanfdata@acf.hhs.gov"),
     ),
     public=True,
