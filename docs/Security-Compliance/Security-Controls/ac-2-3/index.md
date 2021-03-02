@@ -11,6 +11,8 @@ Requirement: The service provider defines the time period for non-user accounts 
 
 The System Admin reviews the list of TDP application users on a monthly basis and/or when the status of a user is changed to inactive or terminated. Inactive accounts are removed from the system manually if their status has changed.
 
+The Django Admin interface tells us when a user last logged in to the TDP Application, so we can determine the last date of a user's activity by checking the user's profile there.
+
 Because most of the users of the TDP application will only need to log in every 90 days, we will disable inactive accounts after 180 days.
 
 #### Related Files  
