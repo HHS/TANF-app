@@ -1,5 +1,5 @@
 # This Dockerfile is intended for use in deployments that target the
-# `development` environment within Cloud.gov
+# `vendor staging` environment within Cloud.gov
 
 # ---
 # Stage 0: Create the app directory, install dependencies, and copy in the source code
@@ -11,9 +11,9 @@ COPY --chown=node:node package.json yarn.lock ./
 USER node
 RUN yarn install && yarn cache clean
 
-# Override the default backend URL to point to the `development` environment
+# Override the default backend URL to point to the `vendor staging` environment
 RUN touch .env.production
-RUN echo "REACT_APP_BACKEND_URL=https://tdp-backend.app.cloud.gov/v1" >> .env.production
+RUN echo "REACT_APP_BACKEND_URL=https://tdp-backend-vendor-staging.app.cloud.gov/v1" >> .env.production
 
 COPY --chown=node:node . .
 
