@@ -50,7 +50,7 @@ class STTUserFactory(BaseUserFactory):
 
     # To prevent an error that happens when calling the `populate_stt` command.
     # The stt factory and the command were competing over the right to set the stt.
-    # Our solution was to not set the STT specificly for the STT tests that
+    # Our solution was to not set the STT specifically for the STT tests that
     # were calling the `populate_stt` command.
     stt = None
 
