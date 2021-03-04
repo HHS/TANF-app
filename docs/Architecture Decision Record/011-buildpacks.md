@@ -28,6 +28,7 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
 - Deploying with Docker containers ensures the application runs the same way in all environments. We will no longer have that assurance.
 - There will need to be more emphasis on testing against environment(s) deployed in Cloud.gov to be sure our code works with in the build pack.
 - Environments shifting to buildpacks may be unstable during transition
+- If we shift away from Cloud.gov, we may need to explore using docker again as fedramped buildpacks may not be available
 
 **Notes**
 - Docker containers will still need to be maintained for local development and CI/CD
