@@ -101,4 +101,5 @@ def test_superuser_env_var_is_set():
     superuser = os.environ.get('DJANGO_SU_NAME')
     assert superuser is not None
     assert User.objects.filter(username=superuser).exists()
+    # make sure the superuser username is a validly formed email
     assert re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", superuser)
