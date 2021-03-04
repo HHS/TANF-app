@@ -22,6 +22,7 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
 - Better assurance of security
 - Shifts responsibility to Cloud.gov
 - Dockerhub will no longer be needed
+- Since containers won't be visible to the public in Dockerhub we limit the chances of exposing sensitive information (ie. "secret" env vars) within the containers
 
 **Cons**
 - Deploying with Docker containers ensures the application runs the same way in all environments. We will no longer have that assurance.
