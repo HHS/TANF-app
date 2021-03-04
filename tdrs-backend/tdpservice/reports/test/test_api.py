@@ -85,7 +85,7 @@ def test_report_file_version_increment(api_client, ofa_admin):
 
 @pytest.mark.django_db
 def test_reports_data_prepper_permission(api_client, data_prepper):
-    """Test that a Data Prepper is allowed to add reports to their own STT"""
+    """Test that a Data Prepper is allowed to add reports to their own STT."""
     user = data_prepper
     api_client.login(username=user.username, password="test_password")
     data = {
