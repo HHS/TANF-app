@@ -1,4 +1,4 @@
-# 10. Record architecture decisions
+# 11. Record architecture decisions
 
 Date: 2021-02-26
 
@@ -28,7 +28,7 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
 - There will need to be more emphasis on testing on platform to be sure our code works with in the build pack.
 - Environments shifting to buildpacks will be unavailable during transition
 
-**Neutral**
+**Notes**
 - Docker containers will still need to be maintained for local development and CI/CD
 - Docker containers will still need to be hardened for CI/CD
 
