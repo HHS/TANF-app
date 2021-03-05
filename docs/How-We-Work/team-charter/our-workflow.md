@@ -1,6 +1,6 @@
 # Our Boards/Workspaces
 
-We have three project management boards for organizing our work:
+We have two project management boards for organizing our work:
 
 - **[Sprint Board](https://github.com/raft-tech/TANF-app#workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/board?repos=281707402)** This is only for the issues our team committed to for the current sprint. This lives in the Raft GitHub account.
 - **[Product Backlog](https://github.com/raft-tech/TANF-app#workspaces/tdrs-product-backlog-5f2c6cdc7c0bb1001bdc43a5/board?repos=281707402)** This is where the PO can stage user stories, adjust prioritization, and prepare issues to bring to Sprint Planning meetings. This also lives in the Raft GitHub account.
@@ -26,18 +26,19 @@ Based on the September 2020 iron triangle conversations, the product team commit
 
 
 ## The issue is refined and organized into an epic
-- The product owner, Design Lead, and Tech lead will meet weekly to review issues on the Product Backlog. They will flesh out details on the issues, prioritize them, and group them.
+- The Product Owner, Product Manager, Design Lead, Raft Tech Lead and ACF Tech Lead will meet weekly to review issues on the Product Backlog. They will flesh out details on the issues, prioritize them, and group them.
 - Epics are used to group issues by their theme. The Epics appear as issues with the label “Epic.” The “Epic Name” should be simple, high-level user story using the “As a <role>, I want to <action> so that <value> syntax.
 - Issues and epics are organized into Product Goals. Most of the columns or “pipelines” on the Product Backlog board are Product Goals. These are a set of epics that we work on in parallel and develop KPIs around. These are laid on the [Product Roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592336604317/61159efd030645a74c267130ea19b2083f87dd09).
 
 
-## The product owner proposes the issue for the next sprint
+## The product owner proposes the issues for the next sprint
 - The PO will come to Sprint Planning meeting with a set of issues she would like the team to focus on for the next sprint. The team discusses these and may add clarifications to the issue cards, break one issue down into two, or in other ways adjust the definition of the work.
 - All elements of the issue template should be defined before the issue is accepted into the sprint
 
 ## The issue is assigned points
 - We will follow a hybrid approach of tracking product delivery and utilization to point issues that are related to admin and tech debt. When assigning points to OCIO related issues, we are thinking of the Raft’s commitment.  
 - At the end of sprint planning, we will acknowledge how many points are for non-product issues (e.g., admin and tech debt) and use them to guide the team towards future planning. 
+- Issue points are based on complexity and do not directly correlate to hours/time spent on an issue.
 
 
 ## The issue is accepted into the sprint
@@ -53,7 +54,7 @@ Based on the September 2020 iron triangle conversations, the product team commit
 ## Work on the issue is started
 - When the individual assigned to work on an issue starts work on it, they should move it to the “In Progress” column/pipeline.
 - Any decisions or discussions about the issue should be documented within the issue
-- Ad hoc pairing or scheduled pairing session(s) with 18F are encouraged prior to the Day 13 QASP review so the 18F team does not see progress on the issue for the first time on Day 13.
+- Ad hoc pairing or scheduled pairing session(s) with 18F are encouraged throughout the sprint to increase transparency and familiarity with the issue
 - For dev issues
   - The branch you create should be prefixed with the issue number
   - Push the branch up as soon as possible and open a Draft PR.
@@ -92,39 +93,33 @@ Based on the September 2020 iron triangle conversations, the product team commit
 
 ## The issue is reviewed by Raft
 - If changes are needed, reviewer moves the issue back to ‘In Progress’ and notes the comments and pings the assignee for revision.
-- For dev issues, if issue meets the acceptance criteria and all tasks are done, the reviewer
-  - closes PR to merge it into the Raft dev environment
-  - creates a new PR for all the issues to be reviewed during QASP review using the ‘Sprint Summary Report’ template (page 16) with a WIP label/note until it is ready to be reviewed
-  - moves the issues to ‘Government Review’ pipeline and assign Laura (gov tech lead) and Lauren to review the PR
-  - Once the WIP label is removed from the PR created in the HHS repo, no work is to be done against the branch submitted for review unless changes are requested and/or the branch has been approved and merged.
-- For design or research issues, if issue meets the acceptance criteria and all tasks are done, the reviewer
-  - moves the issue to ‘Government Review’ pipeline and tags Lauren for review
+- For dev issues, if issue meets the acceptance criteria and all tasks are done, the reviewer follows the [Git Workflow found in our ADR folder](https://github.com/HHS/TANF-app/blob/main/docs/Architecture%20Decision%20Record/009-git-workflow.md)
+- For design or research issues, if issue meets the acceptance criteria and all tasks are done, the reviewer moves the issue to ‘QASP Review’ pipeline and tags Lauren for review
 
 
 ## The issue is reviewed by government
 - Lauren verifies that all the acceptance criteria and the relevant QASP elements have been met.
 - If issues meet the acceptance criteria, reviewers move the issue to “Done and ready for demo.” Only issues in “Done and ready for demo” will be demoed. (So keep issues small!)
 - If changes are needed, government reviewer/s move the issue back to ‘In Progress,’ notes the comments, and tags the assignee. Small tweaks can be sent back to the assignee on the same issue at this stage, but a new issue should be created if the feedback constitutes an significant expansion of scope.
-- When issues are being reviewed by QASP review day (Day 13), Raft team can continue to work on issues that are ‘In progress’ or ‘To Do’ pipeline. If all issues in these columns have been addressed, then Raft team can pull from prioritized product backlog 'Ready to go for Next Sprint'
 
 
 ## The issue is ready for demo
-- When QASP reviewers have signed off and the team is ready for feedback from OFA stakeholders, then the feature is demonstrated in Sprint Demo meeting.
+- When QASP reviewers have signed off and the team is ready for feedback from OFA stakeholders, then the feature is demonstrated in Sprint Demo.
 - Feedback from stakeholders is discussed and, if necessary, new issues are created to address feedback.
 
 
 ## The issue is complete and ready for final QASP review
 - Raft creates a PR and a Sprint Summary Report (see Page 11), which is included in the PR notes.
 - Tech lead reviews the PR, the COR comments acceptance, and Lauren merges the PR into main HHS repo
-- QASP reviewer reviews the PR against the contract QASP, DoD, and provides feedback by Monday (Day 13). Raft address any small feedback (one/two pointer) prior to 12pm Day 15 deadline. Larger feedback is added as an issue for backlog refinement and PR is updated with a note on the ‘issue # has been created to address the specific feedback.’
-- Dev issues: DoD for dev issues is reviewed at the QASP level and is met when the PR: (1) note contains sprint report, (2) meets the QASP, (3) Raft has addressed small feedback (by 12pm on Wednesday, which is Day 15 of the last sprint/Day 1 of next sprint), and (4) has received a signed off from QASP reviewer.
+- QASP reviewer reviews the PR against the contract QASP, DoD, and provides feedback. Raft address any small feedback (one/two pointer) within the same PR. Larger feedback is added as an issue for backlog refinement and PR is updated with a note on the ‘issue # has been created to address the specific feedback.’
+- Dev issues: DoD for dev issues is reviewed at the QASP level and is met when the PR: (1) note contains sprint report, (2) meets the QASP, (3) Raft has addressed small feedback, and (4) has received a signed off from QASP reviewer.
 - Design issues: DoD for design issues is stated in the actual issues
 
 The following evaluate AC and DoD to close issues and/or PR:
 
-AC: Lauren or Alex S (Tech lead)
+AC: Lauren or Alex P (ACF Tech lead)
 
-DoD: Alex S (Tech lead) for dev issues; Design and research - Lauren
+DoD: Alex S (18F Tech lead) or Alex P (ACF Tech Lead) for dev issues; Design and research - Lauren
 
 
 ## The issue is considered ‘sprint done’ when
