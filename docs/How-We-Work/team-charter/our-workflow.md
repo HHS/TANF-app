@@ -54,7 +54,7 @@ Based on the September 2020 iron triangle conversations, the product team commit
 ## Work on the issue is started
 - When the individual assigned to work on an issue starts work on it, they should move it to the “In Progress” column/pipeline.
 - Any decisions or discussions about the issue should be documented within the issue
-- Ad hoc pairing or scheduled pairing session(s) with 18F are encouraged throughout the sprint to increase transparency and familiarity with the issue
+- Ad hoc pairing or scheduled pairing session(s) with 18F and ACF Tech Lead are encouraged throughout the sprint to increase transparency and familiarity with the issue
 - For dev issues
   - The branch you create should be prefixed with the issue number
   - Push the branch up as soon as possible and open a Draft PR.
