@@ -25,6 +25,7 @@ services:
       - DJANGO_CONFIGURATION=Local
       - JWT_KEY=${JWT_KEY}
       - JWT_CERT_TEST=${JWT_CERT_TEST}
+      - DJANGO_SU_NAME=${DJANGO_SU_NAME}
     volumes:
       - .:/tdpapp
     image: tdp
