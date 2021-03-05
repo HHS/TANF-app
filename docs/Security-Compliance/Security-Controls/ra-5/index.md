@@ -23,7 +23,7 @@ b. Security scanning is completed using OWASP ZAP dynamic security scans and Sny
 
 c. Summaries of the security scan reports are reviewed in CircleCI. (see screenshot of summaries of scan reports below)  
 
-![screenshot - Summaries of security scan reports](ra-5-screenshots/Screenshot_OWASP-ZAP-Scan_29012021.png)
+![screenshot - Summaries of security scan reports](images/owasp.png)
 
 d. Summaries of the security scan reports are available in CircleCI.  If there are any vulnerability dependencies found by Snyk, pull requests are automatically opened.  These pull requests are reviewed and remediated as necessary.  
 
