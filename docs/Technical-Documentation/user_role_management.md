@@ -76,10 +76,10 @@ _Alternatively_
 ### User Edit
 
 - When you click on a user from the User List, you can edit that user's information, including
-first name, last name and username, as well as the user's Active Status, assigned Groups, STT and Region. You can
+first name, last name and username, as well as the user's Active Status, Superuser Status, Staff Status, assigned Groups, STT and Region. You can
 also view the date and time the user joined and when they last logged in.
 
-![](images/user_edit.png)
+![](images/admin_users.png)
 
 
 ## <a id="cli"></a> Updating User Roles through the CLI

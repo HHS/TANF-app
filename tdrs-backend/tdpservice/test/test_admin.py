@@ -6,10 +6,13 @@ set to false, while the admin_user has both set to true.
 """
 
 import pytest
+import re
+import os
 from django.contrib import admin
 from django.urls import reverse
 from rest_framework import status
 from django.utils.text import capfirst
+from tdpservice.users.models import User
 
 
 @pytest.mark.django_db
@@ -80,3 +83,23 @@ def test_unauth_cant_access_admin(client):
     url = reverse("admin:index")
     response = client.get(url)
     assert response.status_code == status.HTTP_302_FOUND
+
+
+@pytest.mark.django_db
+def test_admin_users_displays_keys(client, admin_user):
+    """Test an authenticated admin_user sees the appropriate content."""
+    client.login(username=admin_user.username, password="test_password")
+    url = reverse("admin:users_user_change", args=(admin_user.id,))
+    response = client.get(url)
+    assert "Staff status" in response.rendered_content
+    assert "Superuser status" in response.rendered_content
+
+
+@pytest.mark.django_db
+def test_superuser_env_var_is_set():
+    """Test to make sure a valid superuser is in the env."""
+    superuser = os.environ.get('DJANGO_SU_NAME')
+    assert superuser is not None
+    assert User.objects.filter(username=superuser).exists()
+    # make sure the superuser username is a validly formed email
+    assert re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", superuser)
