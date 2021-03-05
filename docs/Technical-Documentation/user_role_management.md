@@ -7,7 +7,7 @@
 For the OFA MVP we will be assigning and updating application user roles through the
 Django Admin Interface. This can be accessed via the backend at:
 
-`<backend-domain-name>/admin`
+`<backend-domain-name>/admin/`
 
 The admin interface requires special privileges which can only be granted via the
 Django CLI [Detailed Below](#cli) or a Django Data migration. 
@@ -18,9 +18,17 @@ can can be each be modified through the interface.
 
 ### Log in to Admin
 
-- Enter your username and password to gain access
+- Go to `<frontend-domain-name>`
+- Sign in through `login.gov`
+- Go to `<backend-domain-name>/admin/`
 
-![](images/admin_login.png)
+_Alternatively_
+
+- Go to `<backend-domain-name>/admin/`
+- You will be redirected to `login.gov`
+- Use your `login.gov` credentials to login
+- You will be redirected back to the main application
+- Go to `<backend-domain-name>/admin/`
 
 ### Admin Home
 
@@ -68,10 +76,10 @@ can can be each be modified through the interface.
 ### User Edit
 
 - When you click on a user from the User List, you can edit that user's information, including
-first name, last name and username, as well as the user's Active Status, assigned Groups, STT and Region. You can
+first name, last name and username, as well as the user's Active Status, Superuser Status, Staff Status, assigned Groups, STT and Region. You can
 also view the date and time the user joined and when they last logged in.
 
-![](images/user_edit.png)
+![](images/admin_users.png)
 
 
 ## <a id="cli"></a> Updating User Roles through the CLI
