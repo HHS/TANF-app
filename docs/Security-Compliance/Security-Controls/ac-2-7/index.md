@@ -28,4 +28,6 @@ upload and manage files for their specific STT. Users assigned the `OFA Admin` r
 full administrative access, except for the ability to assign an `OFA Admin` role
 to a user. This will only be allowed for the most privileged role `System Admin`.
 
+The OFA Tech Lead and one designated OFA Admin will be assigned the System Admin role.
+
 [Pull Request #95](https://github.com/HHS/TANF-app/pull/95)
