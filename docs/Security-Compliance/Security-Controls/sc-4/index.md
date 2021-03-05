@@ -16,3 +16,9 @@ Files for any STT not associated with that user's profile
   - Backend
       - Prevents `Data Prepper` users from uploading or downloading data files not associated with that user's STT by responding with an `Unauthorized` error if a request comes in for a data file with an STT that is not indicated in the user's profile. 
       - Prevents users without the `Data Prepper` or `OFA Admin` roles from uploading or downloading any Data Files by responding with an `Unauthorized` error when a user attempts to upload or download a file.
+      
+ **User Information**
+ 
+ System user profile information is only accessible via the Django Admin interface. Access to this
+ interface is restricted to `System Admin` users. All other users will receive an error if they attempt
+ to access it.
