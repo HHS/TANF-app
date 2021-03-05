@@ -116,9 +116,10 @@ jobs:
       - run:
           name: deploy to cloud.gov
           command: |
-            # If we do not specify a space, then deploy to the branch that we are on.
-            # Also map certain branches to spaces.
+            # Map certain branches to spaces, otherwise default to the Development space.
             # This lets you have dev/staging/main branches that automatically go to the right place.
+            # NOTE: Only branches specified in the workflows at the bottom of this file will get
+            #       automatically deployed on merge.
             export DOCKER_IMAGE_BACKEND="lfrohlich/tdp-backend:$CIRCLE_BRANCH"
             export DOCKER_IMAGE_FRONTEND="lfrohlich/tdp-frontend:$CIRCLE_BRANCH"
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
@@ -139,14 +140,12 @@ jobs:
               export CF_PASSWORD="$CF_PASSWORD_DEV"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_VENDOR_STAGING"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_VENDOR_STAGING"
-            elif [ "$CIRCLE_BRANCH" == "raft-review" ] ; then
+            else
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
               export CF_PASSWORD="$CF_PASSWORD_DEV"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
-            else
-              export CF_SPACE="$CIRCLE_BRANCH"
             fi
             if [ -z "$CF_ORG" ] ; then
               echo CF_ORG not set, aborting
