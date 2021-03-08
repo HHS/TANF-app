@@ -5,6 +5,7 @@ _This is just a quick summary of each day's meetings and focus. See [Team Meetin
 ### Wednesday Sprint Day 1: Planning Day!
 - 10:30-11:30am EST: Backlog Refinement 
 - Async Standup
+- 2:00-2:30pm EST: Dev Sync
 - 3:30-4:30pm EST: Sprint Planning  
 - Sprint goals are discussed in refinement and reviewed during sprint planning. The team uses these goals to prioritize work for the sprint.
 
@@ -16,6 +17,7 @@ _This is just a quick summary of each day's meetings and focus. See [Team Meetin
 ### Friday Sprint Day 3: Work Day!   
 - 12:00-1:00pm EST: IPT
 - Async Standup
+- 2:00-2:30pm EST: Tech Lead Sync
 - Request feedback from teammates on rolling basis 
 
 ### Monday Sprint Day 6: Work Day!  
@@ -31,6 +33,7 @@ _This is just a quick summary of each day's meetings and focus. See [Team Meetin
 - 10:00-10:30am EST: Security Sync
 - 10:30-11:30am EST: Backlog Refinement
 - 12:00-12:15pm EST: Standup
+- 2:00-2:30pm EST: Dev Sync
 - Request feedback from teammates on rolling basis
     
 ### Thursday Sprint Day 9: Work Day!  
@@ -41,6 +44,7 @@ _This is just a quick summary of each day's meetings and focus. See [Team Meetin
 ### Friday Sprint Day 10: Work Day!
 - 12:00-1:00pm EST: IPT
 - Async Standup
+- 2:00-2:30pm EST: Tech Lead Sync
 - Request feedback from teammates on rolling basis
 
 ### Monday Sprint Day 13: Work Day!
