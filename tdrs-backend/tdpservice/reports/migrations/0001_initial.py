@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
                         max_length=16,
                     ),
                 ),
-                ("year", models.IntegerField()),
+                ("year", models.CharField(max_length=16)),
                 (
                     "section",
                     models.CharField(
