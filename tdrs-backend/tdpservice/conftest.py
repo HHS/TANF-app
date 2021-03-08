@@ -4,7 +4,6 @@ from rest_framework.test import APIClient
 
 from tdpservice.users.test.factories import (
     UserFactory,
-    STTUserFactory,
     AdminUserFactory,
     StaffUserFactory,
     STTUserFactory
