@@ -5,7 +5,7 @@ import factory
 from tdpservice.stts.test.factories import STTFactory
 
 
-class BaseUserFactory(factory.django.DjangoModelFactory):
+class UserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
 
     class Meta:
@@ -30,29 +30,6 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
         manager = cls._get_manager(model_class)
         return manager.create_user(*args, **kwargs)
 
-    @factory.post_generation
-    def groups(self, create, extracted, **kwargs):
-        """Add groups to user instance."""
-        if not create:
-            return
-
-        if extracted:
-            for group in extracted:
-                self.groups.add(group)
-
-class UserFactory(BaseUserFactory):
-    """General purpose user factory used through out most tests."""
-
-    stt = factory.SubFactory(STTFactory)
-
-class STTUserFactory(BaseUserFactory):
-    """User factory for use in STT tests."""
-
-    # To prevent an error that happens when calling the `populate_stt` command.
-    # The stt factory and the command were competing over the right to set the stt.
-    # Our solution was to not set the STT specifically for the STT tests that
-    # were calling the `populate_stt` command.
-    stt = None
 
 class AdminUserFactory(UserFactory):
     """Generate Admin User."""

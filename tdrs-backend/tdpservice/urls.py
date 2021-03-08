@@ -24,7 +24,7 @@ urlpatterns = [
     path("auth_check", AuthorizationCheck.as_view(), name="authorization-check"),
     path("", include("tdpservice.users.urls")),
     path("stts/", include("tdpservice.stts.urls")),
-    path("reports/", include("tdpservice.reports.urls")),
+    # the 'test_api-root' from django rest-frameworks default router
     # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
     re_path(
         r"^$", RedirectView.as_view(url=reverse_lazy("test_api-root"), permanent=False)
