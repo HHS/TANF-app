@@ -31,8 +31,8 @@ Based on the September 2020 iron triangle conversations, the product team commit
 - Issues and epics are organized into Product Goals. Most of the columns or “pipelines” on the Product Backlog board are Product Goals. These are a set of epics that we work on in parallel and develop KPIs around. These are laid on the [Product Roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592336604317/61159efd030645a74c267130ea19b2083f87dd09).
 
 
-## The product owner proposes the issues for the next sprint
-- The PO will come to Sprint Planning meeting with a set of issues she would like the team to focus on for the next sprint. The team discusses these and may add clarifications to the issue cards, break one issue down into two, or in other ways adjust the definition of the work.
+## The PM, Leads and PO proposes the issues for the next sprint
+- The group will come to Sprint Planning meeting with a set of issues they would like the team to focus on for the next sprint. The team discusses these and may add clarifications to the issue cards, break one issue down into two, or in other ways adjust the definition of the work.
 - All elements of the issue template should be defined before the issue is accepted into the sprint
 
 ## The issue is assigned points
