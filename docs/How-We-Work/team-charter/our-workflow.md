@@ -114,6 +114,7 @@ Based on the September 2020 iron triangle conversations, the product team commit
 - QASP reviewer reviews the PR against the contract QASP, DoD, and provides feedback. Raft address any small feedback (one/two pointer) within the same PR. Larger feedback is added as an issue for backlog refinement and PR is updated with a note on the ‘issue # has been created to address the specific feedback.’
 - Dev issues: DoD for dev issues is reviewed at the QASP level and is met when the PR: (1) note contains sprint report, (2) meets the QASP, (3) Raft has addressed small feedback, and (4) has received a signed off from QASP reviewer.
 - Design issues: DoD for design issues is stated in the actual issues
+- Security control documentation: follows git workflow as described in [ADR 009](https://github.com/HHS/TANF-app/blob/main/docs/Architecture%20Decision%20Record/009-git-workflow.md)
 
 The following evaluate AC and DoD to close issues and/or PR:
 
