@@ -58,7 +58,7 @@ class ReportFile(File):
                 name="constraint_name",
             )
         ]
-    created_at = models.DateTimeField(auto_now_add=True)
+
     quarter = models.CharField(max_length=16,
                                blank=False,
                                null=False,
