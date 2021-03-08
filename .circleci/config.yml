@@ -92,11 +92,18 @@ jobs:
           name: "Log Into Docker"
           command: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin"
       - run:
+          name: "Setup DockerHub tag name"
+          command: |
+            # Docker will reject tag names that include the literal `/` character
+            # To work around this we replace that character in the CIRCLE_BRANCH name
+            # and expose that to future steps via CircleCI Bash Environment
+            echo "export DOCKER_TAG=`echo $CIRCLE_BRANCH | tr / -`" >> $BASH_ENV
+      - run:
           name:  "Build Backend Docker image"
-          command: "cd tdrs-backend; docker build -t lfrohlich/tdp-backend:$CIRCLE_BRANCH . -f ./docker/Dockerfile.dev"
+          command: "cd tdrs-backend; docker build -t lfrohlich/tdp-backend:$DOCKER_TAG . -f ./docker/Dockerfile.dev"
       - run:
           name:  "Push Backend Image to Docker Hub"
-          command: "docker push lfrohlich/tdp-backend:$CIRCLE_BRANCH"
+          command: "docker push lfrohlich/tdp-backend:$DOCKER_TAG"
       - run:
           name:  "Build Frontend Docker image"
           command: |
@@ -109,10 +116,10 @@ jobs:
             fi
 
             cd tdrs-frontend
-            docker build -t lfrohlich/tdp-frontend:$CIRCLE_BRANCH . -f $DOCKERFILE
+            docker build -t lfrohlich/tdp-frontend:$DOCKER_TAG . -f $DOCKERFILE
       - run:
           name:  "Push Frontend Image to Docker Hub"
-          command: "docker push lfrohlich/tdp-frontend:$CIRCLE_BRANCH"
+          command: "docker push lfrohlich/tdp-frontend:$DOCKER_TAG"
       - run:
           name: deploy to cloud.gov
           command: |
@@ -120,8 +127,8 @@ jobs:
             # This lets you have dev/staging/main branches that automatically go to the right place.
             # NOTE: Only branches specified in the workflows at the bottom of this file will get
             #       automatically deployed on merge.
-            export DOCKER_IMAGE_BACKEND="lfrohlich/tdp-backend:$CIRCLE_BRANCH"
-            export DOCKER_IMAGE_FRONTEND="lfrohlich/tdp-frontend:$CIRCLE_BRANCH"
+            export DOCKER_IMAGE_BACKEND="lfrohlich/tdp-backend:$DOCKER_TAG"
+            export DOCKER_IMAGE_FRONTEND="lfrohlich/tdp-frontend:$DOCKER_TAG"
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
               export CF_SPACE="tanf-prod"
               export CF_USERNAME="$CF_USERNAME_PROD"
