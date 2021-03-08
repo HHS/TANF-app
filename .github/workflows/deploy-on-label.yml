@@ -19,4 +19,4 @@ jobs:
         circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
     - name: Print response output
       run: |
-        echo "Circle CI Response: ${{ steps.curl-circle-ci.outputs.response }}"
+        echo "Circle CI Response: ${{ steps.curl-circle-ci.outputs }}"
