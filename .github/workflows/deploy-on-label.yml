@@ -5,21 +5,18 @@ on:
       - labeled
 jobs:
   dev_pr_deployment:
-#    if: github.event.label.name == 'Deploy%20to%20Development'
+    if: github.event.label.name == 'Deploy to Development'
     runs-on: ubuntu-latest
     name: Deploy to Development environment
     steps:
     - uses: actions/checkout@v2
-#    - name: Circle CI Deployment Trigger
-#      id: curl-circle-ci
-#      uses: Open-Source-Contrib/circle-ci-trigger-action@latest
-#      with:
-#        circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
-#        circle_ci_job: deploy
-#        circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
-#    - name: Print response output
-#      run: |
-#        echo "Circle CI Response: ${{ steps.curl-circle-ci.outputs.response }}"
-    - name: Print label name
+    - name: Circle CI Deployment Trigger
+      id: curl-circle-ci
+      uses: Open-Source-Contrib/circle-ci-trigger-action@latest
+      with:
+        circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
+        circle_ci_job: deploy
+        circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
+    - name: Print response output
       run: |
-        echo "Label name: ${{github.event.label.name}}"
+        echo "Circle CI Response: ${{ steps.curl-circle-ci.outputs.response }}"
