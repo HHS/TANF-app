@@ -1,0 +1,7 @@
+# Local version of Docker compose, using environment variables passed in by env file
+version: "3"
+
+services:
+  web:
+    env_file:
+      - .env

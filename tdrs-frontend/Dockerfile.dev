@@ -1,3 +1,6 @@
+# This Dockerfile is intended for use in deployments that target the
+# `development` environment within Cloud.gov
+
 # ---
 # Stage 0: Create the app directory, install dependencies, and copy in the source code
 FROM node:12.18-alpine3.12 AS localdev
@@ -7,7 +10,9 @@ WORKDIR /home/node/app
 COPY --chown=node:node package.json yarn.lock ./
 USER node
 RUN yarn install && yarn cache clean
-RUN touch .env.production && echo "REACT_APP_BACKEND_URL=https://tdp-backend.app.cloud.gov/v1" >> .env.production
+
+# Override the default backend URL to point to the `development` environment
+RUN touch .env.production
 RUN echo "REACT_APP_BACKEND_URL=https://tdp-backend.app.cloud.gov/v1" >> .env.production
 
 COPY --chown=node:node . .

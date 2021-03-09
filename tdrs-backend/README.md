@@ -26,14 +26,23 @@ This project uses a Pipfile for dependency management. However, due to the limit
 
 **Commands are to be executed from within the `tdrs-backend` directory**
 
-1.) For configuration of the `JWT_KEY` and `JWT_CERT_TEST` environment variables for local development/testing documentation is forthcoming. For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
+1.) Configure your local environment by copying over the .env.example file
+```bash
+$ cp .env.example .env
+```
 
-2.) Configure your local environment variables via the  [`.env.local`](./tdpservice/settings/env_vars/.env.local) file found in this path:
+2.) Replace secrets in `.env` with actual values. To obtain the correct values, 
+please pull from [cloud.gov](https://cloud.gov) or contact the Product Manager.
 
-3.) Start the backend via docker-compose: 
+3.) For Django Admin access, replace the value for `DJANGO_SU_NAME` in `.env` 
+with the email you use to login to [login.gov](https://login.gov)
+
+4.) Start the backend via docker-compose: 
 
 ```bash
-$ docker-compose up -d
+# Merge in local overrides for docker-compose by using -f flag and specifying both
+# This allows environment variables to be passed in from .env files locally.
+$ docker-compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
 ```
 
 This command will start the following containers: 
@@ -45,19 +54,36 @@ c803336c1f61        tdp                          "bash -c 'python wai…"   3 se
 9c3e6c2a88b0        owasp/zap2docker-weekly      "sleep 3600"             4 seconds ago       Up 3 seconds (health: starting)                            tdrs-backend_zaproxy_1
 ```
 
-4.) The backend service will now be available via the following URL: `http://localhost:8080`
+5.) The backend service will now be available via the following URL: `http://localhost:8080`
 
-5.) To `exec` into the PostgreSQL database in the container. 
+6.) To `exec` into the PostgreSQL database in the container. 
 
 ```bash
 $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 ```
 
-6.) Backend project tear down: 
+7.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
+
+8.) Backend project tear down: 
 
 ```bash
  $ docker-compose down --remove-orphans
 ```
+
+----
+### Environment Variable Inheritance
+#### Local
+When run locally with `docker-compose.local.yml` the following order of inheritance will be in place:
+* Variables defined in `tdrs-backend/.env` file
+* Variables defined directly in `docker-compose.yml`
+* Defaults supplied in `tdrs-backend/tdpservice/settings/common.py` (Only **non secret** environment variables, do not commit defaults for any secrets!) 
+
+#### CircleCI
+When run within CI context the follow order of inheritance will define environment variables:
+* For **secrets** only - Variables defined in CircleCI Project Settings (`JWT_KEY`, `JWT_CERT_TEST`, etc)
+  * These must be manually passed in via docker-compose under the `environment` directive, ie. `MY_VAR=${MY_VAR}`
+* Variables defined directly in `docker-compose.yml`
+* Defaults supplied in `tdrs-backend/tdpservice/settings/common.py` (Only **non secret** environment variables, do not commit defaults for any secrets!) 
 
 ----
 ### Code Unit Test, Linting Test, and Vulnerability Scan
@@ -139,7 +165,7 @@ Targeted space <SPACE-1>.
  $ cf set-env tdp-backend JWT_KEY "$(cat key.pem)"
  ```
  
-- **For the list of required environment variables please defer to the `.env.local` file
+- **For the list of required environment variables please defer to the `.env.example` file
 
 5.) After this step you will need to bind the application to a Postgres RDS service if it has not been bound already: 
 ```bash
