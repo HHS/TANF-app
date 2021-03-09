@@ -1,13 +1,22 @@
+###########################################################################
+# GitHub Action Workflow
+# On assignment of the explicit label `Deploy with CircleCI` to an open PR
+# in GitHub this action will trigger a deploy job within CircleCI for the
+# branch defined in the given PR.
+#
+# Leverages the open source GitHub Action:
+# https://github.com/Open-Source-Contrib/circle-ci-trigger-action
+###########################################################################
 name: Deploy PR based on Label
 on:
   pull_request:
     types:
       - labeled
 jobs:
-  dev_pr_deployment:
-    if: github.event.label.name == 'Deploy to Development'
+  pr_labeled_deployment:
+    if: github.event.label.name == 'Deploy with CircleCI'
     runs-on: ubuntu-latest
-    name: Deploy to Development environment
+    name: Initiate deploy job in CircleCI
     steps:
     - uses: actions/checkout@v2
     - name: Circle CI Deployment Trigger
@@ -17,6 +26,3 @@ jobs:
         circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
         circle_ci_job: deploy
         circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
-    - name: Print response output
-      run: |
-        echo "Circle CI Response: ${{ steps.curl-circle-ci.outputs }}"
