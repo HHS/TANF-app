@@ -80,7 +80,7 @@ class Common(Configuration):
         "django_admin_logs",  # logs for admin site
         "corsheaders",
         "django_extensions",
-        "drf_yasg2",
+        "drf_yasg",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
