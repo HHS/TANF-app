@@ -31,15 +31,18 @@ This project uses a Pipfile for dependency management. However, due to the limit
 $ cp .env.example .env
 ```
 
-2.) Replace secrets in .env with actual values. To obtain the correct values, 
+2.) Replace secrets in `.env` with actual values. To obtain the correct values, 
 please pull from [cloud.gov](https://cloud.gov) or contact the Product Manager.
 
-3.) Start the backend via docker-compose: 
+3.) For Django Admin access, replace the value for `DJANGO_SU_NAME` in `.env` 
+with the email you use to login to [login.gov](https://login.gov)
+
+4.) Start the backend via docker-compose: 
 
 ```bash
 # Merge in local overrides for docker-compose by using -f flag and specifying both
 # This allows environment variables to be passed in from .env files locally.
-$ docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d
+$ docker-compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
 ```
 
 This command will start the following containers: 
@@ -51,17 +54,17 @@ c803336c1f61        tdp                          "bash -c 'python wai…"   3 se
 9c3e6c2a88b0        owasp/zap2docker-weekly      "sleep 3600"             4 seconds ago       Up 3 seconds (health: starting)                            tdrs-backend_zaproxy_1
 ```
 
-4.) The backend service will now be available via the following URL: `http://localhost:8080`
+5.) The backend service will now be available via the following URL: `http://localhost:8080`
 
-5.) To `exec` into the PostgreSQL database in the container. 
+6.) To `exec` into the PostgreSQL database in the container. 
 
 ```bash
 $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 ```
 
-6.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
+7.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
 
-7.) Backend project tear down: 
+8.) Backend project tear down: 
 
 ```bash
  $ docker-compose down --remove-orphans

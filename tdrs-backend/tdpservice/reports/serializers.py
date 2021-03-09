@@ -26,6 +26,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
             "year",
             "quarter",
             "section",
+            "created_at"
         ]
 
     def create(self, validated_data):
