@@ -1,0 +1,10 @@
+# Local version of Docker compose, using the Dockerfile.local instead and mounting node_modules
+version: "3"
+
+services:
+  tdp-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    volumes:
+      - /home/node/app/node_modules
