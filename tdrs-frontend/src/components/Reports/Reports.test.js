@@ -1,16 +1,37 @@
 import React from 'react'
 import { mount } from 'enzyme'
+import { render, fireEvent } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import Reports from './Reports'
-import Button from '../Button'
 
 describe('Reports', () => {
   const initialState = {
     reports: {
-      file: null,
+      files: [
+        {
+          section: 'Active Case Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Closed Case Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Aggregate Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Stratum Data',
+          fileName: null,
+          error: null,
+        },
+      ],
       error: null,
       year: 2020,
     },
@@ -34,24 +55,7 @@ describe('Reports', () => {
     expect(options.length).toEqual(2)
   })
 
-  it('should change route to `/reports/:year/upload` on click of `Begin Report` button', () => {
-    const store = mockStore(initialState)
-    const wrapper = mount(
-      <Provider store={store}>
-        <Reports />
-      </Provider>
-    )
-
-    const beginButton = wrapper.find(Button)
-
-    expect(beginButton).toExist()
-
-    beginButton.simulate('click')
-
-    expect(window.location.href.includes('/reports/2020/upload')).toBeTruthy()
-  })
-
-  it('should dispatch setYear when a year is selcted', () => {
+  it('should dispatch setYear when a year is selected', () => {
     const store = mockStore(initialState)
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
@@ -70,5 +74,62 @@ describe('Reports', () => {
     })
 
     expect(store.dispatch).toHaveBeenCalledTimes(1)
+  })
+
+  it('should render the UploadReports form when a year is selected and Begin Report is clicked', () => {
+    const store = mockStore(initialState)
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/))
+
+    expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
+    expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
+    expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+  })
+
+  it('should de-render the UploadReports form after it has been toggled but the year is changed', () => {
+    const store = mockStore(initialState)
+
+    const { getByText, getByLabelText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/))
+
+    const select = getByLabelText('Fiscal Year (October - September)')
+
+    fireEvent.change(select, {
+      target: {
+        value: 2021,
+      },
+    })
+
+    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+  })
+
+  it('should de-render when Cancel is clicked', () => {
+    const store = mockStore(initialState)
+
+    const { getByText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/))
+
+    expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+
+    fireEvent.click(getByText(/Cancel/))
+
+    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
   })
 })
