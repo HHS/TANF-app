@@ -56,7 +56,7 @@ class CanDownloadReport(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """Check if a user can download file."""
-        if is_in_group(request.user, "OFA Admin") and "stt" in request.kwargs:
+        if is_in_group(request.user, "OFA Admin") and view.kwargs.get("stt"):
             return True
         elif request.user.is_authenticated:
             return True
