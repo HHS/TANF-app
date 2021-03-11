@@ -1,20 +1,22 @@
-## Product Roadmap
-Our [roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592336604317/61159efd030645a74c267130ea19b2083f87dd09) prioritizes represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem.
+# Product Roadmap
+Our [roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592336604317/61159efd030645a74c267130ea19b2083f87dd09) represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem.
 
 **_This roadmap is not a promise. The order of these items is likely to change as we discuss options and learn more._**
 
-Right now, we think the best place to start is just getting getting quality data from grantees to OFA. Down the road, we believe the focus will shift to documenting reporting history and devising insights from grantee data.
+## ATO & OFA MVP Scope
+Our first release will produce an application that could be used by OFA Admin staff, but our primary goal is to get Authority to Operate (ATO), which will allow us to have a production environment. Below is a list of functionality that will be included in this release.
 
-1. Decide whether to use and then adapt prototype or vendor's other project
-2. Users can log into new system
-3. Users can easily upload data
-4. Users can view  uploads
-5. Users can run automatic data validation check
-6. Users can edit data
-7. OFA staff have access to data
-8. Grantees can officially submit a file to OFA
-9. User can manually enter data
-10. Grantees can easily resubmit data
+| Functionality | Status | 
+| -------- | ------- | 
+| User can log in using login.gov | Complete
+| Users with appropriate privileges can manage users | Complete
+| Users can upload data files by section and quarter | In Progress
+| Users with appropriate privileges can download files that were previously uploaded     | In Progress
 
+## Tribe MVP Scope
+The next release will focus on enabling a subset of tribes to use our the upload functionality. This will allow our application to privide value to one of our key user groups early on. We are currently in the research portion of understanding what this could produce. 
+
+## Potential future work
+In addition to the work mentioned above, we are looking forward in our research plans to develop functionality that will serve the rest of our users that includes (but is not limited to) focusing on data cleansing and validation. 
 ## Backlog
 The backlog can be found in the [raft-tech fork of the TANF-app GitHub public repository](https://github.com/raft-tech/TANF-app/issues).
