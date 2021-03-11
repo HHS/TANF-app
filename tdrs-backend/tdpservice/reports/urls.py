@@ -16,8 +16,13 @@ urlpatterns = [
     ),
     path(
         "years/<int:stt>",
-        views.GetList.as_view(),
-        name="get-report",
+        views.GetYearList.as_view(),
+        name="get-year-list-admin",
+    ),
+    path(
+        "years",
+        views.GetYearList.as_view(),
+        name="get-year-list",
     )
 ]
 
