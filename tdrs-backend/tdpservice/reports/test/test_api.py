@@ -120,29 +120,6 @@ def test_reports_data_prepper_not_allowed(api_client, data_prepper):
     response = api_client.post("/v1/reports/", data)
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
-
-@pytest.mark.django_db
-def test_individual_report_file_retrieval(api_client, data_prepper):
-    """Test retrieval of individual reports via GetReport."""
-    user = data_prepper
-    api_client.login(username=user.username, password="test_password")
-
-    data = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": user.stt,
-        "year": 2020,
-        "section": "Active Case Data",
-    }
-
-    ReportFile.create_new_version(data)
-    assert ReportFile.objects.filter(**data).exists()
-    response = api_client.get("/v1/reports/2020/Q1/active_case_data")
-
-    assert data["slug"] == response.data["slug"]
-
 @pytest.mark.django_db
 def test_list_report_years(api_client, data_prepper):
     """Test list of years for which there exist a report as a data prepper."""
