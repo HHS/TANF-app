@@ -6,6 +6,8 @@
 #
 # Leverages the open source GitHub Action:
 # https://github.com/Open-Source-Contrib/circle-ci-trigger-action
+#
+# https://docs.github.com/en/rest/reference/repos#statuses
 ###########################################################################
 name: Deploy PR based on Label
 on:
@@ -19,10 +21,23 @@ jobs:
     name: Initiate deploy job in CircleCI
     steps:
     - uses: actions/checkout@v2
-    - name: Circle CI Deployment Trigger
-      id: curl-circle-ci
-      uses: Open-Source-Contrib/circle-ci-trigger-action@latest
+    - name: Get PR Status Checks
+      id: get-pr-checks
+      uses: octokit/request-action@v2.x
       with:
-        circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
-        circle_ci_job: deploy
-        circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
+        route: GET /repos/{owner}/{repo}/commits/{ref}/status
+        owner: raft-tech
+        repo: TANF-app
+        ref: ${{ github.event.pull_request.head.ref }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Print PR Status Checks Result
+      run: |
+        echo "Current PR status: ${{ steps.get-pr-checks.outputs.data }}"
+#    - name: Circle CI Deployment Trigger
+#      id: curl-circle-ci
+#      uses: Open-Source-Contrib/circle-ci-trigger-action@latest
+#      with:
+#        circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
+#        circle_ci_job: deploy
+#        circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
