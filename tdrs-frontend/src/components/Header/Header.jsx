@@ -43,7 +43,11 @@ function HeaderComp() {
             </button>
             <ul className="usa-nav__primary usa-accordion">
               <NavItem pathname={pathname} tabTitle="Welcome" href="/welcome" />
-              <NavItem pathname={pathname} tabTitle="Reports" href="/reports" />
+              <NavItem
+                pathname={pathname}
+                tabTitle="Data Files"
+                href="/data-files"
+              />
               <NavItem
                 pathname={pathname}
                 tabTitle="Profile"

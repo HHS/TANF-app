@@ -38,16 +38,16 @@ describe('Header', () => {
     expect(welcomeLink).toIncludeText('Welcome')
   })
 
-  it('should have a navigation link for Reports', () => {
+  it('should have a navigation link for dataFiles', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
         <Header />
       </Provider>
     )
-    const reportsLink = wrapper.find('#reports')
-    expect(reportsLink).toExist()
-    expect(reportsLink).toIncludeText('Reports')
+    const dataFilesLink = wrapper.find('#data-files')
+    expect(dataFilesLink).toExist()
+    expect(dataFilesLink).toIncludeText('Data Files')
   })
 
   it('should have a navigation link for Profile', () => {
@@ -101,10 +101,10 @@ describe('Header', () => {
     expect(welcomeTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should add usa-current class to Reports tab when on '/reports'", () => {
+  it("should add usa-current class to Data Files tab when on '/data-files'", () => {
     const store = mockStore({
       ...initialState,
-      router: { location: { pathname: '/reports' } },
+      router: { location: { pathname: '/data-files' } },
     })
     const wrapper = mount(
       <Provider store={store}>
@@ -112,15 +112,15 @@ describe('Header', () => {
       </Provider>
     )
 
-    const reportsTab = wrapper.find('#reports')
+    const dataFilesTab = wrapper.find('#data-files')
 
-    expect(reportsTab.hasClass('usa-current')).toEqual(true)
+    expect(dataFilesTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should add usa-current class to Reports tab when on '/reports/*'", () => {
+  it("should add usa-current class to dataFiles tab when on '/data-files/*'", () => {
     const store = mockStore({
       ...initialState,
-      router: { location: { pathname: '/reports/upload' } },
+      router: { location: { pathname: '/data-files/upload' } },
     })
     const wrapper = mount(
       <Provider store={store}>
@@ -128,9 +128,9 @@ describe('Header', () => {
       </Provider>
     )
 
-    const reportsTab = wrapper.find('#reports')
+    const dataFilesTab = wrapper.find('#data-files')
 
-    expect(reportsTab.hasClass('usa-current')).toEqual(true)
+    expect(dataFilesTab.hasClass('usa-current')).toEqual(true)
   })
 
   it("should add usa-current class to Profile tab when on '/edit-profile'", () => {
