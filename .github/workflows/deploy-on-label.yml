@@ -31,13 +31,16 @@ jobs:
         ref: ${{ github.event.pull_request.head.ref }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Print PR Status Checks Result
+    - name: Print current PR state
       run: |
-        echo "Current PR status: ${{ fromJson(steps.get-pr-checks.outputs.data).state }}"
-#    - name: Circle CI Deployment Trigger
-#      id: curl-circle-ci
-#      uses: Open-Source-Contrib/circle-ci-trigger-action@latest
-#      with:
-#        circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
-#        circle_ci_job: deploy
-#        circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
+        export STATE=${{ fromJson(steps.get-pr-checks.outputs.data).state }}
+        echo "::set-env name=STATE::$STATE
+        echo "Current PR state: $STATE"
+    - name: Circle CI Deployment Trigger
+      id: curl-circle-ci
+      if: $STATE == 'success'
+      uses: Open-Source-Contrib/circle-ci-trigger-action@latest
+      with:
+        circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
+        circle_ci_job: deploy
+        circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
