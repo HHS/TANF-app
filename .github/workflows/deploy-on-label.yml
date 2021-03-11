@@ -4,10 +4,23 @@
 # in GitHub this action will trigger a deploy job within CircleCI for the
 # branch defined in the given PR.
 #
-# Leverages the open source GitHub Action:
-# https://github.com/Open-Source-Contrib/circle-ci-trigger-action
+# Step 0: Checkout latest commit on current branch
 #
-# https://docs.github.com/en/rest/reference/repos#statuses
+# Step 1: Using the GitHub API make a request to get the latest Status Checks
+#         for the current branch. This will be used to ensure that all checks
+#         have passed in CircleCI prior to making the deployment
+#         Leverages the open source GitHub Action:
+#           https://github.com/octokit/request-action
+#         Makes a request to the combined status checks API in GitHub
+#           https://docs.github.com/en/rest/reference/repos#statuses
+#
+# Step 2: Extract the combined state from the GitHub API response and store
+#         only the state value as an output for future steps
+#
+# Step 3: If the PR State is `success` make a cURL request to the CircleCI
+#         API to initiate a `deploy` job for the current branch.
+#         Leverages the open source GitHub Action:
+#           https://github.com/Open-Source-Contrib/circle-ci-trigger-action
 ###########################################################################
 name: Deploy PR based on Label
 on:
@@ -26,7 +39,7 @@ jobs:
       uses: octokit/request-action@v2.x
       with:
         route: GET /repos/{owner}/{repo}/commits/{ref}/status
-        owner: raft-tech
+        owner: ${{ github.repository_owner }}
         repo: TANF-app
         ref: ${{ github.event.pull_request.head.ref }}
       env:
