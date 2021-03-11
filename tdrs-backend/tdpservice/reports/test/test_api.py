@@ -192,7 +192,7 @@ def test_list_report_years(api_client, data_prepper):
     ]
 
 @pytest.mark.django_db
-def test_list_ofa_admin_report_years(api_client, ofa_admin,stt):
+def test_list_ofa_admin_report_years(api_client, ofa_admin, stt):
     """Test list of years for which there exist a report as an OFA admin."""
     user = ofa_admin
 
