@@ -36,7 +36,8 @@ class GetReport(APIView):
         serializer = ReportFileSerializer(latest)
         data = serializer.data
         return Response(data, template_name="report.json")
-class GetList(APIView):
+
+class GetYearList(APIView):
     """Get list of years for which there are reports."""
 
     query_string = False
