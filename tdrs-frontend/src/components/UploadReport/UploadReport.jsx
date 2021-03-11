@@ -30,7 +30,8 @@ function UploadReport({ handleCancel }) {
   }
 
   useEffect(() => {
-    // `init` for the uswds fileInput must be called on the initial render for it to load properly
+    // `init` for the uswds fileInput must be called on the
+    // initial render for it to load properly
     fileInput.init()
   }, [])
 
