@@ -33,7 +33,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Print PR Status Checks Result
       run: |
-        echo "Current PR status: ${{ steps.get-pr-checks.outputs.data }}"
+        echo "Current PR status: ${{ fromJson(steps.get-pr-checks.outputs.data).state }}"
 #    - name: Circle CI Deployment Trigger
 #      id: curl-circle-ci
 #      uses: Open-Source-Contrib/circle-ci-trigger-action@latest
