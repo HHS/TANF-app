@@ -16,7 +16,7 @@ Our first release will produce an application that could be used by OFA Admin st
 ## Tribal MVP Scope
 The next release will focus on enabling a subset of tribes to use the upload functionality. This will allow our application to provide value to one of our key user groups early on. We are currently in the research portion of understanding what this could look like. 
 
-## Potential future work
+## STT MVP scope
 In addition to the work mentioned above, we are looking forward in our research plans to develop functionality that will serve the rest of our users that includes (but is not limited to) focusing on data cleansing and validation. 
 ## Backlog
 The backlog can be found in the [raft-tech fork of the TANF-app GitHub public repository](https://github.com/raft-tech/TANF-app/issues).
