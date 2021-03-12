@@ -14,5 +14,5 @@ Data file uploads and downloads with PII are transmitted through connections enc
 All data transmitted between the frontend and backend of the web application are also
 encrypted via TLS.
 
-
+For our TLS connections, clients connect to cloud.gov through [AWS load balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html) which implement the [ELBSecurityPolicy-TLS-1-2-2017-01](https://cloud.gov/docs/compliance/domain-standards/#ssltls-implementation)
 
