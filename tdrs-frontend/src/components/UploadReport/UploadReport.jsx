@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
@@ -36,7 +36,7 @@ function UploadReport({ handleCancel }) {
   }, [])
 
   return (
-    <>
+    <div aria-live="polite">
       <h2 className="font-serif-xl margin-top-5 margin-bottom-0 text-normal">
         Fiscal Year {selectedYear}
       </h2>
@@ -70,7 +70,7 @@ function UploadReport({ handleCancel }) {
           </Button>
         </div>
       </form>
-    </>
+    </div>
   )
 }
 
