@@ -13,7 +13,7 @@ Our first release will produce an application that could be used by OFA Admin st
 | Users can upload data files by section and quarter | In Progress
 | Users with appropriate privileges can download files that were previously uploaded     | In Progress
 
-## Tribe MVP Scope
+## Tribal MVP Scope
 The next release will focus on enabling a subset of tribes to use the upload functionality. This will allow our application to provide value to one of our key user groups early on. We are currently in the research portion of understanding what this could look like. 
 
 ## Potential future work
