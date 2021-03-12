@@ -1,5 +1,5 @@
 # Product Roadmap
-Our [roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592336604317/61159efd030645a74c267130ea19b2083f87dd09) represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem.
+Our [roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592336604317/61159efd030645a74c267130ea19b2083f87dd09) 🔒  represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem.
 
 **_This roadmap is not a promise. The order of these items is likely to change as we discuss options and learn more._**
 
