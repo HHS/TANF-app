@@ -14,7 +14,7 @@ Our first release will produce an application that could be used by OFA Admin st
 | Users with appropriate privileges can download files that were previously uploaded     | In Progress
 
 ## Tribe MVP Scope
-The next release will focus on enabling a subset of tribes to use our the upload functionality. This will allow our application to privide value to one of our key user groups early on. We are currently in the research portion of understanding what this could produce. 
+The next release will focus on enabling a subset of tribes to use the upload functionality. This will allow our application to provide value to one of our key user groups early on. We are currently in the research portion of understanding what this could look like. 
 
 ## Potential future work
 In addition to the work mentioned above, we are looking forward in our research plans to develop functionality that will serve the rest of our users that includes (but is not limited to) focusing on data cleansing and validation. 
