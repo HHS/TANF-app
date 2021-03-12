@@ -19,6 +19,12 @@ function UploadReport({ handleCancel }) {
   }
   const dispatch = useDispatch()
 
+  const headerRef = useRef(null)
+
+  useEffect(() => {
+    headerRef.current.focus()
+  }, [])
+
   const uploadFiles = ({ target }) => {
     dispatch(clearError({ section: target.name }))
     dispatch(
@@ -36,8 +42,12 @@ function UploadReport({ handleCancel }) {
   }, [])
 
   return (
-    <div aria-live="polite">
-      <h2 className="font-serif-xl margin-top-5 margin-bottom-0 text-normal">
+    <>
+      <h2
+        ref={headerRef}
+        className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
+        tabIndex="-1"
+      >
         Fiscal Year {selectedYear}
       </h2>
       <form>
@@ -70,7 +80,7 @@ function UploadReport({ handleCancel }) {
           </Button>
         </div>
       </form>
-    </div>
+    </>
   )
 }
 
