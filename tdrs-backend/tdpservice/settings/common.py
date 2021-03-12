@@ -80,6 +80,7 @@ class Common(Configuration):
         "django_admin_logs",  # logs for admin site
         "corsheaders",
         "django_extensions",
+        "drf_yasg",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -149,6 +150,7 @@ class Common(Configuration):
     USE_I18N = False
     USE_L10N = True
     USE_TZ = True
+    LOGIN_URL = "/v1/login/oidc"
     LOGIN_REDIRECT_URL = "/"
 
     # Static files (CSS, JavaScript, Images)

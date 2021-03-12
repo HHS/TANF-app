@@ -38,6 +38,48 @@ CONTAINER ID        IMAGE                        COMMAND                  CREATE
 ```
 
 ----
+### Environment Variables
+The TDP frontend utilizes built in Create React App (CRA) handling for environment variables which leverages multiple `.env` files:
+* `.env`: Default.
+* `.env.local`: Local overrides. This file is loaded for all environments except test.
+* `.env.development`, `.env.test`, `.env.production`: Environment-specific settings.
+* `.env.development.local`, `.env.test.local`, `.env.production.local`: Local overrides of environment-specific settings.
+
+All of these `.env` files can be checked in to source control, with the exception of `.local` overrides and provided that they contain no *secrets*.
+
+The order of inheritance for env files depends on how the application was built/launched.
+
+#### Docker
+Currently the Dockerfile.local utilizes `yarn build` and serves the React app over nginx. Due to this React assigns `NODE_ENV=production` and uses this order of inheritance:
+* .env.production.local
+* .env.local
+* .env.production
+* .env
+
+#### `npm start` / `yarn start`
+When running this app directly on localhost React will assign `NODE_ENV=development` and use this inheritance order:
+* Any variables set directly on host machine (ie. export MY_VAR=...)
+* .env.development.local
+* .env.local
+* .env.development
+* .env
+
+#### `npm test` / `yarn test`
+During tests, the env files are loaded in this order:
+* .env.test.local
+* .env.test
+* .env
+
+#### CircleCI
+The current CircleCI config utilizes yarn to build and test the frontend application. As such it follows this order of inheritance for environment variables:
+* Any variables set directly in CircleCI Project Settings
+* .env.test.local
+* .env.test
+* .env
+
+[See CRA documentation for more info](https://create-react-app.dev/docs/adding-custom-environment-variables/#adding-development-environment-variables-in-env)
+
+----
 ### Code Linting and Formatting
 
 The app is set up with [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/), and follows the [Airbnb Style Guide](https://github.com/airbnb/javascript).

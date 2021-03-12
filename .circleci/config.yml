@@ -99,7 +99,17 @@ jobs:
           command: "docker push lfrohlich/tdp-backend:$CIRCLE_BRANCH"
       - run:
           name:  "Build Frontend Docker image"
-          command: "cd tdrs-frontend; docker build -t lfrohlich/tdp-frontend:$CIRCLE_BRANCH . -f Dockerfile.dev"
+          command: |
+            # In order to support deploying to different environments we need
+            # to specify which Dockerfile gets used based on the current branch
+            if [ "$CIRCLE_BRANCH" == "raft-tdp-main" ]; then
+              DOCKERFILE="Dockerfile.staging"
+            else
+              DOCKERFILE="Dockerfile.dev"
+            fi
+
+            cd tdrs-frontend
+            docker build -t lfrohlich/tdp-frontend:$CIRCLE_BRANCH . -f $DOCKERFILE
       - run:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push lfrohlich/tdp-frontend:$CIRCLE_BRANCH"
@@ -123,18 +133,12 @@ jobs:
               export CF_PASSWORD="$CF_PASSWORD_STAGING"
               export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_STAGING"
               export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_STAGING"
-            elif [ "$CIRCLE_BRANCH" == "dev" ] ; then
-              export CF_SPACE="tanf-dev"
-              export CF_USERNAME="$CF_USERNAME_DEV"
-              export CF_PASSWORD="$CF_PASSWORD_DEV"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
             elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
               export CF_PASSWORD="$CF_PASSWORD_DEV"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
+              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_VENDOR_STAGING"
+              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_VENDOR_STAGING"
             elif [ "$CIRCLE_BRANCH" == "raft-review" ] ; then
               export CF_SPACE="tanf-dev"
               export CF_USERNAME="$CF_USERNAME_DEV"
