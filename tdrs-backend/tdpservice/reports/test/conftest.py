@@ -12,6 +12,6 @@ def report_data(user):
         "section": "Active Case Data",
         "user": str(user.id),
         "quarter": "Q1",
-        "year": 2020,
+        "year": "2020",
         "stt": "Michigan"
     }
