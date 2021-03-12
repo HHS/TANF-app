@@ -15,6 +15,7 @@ _This is just a quick summary of each day's meetings and focus. See [Team Meetin
 - Request feedback from teammates on rolling basis
 
 ### Friday Sprint Day 3: Work Day!   
+- 10:30-12:00pm EST: Optional Dev Drop-in Hours
 - 12:00-1:00pm EST: IPT
 - Async Standup
 - 2:00-2:30pm EST: Tech Lead Sync
@@ -42,6 +43,7 @@ _This is just a quick summary of each day's meetings and focus. See [Team Meetin
 - Request feedback from teammates on rolling basis 
 
 ### Friday Sprint Day 10: Work Day!
+- 10:30-12:00pm EST: Optional Dev Drop-in Hours
 - 12:00-1:00pm EST: IPT
 - Async Standup
 - 2:00-2:30pm EST: Tech Lead Sync
