@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import classNames from 'classnames'
+
 import Button from '../Button'
 import { setYear } from '../../actions/reports'
 import UploadReport from '../UploadReport'
@@ -25,32 +27,34 @@ function Reports() {
 
   return (
     <>
-      <form>
-        <label
-          className="usa-label text-bold margin-top-4"
-          htmlFor="reportingYears"
-        >
-          Fiscal Year (October - September)
-          {/* eslint-disable-next-line */}
-        <select
-            className="usa-select maxw-mobile"
-            name="reportingYears"
-            id="reportingYears"
-            onChange={handleSelect}
-            value={selectedYear}
+      <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
+        <form>
+          <label
+            className="usa-label text-bold margin-top-4"
+            htmlFor="reportingYears"
           >
-            <option value="2020">2020</option>
-            <option value="2021">2021</option>
-          </select>
-        </label>
-        <Button
-          className="margin-y-2"
-          type="button"
-          onClick={() => setIsToggled(true)}
-        >
-          Search
-        </Button>
-      </form>
+            Fiscal Year (October - September)
+            {/* eslint-disable-next-line */}
+        <select
+              className="usa-select maxw-mobile"
+              name="reportingYears"
+              id="reportingYears"
+              onChange={handleSelect}
+              value={selectedYear}
+            >
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+            </select>
+          </label>
+          <Button
+            className="margin-y-4"
+            type="button"
+            onClick={() => setIsToggled(true)}
+          >
+            Search
+          </Button>
+        </form>
+      </div>
       {isUploadReportToggled && (
         <UploadReport handleCancel={() => setIsToggled(false)} />
       )}
