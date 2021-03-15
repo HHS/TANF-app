@@ -82,3 +82,44 @@ Development | https://tdp-frontend.app.cloud.gov/ | `raft-review` in [Raft fork]
 Vendor staging | https://tdp-frontend-vendor-staging.app.cloud.gov/ | `raft-tdp-main` in [Raft fork](https://github.com/raft-tech/TANF-app)
 Gov staging | TBD | TBD
 Production | TBD | TBD
+
+### Manual Deployments
+
+The application can be manually deployed from any open Pull Request by assigning the label `Deploy with CircleCI`.
+
+This works using a [GitHub Action](https://docs.github.com/en/actions/quickstart) that runs every time a label is assigned to a PR.
+If the assigned label matches the string defined above a cURL request is made to CircleCI to initiate a deploy job for the given PR's branch.
+
+Which deployment environment within Cloud.gov the deploy job targets depends on the branch name as follows:
+* Branch name `staging` => deploys to Gov Staging **(once it exists)
+* Branch name `raft-tdp-main` => deploys to Vendor Staging
+* All other branches deploy to the Development environment
+
+Note that the Production environment is omitted above, since `main` is a protected branch commits can't be made directly
+to it so there is no path to be able to deploy straight to Production from labels on PRs.
+
+#### Communication around Deployments
+
+To prevent interrupting ongoing testing against a deployment environment it is important to always communicate with the Team
+before assigning this label to a new PR. This can be done as a general announcement in either Mattermost (vendor environments)
+or MSFT Teams (gov staging).
+
+#### Enabling the Deployment GitHub Action
+
+Currently the GitHub action defined in the workflow in this repo is only enabled on the `raft-tech` fork.
+
+In order to enable the action take the following steps:
+
+* Create a CircleCI API Token in Project Settings
+  * NOTE: You can't see this again so make sure to save it in a secure place before proceeding.
+ 
+![circleci_api_token](https://user-images.githubusercontent.com/22626085/110530772-d472e680-80e8-11eb-9869-13217dc1785d.png)
+
+* Save the token from above as a Repository Secret in GitHub
+  * NOTE: The secret must be named `CIRCLE_CI_API_TOKEN` exactly or the workflow won't run
+ 
+![github_action_secrets](https://user-images.githubusercontent.com/22626085/110530768-d472e680-80e8-11eb-8397-4bff57df0da5.png)
+
+* Ensure that actions are enabled for the repository
+
+![github_action_setting](https://user-images.githubusercontent.com/22626085/110539802-b199ff80-80f3-11eb-8b9f-b59abd3f83bd.png)
