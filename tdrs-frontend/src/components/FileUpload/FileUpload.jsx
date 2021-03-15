@@ -1,39 +1,78 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { useDispatch, useSelector } from 'react-redux'
+import { clearError, upload } from '../../actions/reports'
 
-function FileUpload({ file, section, onUpload }) {
+function FileUpload({ section }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
-  const formattedName = file.section
+  // The set of uploaded files in our Redux state
+  const files = useSelector((state) => state.reports.files)
+  const dispatch = useDispatch()
+
+  const [sectionNumber, sectionName] = section.split(' - ')
+
+  const file = files.find((currentFile) => sectionName === currentFile.section)
+
+  const formattedSectionName = file.section
     .split(' ')
     .map((word) => word.toLowerCase())
     .join('-')
+
+  const fileName = file?.fileName
+  const hasUploadedFile = Boolean(fileName)
+
+  const ariaDescription = hasUploadedFile
+    ? `${sectionName} - Selected File ${file?.fileName}`
+    : sectionName
+
+  const uploadFile = ({ target }) => {
+    dispatch(clearError({ section: target.name }))
+    dispatch(
+      upload({
+        file: target.files[0],
+        section: target.name,
+      })
+    )
+  }
 
   return (
     <div
       className={`usa-form-group ${file.error ? 'usa-form-group--error' : ''}`}
     >
-      <label className="usa-label text-bold" htmlFor={formattedName}>
-        Section {section} - {file.section}
+      <label className="usa-label text-bold" htmlFor={formattedSectionName}>
+        Section {sectionNumber} - {sectionName}
       </label>
 
       <div>
         {file.error && (
           <div
             className="usa-error-message"
-            id={`${formattedName}-error-alert`}
+            id={`${formattedSectionName}-error-alert`}
             role="alert"
           >
             {file.error.message}
           </div>
         )}
       </div>
+      <div
+        id={`${formattedSectionName}-file`}
+        aria-hidden
+        className="display-none"
+      >
+        {ariaDescription}
+      </div>
       <input
-        onChange={(e) => onUpload(e)}
-        id={formattedName}
+        onChange={(e) => uploadFile(e)}
+        id={formattedSectionName}
         className="usa-file-input"
         type="file"
-        name={file.section}
-        aria-describedby={`${formattedName}-specific-hint`}
+        name={sectionName}
+        aria-describedby={
+          hasUploadedFile
+            ? `${formattedSectionName}-file`
+            : formattedSectionName
+        }
+        aria-hidden="false"
         accept=".txt"
         data-errormessage="We can’t process that file format. Please provide a .txt file."
       />
@@ -42,14 +81,6 @@ function FileUpload({ file, section, onUpload }) {
 }
 
 FileUpload.propTypes = {
-  file: PropTypes.shape({
-    section: PropTypes.string.isRequired,
-    file: PropTypes.string,
-    error: PropTypes.shape({
-      message: PropTypes.string,
-    }),
-  }).isRequired,
-  onUpload: PropTypes.func.isRequired,
   section: PropTypes.string.isRequired,
 }
 
