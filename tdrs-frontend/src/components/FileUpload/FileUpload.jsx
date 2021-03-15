@@ -9,6 +9,7 @@ function FileUpload({ section }) {
   const files = useSelector((state) => state.reports.files)
   const dispatch = useDispatch()
 
+  // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
 
   const file = files.find((currentFile) => sectionName === currentFile.section)
@@ -22,7 +23,7 @@ function FileUpload({ section }) {
   const hasUploadedFile = Boolean(fileName)
 
   const ariaDescription = hasUploadedFile
-    ? `${sectionName} - Selected File ${file?.fileName}`
+    ? `Selected File ${file?.fileName}`
     : sectionName
 
   const uploadFile = ({ target }) => {
