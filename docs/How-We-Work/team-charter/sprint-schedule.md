@@ -16,7 +16,7 @@ _This is just a quick summary of each day's meetings and focus. See [Team Meetin
 
 ### Friday Sprint Day 3: Work Day!   
 - 10:30-12:00pm EST: Optional Dev Drop-in Hours
-- 12:00-1:00pm EST: IPT
+- 12:00-1:00pm EST: Integrated Project Team (IPT) with OCIO and other stakeholders
 - Async Standup
 - 2:00-2:30pm EST: Tech Lead Sync
 - Request feedback from teammates on rolling basis 
