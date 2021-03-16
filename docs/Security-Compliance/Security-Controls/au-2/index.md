@@ -88,3 +88,6 @@ d.
 - Account modification and deletion is logged in Django Admin
 
 #### Related Files  
+
+Django Admin Logging Example
+!()[images/django_admin.png]
