@@ -91,4 +91,4 @@ d.
 
 Django Admin Logging Example
 
-!()[images/django_admin.png]
+![](images/django_admin.png)
