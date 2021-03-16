@@ -90,4 +90,5 @@ d.
 #### Related Files  
 
 Django Admin Logging Example
+
 !()[images/django_admin.png]
