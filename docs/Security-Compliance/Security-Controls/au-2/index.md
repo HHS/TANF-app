@@ -50,4 +50,41 @@ Requirement: Coordination between service provider and consumer shall be documen
 
 The TDP system inherits audit tools and capabilities from Cloud.gov and login.gov to audit the logs of Developer and TDP user account actions, respectively.  Additionally, Django Admin provides logs of user actions that can be monitored and reviewed.
 
+a.i The following events must be identified within server audit logs:
+- a.i.1 | *inherited from Cloud.gov*
+- a.i.2 | *inherited from Cloud.gov*
+- a.i.3 | *inherited from Cloud.gov*
+- a.i.4 | *inherited from Cloud.gov*
+- a.i.5 | *inherited from Login.gov*
+- a.i.6 | *inherited from Cloud.gov*
+- a.i.7 | Access logged in Cloud.gov and activity logged in Django Admin
+- a.i.8 | Account creation through Login.gov, modification and deletion logged in Django Admin
+- a.i.9 | Logged in Django Admin
+- a.i.10 | Uploading and downloading of data files is logged to Cloud.gov system logs
+
+a.ii The following events must be identified within application and database audit logs: 
+- a.ii.1 | Modifications to the application are tracked in the open source repository hosted on GitHub.com
+- a.ii.2 | Frontend alerts and errors send a logging message to the backend to log to the server. Backend errors are logged to the server.
+- a.ii.3 | *inherited from Login.gov*
+- a.ii.4 | Logged in Django Admin
+- a.ii.5 | Access is logged through the backend
+- a.ii.6 | Account creation is inherited from Login.gov. Account modification and deletion is logged in Django Admin.
+- a.ii.7 | Logged in Django Admin
+
+a.iii The following events must be identified within network device (e.g., router, firewall, switch, wireless access point) audit logs:
+- All are inherited from Cloud.gov
+
+b. Inherited from Cloud.gov
+
+c. Inherited from Cloud.gov
+
+d.
+- Login lockouts are inherited from Login.gov
+- Configuration changes are inherited from Cloud.gov
+- Application alerts and error messages are logged to server logs.
+- System Administration activities are logged in Django Admin
+- Modifications of privileges and access are logged in Django Admin
+- Account creation is inherited from Login.gov
+- Account modification and deletion is logged in Django Admin
+
 #### Related Files  
