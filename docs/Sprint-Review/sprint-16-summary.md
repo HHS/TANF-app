@@ -41,17 +41,16 @@
 - Documentation: [Sprint Schedule](https://github.com/raft-tech/TANF-app/pull/746) 
 - [#669 Round 4 Synthesis](https://github.com/raft-tech/TANF-app/issues/669)
 - [#457 Presigned URL for S3 Buckets](https://github.com/raft-tech/TANF-app/issues/457)
+- [#429 Upload front end work](https://github.com/raft-tech/TANF-app/issues/429)
 
 
 ## Moving to Next Sprint (Raft Review, In Progress, Current Sprint Backlog)
 - Remaining Upload/download story breakdown - Work started, more time needed to capture everything
-- Upload front end work: [#430](https://github.com/raft-tech/TANF-app/issues/430), [#429](https://github.com/raft-tech/TANF-app/issues/429), [#639](https://github.com/raft-tech/TANF-app/issues/639)
+- Upload front end work: [#430](https://github.com/raft-tech/TANF-app/issues/430), [#639](https://github.com/raft-tech/TANF-app/issues/639) 
 - Upload back end work: [#643](https://github.com/raft-tech/TANF-app/issues/643), [#647](https://github.com/raft-tech/TANF-app/issues/647), [#485](https://github.com/raft-tech/TANF-app/issues/485), [#352](https://github.com/raft-tech/TANF-app/issues/352), [#670](https://github.com/raft-tech/TANF-app/issues/670)
 - Security control implementation statements, remaining technical controls in the Customer Responsibilty Matrix ([AC-07](https://github.com/raft-tech/TANF-app/issues/656), [IA-08](https://github.com/raft-tech/TANF-app/issues/712), [AU-02](https://github.com/raft-tech/TANF-app/issues/632), [SC-20](https://github.com/raft-tech/TANF-app/issues/708), [SC-28](https://github.com/raft-tech/TANF-app/issues/709), [SC-28(01)](https://github.com/raft-tech/TANF-app/issues/710))
 - [#454 Unauthorized user journey conversation](https://github.com/raft-tech/TANF-app/issues/454)
 - [#691 Front End Hot Reload for Developers](https://github.com/raft-tech/TANF-app/issues/691)
-
-
 
 ## Agenda for Sprint 16 Demo 
 - Research round 4 synthesis (Miles)
