@@ -1,8 +1,12 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Button from '../Button'
 import { history } from '../../configureStore'
-import { setYear } from '../../actions/reports'
+import { setStt, setYear } from '../../actions/reports'
+import ComboBox from '../ComboBox'
+import { setAlert } from '../../actions/alert'
+import { ALERT_ERROR } from '../Alert'
+import { fetchSttList } from '../../actions/sttList'
 
 /**
  * @param {string} selectedYear = The year that the user has chosen from the
@@ -15,18 +19,50 @@ import { setYear } from '../../actions/reports'
  */
 function Reports() {
   const selectedYear = useSelector((state) => state.reports.year)
+  const selectedStt = useSelector((state) => state.reports.stt)
   const dispatch = useDispatch()
+  const [errors] = useState({})
 
   const handleClick = () => {
     history.push(`/reports/${selectedYear}/upload`)
   }
 
-  const handleSelect = ({ target: { value } }) => {
-    dispatch(setYear(value))
-  }
+  const selectYear = ({ target: { value } }) => dispatch(setYear(value))
+  const selectStt = (value) => dispatch(setStt(value))
+
+  const sttList = useSelector((state) => state.stts.sttList)
+
+  useEffect(() => {
+    dispatch(fetchSttList())
+  }, [dispatch])
 
   return (
     <form>
+      <div
+        className={`usa-form-group ${
+          errors.stt ? 'usa-form-group--error' : ''
+        }`}
+      >
+        <ComboBox
+          name="stt"
+          error={errors.stt}
+          handleSelect={selectStt}
+          selected={selectedStt}
+          handleBlur={() => ({})}
+          placeholder="- Select or Search -"
+        >
+          <option value="">Select an STT</option>
+          {sttList.map((stt) => (
+            <option
+              className="sttOption"
+              key={stt.id}
+              value={stt.name.toLowerCase()}
+            >
+              {stt.name}
+            </option>
+          ))}
+        </ComboBox>
+      </div>
       <label
         className="usa-label text-bold margin-top-4"
         htmlFor="reportingYears"
@@ -37,7 +73,7 @@ function Reports() {
           className="usa-select maxw-mobile"
           name="reportingYears"
           id="reportingYears"
-          onChange={handleSelect}
+          onChange={selectYear}
           value={selectedYear}
         >
           <option value="2020">2020</option>

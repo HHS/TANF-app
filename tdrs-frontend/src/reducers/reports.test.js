@@ -1,5 +1,5 @@
 import reducer from './reports'
-import { SET_YEAR } from '../actions/reports'
+import { SET_SELECTED_YEAR } from '../actions/reports'
 
 describe('reducers/upload', () => {
   it('should return the initial state', () => {
@@ -8,10 +8,10 @@ describe('reducers/upload', () => {
     })
   })
 
-  it('should handle "SET_YEAR"', () => {
+  it('should handle "SET_SELECTED_YEAR"', () => {
     expect(
       reducer(undefined, {
-        type: SET_YEAR,
+        type: SET_SELECTED_YEAR,
         payload: {
           year: 2021,
         },
