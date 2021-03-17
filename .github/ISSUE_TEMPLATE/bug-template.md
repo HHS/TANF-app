@@ -6,7 +6,7 @@ Thank you for taking the time to let us know about the issue you found. Please p
 
 ## Action Taken
 
-*In what way were you interacting with the application when you discovered the issue?*
+*In what way were you interacting with the application when you discovered the issue? Please be specific. Did it happen after you made a selection or clicked a button? Which page and which button? This information really helps us get to the bottom of an issue more quickly*
 
 ## What I expected to see
 
