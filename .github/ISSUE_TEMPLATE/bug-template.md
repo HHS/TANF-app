@@ -20,6 +20,6 @@ Thank you for taking the time to let us know about the issue you found. Please p
 
 + URL of the page I was on:
 + Browser and version:
-+ Operating System:
-+ Is the issue repeatable?: (yes | no | don't know)
++ Operating System: ( Windows | MacOS X | Linux | Other )
++ Is the issue repeatable?: ( yes | no | don't know )
 
