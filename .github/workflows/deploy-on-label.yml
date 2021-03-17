@@ -1,0 +1,60 @@
+###########################################################################
+# GitHub Action Workflow
+# On assignment of the explicit label `Deploy with CircleCI` to an open PR
+# in GitHub this action will trigger a deploy job within CircleCI for the
+# branch defined in the given PR.
+#
+# Step 0: Checkout latest commit on current branch
+#
+# Step 1: Using the GitHub API make a request to get the latest Status Checks
+#         for the current branch. This will be used to ensure that all checks
+#         have passed in CircleCI prior to making the deployment
+#         Leverages the open source GitHub Action:
+#           https://github.com/octokit/request-action
+#         Makes a request to the combined status checks API in GitHub
+#           https://docs.github.com/en/rest/reference/repos#statuses
+#
+# Step 2: Extract the combined state from the GitHub API response and store
+#         only the state value as an output for future steps
+#
+# Step 3: If the PR State is `success` make a cURL request to the CircleCI
+#         API to initiate a `deploy` job for the current branch.
+#         Leverages the open source GitHub Action:
+#           https://github.com/Open-Source-Contrib/circle-ci-trigger-action
+###########################################################################
+name: Deploy PR based on Label
+on:
+  pull_request:
+    types:
+      - labeled
+jobs:
+  pr_labeled_deployment:
+    if: github.event.label.name == 'Deploy with CircleCI'
+    runs-on: ubuntu-latest
+    name: Initiate deploy job in CircleCI
+    steps:
+    - uses: actions/checkout@v2
+    - name: Get PR Status Checks
+      id: get-pr-checks
+      uses: octokit/request-action@v2.x
+      with:
+        route: GET /repos/{owner}/{repo}/commits/{ref}/status
+        owner: ${{ github.repository_owner }}
+        repo: TANF-app
+        ref: ${{ github.event.pull_request.head.ref }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Extract current PR state
+      id: get-pr-state
+      run: |
+        STATE=${{ fromJson(steps.get-pr-checks.outputs.data).state }}
+        echo "::set-output name=STATE::$STATE"
+        echo "Current PR state: $STATE"
+    - name: Circle CI Deployment Trigger
+      id: curl-circle-ci
+      if: steps.get-pr-state.outputs.STATE == 'success'
+      uses: Open-Source-Contrib/circle-ci-trigger-action@latest
+      with:
+        circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
+        circle_ci_job: deploy
+        circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
