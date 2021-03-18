@@ -22,4 +22,4 @@ Thank you for taking the time to let us know about the issue you found. Please p
 + Browser and version:
 + Operating System: ( Windows | MacOS X | Linux | Other )
 + Is the issue repeatable?: ( yes | no | don't know )
-
++ Has the issue occurred more than once?:
