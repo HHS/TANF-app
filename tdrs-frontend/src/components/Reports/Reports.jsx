@@ -13,7 +13,7 @@ import UploadReport from '../UploadReport'
  * Reports is the home page for users to file a report.
  * The user can select a year
  * for the report that they would like to upload and then click on
- * `Begin Report` to begin uploading files for that year.
+ * `Search` to begin uploading files for that year.
  */
 function Reports() {
   const selectedYear = useSelector((state) => state.reports.year)

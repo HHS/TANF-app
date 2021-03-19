@@ -76,7 +76,7 @@ describe('Reports', () => {
     expect(store.dispatch).toHaveBeenCalledTimes(1)
   })
 
-  it('should render the UploadReports form when a year is selected and Begin Report is clicked', () => {
+  it('should render the UploadReports form when a year is selected and Search button is clicked', () => {
     const store = mockStore(initialState)
 
     const { getByText } = render(
