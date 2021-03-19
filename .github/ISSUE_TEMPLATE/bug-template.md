@@ -1,5 +1,5 @@
 Thank you for taking the time to let us know about the issue you found. Please provide us with the information below and we will look at it as soon as we are able.
-
+The basic rule for bug reporting is that something isn't working the way one would expect it to work. 
 ## Description
 
 *Please provide a short description of the bug*
