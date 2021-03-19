@@ -1,14 +1,12 @@
 {
   "extends": [
-    "airbnb",
-    "prettier/react",
-    "plugin:prettier/recommended",
+    "react-app",
     "plugin:cypress/recommended",
-    "plugin:jsx-a11y/recommended"
+    "plugin:prettier/recommended",
+    "prettier/react"
   ],
   "plugins": [
-    "cypress",
-    "jsx-a11y"
+    "cypress"
   ],
   "env": {
     "browser": true,
