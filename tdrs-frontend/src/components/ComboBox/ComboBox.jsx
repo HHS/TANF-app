@@ -50,7 +50,7 @@ const ComboBox = ({
         className={`usa-label text-bold ${error ? 'usa-label--error' : ''}`}
         htmlFor={name}
       >
-        Associated State, Tribe, or Territory (required)
+        Associated State, Tribe, or Territory
       </label>
       {error && (
         <span className="usa-error-message" id={`${name}-error-message`}>
@@ -60,7 +60,8 @@ const ComboBox = ({
       <div className="usa-combo-box" data-placeholder={placeholder}>
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
-          className="usa-select"
+          className="usa-select maxw-mobile"
+          data-testid={`${name}-combobox`}
           name={name}
           id={name}
           onChange={(e) => {

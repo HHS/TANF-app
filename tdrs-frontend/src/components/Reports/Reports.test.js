@@ -4,6 +4,7 @@ import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
+import { render } from '@testing-library/react'
 import Reports from './Reports'
 import Button from '../Button'
 
@@ -13,24 +14,52 @@ describe('Reports', () => {
       file: null,
       error: null,
       year: 2020,
+      stt: '',
+    },
+    stts: {
+      sttList: [
+        {
+          id: 1,
+          type: 'state',
+          code: 'AL',
+          name: 'Alabama',
+        },
+      ],
+      loading: false,
     },
   }
   const mockStore = configureStore([thunk])
 
-  it('should render the USWDS Select component with two options', () => {
+  it('should render the Fiscal Year dropdown with two options', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { getByLabelText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
 
-    const select = wrapper.find('.usa-select')
+    const select = getByLabelText('Fiscal Year')
 
-    expect(select).toExist()
+    expect(select).toBeInTheDocument()
 
-    const options = wrapper.find('option')
+    const options = select.children
 
+    expect(options.length).toEqual(2)
+  })
+
+  it('should render the STT dropdown with one option', () => {
+    const store = mockStore(initialState)
+    const { getByTestId } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const select = getByTestId('stt-combobox')
+
+    const options = select.children
+
+    // There is only STT in the mock list but the combobox has a default option
     expect(options.length).toEqual(2)
   })
 
@@ -49,26 +78,5 @@ describe('Reports', () => {
     beginButton.simulate('click')
 
     expect(window.location.href.includes('/reports/2020/upload')).toBeTruthy()
-  })
-
-  it('should dispatch setYear when a year is selcted', () => {
-    const store = mockStore(initialState)
-    const origDispatch = store.dispatch
-    store.dispatch = jest.fn(origDispatch)
-    const wrapper = mount(
-      <Provider store={store}>
-        <Reports />
-      </Provider>
-    )
-
-    const select = wrapper.find('.usa-select')
-
-    select.simulate('change', {
-      target: {
-        value: 2021,
-      },
-    })
-
-    expect(store.dispatch).toHaveBeenCalledTimes(1)
   })
 })

@@ -5,6 +5,7 @@ describe('reducers/upload', () => {
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).toEqual({
       year: 2020,
+      stt: '',
     })
   })
 
@@ -18,6 +19,7 @@ describe('reducers/upload', () => {
       })
     ).toEqual({
       year: 2021,
+      stt: '',
     })
   })
 })

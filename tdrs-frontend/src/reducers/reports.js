@@ -2,7 +2,7 @@ import { SET_SELECTED_STT, SET_SELECTED_YEAR } from '../actions/reports'
 
 const initialState = {
   year: 2020,
-  stt: null,
+  stt: '',
 }
 
 /**

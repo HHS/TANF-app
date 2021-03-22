@@ -39,8 +39,8 @@ function Reports() {
   return (
     <form>
       <div
-        className={`usa-form-group ${
-          errors.stt ? 'usa-form-group--error' : ''
+        className={`usa-form-group${
+          errors.stt ? ' usa-form-group--error' : ''
         }`}
       >
         <ComboBox
@@ -67,7 +67,7 @@ function Reports() {
         className="usa-label text-bold margin-top-4"
         htmlFor="reportingYears"
       >
-        Fiscal Year (October - September)
+        Fiscal Year
         {/* eslint-disable-next-line */}
         <select
           className="usa-select maxw-mobile"
