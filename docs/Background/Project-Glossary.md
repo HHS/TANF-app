@@ -1,6 +1,6 @@
-**477 tribes** - Tribes can enroll in a [477 plan](https://www.bia.gov/sites/bia.gov/files/assets/as-ia/ieed/Primer%20on%20Economic%20Development%20and%20477%20508%20Compliant_508.pdf) to streamline their federal reporting requirements.
+**477 tribes** - Tribes can enroll in a [477 plan](https://www.acf.hhs.gov/ofa/programs/tribal/public-law-102-477-program) to streamline their federal reporting requirements.
 
-**Administration for Children and Families (ACH)** - An operating division of the Department of Health & Human Services.
+**Administration for Children and Families (ACF)** - An operating division of the Department of Health & Human Services.
 
 **Authority to Operate (ATO)** - The approval to permit an information system to store and process federal information. This approval is granted following a risk-management and compliance assessment process.
 
@@ -12,7 +12,7 @@
 
 **Cross-functional Team (CFT)** - Group including OCIO representatives, product owner, and COR.
 
-**Data reports** - aka "Section 1/2/3/4 data" these terms refer to the type of data STTs submit to OFA. There are four types of data reports that STTs can submit. When sending universal data, STTs submit Section 1, 2, and 3 data reports based on the entire case load. When sending sampled data, states and territories submit Section 1 and 2 data reports based on sampled cases, Section 3 based on the entire case load, and Section 4 to report the stratum counts. About half of states and territories submit sampled data. OFA staff typically refer to specific data reports by their section number (Section 1, Section 3), while some STTs often use other terms (Disagg, actives, negatives).
+**Data files** - aka "Section 1/2/3/4 data" these terms refer to the type of data STTs submit to OFA. There are four types of data files that STTs can submit. When sending universal data, STTs submit Section 1, 2, and 3 data reports based on the entire case load. When sending sampled data, states and territories submit Section 1 and 2 data reports based on sampled cases, Section 3 based on the entire case load, and Section 4 to report the stratum counts. About half of states and territories submit sampled data. OFA staff typically refer to specific data reports by their section number (Section 1, Section 3), while some STTs often use other terms (Disagg, actives, negatives).
 
 **Extranet** - aka "TDRS Extranet" was a website where STTs could submit Section 3 aggregate data and Section 4 stratum reports through a web form. The TDRS extranet also allowed STTs and regional program specialists to view the data that had been accepted into the OFA system. The extranet is no longer available.
 
@@ -32,13 +32,10 @@
 
 **Office of Planning, Research, and Evaluation (OPRE)** - An ACF office that focuses on increasing the quality, usefulness, sharing, and analysis of data to improve ACF programs and program participants’ outcomes. Sibling to OFA.
 
-**PIR** -
-
 **Sample data** -
 
 **Software Development Lifecycle (SDLC)** - ACF OCIO's software governance framework designates how the TDRS system will undergo a risk-management assessment and receive an Authority to Operate (ATO).
 
-**State Funded Program (SFP)** -
 
 **States, Tribes, and Territories (STT)** - aka "grantees" who receive block grants from OFA for TANF cash assistance that they then distribute to families in their jurisdiction, as well as other activities that meet a TANF purpose. Territories: Guam, the U.S. Virgin Islands, and Puerto Rico. Currently 75 federally-recognized American Indian tribes and Alaska Native organizations may elect to operate their own TANF programs.
 
@@ -49,7 +46,5 @@
 **Universe data** -
 
 **US Department of Health & Human Services (HHS)** - A Cabinet-level federal department whose mission it is to enhance and protect the health and well-being of all Americans. The Administration of Children and Families is a part.
-
-**Work Breakdown Structure (WBS)** - A document OCIO wants
 
 **Work Verification Plan** - STTs submit [Work Verification plans](https://www.acf.hhs.gov/ofa/resource/data-reports/verification/work-verification-plan-guide) to HHS that detail how they track work in their locality and how they process this information.
