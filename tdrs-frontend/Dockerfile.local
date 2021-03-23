@@ -1,24 +1,21 @@
 # This Dockerfile is intended for use in local development only
 
 # ---
-# Stage 0: Create the app directory, install dependencies, and copy in the source code
+# Stage 0: Create the app directory, install dependencies, copy in the source code, and run with yarn
 FROM node:12.18-alpine3.12 AS localdev
-
-RUN mkdir /home/node/app/ && chown -R node:node /home/node/app
-
-WORKDIR /home/node/app
 
 USER node
 
-COPY --chown=node:node package.json yarn.lock ./
-
-RUN yarn install --prefer-offline
+RUN mkdir /home/node/app/ && chown -R node:node /home/node/app
+WORKDIR /home/node/app
 
 COPY --chown=node:node . ./
 
+RUN yarn install --prefer-offline
+
 ENV SASS_PATH=node_modules:src
 ENV PORT=80
-# ---
-# Stage 1: Serve with yarn
 EXPOSE 80
+
+# Serve with yarn
 CMD ["yarn", "start"]
