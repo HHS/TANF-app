@@ -33,7 +33,7 @@
 **Office of Planning, Research, and Evaluation (OPRE)** - An ACF office that focuses on increasing the quality, usefulness, sharing, and analysis of data to improve ACF programs and program participants’ outcomes. Sibling to OFA.
 
 **Sample data** -
-
+STTs (see definition below) may elect to report TANF information for all families served by the jurisdiction's TANF program or for a stratified sample of families served in the jurisdiction. Sample data, herein, is a reference to data from STTs that submit information for a stratified sample. As of FY2021, 22 STTs submit sample data.
 **Software Development Lifecycle (SDLC)** - ACF OCIO's software governance framework designates how the TDRS system will undergo a risk-management assessment and receive an Authority to Operate (ATO).
 
 
