@@ -14,7 +14,10 @@ WORKDIR /home/node/app
 # to allow Docker to cache the yarn layer to prevent unnecessary installations
 # when code changes occur
 COPY --chown=node:node package.json yarn.lock ./
-RUN yarn install --prefer-offline
+
+# Install yarn packages, using local cache if available and skip creating a
+# new lock file to speed up the build
+RUN yarn install --prefer-offline --frozen-lockfile
 
 COPY --chown=node:node . ./
 
