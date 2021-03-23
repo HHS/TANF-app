@@ -44,7 +44,7 @@ STTs (see definition below) may elect to report TANF information for all familie
 **Temporary Assistance for Needy Families (TANF)** - A program that provides block grants to states, tribes, and territories to help low-income families achieve self-sufficiency.
 
 **Universe data** -
-
+STTs (see definition above) may elect to report TANF information for all families served by the jurisdiction's TANF program or for a stratified sample of families served in the jurisdiction. Universe data, herein, is a reference to data from STTs that submit information for **all families** served in the jurisdiction. 
 **US Department of Health & Human Services (HHS)** - A Cabinet-level federal department whose mission it is to enhance and protect the health and well-being of all Americans. The Administration of Children and Families is a part.
 
 **Work Verification Plan** - STTs submit [Work Verification plans](https://www.acf.hhs.gov/ofa/resource/data-reports/verification/work-verification-plan-guide) to HHS that detail how they track work in their locality and how they process this information.
