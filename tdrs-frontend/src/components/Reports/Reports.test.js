@@ -37,7 +37,7 @@ describe('Reports', () => {
   }
   const mockStore = configureStore([thunk])
 
-  it('should render the Fiscal Year dropdown with two options', () => {
+  it('should render the Fiscal Year dropdown with two options and a placeholder', () => {
     const store = mockStore(initialState)
     const { getByLabelText } = render(
       <Provider store={store}>
@@ -51,7 +51,8 @@ describe('Reports', () => {
 
     const options = select.children
 
-    expect(options.length).toEqual(2)
+    // The placeholder option is included in the length
+    expect(options.length).toEqual(3)
   })
 
   it('should render the STT dropdown with one option, when the user is an OFA Admin', () => {
@@ -66,8 +67,7 @@ describe('Reports', () => {
 
     const options = select.children
 
-    // There is only STT in the mock list but the combobox has a default option
-    expect(options.length).toEqual(2)
+    expect(options.length).toEqual(1)
   })
 
   it('should not render the STT if the user is not an OFA Admin', () => {

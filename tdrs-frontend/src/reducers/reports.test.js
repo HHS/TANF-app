@@ -1,11 +1,16 @@
 import reducer from './reports'
-import { SET_SELECTED_STT, SET_SELECTED_YEAR } from '../actions/reports'
+import {
+  SET_SELECTED_STT,
+  SET_SELECTED_YEAR,
+  SET_SELECTED_QUARTER,
+} from '../actions/reports'
 
 describe('reducers/reports', () => {
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).toEqual({
-      year: 2020,
+      year: '',
       stt: '',
+      quarter: '',
     })
   })
 
@@ -20,6 +25,7 @@ describe('reducers/reports', () => {
     ).toEqual({
       year: 2021,
       stt: '',
+      quarter: '',
     })
   })
 
@@ -32,8 +38,24 @@ describe('reducers/reports', () => {
         },
       })
     ).toEqual({
-      year: 2020, // 2020 is in the default initial state
+      year: '',
       stt: 'florida',
+      quarter: '',
+    })
+  })
+
+  it('should handle "SET_SELECTED_QUARTER"', () => {
+    expect(
+      reducer(undefined, {
+        type: SET_SELECTED_QUARTER,
+        payload: {
+          quarter: 'Q1',
+        },
+      })
+    ).toEqual({
+      year: '',
+      stt: '',
+      quarter: 'Q1',
     })
   })
 })
