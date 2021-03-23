@@ -1,3 +1,12 @@
+---
+name: Bug Report template
+about: Template for bug reporting
+title: ''
+labels: dev
+assignees: ''
+
+---
+
 Thank you for taking the time to let us know about the issue you found. The basic rule for bug reporting is that 
 something isn't working the way one would expect it to work. Please provide us with the information requested 
 below and we will look at it as soon as we are able.

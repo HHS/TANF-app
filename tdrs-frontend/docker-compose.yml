@@ -13,7 +13,7 @@ services:
     tty: true        # docker run -t
     build:
       context: .
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile.dev
     container_name: tdp-ui
     ports:
       - 3000:80
