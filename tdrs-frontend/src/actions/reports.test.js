@@ -23,7 +23,6 @@ describe('actions/reports', () => {
     await store.dispatch(setStt('florida'))
 
     const actions = store.getActions()
-    console.log(actions)
     expect(actions[0].type).toBe(SET_SELECTED_STT)
     expect(actions[0].payload).toStrictEqual({
       stt: 'florida',

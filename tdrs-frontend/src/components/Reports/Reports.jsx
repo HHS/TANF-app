@@ -1,17 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Button from '../Button'
+import STTComboBox from '../STTComboBox'
 import { history } from '../../configureStore'
 import { setStt, setYear } from '../../actions/reports'
-import ComboBox from '../ComboBox'
-import { setAlert } from '../../actions/alert'
-import { ALERT_ERROR } from '../Alert'
-import { fetchSttList } from '../../actions/sttList'
 
 /**
- * @param {string} selectedYear = The year that the user has chosen from the
- * Select component.
- *
  * Reports is the home page for users to file a report.
  * The user can select a year
  * for the report that they would like to upload and then click on
@@ -35,42 +29,23 @@ function Reports() {
 
   // Non-OFA Admin users will be unable to select an STT
   // prefer => `auth.user.stt`
-  const sttList = useSelector((state) => state.stts.sttList)
   const selectStt = (value) => dispatch(setStt(value))
-
-  useEffect(() => {
-    dispatch(fetchSttList())
-  }, [dispatch])
 
   return (
     <form>
-      <div
-        className={`usa-form-group maxw-mobile${
-          errors.stt ? ' usa-form-group--error' : ''
-        }`}
-      >
-        {isOFAAdmin && (
-          <ComboBox
-            name="stt"
+      {isOFAAdmin && (
+        <div
+          className={`usa-form-group maxw-mobile${
+            errors.stt ? ' usa-form-group--error' : ''
+          }`}
+        >
+          <STTComboBox
+            selectedStt={selectedStt}
+            selectStt={selectStt}
             error={errors.stt}
-            handleSelect={selectStt}
-            selected={selectedStt}
-            handleBlur={() => ({})}
-            placeholder="- Select or Search -"
-          >
-            <option value="">Select an STT</option>
-            {sttList.map((stt) => (
-              <option
-                className="sttOption"
-                key={stt.id}
-                value={stt.name.toLowerCase()}
-              >
-                {stt.name}
-              </option>
-            ))}
-          </ComboBox>
-        )}
-      </div>
+          />
+        </div>
+      )}
       <label
         className="usa-label text-bold margin-top-4"
         htmlFor="reportingYears"
