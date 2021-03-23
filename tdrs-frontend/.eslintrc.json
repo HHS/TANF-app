@@ -2,11 +2,12 @@
   "extends": [
     "react-app",
     "plugin:cypress/recommended",
-    "plugin:prettier/recommended",
-    "prettier/react"
+    "plugin:jsx-a11y/recommended",
+    "plugin:prettier/recommended"
   ],
   "plugins": [
-    "cypress"
+    "cypress",
+    "jsx-a11y"
   ],
   "env": {
     "browser": true,
