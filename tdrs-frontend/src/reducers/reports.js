@@ -1,8 +1,13 @@
-import { SET_SELECTED_STT, SET_SELECTED_YEAR } from '../actions/reports'
+import {
+  SET_SELECTED_STT,
+  SET_SELECTED_YEAR,
+  SET_SELECTED_QUARTER,
+} from '../actions/reports'
 
 const initialState = {
-  year: 2020,
+  year: '',
   stt: '',
+  quarter: '',
 }
 
 /**
@@ -18,6 +23,10 @@ const reports = (state = initialState, action) => {
     case SET_SELECTED_STT: {
       const { stt } = payload
       return { ...state, stt }
+    }
+    case SET_SELECTED_QUARTER: {
+      const { quarter } = payload
+      return { ...state, quarter }
     }
     default:
       return state

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import Button from '../Button'
 import STTComboBox from '../STTComboBox'
 import { history } from '../../configureStore'
-import { setStt, setYear } from '../../actions/reports'
+import { setQuarter, setStt, setYear } from '../../actions/reports'
 
 /**
  * Reports is the home page for users to file a report.
@@ -14,6 +14,8 @@ import { setStt, setYear } from '../../actions/reports'
 function Reports() {
   const selectedYear = useSelector((state) => state.reports.year)
   const selectedStt = useSelector((state) => state.reports.stt)
+  const selectedQuarter = useSelector((state) => state.reports.quarter)
+
   const user = useSelector((state) => state.auth.user)
   const isOFAAdmin =
     user && user.roles.some((role) => role.name === 'OFA Admin')
@@ -26,6 +28,7 @@ function Reports() {
   }
 
   const selectYear = ({ target: { value } }) => dispatch(setYear(value))
+  const selectQuarter = ({ target: { value } }) => dispatch(setQuarter(value))
 
   // Non-OFA Admin users will be unable to select an STT
   // prefer => `auth.user.stt`
@@ -59,8 +62,30 @@ function Reports() {
           onChange={selectYear}
           value={selectedYear}
         >
+          <option value="" disabled hidden>
+            - Select Fiscal Year -
+          </option>
           <option value="2020">2020</option>
           <option value="2021">2021</option>
+        </select>
+      </label>
+      <label className="usa-label text-bold margin-top-4" htmlFor="quarter">
+        Quarter
+        {/* eslint-disable-next-line */}
+        <select
+          className="usa-select maxw-mobile"
+          name="quarter"
+          id="quarter"
+          onChange={selectQuarter}
+          value={selectedQuarter}
+        >
+          <option value="" disabled hidden>
+            - Select Quarter -
+          </option>
+          <option value="Q1">Quarter 1 (October - December)</option>
+          <option value="Q2">Quarter 2 (January - March)</option>
+          <option value="Q3">Quarter 3 (April - June)</option>
+          <option value="Q4">Quarter 4 (July-September)</option>
         </select>
       </label>
 
