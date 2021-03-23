@@ -20,6 +20,10 @@ import { fetchSttList } from '../../actions/sttList'
 function Reports() {
   const selectedYear = useSelector((state) => state.reports.year)
   const selectedStt = useSelector((state) => state.reports.stt)
+  const user = useSelector((state) => state.auth.user)
+  const isOFAAdmin =
+    user && user.roles.some((role) => role.name === 'OFA Admin')
+
   const dispatch = useDispatch()
   const [errors] = useState({})
 
@@ -43,25 +47,27 @@ function Reports() {
           errors.stt ? ' usa-form-group--error' : ''
         }`}
       >
-        <ComboBox
-          name="stt"
-          error={errors.stt}
-          handleSelect={selectStt}
-          selected={selectedStt}
-          handleBlur={() => ({})}
-          placeholder="- Select or Search -"
-        >
-          <option value="">Select an STT</option>
-          {sttList.map((stt) => (
-            <option
-              className="sttOption"
-              key={stt.id}
-              value={stt.name.toLowerCase()}
-            >
-              {stt.name}
-            </option>
-          ))}
-        </ComboBox>
+        {isOFAAdmin && (
+          <ComboBox
+            name="stt"
+            error={errors.stt}
+            handleSelect={selectStt}
+            selected={selectedStt}
+            handleBlur={() => ({})}
+            placeholder="- Select or Search -"
+          >
+            <option value="">Select an STT</option>
+            {sttList.map((stt) => (
+              <option
+                className="sttOption"
+                key={stt.id}
+                value={stt.name.toLowerCase()}
+              >
+                {stt.name}
+              </option>
+            ))}
+          </ComboBox>
+        )}
       </div>
       <label
         className="usa-label text-bold margin-top-4"

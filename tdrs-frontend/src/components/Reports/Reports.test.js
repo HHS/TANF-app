@@ -27,6 +27,13 @@ describe('Reports', () => {
       ],
       loading: false,
     },
+    auth: {
+      authenticated: true,
+      user: {
+        email: 'hi@bye.com',
+        roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
+      },
+    },
   }
   const mockStore = configureStore([thunk])
 
@@ -47,7 +54,7 @@ describe('Reports', () => {
     expect(options.length).toEqual(2)
   })
 
-  it('should render the STT dropdown with one option', () => {
+  it('should render the STT dropdown with one option, when the user is an OFA Admin', () => {
     const store = mockStore(initialState)
     const { getByTestId } = render(
       <Provider store={store}>
@@ -61,6 +68,29 @@ describe('Reports', () => {
 
     // There is only STT in the mock list but the combobox has a default option
     expect(options.length).toEqual(2)
+  })
+
+  it('should not render the STT if the user is not an OFA Admin', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          roles: [], // Remove the OFA Admin role
+        },
+      },
+    })
+
+    const { queryByTestId } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const select = queryByTestId('stt-combobox')
+
+    expect(select).toBe(null)
   })
 
   it('should change route to `/reports/:year/upload` on click of `Begin Report` button', () => {
