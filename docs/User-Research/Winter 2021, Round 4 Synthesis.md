@@ -56,7 +56,7 @@ Included in the learnings of this round is that our participants prefered to be 
 
 One ST data analyst discussed that he has a program from a third party that cleanses and validates the data for him before he submits it, and it “predicts whether or not a submission would be accepted.” Other analysts indicated an interest in having this ability. 
 
-**Project Imapacts**
+**Project Impacts**
 - We will plan an interview with the vendor of the program and a look at the software application to leverage a competitive analysis with HMDA's data cleansing process in designing our solution.`  
 - We validated the hypothesis that STTs cannot receive immediate plain language feedback on how to correct data quality errors.
 
