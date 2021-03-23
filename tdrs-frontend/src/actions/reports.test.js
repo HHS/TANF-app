@@ -1,9 +1,9 @@
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 
-import { setYear, SET_SELECTED_YEAR } from './reports'
+import { setYear, SET_SELECTED_YEAR, SET_SELECTED_STT, setStt } from './reports'
 
-describe('actions/setYear', () => {
+describe('actions/reports', () => {
   const mockStore = configureStore([thunk])
 
   it('should dispatch SET_SELECTED_YEAR', async () => {
@@ -15,5 +15,18 @@ describe('actions/setYear', () => {
 
     expect(actions[0].type).toBe(SET_SELECTED_YEAR)
     expect(actions[0].payload).toStrictEqual({ year: 2020 })
+  })
+
+  it('should dispatch SET_SELECTED_STT', async () => {
+    const store = mockStore()
+
+    await store.dispatch(setStt('florida'))
+
+    const actions = store.getActions()
+    console.log(actions)
+    expect(actions[0].type).toBe(SET_SELECTED_STT)
+    expect(actions[0].payload).toStrictEqual({
+      stt: 'florida',
+    })
   })
 })

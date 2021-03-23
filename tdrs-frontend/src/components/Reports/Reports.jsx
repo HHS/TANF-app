@@ -32,9 +32,10 @@ function Reports() {
   }
 
   const selectYear = ({ target: { value } }) => dispatch(setYear(value))
-  const selectStt = (value) => dispatch(setStt(value))
 
+  // Non-OFA Admin users will be unable to select an STT; prefer => `auth.user.stt`
   const sttList = useSelector((state) => state.stts.sttList)
+  const selectStt = (value) => dispatch(setStt(value))
 
   useEffect(() => {
     dispatch(fetchSttList())
