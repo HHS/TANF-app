@@ -33,7 +33,8 @@ function Reports() {
 
   const selectYear = ({ target: { value } }) => dispatch(setYear(value))
 
-  // Non-OFA Admin users will be unable to select an STT; prefer => `auth.user.stt`
+  // Non-OFA Admin users will be unable to select an STT
+  // prefer => `auth.user.stt`
   const sttList = useSelector((state) => state.stts.sttList)
   const selectStt = (value) => dispatch(setStt(value))
 
@@ -44,7 +45,7 @@ function Reports() {
   return (
     <form>
       <div
-        className={`usa-form-group${
+        className={`usa-form-group maxw-mobile${
           errors.stt ? ' usa-form-group--error' : ''
         }`}
       >

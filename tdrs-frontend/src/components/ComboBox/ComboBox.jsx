@@ -60,7 +60,7 @@ const ComboBox = ({
       <div className="usa-combo-box" data-placeholder={placeholder}>
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
-          className="usa-select maxw-mobile"
+          className="usa-select"
           data-testid={`${name}-combobox`}
           name={name}
           id={name}
