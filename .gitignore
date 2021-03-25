@@ -11,6 +11,8 @@ tdrs-frontend/yarn-debug.log*
 tdrs-frontend/yarn-error.log*
 tdrs-frontend/vars-frontend.yml
 tdrs-frontend/pa11y-screenshots/*
+.eslintcache
+
 # Don't commit local environment override files
 tdrs-frontend/.env*.local
 
