@@ -4,7 +4,7 @@ import { SET_SELECTED_STT, SET_SELECTED_YEAR } from '../actions/reports'
 describe('reducers/reports', () => {
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).toEqual({
-      year: 2020,
+      year: '',
       stt: '',
     })
   })
@@ -14,11 +14,11 @@ describe('reducers/reports', () => {
       reducer(undefined, {
         type: SET_SELECTED_YEAR,
         payload: {
-          year: 2021,
+          year: '2021',
         },
       })
     ).toEqual({
-      year: 2021,
+      year: '2021',
       stt: '',
     })
   })
@@ -32,7 +32,7 @@ describe('reducers/reports', () => {
         },
       })
     ).toEqual({
-      year: 2020, // 2020 is in the default initial state
+      year: '',
       stt: 'florida',
     })
   })
