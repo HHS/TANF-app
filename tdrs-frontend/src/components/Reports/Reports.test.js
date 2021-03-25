@@ -74,7 +74,7 @@ describe('Reports', () => {
 
     const options = select.children
 
-    expect(options.length).toEqual(1)
+    expect(options.length).toEqual(2)
   })
 
   it('should not render the STT if the user is not an OFA Admin', () => {
