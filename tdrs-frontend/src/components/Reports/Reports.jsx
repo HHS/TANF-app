@@ -21,7 +21,6 @@ function Reports() {
     user && user.roles.some((role) => role.name === 'OFA Admin')
 
   const dispatch = useDispatch()
-  const [errors] = useState({})
 
   const handleClick = () => {
     history.push(`/reports/${selectedYear}/upload`)
@@ -37,16 +36,8 @@ function Reports() {
   return (
     <form>
       {isOFAAdmin && (
-        <div
-          className={`usa-form-group maxw-mobile${
-            errors.stt ? ' usa-form-group--error' : ''
-          }`}
-        >
-          <STTComboBox
-            selectedStt={selectedStt}
-            selectStt={selectStt}
-            error={errors.stt}
-          />
+        <div className="usa-form-group maxw-mobile">
+          <STTComboBox selectedStt={selectedStt} selectStt={selectStt} />
         </div>
       )}
       <label
@@ -66,7 +57,9 @@ function Reports() {
             - Select Fiscal Year -
           </option>
           <option value="2020">2020</option>
-          <option value="2021">2021</option>
+          <option data-testid="2021" value="2021">
+            2021
+          </option>
         </select>
       </label>
       <label className="usa-label text-bold margin-top-4" htmlFor="quarter">
@@ -90,7 +83,7 @@ function Reports() {
       </label>
 
       <p className="font-sans-md margin-top-5 margin-bottom-0 text-bold">
-        TANF Report {selectedYear}
+        {selectedStt && `${selectedStt} - `}Fiscal Year {selectedYear}
       </p>
 
       <Button className="margin-y-2" type="button" onClick={handleClick}>

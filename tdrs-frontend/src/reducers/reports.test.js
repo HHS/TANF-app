@@ -19,11 +19,11 @@ describe('reducers/reports', () => {
       reducer(undefined, {
         type: SET_SELECTED_YEAR,
         payload: {
-          year: 2021,
+          year: '2021',
         },
       })
     ).toEqual({
-      year: 2021,
+      year: '2021',
       stt: '',
       quarter: '',
     })
