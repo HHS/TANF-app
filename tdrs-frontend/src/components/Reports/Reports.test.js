@@ -4,8 +4,7 @@ import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
-import { render, fireEvent, prettyDOM } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, fireEvent } from '@testing-library/react'
 import Reports from './Reports'
 import Button from '../Button'
 
@@ -74,8 +73,8 @@ describe('Reports', () => {
 
     const options = select.children
 
-    // There is only STT in the mock list but the combobox has a default option
-    expect(options.length).toEqual(2)
+    // There are only two STTs in the mock list but the combobox has a default option
+    expect(options.length).toEqual(3)
   })
 
   it('should not render the STT if the user is not an OFA Admin', () => {
@@ -103,7 +102,7 @@ describe('Reports', () => {
 
   it('should select an STT and a year on the Reports page', () => {
     const store = mockStore(initialState)
-    const { getByTestId, getByText, getByLabelText } = render(
+    const { getByText, getByLabelText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
