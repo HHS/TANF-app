@@ -23,8 +23,8 @@ function FileUpload({ section }) {
   const hasUploadedFile = Boolean(fileName)
 
   const ariaDescription = hasUploadedFile
-    ? `Selected File ${file?.fileName}`
-    : sectionName
+    ? `Selected File ${file?.fileName}. To change the selected file, click this button.`
+    : `Drag file here or choose from folder.`
 
   const uploadFile = ({ target }) => {
     dispatch(clearError({ section: target.name }))
@@ -43,7 +43,6 @@ function FileUpload({ section }) {
       <label className="usa-label text-bold" htmlFor={formattedSectionName}>
         Section {sectionNumber} - {sectionName}
       </label>
-
       <div>
         {file.error && (
           <div
@@ -68,11 +67,7 @@ function FileUpload({ section }) {
         className="usa-file-input"
         type="file"
         name={sectionName}
-        aria-describedby={
-          hasUploadedFile
-            ? `${formattedSectionName}-file`
-            : formattedSectionName
-        }
+        aria-describedby={`${formattedSectionName}-file`}
         aria-hidden="false"
         accept=".txt"
         data-errormessage="We can’t process that file format. Please provide a .txt file."
