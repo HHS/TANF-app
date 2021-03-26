@@ -9,5 +9,4 @@ of trust among parent and child domains, when operating as part of a distributed
 
 ### TDP Implementation
 
-	a. Inherited from Login.gov
-	b. Inherited from Login.gov
+TDP does not provide domain name resolution services. This is inherited from cloud.gov.
