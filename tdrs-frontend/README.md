@@ -26,7 +26,7 @@ Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.
 Execute the command below from `tdrs-frontend/` folder to access the frontend at `http://localhost:3000`
 
 ```
-$ docker-compose up
+$ docker-compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
 ```
 
 The above command will bring up two docker containers
@@ -50,10 +50,10 @@ All of these `.env` files can be checked in to source control, with the exceptio
 The order of inheritance for env files depends on how the application was built/launched.
 
 #### Docker
-Currently the Dockerfile.local utilizes `yarn build` and serves the React app over nginx. Due to this React assigns `NODE_ENV=production` and uses this order of inheritance:
-* .env.production.local
+When running this app with Docker on localhost React will assign `NODE_ENV=development` and use this inheritance order:
+* .env.development.local
 * .env.local
-* .env.production
+* .env.development
 * .env
 
 #### `npm start` / `yarn start`
