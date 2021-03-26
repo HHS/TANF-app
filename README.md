@@ -25,7 +25,7 @@ Welcome to the home of the TANF Data Portal (TDP), a new software development pr
 Both the frontend (`http://localhost:3000`) and the backend (`http://localhost:8080`) applications run within Docker.  Instructions for running these containers are below:
 
 ```
-$ cd tdrs-frontend && docker-compose up -d
+$ cd tdrs-frontend && docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d
 $ cd tdrs-backend && docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d 
 ```
 

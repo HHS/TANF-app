@@ -2,7 +2,7 @@
 version: 1
 applications:
 - name: tdp-frontend
-  memory: 512M
+  memory: 32M
   instances: 1
   disk_quota: 256M
   timeout: 180
