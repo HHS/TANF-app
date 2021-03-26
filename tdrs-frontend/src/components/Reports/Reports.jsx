@@ -19,6 +19,7 @@ function Reports() {
   const user = useSelector((state) => state.auth.user)
   const isOFAAdmin =
     user && user.roles.some((role) => role.name === 'OFA Admin')
+  const sttList = useSelector((state) => state.stts.sttList)
 
   const dispatch = useDispatch()
 
@@ -31,7 +32,18 @@ function Reports() {
 
   // Non-OFA Admin users will be unable to select an STT
   // prefer => `auth.user.stt`
-  const selectStt = (value) => dispatch(setStt(value))
+
+  const selectStt = (value) => {
+    dispatch(setStt(value))
+  }
+
+  const reportHeader = `${
+    selectedStt
+      ? `${
+          sttList.find((stt) => stt.name.toLowerCase() === selectedStt).name
+        } - `
+      : ''
+  }Fiscal Year ${selectedYear}`
 
   return (
     <form>
@@ -83,7 +95,7 @@ function Reports() {
       </label>
 
       <p className="font-sans-md margin-top-5 margin-bottom-0 text-bold">
-        {selectedStt && `${selectedStt} - `}Fiscal Year {selectedYear}
+        {reportHeader}
       </p>
 
       <Button className="margin-y-2" type="button" onClick={handleClick}>

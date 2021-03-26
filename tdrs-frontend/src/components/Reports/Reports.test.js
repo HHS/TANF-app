@@ -4,8 +4,7 @@ import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
-import { render, fireEvent, prettyDOM } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, fireEvent } from '@testing-library/react'
 import Reports from './Reports'
 import Button from '../Button'
 
@@ -102,7 +101,7 @@ describe('Reports', () => {
 
   it('should select an STT and a year on the Reports page', () => {
     const store = mockStore(initialState)
-    const { getByTestId, getByText, getByLabelText } = render(
+    const { getByText, getByLabelText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
