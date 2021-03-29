@@ -9,15 +9,16 @@ LOCALSTACK_URL = 'http://localhost:4566'
 
 
 @pytest.fixture
-def patch_localstack_setting():
+def patch_no_localstack_setting():
+    """Patches Django settings to turn off localstack setting."""
     settings.USE_LOCALSTACK = False
 
 
 def test_s3_client_localstack_url():
-    """ Tests that when USE_LOCALSTACK is True the generated S3 client points
-        to the localstack URL instead of directly to AWS.
+    """Test global S3 client points to localstack when USE_LOCALSTACK is True.
+
+    NOTE: USE_LOCALSTACK is True by default in test environments.
     """
-    # NOTE: By default this is True in tests but confirm before proceeding
     assert settings.USE_LOCALSTACK is True
 
     s3_client = get_s3_client()
@@ -26,9 +27,10 @@ def test_s3_client_localstack_url():
     assert s3_client._endpoint.host == LOCALSTACK_URL
 
 
-def test_s3_client_aws_url(patch_localstack_setting):
-    """ Tests that when USE_LOCALSTACK is False the generated S3 client points
-        to a production AWS environment and *not* the localstack URL.
+def test_s3_client_aws_url(patch_no_localstack_setting):
+    """Test global S3 client points to AWS when USE_LOCALSTACK is False.
+
+    NOTE: Temporarily disables USE_LOCALSTACK setting for this test.
     """
     # Confirm that the settings patch was applied properly
     assert settings.USE_LOCALSTACK is False

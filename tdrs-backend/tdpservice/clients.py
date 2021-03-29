@@ -4,8 +4,9 @@ from django.conf import settings
 
 
 def get_s3_client():
-    """ Returns an S3 client that either goes to localstack or AWS depending
-        on configuration. Intended to be used in place of a direct boto3 client.
+    """Return an S3 client that points to localstack or AWS based on settings.
+
+    Intended to be used in place of a direct boto3 client.
     """
     region_name = settings.AWS_REGION_NAME
 
