@@ -1,4 +1,4 @@
-""" Tests for client services which may be used system-wide. """
+"""Tests for client services which may be used system-wide."""
 import pytest
 
 from django.conf import settings

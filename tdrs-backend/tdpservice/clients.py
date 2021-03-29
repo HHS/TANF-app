@@ -1,3 +1,4 @@
+"""Globally available external client services."""
 from boto3 import client
 from django.conf import settings
 
@@ -13,7 +14,7 @@ def get_s3_client():
     if settings.USE_LOCALSTACK:
         # To get s3 signed URLs to work with localstack we must pass in
         # dummy credentials of `test` per the docs
-        # https://github.com/localstack/localstack#setting-up-local-region-and-credentials-to-run-localstack  noqa
+        # https://github.com/localstack/localstack#setting-up-local-region-and-credentials-to-run-localstack  # noqa
         localstack_creds_placeholder = 'test'
 
         # If localstack is in use then we must supply the endpoint URL
