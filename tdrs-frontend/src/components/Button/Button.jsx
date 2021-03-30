@@ -36,7 +36,7 @@ function Button({
 
   return (
     <button
-      type={type} // eslint-disable-line
+      type={type} // eslint-disable-line react/button-has-type
       className={classes}
       onClick={onClick}
       data-testid="button"

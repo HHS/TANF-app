@@ -6,5 +6,16 @@ import '@testing-library/jest-dom/extend-expect'
 import 'jest-enzyme'
 import Enzyme from 'enzyme'
 import Adapter from 'enzyme-adapter-react-16'
+import startMirage from './mirage'
 
 Enzyme.configure({ adapter: new Adapter() })
+
+let server
+
+global.beforeEach(() => {
+  server = startMirage({ environment: 'test' })
+})
+
+global.afterEach(() => {
+  server.shutdown()
+})

@@ -14,27 +14,36 @@ describe('Reports', () => {
         {
           section: 'Active Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Closed Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Aggregate Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Stratum Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
       ],
       error: null,
       year: 2020,
     },
+    auth: { authenticated: true, user: { email: 'hi@bye.com' } },
   }
   const mockStore = configureStore([thunk])
 

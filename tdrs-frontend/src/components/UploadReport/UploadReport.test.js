@@ -9,25 +9,30 @@ import UploadReport from './UploadReport'
 
 describe('UploadReport', () => {
   const initialState = {
+    auth: { user: { email: 'test@test.com' }, authenticated: true },
     reports: {
       files: [
         {
           section: 'Active Case Data',
+          fileType: null,
           fileName: null,
           error: null,
         },
         {
           section: 'Closed Case Data',
+          fileType: null,
           fileName: null,
           error: null,
         },
         {
           section: 'Aggregate Data',
+          fileType: null,
           fileName: null,
           error: null,
         },
         {
           section: 'Stratum Data',
+          fileType: null,
           fileName: null,
           error: null,
         },
@@ -84,6 +89,7 @@ describe('UploadReport', () => {
             section: 'Active Case Data',
             fileName: null,
             // This error in the state should create the error state in the UI
+            fileType: null,
             error: {
               message: 'something went wrong',
             },
@@ -91,16 +97,19 @@ describe('UploadReport', () => {
           {
             section: 'Closed Case Data',
             fileName: null,
+            fileType: null,
             error: null,
           },
           {
             section: 'Aggregate Data',
             fileName: null,
+            fileType: null,
             error: null,
           },
           {
             section: 'Stratum Data',
             fileName: null,
+            fileType: null,
             error: null,
           },
         ],
@@ -128,5 +137,32 @@ describe('UploadReport', () => {
     const formGroup = document.querySelector('.usa-form-group')
 
     expect(formGroup.classList.contains('usa-form-group--error')).toBeFalsy()
+  })
+
+  it('should clear input value if there is an error', () => {
+    const store = mockStore(initialState)
+    axios.post.mockImplementationOnce(() =>
+      Promise.reject(Error({ message: 'something went wrong' }))
+    )
+
+    const { container } = render(
+      <Provider store={store}>
+        <UploadReport handleCancel={handleCancel} />
+      </Provider>
+    )
+
+    const fileInput = container.querySelector('#active-case-data')
+
+    const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
+    const fileList = [newFile]
+
+    fireEvent.change(fileInput, {
+      target: {
+        name: 'Active Case Data',
+        files: fileList,
+      },
+    })
+
+    expect(fileInput.value).toStrictEqual('')
   })
 })
