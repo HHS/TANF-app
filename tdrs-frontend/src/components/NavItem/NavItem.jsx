@@ -20,6 +20,7 @@ function NavItem({ pathname, tabTitle, href }) {
         className={`usa-nav__link ${
           pathname.includes(href) ? 'usa-current' : ''
         }`}
+        aria-current={href === pathname ? 'page' : undefined}
       >
         <span>{tabTitle}</span>
       </a>
