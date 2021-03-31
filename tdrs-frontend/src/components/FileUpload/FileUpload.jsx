@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
+import fileType from 'file-type/browser'
 import { clearError, upload } from '../../actions/reports'
 
 function FileUpload({ section }) {
@@ -12,45 +13,150 @@ function FileUpload({ section }) {
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
 
-  const file = files.find((currentFile) => sectionName === currentFile.section)
+  const currentFile = files.find((file) => sectionName === file.section)
 
-  const formattedSectionName = file.section
+  const formattedSectionName = currentFile.section
     .split(' ')
     .map((word) => word.toLowerCase())
     .join('-')
 
-  const fileName = file?.fileName
+  const fileName = currentFile?.fileName
   const hasUploadedFile = Boolean(fileName)
 
   const ariaDescription = hasUploadedFile
-    ? `Selected File ${file?.fileName}. To change the selected file, click this button.`
+    ? `Selected File ${currentFile?.fileName}. To change the selected file, click this button.`
     : `Drag file here or choose from folder.`
 
-  const validateAndUploadFile = ({ target }) => {
-    dispatch(clearError({ section: target.name }))
-    dispatch(
-      upload({
-        file: target.files[0],
-        section: target.name,
-      })
+  const inputRef = useRef(null)
+
+  const createErrorState = (input, dropTarget) => {
+    const classPrefix = 'usa-file-input'
+    const filePreviews = dropTarget.querySelector(`.${classPrefix}__preview`)
+    const currentPreviewHeading = dropTarget.querySelector(
+      `.${classPrefix}__preview-heading`
     )
+    const currentErrorMessage = dropTarget.querySelector(
+      `.${classPrefix}__accepted-files-message`
+    )
+
+    const instructions = dropTarget.querySelector(
+      `.${classPrefix}__instructions`
+    )
+
+    console.log({ filePreviews, currentPreviewHeading, currentErrorMessage })
+
+    // Remove the heading above the previews
+    if (currentPreviewHeading) {
+      currentPreviewHeading.outerHTML = ''
+    }
+
+    // Remove existing error messages
+    if (currentErrorMessage) {
+      currentErrorMessage.outerHTML = ''
+      dropTarget.classList.remove('has-invalid-file')
+    }
+
+    // Get rid of existing previews if they exist, show instructions
+    if (filePreviews !== null) {
+      instructions.classList.remove('display-none')
+      filePreviews.parentNode.removeChild(filePreviews)
+    }
+    Array.prototype.forEach.call(filePreviews, function removeImages(node) {
+      node.parentNode.removeChild(node)
+    })
+
+    const errorMessage = document.createElement('div')
+
+    input.value = '' // eslint-disable-line no-param-reassign
+    dropTarget.insertBefore(errorMessage, input)
+    errorMessage.innerHTML = `This is not a valid file type.`
+    errorMessage.classList.add(`${classPrefix}__accepted-files-message`)
+    dropTarget.classList.add(`has-invalid-file`)
+  }
+
+  const validateAndUploadFile = async (event) => {
+    const { name } = event.target
+    const file = event.target.files[0]
+    const blob = file.slice(0, 4)
+
+    const input = inputRef.current
+    const dropTarget = inputRef.current.parentNode
+    console.log({ dropTarget })
+
+    /**
+     * Problem:
+     *
+     * Solution:
+     */
+
+    const filereader = new FileReader()
+
+    filereader.onloadend = function (evt) {
+      if (!evt.target.error) {
+        const uint = new Uint8Array(evt.target.result)
+        const bytes = []
+        uint.forEach((byte) => {
+          bytes.push(byte.toString(16))
+        })
+        const header = bytes.join('').toUpperCase()
+
+        switch (header.toLowerCase()) {
+          // For some reason, fileType.fromBlob won't detect image/png;
+          // Account for this by checking for png and some other file signatures manually.
+          case '89504e47':
+          case '47494638':
+          case 'ffd8ffe0':
+          case 'ffd8ffe1':
+          case 'ffd8ffe2':
+          case 'ffd8ffe3':
+          case 'ffd8ffe8':
+            createErrorState(input, dropTarget)
+            return
+          default:
+            break
+        }
+
+        console.log('asdasdasd')
+
+        fileType.fromBlob(blob).then((res) => {
+          // res should be undefined for non-binary files
+          if (res) {
+            createErrorState(input, dropTarget)
+          }
+        })
+
+        // console.log({ result })
+
+        // dispatch(clearError({ section: name }))
+        // dispatch(
+        //   upload({
+        //     section: name,
+        //     file,
+        //   })
+        // )
+      }
+    }
+
+    filereader.readAsArrayBuffer(blob)
   }
 
   return (
     <div
-      className={`usa-form-group ${file.error ? 'usa-form-group--error' : ''}`}
+      className={`usa-form-group ${
+        currentFile.error ? 'usa-form-group--error' : ''
+      }`}
     >
       <label className="usa-label text-bold" htmlFor={formattedSectionName}>
         Section {sectionNumber} - {sectionName}
       </label>
       <div>
-        {file.error && (
+        {currentFile.error && (
           <div
             className="usa-error-message"
             id={`${formattedSectionName}-error-alert`}
             role="alert"
           >
-            {file.error.message}
+            {currentFile.error.message}
           </div>
         )}
       </div>
@@ -62,6 +168,7 @@ function FileUpload({ section }) {
         {ariaDescription}
       </div>
       <input
+        ref={inputRef}
         onChange={validateAndUploadFile}
         id={formattedSectionName}
         className="usa-file-input"
@@ -69,7 +176,7 @@ function FileUpload({ section }) {
         name={sectionName}
         aria-describedby={`${formattedSectionName}-file`}
         aria-hidden="false"
-        data-errormessage="We can’t process that file format. Please provide a .txt file."
+        data-errormessage="We can’t process that file format. Please provide a plain text file."
       />
     </div>
   )
