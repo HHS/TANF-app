@@ -14,6 +14,8 @@ function Footer() {
                   <a
                     className="usa-footer__primary-link"
                     href="https://www.acf.hhs.gov/privacy-policy"
+                    target="_blank"
+                    rel="noreferrer"
                   >
                     Privacy policy
                   </a>
