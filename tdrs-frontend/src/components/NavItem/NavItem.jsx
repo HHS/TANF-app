@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
  * @param {string} tabTitle - The text that you want displayed
  * on the navigation tab.
  * @param {string} href - The path for where the user should
- * be redirect on click.
+ * be redirected on click.
  */
 function NavItem({ pathname, tabTitle, href }) {
   return (
@@ -15,10 +15,12 @@ function NavItem({ pathname, tabTitle, href }) {
       <a
         href={href}
         key={tabTitle}
-        id={tabTitle.toLowerCase()}
+        // dash-case the tabTitle string (e.g. Data Files => data-files)
+        id={tabTitle.replace(/ /g, '-').toLowerCase()}
         className={`usa-nav__link ${
           pathname.includes(href) ? 'usa-current' : ''
         }`}
+        aria-current={href === pathname ? 'page' : undefined}
       >
         <span>{tabTitle}</span>
       </a>
