@@ -41,7 +41,7 @@ function UploadReport({ handleCancel }) {
 
         <div className="buttonContainer margin-y-4">
           <Button className="card:margin-y-1" type="submit">
-            Submit Files
+            Submit Data Files
           </Button>
           <Button className="cancel" type="button" onClick={handleCancel}>
             Cancel
