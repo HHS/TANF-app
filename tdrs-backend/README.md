@@ -52,6 +52,7 @@ CONTAINER ID        IMAGE                        COMMAND                  CREATE
 c803336c1f61        tdp                          "bash -c 'python wai…"   3 seconds ago       Up 3 seconds                      0.0.0.0:8080->8080/tcp   tdrs-backend_web_1
 20912a347e00        postgres:11.6                "docker-entrypoint.s…"   4 seconds ago       Up 3 seconds                      5432/tcp                 tdrs-backend_postgres_1
 9c3e6c2a88b0        owasp/zap2docker-weekly      "sleep 3600"             4 seconds ago       Up 3 seconds (health: starting)                            tdrs-backend_zaproxy_1
+a64c18db30ed        localstack/localstack:0.12.9 "docker-entrypoint.sh"   2 hours ago         Up 2 hours                        4571/tcp, 0.0.0.0:4566->4566/tcp, 8080/tcp   tdrs-backend_localstack_1
 ```
 
 5.) The backend service will now be available via the following URL: `http://localhost:8080`
@@ -84,6 +85,25 @@ When run within CI context the follow order of inheritance will define environme
   * These must be manually passed in via docker-compose under the `environment` directive, ie. `MY_VAR=${MY_VAR}`
 * Variables defined directly in `docker-compose.yml`
 * Defaults supplied in `tdrs-backend/tdpservice/settings/common.py` (Only **non secret** environment variables, do not commit defaults for any secrets!) 
+
+----
+### Interfacing with AWS S3
+This application supports simulating a fully functional AWS environment by use of the [localstack](https://github.com/localstack/localstack) project.
+
+In order to abstract away implementation logic on when localstack should be used a `get_s3_client` function is exposed that handles determining when to
+route to localstack vs a production AWS environment. This function is exposed globally to the app in `tdpservice/clients.py`.
+
+This is controlled primarily via the environment variable `USE_LOCALSTACK` which gets set to True in local and CI environments.
+Anywhere across the codebase that will reference S3 should use this function instead of boto3.client directly.
+
+Example Usage:
+```
+from tdpservice.clients import get_s3_client
+
+s3_client = get_s3_client()
+
+s3_client.generate_presigned_url(**params)
+```
 
 ----
 ### Code Unit Test, Linting Test, and Vulnerability Scan
