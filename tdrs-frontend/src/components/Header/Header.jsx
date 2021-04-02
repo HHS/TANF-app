@@ -19,13 +19,10 @@ import NavItem from '../NavItem/NavItem'
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
+  const authenticated = useSelector((state) => state.auth.authenticated)
 
   const isSystemAdmin = () => {
-    if (user && user.roles) {
-      return user.roles.some((role) => role.name === 'System Admin')
-    }
-
-    return false
+    return user?.roles?.some((role) => role.name === 'System Admin')
   }
 
   return (
@@ -50,23 +47,31 @@ function HeaderComp() {
               <img src={closeIcon} alt="close" />
             </button>
             <ul className="usa-nav__primary usa-accordion">
-              <NavItem pathname={pathname} tabTitle="Welcome" href="/welcome" />
-              <NavItem
-                pathname={pathname}
-                tabTitle="Data Files"
-                href="/data-files"
-              />
-              <NavItem
-                pathname={pathname}
-                tabTitle="Profile"
-                href="/edit-profile"
-              />
-              {isSystemAdmin() && (
-                <NavItem
-                  pathname={pathname}
-                  tabTitle="Admin"
-                  href={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
-                />
+              {authenticated && (
+                <>
+                  <NavItem
+                    pathname={pathname}
+                    tabTitle="Welcome"
+                    href="/welcome"
+                  />
+                  <NavItem
+                    pathname={pathname}
+                    tabTitle="Data Files"
+                    href="/data-files"
+                  />
+                  <NavItem
+                    pathname={pathname}
+                    tabTitle="Profile"
+                    href="/edit-profile"
+                  />
+                  {isSystemAdmin() && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Admin"
+                      href={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
+                    />
+                  )}
+                </>
               )}
             </ul>
             <div className="usa-nav__secondary">
