@@ -5,6 +5,7 @@ import {
   CLEAR_FILE,
   SET_FILE_ERROR,
   SET_SELECTED_YEAR,
+  SET_SELECTED_STT,
 } from '../actions/reports'
 
 const initialState = {
@@ -30,7 +31,8 @@ const initialState = {
       error: null,
     },
   ],
-  year: 2020,
+  year: '',
+  stt: '',
 }
 
 describe('reducers/reports', () => {
@@ -70,7 +72,8 @@ describe('reducers/reports', () => {
           error: null,
         },
       ],
-      year: 2020,
+      stt: '',
+      year: '',
     })
   })
 
@@ -105,7 +108,8 @@ describe('reducers/reports', () => {
           error: null,
         },
       ],
-      year: 2020,
+      stt: '',
+      year: '',
     })
   })
 
@@ -142,7 +146,8 @@ describe('reducers/reports', () => {
           error: fakeError,
         },
       ],
-      year: 2020,
+      stt: '',
+      year: '',
     })
   })
 
@@ -173,6 +178,7 @@ describe('reducers/reports', () => {
               error: fakeError,
             },
           ],
+          stt: '',
           year: 2020,
         },
         {
@@ -205,11 +211,12 @@ describe('reducers/reports', () => {
           error: null,
         },
       ],
+      stt: '',
       year: 2020,
     })
   })
 
-    it('should handle "SET_SELECTED_STT"', () => {
+  it('should handle "SET_SELECTED_STT"', () => {
     expect(
       reducer(undefined, {
         type: SET_SELECTED_STT,
@@ -218,12 +225,13 @@ describe('reducers/reports', () => {
         },
       })
     ).toEqual({
+      files: initialState.files,
       year: '',
       stt: 'florida',
     })
   })
 
-    it('should handle "SET_SELECTED_YEAR"', () => {
+  it('should handle "SET_SELECTED_YEAR"', () => {
     expect(
       reducer(undefined, {
         type: SET_SELECTED_YEAR,
@@ -232,13 +240,11 @@ describe('reducers/reports', () => {
         },
       })
     ).toEqual({
-            files: initialState.files,
+      files: initialState.files,
       year: '2021',
       stt: '',
     })
   })
-
-
 
   it('should be able to update files with a new value and return those files', () => {
     const state = initialState

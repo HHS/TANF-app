@@ -7,10 +7,7 @@ import Button from '../Button'
 
 import FileUpload from '../FileUpload'
 
-function UploadReport({ handleCancel }) {
-  // The currently selected year from the reportingYears dropdown
-  const selectedYear = useSelector((state) => state.reports.year)
-
+function UploadReport({ handleCancel, header }) {
   // Ensure newly rendered header is focused, else it won't be read be screen readers.
   const headerRef = useRef(null)
 
@@ -31,7 +28,7 @@ function UploadReport({ handleCancel }) {
         className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
         tabIndex="-1"
       >
-        Fiscal Year {selectedYear}
+        {header}
       </h2>
       <form>
         <FileUpload section="1 - Active Case Data" />
@@ -54,6 +51,7 @@ function UploadReport({ handleCancel }) {
 
 UploadReport.propTypes = {
   handleCancel: PropTypes.func.isRequired,
+  header: PropTypes.string.isRequired,
 }
 
 export default UploadReport

@@ -1,12 +1,19 @@
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 
-import { setYear, SET_SELECTED_YEAR, SET_FILE, SET_SELECTED_STT, setStt } from './reports'
+import {
+  setYear,
+  SET_SELECTED_YEAR,
+  SET_FILE,
+  SET_SELECTED_STT,
+  setStt,
+  upload,
+} from './reports'
 
 describe('actions/reports', () => {
   const mockStore = configureStore([thunk])
 
-    it('should dispatch SET_FILE', async () => {
+  it('should dispatch SET_FILE', async () => {
     const store = mockStore()
 
     await store.dispatch(

@@ -32,10 +32,10 @@ function Reports() {
     dispatch(setYear(value))
   }
 
-    // Non-OFA Admin users will be unable to select an STT
+  // Non-OFA Admin users will be unable to select an STT
   // prefer => `auth.user.stt`
 
-    const selectStt = (value) => {
+  const selectStt = (value) => {
     dispatch(setStt(value))
   }
 
@@ -62,18 +62,20 @@ function Reports() {
           >
             Fiscal Year (October - September)
             {/* eslint-disable-next-line */}
-        <select
+              <select
               className="usa-select maxw-mobile"
               name="reportingYears"
               id="reportingYears"
               onChange={handleSelect}
               value={selectedYear}
             >
-               <option value="" disabled hidden>
-            - Select Fiscal Year -
-          </option>
+              <option value="" disabled hidden>
+                - Select Fiscal Year -
+              </option>
               <option value="2020">2020</option>
-              <option data-testid="2021" value="2021">2021</option>
+              <option data-testid="2021" value="2021">
+                2021
+              </option>
             </select>
           </label>
           <Button
@@ -86,7 +88,10 @@ function Reports() {
         </form>
       </div>
       {isUploadReportToggled && (
-        <UploadReport handleCancel={() => setIsToggled(false)} />
+        <UploadReport
+          header={reportHeader}
+          handleCancel={() => setIsToggled(false)}
+        />
       )}
     </>
   )

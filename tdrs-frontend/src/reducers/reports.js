@@ -3,8 +3,8 @@ import {
   CLEAR_FILE,
   SET_FILE_ERROR,
   CLEAR_ERROR,
-  SET_YEAR,
-    SET_SELECTED_STT, SET_SELECTED_YEAR
+  SET_SELECTED_YEAR,
+  SET_SELECTED_STT,
 } from '../actions/reports'
 
 export const getUpdatedFiles = (state, fileName, section, error = null) => {
