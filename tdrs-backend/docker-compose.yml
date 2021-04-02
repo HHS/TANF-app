@@ -5,6 +5,7 @@ services:
   zaproxy:
     image: owasp/zap2docker-weekly
     command: sleep 3600
+
   postgres:
     image: postgres:11.6
     environment:
@@ -12,6 +13,14 @@ services:
       - POSTGRES_PASSWORD=something_secure
       - POSTGRES_DB=tdrs_test
       - POSTGRES_PORT=5432
+
+  clamav-rest:
+    image: ajilaag/clamav-rest:20201028
+    environment:
+      - MAX_FILE_SIZE=200M
+    ports:
+      - "9000:9000"
+
   localstack:
     image: localstack/localstack:0.12.9
     environment:
@@ -21,6 +30,7 @@ services:
       - "4566:4566"
     volumes:
       - localstack_data:/tmp/localstack
+
   web:
     restart: always
     environment:
@@ -36,6 +46,7 @@ services:
       - JWT_KEY=${JWT_KEY}
       - JWT_CERT_TEST=${JWT_CERT_TEST}
       - DJANGO_SU_NAME=${DJANGO_SU_NAME}
+      - AV_SCAN_URL=http://clamav-rest:9000/scan
     volumes:
       - .:/tdpapp
     image: tdp
@@ -50,5 +61,6 @@ services:
     depends_on:
       - postgres
       - localstack
+
 volumes:
   localstack_data:

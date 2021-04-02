@@ -76,6 +76,9 @@ update_backend()
 	   fi
 	fi
 	cf map-route $CGHOSTNAME_BACKEND app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
+
+	# Deploy the latest ClamAV REST server alongside the backend
+	cf push clamav-rest --strategy rolling -f tdrs-backend/manifest.yml
 }
 
 # perform a rolling update for the backend and frontend deployments if specifed,
