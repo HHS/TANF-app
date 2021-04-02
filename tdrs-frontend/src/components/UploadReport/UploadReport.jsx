@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
-// import fileInput from '../../assets/uswds/file-input'
 
 import Button from '../Button'
 
@@ -46,8 +45,8 @@ function UploadReport({ handleCancel }) {
           original_filename: file.fileName,
           slug: file.uuid,
           user: user.id,
-          stt: user.stt.id,
           year: selectedYear,
+          stt: '1',
           quarter: 'Q1',
           section: file.section,
         },

@@ -107,10 +107,10 @@
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
-      "!src/assets/uswds/file-input.js",
       "!src/**/index.js",
       "!src/serviceWorker.js",
       "!src/configureStore.js",
+      "!src/mirage.js",
       "!src/middleware/logger.js"
     ],
     "coverageThreshold": {
