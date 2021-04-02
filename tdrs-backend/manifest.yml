@@ -16,4 +16,4 @@ applications:
   docker:
     image: ajilaag/clamav-rest:20201028
   routes:
-    - rote: clamav-rest.apps.internal
+    - route: clamav-rest.apps.internal
