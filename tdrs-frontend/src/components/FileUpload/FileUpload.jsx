@@ -2,7 +2,7 @@ import React, { useRef } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import fileType from 'file-type/browser'
-import { clearError, upload } from '../../actions/reports'
+import { clearError, clearFile, upload } from '../../actions/reports'
 
 function FileUpload({ section }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
@@ -43,8 +43,6 @@ function FileUpload({ section }) {
       `.${classPrefix}__instructions`
     )
 
-    console.log({ filePreviews, currentPreviewHeading, currentErrorMessage })
-
     // Remove the heading above the previews
     if (currentPreviewHeading) {
       currentPreviewHeading.outerHTML = ''
@@ -56,7 +54,7 @@ function FileUpload({ section }) {
       dropTarget.classList.remove('has-invalid-file')
     }
 
-    // Get rid of existing previews if they exist, show instructions
+    // Get rid of existing previews if they exist, and show instructions
     if (filePreviews !== null) {
       instructions.classList.remove('display-none')
       filePreviews.parentNode.removeChild(filePreviews)
@@ -77,11 +75,15 @@ function FileUpload({ section }) {
   const validateAndUploadFile = async (event) => {
     const { name } = event.target
     const file = event.target.files[0]
+
+    dispatch(clearError({ section: name }))
+    dispatch(clearFile({ section: name }))
+
     const blob = file.slice(0, 4)
 
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
-    console.log({ dropTarget })
+    console.log({ file })
 
     /**
      * Problem:
@@ -116,8 +118,6 @@ function FileUpload({ section }) {
             break
         }
 
-        console.log('asdasdasd')
-
         fileType.fromBlob(blob).then((res) => {
           // res should be undefined for non-binary files
           if (res) {
@@ -125,15 +125,12 @@ function FileUpload({ section }) {
           }
         })
 
-        // console.log({ result })
-
-        // dispatch(clearError({ section: name }))
-        // dispatch(
-        //   upload({
-        //     section: name,
-        //     file,
-        //   })
-        // )
+        dispatch(
+          upload({
+            section: name,
+            file,
+          })
+        )
       }
     }
 

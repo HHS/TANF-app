@@ -6,6 +6,10 @@ export const CLEAR_FILE = 'CLEAR_FILE'
 export const SET_FILE_ERROR = 'SET_FILE_ERROR'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
 
+export const clearFile = ({ section }) => (dispatch) => {
+  dispatch({ type: CLEAR_FILE, payload: { section } })
+}
+
 export const clearError = ({ section }) => (dispatch) => {
   dispatch({ type: CLEAR_ERROR, payload: { section } })
 }
