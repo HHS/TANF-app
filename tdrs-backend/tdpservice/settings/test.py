@@ -17,3 +17,6 @@ class Local(Common):
     EMAIL_HOST = "localhost"
     EMAIL_PORT = 1025
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+    # Always use Localstack during tests
+    USE_LOCALSTACK = True
