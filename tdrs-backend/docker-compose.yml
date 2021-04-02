@@ -12,6 +12,15 @@ services:
       - POSTGRES_PASSWORD=something_secure
       - POSTGRES_DB=tdrs_test
       - POSTGRES_PORT=5432
+  localstack:
+    image: localstack/localstack:0.12.9
+    environment:
+      - SERVICES=s3
+      - DATA_DIR=/tmp/localstack/data
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack_data:/tmp/localstack
   web:
     restart: always
     environment:
@@ -23,6 +32,7 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
+      - USE_LOCALSTACK=1
       - JWT_KEY=${JWT_KEY}
       - JWT_CERT_TEST=${JWT_CERT_TEST}
       - DJANGO_SU_NAME=${DJANGO_SU_NAME}
@@ -39,3 +49,6 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+      - localstack
+volumes:
+  localstack_data:
