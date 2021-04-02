@@ -27,7 +27,7 @@ const Routes = () => {
       <PrivateRoute exact title="Request Submitted" path="/request">
         <Request />
       </PrivateRoute>
-      <PrivateRoute exact title="TANF Reports" path="/reports">
+      <PrivateRoute exact title="TANF Data Files" path="/data-files">
         <Reports />
       </PrivateRoute>
     </Switch>
