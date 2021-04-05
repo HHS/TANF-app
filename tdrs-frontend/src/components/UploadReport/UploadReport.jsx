@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
 
@@ -7,8 +7,6 @@ import Button from '../Button'
 
 import FileUpload from '../FileUpload'
 import axiosInstance from '../../axios-instance'
-import { setAlert } from '../../actions/alert'
-import { ALERT_SUCCESS } from '../Alert'
 
 function UploadReport({ handleCancel }) {
   // The currently selected year from the reportingYears dropdown
@@ -18,7 +16,7 @@ function UploadReport({ handleCancel }) {
   const files = useSelector((state) => state.reports.files)
   const user = useSelector((state) => state.auth.user)
 
-  const dispatch = useDispatch()
+  const [isAlertTriggered, setIsAlertTriggeredState] = useState(false)
 
   // Ensure newly rendered header is focused, else it won't be read be screen readers.
   const headerRef = useRef(null)
@@ -34,13 +32,26 @@ function UploadReport({ handleCancel }) {
     'Stratum Data',
   ]
 
+  const filteredFiles = files.filter((file) => file.fileName)
+  const uploadedSections = filteredFiles
+    .map((file) => fileUploadSections.indexOf(file.section) + 1)
+    .join(', ')
+    .split(' ')
+
+  if (uploadedSections.length > 1) {
+    // This is to ensure the trailing 'and': '1, 2, 3' => '1, 2, and 3'
+    uploadedSections.splice(uploadedSections.length - 1, 0, 'and')
+  }
+
+  const formattedSections = uploadedSections.join(' ')
+
   const onSubmit = async (event) => {
     event.preventDefault()
-    const filteredFiles = files.filter((file) => file.fileName)
 
     const uploadRequests = filteredFiles.map((file) =>
       axiosInstance.post(
-        `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+        // update to `process.env.REACT_APP_BACKEND_URL` and remove mirage route when ready
+        `/mock_api/reports/`,
         {
           original_filename: file.fileName,
           slug: file.uuid,
@@ -54,27 +65,8 @@ function UploadReport({ handleCancel }) {
       )
     )
 
-    const uploadedSections = filteredFiles
-      .map((file) => fileUploadSections.indexOf(file.section) + 1)
-      .join(', ')
-      .split(' ')
-
-    if (uploadedSections.length > 1) {
-      // This is to ensure the trailing 'and': '1, 2, 3' => '1, 2, and 3'
-      uploadedSections.splice(uploadedSections.length - 1, 0, 'and')
-    }
-
-    const formattedSections = uploadedSections.join(' ')
-
     Promise.all(uploadRequests)
-      .then(() =>
-        dispatch(
-          setAlert({
-            heading: `Successfully submitted sections ${formattedSections} on ${new Date().toDateString()}`,
-            type: ALERT_SUCCESS,
-          })
-        )
-      )
+      .then(() => setIsAlertTriggeredState(true))
       .catch((error) => console.error(error))
   }
 
@@ -93,6 +85,16 @@ function UploadReport({ handleCancel }) {
       >
         Fiscal Year {selectedYear}
       </h2>
+      {isAlertTriggered && (
+        <div className="usa-alert usa-alert--success usa-alert--slim">
+          <div className="usa-alert__body" role="alert">
+            <h3 className="usa-alert__heading">
+              Successfully submitted sections: {formattedSections} on
+              {new Date().toDateString()}
+            </h3>
+          </div>
+        </div>
+      )}
       <form onSubmit={onSubmit}>
         {fileUploadSections.map((name, index) => (
           <FileUpload key={name} section={`${index + 1} - ${name}`} />

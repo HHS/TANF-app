@@ -1,4 +1,3 @@
-import axios from 'axios'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 
@@ -8,10 +7,6 @@ describe('actions/reports.js', () => {
   const mockStore = configureStore([thunk])
 
   it('should dispatch SET_FILE', async () => {
-    axios.post.mockImplementationOnce(() =>
-      Promise.resolve({ data: { signed_url: 'www.test.com' } })
-    )
-
     const store = mockStore()
 
     await store.dispatch(
@@ -35,17 +30,10 @@ describe('actions/reports.js', () => {
   })
 
   it('should dispatch SET_FILE_ERROR when there is an error with the post', async () => {
-    axios.post.mockImplementationOnce(() =>
-      Promise.reject(Error({ message: 'something went wrong' }))
-    )
-
     const store = mockStore()
 
     await store.dispatch(
-      upload({
-        file: { name: 'HELLO', type: 'text/plain' },
-        section: 'Active Case Data',
-      })
+      upload({ boop: 'asdasd', section: 'Active Case Data' })
     )
 
     const actions = store.getActions()

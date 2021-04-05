@@ -14,6 +14,7 @@ let server
 
 global.beforeEach(() => {
   server = startMirage({ environment: 'test' })
+  global.mirageServer = server
 })
 
 global.afterEach(() => {

@@ -75,7 +75,7 @@
   "devDependencies": {
     "@testing-library/dom": "^7.21.5",
     "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
+    "@testing-library/react": "^11.2.6",
     "@testing-library/user-event": "^7.1.2",
     "@types/classnames": "^2.2.10",
     "@typescript-eslint/eslint-plugin": "^4.0.0",
@@ -108,6 +108,7 @@
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
       "!src/**/index.js",
+      "!src/utils/createFileInputErrorState.js",
       "!src/serviceWorker.js",
       "!src/configureStore.js",
       "!src/mirage.js",

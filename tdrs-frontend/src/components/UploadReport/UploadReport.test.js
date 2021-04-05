@@ -2,7 +2,7 @@ import React from 'react'
 import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, prettyDOM, render, waitFor } from '@testing-library/react'
 import axios from 'axios'
 
 import UploadReport from './UploadReport'
@@ -142,16 +142,16 @@ describe('UploadReport', () => {
   it('should clear input value if there is an error', () => {
     const store = mockStore(initialState)
     axios.post.mockImplementationOnce(() =>
-      Promise.reject(Error({ message: 'something went wrong' }))
+      Promise.resolve({ data: { id: 1 } })
     )
 
-    const { container } = render(
+    const { getByLabelText } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
     )
 
-    const fileInput = container.querySelector('#active-case-data')
+    const fileInput = getByLabelText('Section 1 - Active Case Data')
 
     const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
     const fileList = [newFile]

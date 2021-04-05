@@ -9,13 +9,7 @@ export default function startMirage(
     routes() {
       this.namespace = 'mock_api'
 
-      this.post('/reports/signed_url/', () => {
-        return {
-          signed_url: '/mock_api/signed_s3_url/',
-        }
-      })
-
-      this.put('/signed_s3_url/', () => {
+      this.post('/reports/', () => {
         return 'Success'
       })
 
