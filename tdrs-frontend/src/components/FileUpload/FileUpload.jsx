@@ -14,18 +14,18 @@ function FileUpload({ section }) {
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
 
-  const currentFile = files.find((file) => sectionName === file.section)
+  const selectedFile = files.find((file) => sectionName === file.section)
 
-  const formattedSectionName = currentFile.section
+  const formattedSectionName = selectedFile.section
     .split(' ')
     .map((word) => word.toLowerCase())
     .join('-')
 
-  const fileName = currentFile?.fileName
+  const fileName = selectedFile?.fileName
   const hasUploadedFile = Boolean(fileName)
 
   const ariaDescription = hasUploadedFile
-    ? `Selected File ${currentFile?.fileName}. To change the selected file, click this button.`
+    ? `Selected File ${selectedFile?.fileName}. To change the selected file, click this button.`
     : `Drag file here or choose from folder.`
 
   const inputRef = useRef(null)
@@ -34,24 +34,21 @@ function FileUpload({ section }) {
     const { name } = event.target
     const file = event.target.files[0]
 
+    // Clear existing errors and the current file in the state if the user is re-uploading
     dispatch(clearError({ section: name }))
     dispatch(clearFile({ section: name }))
 
+    // Get the the first 4 bytes of the file with which to check file signatures
     const blob = file.slice(0, 4)
 
     const input = inputRef.current
     const dropTarget = inputRef.current.parentNode
 
-    /**
-     * Problem:
-     *
-     * Solution:
-     */
-
     const filereader = new FileReader()
 
     filereader.onloadend = (evt) => {
       if (!evt.target.error) {
+        // Read in the file blob "headers: and create a hex string signature
         const uint = new Uint8Array(evt.target.result)
         const bytes = []
         uint.forEach((byte) => {
@@ -61,7 +58,8 @@ function FileUpload({ section }) {
 
         switch (header) {
           // For some reason, fileType.fromBlob won't detect image/png;
-          // Account for this by checking for png and some other file signatures manually.
+          // Account for this by checking for png and some other
+          // file signatures manually.
           case '89504e47':
           case '47494638':
           case 'ffd8ffe0':
@@ -69,19 +67,26 @@ function FileUpload({ section }) {
           case 'ffd8ffe2':
           case 'ffd8ffe3':
           case 'ffd8ffe8':
+            // reject the file and create an error message
             createFileInputErrorState(input, dropTarget)
             return
           default:
             break
         }
 
+        // file-type should detect and return values for most other
+        // known binary files
         fileType.fromBlob(blob).then((res) => {
           // res should be undefined for non-binary files
           if (res) {
+            // reject the file and create an error message
+
             createFileInputErrorState(input, dropTarget)
           }
         })
 
+        // At this point we can reasonably conclude the file is a text file.
+        // Add the file to the redux state
         dispatch(
           upload({
             section: name,
@@ -97,20 +102,20 @@ function FileUpload({ section }) {
   return (
     <div
       className={`usa-form-group ${
-        currentFile.error ? 'usa-form-group--error' : ''
+        selectedFile.error ? 'usa-form-group--error' : ''
       }`}
     >
       <label className="usa-label text-bold" htmlFor={formattedSectionName}>
         Section {sectionNumber} - {sectionName}
       </label>
       <div>
-        {currentFile.error && (
+        {selectedFile.error && (
           <div
             className="usa-error-message"
             id={`${formattedSectionName}-error-alert`}
             role="alert"
           >
-            {currentFile.error.message}
+            {selectedFile.error.message}
           </div>
         )}
       </div>

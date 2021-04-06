@@ -20,10 +20,8 @@ axios.defaults.withCredentials = true
 const store = configureStore()
 store.dispatch(fetchAuth())
 
-if (process.env.NODE_ENV === 'development') {
-  // Start the mirage server to stub some backend endpoints when running locally
-  startMirage()
-}
+// Start the mirage server to stub some backend endpoints when running locally
+startMirage()
 
 ReactDOM.render(
   <Provider store={store}>

@@ -47,7 +47,7 @@ export const validation = (fieldName, fieldValue) => {
  *
  * EditProfile renders a form for a user to request access to the application.
  * There is an input for first and last name and a combo box to select
- * an associated STT.
+ *  an associated STT.
  */
 
 function EditProfile() {

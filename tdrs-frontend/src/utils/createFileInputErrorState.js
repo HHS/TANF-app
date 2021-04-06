@@ -2,6 +2,8 @@
  * This utility function is mainly used to manually trigger the respective error classes
  * and cleanup the markup around the USWDS file input component used in FileUpload.jsx
  *
+ * This mostly is copied from file-input.js in uswds with some conveniences for our use case.
+ *
  * @param {HTMLElement} input
  * @param {HTMLElement} dropTarget
  */
