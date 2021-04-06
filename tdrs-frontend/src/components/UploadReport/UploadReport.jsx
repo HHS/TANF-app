@@ -89,7 +89,7 @@ function UploadReport({ handleCancel }) {
         <div className="usa-alert usa-alert--success usa-alert--slim">
           <div className="usa-alert__body" role="alert">
             <h3 className="usa-alert__heading">
-              Successfully submitted sections: {formattedSections} on
+              Successfully submitted sections: {formattedSections} on{' '}
               {new Date().toDateString()}
             </h3>
           </div>
