@@ -40,7 +40,8 @@
   "resolutions": {
     "lodash": "^4.17.20",
     "bl": "^4.0.3",
-    "node-forge": "0.10.0"
+    "node-forge": "0.10.0",
+    "ssri": "8.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
