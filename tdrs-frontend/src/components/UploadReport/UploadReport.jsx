@@ -83,7 +83,7 @@ function UploadReport({ handleCancel }) {
         className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
         tabIndex="-1"
       >
-        Fiscal Year {selectedYear}
+        {selectedYear}
       </h2>
       {isAlertTriggered && (
         <div className="usa-alert usa-alert--success usa-alert--slim">
