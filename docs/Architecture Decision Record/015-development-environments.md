@@ -47,3 +47,6 @@ _In order to get here, the following tasks will have to be completed_
   - For all branches other than raft-tdp-main and HHS:main deploy to a distinct app 
 - Move vendor staging to new staging space/domain
 - Update merge to `raft-tdp-main` to deploy to staging and not any development environment
+
+Time estimate for development: 4-6 hours
+Story Points: 2
