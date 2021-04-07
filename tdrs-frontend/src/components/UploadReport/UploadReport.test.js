@@ -80,7 +80,8 @@ describe('UploadReport', () => {
   })
 
   it('should render a div with class "usa-form-group--error" if there is an error', () => {
-    // Recreate the store with the intial state, except add an `error` object to one of the files.
+    // Recreate the store with the intial state, except add an `error`
+    // object to one of the files.
     const store = mockStore({
       ...initialState,
       reports: {
@@ -115,26 +116,27 @@ describe('UploadReport', () => {
         ],
       },
     })
-    render(
+
+    const { container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
     )
 
-    const formGroup = document.querySelector('.usa-form-group')
+    const formGroup = container.querySelector('.usa-form-group')
 
     expect(formGroup.classList.contains('usa-form-group--error')).toBeTruthy()
   })
 
   it('should render a div without class "usa-form-group--error" if there is NOT an error', () => {
     const store = mockStore(initialState)
-    render(
+    const { container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
     )
 
-    const formGroup = document.querySelector('.usa-form-group')
+    const formGroup = container.querySelector('.usa-form-group')
 
     expect(formGroup.classList.contains('usa-form-group--error')).toBeFalsy()
   })

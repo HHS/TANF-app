@@ -2,8 +2,16 @@ import React, { useRef } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import fileType from 'file-type/browser'
-import { clearError, clearFile, upload } from '../../actions/reports'
+import {
+  clearError,
+  clearFile,
+  SET_FILE_ERROR,
+  upload,
+} from '../../actions/reports'
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
+
+const INVALID_FILE_ERROR =
+  'We can’t process that file format. Please provide a plain text file.'
 
 function FileUpload({ section }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
@@ -69,6 +77,14 @@ function FileUpload({ section }) {
           case 'ffd8ffe8':
             // reject the file and create an error message
             createFileInputErrorState(input, dropTarget)
+
+            dispatch({
+              type: SET_FILE_ERROR,
+              payload: {
+                error: { message: INVALID_FILE_ERROR },
+                section: name,
+              },
+            })
             return
           default:
             break
@@ -80,8 +96,15 @@ function FileUpload({ section }) {
           // res should be undefined for non-binary files
           if (res) {
             // reject the file and create an error message
-
             createFileInputErrorState(input, dropTarget)
+
+            dispatch({
+              type: SET_FILE_ERROR,
+              payload: {
+                error: { message: INVALID_FILE_ERROR },
+                section: name,
+              },
+            })
           }
         })
 
@@ -135,7 +158,7 @@ function FileUpload({ section }) {
         name={sectionName}
         aria-describedby={`${formattedSectionName}-file`}
         aria-hidden="false"
-        data-errormessage="We can’t process that file format. Please provide a plain text file."
+        data-errormessage={INVALID_FILE_ERROR}
       />
     </div>
   )
