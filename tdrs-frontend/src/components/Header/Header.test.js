@@ -4,11 +4,11 @@ import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 
+import { render } from '@testing-library/react'
 import Header from './Header'
-import auth from '../../reducers/auth'
 
 describe('Header', () => {
-  let initialState = {
+  const initialState = {
     router: { location: { pathname: '/edit-profile' } },
     auth: {
       user: {
@@ -85,9 +85,9 @@ describe('Header', () => {
     const store = mockStore({
       ...initialState,
       auth: {
-        ...initialState.auth,
+        authenticated: true,
         user: {
-          ...initialState.user,
+          email: 'test@test.com',
           roles: [{ id: 2, name: 'Data Prepper', permissions: [] }],
         },
       },
@@ -176,8 +176,8 @@ describe('Header', () => {
   })
 
   it("should not add usa-current class to Welcome tab when not on '/'", () => {
-    initialState = { ...initialState, router: { location: { pathname: '/' } } }
-    const store = mockStore(initialState)
+    const state = { ...initialState, router: { location: { pathname: '/' } } }
+    const store = mockStore(state)
     const wrapper = mount(
       <Provider store={store}>
         <Header />
@@ -227,11 +227,11 @@ describe('Header', () => {
   })
 
   it('should have one visible secondaryItem when user is logged out', () => {
-    initialState = {
+    const state = {
       ...initialState,
       auth: { user: {}, authenticated: false },
     }
-    const store = mockStore(initialState)
+    const store = mockStore(state)
     const wrapper = mount(
       <Provider store={store}>
         <Header />
@@ -242,5 +242,25 @@ describe('Header', () => {
 
     expect(secondaryLinks.first().hasClass('display-none')).toBeTruthy()
     expect(secondaryLinks.last().text()).toEqual('Sign In')
+  })
+
+  it('should NOT show any nav items when the user is NOT logged in', () => {
+    const state = {
+      ...initialState,
+      auth: { user: {}, authenticated: false },
+    }
+
+    const store = mockStore(state)
+
+    const { queryByText } = render(
+      <Provider store={store}>
+        <Header />
+      </Provider>
+    )
+
+    expect(queryByText('Welcome')).not.toBeInTheDocument()
+    expect(queryByText('Data Files')).not.toBeInTheDocument()
+    expect(queryByText('Profile')).not.toBeInTheDocument()
+    expect(queryByText('Admin')).not.toBeInTheDocument()
   })
 })
