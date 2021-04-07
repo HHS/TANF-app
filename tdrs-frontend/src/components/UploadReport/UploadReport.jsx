@@ -3,10 +3,12 @@ import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
 
+import classNames from 'classnames'
 import Button from '../Button'
 
 import FileUpload from '../FileUpload'
 import axiosInstance from '../../axios-instance'
+import { SET_FILE_ERROR } from '../../actions/reports'
 
 function UploadReport({ handleCancel }) {
   // The currently selected year from the reportingYears dropdown
@@ -14,9 +16,14 @@ function UploadReport({ handleCancel }) {
 
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.files)
+  // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
 
-  const [isAlertTriggered, setIsAlertTriggeredState] = useState(false)
+  const [localAlert, setlocalAlertState] = useState({
+    active: false,
+    type: null,
+    message: null,
+  })
 
   // Ensure newly rendered header is focused, else it won't be read be screen readers.
   const headerRef = useRef(null)
@@ -48,9 +55,19 @@ function UploadReport({ handleCancel }) {
   const onSubmit = async (event) => {
     event.preventDefault()
 
+    if (filteredFiles.length === 0) {
+      setlocalAlertState({
+        active: true,
+        type: 'error',
+        message: 'No changes have been made to data files',
+      })
+      return
+    }
+
     const uploadRequests = filteredFiles.map((file) =>
       axiosInstance.post(
-        // update to `process.env.REACT_APP_BACKEND_URL` and remove mirage route when ready
+        // update to `process.env.REACT_APP_BACKEND_URL` and
+        // remove mirage route when ready
         `/mock_api/reports/`,
         {
           original_filename: file.fileName,
@@ -66,7 +83,13 @@ function UploadReport({ handleCancel }) {
     )
 
     Promise.all(uploadRequests)
-      .then(() => setIsAlertTriggeredState(true))
+      .then(() =>
+        setlocalAlertState({
+          active: true,
+          type: 'success',
+          message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
+        })
+      )
       .catch((error) => console.error(error))
   }
 
@@ -85,13 +108,14 @@ function UploadReport({ handleCancel }) {
       >
         {selectedYear}
       </h2>
-      {isAlertTriggered && (
-        <div className="usa-alert usa-alert--success usa-alert--slim">
+      {localAlert.active && (
+        <div
+          className={classNames('usa-alert usa-alert--slim', {
+            [`usa-alert--${localAlert.type}`]: true,
+          })}
+        >
           <div className="usa-alert__body" role="alert">
-            <h3 className="usa-alert__heading">
-              Successfully submitted sections: {formattedSections} on{' '}
-              {new Date().toDateString()}
-            </h3>
+            <p className="usa-alert__text">{localAlert.message}</p>
           </div>
         </div>
       )}
