@@ -6,6 +6,7 @@ import { fileInput } from 'uswds/src/js/components'
 import Button from '../Button'
 
 import FileUpload from '../FileUpload'
+import axiosInstance from '../../axios-instance'
 
 function UploadReport({ handleCancel }) {
   // The currently selected year from the reportingYears dropdown
@@ -23,6 +24,16 @@ function UploadReport({ handleCancel }) {
     // initial render for it to load properly
     fileInput.init()
   }, [])
+
+  const log = async () => {
+    await axiosInstance.post(
+      `${process.env.REACT_APP_BACKEND_URL}/logs/`,
+      {
+        someKey: 'asdasdasd ',
+      },
+      { withCredentials: true }
+    )
+  }
 
   return (
     <>
@@ -45,6 +56,9 @@ function UploadReport({ handleCancel }) {
           </Button>
           <Button className="cancel" type="button" onClick={handleCancel}>
             Cancel
+          </Button>
+          <Button className="cancel" type="button" onClick={log}>
+            Cancel2
           </Button>
         </div>
       </form>
