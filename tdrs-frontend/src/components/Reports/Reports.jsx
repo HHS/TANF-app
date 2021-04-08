@@ -17,8 +17,11 @@ import STTComboBox from '../STTComboBox'
  * `Search` to begin uploading files for that year.
  */
 function Reports() {
+  // The selected year in the dropdown tied to our redux `reports` state object
   const selectedYear = useSelector((state) => state.reports.year)
+  // The selected stt in the dropdown tied to our redux `reports` state object
   const selectedStt = useSelector((state) => state.reports.stt)
+  // The logged in user saved in our redux `auth` state object
   const user = useSelector((state) => state.auth.user)
   const isOFAAdmin =
     user && user.roles.some((role) => role.name === 'OFA Admin')
