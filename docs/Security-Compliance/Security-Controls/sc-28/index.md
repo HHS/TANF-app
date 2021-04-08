@@ -11,6 +11,6 @@ SC-28 [confidentiality AND integrity]
 
 ### TDP Implementation
 
-TDP will store sensitive information in cloud.gov S3 buckets, which are encrypted by default with [AES-256](https://www.idera.com/glossary/aes-256-bit-encryption) encryption.
+TDP stores sensitive information in cloud.gov S3 buckets, which are encrypted by default with [AES-256](https://www.idera.com/glossary/aes-256-bit-encryption) encryption.
 	
 #### Related Files
