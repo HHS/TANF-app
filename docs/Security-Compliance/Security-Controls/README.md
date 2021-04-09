@@ -22,7 +22,7 @@
 
 ### Risk Assessment
 
-1. [ra-5](ra-5/index.md]
+1. [ra-5](ra-5/index.md)
 
 ### System and Communications Protection
 
