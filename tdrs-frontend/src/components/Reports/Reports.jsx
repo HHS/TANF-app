@@ -102,7 +102,7 @@ function Reports() {
               <option value="Q1">Quarter 1 (October - December)</option>
               <option value="Q2">Quarter 2 (January - March)</option>
               <option value="Q3">Quarter 3 (April - June)</option>
-              <option value="Q4">Quarter 4 (July-September)</option>
+              <option value="Q4">Quarter 4 (July - September)</option>
             </select>
           </label>
           <Button className="margin-y-4" type="button" onClick={handleSearch}>
