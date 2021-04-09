@@ -11,12 +11,12 @@ _faker = faker.Faker()
 
 @pytest.fixture
 def fake_file_name():
-    """A random but valid filename ending in .txt"""
+    """Generate a random, but valid file name ending in .txt."""
     return _faker.file_name(extension='txt')
 
 
 @pytest.fixture
-def fake_file(fake_file_name):
+def fake_file():
     """Generate an in-memory file-like object with random contents."""
     return StringIO(_faker.sentence())
 
