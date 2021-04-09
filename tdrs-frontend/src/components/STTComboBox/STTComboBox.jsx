@@ -24,7 +24,7 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
     <ComboBox
       name="stt"
       label="Associated State, Tribe, or Territory"
-      error={error}
+      error={error ? 'An state, tribe, or territory is required' : undefined}
       handleSelect={selectStt}
       selected={selectedStt}
       handleBlur={handleBlur}
