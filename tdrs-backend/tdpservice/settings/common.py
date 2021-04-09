@@ -161,7 +161,6 @@ class Common(Configuration):
     USE_TZ = True
     LOGIN_URL = "/v1/login/oidc"
     LOGIN_REDIRECT_URL = "/"
-    FRONTEND_URL = os.getenv("FRONTEND_BASE_URL")
 
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/2.0/howto/static-files/

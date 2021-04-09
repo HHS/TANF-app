@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect
 from django.utils import timezone
-from django.conf import settings
 
 import jwt
 import requests
@@ -96,11 +95,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
-            return HttpResponseRedirect(settings.FRONTEND_URL)
+            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
 
         if state is None:
             logger.info("Redirecting call to main page. No state provided.")
-            return HttpResponseRedirect(settings.FRONTEND_URL)
+            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
 
         # get the validation keys to confirm generated nonce and state
         nonce_and_state = get_nonce_and_state(request.session)
