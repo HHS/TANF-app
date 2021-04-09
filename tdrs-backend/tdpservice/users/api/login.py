@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect
 from django.utils import timezone
+from django.conf import settings
 
 import jwt
 import requests
@@ -24,6 +25,12 @@ from .utils import (
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+
+class InactiveUser(Exception):
+    """Inactive User Error Handler."""
+
+    pass
 
 
 class TokenAuthorizationOIDC(ObtainAuthToken):
@@ -59,8 +66,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = CustomAuthentication.authenticate(
             self, username=decoded_payload["email"]
         )
-        if user is not None:
+
+        if user and user.is_active:
             self.login_user(request, user, "User Found")
+        elif user and not user.is_active:
+            raise InactiveUser(f'Error: Inactive User Attempting Login {user.username}')
         else:
             User = get_user_model()
             user = User.objects.create_user(decoded_payload["email"])
@@ -86,11 +96,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
-            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
+            return HttpResponseRedirect(settings.FRONTEND_URL)
 
         if state is None:
             logger.info("Redirecting call to main page. No state provided.")
-            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
+            return HttpResponseRedirect(settings.FRONTEND_URL)
 
         # get the validation keys to confirm generated nonce and state
         nonce_and_state = get_nonce_and_state(request.session)
@@ -137,6 +147,15 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         try:
             user = self.handle_user(request, id_token, decoded_payload)
             return response_redirect(user, id_token)
+
+        except InactiveUser as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         except Exception as e:
             logger.exception(f"Error attempting to login/register user:  {e} at...")
