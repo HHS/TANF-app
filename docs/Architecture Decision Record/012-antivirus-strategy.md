@@ -14,6 +14,8 @@ Our original plan was to upload files to S3 using signed URLs from S3, and check
 
 Instead of using a signed URL and sending the file directly to S3, we will instead send the file to the backend and scan it with Clam AV before sending it to S3. In the event there is a virus, we will destroy the file on the backend immediately and return an error to the frontend. 
 
+By using the [ClamAV REST server](https://github.com/ajilaag/clamav-rest) implementation we are able to scan files for viruses and malicious behavior. Additionally, Anti-Virus definitions are kept up to date automatically by use of the included [freshclam](https://www.clamav.net/documents/signature-testing-and-management#freshclam) tool which automatically downloads and updates an internal database of virus signatures using the official ClamAV source.
+
 In addition to this, the frontend is able to reliably determine if a file is a binary file. The client will check submitted files for this and immediately return an error to the user. These files will not be sent to the backend.
 
 ## Consequences
