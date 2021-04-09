@@ -59,8 +59,9 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      - clamav-rest
       - localstack
+      - postgres
 
 volumes:
   localstack_data:
