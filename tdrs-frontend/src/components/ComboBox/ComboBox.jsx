@@ -31,7 +31,9 @@ const ComboBox = ({
   useEffect(() => {
     // The combo box was not rendering as a combo box without this line
     comboBox.init()
+  }, [])
 
+  useEffect(() => {
     const input = document.querySelector('.usa-combo-box__input')
     if (input) {
       if (error) {

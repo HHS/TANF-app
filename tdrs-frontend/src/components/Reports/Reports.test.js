@@ -1,17 +1,38 @@
 import React from 'react'
 import { mount } from 'enzyme'
+import { render, fireEvent } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
-import { render, fireEvent } from '@testing-library/react'
 import Reports from './Reports'
 import Button from '../Button'
 
 describe('Reports', () => {
   const initialState = {
     reports: {
-      file: null,
+      files: [
+        {
+          section: 'Active Case Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Closed Case Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Aggregate Data',
+          fileName: null,
+          error: null,
+        },
+        {
+          section: 'Stratum Data',
+          fileName: null,
+          error: null,
+        },
+      ],
       error: null,
       year: '',
       stt: '',
@@ -51,7 +72,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year')
+    const select = getByLabelText('Fiscal Year (October - September)')
 
     expect(select).toBeInTheDocument()
 
@@ -116,7 +137,7 @@ describe('Reports', () => {
 
     expect(sttDropdown.value).toEqual('alaska')
 
-    const yearsDropdown = getByLabelText('Fiscal Year')
+    const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
 
     fireEvent.select(yearsDropdown, {
       target: { value: '2021' },
@@ -125,28 +146,60 @@ describe('Reports', () => {
     expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
   })
 
-  it('should change route to `/reports/:year/upload` on click of `Begin Report` button', () => {
-    const store = mockStore({
-      ...initialState,
-      reports: {
-        file: null,
-        error: null,
-        year: '2020',
-        stt: '',
-      },
-    })
-    const wrapper = mount(
+  it('should render the UploadReports form when a year is selected and Search button is clicked', () => {
+    const store = mockStore(initialState)
+
+    const { getByText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
 
-    const beginButton = wrapper.find(Button)
+    fireEvent.click(getByText(/Search/))
 
-    expect(beginButton).toExist()
+    expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
+    expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
+    expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+  })
 
-    beginButton.simulate('click')
+  it('should de-render the UploadReports form after it has been toggled but the year is changed', () => {
+    const store = mockStore(initialState)
 
-    expect(window.location.href.includes('/reports/2020/upload')).toBeTruthy()
+    const { getByText, getByLabelText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/))
+
+    const select = getByLabelText('Fiscal Year (October - September)')
+
+    fireEvent.change(select, {
+      target: {
+        value: 2021,
+      },
+    })
+
+    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+  })
+
+  it('should de-render when Cancel is clicked', () => {
+    const store = mockStore(initialState)
+
+    const { getByText, queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/))
+
+    expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+
+    fireEvent.click(getByText(/Cancel/))
+
+    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
   })
 })
