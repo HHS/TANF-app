@@ -1,0 +1,3 @@
+## Boundary Diagram
+
+![](diagram.png)
