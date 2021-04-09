@@ -14,11 +14,11 @@ import STTComboBox from '../STTComboBox'
  * `Search` to begin uploading files for that year.
  */
 function Reports() {
-  // The selected year in the dropdown tied to our redux `reports` state object
+  // The selected year in the dropdown tied to our redux `reports` state
   const selectedYear = useSelector((state) => state.reports.year)
-  // The selected stt in the dropdown tied to our redux `reports` state object
+  // The selected stt in the dropdown tied to our redux `reports` state
   const selectedStt = useSelector((state) => state.reports.stt)
-  // The selected quarter in the dropdown tied to our redux `reports` state object
+  // The selected quarter in the dropdown tied to our redux `reports` state
   const selectedQuarter = useSelector((state) => state.reports.quarter)
   // The logged in user saved in our redux `auth` state object
   const user = useSelector((state) => state.auth.user)
@@ -29,17 +29,33 @@ function Reports() {
   const dispatch = useDispatch()
   const [isUploadReportToggled, setIsToggled] = useState(false)
 
+  const [formHasErrors, setFormErrors] = useState(false)
+  const toggleFormErrors = () => {
+    setFormErrors((prevState) => !prevState)
+  }
+
   const selectYear = ({ target: { value } }) => {
     setIsToggled(false)
     dispatch(setYear(value))
   }
 
   const handleSearch = () => {
-    setIsToggled(true)
+    const isFormComplete = Boolean(
+      selectedYear && selectedStt && selectedQuarter
+    )
+
+    if (isFormComplete) {
+      setIsToggled(true)
+    } else {
+      // create error state
+      console.log('You stupid fuck')
+      setFormErrors(true)
+    }
   }
 
-  const selectQuarter = ({ target: { value } }) => dispatch(setQuarter(value))
-
+  const selectQuarter = ({ target: { value } }) => {
+    dispatch(setQuarter(value))
+  }
   // Non-OFA Admin users will be unable to select an STT
   // prefer => `auth.user.stt`
 
@@ -60,15 +76,29 @@ function Reports() {
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
         <form>
           {isOFAAdmin && (
-            <div className="usa-form-group maxw-mobile">
-              <STTComboBox selectedStt={selectedStt} selectStt={selectStt} />
+            <div className="usa-form-group maxw-mobile margin-top-4">
+              <STTComboBox
+                selectedStt={selectedStt}
+                selectStt={selectStt}
+                error={formHasErrors && !selectedStt}
+              />
             </div>
           )}
+
           <label
             className="usa-label text-bold margin-top-4"
             htmlFor="reportingYears"
           >
             Fiscal Year (October - September)
+            {formHasErrors && !selectedYear && (
+              <div
+                className="usa-error-message"
+                id="years-error-alert"
+                role="alert"
+              >
+                A fiscal year is required
+              </div>
+            )}
             {/* eslint-disable-next-line */}
               <select
               className="usa-select maxw-mobile"
@@ -86,8 +116,18 @@ function Reports() {
               </option>
             </select>
           </label>
+
           <label className="usa-label text-bold margin-top-4" htmlFor="quarter">
             Quarter
+            {formHasErrors && !selectedQuarter && (
+              <div
+                className="usa-error-message"
+                id="quarter-error-alert"
+                role="alert"
+              >
+                A quarter is required
+              </div>
+            )}
             {/* eslint-disable-next-line */}
             <select
               className="usa-select maxw-mobile"
