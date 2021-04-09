@@ -1,3 +1,4 @@
+"""Integration test(s) for clamav-rest operations."""
 from io import StringIO
 import pytest
 import requests
@@ -32,4 +33,4 @@ def test_clamav_accepts_files(fake_file, fake_file_name):
         files={'file': fake_file},
         data={'name': fake_file_name}
     )
-    assert response.status_code == 200
+    assert response.status_code == 200  # ClamAV returns 200 for a "clean" file
