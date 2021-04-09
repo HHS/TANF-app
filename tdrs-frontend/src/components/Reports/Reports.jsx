@@ -8,9 +8,6 @@ import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
 
 /**
- * @param {string} selectedYear = The year that the user has chosen from the
- * Select component.
- *
  * Reports is the home page for users to file a report.
  * The user can select a year
  * for the report that they would like to upload and then click on
@@ -33,6 +30,10 @@ function Reports() {
   const handleSelect = ({ target: { value } }) => {
     setIsToggled(false)
     dispatch(setYear(value))
+  }
+
+  const handleSearch = () => {
+    setIsToggled(true)
   }
 
   // Non-OFA Admin users will be unable to select an STT
@@ -81,11 +82,7 @@ function Reports() {
               </option>
             </select>
           </label>
-          <Button
-            className="margin-y-4"
-            type="button"
-            onClick={() => setIsToggled(true)}
-          >
+          <Button className="margin-y-4" type="button" onClick={handleSearch}>
             Search
           </Button>
         </form>

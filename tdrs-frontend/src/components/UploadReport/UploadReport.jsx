@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react'
-import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
 
@@ -8,7 +7,8 @@ import Button from '../Button'
 import FileUpload from '../FileUpload'
 
 function UploadReport({ handleCancel, header }) {
-  // Ensure newly rendered header is focused, else it won't be read be screen readers.
+  // Ensure newly rendered header is focused, else it
+  // won't be read be screen readers.
   const headerRef = useRef(null)
 
   useEffect(() => {
