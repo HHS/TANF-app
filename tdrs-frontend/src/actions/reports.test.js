@@ -2,14 +2,14 @@ import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 
 import {
-  setYear,
   SET_SELECTED_YEAR,
   SET_FILE,
   SET_SELECTED_STT,
+  SET_SELECTED_QUARTER,
+  setQuarter,
   setStt,
+  setYear,
   upload,
-    setQuarter,
-SET_SELECTED_QUARTER,
 } from './reports'
 
 describe('actions/reports', () => {

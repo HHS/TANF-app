@@ -6,7 +6,7 @@ import {
   SET_FILE_ERROR,
   SET_SELECTED_YEAR,
   SET_SELECTED_STT,
-    SET_SELECTED_QUARTER,
+  SET_SELECTED_QUARTER,
 } from '../actions/reports'
 
 const initialState = {
@@ -264,9 +264,11 @@ describe('reducers/reports', () => {
   })
 
   it('should be able to update files with a new value and return those files', () => {
-    const state = initialState
-
-    const updatedFiles = getUpdatedFiles(state, 'Test.txt', 'Active Case Data')
+    const updatedFiles = getUpdatedFiles(
+      initialState,
+      'Test.txt',
+      'Active Case Data'
+    )
 
     expect(updatedFiles).toStrictEqual([
       {

@@ -3,7 +3,6 @@ import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { fireEvent, render } from '@testing-library/react'
-import axios from 'axios'
 
 import UploadReport from './UploadReport'
 
@@ -75,7 +74,8 @@ describe('UploadReport', () => {
   })
 
   it('should render a div with class "usa-form-group--error" if there is an error', () => {
-    // Recreate the store with the intial state, except add an `error` object to one of the files.
+    // Recreate the store with the initial state, except add an `error`
+    // object to one of the files.
     const store = mockStore({
       ...initialState,
       reports: {
