@@ -69,7 +69,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         if user and user.is_active:
             self.login_user(request, user, "User Found")
         elif user and not user.is_active:
-            raise InactiveUser(f'Login failed, user account is inactive: {user.username}')
+            raise InactiveUser(
+                f'Login failed, user account is inactive: {user.username}'
+            )
         else:
             User = get_user_model()
             user = User.objects.create_user(decoded_payload["email"])
