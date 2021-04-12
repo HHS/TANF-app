@@ -16,7 +16,7 @@ We had originally implemented pre-signed URLs for downloading files because the 
 
 We believe the use of time/IP address limited signed URLs is a reasonably secure approach to downloading files from S3. However, we also believe that it may cause issues with our ATO approval as the data is highly sensitive. Furthermore, 18F published a recommendation today, [recommending to not use pre-signed URLs](https://engineering.18f.gov/security/cloud-services/) for FISMA High projects.
 
-In our investigation we discovered a way that we can securely download the files from the backend while streaming the files directly from S3 to the client, taking any pressure off of resources needed for parsing files on the backend. 
+In our investigation we discovered a way that we can [ecurely download the files from the backend while [streaming the files](https://github.com/jschneier/django-storages/blob/master/storages/backends/s3boto3.py#L83) directly from S3 to the client, taking any pressure off of resources needed for parsing files on the backend. 
 
 In light of these facts we have decided to shift our efforts to download files from the backend.
 
