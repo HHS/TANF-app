@@ -1,6 +1,6 @@
-<mxfile modified="2021-04-12T17:33:35.801Z" host="app.diagrams.net" agent="5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36" etag="cMU3xl_kCe0N34_A4Hgh" version="14.5.10" type="github">
+<mxfile modified="2021-04-12T18:16:34.898Z" host="app.diagrams.net" agent="5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36" etag="ttSn_P3-v9Jize0rQ5E1" version="14.5.10" type="github">
   <diagram id="joxKfAUvZ1GzhVLKwL1J" name="Network Design">
-    <mxGraphModel dx="759" dy="499" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="803" dy="537" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -11,10 +11,10 @@
           <mxGeometry x="270" y="430" width="470" height="690" as="geometry" />
         </mxCell>
         <mxCell id="QzKXCY8GYKlgsEN4Nh85-55" value="" style="rounded=1;arcSize=18;dashed=1;strokeColor=#ff0000;fillColor=none;gradientColor=none;dashPattern=8 4;strokeWidth=4;fontColor=#000000;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;connectable=1;" parent="1" vertex="1">
-          <mxGeometry x="350" y="640" width="340" height="450" as="geometry" />
+          <mxGeometry x="320" y="640" width="380" height="460" as="geometry" />
         </mxCell>
         <mxCell id="iA-LfhA7wfivf__Mqdaw-14" value="&lt;font color=&quot;#ff0000&quot;&gt;Isolated Production cloud.gov Space&lt;br&gt;&lt;/font&gt;" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_vpc;strokeColor=#248814;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#AAB7B8;dashed=0;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;connectable=1;strokeWidth=5;" parent="1" vertex="1">
-          <mxGeometry x="377.75" y="670" width="272.25" height="230" as="geometry" />
+          <mxGeometry x="380" y="670" width="280" height="230" as="geometry" />
         </mxCell>
         <mxCell id="iA-LfhA7wfivf__Mqdaw-48" value="Commit Code" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6C8EBF;" parent="1" source="QzKXCY8GYKlgsEN4Nh85-24" target="iA-LfhA7wfivf__Mqdaw-43" edge="1">
           <mxGeometry x="0.7757" relative="1" as="geometry">
@@ -152,7 +152,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="XUrn47uTPDeKOQUj5lta-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="iA-LfhA7wfivf__Mqdaw-14" target="fAXEoHdD-FQfSCv90Svo-3">
+        <mxCell id="XUrn47uTPDeKOQUj5lta-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="rVX_8A2fTbSxbzOPcYSw-11" target="fAXEoHdD-FQfSCv90Svo-3">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="440" y="911" />
@@ -161,7 +161,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="rVX_8A2fTbSxbzOPcYSw-11" value="&lt;span style=&quot;color: rgb(0 , 0 , 0)&quot;&gt;AnitVirus API&lt;/span&gt;&lt;br style=&quot;color: rgb(0 , 0 , 0)&quot;&gt;&lt;span style=&quot;color: rgb(0 , 0 , 0)&quot;&gt;Application&lt;/span&gt;" style="outlineConnect=0;fontColor=#232F3E;gradientColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.container_2;strokeColor=#007FFF;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="415" y="790.9999999999999" width="60" height="60" as="geometry" />
+          <mxGeometry x="410" y="791" width="65" height="65" as="geometry" />
         </mxCell>
         <mxCell id="XUrn47uTPDeKOQUj5lta-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=#A8A8A8;" edge="1" parent="1" source="wMVF6Ftdtufdl3YfwQ66-36" target="wMVF6Ftdtufdl3YfwQ66-36">
           <mxGeometry relative="1" as="geometry" />
