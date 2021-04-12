@@ -30,8 +30,12 @@ function Reports() {
   const [isUploadReportToggled, setIsToggled] = useState(false)
 
   const [formHasErrors, setFormErrors] = useState(false)
-  const toggleFormErrors = () => {
-    setFormErrors((prevState) => !prevState)
+
+  const quarters = {
+    Q1: 'Quarter 1 (October - December)',
+    Q2: 'Quarter 2 (January - March)',
+    Q3: 'Quarter 3 (April - June)',
+    Q4: 'Quarter 4 (July - September)',
   }
 
   const selectYear = ({ target: { value } }) => {
@@ -48,7 +52,6 @@ function Reports() {
       setIsToggled(true)
     } else {
       // create error state
-      console.log('You stupid fuck')
       setFormErrors(true)
     }
   }
@@ -64,19 +67,19 @@ function Reports() {
   }
 
   const reportHeader = `${
-    selectedStt
-      ? `${
-          sttList.find((stt) => stt.name.toLowerCase() === selectedStt).name
-        } - `
-      : ''
-  }Fiscal Year ${selectedYear}`
+    sttList?.find((stt) => stt?.name?.toLowerCase() === selectedStt)?.name
+  } - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
 
   return (
     <>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
         <form>
           {isOFAAdmin && (
-            <div className="usa-form-group maxw-mobile margin-top-4">
+            <div
+              className={classNames('usa-form-group maxw-mobile margin-top-4', {
+                'usa-form-group--error': formHasErrors && !selectedStt,
+              })}
+            >
               <STTComboBox
                 selectedStt={selectedStt}
                 selectStt={selectStt}
@@ -85,66 +88,88 @@ function Reports() {
             </div>
           )}
 
-          <label
-            className="usa-label text-bold margin-top-4"
-            htmlFor="reportingYears"
+          <div
+            className={classNames('usa-form-group maxw-mobile margin-top-4', {
+              'usa-form-group--error': formHasErrors && !selectedYear,
+            })}
           >
-            Fiscal Year (October - September)
-            {formHasErrors && !selectedYear && (
-              <div
-                className="usa-error-message"
-                id="years-error-alert"
-                role="alert"
-              >
-                A fiscal year is required
-              </div>
-            )}
-            {/* eslint-disable-next-line */}
+            <label
+              className="usa-label text-bold margin-top-4"
+              htmlFor="reportingYears"
+            >
+              Fiscal Year (October - September)
+              {formHasErrors && !selectedYear && (
+                <div
+                  className="usa-error-message"
+                  id="years-error-alert"
+                  role="alert"
+                >
+                  A fiscal year is required
+                </div>
+              )}
+              {/* eslint-disable-next-line */}
               <select
-              className="usa-select maxw-mobile"
-              name="reportingYears"
-              id="reportingYears"
-              onChange={selectYear}
-              value={selectedYear}
-            >
-              <option value="" disabled hidden>
-                - Select Fiscal Year -
-              </option>
-              <option value="2020">2020</option>
-              <option data-testid="2021" value="2021">
-                2021
-              </option>
-            </select>
-          </label>
-
-          <label className="usa-label text-bold margin-top-4" htmlFor="quarter">
-            Quarter
-            {formHasErrors && !selectedQuarter && (
-              <div
-                className="usa-error-message"
-                id="quarter-error-alert"
-                role="alert"
+                className={classNames('usa-select maxw-mobile', {
+                  'usa-combo-box__input--error': formHasErrors && !selectedYear,
+                })}
+                name="reportingYears"
+                id="reportingYears"
+                onChange={selectYear}
+                value={selectedYear}
               >
-                A quarter is required
-              </div>
-            )}
-            {/* eslint-disable-next-line */}
-            <select
-              className="usa-select maxw-mobile"
-              name="quarter"
-              id="quarter"
-              onChange={selectQuarter}
-              value={selectedQuarter}
+                <option value="" disabled hidden>
+                  - Select Fiscal Year -
+                </option>
+                <option value="2020">2020</option>
+                <option data-testid="2021" value="2021">
+                  2021
+                </option>
+              </select>
+            </label>
+          </div>
+          <div
+            className={classNames('usa-form-group maxw-mobile margin-top-4', {
+              'usa-form-group--error': formHasErrors && !selectedQuarter,
+            })}
+          >
+            <label
+              className="usa-label text-bold margin-top-4"
+              htmlFor="quarter"
             >
-              <option value="" disabled hidden>
-                - Select Quarter -
-              </option>
-              <option value="Q1">Quarter 1 (October - December)</option>
-              <option value="Q2">Quarter 2 (January - March)</option>
-              <option value="Q3">Quarter 3 (April - June)</option>
-              <option value="Q4">Quarter 4 (July - September)</option>
-            </select>
-          </label>
+              Quarter
+              {formHasErrors && !selectedQuarter && (
+                <div
+                  className="usa-error-message"
+                  id="quarter-error-alert"
+                  role="alert"
+                >
+                  A quarter is required
+                </div>
+              )}
+              {/* eslint-disable-next-line */}
+            <select
+                className={classNames('usa-select maxw-mobile', {
+                  'usa-combo-box__input--error':
+                    formHasErrors && !selectedQuarter,
+                })}
+                name="quarter"
+                id="quarter"
+                onChange={selectQuarter}
+                value={selectedQuarter}
+              >
+                <option value="" disabled hidden>
+                  - Select Quarter -
+                </option>
+                {Object.entries(quarters).map(
+                  ([quarter, quarterDescription]) => (
+                    <option value={quarter} key={quarter}>
+                      {quarterDescription}
+                    </option>
+                  )
+                )}
+              </select>
+            </label>
+          </div>
           <Button className="margin-y-4" type="button" onClick={handleSearch}>
             Search
           </Button>

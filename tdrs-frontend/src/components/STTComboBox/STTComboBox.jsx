@@ -47,7 +47,7 @@ STTComboBox.propTypes = {
   selectStt: PropTypes.func.isRequired,
   handleBlur: PropTypes.func,
   selectedStt: PropTypes.string,
-  error: PropTypes.string,
+  error: PropTypes.bool,
 }
 
 STTComboBox.defaultProps = {
