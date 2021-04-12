@@ -10,10 +10,8 @@ applications:
     AV_SCAN_URL: http://clamav-rest.apps.internal:9000/scan
 - name: clamav-rest
   instances: 1
-  memory: 2G
+  memory: 512M
   env:
     MAX_FILE_SIZE: 200M
   docker:
     image: ajilaag/clamav-rest:20201028
-  routes:
-    - route: clamav-rest.apps.internal

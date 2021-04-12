@@ -164,8 +164,10 @@ jobs:
             cf target -o $CF_ORG -s "$CF_SPACE"
       - run:
           name: "Deploy clamav-rest"
-          # NOTE: docker-backend is unused by clamav-rest but is needed to prevent an error when calling cf push
-          command: "cf push clamav-rest --strategy rolling -f tdrs-backend/manifest.yml --var docker-backend=null"
+          command: |
+            # NOTE: docker-backend is unused by clamav-rest but is needed to prevent an error when calling cf push
+            cf push clamav-rest --no-route -f tdrs-backend/manifest.yml --var docker-backend=null --strategy rolling
+            cf map-route clamav-rest apps.internal --hostname "$CGHOSTNAME_BACKEND-clamav-rest"
       - run:
           name: "Deploy to Cloud.gov"
           command: "./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH"
