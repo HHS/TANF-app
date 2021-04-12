@@ -1,12 +1,10 @@
 import React from 'react'
-import { mount } from 'enzyme'
 import { render, fireEvent } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import Reports from './Reports'
-import Button from '../Button'
 
 describe('Reports', () => {
   const initialState = {
@@ -36,6 +34,7 @@ describe('Reports', () => {
       error: null,
       year: '',
       stt: '',
+      quarter: '',
     },
     stts: {
       sttList: [
@@ -147,13 +146,23 @@ describe('Reports', () => {
   })
 
   it('should render the UploadReports form when a year is selected and Search button is clicked', () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
 
-    const { getByText } = render(
+    const { getByText, queryByText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
+
+    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
 
     fireEvent.click(getByText(/Search/))
 
@@ -164,7 +173,15 @@ describe('Reports', () => {
   })
 
   it('should de-render the UploadReports form after it has been toggled but the year is changed', () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
 
     const { getByText, getByLabelText, queryByText } = render(
       <Provider store={store}>
@@ -172,9 +189,13 @@ describe('Reports', () => {
       </Provider>
     )
 
+    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+
     fireEvent.click(getByText(/Search/))
 
-    const select = getByLabelText('Fiscal Year (October - September)')
+    expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
+
+    const select = getByLabelText(/Fiscal Year/)
 
     fireEvent.change(select, {
       target: {
@@ -186,7 +207,15 @@ describe('Reports', () => {
   })
 
   it('should de-render when Cancel is clicked', () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
 
     const { getByText, queryByText } = render(
       <Provider store={store}>
