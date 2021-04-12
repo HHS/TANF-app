@@ -282,7 +282,7 @@ def test_login_with_inactive_user(mocker, api_client, inactive_user):
     response = view(request)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.data == {
-        "error": f'Error: Inactive User Attempting Login {inactive_user.username}'
+        "error": f'Login failed, user account is inactive: {inactive_user.username}'
     }
 
 
