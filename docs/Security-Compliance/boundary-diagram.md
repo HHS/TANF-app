@@ -10,7 +10,7 @@ For the MVP, OFA admins will upload data on behalf of STTs and upload data files
 
 ### Environments/Spaces
 
-Production, Staging, and Dev spaces provide users with access to a shared location for app development, deployment, and maintenance. The frontend and backend application in each environment is scoped to a space. Roles provide access control for these resources and each space role applies only to a particular space. Developer access to the Dev space does not permit access to Staging and Production.
+Production, Staging, and Dev spaces provide users with access to a shared location for app development, deployment, and maintenance. The frontend and backend application in each environment is scoped to a space. Roles provide access control for these resources and each space role applies only to a particular space. Developer access to the Dev space does not permit access to Production.
 
 ### User access
 
