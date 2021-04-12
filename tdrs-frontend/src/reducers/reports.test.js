@@ -34,6 +34,7 @@ const initialState = {
   ],
   year: '',
   stt: '',
+  quarter: '',
 }
 
 describe('reducers/reports', () => {
@@ -75,6 +76,7 @@ describe('reducers/reports', () => {
       ],
       stt: '',
       year: '',
+      quarter: '',
     })
   })
 
@@ -110,6 +112,7 @@ describe('reducers/reports', () => {
         },
       ],
       stt: '',
+      year: '',
       quarter: '',
     })
   })
@@ -149,6 +152,7 @@ describe('reducers/reports', () => {
       ],
       stt: '',
       year: '',
+      quarter: '',
     })
   })
 
@@ -180,7 +184,8 @@ describe('reducers/reports', () => {
             },
           ],
           stt: '',
-          year: 2020,
+          quarter: '',
+          year: '2020',
         },
         {
           type: CLEAR_ERROR,
@@ -214,6 +219,7 @@ describe('reducers/reports', () => {
       ],
       stt: '',
       quarter: '',
+      year: '2020',
     })
   })
 
@@ -242,9 +248,51 @@ describe('reducers/reports', () => {
         },
       })
     ).toEqual({
+      files: initialState.files,
       year: '',
       stt: '',
       quarter: 'Q1',
+    })
+
+    expect(
+      reducer(undefined, {
+        type: SET_SELECTED_QUARTER,
+        payload: {
+          quarter: 'Q2',
+        },
+      })
+    ).toEqual({
+      files: initialState.files,
+      year: '',
+      stt: '',
+      quarter: 'Q2',
+    })
+
+    expect(
+      reducer(undefined, {
+        type: SET_SELECTED_QUARTER,
+        payload: {
+          quarter: 'Q3',
+        },
+      })
+    ).toEqual({
+      files: initialState.files,
+      year: '',
+      stt: '',
+      quarter: 'Q3',
+    })
+    expect(
+      reducer(undefined, {
+        type: SET_SELECTED_QUARTER,
+        payload: {
+          quarter: 'Q4',
+        },
+      })
+    ).toEqual({
+      files: initialState.files,
+      year: '',
+      stt: '',
+      quarter: 'Q4',
     })
   })
 
@@ -260,6 +308,7 @@ describe('reducers/reports', () => {
       files: initialState.files,
       year: '2021',
       stt: '',
+      quarter: '',
     })
   })
 
