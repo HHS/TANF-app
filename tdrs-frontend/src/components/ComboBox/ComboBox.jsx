@@ -64,14 +64,6 @@ const ComboBox = ({
           </div>
         )}
       </label>
-      {/* <div> */}
-      {/*  {formHasErrors && !selectedStt && ( */}
-      {/*    <div className="usa-error-message" id="stt-error-alert" role="alert"> */}
-      {/*      A state, tribe, or territory is required */}
-      {/*    </div> */}
-      {/*  )} */}
-      {/* </div> */}
-
       <div className="usa-combo-box" data-placeholder={placeholder}>
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
