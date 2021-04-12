@@ -20,7 +20,8 @@ tdrs-frontend/.env*.local
 tdrs-backend/vars-backend.yml
 tdrs-backend/coverage.xml
 tdrs-backend/htmlcov/*
-tdrs-backend/.env*
+tdrs-backend/.env
+tdrs-backend/.env.production
 *.pyc
 /backend/db.sqlite3
 .DS_Store
