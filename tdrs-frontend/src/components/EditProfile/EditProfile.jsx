@@ -10,6 +10,7 @@ import { ALERT_ERROR } from '../Alert'
 import Button from '../Button'
 import FormGroup from '../FormGroup'
 import ComboBox from '../ComboBox'
+import useEventLogger from '../../utils/eventLogger'
 
 /**
  *
@@ -71,11 +72,14 @@ function EditProfile() {
 
   const [touched, setTouched] = useState({})
 
+  const logger = useEventLogger()
+
   useEffect(() => {
     if (requestAccessError) {
       dispatch(
         setAlert({ heading: requestAccessError.message, type: ALERT_ERROR })
       )
+      logger.error(requestAccessError.message)
     }
     dispatch(fetchSttList())
   }, [dispatch, requestAccessError])

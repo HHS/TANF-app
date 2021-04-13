@@ -2,12 +2,15 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import { clearError, upload } from '../../actions/reports'
+import useEventLogger from '../../utils/eventLogger'
 
 function FileUpload({ section }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.files)
   const dispatch = useDispatch()
+
+  const logger = useEventLogger()
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
@@ -34,6 +37,7 @@ function FileUpload({ section }) {
         section: target.name,
       })
     )
+    logger.alert(`Selected ${target.files[0].fileName} in ${target.name}`)
   }
 
   return (
