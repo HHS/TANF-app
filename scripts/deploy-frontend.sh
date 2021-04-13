@@ -33,7 +33,7 @@ update_frontend()
     cp  nginx/nginx.conf deployment/nginx.conf
     cp  nginx/mime.types deployment/mime.types
 
-    cp manifest.yml deployment/manifest.buildpack.yml
+    cp manifest.buildpack.yml deployment/manifest.buildpack.yml
 
     cd deployment
 	  if [ "$1" = "rolling" ] ; then
