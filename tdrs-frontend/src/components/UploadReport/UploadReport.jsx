@@ -12,7 +12,8 @@ function UploadReport({ handleCancel }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
 
-  // Ensure newly rendered header is focused, else it won't be read be screen readers.
+  // Ensure newly rendered header is focused,
+  // else it won't be read be screen readers.
   const headerRef = useRef(null)
   const logger = useEventLogger()
 

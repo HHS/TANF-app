@@ -2,7 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import { clearError, upload } from '../../actions/reports'
-import useEventLogger from '../../utils/eventLogger'
 
 function FileUpload({ section }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
