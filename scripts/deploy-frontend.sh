@@ -33,15 +33,15 @@ update_frontend()
     cp  nginx/nginx.conf deployment/nginx.conf
     cp  nginx/mime.types deployment/mime.types
 
-    cp manifest.yml deployment/manifest.yml
+    cp manifest.yml deployment/manifest.buildpack.yml
 
     cd deployment
 	  if [ "$1" = "rolling" ] ; then
 		    # Do a zero downtime deploy.  This requires enough memory for
 		    # two apps to exist in the org/space at one time.
-		    cf push $CGHOSTNAME_FRONTEND --no-route -f manifest.yml --strategy rolling || exit 1
+		    cf push $CGHOSTNAME_FRONTEND --no-route -f manifest.buildpack.yml --strategy rolling || exit 1
 	  else
-		    cf push $CGHOSTNAME_FRONTEND --no-route -f manifest.yml
+		    cf push $CGHOSTNAME_FRONTEND --no-route -f manifest.buildpack.yml
 	  fi
 	  cf map-route $CGHOSTNAME_FRONTEND app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
     cd ../..
