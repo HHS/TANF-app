@@ -6,6 +6,7 @@ import { fileInput } from 'uswds/src/js/components'
 import Button from '../Button'
 
 import FileUpload from '../FileUpload'
+import useEventLogger from '../../utils/eventLogger'
 
 function UploadReport({ handleCancel }) {
   // The currently selected year from the reportingYears dropdown
@@ -13,6 +14,11 @@ function UploadReport({ handleCancel }) {
 
   // Ensure newly rendered header is focused, else it won't be read be screen readers.
   const headerRef = useRef(null)
+  const logger = useEventLogger()
+
+  const onSubmit = () => {
+    logger.alert(`Submitted data files`)
+  }
 
   useEffect(() => {
     headerRef.current.focus()
@@ -40,7 +46,7 @@ function UploadReport({ handleCancel }) {
         <FileUpload section="4 - Stratum Data" />
 
         <div className="buttonContainer margin-y-4">
-          <Button className="card:margin-y-1" type="submit">
+          <Button className="card:margin-y-1" type="submit" onClick={onSubmit}>
             Submit Data Files
           </Button>
           <Button className="cancel" type="button" onClick={handleCancel}>

@@ -10,8 +10,6 @@ function FileUpload({ section }) {
   const files = useSelector((state) => state.reports.files)
   const dispatch = useDispatch()
 
-  const logger = useEventLogger()
-
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
 
@@ -37,7 +35,6 @@ function FileUpload({ section }) {
         section: target.name,
       })
     )
-    logger.alert(`Selected ${target.files[0].fileName} in ${target.name}`)
   }
 
   return (
