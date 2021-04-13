@@ -21,6 +21,14 @@ function sendDataToBackend(data) {
   })
 }
 
+/**
+ * Abstract the logger into a React hook to be used in components.
+ * This will fail in contexts without a signed-in user.
+ *
+ * ex:
+ * const logger = useEventLogger()
+ * logger.error('Some strange error')
+ */
 export default function useEventLogger() {
   const user = useSelector((state) => state.auth.user)
 

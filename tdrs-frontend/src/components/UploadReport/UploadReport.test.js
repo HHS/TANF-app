@@ -3,7 +3,6 @@ import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { fireEvent, render } from '@testing-library/react'
-import axios from 'axios'
 
 import UploadReport from './UploadReport'
 
@@ -33,6 +32,7 @@ describe('UploadReport', () => {
         },
       ],
     },
+    auth: { authenticated: true, user: { email: 'hi@bye.com' } },
   }
   const mockStore = configureStore([thunk])
   const handleCancel = jest.fn()

@@ -35,6 +35,7 @@ describe('Reports', () => {
       error: null,
       year: 2020,
     },
+    auth: { authenticated: true, user: { email: 'hi@bye.com' } },
   }
   const mockStore = configureStore([thunk])
 

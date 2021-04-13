@@ -82,7 +82,7 @@ function EditProfile() {
       logger.error(requestAccessError.message)
     }
     dispatch(fetchSttList())
-  }, [dispatch, requestAccessError])
+  }, [dispatch, requestAccessError, logger])
 
   const setStt = (sttName) => {
     let selectedStt = sttList.find((stt) => sttName === stt.name.toLowerCase())
