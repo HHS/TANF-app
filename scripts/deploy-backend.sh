@@ -46,9 +46,9 @@ update_backend()
 	  if [ "$1" = "rolling" ] ; then
 		    # Do a zero downtime deploy.  This requires enough memory for
 		    # two apps to exist in the org/space at one time.
-		    cf push $CGHOSTNAME_BACKEND --no-route -f manifest.yml  --strategy rolling || exit 1
+		    cf push $CGHOSTNAME_BACKEND --no-route -f manifest.buildpack.yml  --strategy rolling || exit 1
 	  else
-		    cf push $CGHOSTNAME_BACKEND --no-route -f manifest.yml
+		    cf push $CGHOSTNAME_BACKEND --no-route -f manifest.buildpack.yml
 		    # set up JWT key if needed
 		    if cf e $CGHOSTNAME_BACKEND | grep -q JWT_KEY ; then
 		        echo jwt cert already created
