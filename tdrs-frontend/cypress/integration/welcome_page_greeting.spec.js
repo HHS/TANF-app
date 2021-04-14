@@ -18,11 +18,6 @@ describe('welcome page greeting', () => {
 
     cy.get('.usa-banner__content').should('be.visible')
   })
-  it('contains a navigation link', () => {
-    cy.visit('http://localhost:3000')
-
-    cy.get('li.usa-nav__primary-item').find('a.usa-nav__link')
-  })
   it('prompts the user to sign in', () => {
     cy.visit('http://localhost:3000')
 
