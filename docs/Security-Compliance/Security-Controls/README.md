@@ -30,3 +30,11 @@
 2. [sc-8](sc-8/index.md)
 3. [sc-20](sc-20/index.md)
 4. [sc-28(01)](sc-28-1/index.md)
+
+### System and Information Integrity
+
+1. [si-12](si-12/index.md)
+
+### Configuration Management
+
+1. [cm-07(02)](cm-7-2/index.md)
