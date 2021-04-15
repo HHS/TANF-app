@@ -57,7 +57,7 @@ const ComboBox = ({
         {error && (
           <div
             className="usa-error-message"
-            id={`${name}-error-message`}
+            id={`${name}-error-alert`}
             role="alert"
           >
             {error}
@@ -69,6 +69,7 @@ const ComboBox = ({
         <select
           className="usa-select"
           data-testid={`${name}-combobox`}
+          aria-describedby={`${name}-error-alert`}
           name={name}
           id={name}
           onChange={(e) => {

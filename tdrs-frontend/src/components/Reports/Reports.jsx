@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 
@@ -29,7 +29,7 @@ function Reports() {
   const dispatch = useDispatch()
   const [isUploadReportToggled, setIsToggled] = useState(false)
 
-  const [formHasErrors, setFormErrors] = useState(false)
+  const [formValidation, setFormValidationState] = useState({})
 
   const quarters = {
     Q1: 'Quarter 1 (October - December)',
@@ -38,32 +38,51 @@ function Reports() {
     Q4: 'Quarter 4 (July - September)',
   }
 
-  const selectYear = ({ target: { value } }) => {
-    setIsToggled(false)
-    dispatch(setYear(value))
-  }
-
   const handleSearch = () => {
-    const isFormComplete = Boolean(
-      selectedYear && selectedStt && selectedQuarter
-    )
+    // Clear previous errors
+    setFormValidationState({})
 
-    if (isFormComplete) {
+    // Filter out non-truthy values
+    const form = [selectedYear, selectedStt, selectedQuarter].filter(Boolean)
+
+    if (form.length === 3) {
       setIsToggled(true)
     } else {
       // create error state
-      setFormErrors(true)
+      setFormValidationState({
+        year: !selectedYear,
+        stt: !selectedStt,
+        quarter: !selectedQuarter,
+        errors: 3 - form.length,
+      })
     }
+  }
+
+  const selectYear = ({ target: { value } }) => {
+    setIsToggled(false)
+    dispatch(setYear(value))
+    setFormValidationState((currentState) => ({
+      ...currentState,
+      year: !value,
+    }))
   }
 
   const selectQuarter = ({ target: { value } }) => {
     dispatch(setQuarter(value))
+    setFormValidationState((currentState) => ({
+      ...currentState,
+      quarter: !value,
+    }))
   }
   // Non-OFA Admin users will be unable to select an STT
   // prefer => `auth.user.stt`
 
   const selectStt = (value) => {
     dispatch(setStt(value))
+    setFormValidationState((currentState) => ({
+      ...currentState,
+      stt: !value,
+    }))
   }
 
   const reportHeader = `${
@@ -73,24 +92,25 @@ function Reports() {
   return (
     <>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
+        <div>There are {formValidation.errors} errors in this form</div>
         <form>
           {isOFAAdmin && (
             <div
               className={classNames('usa-form-group maxw-mobile margin-top-4', {
-                'usa-form-group--error': formHasErrors && !selectedStt,
+                'usa-form-group--error': formValidation.stt,
               })}
             >
               <STTComboBox
                 selectedStt={selectedStt}
                 selectStt={selectStt}
-                error={formHasErrors && !selectedStt}
+                error={formValidation.stt}
               />
             </div>
           )}
 
           <div
             className={classNames('usa-form-group maxw-mobile margin-top-4', {
-              'usa-form-group--error': formHasErrors && !selectedYear,
+              'usa-form-group--error': formValidation.year,
             })}
           >
             <label
@@ -98,7 +118,7 @@ function Reports() {
               htmlFor="reportingYears"
             >
               Fiscal Year (October - September)
-              {formHasErrors && !selectedYear && (
+              {formValidation.year && (
                 <div
                   className="usa-error-message"
                   id="years-error-alert"
@@ -110,12 +130,13 @@ function Reports() {
               {/* eslint-disable-next-line */}
               <select
                 className={classNames('usa-select maxw-mobile', {
-                  'usa-combo-box__input--error': formHasErrors && !selectedYear,
+                  'usa-combo-box__input--error': formValidation.year,
                 })}
                 name="reportingYears"
                 id="reportingYears"
                 onChange={selectYear}
                 value={selectedYear}
+                aria-describedby="years-error-alert"
               >
                 <option value="" disabled hidden>
                   - Select Fiscal Year -
@@ -129,7 +150,7 @@ function Reports() {
           </div>
           <div
             className={classNames('usa-form-group maxw-mobile margin-top-4', {
-              'usa-form-group--error': formHasErrors && !selectedQuarter,
+              'usa-form-group--error': formValidation.quarter,
             })}
           >
             <label
@@ -137,7 +158,7 @@ function Reports() {
               htmlFor="quarter"
             >
               Quarter
-              {formHasErrors && !selectedQuarter && (
+              {formValidation.quarter && (
                 <div
                   className="usa-error-message"
                   id="quarter-error-alert"
@@ -149,13 +170,13 @@ function Reports() {
               {/* eslint-disable-next-line */}
             <select
                 className={classNames('usa-select maxw-mobile', {
-                  'usa-combo-box__input--error':
-                    formHasErrors && !selectedQuarter,
+                  'usa-combo-box__input--error': formValidation.quarter,
                 })}
                 name="quarter"
                 id="quarter"
                 onChange={selectQuarter}
                 value={selectedQuarter}
+                aria-describedby="quarter-error-alert"
               >
                 <option value="" disabled hidden>
                   - Select Quarter -
