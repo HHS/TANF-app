@@ -36,7 +36,7 @@
 - Upload front end work [#430](https://github.com/raft-tech/TANF-app/issues/430), [#530](https://github.com/raft-tech/TANF-app/issues/530)
 - [ADR: Download Strategy](https://github.com/raft-tech/TANF-app/pull/821)
 - [ADR: Development Environments](https://github.com/raft-tech/TANF-app/pull/825) 
-- Security control implementation statements([SI-12)](https://github.com/raft-tech/TANF-app/issues/788)
+- Security control implementation statements([SI-12)](https://github.com/raft-tech/TANF-app/issues/788) and CM(02)(07)
 
 
 ## Moving to Next Sprint (Raft Review, In Progress, Current Sprint Backlog)
