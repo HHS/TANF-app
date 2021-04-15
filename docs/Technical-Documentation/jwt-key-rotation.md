@@ -2,7 +2,7 @@
 
 ## Context
 
-To maintain good security, we will periodically rotate our JWT keys. This document outlines the process of how to do this.
+To maintain good security, we will periodically rotate the JWT keys used to control authentication and authorization to our application. This document outlines the process of how to do this.
 
 **Warning** Production sites will need to be taken down for maintenance when rotating keys, as the rotation will automatically invalidate all current sessions.
 
