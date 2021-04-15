@@ -52,6 +52,10 @@ cat jwtRS256.key.base64
 2. Update the environment variable `JWT_KEY` with the private key in cloud.gov backend development and staging environments
 3. Login to the [Login.gov Sandbox](https://dashboard.int.identitysandbox.gov/) and update the public key there
 
+Note: Login.gov requires the key to be uploaded in PEM format, which is the format we produced in the `jwtRS256.key.pub` file.
+
+![pem_upload](https://user-images.githubusercontent.com/1181427/114887693-ae6eef00-9dd6-11eb-98cc-2de3f061337a.png)
+
 #### CI/CD Environment
 **Note** _Please generate a separate set of keys for the CI/CD environment_
 1. Distribute the private key to development staff securely to copy to `.env` files as the value for key `JWT_CERT_TEST`
