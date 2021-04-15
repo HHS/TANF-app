@@ -30,7 +30,7 @@ update_frontend()
     mkdir deployment
 
     cp -r build deployment/public
-    cp  nginx/nginx.conf deployment/nginx.conf
+    cp  nginx/buildpack.nginx.conf deployment/nginx.conf
     cp  nginx/mime.types deployment/mime.types
 
     cp manifest.buildpack.yml deployment/manifest.buildpack.yml
