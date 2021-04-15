@@ -49,7 +49,7 @@ cat jwtRS256.key.base64
 
 #### Dev/Staging Environments
 1. Distribute the private key to development staff securely to copy to `.env` files as the value for key `JWT_KEY`
-2. Update the variable `JWT_KEY` with the private key in cloud.gov backend development and staging environments
+2. Update the environment variable `JWT_KEY` with the private key in cloud.gov backend development and staging environments
 3. Login to the [Login.gov Sandbox](https://dashboard.int.identitysandbox.gov/) and update the public key there
 
 #### CI/CD Environment
