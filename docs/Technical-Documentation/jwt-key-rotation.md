@@ -41,7 +41,7 @@ cat jwtRS256.key.pub
 We use Base64 Encoded Private Keys to make it easier to save to cloud environments and local `.env` files.
 
 ```bash=
-openssl enc -base64 -in jwtRS256.key -out jwtRS256.key.base64
+openssl enc -base64 -w 0 -in jwtRS256.key -out jwtRS256.key.base64
 cat jwtRS256.key.base64
 ```
 
