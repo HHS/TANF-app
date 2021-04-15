@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
 
@@ -8,7 +8,7 @@ import Button from '../Button'
 
 import FileUpload from '../FileUpload'
 import axiosInstance from '../../axios-instance'
-import { SET_FILE_ERROR } from '../../actions/reports'
+import { clearError } from '../../actions/reports'
 
 function UploadReport({ handleCancel }) {
   // The currently selected year from the reportingYears dropdown
@@ -25,8 +25,10 @@ function UploadReport({ handleCancel }) {
     message: null,
   })
 
-  // Ensure newly rendered header is focused, else it won't be read be screen readers.
+  // Ensure newly rendered header is focused,
+  // else it won't be read be screen readers.
   const headerRef = useRef(null)
+  const dispatch = useDispatch()
 
   useEffect(() => {
     headerRef.current.focus()
@@ -51,6 +53,17 @@ function UploadReport({ handleCancel }) {
   }
 
   const formattedSections = uploadedSections.join(' ')
+
+  const clearErrorState = () => {
+    for (const section of fileUploadSections) {
+      dispatch(clearError({ section }))
+    }
+
+    const errors = document.querySelectorAll('.has-invalid-file')
+    for (const error of errors) {
+      error?.classList?.remove('has-invalid-file')
+    }
+  }
 
   const onSubmit = async (event) => {
     event.preventDefault()
@@ -83,14 +96,20 @@ function UploadReport({ handleCancel }) {
     )
 
     Promise.all(uploadRequests)
-      .then(() =>
+      .then(() => {
         setlocalAlertState({
           active: true,
           type: 'success',
           message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
         })
-      )
+        clearErrorState()
+      })
       .catch((error) => console.error(error))
+  }
+
+  const onCancel = () => {
+    handleCancel()
+    clearErrorState()
   }
 
   useEffect(() => {
@@ -106,7 +125,7 @@ function UploadReport({ handleCancel }) {
         className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
         tabIndex="-1"
       >
-        {selectedYear}
+        Fiscal Year {selectedYear}
       </h2>
       {localAlert.active && (
         <div
@@ -121,14 +140,18 @@ function UploadReport({ handleCancel }) {
       )}
       <form onSubmit={onSubmit}>
         {fileUploadSections.map((name, index) => (
-          <FileUpload key={name} section={`${index + 1} - ${name}`} />
+          <FileUpload
+            key={name}
+            section={`${index + 1} - ${name}`}
+            setlocalAlertState={setlocalAlertState}
+          />
         ))}
 
         <div className="buttonContainer margin-y-4">
           <Button className="card:margin-y-1" type="submit">
             Submit Data Files
           </Button>
-          <Button className="cancel" type="button" onClick={handleCancel}>
+          <Button className="cancel" type="button" onClick={onCancel}>
             Cancel
           </Button>
         </div>

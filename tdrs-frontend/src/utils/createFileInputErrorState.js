@@ -1,8 +1,10 @@
 /**
- * This utility function is mainly used to manually trigger the respective error classes
- * and cleanup the markup around the USWDS file input component used in FileUpload.jsx
+ * This utility function is mainly used to manually trigger the respective
+ * error classes and cleanup the markup around the USWDS file input
+ * component used in FileUpload.jsx
  *
- * This mostly is copied from file-input.js in uswds with some conveniences for our use case.
+ * This mostly is copied from file-input.js in USWDS with some conveniences
+ * for our use case.
  *
  * @param {HTMLElement} input
  * @param {HTMLElement} dropTarget
@@ -39,11 +41,6 @@ export default function createFileInputErrorState(input, dropTarget) {
     node.parentNode.removeChild(node)
   })
 
-  const errorMessage = document.createElement('div')
-
   input.value = '' // eslint-disable-line no-param-reassign
-  dropTarget.insertBefore(errorMessage, input)
-  errorMessage.innerHTML = `This is not a valid file type.`
-  errorMessage.classList.add(`${classPrefix}__accepted-files-message`)
   dropTarget.classList.add(`has-invalid-file`)
 }

@@ -13,7 +13,7 @@ import createFileInputErrorState from '../../utils/createFileInputErrorState'
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
 
-function FileUpload({ section }) {
+function FileUpload({ section, setlocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.files)
@@ -39,10 +39,17 @@ function FileUpload({ section }) {
   const inputRef = useRef(null)
 
   const validateAndUploadFile = (event) => {
+    setlocalAlertState({
+      active: false,
+      type: null,
+      message: null,
+    })
+
     const { name } = event.target
     const file = event.target.files[0]
 
-    // Clear existing errors and the current file in the state if the user is re-uploading
+    // Clear existing errors and the current
+    // file in the state if the user is re-uploading
     dispatch(clearError({ section: name }))
     dispatch(clearFile({ section: name }))
 
@@ -166,6 +173,7 @@ function FileUpload({ section }) {
 
 FileUpload.propTypes = {
   section: PropTypes.string.isRequired,
+  setlocalAlertState: PropTypes.func.isRequired,
 }
 
 export default FileUpload
