@@ -20,6 +20,8 @@ In our investigation we discovered a way that we can [securely download the file
 
 In light of these facts we have decided to shift our efforts to download files from the backend.
 
+[Technical Documentation](../Technical-Documentation/data-file-downloads.md)
+
 ## Consequences
 
 **Pros**
