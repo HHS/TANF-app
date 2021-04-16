@@ -30,6 +30,9 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
       handleBlur={handleBlur}
       placeholder="- Select or Search -"
     >
+      <option value="" disabled hidden>
+        - Select or Search -
+      </option>
       {sttList.map((stt) => (
         <option
           className="sttOption"

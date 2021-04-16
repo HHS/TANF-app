@@ -55,11 +55,7 @@ const ComboBox = ({
       >
         {label}
         {error && (
-          <div
-            className="usa-error-message"
-            id={`${name}-error-alert`}
-            role="alert"
-          >
+          <div className="usa-error-message" id={`${name}-error-alert`}>
             {error}
           </div>
         )}

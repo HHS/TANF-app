@@ -97,7 +97,13 @@ function Reports() {
       quarter: touched.quarter && !selectedQuarter,
       errors,
     }))
-  }, [selectedYear, selectedStt, selectedQuarter, setFormValidationState])
+  }, [
+    selectedYear,
+    selectedStt,
+    selectedQuarter,
+    setFormValidationState,
+    touched,
+  ])
 
   const reportHeader = `${
     sttList?.find((stt) => stt?.name?.toLowerCase() === selectedStt)?.name
@@ -109,7 +115,7 @@ function Reports() {
     <>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
         {Boolean(formValidation.errors) && (
-          <div>
+          <div className="margin-top-4 usa-error-message" role="alert">
             There {errorsCount === 1 ? 'is' : 'are'} {formValidation.errors}{' '}
             errors in this form
           </div>
@@ -140,11 +146,7 @@ function Reports() {
             >
               Fiscal Year (October - September)
               {formValidation.year && (
-                <div
-                  className="usa-error-message"
-                  id="years-error-alert"
-                  role="alert"
-                >
+                <div className="usa-error-message" id="years-error-alert">
                   A fiscal year is required
                 </div>
               )}
@@ -180,11 +182,7 @@ function Reports() {
             >
               Quarter
               {formValidation.quarter && (
-                <div
-                  className="usa-error-message"
-                  id="quarter-error-alert"
-                  role="alert"
-                >
+                <div className="usa-error-message" id="quarter-error-alert">
                   A quarter is required
                 </div>
               )}
