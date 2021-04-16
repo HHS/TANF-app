@@ -29,7 +29,7 @@
 1. [sc-4](sc-4/index.md)
 2. [sc-8](sc-8/index.md)
 3. [sc-20](sc-20/index.md)
-4. [sc-28(01)](sc-28-1/index.md)
+5. [sc-28(01)](sc-28-1/index.md)
 
 ### System and Information Integrity
 
