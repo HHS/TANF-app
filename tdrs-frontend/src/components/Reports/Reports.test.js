@@ -93,7 +93,7 @@ describe('Reports', () => {
 
     const options = select.children
 
-    expect(options.length).toEqual(2)
+    expect(options.length).toEqual(3)
   })
 
   it('should not render the STT if the user is not an OFA Admin', () => {
@@ -164,7 +164,7 @@ describe('Reports', () => {
 
     expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
 
-    fireEvent.click(getByText(/Search/))
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
     expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
@@ -191,7 +191,7 @@ describe('Reports', () => {
 
     expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
 
-    fireEvent.click(getByText(/Search/))
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
 
@@ -223,7 +223,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/))
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
 

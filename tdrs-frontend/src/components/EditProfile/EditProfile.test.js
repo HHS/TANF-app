@@ -126,7 +126,7 @@ describe('EditProfile', () => {
 
     const options = wrapper.find('option')
 
-    expect(options.length).toEqual(3)
+    expect(options.length).toEqual(4)
   })
 
   it('should have errors when you try to submit and first name does not have at least 1 character', () => {
