@@ -30,6 +30,7 @@ function Reports() {
   const [isUploadReportToggled, setIsToggled] = useState(false)
 
   const [formValidation, setFormValidationState] = useState({})
+  const [touched, setTouched] = useState({})
 
   const quarters = {
     Q1: 'Quarter 1 (October - December)',
@@ -55,44 +56,64 @@ function Reports() {
         quarter: !selectedQuarter,
         errors: 3 - form.length,
       })
+      setTouched({
+        year: true,
+        stt: true,
+        quarter: true,
+      })
     }
   }
 
   const selectYear = ({ target: { value } }) => {
     setIsToggled(false)
     dispatch(setYear(value))
-    setFormValidationState((currentState) => ({
-      ...currentState,
-      year: !value,
-    }))
+    setTouched((currentForm) => ({ ...currentForm, year: true }))
   }
 
   const selectQuarter = ({ target: { value } }) => {
+    setIsToggled(false)
     dispatch(setQuarter(value))
-    setFormValidationState((currentState) => ({
-      ...currentState,
-      quarter: !value,
-    }))
+    setTouched((currentForm) => ({ ...currentForm, quarter: true }))
   }
   // Non-OFA Admin users will be unable to select an STT
   // prefer => `auth.user.stt`
 
   const selectStt = (value) => {
+    setIsToggled(false)
     dispatch(setStt(value))
+    setTouched((currentForm) => ({ ...currentForm, stt: true }))
+  }
+
+  useEffect(() => {
+    const form = [selectedYear, selectedStt, selectedQuarter].filter(Boolean)
+    const touchedFields = Object.keys(touched).length
+
+    const errors = touchedFields === 3 ? 3 - form.length : 0
+
     setFormValidationState((currentState) => ({
       ...currentState,
-      stt: !value,
+      year: touched.year && !selectedYear,
+      stt: touched.stt && !selectedStt,
+      quarter: touched.quarter && !selectedQuarter,
+      errors,
     }))
-  }
+  }, [selectedYear, selectedStt, selectedQuarter, setFormValidationState])
 
   const reportHeader = `${
     sttList?.find((stt) => stt?.name?.toLowerCase() === selectedStt)?.name
   } - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
 
+  const errorsCount = formValidation.errors
+
   return (
     <>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
-        <div>There are {formValidation.errors} errors in this form</div>
+        {Boolean(formValidation.errors) && (
+          <div>
+            There {errorsCount === 1 ? 'is' : 'are'} {formValidation.errors}{' '}
+            errors in this form
+          </div>
+        )}
         <form>
           {isOFAAdmin && (
             <div
