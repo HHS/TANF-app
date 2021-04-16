@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
+import { getAvailableFileList } from '../../actions/reports'
 
 import Button from '../Button'
 
@@ -13,10 +14,17 @@ function UploadReport({ handleCancel }) {
 
   // Ensure newly rendered header is focused, else it won't be read be screen readers.
   const headerRef = useRef(null)
+  const dispatch = useDispatch()
 
   useEffect(() => {
     headerRef.current.focus()
   }, [])
+
+  useEffect(() => dispatch(getAvailableFileList({ selectedYear })), [
+    dispatch,
+    getAvailableFileList,
+    selectedYear,
+  ])
 
   useEffect(() => {
     // `init` for the uswds fileInput must be called on the
