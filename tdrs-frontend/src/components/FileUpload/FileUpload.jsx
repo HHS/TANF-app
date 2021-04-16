@@ -1,23 +1,54 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
-import { clearError, upload } from '../../actions/reports'
+import axios from 'axios'
+
+import { clearError, upload, download } from '../../actions/reports'
+
+import Button from '../Button'
+
+// helpers
+const getReports = (state) => state.reports
+const toLower = (s) => s.toLowerCase()
+
+const initiateDownloadSequence = ({
+  data,
+  year,
+  quarter,
+  section,
+  canDownload,
+}) => () => {
+  if (canDownload) {
+    const url = window.URL.createObjectURL(new Blob([data]))
+    const link = document.createElement('a')
+
+    link.href = url
+    link.setAttribute('download', `${year}.${quarter}.${section}.txt`)
+
+    document.body.appendChild(link)
+
+    link.click()
+
+    document.body.removeChild(link)
+  }
+}
 
 function FileUpload({ section }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
-  const files = useSelector((state) => state.reports.files)
+  const { files, year, quarter, data, canDownload } = useSelector(getReports)
   const dispatch = useDispatch()
+
+  useEffect(initiateDownloadSequence({ year, quarter, data, canDownload }), [
+    data,
+  ])
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
 
   const file = files.find((currentFile) => sectionName === currentFile.section)
 
-  const formattedSectionName = file.section
-    .split(' ')
-    .map((word) => word.toLowerCase())
-    .join('-')
+  const formattedSectionName = file.section.split(' ').map(toLower).join('-')
 
   const fileName = file?.fileName
   const hasUploadedFile = Boolean(fileName)
@@ -26,14 +57,13 @@ function FileUpload({ section }) {
     ? `Selected File ${file?.fileName}. To change the selected file, click this button.`
     : `Drag file here or choose from folder.`
 
+  const downloadFile = ({ target }) => {
+    dispatch(clearError({ section }))
+    dispatch(download({ section, year }))
+  }
   const uploadFile = ({ target }) => {
     dispatch(clearError({ section: target.name }))
-    dispatch(
-      upload({
-        file: target.files[0],
-        section: target.name,
-      })
-    )
+    dispatch(upload({ file: target.files[0], section: target.name }))
   }
 
   return (
@@ -72,6 +102,13 @@ function FileUpload({ section }) {
         accept=".txt"
         data-errormessage="We can’t process that file format. Please provide a .txt file."
       />
+      <div style={{ marginTop: '25px', marginTop: '20px' }}>
+        {canDownload ? (
+          <Button className="cancel" type="button" onClick={downloadFile}>
+            Download
+          </Button>
+        ) : null}
+      </div>
     </div>
   )
 }
