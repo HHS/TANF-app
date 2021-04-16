@@ -12,6 +12,7 @@
     "history": "^4.7.2",
     "immutable": "^4.0.0-rc.12",
     "include-media": "^1.4.9",
+    "miragejs": "^0.1.41",
     "prop-types": "^15.7.2",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
