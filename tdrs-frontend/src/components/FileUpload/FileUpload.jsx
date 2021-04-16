@@ -74,10 +74,10 @@ function FileUpload({ section, setlocalAlertState }) {
         switch (header) {
           // For some reason, fileType.fromBlob won't detect image/png;
           // Account for this by checking for png and some other
-          // file signatures manually.
-          case '89504e47':
-          case '47494638':
-          case 'ffd8ffe0':
+          // file signatures manually. https://stackoverflow.com/a/55136384/7678576
+          case '89504e47': // image/png
+          case '47494638': // image/gif
+          case 'ffd8ffe0': // all the rest are image/jpeg
           case 'ffd8ffe1':
           case 'ffd8ffe2':
           case 'ffd8ffe3':
