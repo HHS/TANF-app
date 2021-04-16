@@ -73,6 +73,31 @@ describe('UploadReport', () => {
 
     expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
+  it('should display a download button when the file is available for download.', () => {
+    const store = mockStore(initialState)
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { getByLabelText } = render(
+      <Provider store={store}>
+        <UploadReport handleCancel={handleCancel} />
+      </Provider>
+    )
+
+    const fileInputs = getByLabelText('Section 1 - Active Case Data')
+
+    const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
+
+    const buttons = container.querySelectorAll('.tanf-file-download-btn')
+
+    fireEvent.change(fileInput, {
+      target: {
+        files: [newFile],
+      },
+    })
+
+    expect(store.dispatch).toHaveBeenCalledTimes(2)
+  })
 
   it('should render a div with class "usa-form-group--error" if there is an error', () => {
     // Recreate the store with the intial state, except add an `error` object to one of the files.
