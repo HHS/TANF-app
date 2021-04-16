@@ -38,6 +38,7 @@ export const fetchSttList = () => async (dispatch) => {
     })
 
     if (data) {
+      // shouldn't this logic be done by the backend serializer?
       data.forEach((item, i) => {
         if (item.name === 'Federal Government') {
           data.splice(i, 1)
