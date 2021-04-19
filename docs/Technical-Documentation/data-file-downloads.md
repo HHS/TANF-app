@@ -3,7 +3,7 @@
 This application provides a secure means to both store and download files from
 AWS S3 through the use of an open source Django plugin `django-storages`. By
 utilizing built in Django classes in conjunction with this plugin we can enable
-these files to be downloaded through an API endpoint without having to write
+downloading of these files through an API endpoint without having to write
 the files to the local storage of the server, thus removing a performance
 penalty that would be incurred by essentially downloading the file twice.
 
