@@ -32,6 +32,8 @@ jobs:
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
+      - store_artifacts:
+          path: reports/backend/owasp_report.html
   test-frontend:
     working_directory: ~/tdp-apps
     docker:
@@ -73,6 +75,8 @@ jobs:
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-frontend; ./zap-scanner.sh"
+      - store_artifacts:
+          path: reports/frontend/owasp_report.html
   deploy:
     working_directory: ~/tdp-deploy
     docker:
