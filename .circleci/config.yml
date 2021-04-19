@@ -166,7 +166,7 @@ jobs:
           name: "Deploy clamav-rest"
           command: |
             # First delete the existing implementation of clamav-rest so we don't exhaust memory quota
-            cf delete -r clamav-rest
+            cf delete -r clamav-rest -f
             # NOTE: docker-backend is unused by clamav-rest but is needed to prevent an error when calling cf push
             cf push clamav-rest -f tdrs-backend/manifest.yml --var docker-backend=null --var cf-space=$CF_SPACE
       - run:
