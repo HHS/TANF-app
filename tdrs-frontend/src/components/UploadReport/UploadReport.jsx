@@ -6,7 +6,7 @@ import { fileInput } from 'uswds/src/js/components'
 import Button from '../Button'
 
 import FileUpload from '../FileUpload'
-import useEventLogger from '../../utils/eventLogger'
+import { useEventLogger } from '../../utils/eventLogger'
 
 function UploadReport({ handleCancel }) {
   // The currently selected year from the reportingYears dropdown

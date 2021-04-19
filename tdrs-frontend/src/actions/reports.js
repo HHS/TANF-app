@@ -1,3 +1,5 @@
+import { logErrorToServer } from '../utils/eventLogger'
+
 export const SET_FILE = 'SET_FILE'
 export const CLEAR_FILE = 'CLEAR_FILE'
 export const SET_FILE_ERROR = 'SET_FILE_ERROR'
@@ -18,6 +20,7 @@ export const upload = ({ file, section }) => async (dispatch) => {
       },
     })
   } catch (error) {
+    logErrorToServer(SET_FILE_ERROR)
     dispatch({ type: SET_FILE_ERROR, payload: { error, section } })
     return false
   }

@@ -10,7 +10,7 @@ import { ALERT_ERROR } from '../Alert'
 import Button from '../Button'
 import FormGroup from '../FormGroup'
 import ComboBox from '../ComboBox'
-import useEventLogger from '../../utils/eventLogger'
+import { useEventLogger } from '../../utils/eventLogger'
 
 /**
  *
