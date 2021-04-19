@@ -12,9 +12,9 @@ jobs:
       - run:
           name: "Test: Build and Spin-up Django API Service"
           command: "cd tdrs-backend; docker-compose up -d --build"
-#      - run:
-#          name: "Tear Down Django API Service"
-#          command: "cd tdrs-backend; docker-compose down "
+      - run:
+          name: "Tear Down Django API Service"
+          command: "cd tdrs-backend; docker-compose down "
       - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
           command: "cd tdrs-backend; docker-compose run web sh -c \"pytest && pytest --cov-report=xml\""
