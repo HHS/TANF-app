@@ -7,11 +7,14 @@ applications:
   docker:
     image: ((docker-backend))
   env:
-    AV_SCAN_URL: http://clamav-rest.apps.internal:9000/scan
+    AV_SCAN_URL: http://((cf-space))-clamav-rest.apps.internal:9000/scan
 - name: clamav-rest
   instances: 1
-  memory: 512M
+  memory: 1.5G
+  disk_quota: 2G
+  docker:
+    image: rafttech/clamav-rest:0.103.2
   env:
     MAX_FILE_SIZE: 200M
-  docker:
-    image: ajilaag/clamav-rest:20201028
+  routes:
+  - route: ((cf-space))-clamav-rest.apps.internal
