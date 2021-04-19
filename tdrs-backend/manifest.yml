@@ -10,7 +10,7 @@ applications:
     AV_SCAN_URL: http://((cf-space))-clamav-rest.apps.internal:9000/scan
 - name: clamav-rest
   instances: 1
-  memory: 1.5G
+  memory: 2G
   disk_quota: 2G
   docker:
     image: rafttech/clamav-rest:0.103.2
