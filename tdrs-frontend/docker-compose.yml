@@ -1,8 +1,13 @@
 version: "3"
 services:
   zaproxy:
-    image: owasp/zap2docker-weekly
+    image: owasp/zap2docker-stable
+    container_name: zap-scan
     command: sleep 3600
+    ports:
+      - 8090:8090
+    networks:
+      - local
     volumes:
       - ./reports:/zap/wrk/:rw
   tdp-frontend:
