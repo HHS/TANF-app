@@ -23,4 +23,3 @@ def test_write_logs(api_client, ofa_admin):
     response = api_client.post("/v1/logs/", data)
     assert response.status_code == status.HTTP_200_OK
     assert response.data == 'Success'
-
