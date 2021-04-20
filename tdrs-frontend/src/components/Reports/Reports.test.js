@@ -1,11 +1,9 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import { render, fireEvent, waitFor, prettyDOM } from '@testing-library/react'
+import { render, fireEvent, waitFor } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
-import axios from 'axios'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
 
@@ -43,9 +41,33 @@ describe('Reports', () => {
         },
       ],
       error: null,
-      year: 2020,
+      year: '',
+      stt: '',
     },
-    auth: { authenticated: true, user: { email: 'hi@bye.com' } },
+    stts: {
+      sttList: [
+        {
+          id: 1,
+          type: 'state',
+          code: 'AL',
+          name: 'Alabama',
+        },
+        {
+          id: 2,
+          type: 'state',
+          code: 'AK',
+          name: 'Alaska',
+        },
+      ],
+      loading: false,
+    },
+    auth: {
+      authenticated: true,
+      user: {
+        email: 'hi@bye.com',
+        roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
+      },
+    },
   }
   const mockStore = configureStore([thunk])
 
@@ -54,42 +76,88 @@ describe('Reports', () => {
       type: 'text/plain',
     })
 
-  it('should render the USWDS Select component with two options', () => {
+  it('should render the Fiscal Year dropdown with two options and a placeholder', () => {
     const store = mockStore(initialState)
-    const wrapper = mount(
+    const { getByLabelText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
 
-    const select = wrapper.find('.usa-select')
+    const select = getByLabelText('Fiscal Year (October - September)')
 
-    expect(select).toExist()
+    expect(select).toBeInTheDocument()
 
-    const options = wrapper.find('option')
+    const options = select.children
 
-    expect(options.length).toEqual(2)
+    // The placeholder option is included in the length
+    expect(options.length).toEqual(3)
   })
 
-  it('should dispatch setYear when a year is selected', () => {
+  it('should render the STT dropdown with one option, when the user is an OFA Admin', () => {
     const store = mockStore(initialState)
-    const origDispatch = store.dispatch
-    store.dispatch = jest.fn(origDispatch)
-    const wrapper = mount(
+    const { getByTestId } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
 
-    const select = wrapper.find('.usa-select')
+    const select = getByTestId('stt-combobox')
 
-    select.simulate('change', {
-      target: {
-        value: 2021,
+    const options = select.children
+
+    // There are only two STTs in the mock list but the combobox
+    // has a default option
+    expect(options.length).toEqual(3)
+  })
+
+  it('should not render the STT if the user is not an OFA Admin', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          roles: [], // Remove the OFA Admin role
+        },
       },
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(1)
+    const { queryByTestId } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const select = queryByTestId('stt-combobox')
+
+    expect(select).toBe(null)
+  })
+
+  it('should select an STT and a year on the Reports page', () => {
+    const store = mockStore(initialState)
+    const { getByText, getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const sttDropdown = getByLabelText('Associated State, Tribe, or Territory')
+
+    // Due to weirdness with USWDS, fire a change event instead of a select
+    fireEvent.change(sttDropdown, {
+      target: { value: 'alaska' },
+    })
+
+    expect(sttDropdown.value).toEqual('alaska')
+
+    const yearsDropdown = getByLabelText('Fiscal Year (October - September)')
+
+    fireEvent.select(yearsDropdown, {
+      target: { value: '2021' },
+    })
+
+    expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
   })
 
   it('should render the UploadReports form when a year is selected and Search button is clicked', () => {
@@ -187,13 +255,13 @@ describe('Reports', () => {
         },
       })
     })
-    expect(store.dispatch).toHaveBeenCalledTimes(8)
+    expect(store.dispatch).toHaveBeenCalledTimes(9)
 
     // There should be 4 more dispatches upon making the submission,
     // one request to /reports for each file
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(12)
+    expect(store.dispatch).toHaveBeenCalledTimes(13)
   })
 
   it('should add files to the redux state when uploading', async () => {
