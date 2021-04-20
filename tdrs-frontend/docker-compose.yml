@@ -1,7 +1,7 @@
 version: "3"
 services:
   zaproxy:
-    image: owasp/zap2docker-stable
+    image: owasp/zap2docker-weekly
     container_name: zap-scan
     command: sleep 3600
     ports:
