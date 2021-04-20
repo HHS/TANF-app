@@ -2,32 +2,37 @@ import React from 'react'
 import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, prettyDOM, render, waitFor } from '@testing-library/react'
 import axios from 'axios'
 
 import UploadReport from './UploadReport'
 
 describe('UploadReport', () => {
   const initialState = {
+    auth: { user: { email: 'test@test.com' }, authenticated: true },
     reports: {
       files: [
         {
           section: 'Active Case Data',
+          fileType: null,
           fileName: null,
           error: null,
         },
         {
           section: 'Closed Case Data',
+          fileType: null,
           fileName: null,
           error: null,
         },
         {
           section: 'Aggregate Data',
+          fileType: null,
           fileName: null,
           error: null,
         },
         {
           section: 'Stratum Data',
+          fileType: null,
           fileName: null,
           error: null,
         },
@@ -75,7 +80,8 @@ describe('UploadReport', () => {
   })
 
   it('should render a div with class "usa-form-group--error" if there is an error', () => {
-    // Recreate the store with the intial state, except add an `error` object to one of the files.
+    // Recreate the store with the intial state, except add an `error`
+    // object to one of the files.
     const store = mockStore({
       ...initialState,
       reports: {
@@ -84,6 +90,7 @@ describe('UploadReport', () => {
             section: 'Active Case Data',
             fileName: null,
             // This error in the state should create the error state in the UI
+            fileType: null,
             error: {
               message: 'something went wrong',
             },
@@ -91,42 +98,73 @@ describe('UploadReport', () => {
           {
             section: 'Closed Case Data',
             fileName: null,
+            fileType: null,
             error: null,
           },
           {
             section: 'Aggregate Data',
             fileName: null,
+            fileType: null,
             error: null,
           },
           {
             section: 'Stratum Data',
             fileName: null,
+            fileType: null,
             error: null,
           },
         ],
       },
     })
-    render(
+
+    const { container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
     )
 
-    const formGroup = document.querySelector('.usa-form-group')
+    const formGroup = container.querySelector('.usa-form-group')
 
     expect(formGroup.classList.contains('usa-form-group--error')).toBeTruthy()
   })
 
   it('should render a div without class "usa-form-group--error" if there is NOT an error', () => {
     const store = mockStore(initialState)
-    render(
+    const { container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
     )
 
-    const formGroup = document.querySelector('.usa-form-group')
+    const formGroup = container.querySelector('.usa-form-group')
 
     expect(formGroup.classList.contains('usa-form-group--error')).toBeFalsy()
+  })
+
+  it('should clear input value if there is an error', () => {
+    const store = mockStore(initialState)
+    axios.post.mockImplementationOnce(() =>
+      Promise.resolve({ data: { id: 1 } })
+    )
+
+    const { getByLabelText } = render(
+      <Provider store={store}>
+        <UploadReport handleCancel={handleCancel} />
+      </Provider>
+    )
+
+    const fileInput = getByLabelText('Section 1 - Active Case Data')
+
+    const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
+    const fileList = [newFile]
+
+    fireEvent.change(fileInput, {
+      target: {
+        name: 'Active Case Data',
+        files: fileList,
+      },
+    })
+
+    expect(fileInput.value).toStrictEqual('')
   })
 })
