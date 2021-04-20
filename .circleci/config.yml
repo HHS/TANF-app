@@ -121,7 +121,7 @@ jobs:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push lfrohlich/tdp-frontend:$DOCKER_TAG"
       - run:
-          name: "Login to Cloud.gov and set space and org targets"
+          name: "Deploy to Cloud.gov"
           command: |
             # Map certain branches to spaces, otherwise default to the Development space.
             # This lets you have dev/staging/main branches that automatically go to the right place.
@@ -162,16 +162,19 @@ jobs:
             cf api https://api.fr.cloud.gov
             cf auth "$CF_USERNAME" "$CF_PASSWORD"
             cf target -o $CF_ORG -s "$CF_SPACE"
-      - run:
-          name: "Deploy clamav-rest"
-          command: |
+
+            ###
+            # Deploy ClamAV REST server
+            #
             # First delete the existing implementation of clamav-rest so we don't exhaust memory quota
             cf delete -r clamav-rest -f
             # NOTE: docker-backend is unused by clamav-rest but is needed to prevent an error when calling cf push
             cf push clamav-rest -f tdrs-backend/manifest.yml --var docker-backend=null --var cf-space=$CF_SPACE
-      - run:
-          name: "Deploy to Cloud.gov"
-          command: "./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH $CF_SPACE"
+
+            ###
+            # Deploy frontend and backend applications
+            #
+            ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH $CF_SPACE
 workflows:
   build-and-test:
     jobs:
