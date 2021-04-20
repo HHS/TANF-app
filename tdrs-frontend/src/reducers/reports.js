@@ -3,7 +3,8 @@ import {
   CLEAR_FILE,
   SET_FILE_ERROR,
   CLEAR_ERROR,
-  SET_YEAR,
+  SET_SELECTED_YEAR,
+  SET_SELECTED_STT,
 } from '../actions/reports'
 
 export const getUpdatedFiles = (
@@ -60,7 +61,8 @@ const initialState = {
       fileType: null,
     },
   ],
-  year: 2020,
+  year: '',
+  stt: '',
 }
 
 const reports = (state = initialState, action) => {
@@ -99,9 +101,13 @@ const reports = (state = initialState, action) => {
       const updatedFiles = getUpdatedFiles(state, null, section, null)
       return { ...state, files: updatedFiles }
     }
-    case SET_YEAR: {
+    case SET_SELECTED_YEAR: {
       const { year } = payload
       return { ...state, year }
+    }
+    case SET_SELECTED_STT: {
+      const { stt } = payload
+      return { ...state, stt }
     }
     default:
       return state
