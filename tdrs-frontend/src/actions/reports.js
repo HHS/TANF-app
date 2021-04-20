@@ -1,7 +1,13 @@
+import { v4 as uuidv4 } from 'uuid'
+
 export const SET_FILE = 'SET_FILE'
 export const CLEAR_FILE = 'CLEAR_FILE'
 export const SET_FILE_ERROR = 'SET_FILE_ERROR'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
+
+export const clearFile = ({ section }) => (dispatch) => {
+  dispatch({ type: CLEAR_FILE, payload: { section } })
+}
 
 export const clearError = ({ section }) => (dispatch) => {
   dispatch({ type: CLEAR_ERROR, payload: { section } })
@@ -14,11 +20,16 @@ export const upload = ({ file, section }) => async (dispatch) => {
       type: SET_FILE,
       payload: {
         fileName: file.name,
+        fileType: file.type,
         section,
+        uuid: uuidv4(),
       },
     })
   } catch (error) {
-    dispatch({ type: SET_FILE_ERROR, payload: { error, section } })
+    dispatch({
+      type: SET_FILE_ERROR,
+      payload: { error: Error({ message: 'something went wrong' }), section },
+    })
     return false
   }
 
