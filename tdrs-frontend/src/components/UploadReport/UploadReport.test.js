@@ -46,7 +46,7 @@ describe('UploadReport', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} />
+        <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -62,7 +62,7 @@ describe('UploadReport', () => {
 
     const { getByLabelText } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} />
+        <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -119,7 +119,7 @@ describe('UploadReport', () => {
 
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} />
+        <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -132,7 +132,7 @@ describe('UploadReport', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} />
+        <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -149,7 +149,7 @@ describe('UploadReport', () => {
 
     const { getByLabelText } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} />
+        <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 

@@ -392,19 +392,19 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { getByLabelText } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
     )
 
-    const select = wrapper.find('.usa-select')
+    const select = getByLabelText('Associated State, Tribe, or Territory')
 
-    select.simulate('change', {
+    fireEvent.change(select, {
       target: { value: 'alaska' },
     })
 
-    expect(select.instance().value).toEqual('alaska')
+    expect(select.value).toEqual('alaska')
   })
 
   it('should reset Select element value to an empty string when there is no selected stt', () => {
@@ -640,6 +640,7 @@ describe('EditProfile', () => {
         <EditProfile />
       </Provider>
     )
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    // Account for the internal dispatch to fetch stts
+    expect(store.dispatch).toHaveBeenCalledTimes(3)
   })
 })

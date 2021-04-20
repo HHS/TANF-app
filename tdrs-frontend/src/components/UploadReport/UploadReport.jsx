@@ -11,7 +11,7 @@ import axiosInstance from '../../axios-instance'
 import { clearError } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 
-function UploadReport({ handleCancel }) {
+function UploadReport({ handleCancel, header }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
 
@@ -129,7 +129,7 @@ function UploadReport({ handleCancel }) {
         className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
         tabIndex="-1"
       >
-        Fiscal Year {selectedYear}
+        {header}
       </h2>
       {localAlert.active && (
         <div
@@ -166,6 +166,7 @@ function UploadReport({ handleCancel }) {
 
 UploadReport.propTypes = {
   handleCancel: PropTypes.func.isRequired,
+  header: PropTypes.string.isRequired,
 }
 
 export default UploadReport
