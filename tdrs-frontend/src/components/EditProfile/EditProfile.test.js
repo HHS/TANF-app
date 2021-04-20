@@ -3,7 +3,7 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { fireEvent, prettyDOM, render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import { MemoryRouter, Redirect } from 'react-router-dom'
 import EditProfile, { validation } from './EditProfile'

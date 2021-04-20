@@ -2,7 +2,7 @@ import React from 'react'
 import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { fireEvent, prettyDOM, render, waitFor } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import axios from 'axios'
 
 import UploadReport from './UploadReport'

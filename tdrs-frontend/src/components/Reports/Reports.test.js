@@ -70,12 +70,12 @@ describe('Reports', () => {
     },
   }
   const mockStore = configureStore([thunk])
-  
+
   const makeTestFile = (name) =>
     new File(['test'], name, {
       type: 'text/plain',
     })
-  
+
   it('should render the Fiscal Year dropdown with two options and a placeholder', () => {
     const store = mockStore(initialState)
     const { getByLabelText } = render(
@@ -106,7 +106,8 @@ describe('Reports', () => {
 
     const options = select.children
 
-    // There are only two STTs in the mock list but the combobox has a default option
+    // There are only two STTs in the mock list but the combobox
+    // has a default option
     expect(options.length).toEqual(3)
   })
 
