@@ -249,7 +249,15 @@ describe('Reports', () => {
   })
 
   it('should make a request with the selections and upload payloads after clicking Submit Data Files', async () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
@@ -259,7 +267,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/))
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     await waitFor(() => {
       fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {

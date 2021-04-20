@@ -182,7 +182,7 @@ function EditProfile() {
         >
           <STTComboBox
             selectStt={setStt}
-            error={errors.stt}
+            error={Boolean(errors.stt)}
             selectedStt={
               profileInfo.stt &&
               profileInfo.stt.name &&
