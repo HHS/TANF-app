@@ -30,7 +30,7 @@ function UploadReport({ handleCancel, header }) {
   // else it won't be read be screen readers.
   const headerRef = useRef(null)
   const dispatch = useDispatch()
-  
+
   const logger = useEventLogger()
 
   useEffect(() => {
