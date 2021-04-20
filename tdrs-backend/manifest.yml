@@ -1,7 +1,7 @@
 version: 1
 applications:
 - name: tdp-backend
-  memory: 256M
+  memory: 512M
   instances: 1
   disk_quota: 2G
   docker:
