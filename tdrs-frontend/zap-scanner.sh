@@ -19,12 +19,13 @@ docker-compose up -d --build
 	  -config spider.postform=true"
 
 	echo "================== OWASP ZAP tests =================="
-	docker exec zap-scan zap-full-scan.py -t http://tdp-ui -m 5 -z "${ZAP_CONFIG}" | tee /tmp/zap.out 
-	if grep 'FAIL-NEW: 0' /tmp/zap.out >/dev/null ; then
-		ZAPEXIT=0
-	else
-		ZAPEXIT=1
-	fi
+	chmod 777 $(pwd)/reports
+    docker-compose run zaproxy zap-full-scan.py \
+        -t http://tdp-frontend \
+        -m 5 \
+        -z "${ZAP_CONFIG}" \
+        -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
+    ZAPEXIT=$?
 
  docker-compose down --remove-orphan
 
