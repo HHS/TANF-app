@@ -173,7 +173,7 @@ jobs:
             ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH $CF_SPACE
 
             # Enable direct communication over internal routes between backend and clamav-rest containers
-            cf add-network-policy $CG_HOSTNAME_BACKEND clamav-rest -s $CF_SPACE -o $CF_ORG --protocol tcp --port 9000
+            cf add-network-policy $CGHOSTNAME_BACKEND clamav-rest -s $CF_SPACE -o $CF_ORG --protocol tcp --port 9000
 workflows:
   build-and-test:
     jobs:
