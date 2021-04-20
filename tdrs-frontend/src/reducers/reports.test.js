@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import reducer, { getUpdatedFiles } from './reports'
 import {
   CLEAR_ERROR,
@@ -12,22 +13,30 @@ const initialState = {
     {
       section: 'Active Case Data',
       fileName: null,
+      fileType: null,
       error: null,
+      uuid: null,
     },
     {
       section: 'Closed Case Data',
       fileName: null,
+      fileType: null,
       error: null,
+      uuid: null,
     },
     {
       section: 'Aggregate Data',
       fileName: null,
+      fileType: null,
       error: null,
+      uuid: null,
     },
     {
       section: 'Stratum Data',
       fileName: null,
+      fileType: null,
       error: null,
+      uuid: null,
     },
   ],
   year: 2020,
@@ -39,12 +48,15 @@ describe('reducers/reports', () => {
   })
 
   it('should handle SET_FILE', () => {
+    const uuid = uuidv4()
     expect(
       reducer(undefined, {
         type: SET_FILE,
         payload: {
           fileName: 'Test.txt',
+          fileType: 'text/plain',
           section: 'Stratum Data',
+          uuid,
         },
       })
     ).toEqual({
@@ -52,22 +64,30 @@ describe('reducers/reports', () => {
         {
           section: 'Active Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Closed Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Aggregate Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Stratum Data',
           fileName: 'Test.txt',
+          fileType: 'text/plain',
           error: null,
+          uuid,
         },
       ],
       year: 2020,
@@ -87,22 +107,30 @@ describe('reducers/reports', () => {
         {
           section: 'Active Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Closed Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Aggregate Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Stratum Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
       ],
       year: 2020,
@@ -124,22 +152,30 @@ describe('reducers/reports', () => {
         {
           section: 'Active Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Closed Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Aggregate Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Stratum Data',
           fileName: null,
+          fileType: null,
           error: fakeError,
+          uuid: null,
         },
       ],
       year: 2020,
@@ -155,22 +191,30 @@ describe('reducers/reports', () => {
             {
               section: 'Active Case Data',
               fileName: null,
+              fileType: null,
               error: null,
+              uuid: null,
             },
             {
               section: 'Closed Case Data',
               fileName: null,
+              fileType: null,
               error: null,
+              uuid: null,
             },
             {
               section: 'Aggregate Data',
               fileName: null,
+              fileType: null,
               error: null,
+              uuid: null,
             },
             {
               section: 'Stratum Data',
               fileName: null,
+              fileType: null,
               error: fakeError,
+              uuid: null,
             },
           ],
           year: 2020,
@@ -187,22 +231,30 @@ describe('reducers/reports', () => {
         {
           section: 'Active Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Closed Case Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Aggregate Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
         {
           section: 'Stratum Data',
           fileName: null,
+          fileType: null,
           error: null,
+          uuid: null,
         },
       ],
       year: 2020,
@@ -224,30 +276,85 @@ describe('reducers/reports', () => {
   })
 
   it('should be able to update files with a new value and return those files', () => {
-    const state = initialState
-
-    const updatedFiles = getUpdatedFiles(state, 'Test.txt', 'Active Case Data')
+    const updatedFiles = getUpdatedFiles(
+      initialState,
+      'Test.txt',
+      'Active Case Data'
+    )
 
     expect(updatedFiles).toStrictEqual([
       {
         section: 'Active Case Data',
         fileName: 'Test.txt',
+        fileType: null,
         error: null,
+        uuid: null,
       },
       {
         section: 'Closed Case Data',
         fileName: null,
+        fileType: null,
         error: null,
+        uuid: null,
       },
       {
         section: 'Aggregate Data',
         fileName: null,
+        fileType: null,
         error: null,
+        uuid: null,
       },
       {
         section: 'Stratum Data',
         fileName: null,
+        fileType: null,
         error: null,
+        uuid: null,
+      },
+    ])
+  })
+
+  it('should be able to update files with a new value and return those files', () => {
+    const state = initialState
+
+    const uuid = uuidv4()
+
+    const updatedFiles = getUpdatedFiles(
+      state,
+      'Test.txt',
+      'Active Case Data',
+      uuid,
+      'text/plain'
+    )
+
+    expect(updatedFiles).toStrictEqual([
+      {
+        section: 'Active Case Data',
+        fileName: 'Test.txt',
+        fileType: 'text/plain',
+        error: null,
+        uuid,
+      },
+      {
+        section: 'Closed Case Data',
+        fileName: null,
+        fileType: null,
+        error: null,
+        uuid: null,
+      },
+      {
+        section: 'Aggregate Data',
+        fileName: null,
+        fileType: null,
+        error: null,
+        uuid: null,
+      },
+      {
+        section: 'Stratum Data',
+        fileName: null,
+        fileType: null,
+        error: null,
+        uuid: null,
       },
     ])
   })
