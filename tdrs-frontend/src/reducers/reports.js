@@ -96,7 +96,7 @@ const reports = (state = initialState, action) => {
         null,
         error
       )
-      return { ...initialState, files: updatedFiles }
+      return { ...state, files: updatedFiles }
     }
     case CLEAR_ERROR: {
       const { section } = payload

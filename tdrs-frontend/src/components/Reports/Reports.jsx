@@ -40,27 +40,28 @@ function Reports() {
   }
 
   const handleSearch = () => {
-    // Clear previous errors
-    setFormValidationState({})
+    if (!isUploadReportToggled) {
+      // Clear previous errors
+      setFormValidationState({})
+      // Filter out non-truthy values
+      const form = [selectedYear, selectedStt, selectedQuarter].filter(Boolean)
 
-    // Filter out non-truthy values
-    const form = [selectedYear, selectedStt, selectedQuarter].filter(Boolean)
-
-    if (form.length === 3) {
-      setIsToggled(true)
-    } else {
-      // create error state
-      setFormValidationState({
-        year: !selectedYear,
-        stt: !selectedStt,
-        quarter: !selectedQuarter,
-        errors: 3 - form.length,
-      })
-      setTouched({
-        year: true,
-        stt: true,
-        quarter: true,
-      })
+      if (form.length === 3) {
+        setIsToggled(true)
+      } else {
+        // create error state
+        setFormValidationState({
+          year: !selectedYear,
+          stt: !selectedStt,
+          quarter: !selectedQuarter,
+          errors: 3 - form.length,
+        })
+        setTouched({
+          year: true,
+          stt: true,
+          quarter: true,
+        })
+      }
     }
   }
 
@@ -85,19 +86,22 @@ function Reports() {
   }
 
   useEffect(() => {
-    const form = [selectedYear, selectedStt, selectedQuarter].filter(Boolean)
-    const touchedFields = Object.keys(touched).length
+    if (!isUploadReportToggled) {
+      const form = [selectedYear, selectedStt, selectedQuarter].filter(Boolean)
+      const touchedFields = Object.keys(touched).length
 
-    const errors = touchedFields === 3 ? 3 - form.length : 0
+      const errors = touchedFields === 3 ? 3 - form.length : 0
 
-    setFormValidationState((currentState) => ({
-      ...currentState,
-      year: touched.year && !selectedYear,
-      stt: touched.stt && !selectedStt,
-      quarter: touched.quarter && !selectedQuarter,
-      errors,
-    }))
+      setFormValidationState((currentState) => ({
+        ...currentState,
+        year: touched.year && !selectedYear,
+        stt: touched.stt && !selectedStt,
+        quarter: touched.quarter && !selectedQuarter,
+        errors,
+      }))
+    }
   }, [
+    isUploadReportToggled,
     selectedYear,
     selectedStt,
     selectedQuarter,
