@@ -38,12 +38,7 @@ jobs:
     working_directory: ~/tdp-apps
     machine:
       docker_layer_caching: false
-    docker:
-      - image: cypress/base:10
-        user: root
     steps:
-      - setup_remote_docker:
-          docker_layer_caching: false
       - checkout
       - run:
           name: 'Ensure docker exists,otherwise install it.'
