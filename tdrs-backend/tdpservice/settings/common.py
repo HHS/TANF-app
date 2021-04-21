@@ -81,6 +81,7 @@ class Common(Configuration):
         "corsheaders",
         "django_extensions",
         "drf_yasg",
+        "storages",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -171,6 +172,10 @@ class Common(Configuration):
         "django.contrib.staticfiles.finders.FileSystemFinder",
         "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     )
+
+    # Store uploaded files in S3
+    # http://django-storages.readthedocs.org/en/latest/index.html
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
     # Media files
     MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")

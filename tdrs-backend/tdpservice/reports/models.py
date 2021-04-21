@@ -82,6 +82,8 @@ class ReportFile(File):
                             blank=False,
                             null=False)
 
+    file = models.FileField(upload_to='data_files')
+
     @classmethod
     def create_new_version(self, data):
         """Create a new version of a report with an incremented version."""
