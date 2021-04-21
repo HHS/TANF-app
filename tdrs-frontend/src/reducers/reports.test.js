@@ -5,7 +5,8 @@ import {
   SET_FILE,
   CLEAR_FILE,
   SET_FILE_ERROR,
-  SET_YEAR,
+  SET_SELECTED_YEAR,
+  SET_SELECTED_STT,
 } from '../actions/reports'
 
 const initialState = {
@@ -39,7 +40,8 @@ const initialState = {
       uuid: null,
     },
   ],
-  year: 2020,
+  year: '',
+  stt: '',
 }
 
 describe('reducers/reports', () => {
@@ -90,7 +92,8 @@ describe('reducers/reports', () => {
           uuid,
         },
       ],
-      year: 2020,
+      stt: '',
+      year: '',
     })
   })
 
@@ -133,7 +136,8 @@ describe('reducers/reports', () => {
           uuid: null,
         },
       ],
-      year: 2020,
+      stt: '',
+      year: '',
     })
   })
 
@@ -178,7 +182,8 @@ describe('reducers/reports', () => {
           uuid: null,
         },
       ],
-      year: 2020,
+      stt: '',
+      year: '',
     })
   })
 
@@ -217,6 +222,7 @@ describe('reducers/reports', () => {
               uuid: null,
             },
           ],
+          stt: '',
           year: 2020,
         },
         {
@@ -257,21 +263,38 @@ describe('reducers/reports', () => {
           uuid: null,
         },
       ],
+      stt: '',
       year: 2020,
     })
   })
 
-  it('should handle "SET_YEAR"', () => {
+  it('should handle "SET_SELECTED_STT"', () => {
     expect(
       reducer(undefined, {
-        type: SET_YEAR,
+        type: SET_SELECTED_STT,
         payload: {
-          year: 2021,
+          stt: 'florida',
         },
       })
     ).toEqual({
       files: initialState.files,
-      year: 2021,
+      year: '',
+      stt: 'florida',
+    })
+  })
+
+  it('should handle "SET_SELECTED_YEAR"', () => {
+    expect(
+      reducer(undefined, {
+        type: SET_SELECTED_YEAR,
+        payload: {
+          year: '2021',
+        },
+      })
+    ).toEqual({
+      files: initialState.files,
+      year: '2021',
+      stt: '',
     })
   })
 

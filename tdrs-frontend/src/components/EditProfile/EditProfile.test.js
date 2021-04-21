@@ -392,19 +392,19 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { getByLabelText } = render(
       <Provider store={store}>
         <EditProfile />
       </Provider>
     )
 
-    const select = wrapper.find('.usa-select')
+    const select = getByLabelText('Associated State, Tribe, or Territory')
 
-    select.simulate('change', {
+    fireEvent.change(select, {
       target: { value: 'alaska' },
     })
 
-    expect(select.instance().value).toEqual('alaska')
+    expect(select.value).toEqual('alaska')
   })
 
   it('should reset Select element value to an empty string when there is no selected stt', () => {
@@ -592,14 +592,14 @@ describe('EditProfile', () => {
 
     // There should be four dispatches, three called `onChange` during
     // the above selections, and 1 to fetch the STT list
-    expect(store.dispatch).toHaveBeenCalledTimes(4)
+    expect(store.dispatch).toHaveBeenCalledTimes(5)
 
     const form = wrapper.find('.usa-form').hostNodes()
     form.simulate('submit', {
       preventDefault: () => {},
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(6)
+    expect(store.dispatch).toHaveBeenCalledTimes(7)
   })
 
   it('should dispatch "setAlert" when form is submitted and there is an error', () => {
@@ -640,6 +640,7 @@ describe('EditProfile', () => {
         <EditProfile />
       </Provider>
     )
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    // Account for the internal dispatch to fetch stts
+    expect(store.dispatch).toHaveBeenCalledTimes(3)
   })
 })

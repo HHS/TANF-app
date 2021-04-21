@@ -9,9 +9,9 @@ import { ALERT_ERROR } from '../Alert'
 
 import Button from '../Button'
 import FormGroup from '../FormGroup'
-import ComboBox from '../ComboBox'
-import { useEventLogger } from '../../utils/eventLogger'
 
+import STTComboBox from '../STTComboBox'
+import { useEventLogger } from '../../utils/eventLogger'
 /**
  *
  * @param {string} fieldName - The name of the element that is being validated
@@ -53,7 +53,6 @@ export const validation = (fieldName, fieldValue) => {
 
 function EditProfile() {
   const errorRef = useRef(null)
-  const sttList = useSelector((state) => state.stts.sttList)
   const requestedAccess = useSelector(
     (state) => state.requestAccess.requestAccess
   )
@@ -85,9 +84,10 @@ function EditProfile() {
   }, [dispatch, requestAccessError, logger])
 
   const setStt = (sttName) => {
-    let selectedStt = sttList.find((stt) => sttName === stt.name.toLowerCase())
-    if (!selectedStt) selectedStt = ''
-    setProfileInfo({ ...profileInfo, stt: selectedStt })
+    setProfileInfo((currentState) => ({
+      ...currentState,
+      stt: sttName.toLowerCase(),
+    }))
   }
 
   const handleChange = ({ name, value }) => {
@@ -183,29 +183,16 @@ function EditProfile() {
             errors.stt ? 'usa-form-group--error' : ''
           }`}
         >
-          <ComboBox
-            name="stt"
+          <STTComboBox
+            selectStt={setStt}
             error={errors.stt}
-            handleSelect={setStt}
-            selected={
+            selectedStt={
               profileInfo.stt &&
               profileInfo.stt.name &&
               profileInfo.stt.name.toLowerCase()
             }
             handleBlur={handleBlur}
-            placeholder="- Select or Search -"
-          >
-            <option value="">Select an STT</option>
-            {sttList.map((stt) => (
-              <option
-                className="sttOption"
-                key={stt.id}
-                value={stt.name.toLowerCase()}
-              >
-                {stt.name}
-              </option>
-            ))}
-          </ComboBox>
+          />
         </div>
         <Button type="submit" className="width-full request-access-button">
           Request Access
