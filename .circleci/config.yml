@@ -56,6 +56,7 @@ jobs:
       - node/install-yarn
       - node/install-packages:
           app-dir: tdrs-frontend
+          cache-path: ~/.cache
           pkg-manager: yarn
       - run:
           name: "Run ESLint"
@@ -76,10 +77,7 @@ jobs:
             fi
       - run:
           name: "Run Cypress Integration Tests"
-          command: |
-            cd tdrs-frontend;
-            cypress install
-            yarn cy:run:ci
+          command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-frontend; ./zap-scanner.sh"
