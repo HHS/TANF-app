@@ -42,18 +42,21 @@ jobs:
       docker_layer_caching: false
     steps:
       - checkout
-      - node/install:
-          install-yarn: true
-          node-version: "12.18"
-      - run:
-          name: 'Ensure docker exists,otherwise install it.'
-          command: "./scripts/docker-check.sh"
       - run:
           name: 'Ensure docker-compose exists,otherwise install it.'
           command: "./scripts/docker-compose-check.sh"
-      - run:
-          name: "Install Package Dependencies"
-          command: "cd tdrs-frontend; yarn"
+      - run: 
+          name: "Install Node.JS"
+          command: |
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install v12.18
+            nvm alias default v12.18
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+      - node/install-yarn
+      - node/install-packages:
+          app-dir: tdrs-frontend
+          pkg-manager: yarn
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
