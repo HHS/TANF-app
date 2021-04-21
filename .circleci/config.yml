@@ -37,6 +37,9 @@ jobs:
   test-frontend:
     machine:
       docker_layer_caching: false
+    docker:
+      - image: cypress/base:10
+        user: root
     steps:
       - checkout
       - run:
