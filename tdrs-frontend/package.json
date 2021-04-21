@@ -89,11 +89,12 @@
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
       "!src/**/index.js",
+      "!src/axios-instance.js",
       "!src/serviceWorker.js",
       "!src/configureStore.js",
+      "!src/mirage.js",
       "!src/middleware/logger.js",
-      "!src/utils/createFileInputErrorState.js",
-      "!src/mirage.js"
+      "!src/utils/createFileInputErrorState.js"
     ],
     "coverageThreshold": {
       "global": {

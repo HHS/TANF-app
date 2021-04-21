@@ -402,4 +402,22 @@ describe('Reports', () => {
       uuid: actions[3].payload.uuid,
     })
   })
+
+  it('should display error labels when user tries to search without making selections', () => {
+    const store = mockStore(initialState)
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+    expect(getByText('A fiscal year is required')).toBeInTheDocument()
+    expect(getByText('A quarter is required')).toBeInTheDocument()
+    expect(
+      getByText('A state, tribe, or territory is required')
+    ).toBeInTheDocument()
+  })
 })
