@@ -56,6 +56,7 @@ jobs:
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
       - node/install-yarn
       - cypress/install:
+          cache-key: cache-{{ arch }}-{{ .Branch }}-{{ checksum "tdrs-frontend/package.json" }}
           working_directory: tdrs-frontend
           yarn: true
       - run:
