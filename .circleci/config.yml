@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  node: circleci/node@4.2.1
 jobs:
   test-backend:
     machine:
@@ -40,6 +42,8 @@ jobs:
       docker_layer_caching: false
     steps:
       - checkout
+      - node/install:
+          install-yarn: true
       - run:
           name: 'Ensure docker exists,otherwise install it.'
           command: "./scripts/docker-check.sh"
