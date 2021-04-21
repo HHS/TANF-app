@@ -21,10 +21,10 @@ docker-compose up -d --build
 	echo "================== OWASP ZAP tests =================="
 	chmod 777 $(pwd)/reports
   docker-compose run zaproxy zap-full-scan.py \
-      -t http://tdp-frontend \
-      -m 5 \
-      -z "${ZAP_CONFIG}" \
-      -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
+    -t http://tdp-frontend \
+    -m 5 \
+    -z "${ZAP_CONFIG}" \
+    -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
   ZAPEXIT=$?
 
  docker-compose down --remove-orphan
