@@ -1,6 +1,6 @@
 # 9. Git Workflow
 
-Date: 2021-02-23
+Date: 2021-04-22
 
 ## Status
 
@@ -34,6 +34,7 @@ A contributor to the TDP project would always use the following steps to propose
     * Add in-line comment to the file changes to provide context for the proposed changes
     * Ensure there are no merge conflicts 
     * Ensure CI/CD pipelines are green
+    * For frontend PRs, ensure that documentation trail from Raft's a11y review associated with epic is included and indicate if PR completes this epic. 
     * Update the title to remove `WIP`, change the PR to [Ready for Review](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/changing-the-stage-of-a-pull-request), assign label `raft-review`.
     * If your PR is against a branch other than `raft-tdp-main` keep it as a draft PR and add the tag `blocked` until the other branch is merged. 
 13. Assign a reviewer: 
@@ -49,8 +50,9 @@ A contributor to the TDP project would always use the following steps to propose
     * removes `raft-review` label
     * adds `qasp-review` label
     * assigns the Government as the reviewer:
-        * For backend development work assign `alexsoble`, `adpennington` and `lfrohlich`
-        * For frontend work, assign the same as backend work but also include `iamjolly` and `ttran-hub` for a11y review
+        * For backend and frontend development work assign `adpennington` and `alexsoble`
+        * For frontend work submitted for review but does not yet complete the epic, `adpennington` will sign off on Raft's a11y documentation (e.g. screen captures with VoiceOver utility, summary of review, etc.) and cc: `ttran-hub`
+        * For frontend work submitted for review that completes the epic, `adpennington` will complete code review, tag `ttran-hub` + `iamjolly` via comment, and add `a11y` label to PR 
         * For research and design work assign `lfrohlich`
         * For security controls assign `lfrohlich`
 18. For PRs with `qasp-review` label, the appropriate reviewer performs the review and/or requests changes. **GOAL** 5 days: 3 days to perform the review and 2 days to implement the requested changes.

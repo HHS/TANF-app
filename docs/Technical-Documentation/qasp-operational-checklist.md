@@ -37,7 +37,8 @@ As Product Owner, @lfrohlich will decide if ACs are met.
 > *Performance Standard(s): Web Content Accessibility Guidelines 2.1 AA standards*
 
 > *Acceptable Quality Level: 0 errors reported using an automated scanner and 0 errors reported in manual testing*
-
++ [ ] Does this PR complete the epic? 
++ [ ] Are links included to any other gov-approved PRs associated with epic?
 + [ ] Did automated and manual testing with @iamjolly and @ttran-hub using Accessibility Insights reveal any errors introduced in this PR?
     + [See the full Accessibility Assessment plan here.](https://github.com/HHS/TANF-app/blob/main/docs/a11y/how-18f-will-test-a11y.md)
 

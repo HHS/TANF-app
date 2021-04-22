@@ -15,7 +15,7 @@ Our web testing tool will be [Accessibility Insights](https://accessibilityinsig
 
 Accessibility Insights includes both a [Fast Pass](https://accessibilityinsights.io/docs/en/web/getstarted/fastpass/) tool and a comprehensive [Assessment](https://accessibilityinsights.io/docs/en/web/getstarted/assessment/) tool.
 
-We will check new pages, features, and interactions added during the course of each sprint using:
+We will conduct accessibility review at the epic-level (i.e., when the last  or only feature associated with the epic has been submitted for QASP review). We will check new pages, features, and interactions added during the course of each sprint using:
 
 - Accessibility Insights Fast Pass tool
 - Accessibility Insights Assessment tool
@@ -24,7 +24,7 @@ We will check new pages, features, and interactions added during the course of e
   - VoiceOver on Safari, Mac OS
   - VoiceOver on iOS
 
-We won't re-rest pages or elements that have previously been tested and haven't changed since, such as header or footer elements.
+We will consider all documentation from Raft's a11y reviews included in each PR associated with the epic. We won't re-test pages or elements that have previously been tested and haven't changed since, such as header or footer elements.
 
 We will invite in ACF's 508 Coordinator to review the accessibility of the site at strategic points in the process.
 
