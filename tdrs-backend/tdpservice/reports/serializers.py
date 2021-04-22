@@ -11,6 +11,7 @@ from .errors import ImmutabilityError
 class ReportFileSerializer(serializers.ModelSerializer):
     """Serializer for Report files."""
 
+    file = serializers.FileField(write_only=True)
     stt = serializers.PrimaryKeyRelatedField(queryset=STT.objects.all())
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
@@ -19,6 +20,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
 
         model = ReportFile
         fields = [
+            "file",
             "original_filename",
             "slug",
             "extension",
