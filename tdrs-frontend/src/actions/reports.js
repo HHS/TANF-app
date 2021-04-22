@@ -12,6 +12,8 @@ export const FILE_DOWNLOAD_ERROR = 'FILE_DOWNLOAD_ERROR'
 
 export const FETCH_FILE_LIST = 'FETCH_FILE_LIST'
 export const SET_FILE_LIST = 'SET_FILE_LIST'
+export const FETCH_FILE_LIST_ERROR = 'FETCH_FILE_LIST_ERROR'
+export const DOWNLOAD_DIALOG_OPEN = 'DOWNLOAD_DIALOG_OPEN'
 
 export const clearFile = ({ section }) => (dispatch) => {
   dispatch({ type: CLEAR_FILE, payload: { section } })
@@ -26,11 +28,26 @@ export const clearError = ({ section }) => (dispatch) => {
 export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
   dispatch
 ) => {
-  const response = await axios({
-    url: `/mock/reports/${year}/${quarter}`,
-    method: 'get',
-    responseType: 'json',
+  dispatch({
+    type: FETCH_FILE_LIST,
   })
+  try {
+    const response = await axios({
+      url: `/mock_api/reports/${year}/${quarter}`,
+      method: 'get',
+      responseType: 'json',
+    })
+    dispatch({
+      type: SET_FILE_LIST,
+      payload: {
+        data: response.data,
+      },
+    })
+  } catch (error) {
+    dispatch({
+      type: FETCH_FILE_LIST_ERROR,
+    })
+  }
 }
 
 export const download = ({ year, quarter = 'Q1', section }) => async (
@@ -40,7 +57,7 @@ export const download = ({ year, quarter = 'Q1', section }) => async (
     dispatch({ type: START_FILE_DOWNLOAD })
 
     const response = await axios({
-      url: `/mock/reports/data-files/${year}/${quarter}/${section}`,
+      url: `/mock_api/reports/data-files/${year}/${quarter}/${section}`,
       method: 'get',
       responseType: 'blob',
     })
@@ -49,10 +66,10 @@ export const download = ({ year, quarter = 'Q1', section }) => async (
     dispatch({
       type: END_FILE_DOWNLOAD,
       payload: {
+        data,
         year,
         quarter,
         section,
-        data,
       },
     })
   } catch (error) {
@@ -96,4 +113,21 @@ export const setStt = (stt) => (dispatch) => {
 }
 export const setYear = (year) => (dispatch) => {
   dispatch({ type: SET_SELECTED_YEAR, payload: { year } })
+}
+
+export const triggerDownloadDialog = ({ year, quarter, section, data }) => (
+  dispatch
+) => {
+  const url = window.URL.createObjectURL(new Blob([data]))
+  const link = document.createElement('a')
+
+  link.href = url
+  link.setAttribute('download', `${year}.${quarter}.${section}.txt`)
+
+  document.body.appendChild(link)
+
+  link.click()
+
+  document.body.removeChild(link)
+  dispatch({ type: DOWNLOAD_DIALOG_OPEN })
 }

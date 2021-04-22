@@ -3,6 +3,11 @@ import {
   CLEAR_FILE,
   SET_FILE_ERROR,
   CLEAR_ERROR,
+  SET_YEAR,
+  SET_FILE_LIST,
+  END_FILE_DOWNLOAD,
+  START_FILE_DOWNLOAD,
+  DOWNLOAD_DIALOG_OPEN,
   SET_SELECTED_YEAR,
   SET_SELECTED_STT,
 } from '../actions/reports'
@@ -78,6 +83,27 @@ const reports = (state = initialState, action) => {
         fileType
       )
       return { ...state, files: updatedFiles }
+    }
+    case SET_FILE_LIST: {
+      const { data } = payload
+      return { ...state, fileList: data }
+    }
+    case START_FILE_DOWNLOAD: {
+      return { ...state }
+    }
+    case END_FILE_DOWNLOAD: {
+      return {
+        ...state,
+        downloadedFile: {
+          ...payload,
+        },
+      }
+    }
+    case DOWNLOAD_DIALOG_OPEN: {
+      return {
+        ...state,
+        downloadedFile: null,
+      }
     }
     case CLEAR_FILE: {
       const { section } = payload

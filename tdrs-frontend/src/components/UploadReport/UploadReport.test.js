@@ -83,23 +83,13 @@ describe('UploadReport', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByLabelText } = render(
+    const { container, getByLabelText } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
     )
 
-    const fileInputs = getByLabelText('Section 1 - Active Case Data')
-
-    const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
-
     const buttons = container.querySelectorAll('.tanf-file-download-btn')
-
-    fireEvent.change(fileInput, {
-      target: {
-        files: [newFile],
-      },
-    })
 
     expect(store.dispatch).toHaveBeenCalledTimes(2)
   })

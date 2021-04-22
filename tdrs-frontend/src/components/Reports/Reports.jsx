@@ -66,7 +66,7 @@ function Reports() {
           >
             Fiscal Year (October - September)
             {/* eslint-disable-next-line */}
-              <select
+            <select
               className="usa-select maxw-mobile"
               name="reportingYears"
               id="reportingYears"

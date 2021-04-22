@@ -1,4 +1,4 @@
-@include media(">=medium") {
+@include media('>=medium') {
   .usa-banner {
     background-color: #ebf3fa;
     &__header {
@@ -21,8 +21,8 @@
         }
       }
     }
-    &__button[aria-expanded=true]::after,
-    &__button[aria-expanded=true]:hover::after {
+    &__button[aria-expanded='true']::after,
+    &__button[aria-expanded='true']:hover::after {
       background-color: white;
     }
   }

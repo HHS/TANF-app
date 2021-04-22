@@ -2,7 +2,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
-import { getAvailableFileList } from '../../actions/reports'
+import {
+  getAvailableFileList,
+  triggerDownloadDialog,
+} from '../../actions/reports'
 
 import classNames from 'classnames'
 import Button from '../Button'
@@ -14,6 +17,7 @@ import { clearError } from '../../actions/reports'
 function UploadReport({ handleCancel, header }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
+  const downloadedReport = useSelector((state) => state.reports.downloadedFile)
 
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.files)
@@ -35,11 +39,15 @@ function UploadReport({ handleCancel, header }) {
     headerRef.current.focus()
   }, [])
 
-  useEffect(() => dispatch(getAvailableFileList({ selectedYear })), [
-    dispatch,
-    getAvailableFileList,
-    selectedYear,
-  ])
+  useEffect(() => {
+    dispatch(getAvailableFileList({ year: selectedYear }))
+  }, [dispatch, getAvailableFileList, selectedYear])
+
+  useEffect(() => {
+    if (downloadedReport) {
+      dispatch(triggerDownloadDialog(downloadedReport))
+    }
+  }, [downloadedReport])
 
   const fileUploadSections = [
     'Active Case Data',

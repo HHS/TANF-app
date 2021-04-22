@@ -18,50 +18,131 @@ import { clearError, upload, download } from '../../actions/reports'
 
 import Button from '../Button'
 
-// helpers
-const getReports = (state) => state.reports
-const toLower = (s) => s.toLowerCase()
+const SPACER_GIF =
+      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+const LOADING_CLASS = "is-loading";
+const GENERIC_PREVIEW_CLASS_NAME = `${PREFIX}-file-input__preview-image`;
 
-const initiateDownloadSequence = ({
-  data,
-  year,
-  quarter,
-  section,
-  canDownload,
-}) => () => {
-  if (canDownload) {
-    const url = window.URL.createObjectURL(new Blob([data]))
-    const link = document.createElement('a')
+const handleChange = (e, fileInputEl, instructions, dropTarget) => {
+  const fileNames = e.target.files;
+  const filePreviewsHeading = document.createElement("div");
 
-    link.href = url
-    link.setAttribute('download', `${year}.${quarter}.${section}.txt`)
+  // First, get rid of existing previews
+  removeOldPreviews(dropTarget, instructions);
 
-    document.body.appendChild(link)
+  // Iterates through files list and creates previews
+  for (let i = 0; i < fileNames.length; i += 1) {
+    const reader = new FileReader();
+    const fileName = fileNames[i].name;
 
-    link.click()
+    // Starts with a loading image while preview is created
+    reader.onloadstart = function createLoadingImage() {
+      const imageId = makeSafeForID(fileName);
+      const previewImage = `<img id="${imageId}" src="${SPACER_GIF}" alt="" class="${GENERIC_PREVIEW_CLASS_NAME} ${LOADING_CLASS}"/>`;
 
-    document.body.removeChild(link)
+      instructions.insertAdjacentHTML(
+        "afterend",
+        `<div class="${PREVIEW_CLASS}" aria-hidden="true">${previewImage}${fileName}<div>`
+      );
+    };
+
+    // Not all files will be able to generate previews. In case this happens, we provide several types "generic previews" based on the file extension.
+    reader.onloadend = function createFilePreview() {
+      const imageId = makeSafeForID(fileName);
+      const previewImage = document.getElementById(imageId);
+      if (fileName.indexOf(".pdf") > 0) {
+        previewImage.setAttribute(
+          "onerror",
+          `this.onerror=null;this.src="${SPACER_GIF}"; this.classList.add("${PDF_PREVIEW_CLASS}")`
+        );
+      } else if (
+        fileName.indexOf(".doc") > 0 ||
+        fileName.indexOf(".pages") > 0
+      ) {
+        previewImage.setAttribute(
+          "onerror",
+          `this.onerror=null;this.src="${SPACER_GIF}"; this.classList.add("${WORD_PREVIEW_CLASS}")`
+        );
+      } else if (
+        fileName.indexOf(".xls") > 0 ||
+        fileName.indexOf(".numbers") > 0
+      ) {
+        previewImage.setAttribute(
+          "onerror",
+          `this.onerror=null;this.src="${SPACER_GIF}"; this.classList.add("${EXCEL_PREVIEW_CLASS}")`
+        );
+      } else if (fileName.indexOf(".mov") > 0 || fileName.indexOf(".mp4") > 0) {
+        previewImage.setAttribute(
+          "onerror",
+          `this.onerror=null;this.src="${SPACER_GIF}"; this.classList.add("${VIDEO_PREVIEW_CLASS}")`
+        );
+      } else {
+        previewImage.setAttribute(
+          "onerror",
+          `this.onerror=null;this.src="${SPACER_GIF}"; this.classList.add("${GENERIC_PREVIEW_CLASS}")`
+        );
+      }
+
+      // Removes loader and displays preview
+      previewImage.classList.remove(LOADING_CLASS);
+      previewImage.src = reader.result;
+    };
+
+    if (fileNames[i]) {
+      reader.readAsDataURL(fileNames[i]);
+    }
+
+    // Adds heading above file previews, pluralizes if there are multiple
+    if (i === 0) {
+      dropTarget.insertBefore(filePreviewsHeading, instructions);
+      filePreviewsHeading.innerHTML = `Selected file <span class="usa-file-input__choose">Change file</span>`;
+    } else if (i >= 1) {
+      dropTarget.insertBefore(filePreviewsHeading, instructions);
+      filePreviewsHeading.innerHTML = `${
+        i + 1
+      } files selected <span class="usa-file-input__choose">Change files</span>`;
+    }
+
+    // Hides null state content and sets preview heading class
+    if (filePreviewsHeading) {
+      instructions.classList.add(HIDDEN_CLASS);
+      filePreviewsHeading.classList.add(PREVIEW_HEADING_CLASS);
+    }
   }
 }
 
 function FileUpload({ section }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
-  const { files, year, quarter, data, canDownload } = useSelector(getReports)
+  const { files, year, quarter, data, canDownload, fileList } = useSelector(
+    (state) => state.reports
+  )
   const dispatch = useDispatch()
 
-  useEffect(initiateDownloadSequence({ year, quarter, data, canDownload }), [
-    data,
-  ])
+  useEffect(() => {
+    if (canDownload) {
+      const url = window.URL.createObjectURL(new Blob([data]))
+      const link = document.createElement('a')
+
+      link.href = url
+      link.setAttribute('download', `${year}.${quarter}.${section}.txt`)
+
+      document.body.appendChild(link)
+
+      link.click()
+
+      document.body.removeChild(link)
+    }
+  }, [canDownload])
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
 
   const selectedFile = files.find((file) => sectionName === file.section)
 
-  const formattedSectionName = selectedFile.section
+  const formattedSectionName = file.section
     .split(' ')
-    .map((word) => word.toLowerCase())
+    .map((s) => s.toLowerCase())
     .join('-')
 
   const fileName = selectedFile?.fileName
@@ -207,7 +288,7 @@ function FileUpload({ section }) {
         data-errormessage={INVALID_FILE_ERROR}
       />
       <div style={{ marginTop: '25px', marginTop: '20px' }}>
-        {canDownload ? (
+        {fileList?.some((file) => file.section === section) ? (
           <Button className="cancel" type="button" onClick={downloadFile}>
             Download
           </Button>

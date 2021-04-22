@@ -15,6 +15,18 @@ export default function startMirage(
       this.get('/reports/data-files/:year/:quarter/:section', () => {
         return 'some text'
       })
+      this.get('/reports/:year/:quarter/', () => {
+        return [
+          {
+            fileName: 'test.txt',
+            section: '1 - Active Case Data',
+          },
+          {
+            fileName: 'testb.txt',
+            section: '2 - Closed Case Data',
+          },
+        ]
+      })
 
       // Allow unhandled requests to pass through
       this.passthrough(`${process.env.REACT_APP_BACKEND_URL}/**`)
