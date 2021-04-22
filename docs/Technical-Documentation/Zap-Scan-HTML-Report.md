@@ -22,3 +22,5 @@ link to view the running process at CircleCI
 
 4. Click the `owasp_report.html` link to view the report.
 
+![image](images/artifacts.png)
+
