@@ -13,3 +13,8 @@ Conversation screen to see the checks running.
 
 2. To the right of either `ci/circleci: test-backend` or `ci/circleci: test-backend` click the `Details` 
 link to view the running process at CircleCI
+
+![image](images/circleci.png)
+
+3. Click the `Artifacts` tab at the top of the screen once the process has completed.
+
