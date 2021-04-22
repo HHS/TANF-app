@@ -12,7 +12,6 @@ import App from './App'
 
 import 'uswds/dist/js/uswds'
 import './index.scss'
-import startMirage from './mirage'
 
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
@@ -20,7 +19,6 @@ axios.defaults.withCredentials = true
 
 const store = configureStore()
 store.dispatch(fetchAuth())
-startMirage()
 
 // Start the mirage server to stub some backend endpoints when running locally
 startMirage()
