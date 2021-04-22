@@ -18,3 +18,7 @@ link to view the running process at CircleCI
 
 3. Click the `Artifacts` tab at the top of the screen once the process has completed.
 
+![image](images/artifacts.png)
+
+4. Click the `owasp_report.html` link to view the report.
+
