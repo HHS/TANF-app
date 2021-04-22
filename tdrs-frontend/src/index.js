@@ -6,6 +6,7 @@ import { ConnectedRouter as Router } from 'connected-react-router'
 import { Provider } from 'react-redux'
 
 import configureStore, { history } from './configureStore'
+import startMirage from './mirage'
 import { fetchAuth } from './actions/auth'
 import App from './App'
 
@@ -19,6 +20,9 @@ axios.defaults.withCredentials = true
 
 const store = configureStore()
 store.dispatch(fetchAuth())
+startMirage()
+
+// Start the mirage server to stub some backend endpoints when running locally
 startMirage()
 
 ReactDOM.render(

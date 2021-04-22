@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
 
 export const SET_FILE = 'SET_FILE'
@@ -11,6 +12,10 @@ export const FILE_DOWNLOAD_ERROR = 'FILE_DOWNLOAD_ERROR'
 
 export const FETCH_FILE_LIST = 'FETCH_FILE_LIST'
 export const SET_FILE_LIST = 'SET_FILE_LIST'
+
+export const clearFile = ({ section }) => (dispatch) => {
+  dispatch({ type: CLEAR_FILE, payload: { section } })
+}
 
 export const clearError = ({ section }) => (dispatch) => {
   dispatch({ type: CLEAR_ERROR, payload: { section } })
@@ -67,19 +72,28 @@ export const upload = ({ file, section }) => async (dispatch) => {
       type: SET_FILE,
       payload: {
         fileName: file.name,
+        fileType: file.type,
         section,
+        uuid: uuidv4(),
       },
     })
   } catch (error) {
-    dispatch({ type: SET_FILE_ERROR, payload: { error, section } })
+    dispatch({
+      type: SET_FILE_ERROR,
+      payload: { error: Error({ message: 'something went wrong' }), section },
+    })
     return false
   }
 
   return true
 }
 
-export const SET_YEAR = 'SET_YEAR'
+export const SET_SELECTED_STT = 'SET_SELECTED_STT'
+export const SET_SELECTED_YEAR = 'SET_SELECTED_YEAR'
 
+export const setStt = (stt) => (dispatch) => {
+  dispatch({ type: SET_SELECTED_STT, payload: { stt } })
+}
 export const setYear = (year) => (dispatch) => {
-  dispatch({ type: SET_YEAR, payload: { year } })
+  dispatch({ type: SET_SELECTED_YEAR, payload: { year } })
 }
