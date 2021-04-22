@@ -5,6 +5,7 @@ import pytest
 from rest_framework import status
 
 from ..models import ReportFile
+from ..views import logger
 
 
 @pytest.mark.django_db
@@ -63,6 +64,7 @@ def test_report_file_version_increment(api_client, ofa_admin):
 
     assert response1.status_code == status.HTTP_201_CREATED
     assert response1.data["slug"] == data1["slug"]
+    logger.info(response1, response2)
 
     assert response2.status_code == status.HTTP_201_CREATED
     assert response2.data["slug"] == data2["slug"]

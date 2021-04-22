@@ -1,25 +1,24 @@
 import { useSelector } from 'react-redux'
 import axiosInstance from '../axios-instance'
 
-function sendDataToServer(...data) {
-  axiosInstance.post(
-    `${process.env.REACT_APP_BACKEND_URL}/logs/`,
-    { ...data },
-    {
-      withCredentials: true,
-    }
-  )
+function sendDataToServer(data) {
+  axiosInstance.post(`${process.env.REACT_APP_BACKEND_URL}/logs/`, data, {
+    withCredentials: true,
+  })
 }
 
 class EventLogger {
   constructor(initialContext = {}) {
-    this.logEvents = (message, type, context) => {
-      sendDataToServer({
-        message,
+    this.logEvents = (type, message, timestamp, context) => {
+      const log = {
         type,
+        message,
+        timestamp,
         ...initialContext,
         ...context,
-      })
+      }
+
+      sendDataToServer(log)
     }
   }
 
@@ -31,9 +30,9 @@ class EventLogger {
     return this.log('alert', message, context)
   }
 
-  log(message, type, context = {}) {
+  log(type, message, context = {}) {
     const timestamp = new Date().toISOString()
-    return this.logEvents(message, type, { ...context, timestamp })
+    return this.logEvents(type, message, timestamp, context)
   }
 }
 
@@ -46,7 +45,7 @@ class EventLogger {
  */
 export function useEventLogger() {
   const user = useSelector((state) => state.auth.user)
-  return new EventLogger({ username: user.email })
+  return new EventLogger({ user: user.id })
 }
 
 /**
