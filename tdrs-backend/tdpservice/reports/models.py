@@ -82,7 +82,9 @@ class ReportFile(File):
                             blank=False,
                             null=False)
 
-    file = models.FileField(upload_to='data_files')
+    # NOTE: `file` is only temporarily nullable until we complete the issue:
+    # https://github.com/raft-tech/TANF-app/issues/755
+    file = models.FileField(upload_to='data_files', null=True, blank=True)
 
     @classmethod
     def create_new_version(self, data):

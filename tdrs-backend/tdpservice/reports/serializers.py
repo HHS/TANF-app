@@ -7,6 +7,7 @@ from .models import ReportFile
 
 from .errors import ImmutabilityError
 
+
 class ReportFileSerializer(serializers.ModelSerializer):
     """Serializer for Report files."""
 
