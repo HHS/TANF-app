@@ -7,7 +7,7 @@ The [QASP](https://github.com/18F/tdrs-app-rfq/blob/main/Final-RFQ/FINAL-TDRS-so
 | Performance Standard(s)  | Web Content Accessibility Guidelines 2.1 AA standards                                                                                                                                                               |
 | Acceptable Quality Level | 0 errors reported using an automated scanner and 0 errors reported in manual testing                                                                                                                                |
 | Method of Assessment     | Combined approach using automated and manual testing with tools equivalent to [Accessibility Insights](https://accessibilityinsights.io/) and/or the [DHS Trusted Tester process](https://www.dhs.gov/508-testing). |
-| Due Date                 | Every sprint                                                                                                                                                                                                        |
+| Due Date                 | When PR that completes the feature epic is submitted for QASP review                                                                                                                                                                                                      |
 
 ## How does government plan to carry out the Method of Assessment?
 
