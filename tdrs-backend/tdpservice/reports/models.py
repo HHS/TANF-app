@@ -5,6 +5,7 @@ from django.db.models import Max
 
 from ..stts.models import STT
 from ..users.models import User
+from .validators import validate_data_file
 
 
 # The Report File model was starting to explode, and I think that keeping this logic
@@ -84,7 +85,10 @@ class ReportFile(File):
 
     # NOTE: `file` is only temporarily nullable until we complete the issue:
     # https://github.com/raft-tech/TANF-app/issues/755
-    file = models.FileField(upload_to='data_files', null=True, blank=True)
+    file = models.FileField(upload_to='data_files',
+                            null=True,
+                            blank=True,
+                            validators=[validate_data_file])
 
     @classmethod
     def create_new_version(self, data):
