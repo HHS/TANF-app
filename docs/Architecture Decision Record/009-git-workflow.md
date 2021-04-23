@@ -52,7 +52,7 @@ A contributor to the TDP project would always use the following steps to propose
     * assigns the Government as the reviewer:
         * For backend and frontend development work assign `adpennington` and `alexsoble`
         * For frontend work submitted for review but does not yet complete the epic, `adpennington` will sign off on Raft's a11y documentation (e.g. screen captures with VoiceOver utility, summary of review, etc.) and cc: `ttran-hub`
-        * For frontend work submitted for review that completes the epic, `adpennington` will complete code review, tag `ttran-hub` + `iamjolly` via comment, and add `a11y` label to PR. Gov a11y review team will use accessibility insights for manual testing. More information about this process is described [here](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/how-government-will-test-a11y.md) 
+        * For frontend work submitted for review that completes the epic, `adpennington` will complete code review, tag `ttran-hub` + `iamjolly` via comment, and add `a11y` label to PR. Gov a11y review team will use accessibility insights for manual testing. More information about how and when this process will be carried out is described [here.](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/how-government-will-test-a11y.md) 
         * For research and design work assign `lfrohlich`
         * For security controls assign `lfrohlich`
 18. For PRs with `qasp-review` label, the appropriate reviewer performs the review and/or requests changes. **GOAL** 5 days: 3 days to perform the review and 2 days to implement the requested changes.
