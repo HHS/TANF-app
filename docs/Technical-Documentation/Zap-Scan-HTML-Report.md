@@ -6,7 +6,8 @@ to access the report.
 
 ### Accessing the HTML Report
 
-1. When a pull request is issue, the CI/CD checks automatically kick off. Go to the bottom of the
+1. When a pull request is issued, the CI/CD checks automatically kick off. Go to the bottom of the
+
 Conversation screen to see the checks running.
 
 ![image](images/ci-cd-checks.png)
@@ -23,4 +24,3 @@ link to view the running process at CircleCI
 4. Click the `owasp_report.html` link to view the report.
 
 ![image](images/report.png)
-
