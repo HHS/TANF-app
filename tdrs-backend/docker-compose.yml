@@ -5,6 +5,8 @@ services:
   zaproxy:
     image: owasp/zap2docker-weekly
     command: sleep 3600
+    volumes:
+      - ./reports:/zap/wrk/:rw
 
   postgres:
     image: postgres:11.6
