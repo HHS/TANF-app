@@ -7,11 +7,11 @@ import LoginCallback from '../LoginCallback'
 import Request from '../Request'
 import Reports from '../Reports'
 
-/** This component renders a message signalling to the user that this 
-  * page does not exist.
-  */
+/** This component renders a message signalling to the user that this
+ * page does not exist.
+ */
 function NoMatch() {
-  let location = useLocation();
+  let location = useLocation()
 
   return (
     <div>
@@ -19,7 +19,7 @@ function NoMatch() {
         No match for <code>{location.pathname}</code>
       </h3>
     </div>
-  );
+  )
 }
 
 /**
