@@ -40,10 +40,12 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
             for group in extracted:
                 self.groups.add(group)
 
+
 class UserFactory(BaseUserFactory):
     """General purpose user factory used through out most tests."""
 
     stt = factory.SubFactory(STTFactory)
+
 
 class STTUserFactory(BaseUserFactory):
     """User factory for use in STT tests."""
@@ -53,6 +55,7 @@ class STTUserFactory(BaseUserFactory):
     # Our solution was to not set the STT specifically for the STT tests that
     # were calling the `populate_stt` command.
     stt = None
+
 
 class AdminUserFactory(UserFactory):
     """Generate Admin User."""
@@ -65,3 +68,9 @@ class StaffUserFactory(UserFactory):
     """Generate Staff User."""
 
     is_staff = True
+
+
+class InactiveUserFactory(UserFactory):
+    """Generate inactive user."""
+
+    is_active = False

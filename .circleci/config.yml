@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   node: circleci/node@4.2.1
-  cypress: cypress-io/cypress@1.27.0
 jobs:
   test-backend:
     machine:
@@ -55,10 +54,10 @@ jobs:
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
       - node/install-yarn
-      - cypress/install:
-          cache-key: cache-{{ arch }}-{{ .Branch }}-{{ checksum "tdrs-frontend/package.json" }}
-          working_directory: tdrs-frontend
-          yarn: true
+      - node/install-packages:
+          app-dir: tdrs-frontend
+          cache-path: ~/.cache
+          pkg-manager: yarn
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
