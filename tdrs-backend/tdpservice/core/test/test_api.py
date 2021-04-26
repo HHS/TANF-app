@@ -20,6 +20,8 @@ def test_write_logs(api_client, ofa_admin):
         "section": "Active Case Data",
         "file_version": "0.0.1",
         "timestamp": "2021-04-26T18:32:43.330Z",
+        "type": "alert",
+        "message": "Something strange happened",
     }
     response = api_client.post("/v1/logs/", data)
     assert response.status_code == status.HTTP_200_OK
