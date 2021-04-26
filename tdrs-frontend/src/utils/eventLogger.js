@@ -57,7 +57,7 @@ class EventLogger {
  */
 export function useEventLogger() {
   const user = useSelector((state) => state.auth.user)
-  return new EventLogger({ user: user.id })
+  return new EventLogger({ user: user.email })
 }
 
 /**
