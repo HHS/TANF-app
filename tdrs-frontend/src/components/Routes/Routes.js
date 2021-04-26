@@ -7,7 +7,7 @@ import LoginCallback from '../LoginCallback'
 import Request from '../Request'
 import Reports from '../Reports'
 
-/** This component renders a message signalling to the user that this
+/** This component renders a message signaling to the user that this
  * page does not exist.
  */
 function NoMatch() {
