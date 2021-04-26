@@ -7,19 +7,31 @@ function sendDataToServer(data) {
   })
 }
 
+function logEvents(initialContext) {
+  return (type, message, timestamp, context) => {
+    const log = {
+      type,
+      message,
+      timestamp,
+      ...initialContext,
+      ...context,
+    }
+
+    sendDataToServer(log)
+  }
+}
+
+/**
+ * Custom logger for dev convenience. This can be extended with any `logEvents`
+ * function if needed.
+ *
+ * ex: const logger = new EventLogger({ user: user.id })
+ * logger.error('Invariant violation')
+ */
+
 class EventLogger {
   constructor(initialContext = {}) {
-    this.logEvents = (type, message, timestamp, context) => {
-      const log = {
-        type,
-        message,
-        timestamp,
-        ...initialContext,
-        ...context,
-      }
-
-      sendDataToServer(log)
-    }
+    this.logEvents = logEvents(initialContext)
   }
 
   error(message, context) {
@@ -45,7 +57,7 @@ class EventLogger {
  */
 export function useEventLogger() {
   const user = useSelector((state) => state.auth.user)
-  return new EventLogger({ user: user.id })
+  return new EventLogger({ user: user.email })
 }
 
 /**

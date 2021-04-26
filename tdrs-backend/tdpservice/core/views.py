@@ -1,10 +1,11 @@
 """Define core, generic views of the app."""
 import logging
 
-from django.contrib.admin.models import LogEntry, CHANGE
+from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.contenttypes.models import ContentType
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 
 from ..reports.models import ReportFile
 
@@ -12,17 +13,14 @@ logger = logging.getLogger()
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def write_logs(request):
     """Pass request bodies to the system logger.
 
     Mainly used to log client-side alerts and errors.
     """
     data = request.data
-    logger.info(data)
-
-    # logger.info(json.loads(request.data))
-    # logger.info(json.loads(request.body))
-    # Make new model somehow ..  
+    logger.info(f"[{data['timestamp']}]: [{data['type']}] {data['message']} for {request.user}")
 
     if data['files']:
         for file in data['files']:

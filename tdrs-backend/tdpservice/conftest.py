@@ -6,7 +6,8 @@ from tdpservice.users.test.factories import (
     UserFactory,
     AdminUserFactory,
     StaffUserFactory,
-    STTUserFactory
+    STTUserFactory,
+    InactiveUserFactory
 )
 
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
@@ -54,6 +55,12 @@ def admin_user():
 def staff_user():
     """Return a staff user."""
     return StaffUserFactory.create()
+
+
+@pytest.fixture
+def inactive_user():
+    """Return an inactive user."""
+    return InactiveUserFactory.create()
 
 
 @pytest.fixture
