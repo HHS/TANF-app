@@ -17,7 +17,6 @@ _Create a list of functional outcomes that must be achieved to complete this iss
 - [ ] _Outcome 1_
 - [ ] _Outcome 2_
 - [ ] _Outcome 3_
-- [ ] Work is reviewed alongside [our design principles](https://github.com/HHS/TANF-app/wiki/Design-principles) and any friction is documented and discussed with the team
 - [ ] Testing Checklist has been run and all tests pass
 - [ ] README is updated, if necessary
 
