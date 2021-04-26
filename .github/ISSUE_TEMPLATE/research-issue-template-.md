@@ -12,7 +12,7 @@ Description:
 
 AC:
 
-- [ ] [Draft research plan]/[user interviews]/[synthesis] is complete.
+- [ ] [Draft research plan]/[user interviews]/[synthesis] is complete. 
 
 Proposed Tasks:
 
