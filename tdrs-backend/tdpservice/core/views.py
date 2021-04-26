@@ -16,6 +16,9 @@ def write_logs(request):
     Mainly used to log client-side alerts and errors.
     """
     data = request.data
-    logger.info(f"[{data['timestamp']}]: [{data['type']}] {data['message']} for {request.user}")
+    logger.info(f"[{data['timestamp']}]: "
+                f"[{data['type']}] "
+                f"{data['message']} "
+                f"for {request.user}")
 
     return Response('Success')
