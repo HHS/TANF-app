@@ -1,26 +1,37 @@
 import { useSelector } from 'react-redux'
 import axiosInstance from '../axios-instance'
 
-function sendDataToServer(...data) {
-  axiosInstance.post(
-    `${process.env.REACT_APP_BACKEND_URL}/logs/`,
-    { ...data },
-    {
-      withCredentials: true,
-    }
-  )
+function sendDataToServer(data) {
+  axiosInstance.post(`${process.env.REACT_APP_BACKEND_URL}/logs/`, data, {
+    withCredentials: true,
+  })
 }
+
+function logEvents(initialContext) {
+  return (type, message, timestamp, context) => {
+    const log = {
+      type,
+      message,
+      timestamp,
+      ...initialContext,
+      ...context,
+    }
+
+    sendDataToServer(log)
+  }
+}
+
+/**
+ * Custom logger for dev convenience. This can be extended with any `logEvents`
+ * function if needed.
+ *
+ * ex: const logger = new EventLogger({ user: user.id })
+ * logger.error('Invariant violation')
+ */
 
 class EventLogger {
   constructor(initialContext = {}) {
-    this.logEvents = (message, type, context) => {
-      sendDataToServer({
-        message,
-        type,
-        ...initialContext,
-        ...context,
-      })
-    }
+    this.logEvents = logEvents(initialContext)
   }
 
   error(message, context) {
@@ -31,9 +42,9 @@ class EventLogger {
     return this.log('alert', message, context)
   }
 
-  log(message, type, context = {}) {
+  log(type, message, context = {}) {
     const timestamp = new Date().toISOString()
-    return this.logEvents(message, type, { ...context, timestamp })
+    return this.logEvents(type, message, timestamp, context)
   }
 }
 
@@ -46,7 +57,7 @@ class EventLogger {
  */
 export function useEventLogger() {
   const user = useSelector((state) => state.auth.user)
-  return new EventLogger({ username: user.email })
+  return new EventLogger({ user: user.id })
 }
 
 /**

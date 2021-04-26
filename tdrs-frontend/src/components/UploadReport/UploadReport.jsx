@@ -20,7 +20,7 @@ function UploadReport({ handleCancel, header }) {
   // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
 
-  const [localAlert, setlocalAlertState] = useState({
+  const [localAlert, setLocalAlertState] = useState({
     active: false,
     type: null,
     message: null,
@@ -72,7 +72,7 @@ function UploadReport({ handleCancel, header }) {
     event.preventDefault()
 
     if (filteredFiles.length === 0) {
-      setlocalAlertState({
+      setLocalAlertState({
         active: true,
         type: 'error',
         message: 'No changes have been made to data files',
@@ -84,7 +84,7 @@ function UploadReport({ handleCancel, header }) {
       axiosInstance.post(
         // update to `process.env.REACT_APP_BACKEND_URL` and
         // remove mirage route when ready
-        `/mock_api/reports/`,
+        `${process.env.REACT_APP_BACKEND_URL}/reports/`,
         {
           original_filename: file.fileName,
           slug: file.uuid,
@@ -100,7 +100,7 @@ function UploadReport({ handleCancel, header }) {
 
     Promise.all(uploadRequests)
       .then(() => {
-        setlocalAlertState({
+        setLocalAlertState({
           active: true,
           type: 'success',
           message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
@@ -147,7 +147,7 @@ function UploadReport({ handleCancel, header }) {
           <FileUpload
             key={name}
             section={`${index + 1} - ${name}`}
-            setlocalAlertState={setlocalAlertState}
+            setLocalAlertState={setLocalAlertState}
           />
         ))}
 
