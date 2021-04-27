@@ -1,13 +1,13 @@
 """Define core, generic views of the app."""
 import logging
 
-from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 
-from ..reports.models import ReportFile
+from reports.models import ReportFile
 
 logger = logging.getLogger()
 
@@ -20,7 +20,10 @@ def write_logs(request):
     Mainly used to log client-side alerts and errors.
     """
     data = request.data
-    logger.info(f"[{data['timestamp']}]: [{data['type']}] {data['message']} for {request.user}")
+    logger.info(f"[{data['timestamp']}]: "
+                f"[{data['type']}] "
+                f"{data['message']} "
+                f"for {request.user}")
 
     if data['files']:
         for file in data['files']:
@@ -32,5 +35,6 @@ def write_logs(request):
                 action_flag=CHANGE,
                 change_message=data['message'],
             )
+
 
     return Response('Success')
