@@ -11,7 +11,7 @@ _faker = faker.Faker()
 
 @pytest.fixture
 def clamav_url():
-    """The URL that can be used to reach ClamAV-REST."""
+    """URL that can be used to reach ClamAV-REST."""
     return settings.AV_SCAN_URL
 
 
