@@ -30,6 +30,7 @@ def fake_file():
 @pytest.fixture
 def infected_file():
     """Generate an EICAR test file that will be treated as an infected file.
+
     https://en.wikipedia.org/wiki/EICAR_test_file
     """
     return StringIO(
@@ -38,7 +39,7 @@ def infected_file():
 
 
 def _send_file_to_clamav(clamav_url, file, file_name):
-    """Sends a file over HTTP to ClamAV-REST."""
+    """Send a file over HTTP to ClamAV-REST."""
     return requests.post(
         clamav_url,
         files={'file': file},
@@ -47,7 +48,7 @@ def _send_file_to_clamav(clamav_url, file, file_name):
 
 
 def assert_clamav_url(clamav_url):
-    """Ensures that the provided setting for AV_SCAN_URL is configured."""
+    """Ensure that the provided setting for AV_SCAN_URL is configured."""
     assert clamav_url is not None
 
 
