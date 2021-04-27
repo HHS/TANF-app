@@ -53,16 +53,19 @@ jobs:
             nvm alias default v12.18
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
-      - run:
-          name: "Set NPM configuration"
-          command: |
-            npm config set puppeteer_skip_chromium_download true -g
-            npm config set puppeteer_executable_path /usr/bin/google-chrome
+#      - run:
+#          name: "Set NPM configuration"
+#          command: |
+#            npm config set puppeteer_skip_chromium_download true -g
+#            npm config set puppeteer_executable_path /usr/bin/google-chrome
       - node/install-yarn
       - node/install-packages:
           app-dir: tdrs-frontend
           cache-path: ~/.cache
           pkg-manager: yarn
+      - run:
+          name: "Manually install Chromium"
+          command: "node node_modules/puppeteer/install.js"
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
