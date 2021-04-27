@@ -65,7 +65,7 @@ jobs:
           pkg-manager: yarn
       - run:
           name: "Manually install Chromium"
-          command: "node node_modules/puppeteer/install.js"
+          command: "node tdrs-frontend/node_modules/puppeteer/install.js"
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
