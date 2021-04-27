@@ -1,5 +1,6 @@
 version: 2.1
 orbs:
+  browser-tools: circleci/browser-tools@1.1.3
   node: circleci/node@4.2.1
 jobs:
   test-backend:
@@ -53,6 +54,10 @@ jobs:
             nvm alias default v12.18
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+      - browser-tools/install-chrome
+      - run:
+          name: "Set variable to skip re-downloading Chromium"
+          command: "npm config set puppeteer_skip_chromium_download true -g"
       - node/install-yarn
       - node/install-packages:
           app-dir: tdrs-frontend
