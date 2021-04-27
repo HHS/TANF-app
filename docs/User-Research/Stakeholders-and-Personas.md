@@ -18,11 +18,11 @@ Last updated for [Issue #804](https://github.com/raft-tech/TANF-app/issues/804)
 
 ## Background
 
-As of Summer 2020, a number of groups and prospective stakeholder types had been identified as groups impacted by this project. Some of them interact with TDRS directly, and some are impacted indirectly. The original TDRS personas that were identified can be found in the personas mural linked below.
+As of Summer 2020, a number of groups and prospective stakeholder types had been identified as groups impacted by this project. Some of them interact with TDP directly, and some are impacted indirectly. The original TDP personas that were identified can be found in the personas mural linked below.
 
-We expect that there will be a couple hundred users who interact with the TDRS system, made up of both STT and OFA staff.
+We expect that there will be a couple hundred users who interact with the TDP system, made up of both STT and OFA staff.
 
-For the purposes of the OFA MVP, the only users who will have access to the application will be OFA Admin and STT (test) users.  Raft team or OFA will be acting as STT users for the OFA MVP.
+For the purposes of the Release 1, the only users who will have access to the application will be OFA Admin and STT (test) users.  Raft team or OFA will be acting as STT users for the OFA MVP.
 
 **Supporting Documentation**
 
@@ -87,13 +87,13 @@ Some grantees segment data preparation and data transmission into two distinct r
 
 ### OFA analysts
 
-OFA analysts review, analyze, and report on STT’s TANF data that’s submitted through TDRS. They also help STTs through the transmission process by offering support and guidance around data quality (including fatal/warning edits). Analysts in the Tribal TANF Division also play a direct role communicating submission status, resubmission requests, and various reports to Tribes. 
+OFA analysts review, analyze, and report on STT’s TANF data that’s submitted through TDP. They also help STTs through the transmission process by offering support and guidance around data quality (including fatal/warning edits). Analysts in the Tribal TANF Division also play a direct role communicating submission status, resubmission requests, and various reports to Tribes. 
 
 **Supporting Documentation**
 
 - [Description of the OFA support mailbox](<https://hhsgov.sharepoint.com/:w:/r/sites/TANFDataPortalOFA-UserResearch/Shared%20Documents/User%20Research/OFA%20Resource%20Mailbox%20notes.docx?d=w2542a110040b44c1b82706a54c6ec9f2&csf=1&web=1&e=O5meXQ>) :lock:
 
-### OFA admins
+### OFA system admins
 
 OFA admins are members of the TANF Data Division. They oversee the collection and processing of TANF data and ensure OFA analysts have what they need to do their work.
 
