@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #       need to rely on calling os.environ directly.
 os.environ.setdefault(
     "ACR_VALUES",
-    "http://idmanagement.gov/ns/assurance/ial/1"
+    "http://idmanagement.gov/ns/assurance/ial/2?strict=true"
 )
 os.environ.setdefault("BASE_URL", "http://localhost:8080/v1")
 os.environ.setdefault(
