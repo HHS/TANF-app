@@ -69,10 +69,6 @@ def test_clamav_rejects_infected_files(
     """Test that ClamAV will reject files that match infection signatures."""
     assert_clamav_url(clamav_url)
 
-    # TEMPORARY: Use the wrong URL so we can fake a connection error and
-    # confirm test step fails in CI
-    clamav_url = 'http://i-dont-go-anywhere/scan'
-
     # Send a test file that will be treated as "infected"
     response = _send_file_to_clamav(clamav_url, infected_file, fake_file_name)
     assert response.status_code == 406  # ClamAV returns 406 for infected files
