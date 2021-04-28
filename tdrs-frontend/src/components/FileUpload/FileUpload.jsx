@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import fileType from 'file-type/browser'
@@ -13,167 +13,58 @@ import {
 import Button from '../Button'
 
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
+import { handlePreview, getTargetClassName } from './utils'
 
-const PREVIEW_HEADING_CLASS = `${PREFIX}-file-input__preview-heading`
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
-const PREFIX = ''
-const PREVIEW_CLASS = `${PREFIX}-file-input__preview`
 
-const SPACER_GIF =
-  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
-const LOADING_CLASS = 'is-loading'
-const GENERIC_PREVIEW_CLASS_NAME = `${PREFIX}-file-input__preview-image`
-const ACCEPTED_FILE_MESSAGE_CLASS = `${PREFIX}-file-input__accepted-files-message`
-const INVALID_FILE_CLASS = 'has-invalid-file'
-const HIDDEN_CLASS = 'display-none'
-const GENERIC_PREVIEW_CLASS = `${GENERIC_PREVIEW_CLASS_NAME}--generic`
-
-const removeOldPreviews = (dropTarget, instructions) => {
-  const filePreviews = dropTarget.querySelectorAll(`.${PREVIEW_CLASS}`)
-  const currentPreviewHeading = dropTarget.querySelector(
-    `.${PREVIEW_HEADING_CLASS}`
-  )
-  const currentErrorMessage = dropTarget.querySelector(
-    `.${ACCEPTED_FILE_MESSAGE_CLASS}`
-  )
-
-  // Remove the heading above the previews
-  if (currentPreviewHeading) {
-    currentPreviewHeading.outerHTML = ''
-  }
-
-  // Remove existing error messages
-  if (currentErrorMessage) {
-    currentErrorMessage.outerHTML = ''
-    dropTarget.classList.remove(INVALID_FILE_CLASS)
-  }
-
-  // Get rid of existing previews if they exist, show instructions
-  if (filePreviews !== null) {
-    if (instructions) {
-      instructions.classList.remove(HIDDEN_CLASS)
-    }
-    Array.prototype.forEach.call(filePreviews, function removeImages(node) {
-      node.parentNode.removeChild(node)
-    })
-  }
-}
-
-/**
- * Creates an ID name for each file that strips all invalid characters.
- * @param {string} name - name of the file added to file input
- * @returns {string} same characters as the name with invalid chars removed
- */
-const makeSafeForID = (name) => {
-  return name.replace(/[^a-z0-9]/g, function replaceName(s) {
-    const c = s.charCodeAt(0)
-    if (c === 32) return '-'
-    if (c >= 65 && c <= 90) return `img_${s.toLowerCase()}`
-    return `__${('000', c.toString(16)).slice(-4)}`
-  })
-}
-
-const handleChange = (e, fileInputEl, instructions, dropTarget) => {
-  const fileNames = e.target.files
-  const filePreviewsHeading = document.createElement('div')
-
-  // First, get rid of existing previews
-  removeOldPreviews(dropTarget, instructions)
-
-  // Iterates through files list and creates previews
-  for (let i = 0; i < fileNames.length; i += 1) {
-    const reader = new FileReader()
-    const fileName = fileNames[i].name
-
-    // Starts with a loading image while preview is created
-    reader.onloadstart = function createLoadingImage() {
-      const imageId = makeSafeForID(fileName)
-      const previewImage = `<img id="${imageId}" src="${SPACER_GIF}" alt="" class="${GENERIC_PREVIEW_CLASS_NAME} ${LOADING_CLASS}"/>`
-
-      instructions.insertAdjacentHTML(
-        'afterend',
-        `<div class="${PREVIEW_CLASS}" aria-hidden="true">${previewImage}${fileName}<div>`
-      )
-    }
-
-    // Not all files will be able to generate previews. In case this happens, we provide several types "generic previews" based on the file extension.
-    reader.onloadend = function createFilePreview() {
-      const imageId = makeSafeForID(fileName)
-      const previewImage = document.getElementById(imageId)
-      previewImage.setAttribute(
-        'onerror',
-        `this.onerror=null;this.src="${SPACER_GIF}"; this.classList.add("${GENERIC_PREVIEW_CLASS}")`
-      )
-
-      // Removes loader and displays preview
-      previewImage.classList.remove(LOADING_CLASS)
-      previewImage.src = reader.result
-    }
-
-    if (fileNames[i]) {
-      reader.readAsDataURL(fileNames[i])
-    }
-
-    // Adds heading above file previews, pluralizes if there are multiple
-    if (i === 0) {
-      dropTarget.insertBefore(filePreviewsHeading, instructions)
-      filePreviewsHeading.innerHTML = `Selected file <span class="usa-file-input__choose">Change file</span>`
-    } else if (i >= 1) {
-      dropTarget.insertBefore(filePreviewsHeading, instructions)
-      filePreviewsHeading.innerHTML = `${
-        i + 1
-      } files selected <span class="usa-file-input__choose">Change files</span>`
-    }
-
-    // Hides null state content and sets preview heading class
-    if (filePreviewsHeading) {
-      instructions.classList.add(HIDDEN_CLASS)
-      filePreviewsHeading.classList.add(PREVIEW_HEADING_CLASS)
-    }
-  }
-}
-
-function FileUpload({ section }) {
+function FileUpload({ section, setlocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
-  const { files, year, quarter, data, canDownload, fileList } = useSelector(
+  const [inputHasRendered, setInputHasRendered] = useState(false)
+  const { files, year, quarter, data, fileList, downloadedFile } = useSelector(
     (state) => state.reports
   )
+  const hasFile = fileList?.some((file) => file.section === section)
+  const isDownloaded = fileList?.some(
+    (file) =>
+      file.section === downloadedFile?.section &&
+      file.year === downloadedFile?.year &&
+      file.quarter === downloadedFile?.quarter
+  )
   const dispatch = useDispatch()
-
-  useEffect(() => {
-    if (canDownload) {
-      const url = window.URL.createObjectURL(new Blob([data]))
-      const link = document.createElement('a')
-
-      link.href = url
-      link.setAttribute('download', `${year}.${quarter}.${section}.txt`)
-
-      document.body.appendChild(link)
-
-      link.click()
-
-      document.body.removeChild(link)
-    }
-  }, [canDownload])
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
 
   const selectedFile = files.find((file) => sectionName === file.section)
 
-  const formattedSectionName = file.section
+  const formattedSectionName = selectedFile.section
     .split(' ')
     .map((s) => s.toLowerCase())
     .join('-')
 
-  const fileName = selectedFile?.fileName
+  const targetClassName = getTargetClassName(formattedSectionName)
+  console.log({ targetClassName })
+
+  const fileName = selectedFile?.fileName || 'report.txt'
   const hasUploadedFile = Boolean(fileName)
 
   const ariaDescription = hasUploadedFile
     ? `Selected File ${selectedFile?.fileName}. To change the selected file, click this button.`
     : `Drag file here or choose from folder.`
+
+  useEffect(() => {
+    const trySettingPreview = () => {
+      const previewState = handlePreview(fileName, targetClassName)
+      console.log({ previewState })
+      if (!previewState) {
+        setTimeout(trySettingPreview, 100)
+      }
+    }
+    console.log({ hasFile })
+    if (hasFile) trySettingPreview()
+  }, [hasFile])
 
   const downloadFile = ({ target }) => {
     dispatch(clearError({ section }))
@@ -311,8 +202,8 @@ function FileUpload({ section }) {
         data-errormessage={INVALID_FILE_ERROR}
       />
       <div style={{ marginTop: '25px', marginTop: '20px' }}>
-        {fileList?.some((file) => file.section === section) ? (
-          <Button className="cancel" type="button" onClick={downloadFile}>
+        {hasFile ? (
+          <Button className="tanf-file-download-button" type="button" onClick={downloadFile}>
             Download
           </Button>
         ) : null}
