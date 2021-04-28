@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 
+from ..users.models import User
 from ..reports.models import ReportFile
 
 logger = logging.getLogger()
@@ -28,7 +29,7 @@ def write_logs(request):
     if data['files']:
         for file in data['files']:
             LogEntry.objects.log_action(
-                user_id=data['user'],
+                user_id=User.objects.get(username=data['user']),
                 content_type_id=ContentType.objects.get_for_model(ReportFile).pk,
                 object_id=file,
                 object_repr=str(data),
