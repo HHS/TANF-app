@@ -92,11 +92,19 @@ const reports = (state = initialState, action) => {
       return { ...state }
     }
     case END_FILE_DOWNLOAD: {
+      const updatedFiles = getUpdatedFiles(
+        state, 
+      )
       return {
         ...state,
-        downloadedFile: {
-          ...payload,
-        },
+        files: state.files.map((file) =>
+          file.section === payload.section
+            ? {
+                ...file,
+                data: payload.data,
+              }
+            : file
+        ),
       }
     }
     case DOWNLOAD_DIALOG_OPEN: {
