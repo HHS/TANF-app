@@ -90,6 +90,7 @@ describe('UploadReport', () => {
     )
 
     const buttons = container.querySelectorAll('.tanf-file-download-btn')
+    expect(buttons.length).toBe(2)
 
     expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
