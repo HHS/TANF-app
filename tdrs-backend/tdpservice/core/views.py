@@ -26,7 +26,7 @@ def write_logs(request):
                 f"{data['message']} "
                 f"for {request.user}")
 
-    if data['files']:
+    if 'files' in data:
         for file in data['files']:
             LogEntry.objects.log_action(
                 user_id=User.objects.get(username=data['user']),
