@@ -203,7 +203,11 @@ function FileUpload({ section, setlocalAlertState }) {
       />
       <div style={{ marginTop: '25px', marginTop: '20px' }}>
         {hasFile ? (
-          <Button className="tanf-file-download-button" type="button" onClick={downloadFile}>
+          <Button
+            className="tanf-file-download-btn"
+            type="button"
+            onClick={downloadFile}
+          >
             Download
           </Button>
         ) : null}
