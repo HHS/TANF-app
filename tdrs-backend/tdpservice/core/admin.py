@@ -34,18 +34,15 @@ class LogEntryAdmin(admin.ModelAdmin):
     ]
 
     def has_add_permission(self, request):
-        """Deny the user permission to manually create
-        LogEntry objects in Django Admin."""
+        """Deny the user permission to create LogEntry objects in Django Admin."""
         return False
 
     def has_change_permission(self, request, obj=None):
-        """Deny the user permission to manually update
-        LogEntry objects in Django Admin."""
+        """Deny the user permission to update LogEntry objects in Django Admin."""
         return False
 
     def has_delete_permission(self, request, obj=None):
-        """Deny the user permission to manually delete
-        LogEntry objects in Django Admin."""
+        """Deny the user permission to delete LogEntry objects in Django Admin."""
         return False
 
     def has_view_permission(self, request, obj=None):
