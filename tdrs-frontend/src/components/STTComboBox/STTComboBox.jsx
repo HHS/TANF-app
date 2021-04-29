@@ -17,8 +17,10 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    dispatch(fetchSttList())
-  }, [dispatch])
+    if (sttList.length === 0) {
+      dispatch(fetchSttList())
+    }
+  }, [dispatch, sttList])
 
   return (
     <ComboBox

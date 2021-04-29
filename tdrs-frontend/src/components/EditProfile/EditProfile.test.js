@@ -509,14 +509,14 @@ describe('EditProfile', () => {
     })
 
     // Account for the internal dispatch to fetch stts
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    expect(store.dispatch).toHaveBeenCalledTimes(1)
 
     const form = wrapper.find('.usa-form').hostNodes()
     form.simulate('submit', {
       preventDefault: () => {},
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(3)
+    expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
 
   it('should dispatch "setAlert" when form is submitted and there is an error', () => {
@@ -558,6 +558,6 @@ describe('EditProfile', () => {
       </Provider>
     )
     // Account for the internal dispatch to fetch stts
-    expect(store.dispatch).toHaveBeenCalledTimes(3)
+    expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
 })
