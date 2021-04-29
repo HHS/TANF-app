@@ -121,7 +121,7 @@ function Reports() {
         {Boolean(formValidation.errors) && (
           <div className="margin-top-4 usa-error-message" role="alert">
             There {errorsCount === 1 ? 'is' : 'are'} {formValidation.errors}{' '}
-            errors in this form
+            error(s) in this form
           </div>
         )}
         <form>
