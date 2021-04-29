@@ -82,8 +82,6 @@ function UploadReport({ handleCancel, header }) {
 
     const uploadRequests = filteredFiles.map((file) =>
       axiosInstance.post(
-        // update to `process.env.REACT_APP_BACKEND_URL` and
-        // remove mirage route when ready
         `${process.env.REACT_APP_BACKEND_URL}/reports/`,
         {
           original_filename: file.fileName,
