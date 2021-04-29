@@ -1,8 +1,20 @@
 version: 1
 applications:
 - name: tdp-backend
-  memory: 256M
+  memory: 512M
   instances: 1
   disk_quota: 2G
   docker:
     image: ((docker-backend))
+  env:
+    AV_SCAN_URL: http://((cf-space))-clamav-rest.apps.internal:9000/scan
+- name: clamav-rest
+  instances: 1
+  memory: 2G
+  disk_quota: 2G
+  docker:
+    image: rafttech/clamav-rest:0.103.2
+  env:
+    MAX_FILE_SIZE: 200M
+  routes:
+  - route: ((cf-space))-clamav-rest.apps.internal
