@@ -82,7 +82,7 @@ function UploadReport({ handleCancel, header, stt }) {
       axiosInstance.post(
         // update to `process.env.REACT_APP_BACKEND_URL` and
         // remove mirage route when ready
-        `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+        `/mock_api/reports/`,
         {
           original_filename: file.fileName,
           slug: file.uuid,
