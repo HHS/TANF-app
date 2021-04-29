@@ -27,13 +27,17 @@ DOCKER_IMAGE_FRONTEND=${6}
 #The Github Branch triggered to execure this script if triggered in circleci
 CIRCLE_BRANCH=${7}
 
+# The Space in Cloud.gov that this application will be deployed to
+CF_SPACE=${8}
+
 echo DEPLOY_STRATEGY: $DEPLOY_STRATEGY
-echo DEPLOY_ENV=$DEPLOY_ENV
+echo DEPLOY_ENV: $DEPLOY_ENV
 echo BACKEND_HOST: $CGHOSTNAME_BACKEND
 echo FRONTEND_HOST: $CGHOSTNAME_FRONTEND
 echo DOCKER_BACKEND_IMAGE: $DOCKER_IMAGE_BACKEND
 echo DOCKER_FRONTEND_IMAGE: $DOCKER_IMAGE_FRONTEND
-echo CIRCLE_BRANCH=$CIRCLE_BRANCH
+echo CIRCLE_BRANCH: $CIRCLE_BRANCH
+echo CF_SPACE: $CF_SPACE
 
 
 # function to check if a service exists
@@ -64,10 +68,10 @@ update_backend()
 		# Do a zero downtime deploy.  This requires enough memory for
 		# two apps to exist in the org/space at one time.
 		#The `--var` parameter ingest a value into the ((docker-backend)) environment variable in the manifest.yml**
-		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND --strategy rolling || exit 1
+		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND  --var cf-space=$CF_SPACE --strategy rolling || exit 1
 
 	else
-		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND
+		cf push $CGHOSTNAME_BACKEND --no-route -f tdrs-backend/manifest.yml --var docker-backend=$DOCKER_IMAGE_BACKEND --var cf-space=$CF_SPACE
 		# set up JWT key if needed
 		if cf e $CGHOSTNAME_BACKEND | grep -q JWT_KEY ; then
 		   echo jwt cert already created
