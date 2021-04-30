@@ -9,7 +9,6 @@ commands:
         type: "string"
     steps:
       - run: |
-          CF_SPACE=$CF_SPACE_<<parameters.env>>
           CF_USERNAME=$CF_USERNAME_<<parameters.env>>
           CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>
           CGHOSTNAME_FRONTEND=$CGHOSTNAME_FRONTEND_<<parameters.env>>
@@ -51,12 +50,16 @@ commands:
           bash ./scripts/deploy-backend.sh \
             <<parameters.deploy-strategy>> \
             <<parameters.deploy-env>> \
-            <<parameters.backend-hostname>> 
+            <<parameters.backend-hostname>>
   login-cloud-dot-gov:
-    - run: |
-        cf api https://api.fr.cloud.gov
-        cf auth "$CF_USERNAME" "$CF_PASSWORD"
-        cf target -o $CF_ORG -s "$CF_SPACE"
+    parameters:
+      cf-space:
+        default: "tanf-dev"
+    steps:
+      - run: |
+          cf api https://api.fr.cloud.gov
+          cf auth "$CF_USERNAME" "$CF_PASSWORD"
+          cf target -o $CF_ORG -s "<<parameters.cf-space>>"
 jobs:
   test-backend:
     machine:
