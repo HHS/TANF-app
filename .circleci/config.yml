@@ -8,7 +8,8 @@ commands:
         default: "DEV"
         type: "string"
     steps:
-      - run: |
+      - run: 
+      |
         CF_SPACE=$CF_SPACE_<<parameters.env>>
         CF_USERNAME=$CF_USERNAME_<<parameters.env>>
         CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>
