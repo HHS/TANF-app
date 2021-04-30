@@ -43,9 +43,6 @@ commands:
       deploy-env:
         default: "staging"
         type: string
-      deploy-env:
-        default: "staging"
-        type: string
       backend-hostname:
         default: ""
         type: string
