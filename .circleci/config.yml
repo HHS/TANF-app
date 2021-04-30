@@ -9,11 +9,11 @@ commands:
         type: "string"
     steps:
       - run: |
-        CF_SPACE=CF_SPACE_<<parameters.env>>
-        CF_USERNAME=CF_USERNAME_<<parameters.env>>
-        CF_PASSWORD=CF_PASSWORD_<<parameters.env>>
-        CGHOSTNAME_FRONTEND=CGHOSTNAME_FRONTEND_<<parameters.env>>
-        CGHOSTNAME_BACKEND=CGHOSTNAME_BACKEND_<<parameters.env>>
+        CF_SPACE=$CF_SPACE_<<parameters.env>>
+        CF_USERNAME=$CF_USERNAME_<<parameters.env>>
+        CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>
+        CGHOSTNAME_FRONTEND=$CGHOSTNAME_FRONTEND_<<parameters.env>>
+        CGHOSTNAME_BACKEND=$CGHOSTNAME_BACKEND_<<parameters.env>>
   deploy-frontend:
     parameters:
       deploy-strategy:
