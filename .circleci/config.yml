@@ -141,6 +141,9 @@ jobs:
           path: tdrs-frontend/reports/owasp_report.html
   deploy-dev:
     working_directory: ~/tdp-deploy
+    docker:
+      - image: circleci/python:3.8
+        user: root
     steps:
       - checkout
       - run:
