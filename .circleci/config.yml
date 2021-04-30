@@ -54,6 +54,7 @@ commands:
   login-cloud-dot-gov:
     parameters:
       cf-space:
+        type: "string"
         default: "tanf-dev"
     steps:
       - run: |
