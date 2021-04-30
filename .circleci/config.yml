@@ -8,13 +8,12 @@ commands:
         default: "DEV"
         type: "string"
     steps:
-      - run: 
-      |
-        CF_SPACE=$CF_SPACE_<<parameters.env>>
-        CF_USERNAME=$CF_USERNAME_<<parameters.env>>
-        CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>
-        CGHOSTNAME_FRONTEND=$CGHOSTNAME_FRONTEND_<<parameters.env>>
-        CGHOSTNAME_BACKEND=$CGHOSTNAME_BACKEND_<<parameters.env>>
+      - run: |
+          CF_SPACE=$CF_SPACE_<<parameters.env>>
+          CF_USERNAME=$CF_USERNAME_<<parameters.env>>
+          CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>
+          CGHOSTNAME_FRONTEND=$CGHOSTNAME_FRONTEND_<<parameters.env>>
+          CGHOSTNAME_BACKEND=$CGHOSTNAME_BACKEND_<<parameters.env>>
   deploy-frontend:
     parameters:
       deploy-strategy:
@@ -30,13 +29,12 @@ commands:
         default: "https://tdp-frontend.app.cloud.gov/"
         type: string
     steps:
-      - run: 
-      |
-        bash ./scripts/deploy-frontend.sh \
-          <<parameters.deploy-strategy>> \
-          <<parameters.deploy-env>> \
-          <<parameters.frontend-hostname>> \
-          <<parameters.backend-hostname>> 
+      - run: |
+          bash ./scripts/deploy-frontend.sh \
+            <<parameters.deploy-strategy>> \
+            <<parameters.deploy-env>> \
+            <<parameters.frontend-hostname>> \
+            <<parameters.backend-hostname>> 
   deploy-backend:
     parameters:
       deploy-strategy:
@@ -53,10 +51,10 @@ commands:
         type: string
     steps:
       - run: |
-        bash ./scripts/deploy-backend.sh \
-          <<parameters.deploy-strategy>> \
-          <<parameters.deploy-env>> \
-          <<parameters.backend-hostname>> 
+          bash ./scripts/deploy-backend.sh \
+            <<parameters.deploy-strategy>> \
+            <<parameters.deploy-env>> \
+            <<parameters.backend-hostname>> 
   login-cloud-dot-gov:
     - run: |
       cf api https://api.fr.cloud.gov
