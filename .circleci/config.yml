@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   node: circleci/node@4.2.1
-  cypress: cypress-io/cypress@1.27.0
 jobs:
   test-backend:
     machine:
@@ -16,11 +15,8 @@ jobs:
           name: "Test: Build and Spin-up Django API Service"
           command: "cd tdrs-backend; docker-compose up -d --build"
       - run:
-          name: "Tear Down Django API Service"
-          command: "cd tdrs-backend; docker-compose down "
-      - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
-          command: "cd tdrs-backend; docker-compose run web sh -c \"pytest && pytest --cov-report=xml\""
+          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"pytest --cov-report=xml\""
       - run:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
@@ -55,10 +51,10 @@ jobs:
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
       - node/install-yarn
-      - cypress/install:
-          cache-key: cache-{{ arch }}-{{ .Branch }}-{{ checksum "tdrs-frontend/package.json" }}
-          working_directory: tdrs-frontend
-          yarn: true
+      - node/install-packages:
+          app-dir: tdrs-frontend
+          cache-path: ~/.cache
+          pkg-manager: yarn
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
@@ -174,11 +170,11 @@ jobs:
             cf auth "$CF_USERNAME" "$CF_PASSWORD"
             cf target -o $CF_ORG -s "$CF_SPACE"
 
-            # Deploy ClamAV REST server
             # First delete the existing implementation of clamav-rest so we don't exhaust memory quota
             cf delete -r clamav-rest -f
-            # NOTE: docker-backend is unused by clamav-rest but is needed to prevent an error when calling cf push
-            cf push clamav-rest -f tdrs-backend/manifest.yml --var docker-backend=null --var cf-space=$CF_SPACE
+
+            # Deploy ClamAV REST server
+            cf push clamav-rest -f tdrs-backend/manifest_clamav.yml --var cf-space=$CF_SPACE
 
             # Deploy frontend and backend applications
             ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH $CF_SPACE
