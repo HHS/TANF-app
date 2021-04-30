@@ -1,12 +1,19 @@
 """Integration test(s) for clamav-rest operations."""
 from io import StringIO
 import pytest
-import requests
 
 from django.conf import settings
 from factory.faker import faker
 
+from tdpservice.clients import ClamAVClient
+
 _faker = faker.Faker()
+
+
+@pytest.fixture
+def clamav_client(clamav_url):
+    av_client = ClamAVClient(endpoint_url=clamav_url)
+    return av_client
 
 
 @pytest.fixture
@@ -38,30 +45,27 @@ def infected_file():
     )
 
 
-def _send_file_to_clamav(clamav_url, file, file_name):
-    """Send a file over HTTP to ClamAV-REST."""
-    return requests.post(
-        clamav_url,
-        files={'file': file},
-        data={'name': file_name}
-    )
-
-
 def assert_clamav_url(clamav_url):
     """Ensure that the provided setting for AV_SCAN_URL is configured."""
     assert clamav_url is not None
 
 
-def test_clamav_accepts_files(clamav_url, fake_file, fake_file_name):
+def test_clamav_accepts_files(
+    clamav_client,
+    clamav_url,
+    fake_file,
+    fake_file_name
+):
     """Test that ClamAV is configured and accessible by this application."""
     assert_clamav_url(clamav_url)
 
     # Send a fake file to ClamAV to ensure it is accessible and accepts files.
-    response = _send_file_to_clamav(clamav_url, fake_file, fake_file_name)
-    assert response.status_code == 200  # ClamAV returns 200 for a "clean" file
+    is_file_clean = clamav_client.scan_file(fake_file, fake_file_name)
+    assert is_file_clean is True
 
 
 def test_clamav_rejects_infected_files(
+    clamav_client,
     clamav_url,
     infected_file,
     fake_file_name
@@ -70,5 +74,10 @@ def test_clamav_rejects_infected_files(
     assert_clamav_url(clamav_url)
 
     # Send a test file that will be treated as "infected"
-    response = _send_file_to_clamav(clamav_url, infected_file, fake_file_name)
-    assert response.status_code == 406  # ClamAV returns 406 for infected files
+    is_file_clean = clamav_client.scan_file(infected_file, fake_file_name)
+    assert is_file_clean is False
+
+
+def test_clamav_rejects_invalid_files():
+    """TODO"""
+    pass

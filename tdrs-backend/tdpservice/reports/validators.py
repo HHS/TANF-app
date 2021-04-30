@@ -4,6 +4,8 @@ import logging
 from django.core.exceptions import ValidationError
 from inflection import pluralize
 
+from tdpservice.clients import ClamAVClient
+
 logger = logging.getLogger(__name__)
 
 # The default set of Extensions allowed for an uploaded file
@@ -16,13 +18,6 @@ ALLOWED_FILE_EXTENSIONS = [
 ALLOWED_FILE_CONTENT_TYPES = [
     'text/plain',
 ]
-
-# https://github.com/raft-tech/clamav-rest#status-codes
-AV_SCAN_CODES = {
-    'CLEAN': [200],
-    'INFECTED': [406],
-    'ERROR': [400, 412, 500, 501]
-}
 
 
 def _get_unsupported_msg(_type, value, supported_options):
@@ -60,7 +55,19 @@ def validate_file_extension(file):
 
 
 def validate_file_infection(file):
-    pass
+    av_client = ClamAVClient()
+    try:
+        is_file_clean = av_client.scan_file(file, file.name)
+    except ClamAVClient.ServiceUnavailable:
+        raise ValidationError(
+            'Unable to complete security inspection, please try again or '
+            'contact support for assistance'
+        )
+
+    if not is_file_clean:
+        raise ValidationError(
+            'Rejected: uploaded file did not pass security inspection'
+        )
 
 
 def validate_data_file(file):
