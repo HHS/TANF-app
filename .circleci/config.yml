@@ -51,17 +51,16 @@ commands:
         default: ""
         type: string
     steps:
-      - run: 
-      |
+      - run: |
         bash ./scripts/deploy-backend.sh \
           <<parameters.deploy-strategy>> \
           <<parameters.deploy-env>> \
           <<parameters.backend-hostname>> 
   login-cloud-dot-gov:
     - run: |
-            cf api https://api.fr.cloud.gov
-            cf auth "$CF_USERNAME" "$CF_PASSWORD"
-            cf target -o $CF_ORG -s "$CF_SPACE"
+      cf api https://api.fr.cloud.gov
+      cf auth "$CF_USERNAME" "$CF_PASSWORD"
+      cf target -o $CF_ORG -s "$CF_SPACE"
 jobs:
   test-backend:
     machine:
