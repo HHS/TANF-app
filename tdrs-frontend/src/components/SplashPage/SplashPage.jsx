@@ -34,7 +34,7 @@ function SplashPage() {
           <div className="usa-hero__callout">
             <h1 className="usa-hero__heading">
               <span className="usa-hero__heading--alt font-serif-2xl margin-bottom-5">
-                Sign into TANF Data Portal
+                Sign into TANF Data Portal!
               </span>
             </h1>
             <p className="text-black margin-bottom-5">
