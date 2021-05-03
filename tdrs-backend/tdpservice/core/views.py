@@ -28,11 +28,14 @@ def write_logs(request):
 
     if 'files' in data:
         for file in data['files']:
+
+            object_repr = '\n'.join([f'{key}: {value}' for key, value in data.items()])
+
             LogEntry.objects.log_action(
                 user_id=User.objects.get(username=data['user']).pk,
                 content_type_id=ContentType.objects.get_for_model(ReportFile).pk,
                 object_id=file,
-                object_repr=str(data),
+                object_repr=object_repr,
                 action_flag=CHANGE,
                 change_message=data['message'],
             )
