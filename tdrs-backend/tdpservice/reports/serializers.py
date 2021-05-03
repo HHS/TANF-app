@@ -1,17 +1,21 @@
 """Serialize stt data."""
 
 from rest_framework import serializers
-from ..stts.models import STT
-from ..users.models import User
-from .models import ReportFile
 
-from .errors import ImmutabilityError
+from tdpservice.reports.errors import ImmutabilityError
+from tdpservice.reports.models import ReportFile
+from tdpservice.reports.validators import validate_data_file
+from tdpservice.stts.models import STT
+from tdpservice.users.models import User
 
 
 class ReportFileSerializer(serializers.ModelSerializer):
     """Serializer for Report files."""
 
-    file = serializers.FileField(write_only=True)
+    file = serializers.FileField(
+        write_only=True,
+        validators=[validate_data_file]
+    )
     stt = serializers.PrimaryKeyRelatedField(queryset=STT.objects.all())
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 

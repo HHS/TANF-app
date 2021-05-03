@@ -9,6 +9,7 @@ from boto3 import client
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class ClamAVClient:

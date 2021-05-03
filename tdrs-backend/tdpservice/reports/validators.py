@@ -29,7 +29,7 @@ def _get_unsupported_msg(_type, value, supported_options):
 
 
 def validate_file_content_type(file):
-    file_content_type = file.file.content_type
+    file_content_type = file.content_type
 
     if file_content_type not in ALLOWED_FILE_CONTENT_TYPES:
         msg = _get_unsupported_msg(

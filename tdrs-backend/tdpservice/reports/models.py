@@ -87,8 +87,9 @@ class ReportFile(File):
     # https://github.com/raft-tech/TANF-app/issues/755
     file = models.FileField(upload_to='data_files',
                             null=True,
-                            blank=True,
-                            validators=[validate_data_file])
+                            blank=True)
+
+    # In [43]: report.file._file.obj.download_fileobj(filel, ExtraArgs={'VersionId': 'b47b4b60-3bd9-4c2e-a08d-0de530e627c4'})
 
     @classmethod
     def create_new_version(self, data):
