@@ -21,10 +21,10 @@ commands:
       deploy-env:
         default: "staging"
         type: string
-      backend-hostname:
+      backend-appname:
         default: "tdp-backend"
         type: string
-      frontend-hostname:
+      frontend-appname:
         default: "tdp-frontend"
         type: string
     steps:
@@ -32,8 +32,8 @@ commands:
           bash ./scripts/deploy-frontend.sh \
             <<parameters.deploy-strategy>> \
             <<parameters.deploy-env>> \
-            <<parameters.frontend-hostname>> \
-            <<parameters.backend-hostname>> 
+            <<parameters.frontend-appname>> \
+            <<parameters.backend-appname>> 
   deploy-backend:
     parameters:
       deploy-strategy:
@@ -42,7 +42,7 @@ commands:
       deploy-env:
         default: "staging"
         type: string
-      backend-hostname:
+      backend-appname:
         default: ""
         type: string
     steps:
@@ -50,7 +50,7 @@ commands:
           bash ./scripts/deploy-backend.sh \
             <<parameters.deploy-strategy>> \
             <<parameters.deploy-env>> \
-            <<parameters.backend-hostname>>
+            <<parameters.backend-appname>>
   login-cloud-dot-gov:
     parameters:
       cf-space:
