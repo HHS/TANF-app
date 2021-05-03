@@ -22,10 +22,10 @@ commands:
         default: "staging"
         type: string
       backend-hostname:
-        default: "https://tdp-backend.app.cloud.gov/"
+        default: "tdp-backend"
         type: string
       frontend-hostname:
-        default: "https://tdp-frontend.app.cloud.gov/"
+        default: "tdp-frontend"
         type: string
     steps:
       - run: |
