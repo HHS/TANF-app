@@ -160,6 +160,27 @@ jobs:
       - login-cloud-dot-gov
       - deploy-frontend
       - deploy-backend
+
+  deploy-prod:
+    working_directory: ~/tdp-deploy
+    docker:
+      - image: circleci/python:3.8
+        user: root
+    steps:
+      - checkout
+      - run:
+          name: 'Ensure sudo is installed, otherwise install it.'
+          command: "./scripts/sudo-check.sh"
+      - run:
+          name: 'Ensure cf cli is installed, otherwise install it.'
+          command: "./scripts/cf-check.sh"
+      - set-environment:
+          env: "PROD"
+      - login-cloud-dot-gov:
+          cf-space: "tanf-prod"
+
+      - deploy-frontend
+      - deploy-backend
 workflows:
   build-and-test:
     jobs:
