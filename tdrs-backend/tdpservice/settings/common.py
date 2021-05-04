@@ -314,3 +314,6 @@ class Common(Configuration):
     # Capture all logging statements across the service in the root handler
     logger = logging.getLogger()
     logger.addHandler(logging.StreamHandler())
+
+    # AV Scanning Settings
+    AV_SCAN_URL = os.getenv('AV_SCAN_URL')

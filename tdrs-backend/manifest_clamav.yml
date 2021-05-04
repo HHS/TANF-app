@@ -1,0 +1,12 @@
+version: 1
+applications:
+- name: clamav-rest
+  instances: 1
+  memory: 2G
+  disk_quota: 2G
+  docker:
+    image: rafttech/clamav-rest:0.103.2
+  env:
+    MAX_FILE_SIZE: 200M
+  routes:
+    - route: ((cf-space))-clamav-rest.apps.internal
