@@ -9,6 +9,8 @@ commands:
         type: "string"
     steps:
       - run: |
+          export TEST_VAR_DEV="TEST"
+          export TEST_VAR_<<parameters.env>>
           export CF_USERNAME=$CF_USERNAME_<<parameters.env>>
           export CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>
           export CGHOSTNAME_FRONTEND=$CGHOSTNAME_FRONTEND_<<parameters.env>>
