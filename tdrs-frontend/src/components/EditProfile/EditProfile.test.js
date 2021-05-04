@@ -398,7 +398,9 @@ describe('EditProfile', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Associated State, Tribe, or Territory')
+    const select = getByLabelText('Associated State, Tribe, or Territory', {
+      selector: 'input',
+    })
 
     fireEvent.change(select, {
       target: { value: 'alaska' },

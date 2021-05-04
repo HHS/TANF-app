@@ -170,11 +170,11 @@ jobs:
             cf auth "$CF_USERNAME" "$CF_PASSWORD"
             cf target -o $CF_ORG -s "$CF_SPACE"
 
-            # Deploy ClamAV REST server
             # First delete the existing implementation of clamav-rest so we don't exhaust memory quota
             cf delete -r clamav-rest -f
-            # NOTE: docker-backend is unused by clamav-rest but is needed to prevent an error when calling cf push
-            cf push clamav-rest -f tdrs-backend/manifest.yml --var docker-backend=null --var cf-space=$CF_SPACE
+
+            # Deploy ClamAV REST server
+            cf push clamav-rest -f tdrs-backend/manifest_clamav.yml --var cf-space=$CF_SPACE
 
             # Deploy frontend and backend applications
             ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH $CF_SPACE
