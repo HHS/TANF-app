@@ -1,7 +1,10 @@
 """Globally available pytest fixtures."""
 import pytest
+from django.contrib.admin.models import LogEntry
+from django.contrib.admin.sites import AdminSite
 from rest_framework.test import APIClient
 
+from tdpservice.core.admin import LogEntryAdmin
 from tdpservice.users.test.factories import (
     UserFactory,
     AdminUserFactory,
@@ -79,3 +82,8 @@ def region():
 def report():
     """Return a report file."""
     return ReportFileFactory.create()
+
+
+@pytest.fixture
+def admin():
+    return LogEntryAdmin(LogEntry, AdminSite())
