@@ -1,8 +1,9 @@
 """Generate test data for Report files."""
-
 import factory
+
 from tdpservice.users.test.factories import UserFactory
 from tdpservice.stts.test.factories import STTFactory
+
 
 class ReportFileFactory(factory.django.DjangoModelFactory):
     """Generate test data for report files."""
@@ -21,3 +22,4 @@ class ReportFileFactory(factory.django.DjangoModelFactory):
     version = 1
     user = factory.SubFactory(UserFactory)
     stt = factory.SubFactory(STTFactory)
+    file = factory.django.FileField(filename='my_data_file.txt')

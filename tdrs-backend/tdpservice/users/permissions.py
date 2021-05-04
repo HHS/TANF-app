@@ -3,15 +3,17 @@
 from rest_framework import permissions
 
 
-def is_own_stt(request, view):
+def is_own_stt(request):
     """Verify user belongs to requested STT."""
     return is_in_group(request.user, "Data Prepper") and (
-        request.user.stt.id == request.data['stt']
+        request.user.stt.id == int(request.data['stt'])
     )
+
 
 def is_in_group(user, group_name):
     """Take a user and a group name, and returns `True` if the user is in that group."""
     return user.groups.filter(name=group_name).exists()
+
 
 class IsUser(permissions.BasePermission):
     """Object-level permission to only allow owners of an object to edit it."""
@@ -58,4 +60,4 @@ class CanUploadReport(permissions.BasePermission):
 
         If they are a data prepper, ensures the STT is their own.
         """
-        return is_in_group(request.user, "OFA Admin") or is_own_stt(request, view)
+        return is_in_group(request.user, "OFA Admin") or is_own_stt(request)

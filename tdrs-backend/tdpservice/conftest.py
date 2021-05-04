@@ -1,7 +1,15 @@
 """Globally available pytest fixtures."""
-import pytest
-from rest_framework.test import APIClient
+from io import StringIO
+from tempfile import NamedTemporaryFile
+import uuid
 
+from django.contrib.auth.models import Group
+from factory.faker import faker
+from rest_framework.test import APIClient
+import pytest
+
+from tdpservice.reports.test.factories import ReportFileFactory
+from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from tdpservice.users.test.factories import (
     UserFactory,
     AdminUserFactory,
@@ -10,9 +18,7 @@ from tdpservice.users.test.factories import (
     InactiveUserFactory
 )
 
-from tdpservice.stts.test.factories import STTFactory, RegionFactory
-from django.contrib.auth.models import Group
-from tdpservice.reports.test.factories import ReportFileFactory
+_faker = faker.Faker()
 
 
 @pytest.fixture(scope="function")
@@ -73,6 +79,98 @@ def stt():
 def region():
     """Return a region."""
     return RegionFactory.create()
+
+
+@pytest.fixture
+def fake_file_name():
+    """Generate a random, but valid file name ending in .txt."""
+    return _faker.file_name(extension='txt')
+
+
+@pytest.fixture
+def fake_file():
+    """Generate an in-memory file-like object with random contents."""
+    return StringIO(_faker.sentence())
+
+
+@pytest.fixture
+def infected_file():
+    """Generate an EICAR test file that will be treated as an infected file.
+
+    https://en.wikipedia.org/wiki/EICAR_test_file
+    """
+    return StringIO(
+        r'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'
+    )
+
+
+def create_temporary_file(
+    file_contents: str,
+    suffix: str = '.txt'
+) -> NamedTemporaryFile:
+    file = NamedTemporaryFile(suffix=suffix)
+    file_contents_bytes = str.encode(file_contents)
+    file.write(file_contents_bytes)
+    file.seek(0)
+
+    return file
+
+
+@pytest.fixture
+def data_file(fake_file):
+    return create_temporary_file(fake_file.read())
+
+
+@pytest.fixture
+def other_data_file(fake_file):
+    fake_file.seek(0)
+    return create_temporary_file(fake_file.read())
+
+
+@pytest.fixture
+def infected_data_file(infected_file):
+    return create_temporary_file(infected_file.read())
+
+
+@pytest.fixture
+def base_report_data(fake_file_name, user):
+    return {
+        "original_filename": fake_file_name,
+        "slug": uuid.uuid4(),
+        "extension": "txt",
+        "section": "Active Case Data",
+        "user": str(user.id),
+        "quarter": "Q1",
+        "year": "2020",
+        "stt": int(user.stt.id)
+    }
+
+
+@pytest.fixture
+def report_data(base_report_data, data_file):
+    """Return report creation data."""
+    return {
+        "file": data_file,
+        **base_report_data
+    }
+
+
+@pytest.fixture
+def other_report_data(base_report_data, other_data_file):
+    """Return report creation data."""
+    return {
+        "file": other_data_file,
+        **base_report_data
+    }
+
+
+@pytest.fixture
+def infected_report_data(base_report_data, infected_data_file):
+    """Return report creation data."""
+    return {
+        "file": infected_data_file,
+        **base_report_data
+    }
 
 
 @pytest.fixture

@@ -1,11 +1,22 @@
 """Define report models."""
+import os
+import uuid
 
 from django.db import models
 from django.db.models import Max
 
-from ..stts.models import STT
-from ..users.models import User
-from .validators import validate_data_file
+from tdpservice.stts.models import STT
+from tdpservice.users.models import User
+
+
+def get_s3_upload_path(instance, filename):
+    """Produce an upload path for S3 files that is guaranteed to be unique
+    per STT and Quarter.
+    """
+    return os.path.join(
+        f'data_files/{instance.stt.id}/{instance.quarter}',
+        filename
+    )
 
 
 # The Report File model was starting to explode, and I think that keeping this logic
@@ -24,6 +35,7 @@ class File(models.Model):
                                          blank=False,
                                          null=False)
     # Slug is the name of the file in S3
+    # NOTE: Currently unused, may be removed with a later release
     slug = models.CharField(max_length=256, blank=False, null=False)
     # Not all files will have the correct extension,
     # or even have one at all. The UI will provide this information
@@ -85,7 +97,7 @@ class ReportFile(File):
 
     # NOTE: `file` is only temporarily nullable until we complete the issue:
     # https://github.com/raft-tech/TANF-app/issues/755
-    file = models.FileField(upload_to='data_files',
+    file = models.FileField(upload_to=get_s3_upload_path,
                             null=True,
                             blank=True)
 
