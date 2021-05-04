@@ -8,6 +8,7 @@ from tdpservice.users.models import User
 
 @pytest.mark.django_db
 def test_log_entry_admin(admin_user, admin):
+    """Tests the custom LogEntryAdmin."""
     log_entry = LogEntry(
         content_type_id=ContentType.objects.get_for_model(User).id,
         action_flag=ADDITION,

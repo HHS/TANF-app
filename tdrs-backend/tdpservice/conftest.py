@@ -86,4 +86,5 @@ def report():
 
 @pytest.fixture
 def admin():
+    """Return a custom LogEntryAdmin."""
     return LogEntryAdmin(LogEntry, AdminSite())

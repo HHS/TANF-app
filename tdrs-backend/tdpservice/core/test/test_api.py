@@ -74,5 +74,7 @@ def test_log_entry_creation(api_client, report):
 
     api_client.post("/v1/logs/", data)
 
-    assert LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(ReportFile).pk,
-                                   object_id=report.pk).exists()
+    assert LogEntry.objects.filter(
+        content_type_id=ContentType.objects.get_for_model(ReportFile).pk,
+        object_id=report.pk
+    ).exists()
