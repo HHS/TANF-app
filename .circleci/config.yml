@@ -153,8 +153,8 @@ jobs:
       - run:
           name: 'Ensure cf cli is installed, otherwise install it.'
           command: "./scripts/cf-check.sh"
-      - login-cloud-dot-gov
       - set-environment
+      - login-cloud-dot-gov
       - deploy-frontend
       - deploy-backend
 
