@@ -1,7 +1,7 @@
 """Define core, generic views of the app."""
 import logging
 
-from django.contrib.admin.models import LogEntry, CHANGE
+from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -28,15 +28,21 @@ def write_logs(request):
 
     if 'files' in data:
         for file in data['files']:
+            # Add the file name of each referenced ReportFile.
+            single_report_log = {**data, 'file': ReportFile.objects.get(pk=file).original_filename}
+            # Remove the list of other files that were uploaded.
+            single_report_log.pop('files', None)
+            # Transform into newline-delimited string for the LogEntryDetails view.
+            object_repr = '\n'.join([f'{key}: {value}' for key, value in single_report_log.items()])
 
-            object_repr = '\n'.join([f'{key}: {value}' for key, value in data.items()])
+            # @TODO: Fine tune the action flag to support CHANGE actions, for newly uploaded Reports.
 
             LogEntry.objects.log_action(
                 user_id=User.objects.get(username=data['user']).pk,
                 content_type_id=ContentType.objects.get_for_model(ReportFile).pk,
                 object_id=file,
                 object_repr=object_repr,
-                action_flag=CHANGE,
+                action_flag=ADDITION,
                 change_message=data['message'],
             )
 
