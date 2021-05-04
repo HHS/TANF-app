@@ -43,7 +43,7 @@ commands:
         default: "staging"
         type: string
       backend-appname:
-        default: ""
+        default: "tdp-backend"
         type: string
     steps:
       - run: |
@@ -153,8 +153,8 @@ jobs:
       - run:
           name: 'Ensure cf cli is installed, otherwise install it.'
           command: "./scripts/cf-check.sh"
-      - set-environment
       - login-cloud-dot-gov
+      - set-environment
       - deploy-frontend
       - deploy-backend
 
