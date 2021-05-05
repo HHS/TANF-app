@@ -1,4 +1,5 @@
 import { createServer } from 'miragejs'
+import { v4 as uuidv4 } from 'uuid'
 
 export default function startMirage(
   { environment } = { environment: 'development' }
@@ -20,10 +21,12 @@ export default function startMirage(
           {
             fileName: 'test.txt',
             section: '1 - Active Case Data',
+            uuid: uuidv4(),
           },
           {
             fileName: 'testb.txt',
             section: '2 - Closed Case Data',
+            uuid: uuidv4(),
           },
         ]
       })
