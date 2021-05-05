@@ -43,6 +43,7 @@ describe('Reports', () => {
       error: null,
       year: '',
       stt: '',
+      quarter: '',
     },
     stts: {
       sttList: [
@@ -164,15 +165,25 @@ describe('Reports', () => {
   })
 
   it('should render the UploadReports form when a year is selected and Search button is clicked', () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
 
-    const { getByText } = render(
+    const { getByText, queryByText } = render(
       <Provider store={store}>
         <Reports />
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/))
+    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
     expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
@@ -181,7 +192,15 @@ describe('Reports', () => {
   })
 
   it('should de-render the UploadReports form after it has been toggled but the year is changed', () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
 
     const { getByText, getByLabelText, queryByText } = render(
       <Provider store={store}>
@@ -189,9 +208,13 @@ describe('Reports', () => {
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/))
+    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
 
-    const select = getByLabelText('Fiscal Year (October - September)')
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+    expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
+
+    const select = getByLabelText(/Fiscal Year/)
 
     fireEvent.change(select, {
       target: {
@@ -203,7 +226,15 @@ describe('Reports', () => {
   })
 
   it('should de-render when Cancel is clicked', () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
 
     const { getByText, queryByText } = render(
       <Provider store={store}>
@@ -211,7 +242,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/))
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
 
@@ -221,7 +252,15 @@ describe('Reports', () => {
   })
 
   it('should make a request with the selections and upload payloads after clicking Submit Data Files', async () => {
-    const store = mockStore(initialState)
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        year: '2021',
+        stt: 'Florida',
+        quarter: 'Q3',
+      },
+    })
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
@@ -231,7 +270,7 @@ describe('Reports', () => {
       </Provider>
     )
 
-    fireEvent.click(getByText(/Search/))
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
     await waitFor(() => {
       fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
@@ -258,13 +297,13 @@ describe('Reports', () => {
         },
       })
     })
-    expect(store.dispatch).toHaveBeenCalledTimes(9)
+    expect(store.dispatch).toHaveBeenCalledTimes(8)
 
     // There should be 4 more dispatches upon making the submission,
     // one request to /reports for each file
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(13)
+    expect(store.dispatch).toHaveBeenCalledTimes(12)
   })
 
   it('should add files to the redux state when uploading', async () => {
@@ -365,5 +404,23 @@ describe('Reports', () => {
       section: 'Stratum Data',
       uuid: actions[3].payload.uuid,
     })
+  })
+
+  it('should display error labels when user tries to search without making selections', () => {
+    const store = mockStore(initialState)
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+    expect(getByText('A fiscal year is required')).toBeInTheDocument()
+    expect(getByText('A quarter is required')).toBeInTheDocument()
+    expect(
+      getByText('A state, tribe, or territory is required')
+    ).toBeInTheDocument()
   })
 })
