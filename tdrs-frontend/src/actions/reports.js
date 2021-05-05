@@ -67,8 +67,6 @@ export const download = ({ year, quarter = 'Q1', section }) => async (
       type: END_FILE_DOWNLOAD,
       payload: {
         data,
-        year,
-        quarter,
         section,
       },
     })
