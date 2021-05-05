@@ -20,7 +20,7 @@ Value Delivered: Get approval for the authority to operate and create a producti
 ## Release 1 (fka OFA MVP) Scope
 Value Delivered: ACF employees can use a secure method to log into the system; this would require a PIV card.
 
-Our first release to production will include the functionality built for ATO (above) and also include a secure way for ACF employees to access the system, we're currently looking into integrating with HHS AMS/ACF AMS or additional options within login.gov. It is important these measures are put into place before production data is uploaded to the system.
+Our first release to production will include the functionality built for ATO (above) and also include a secure way for ACF employees to access the system, we're currently looking into integrating with HHS AMS/ACF AMS or additional options within login.gov. It is important these measures are put into place before sensitive production data is uploaded to the system.
 
 The team is also investigating options for optimizing permission management and strategy as a part of this release. 
 | Outcome | Status | 
