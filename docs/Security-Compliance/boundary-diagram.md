@@ -26,6 +26,6 @@ Application configuration will be handled by environment variables stored secure
 
 ## Updating
 
-- Download latest version pdf diagram [[draw.io](diagram.drawio) | [Visio](diagram.vsdx)]
+- Download latest version pdf diagram [draw.io](diagram.drawio)
 - Edit this diagram with [draw.io](https://app.diagrams.net/)
 - Update the image and point download link to correct file

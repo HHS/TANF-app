@@ -21,8 +21,3 @@ Our team will build a new, secure, web-based data reporting system to improve th
 - **When we see something, we say something.** Don’t be afraid to surface problems that you may become aware of, “ping” a teammate on stale ticket, or provide feedback. Acknowledge and discuss things that aren’t working well (without blame) with an eye towards improvements. Have a real chat about resolving something rather than perpetuating misunderstandings.  
 - **We default to openness and transparency.** We ask questions in the open, general channels whenever possible.  
 - **We state our goals explicitly and re-check them periodically.** At the beginning of meetings, we state our goals and check if there’s any reason for adjusting that goal.  At the end of meetings, we make sure to summarize commitments.  
-
-
-# Our Individual Preferences 
-
-While we share values, we also have our individual preferences, habits, and peeves. Take some time to read [our team forming Mural](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1595974160269/d9c2e1f9cb436a2b13a96d05ba2266bea5f66497) and understand how our team mates like to work, what makes them grumpy, and how they prefer feedback as  
