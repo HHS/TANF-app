@@ -37,7 +37,7 @@ _Notes:_ We're investigating a way to automatically update file names once uploa
 
 While this type of workflow isn't our long term workflow, including it at this point delivers value to the users quicker. So we are evaluating the ROI before deciding on this path.
 
-_Risks:_ The users that would be on-boarded to this process, would potentially have to learn and adjust with future releases and changes in functionality and workflow. Increase communication with them should help here.
+_Risks:_ The users that would be on-boarded to this process, would potentially have to learn and adjust with future releases and changes in functionality and workflow. Increased communication with them should help here.
 | Outcome | Status | 
 | -------- | ------- | 
 | STT user of the system knows their file(s) were successfully uploaded | Not Started
