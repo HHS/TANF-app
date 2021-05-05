@@ -25,7 +25,7 @@ Our first release to production will include the functionality built for ATO (ab
 The team is also investigating options for optimizing permission management and strategy as a part of this release. 
 | Outcome | Status | 
 | -------- | ------- | 
-| ACF employee can log in securely | Researching
+| Privileged ACF users are required to login with PIV/CAC credentials | Researching
 | Permissions Configuration | Researching
 
 
