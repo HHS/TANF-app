@@ -41,6 +41,7 @@ _Risks:_ The users that would be on-boarded to this process, would potentially h
 | Outcome | Status | 
 | -------- | ------- | 
 | STT user of the system knows their file(s) were successfully uploaded | Not Started
+| Files successfully transferred to ACF server | Not Started
 | Files uploaded by STT user(s) are successfully entered into the existing TDRS system | Not Started
 
 ## Potential future work
