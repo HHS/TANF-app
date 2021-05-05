@@ -33,7 +33,7 @@ The team is also investigating options for optimizing permission management and 
 
 Value Delivered: Allow users to securely upload data into our system, replacing a less secure way of doing so while increasing communication with the users and not increasing burden for OFA Admin staff.
 
-_Notes:_ We're investigating a way to automatically update file names once uploaded (based on standard naming convention) and set up a CRON job to pick up files and move them into a place where the existing TDRS application can pick them up. If this solution is selected, it would reduce the amount of time OFA Admin spends with each file. 
+_Notes:_ We're investigating a way to automatically update file names once uploaded (based on standard naming convention) and set up a CRON job to pick up files and move them into a place where the existing TDRS application can pick them up. If this solution is selected, it would reduce the amount of time OFA tribal TANF and data staff spend with each file. 
 
 While this type of workflow isn't our long term workflow, including it at this point delivers value to the users quicker. So we are evaluating the ROI before deciding on this path.
 
