@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.8.9
 ENV PYTHONUNBUFFERED 1
 
 ARG user=tdpuser
