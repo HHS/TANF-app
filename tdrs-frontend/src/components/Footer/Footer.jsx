@@ -31,7 +31,7 @@ function Footer() {
             <div className="grid-col-auto">
               <img
                 className="mobile-lg:maxw-mobile mobile:width-mobile"
-                alt="Administration for Children and Families Logo"
+                alt="Administration for Children and Families, Office of Family Assistance"
                 src={ACFLogo}
               />
             </div>
