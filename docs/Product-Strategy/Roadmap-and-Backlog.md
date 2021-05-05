@@ -2,7 +2,7 @@ _updated May 2021_
 # Product Roadmap
 Our [roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1617994644349/6047bad9ed365b22986e52f5d9f01aac32286ae9) :lock:represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem.
 
-We consider ATO, Release 1 and Release 2 committments that the team will deliver on at this time. There might be a few shifts in approach, timing or scope, but in general, these outcomes will be worked on by the team. Metrics for sucess will be added as they are defined for releases.
+We consider ATO, Release 1 and Release 2 commitments that the team will deliver on at this time. There might be a few shifts in approach, timing or scope, but in general, these outcomes will be worked on by the team. Metrics for success will be added as they are defined for releases.
 
 Beyond that, we're still discovering and planning on what best serves our users. This doc will continue to be updated as we make decisions and scope releases. 
 
