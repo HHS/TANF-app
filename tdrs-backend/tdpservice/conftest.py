@@ -118,13 +118,13 @@ def create_temporary_file(
 
 @pytest.fixture
 def data_file(fake_file):
-    """A temporary file that can be used in upload tests."""
+    """Temporary file for testing file uploads."""
     return create_temporary_file(fake_file.read())
 
 
 @pytest.fixture
 def other_data_file(fake_file):
-    """An additional temporary file available for tests.
+    """Additional temporary file for testing file uploads.
 
     Since temporary files are destroyed as soon as they are closed and fixtures
     are only run once per function by default we need to have a second file
@@ -136,7 +136,7 @@ def other_data_file(fake_file):
 
 @pytest.fixture
 def infected_data_file(infected_file):
-    """A temporary file which should be marked as infected by ClamAV-REST."""
+    """Temporary file intended to be marked as infected by ClamAV-REST."""
     return create_temporary_file(infected_file.read())
 
 
