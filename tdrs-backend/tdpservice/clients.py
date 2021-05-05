@@ -14,8 +14,10 @@ logger.setLevel(logging.DEBUG)
 
 class ClamAVClient:
     """An HTTP client that can be used to send files to a ClamAV REST server."""
+
     class ServiceUnavailable(Exception):
         """Raised when the target ClamAV REST server is unavailable."""
+
         pass
 
     # https://github.com/raft-tech/clamav-rest#status-codes
@@ -33,9 +35,7 @@ class ClamAVClient:
         self.session = self.init_session()
 
     def init_session(self):
-        """Create a new requests.Session object that can retry failed
-        connection attempts and maintain TCP connections between requests.
-        """
+        """Create a new request session that can retry failed connections."""
         session = Session()
         retries = Retry(
             backoff_factor=settings.AV_SCAN_BACKOFF_FACTOR,

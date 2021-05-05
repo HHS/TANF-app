@@ -1,7 +1,6 @@
 """Globally available pytest fixtures."""
 from io import StringIO
 from tempfile import NamedTemporaryFile
-import uuid
 
 from django.contrib.auth.models import Group
 from factory.faker import faker
@@ -96,6 +95,7 @@ def fake_file():
 @pytest.fixture
 def infected_file():
     """Generate an EICAR test file that will be treated as an infected file.
+
     https://en.wikipedia.org/wiki/EICAR_test_file
     """
     return StringIO(
@@ -107,9 +107,7 @@ def create_temporary_file(
     file_contents: str,
     suffix: str = '.txt'
 ) -> NamedTemporaryFile:
-    """Create a temporary file with an explicit name from the given string which
-    represents the contents of the desired file.
-    """
+    """Create a temporary file with an explicit name from a given string."""
     file = NamedTemporaryFile(suffix=suffix)
     file_contents_bytes = str.encode(file_contents)
     file.write(file_contents_bytes)
