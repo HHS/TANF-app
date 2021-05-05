@@ -29,7 +29,7 @@ The team is also investigating options for optimizing permission management and 
 | Permissions Configuration | Researching
 
 
-## Release 2 (fka Tribe MVP) Scope
+## Release 2 (fka Tribal MVP) Scope
 
 Value Delivered: Allow users to securely upload data into our system, replacing a less secure way of doing so while increasing communication with the users and not increasing burden for OFA Admin staff.
 
