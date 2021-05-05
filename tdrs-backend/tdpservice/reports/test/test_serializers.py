@@ -6,10 +6,13 @@ from ..errors import ImmutabilityError
 
 
 @pytest.mark.django_db
-def test_serializer_with_valid_data(report):
+def test_serializer_with_valid_data(report, data_file):
     """If a serializer has valid data it will return a valid object."""
     get_serializer = ReportFileSerializer(report)
-    create_serializer = ReportFileSerializer(data=get_serializer.data)
+    create_serializer = ReportFileSerializer(data={
+        'file': data_file,
+        **get_serializer.data
+    })
     create_serializer.is_valid(raise_exception=True)
     assert create_serializer.is_valid() is True
 

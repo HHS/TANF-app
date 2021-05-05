@@ -3,7 +3,6 @@ import logging
 
 from rest_framework.parsers import MultiPartParser
 from rest_framework.viewsets import ModelViewSet
-from storages.backends.s3boto3 import S3Boto3StorageFile
 
 from tdpservice.reports.models import ReportFile
 from tdpservice.reports.serializers import ReportFileSerializer

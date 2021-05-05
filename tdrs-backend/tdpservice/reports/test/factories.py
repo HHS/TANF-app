@@ -22,4 +22,4 @@ class ReportFileFactory(factory.django.DjangoModelFactory):
     version = 1
     user = factory.SubFactory(UserFactory)
     stt = factory.SubFactory(STTFactory)
-    file = factory.django.FileField(filename='my_data_file.txt')
+    file = factory.django.FileField(data=b'test', filename='my_data_file.txt')
