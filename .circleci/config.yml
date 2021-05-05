@@ -78,7 +78,7 @@ jobs:
           command: "cd tdrs-backend; docker-compose up -d --build"
       - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
-          command: "cd tdrs-backend; docker-compose run --rm web sh -c \"pytest --cov-report=xml\""
+          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"pytest --cov-report=xml\""
       - run:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
