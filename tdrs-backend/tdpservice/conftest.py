@@ -107,6 +107,9 @@ def create_temporary_file(
     file_contents: str,
     suffix: str = '.txt'
 ) -> NamedTemporaryFile:
+    """Create a temporary file with an explicit name from the given string which
+    represents the contents of the desired file.
+    """
     file = NamedTemporaryFile(suffix=suffix)
     file_contents_bytes = str.encode(file_contents)
     file.write(file_contents_bytes)
@@ -117,17 +120,25 @@ def create_temporary_file(
 
 @pytest.fixture
 def data_file(fake_file):
+    """A temporary file that can be used in upload tests."""
     return create_temporary_file(fake_file.read())
 
 
 @pytest.fixture
 def other_data_file(fake_file):
+    """An additional temporary file available for tests.
+
+    Since temporary files are destroyed as soon as they are closed and fixtures
+    are only run once per function by default we need to have a second file
+    available for tests that perform multiple uploads.
+    """
     fake_file.seek(0)
     return create_temporary_file(fake_file.read())
 
 
 @pytest.fixture
 def infected_data_file(infected_file):
+    """A temporary file which should be marked as infected by ClamAV-REST."""
     return create_temporary_file(infected_file.read())
 
 

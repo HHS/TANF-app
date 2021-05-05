@@ -7,6 +7,7 @@ from tdpservice.clients import ClamAVClient
 
 @pytest.fixture
 def clamav_client(clamav_url):
+    """HTTP Client used to send files to ClamAV-REST."""
     av_client = ClamAVClient(endpoint_url=clamav_url)
     return av_client
 

@@ -13,7 +13,9 @@ logger.setLevel(logging.DEBUG)
 
 
 class ClamAVClient:
+    """An HTTP client that can be used to send files to a ClamAV REST server."""
     class ServiceUnavailable(Exception):
+        """Raised when the target ClamAV REST server is unavailable."""
         pass
 
     # https://github.com/raft-tech/clamav-rest#status-codes
@@ -31,6 +33,9 @@ class ClamAVClient:
         self.session = self.init_session()
 
     def init_session(self):
+        """Create a new requests.Session object that can retry failed
+        connection attempts and maintain TCP connections between requests.
+        """
         session = Session()
         retries = Retry(
             backoff_factor=settings.AV_SCAN_BACKOFF_FACTOR,
@@ -41,6 +46,15 @@ class ClamAVClient:
         return session
 
     def scan_file(self, file, file_name) -> bool:
+        """Scan a file for virus infections.
+
+        :param file:
+            The file or file-like object that should be scanned
+        :param file_name:
+            The name of the target file (str).
+        :returns is_file_clean:
+            A boolean indicating whether or not the file passed the ClamAV scan
+        """
         logger.debug(f'Initiating virus scan for file: {file_name}')
         try:
             scan_response = self.session.post(
@@ -71,6 +85,7 @@ class ClamAVClient:
 
 def get_s3_client():
     """Return an S3 client that points to localstack or AWS based on settings.
+
     Intended to be used in place of a direct boto3 client.
     """
     region_name = settings.AWS_REGION_NAME
