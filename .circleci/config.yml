@@ -1,6 +1,17 @@
 version: 2.1
+
 orbs:
   node: circleci/node@4.2.1
+
+executors:
+  docker-executor:
+    docker:
+      - image: circleci/python:3.8
+        user: root
+  machine-executor:
+    machine:
+      docker_layer_caching: false
+
 commands:
   ###
   # General re-usable commands
@@ -96,10 +107,49 @@ commands:
             <<parameters.deploy-strategy>> \
             <<parameters.backend-appname>>
 
+  deploy-cloud-dot-gov:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-password:
+        default: CF_PASSWORD_DEV
+        type: env_var_name
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-username:
+        default: CF_USERNAME_DEV
+        type: env_var_name
+      deploy-strategy:
+        default: rolling
+        type: string
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - deploy-frontend:
+          backend-appname: <<parameters.backend-appname>>
+          deploy-strategy: <<parameters.deploy-strategy>>
+          frontend-appname: <<parameters.frontend-appname>>
+      - deploy-backend:
+          backend-appname: <<parameters.backend-appname>>
+          deploy-strategy: <<parameters.deploy-strategy>>
+
 jobs:
   test-backend:
-    machine:
-      docker_layer_caching: false
+    executor: machine-executor
     branches:
     steps:
       - checkout
@@ -128,9 +178,8 @@ jobs:
           path: tdrs-backend/reports/owasp_report.html
 
   test-frontend:
+    executor: machine-executor
     working_directory: ~/tdp-apps
-    machine:
-      docker_layer_caching: false
     steps:
       - checkout
       - docker-compose-check
@@ -167,55 +216,32 @@ jobs:
           path: tdrs-frontend/reports/owasp_report.html
 
   deploy-dev:
+    executor: docker-executor
     working_directory: ~/tdp-deploy
-    docker:
-      - image: circleci/python:3.8
-        user: root
     steps:
-      - checkout
-      - sudo-check
-      - cf-check
-      - login-cloud-dot-gov
-      - deploy-frontend
-      - deploy-backend
+      - deploy-cloud-dot-gov
 
   deploy-staging:
     working_directory: ~/tdp-deploy
-    docker:
-      - image: circleci/python:3.8
-        user: root
+    executor: docker-executor
     steps:
-      - checkout
-      - sudo-check
-      - cf-check
-      - login-cloud-dot-gov:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-staging
+          frontend-appname: tdp-frontend-staging
           cf-password: CF_PASSWORD_STAGING
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
-      - deploy-frontend:
-          backend-appname: tdp-backend-staging
-          frontend-appname: tdp-frontend-staging
-      - deploy-backend:
-          backend-appname: tdp-backend-staging
 
   deploy-prod:
+    executor: docker-executor
     working_directory: ~/tdp-deploy
-    docker:
-      - image: circleci/python:3.8
-        user: root
     steps:
-      - checkout
-      - sudo-check
-      - cf-check
-      - login-cloud-dot-gov:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-prod
           cf-password: CF_PASSWORD_PROD
           cf-space: tanf-prod
           cf-username: CF_USERNAME_PROD
-      - deploy-frontend:
-          backend-appname: tdp-backend-prod
           frontend-appname: tdp-frontend-prod
-      - deploy-backend:
-          backend-appname: tdp-backend-prod
 
 workflows:
   build-and-test:
