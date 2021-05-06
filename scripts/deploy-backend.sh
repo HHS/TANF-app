@@ -1,99 +1,89 @@
-
 #!/bin/sh
-
 
 # The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
 
-# The environment in which you want to execute these commands
-DEPLOY_ENV=${2}
-
 #The application name  defined via the manifest yml for the frontend
-CGHOSTNAME_BACKEND=${3}
+CGHOSTNAME_BACKEND=${2}
 
-#The Github Branch triggered to execure this script if triggered in circleci
-CIRCLE_BRANCH=${4}
-
-echo DEPLOY_STRATEGY: $DEPLOY_STRATEGY
-echo DEPLOY_ENV=$DEPLOY_ENV
-echo BACKEND_HOST: $CGHOSTNAME_BACKEND
-echo CIRCLE_BRANCH=$CIRCLE_BRANCH
+echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
+echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
 
 #Helper method to generate JWT cert and keys for new environment
 generate_jwt_cert() 
 {
-	  echo "regenerating JWT cert/key"
-	  yes 'XX' | openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -sha256
-	  cf set-env $CGHOSTNAME_BACKEND JWT_CERT "$(cat cert.pem)"
-	  cf set-env $CGHOSTNAME_BACKEND JWT_KEY "$(cat key.pem)"
+    echo "regenerating JWT cert/key"
+    yes 'XX' | openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -sha256
+    cf set-env "$CGHOSTNAME_BACKEND" JWT_CERT "$(cat cert.pem)"
+    cf set-env "$CGHOSTNAME_BACKEND" JWT_KEY "$(cat key.pem)"
 
-	  # make sure that we have something set that you can later override with the
-	  # proper value so that the app can start up
-	  if cf e $CGHOSTNAME_BACKEND | grep -q OIDC_RP_CLIENT_ID ; then
-		    echo OIDC_RP_CLIENT_ID already set up
-	  else
-		    echo "once you have gotten your client ID set up with login.gov, you will need to set the OIDC_RP_CLIENT_ID to the proper value"
-		    echo "you can do this by running: cf set-env tdp-backend OIDC_RP_CLIENT_ID 'your_client_id'"
-		    echo "login.gov will need this cert when you are creating the app:"
-		    cat cert.pem
-		    cf set-env $CGHOSTNAME_BACKEND OIDC_RP_CLIENT_ID "XXX"
-	  fi
+    # make sure that we have something set that you can later override with the
+    # proper value so that the app can start up
+    if cf e "$CGHOSTNAME_BACKEND" | grep -q OIDC_RP_CLIENT_ID ; then
+        echo OIDC_RP_CLIENT_ID already set up
+    else
+        echo "once you have gotten your client ID set up with login.gov, you will need to set the OIDC_RP_CLIENT_ID to the proper value"
+        echo "you can do this by running: cf set-env tdp-backend OIDC_RP_CLIENT_ID 'your_client_id'"
+        echo "login.gov will need this cert when you are creating the app:"
+        cat cert.pem
+        cf set-env "$CGHOSTNAME_BACKEND" OIDC_RP_CLIENT_ID "XXX"
+    fi
 }
 
 update_backend()
 {
-    cd tdrs-backend
-	  if [ "$1" = "rolling" ] ; then
-		    # Do a zero downtime deploy.  This requires enough memory for
-		    # two apps to exist in the org/space at one time.
-		    cf push $CGHOSTNAME_BACKEND --no-route -f manifest.buildpack.yml  --strategy rolling || exit 1
-	  else
-		    cf push $CGHOSTNAME_BACKEND --no-route -f manifest.buildpack.yml
-		    # set up JWT key if needed
-		    if cf e $CGHOSTNAME_BACKEND | grep -q JWT_KEY ; then
-		        echo jwt cert already created
-		    else
-		        generate_jwt_cert
-	      fi
-	  fi
-	  cf map-route $CGHOSTNAME_BACKEND app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
+    cd tdrs-backend || exit
+    if [ "$1" = "rolling" ] ; then
+        # Do a zero downtime deploy.  This requires enough memory for
+        # two apps to exist in the org/space at one time.
+        cf push "$CGHOSTNAME_BACKEND" --no-route -f manifest.buildpack.yml  --strategy rolling || exit 1
+    else
+        cf push "$CGHOSTNAME_BACKEND" --no-route -f manifest.buildpack.yml
+        # set up JWT key if needed
+        if cf e "$CGHOSTNAME_BACKEND" | grep -q JWT_KEY ; then
+            echo jwt cert already created
+        else
+            generate_jwt_cert
+        fi
+    fi
+    cf map-route "$CGHOSTNAME_BACKEND" app.cloud.gov --hostname "$CGHOSTNAME_BACKEND"
     cd ..
 }
 
 bind_backend_to_services() {
-    cf bind-service $CGHOSTNAME_BACKEND tdp-django-static-sandbox
-    cf bind-service $CGHOSTNAME_BACKEND tdp-storage-sandbox
-    cf bind-service $CGHOSTNAME_BACKEND tanf-storage
-    cf bind-service $CGHOSTNAME_BACKEND tdp-db
+    cf bind-service "$CGHOSTNAME_BACKEND" tdp-django-static-sandbox
+    cf bind-service "$CGHOSTNAME_BACKEND" tdp-storage-sandbox
+    cf bind-service "$CGHOSTNAME_BACKEND" tanf-storage
+    cf bind-service "$CGHOSTNAME_BACKEND" tdp-db
 
-    bash ./scripts/set-backend-env-vars.sh $CGHOSTNAME_BACKEND
+    bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND"
 
-    cf restage $CGHOSTNAME_BACKEND
+    cf restage "$CGHOSTNAME_BACKEND"
 }
 
 
-if [ $DEPLOY_STRATEGY = "rolling" ] ; then
-    # perform a rolling update for the backend and frontend deployments if specifed,
-    # otherwise perform a normal deployment
-	  update_backend 'rolling'
-elif [ $DEPLOY_STRATEGY = "bind" ] ; then
-    # Bind the services the application depends on, update the environment variables
-    # and restage the app.
+if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
+    # perform a rolling update for the backend and frontend deployments if
+    # specified, otherwise perform a normal deployment
+    update_backend 'rolling'
+elif [ "$DEPLOY_STRATEGY" = "bind" ] ; then
+    # Bind the services the application depends on, update the environment
+    # variables and restage the app.
     bind_backend_to_services
-elif [ $DEPLOY_STRATEGY = "initial" ]; then
+elif [ "$DEPLOY_STRATEGY" = "initial" ]; then
     # There is no app with this name, and the services need to be bound to it
-    # for it to work
-    # the app will fail to start once, have the services bind, and then get restaged.
+    # for it to work. the app will fail to start once, have the services bind,
+    # and then get restaged.
     update_backend
     bind_backend_to_services
-elif [ $DEPLOY_STRATEGY = "rebuild" ]; then
+elif [ "$DEPLOY_STRATEGY" = "rebuild" ]; then
     # You want to redeploy the instance under the same name
     # Delete the existing app (with out deleting the services)
     # and perform the initial deployment strategy.
-    cf delete $CGHOSTNAME_BACKEND -r -f
+    cf delete "$CGHOSTNAME_BACKEND" -r -f
     update_backend
     bind_backend_to_services
 else
-    # No changes to deployment configuration, just deploy the changed files and restart
-	  update_backend
+    # No changes to deployment config, just deploy the changes and restart
+    update_backend
 fi

@@ -37,36 +37,33 @@ commands:
   ###
   # Deployment commands
   #
-  set-environment:
-    parameters:
-      env:
-        default: "DEV"
-        type: "string"
-    steps:
-      - run: |
-          echo "export CF_USERNAME=$CF_USERNAME_<<parameters.env>>" >> $BASH_ENV
-          echo "export CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>" >> $BASH_ENV
-          echo "export CGHOSTNAME_FRONTEND=$CGHOSTNAME_FRONTEND_<<parameters.env>>" >> $BASH_ENV
-          echo "export CGHOSTNAME_BACKEND=$CGHOSTNAME_BACKEND_<<parameters.env>>" >> $BASH_ENV
-
   login-cloud-dot-gov:
+    description: Authenticates with Cloud.gov and sets appropriate targets
     parameters:
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
       cf-space:
-        type: "string"
-        default: "tanf-dev"
+        type: string
+        default: tanf-dev
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
     steps:
       - run: |
-          cf api https://api.fr.cloud.gov
-          cf auth "$CF_USERNAME" "$CF_PASSWORD"
-          cf target -o $CF_ORG -s "<<parameters.cf-space>>"
+          cf login -a https://api.fr.cloud.gov \
+            -u ${<<parameters.cf-username>>} \
+            -p ${<<parameters.cf-password>>} \
+            -o ${<<parameters.cf-org>>} \
+            -s <<parameters.cf-space>>
 
   deploy-frontend:
     parameters:
       deploy-strategy:
         default: "rolling"
-        type: string
-      deploy-env:
-        default: "staging"
         type: string
       backend-appname:
         default: "tdp-backend"
@@ -76,12 +73,12 @@ commands:
         type: string
 
     steps:
-      - install-nodejs
-      - node/install-yarn
+      - node/install:
+          install-yarn: true
+          node-version: 12.18
       - run: |
           bash ./scripts/deploy-frontend.sh \
             <<parameters.deploy-strategy>> \
-            <<parameters.deploy-env>> \
             <<parameters.frontend-appname>> \
             <<parameters.backend-appname>>
 
@@ -90,9 +87,6 @@ commands:
       deploy-strategy:
         default: "rolling"
         type: string
-      deploy-env:
-        default: "staging"
-        type: string
       backend-appname:
         default: "tdp-backend"
         type: string
@@ -100,7 +94,6 @@ commands:
       - run: |
           bash ./scripts/deploy-backend.sh \
             <<parameters.deploy-strategy>> \
-            <<parameters.deploy-env>> \
             <<parameters.backend-appname>>
 
 jobs:
@@ -182,7 +175,6 @@ jobs:
       - checkout
       - sudo-check
       - cf-check
-      - set-environment
       - login-cloud-dot-gov
       - deploy-frontend
       - deploy-backend
@@ -196,18 +188,15 @@ jobs:
       - checkout
       - sudo-check
       - cf-check
-      - install-nodejs
-      - node/install-yarn
-      - set-environment:
-          env: "STAGING"
       - login-cloud-dot-gov:
-          cf-space: "tanf-staging"
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
       - deploy-frontend:
-          deploy-appname: "tdp-staging-frontend"
-          deploy-env: "staging"
+          backend-appname: tdp-backend-staging
+          frontend-appname: tdp-frontend-staging
       - deploy-backend:
-          deploy-appname: "tdp-staging-backend"
-          deploy-env: "staging"
+          backend-appname: tdp-backend-staging
 
   deploy-prod:
     working_directory: ~/tdp-deploy
@@ -218,16 +207,15 @@ jobs:
       - checkout
       - sudo-check
       - cf-check
-      - set-environment:
-          env: "PROD"
       - login-cloud-dot-gov:
-          cf-space: "tanf-prod"
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
       - deploy-frontend:
-          deploy-appname: "prod-tdp-frontend"
-          deploy-env: "production"
+          backend-appname: tdp-backend-prod
+          frontend-appname: tdp-frontend-prod
       - deploy-backend:
-          deploy-appname: "prod-tdp-backend"
-          deploy-env: "production"
+          backend-appname: tdp-backend-prod
 
 workflows:
   build-and-test:

@@ -5,17 +5,13 @@
 # The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
 
-# The environment in which you want to execute these commands
-DEPLOY_ENV=${2}
-
 #The application name  defined via the manifest yml for the frontend
-CGHOSTNAME_FRONTEND=${3}
-CGHOSTNAME_BACKEND=${4}
+CGHOSTNAME_FRONTEND=${2}
+CGHOSTNAME_BACKEND=${3}
 
 update_frontend()
 {
     echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
-    echo DEPLOY_ENV: "$DEPLOY_ENV"
     echo FRONTEND_HOST: "$CGHOSTNAME_FRONTEND"
     echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
     cd tdrs-frontend || exit
