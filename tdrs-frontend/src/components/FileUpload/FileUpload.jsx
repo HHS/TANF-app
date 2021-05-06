@@ -22,11 +22,10 @@ function FileUpload({ section, setlocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
   const [inputHasRendered, setInputHasRendered] = useState(false)
-  const { files, year, quarter, data, fileList, downloadedFile } = useSelector(
+  const { files, year, quarter, data, downloadedFile } = useSelector(
     (state) => state.reports
   )
-  const hasFile = fileList?.some((file) => file.section === section)
-  const isDownloaded = fileList?.some(
+  const isDownloaded = files?.some(
     (file) =>
       file.section === downloadedFile?.section &&
       file.year === downloadedFile?.year &&
@@ -36,6 +35,11 @@ function FileUpload({ section, setlocalAlertState }) {
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
+
+  const hasFile = files?.some((file) => {
+    console.log({ file, section })
+    return file.section === sectionName && file.uuid
+  })
 
   const selectedFile = files.find((file) => sectionName === file.section)
 
@@ -67,8 +71,8 @@ function FileUpload({ section, setlocalAlertState }) {
   }, [hasFile])
 
   const downloadFile = ({ target }) => {
-    dispatch(clearError({ section }))
-    dispatch(download({ section, year }))
+    dispatch(clearError({ section: sectionName }))
+    dispatch(download({ section: sectionName, year }))
   }
   const inputRef = useRef(null)
 
