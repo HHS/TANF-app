@@ -5,6 +5,8 @@ import configureStore from 'redux-mock-store'
 import { fireEvent, render } from '@testing-library/react'
 import axios from 'axios'
 
+import { v4 as uuidv4 } from 'uuid'
+
 import UploadReport from './UploadReport'
 
 describe('UploadReport', () => {
@@ -13,16 +15,14 @@ describe('UploadReport', () => {
     reports: {
       files: [
         {
+          fileName: 'test.txt',
           section: 'Active Case Data',
-          fileType: null,
-          fileName: null,
-          error: null,
+          uuid: uuidv4(),
         },
         {
+          fileName: 'testb.txt',
           section: 'Closed Case Data',
-          fileType: null,
-          fileName: null,
-          error: null,
+          uuid: uuidv4(),
         },
         {
           section: 'Aggregate Data',
@@ -76,7 +76,7 @@ describe('UploadReport', () => {
       },
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    expect(store.dispatch).toHaveBeenCalledTimes(3)
   })
   it('should display a download button when the file is available for download.', () => {
     const store = mockStore(initialState)
@@ -92,7 +92,41 @@ describe('UploadReport', () => {
     const buttons = container.querySelectorAll('.tanf-file-download-btn')
     expect(buttons.length).toBe(2)
 
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    //expect(store.dispatch).toHaveBeenCalledTimes(2)
+  })
+
+  it('should render a preview when there is a file available to download',(done) => {
+    const store = mockStore(initialState)
+    const origDispatch = store.dispatch
+    store.dispatch = jest.fn(origDispatch)
+
+    const { container, getByLabelText } = render(
+      <Provider store={store}>
+        <UploadReport handleCancel={handleCancel} />
+      </Provider>
+    )
+
+    setTimeout(() => {
+      const PREFIX = 'usa'
+
+      const PREVIEW_HEADING_CLASS = `${PREFIX}-file-input__preview-heading`
+
+      const PREVIEW_CLASS = `${PREFIX}-file-input__preview`
+      const GENERIC_PREVIEW_CLASS_NAME = `${PREFIX}-file-input__preview-image`
+      const ACCEPTED_FILE_MESSAGE_CLASS = `${PREFIX}-file-input__accepted-files-message`
+      const TARGET_CLASS = `${PREFIX}-file-input__target`
+
+      const GENERIC_PREVIEW_CLASS = `${GENERIC_PREVIEW_CLASS_NAME}--generic`
+
+      const LOADING_CLASS = 'is-loading'
+      const INVALID_FILE_CLASS = 'has-invalid-file'
+      const HIDDEN_CLASS = 'display-none'
+      const INSTRUCTIONS_CLASS = `${PREFIX}-file-input__instructions`
+      const headings = container.querySelectorAll(`.${PREVIEW_HEADING_CLASS}`)
+      expect(headings.length).toBe(2)
+      done()
+    },500)
+
   })
 
   it('should render a div with class "usa-form-group--error" if there is an error', () => {
