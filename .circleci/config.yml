@@ -9,12 +9,11 @@ commands:
         type: "string"
     steps:
       - run: |
-          export TEST_VAR_DEV="TEST"
-          export TEST_VAR_<<parameters.env>>
-          export CF_USERNAME=$CF_USERNAME_<<parameters.env>>
-          export CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>
-          export CGHOSTNAME_FRONTEND=$CGHOSTNAME_FRONTEND_<<parameters.env>>
-          export CGHOSTNAME_BACKEND=$CGHOSTNAME_BACKEND_<<parameters.env>>
+          echo "export CF_USERNAME=$CF_USERNAME_<<parameters.env>>" >> $BASH_ENV
+          echo "export CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>" >> $BASH_ENV
+          echo "export CGHOSTNAME_FRONTEND=$CGHOSTNAME_FRONTEND_<<parameters.env>>" >> $BASH_ENV
+          echo "export CGHOSTNAME_BACKEND=$CGHOSTNAME_BACKEND_<<parameters.env>>" >> $BASH_ENV
+
   deploy-frontend:
     parameters:
       deploy-strategy:
@@ -29,13 +28,15 @@ commands:
       frontend-appname:
         default: "tdp-frontend"
         type: string
+
     steps:
       - run: |
           bash ./scripts/deploy-frontend.sh \
             <<parameters.deploy-strategy>> \
             <<parameters.deploy-env>> \
             <<parameters.frontend-appname>> \
-            <<parameters.backend-appname>> 
+            <<parameters.backend-appname>>
+
   deploy-backend:
     parameters:
       deploy-strategy:
@@ -53,6 +54,7 @@ commands:
             <<parameters.deploy-strategy>> \
             <<parameters.deploy-env>> \
             <<parameters.backend-appname>>
+
   login-cloud-dot-gov:
     parameters:
       cf-space:
@@ -63,6 +65,19 @@ commands:
           cf api https://api.fr.cloud.gov
           cf auth "$CF_USERNAME" "$CF_PASSWORD"
           cf target -o $CF_ORG -s "<<parameters.cf-space>>"
+
+  sudo-check:
+    steps:
+      - run:
+          name: 'Ensure sudo is installed, otherwise install it.'
+          command: "./scripts/sudo-check.sh"
+
+  cf-check:
+    steps:
+      - run:
+          name: 'Ensure cf cli is installed, otherwise install it.'
+          command: "./scripts/cf-check.sh"
+
 jobs:
   test-backend:
     machine:
@@ -95,6 +110,7 @@ jobs:
           command: "cd tdrs-backend; ./zap-scanner.sh"
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
+
   test-frontend:
     working_directory: ~/tdp-apps
     machine:
@@ -142,6 +158,7 @@ jobs:
           command: "cd tdrs-frontend; ./zap-scanner.sh"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
+
   deploy-dev:
     working_directory: ~/tdp-deploy
     docker:
@@ -149,42 +166,12 @@ jobs:
         user: root
     steps:
       - checkout
-      - run:
-          name: 'Ensure sudo is installed, otherwise install it.'
-          command: "./scripts/sudo-check.sh"
-      - run:
-          name: 'Ensure cf cli is installed, otherwise install it.'
-          command: "./scripts/cf-check.sh"
+      - sudo-check
+      - cf-check
       - set-environment
       - login-cloud-dot-gov
       - deploy-frontend
       - deploy-backend
-
-  deploy-prod:
-    working_directory: ~/tdp-deploy
-    docker:
-      - image: circleci/python:3.8
-        user: root
-    steps:
-      - checkout
-      - run:
-          name: 'Ensure sudo is installed, otherwise install it.'
-          command: "./scripts/sudo-check.sh"
-      - run:
-          name: 'Ensure cf cli is installed, otherwise install it.'
-          command: "./scripts/cf-check.sh"
-      - set-environment:
-          env: "PROD"
-      - login-cloud-dot-gov:
-          cf-space: "tanf-prod"
-
-      - deploy-frontend:
-          deploy-appname: "tanf-prod-frontend"
-          deploy-env: "production"
-
-      - deploy-backend:
-          deploy-appname: "tanf-prod-backend"
-          deploy-env: "production"
 
   deploy-staging:
     working_directory: ~/tdp-deploy
@@ -193,24 +180,39 @@ jobs:
         user: root
     steps:
       - checkout
-      - run:
-          name: 'Ensure sudo is installed, otherwise install it.'
-          command: "./scripts/sudo-check.sh"
-      - run:
-          name: 'Ensure cf cli is installed, otherwise install it.'
-          command: "./scripts/cf-check.sh"
+      - sudo-check
+      - cf-check
+      - set-environment:
+          env: "STAGING"
+      - login-cloud-dot-gov:
+          cf-space: "tanf-staging"
+      - deploy-frontend:
+          deploy-appname: "tdp-staging-frontend"
+          deploy-env: "staging"
+      - deploy-backend:
+          deploy-appname: "tdp-staging-backend"
+          deploy-env: "staging"
+
+  deploy-prod:
+    working_directory: ~/tdp-deploy
+    docker:
+      - image: circleci/python:3.8
+        user: root
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
       - set-environment:
           env: "PROD"
       - login-cloud-dot-gov:
           cf-space: "tanf-prod"
-
       - deploy-frontend:
-          deploy-appname: "tanf-prod-frontend"
+          deploy-appname: "prod-tdp-frontend"
+          deploy-env: "production"
+      - deploy-backend:
+          deploy-appname: "prod-tdp-backend"
           deploy-env: "production"
 
-      - deploy-backend:
-          deploy-appname: "tanf-prod-backend"
-          deploy-env: "production"
 workflows:
   build-and-test:
     jobs:
