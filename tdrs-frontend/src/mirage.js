@@ -20,12 +20,12 @@ export default function startMirage(
         return [
           {
             fileName: 'test.txt',
-            section: '1 - Active Case Data',
+            section: 'Active Case Data',
             uuid: uuidv4(),
           },
           {
             fileName: 'testb.txt',
-            section: '2 - Closed Case Data',
+            section: 'Closed Case Data',
             uuid: uuidv4(),
           },
         ]
