@@ -75,7 +75,7 @@ commands:
     steps:
       - node/install:
           install-yarn: true
-          node-version: 12.18
+          node-version: "12.18"
       - run: |
           bash ./scripts/deploy-frontend.sh \
             <<parameters.deploy-strategy>> \
