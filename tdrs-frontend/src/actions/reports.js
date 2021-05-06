@@ -7,7 +7,6 @@ export const SET_FILE_ERROR = 'SET_FILE_ERROR'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
 
 export const START_FILE_DOWNLOAD = 'START_FILE_DOWNLOAD'
-export const END_FILE_DOWNLOAD = 'END_FILE_DOWNLOAD'
 export const FILE_DOWNLOAD_ERROR = 'FILE_DOWNLOAD_ERROR'
 
 export const FETCH_FILE_LIST = 'FETCH_FILE_LIST'
@@ -54,6 +53,7 @@ export const download = ({ year, quarter = 'Q1', section }) => async (
   dispatch
 ) => {
   try {
+    if(!year) throw new Error("No year was provided to download action.")
     dispatch({ type: START_FILE_DOWNLOAD })
 
     const response = await axios({
@@ -63,13 +63,18 @@ export const download = ({ year, quarter = 'Q1', section }) => async (
     })
     const { data } = response
 
-    dispatch({
-      type: END_FILE_DOWNLOAD,
-      payload: {
-        data,
-        section,
-      },
-    })
+    const url = window.URL.createObjectURL(new Blob([data]))
+    const link = document.createElement('a')
+
+    link.href = url
+    link.setAttribute('download', `${year}.${quarter}.${section}.txt`)
+
+    document.body.appendChild(link)
+
+    link.click()
+
+    document.body.removeChild(link)
+    dispatch({ type: DOWNLOAD_DIALOG_OPEN })
   } catch (error) {
     dispatch({
       type: FILE_DOWNLOAD_ERROR,
@@ -111,21 +116,4 @@ export const setStt = (stt) => (dispatch) => {
 }
 export const setYear = (year) => (dispatch) => {
   dispatch({ type: SET_SELECTED_YEAR, payload: { year } })
-}
-
-export const triggerDownloadDialog = ({ year, quarter, section, data }) => (
-  dispatch
-) => {
-  const url = window.URL.createObjectURL(new Blob([data]))
-  const link = document.createElement('a')
-
-  link.href = url
-  link.setAttribute('download', `${year}.${quarter}.${section}.txt`)
-
-  document.body.appendChild(link)
-
-  link.click()
-
-  document.body.removeChild(link)
-  dispatch({ type: DOWNLOAD_DIALOG_OPEN })
 }
