@@ -512,14 +512,14 @@ describe('EditProfile', () => {
 
     // There should be four dispatches, three called `onChange` during
     // the above selections, and 1 to fetch the STT list
-    expect(store.dispatch).toHaveBeenCalledTimes(5)
+    expect(store.dispatch).toHaveBeenCalledTimes(4)
 
     const form = wrapper.find('.usa-form').hostNodes()
     form.simulate('submit', {
       preventDefault: () => {},
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(7)
+    expect(store.dispatch).toHaveBeenCalledTimes(6)
   })
 
   it('should dispatch "setAlert" when form is submitted and there is an error', () => {
