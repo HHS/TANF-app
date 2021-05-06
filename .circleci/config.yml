@@ -2,6 +2,41 @@ version: 2.1
 orbs:
   node: circleci/node@4.2.1
 commands:
+  ###
+  # General re-usable commands
+  #
+  cf-check:
+    steps:
+      - run:
+          name: 'Ensure cf cli is installed, otherwise install it.'
+          command: "./scripts/cf-check.sh"
+
+  docker-compose-check:
+    steps:
+      - run:
+          name: 'Ensure docker-compose exists,otherwise install it.'
+          command: "./scripts/docker-compose-check.sh"
+
+  install-nodejs:
+    steps:
+      - run:
+          name: "Install Node.JS"
+          command: |
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install v12.18
+            nvm alias default v12.18
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+
+  sudo-check:
+    steps:
+      - run:
+          name: 'Ensure sudo is installed, otherwise install it.'
+          command: "./scripts/sudo-check.sh"
+
+  ###
+  # Deployment commands
+  #
   set-environment:
     parameters:
       env:
@@ -13,6 +48,17 @@ commands:
           echo "export CF_PASSWORD=$CF_PASSWORD_<<parameters.env>>" >> $BASH_ENV
           echo "export CGHOSTNAME_FRONTEND=$CGHOSTNAME_FRONTEND_<<parameters.env>>" >> $BASH_ENV
           echo "export CGHOSTNAME_BACKEND=$CGHOSTNAME_BACKEND_<<parameters.env>>" >> $BASH_ENV
+
+  login-cloud-dot-gov:
+    parameters:
+      cf-space:
+        type: "string"
+        default: "tanf-dev"
+    steps:
+      - run: |
+          cf api https://api.fr.cloud.gov
+          cf auth "$CF_USERNAME" "$CF_PASSWORD"
+          cf target -o $CF_ORG -s "<<parameters.cf-space>>"
 
   deploy-frontend:
     parameters:
@@ -30,6 +76,8 @@ commands:
         type: string
 
     steps:
+      - install-nodejs
+      - node/install-yarn
       - run: |
           bash ./scripts/deploy-frontend.sh \
             <<parameters.deploy-strategy>> \
@@ -55,29 +103,6 @@ commands:
             <<parameters.deploy-env>> \
             <<parameters.backend-appname>>
 
-  login-cloud-dot-gov:
-    parameters:
-      cf-space:
-        type: "string"
-        default: "tanf-dev"
-    steps:
-      - run: |
-          cf api https://api.fr.cloud.gov
-          cf auth "$CF_USERNAME" "$CF_PASSWORD"
-          cf target -o $CF_ORG -s "<<parameters.cf-space>>"
-
-  sudo-check:
-    steps:
-      - run:
-          name: 'Ensure sudo is installed, otherwise install it.'
-          command: "./scripts/sudo-check.sh"
-
-  cf-check:
-    steps:
-      - run:
-          name: 'Ensure cf cli is installed, otherwise install it.'
-          command: "./scripts/cf-check.sh"
-
 jobs:
   test-backend:
     machine:
@@ -85,9 +110,7 @@ jobs:
     branches:
     steps:
       - checkout
-      - run:
-          name: 'Ensure docker-compose exists,otherwise install it.'
-          command: "./scripts/docker-compose-check.sh"
+      - docker-compose-check
       - run:
           name: "Test: Build and Spin-up Django API Service"
           command: "cd tdrs-backend; docker-compose up -d --build"
@@ -117,17 +140,8 @@ jobs:
       docker_layer_caching: false
     steps:
       - checkout
-      - run:
-          name: 'Ensure docker-compose exists,otherwise install it.'
-          command: "./scripts/docker-compose-check.sh"
-      - run: 
-          name: "Install Node.JS"
-          command: |
-            source /opt/circleci/.nvm/nvm.sh
-            nvm install v12.18
-            nvm alias default v12.18
-            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
-            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+      - docker-compose-check
+      - install-nodejs
       - node/install-yarn
       - node/install-packages:
           app-dir: tdrs-frontend
@@ -182,6 +196,8 @@ jobs:
       - checkout
       - sudo-check
       - cf-check
+      - install-nodejs
+      - node/install-yarn
       - set-environment:
           env: "STAGING"
       - login-cloud-dot-gov:
