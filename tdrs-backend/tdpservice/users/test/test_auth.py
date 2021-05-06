@@ -244,6 +244,49 @@ def test_login_with_general_exception(mocker):
 
 
 @pytest.mark.django_db
+def test_login_with_inactive_user(mocker, api_client, inactive_user):
+    """Login with inactive user should error and return message."""
+    os.environ["JWT_KEY"] = test_private_key
+    inactive_user.username = "test@example.com"
+    inactive_user.save()
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": os.environ["MOCK_TOKEN"],
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test@example.com",
+        "email_verified": True,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "verified_at": 1577854800,
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["state_nonce_tracker"] = {
+        "nonce": nonce,
+        "state": state,
+        "added_on": time.time(),
+    }
+    response = view(request)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.data == {
+        "error": f'Login failed, user account is inactive: {inactive_user.username}'
+    }
+
+
+@pytest.mark.django_db
 def test_login_with_existing_user(mocker, api_client, user):
     """Login should work with existing user."""
     os.environ["JWT_KEY"] = test_private_key
