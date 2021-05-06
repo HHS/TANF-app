@@ -17,20 +17,24 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    dispatch(fetchSttList())
-  }, [dispatch])
+    if (sttList.length === 0) {
+      dispatch(fetchSttList())
+    }
+  }, [dispatch, sttList])
 
   return (
     <ComboBox
       name="stt"
       label="Associated State, Tribe, or Territory"
-      error={error}
+      error={error ? 'A state, tribe, or territory is required' : undefined}
       handleSelect={selectStt}
       selected={selectedStt}
       handleBlur={handleBlur}
       placeholder="- Select or Search -"
     >
-      <option value="">Select an STT</option>
+      <option value="" disabled hidden>
+        - Select or Search -
+      </option>
       {sttList.map((stt) => (
         <option
           className="sttOption"
@@ -48,7 +52,7 @@ STTComboBox.propTypes = {
   selectStt: PropTypes.func.isRequired,
   handleBlur: PropTypes.func,
   selectedStt: PropTypes.string,
-  error: PropTypes.string,
+  error: PropTypes.bool,
 }
 
 STTComboBox.defaultProps = {

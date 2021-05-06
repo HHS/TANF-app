@@ -10,10 +10,11 @@ import FileUpload from '../FileUpload'
 import axiosInstance from '../../axios-instance'
 import { clearError } from '../../actions/reports'
 
-function UploadReport({ handleCancel, header }) {
+function UploadReport({ handleCancel, header, stt }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
-
+  // The selected quarter in the dropdown tied to our redux `reports` state
+  const selectedQuarter = useSelector((state) => state.reports.quarter)
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.files)
   // The logged in user in our Redux state
@@ -87,8 +88,8 @@ function UploadReport({ handleCancel, header }) {
           slug: file.uuid,
           user: user.id,
           year: selectedYear,
-          stt: '1',
-          quarter: 'Q1',
+          stt,
+          quarter: selectedQuarter,
           section: file.section,
         },
         { withCredentials: true }
@@ -163,6 +164,7 @@ function UploadReport({ handleCancel, header }) {
 UploadReport.propTypes = {
   handleCancel: PropTypes.func.isRequired,
   header: PropTypes.string.isRequired,
+  stt: PropTypes.number,
 }
 
 export default UploadReport
