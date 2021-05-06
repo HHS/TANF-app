@@ -12,21 +12,25 @@ import {
   SET_SELECTED_STT,
 } from '../actions/reports'
 
+const getFileIndex = (files, section) =>
+  files.findIndex((currentFile) => currentFile.section === section)
+const getFile = (files, section) =>
+  files.find((currentFile) => currentFile.section === section)
 export const getUpdatedFiles = (
   state,
   fileName,
   section,
   uuid = null,
   fileType = null,
-  error = null
+  error = null,
+  data = ''
 ) => {
-  const oldFileIndex = state.files.findIndex(
-    (currentFile) => currentFile.section === section
-  )
+  const oldFileIndex = getFileIndex(state.files, section)
   const updatedFiles = [...state.files]
   updatedFiles[oldFileIndex] = {
     section,
     fileName,
+    data,
     error,
     uuid,
     fileType,
@@ -86,31 +90,15 @@ const reports = (state = initialState, action) => {
     }
     case SET_FILE_LIST: {
       const { data } = payload
-      return { ...state, fileList: data }
-    }
-    case START_FILE_DOWNLOAD: {
-      return { ...state }
-    }
-    case END_FILE_DOWNLOAD: {
-      const updatedFiles = getUpdatedFiles(
-        state, 
-      )
       return {
         ...state,
-        files: state.files.map((file) =>
-          file.section === payload.section
-            ? {
-                ...file,
-                data: payload.data,
-              }
-            : file
-        ),
-      }
-    }
-    case DOWNLOAD_DIALOG_OPEN: {
-      return {
-        ...state,
-        downloadedFile: null,
+        files: state.files.map((file) => {
+          const dataFile = getFile(data, file.section)
+          console.log({ file, dataFile, data })
+          if (dataFile) {
+            return dataFile
+          } else return file
+        }),
       }
     }
     case CLEAR_FILE: {
@@ -132,7 +120,14 @@ const reports = (state = initialState, action) => {
     }
     case CLEAR_ERROR: {
       const { section } = payload
-      const updatedFiles = getUpdatedFiles(state, null, section, null)
+      const file = getFile(state.files, section)
+      const updatedFiles = getUpdatedFiles(
+        state,
+        file.fileName,
+        section,
+        file.uuid,
+        file.fileType
+      )
       return { ...state, files: updatedFiles }
     }
     case SET_SELECTED_YEAR: {
