@@ -17,7 +17,6 @@ import { clearError } from '../../actions/reports'
 function UploadReport({ handleCancel, header }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
-  const downloadedReport = useSelector((state) => state.reports.downloadedFile)
 
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.files)
@@ -42,12 +41,6 @@ function UploadReport({ handleCancel, header }) {
   useEffect(() => {
     dispatch(getAvailableFileList({ year: selectedYear }))
   }, [dispatch, getAvailableFileList, selectedYear])
-
-  useEffect(() => {
-    if (downloadedReport) {
-      dispatch(triggerDownloadDialog(downloadedReport))
-    }
-  }, [downloadedReport])
 
   const fileUploadSections = [
     'Active Case Data',
