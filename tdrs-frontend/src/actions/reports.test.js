@@ -4,11 +4,15 @@ import configureStore from 'redux-mock-store'
 import {
   setYear,
   SET_SELECTED_YEAR,
+  START_FILE_DOWNLOAD,
   SET_FILE,
+  FILE_DOWNLOAD_ERROR,
+  DOWNLOAD_DIALOG_OPEN,
   SET_FILE_ERROR,
   SET_SELECTED_STT,
   setStt,
   upload,
+  download,
 } from './reports'
 
 describe('actions/reports', () => {
@@ -51,6 +55,32 @@ describe('actions/reports', () => {
       error: Error({ message: 'something went wrong' }),
       section: 'Active Case Data',
     })
+  })
+
+  it('should dispatch OPEN_FILE_DIALOG when a file has been successfully downloaded', async () => {
+    const store = mockStore()
+
+    await store.dispatch(
+      download({
+        year: 2020,
+        section: 'Active Case Data',
+      })
+    )
+    const actions = store.getActions()
+    expect(actions[0].type).toBe(START_FILE_DOWNLOAD)
+  })
+
+  it('should dispatch FILE_DOWNLOAD_ERROR if no year is provided to download',async () => {
+
+    const store = mockStore()
+
+    await store.dispatch(
+      download({
+        section: 'Active Case Data',
+      })
+    )
+    const actions = store.getActions()
+    expect(actions[0].type).toBe(FILE_DOWNLOAD_ERROR)
   })
 
   it('should dispatch SET_SELECTED_YEAR', async () => {
