@@ -75,7 +75,13 @@ describe('actions/reports', () => {
       })
     )
     const actions = store.getActions()
+
     expect(actions[0].type).toBe(START_FILE_DOWNLOAD)
+    try {
+      expect(actions[1].type).toBe(DOWNLOAD_DIALOG_OPEN)
+    } catch (err) {
+      throw actions[1].payload.error
+    }
   })
 
   it('should dispatch SET_FILE_LIST', async () => {

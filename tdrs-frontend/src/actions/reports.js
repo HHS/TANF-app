@@ -43,6 +43,11 @@ export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
   } catch (error) {
     dispatch({
       type: FETCH_FILE_LIST_ERROR,
+      payload: {
+        error,
+        year,
+        quarter,
+      }
     })
   }
 }
