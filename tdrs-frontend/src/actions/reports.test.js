@@ -1,5 +1,7 @@
+import axios from 'axios'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
+import { v4 as uuidv4 } from 'uuid'
 
 import {
   setYear,
@@ -116,6 +118,7 @@ describe('actions/reports', () => {
     }
   })
 
+  it('should dispatch FILE_DOWNLOAD_ERROR if no year is provided to download', async () => {
     const store = mockStore()
 
     await store.dispatch(
