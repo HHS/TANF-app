@@ -6,6 +6,7 @@ import {
   SET_SELECTED_YEAR,
   START_FILE_DOWNLOAD,
   SET_FILE,
+  SET_FILE_LIST,
   FILE_DOWNLOAD_ERROR,
   DOWNLOAD_DIALOG_OPEN,
   SET_FILE_ERROR,
@@ -13,6 +14,7 @@ import {
   setStt,
   upload,
   download,
+  getAvailableFileList,
 } from './reports'
 
 describe('actions/reports', () => {
@@ -76,7 +78,7 @@ describe('actions/reports', () => {
     expect(actions[0].type).toBe(START_FILE_DOWNLOAD)
   })
 
-  it('should dispatch FILE_DOWNLOAD_ERROR if no year is provided to download',async () => {
+  it('should dispatch SET_FILE_LIST', async () => {
     axios.get.mockImplementationOnce(() =>
       Promise.resolve({
         data: [
@@ -93,7 +95,20 @@ describe('actions/reports', () => {
         ],
       })
     )
+    const store = mockStore()
+
+    await store.dispatch(
+      getAvailableFileList({
+        year: 2020,
+      })
     )
+    const actions = store.getActions()
+    try {
+      expect(actions[1].type).toBe(SET_FILE_LIST)
+    } catch (err) {
+      throw actions[1].payload.error
+    }
+  })
 
     const store = mockStore()
 
