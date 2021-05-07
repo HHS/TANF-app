@@ -31,9 +31,7 @@ export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
     type: FETCH_FILE_LIST,
   })
   try {
-    const response = await axios({
-      url: `/mock_api/reports/${year}/${quarter}`,
-      method: 'get',
+    const response = await axios.get(`/mock_api/reports/${year}/${quarter}`,{
       responseType: 'json',
     })
     dispatch({
@@ -53,15 +51,13 @@ export const download = ({ year, quarter = 'Q1', section }) => async (
   dispatch
 ) => {
   try {
-    if(!year) throw new Error("No year was provided to download action.")
+    if (!year) throw new Error('No year was provided to download action.')
     dispatch({ type: START_FILE_DOWNLOAD })
 
-    const response = await axios({
-      url: `/mock_api/reports/data-files/${year}/${quarter}/${section}`,
-      method: 'get',
+    const response = await axios.get(`/mock_api/reports/data-files/${year}/${quarter}/${section}`,{
       responseType: 'blob',
     })
-    const { data } = response
+    const data = response.data
 
     const url = window.URL.createObjectURL(new Blob([data]))
     const link = document.createElement('a')

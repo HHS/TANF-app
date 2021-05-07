@@ -58,6 +58,12 @@ describe('actions/reports', () => {
   })
 
   it('should dispatch OPEN_FILE_DIALOG when a file has been successfully downloaded', async () => {
+    window.URL.createObjectURL = jest.fn(() => null)
+    axios.get.mockImplementationOnce(() => 
+      Promise.resolve({
+        data: 'Some text'
+      })
+    )
     const store = mockStore()
 
     await store.dispatch(
@@ -71,6 +77,23 @@ describe('actions/reports', () => {
   })
 
   it('should dispatch FILE_DOWNLOAD_ERROR if no year is provided to download',async () => {
+    axios.get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: [
+          {
+            fileName: 'test.txt',
+            section: 'Active Case Data',
+            uuid: uuidv4(),
+          },
+          {
+            fileName: 'testb.txt',
+            section: 'Closed Case Data',
+            uuid: uuidv4(),
+          },
+        ],
+      })
+    )
+    )
 
     const store = mockStore()
 
