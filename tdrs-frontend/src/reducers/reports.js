@@ -94,7 +94,6 @@ const reports = (state = initialState, action) => {
         ...state,
         files: state.files.map((file) => {
           const dataFile = getFile(data, file.section)
-          console.log({ file, dataFile, data })
           if (dataFile) {
             return dataFile
           } else return file

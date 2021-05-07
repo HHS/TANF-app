@@ -37,7 +37,6 @@ function FileUpload({ section, setlocalAlertState }) {
   const [sectionNumber, sectionName] = section.split(' - ')
 
   const hasFile = files?.some((file) => {
-    console.log({ file, section })
     return file.section === sectionName && file.uuid
   })
 
@@ -49,7 +48,6 @@ function FileUpload({ section, setlocalAlertState }) {
     .join('-')
 
   const targetClassName = getTargetClassName(formattedSectionName)
-  console.log({ targetClassName })
 
   const fileName = selectedFile?.fileName || 'report.txt'
   const hasUploadedFile = Boolean(fileName)
@@ -61,12 +59,10 @@ function FileUpload({ section, setlocalAlertState }) {
   useEffect(() => {
     const trySettingPreview = () => {
       const previewState = handlePreview(fileName, targetClassName)
-      console.log({ previewState })
       if (!previewState) {
         setTimeout(trySettingPreview, 100)
       }
     }
-    console.log({ hasFile })
     if (hasFile) trySettingPreview()
   }, [hasFile])
 
