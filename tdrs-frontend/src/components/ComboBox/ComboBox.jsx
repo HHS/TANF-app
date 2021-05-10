@@ -54,17 +54,18 @@ const ComboBox = ({
         htmlFor={name}
       >
         {label}
+        {error && (
+          <div className="usa-error-message" id={`${name}-error-alert`}>
+            {error}
+          </div>
+        )}
       </label>
-      {error && (
-        <span className="usa-error-message" id={`${name}-error-message`}>
-          {error}
-        </span>
-      )}
       <div className="usa-combo-box" data-placeholder={placeholder}>
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
           className="usa-select"
           data-testid={`${name}-combobox`}
+          aria-describedby={`${name}-error-alert`}
           name={name}
           id={name}
           onChange={(e) => {
