@@ -94,8 +94,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         if user and user.is_active:
             # User's are able to update their emails on login.gov
             # Update the User with the latest email from the decoded_payload.
-            if user.email != email:
+            if user.username != email:
                 user.email = email
+                user.username = email
                 user.save()
 
             self.login_user(request, user, "User Found")

@@ -20,6 +20,7 @@ from ..api.utils import (
     validate_nonce_and_state,
 )
 from ..authentication import CustomAuthentication
+from ..models import User
 
 test_private_key = os.environ["JWT_CERT_TEST"]
 
@@ -82,6 +83,7 @@ def test_oidc_logout_with_token(api_client):
     request.session["token"] = "testtoken"
     response = view(request)
     assert response.status_code == status.HTTP_302_FOUND
+
 
 @pytest.mark.django_db
 def test_auth_update(api_client, user):
@@ -327,6 +329,94 @@ def test_login_with_existing_user(mocker, api_client, user):
 
 
 @pytest.mark.django_db
+def test_login_with_old_email(mocker, api_client, user):
+    """Login should work with existing user."""
+    os.environ["JWT_KEY"] = test_private_key
+    user.username = "test_old_email@example.com"
+    user.save()
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": os.environ["MOCK_TOKEN"],
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test_new_email@example.com",
+        "email_verified": True,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": user.sub,
+        "verified_at": 1577854800,
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["state_nonce_tracker"] = {
+        "nonce": nonce,
+        "state": state,
+        "added_on": time.time(),
+    }
+    response = view(request)
+    # Ensure the user's username was updated with new email.
+    assert User.objects.filter(username="test_new_email@example.com").exists()
+    assert response.status_code == status.HTTP_302_FOUND
+
+
+@pytest.mark.django_db
+def test_login_with_initial_superuser(mocker, api_client, user):
+    """Login should work with existing user."""
+    # How to set os vars for sudo su??
+    os.environ["JWT_KEY"] = test_private_key
+    os.environ["DJANGO_SU_NAME"] = "test_superuser@example.com"
+    user.username = "test_superuser@example.com"
+    user.sub = None
+    user.save()
+    nonce = "testnonce"
+    state = "teststate"
+    code = secrets.token_hex(32)
+    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+    token = {
+        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": os.environ["MOCK_TOKEN"],
+    }
+    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+    decoded_token = {
+        "email": "test_superuser@example.com",
+        "email_verified": True,
+        "nonce": nonce,
+        "iss": "https://idp.int.identitysandbox.gov",
+        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f66ca",
+        "verified_at": 1577854800,
+    }
+    mock_post.return_value = MockRequest(data=token)
+    mock_decode.return_value = decoded_token
+    factory = APIRequestFactory()
+    view = TokenAuthorizationOIDC.as_view()
+    request = factory.get("/v1/login", {"state": state, "code": code})
+    request.session = api_client.session
+    request.session["state_nonce_tracker"] = {
+        "nonce": nonce,
+        "state": state,
+        "added_on": time.time(),
+    }
+    response = view(request)
+
+    user = User.objects.get(username="test_superuser@example.com")
+    assert str(user.sub) == decoded_token["sub"]
+    assert response.status_code == status.HTTP_302_FOUND
+
+
+@pytest.mark.django_db
 def test_login_with_expired_token(mocker, api_client):
     """Login should proceed when token already exists."""
     os.environ["JWT_KEY"] = test_private_key
@@ -506,6 +596,7 @@ def test_generate_client_assertion_base64():
     """Test client assertion generation with base64 encoded key."""
     os.environ["JWT_KEY"] = test_private_key
     assert generate_client_assertion() is not None
+
 
 @pytest.mark.django_db
 def test_generate_client_assertion_pem():
