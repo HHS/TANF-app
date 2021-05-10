@@ -96,7 +96,7 @@ describe('reducers/reports', () => {
           error: null,
         },
       ],
-      quarter:"",
+      quarter: '',
       stt: '',
       year: '',
     })
