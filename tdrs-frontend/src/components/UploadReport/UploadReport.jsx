@@ -9,6 +9,7 @@ import Button from '../Button'
 import FileUpload from '../FileUpload'
 import axiosInstance from '../../axios-instance'
 import { clearError } from '../../actions/reports'
+import { useEventLogger } from '../../utils/eventLogger'
 
 function UploadReport({ handleCancel, header, stt }) {
   // The currently selected year from the reportingYears dropdown
@@ -20,7 +21,7 @@ function UploadReport({ handleCancel, header, stt }) {
   // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
 
-  const [localAlert, setlocalAlertState] = useState({
+  const [localAlert, setLocalAlertState] = useState({
     active: false,
     type: null,
     message: null,
@@ -30,6 +31,8 @@ function UploadReport({ handleCancel, header, stt }) {
   // else it won't be read be screen readers.
   const headerRef = useRef(null)
   const dispatch = useDispatch()
+
+  const logger = useEventLogger()
 
   useEffect(() => {
     headerRef.current.focus()
@@ -70,7 +73,7 @@ function UploadReport({ handleCancel, header, stt }) {
     event.preventDefault()
 
     if (filteredFiles.length === 0) {
-      setlocalAlertState({
+      setLocalAlertState({
         active: true,
         type: 'error',
         message: 'No changes have been made to data files',
@@ -80,9 +83,7 @@ function UploadReport({ handleCancel, header, stt }) {
 
     const uploadRequests = filteredFiles.map((file) =>
       axiosInstance.post(
-        // update to `process.env.REACT_APP_BACKEND_URL` and
-        // remove mirage route when ready
-        `/mock_api/reports/`,
+        `${process.env.REACT_APP_BACKEND_URL}/reports/`,
         {
           original_filename: file.fileName,
           slug: file.uuid,
@@ -98,12 +99,13 @@ function UploadReport({ handleCancel, header, stt }) {
 
     Promise.all(uploadRequests)
       .then(() => {
-        setlocalAlertState({
+        setLocalAlertState({
           active: true,
           type: 'success',
           message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
         })
         clearErrorState()
+        logger.alert(`Submitted data files`)
       })
       .catch((error) => console.error(error))
   }
@@ -144,7 +146,7 @@ function UploadReport({ handleCancel, header, stt }) {
           <FileUpload
             key={name}
             section={`${index + 1} - ${name}`}
-            setlocalAlertState={setlocalAlertState}
+            setLocalAlertState={setLocalAlertState}
           />
         ))}
 
