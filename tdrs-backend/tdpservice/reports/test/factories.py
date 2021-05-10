@@ -4,6 +4,7 @@ import factory
 from tdpservice.users.test.factories import UserFactory
 from tdpservice.stts.test.factories import STTFactory
 
+
 class ReportFileFactory(factory.django.DjangoModelFactory):
     """Generate test data for report files."""
 

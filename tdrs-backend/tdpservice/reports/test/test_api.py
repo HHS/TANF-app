@@ -6,6 +6,7 @@ from rest_framework import status
 
 from ..models import ReportFile
 
+
 @pytest.mark.django_db
 def test_create_report_file_entry(api_client, ofa_admin):
     """Test ability to create report file metadata registry."""
@@ -112,7 +113,7 @@ def test_reports_data_prepper_not_allowed(api_client, data_prepper):
         "quarter": "Q1",
         "slug": uuid.uuid4(),
         "user": user.id,
-        "stt": int(user.stt.id)+1,
+        "stt": int(user.stt.id) + 1,
         "year": 2020,
         "section": "Active Case Data",
     }
