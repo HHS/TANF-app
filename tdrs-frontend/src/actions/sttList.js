@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { logErrorToServer } from '../utils/eventLogger'
 
 export const FETCH_STTS = 'FETCH_STTS'
 export const SET_STTS = 'SET_STTS'
@@ -49,6 +50,7 @@ export const fetchSttList = () => async (dispatch) => {
       dispatch({ type: CLEAR_STTS })
     }
   } catch (error) {
+    logErrorToServer(SET_STTS_ERROR)
     dispatch({ type: SET_STTS_ERROR, payload: { error } })
   }
 }
