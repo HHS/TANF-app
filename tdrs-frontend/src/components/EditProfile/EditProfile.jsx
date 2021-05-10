@@ -11,7 +11,7 @@ import Button from '../Button'
 import FormGroup from '../FormGroup'
 
 import STTComboBox from '../STTComboBox'
-
+import { useEventLogger } from '../../utils/eventLogger'
 /**
  *
  * @param {string} fieldName - The name of the element that is being validated
@@ -72,14 +72,17 @@ function EditProfile() {
 
   const [touched, setTouched] = useState({})
 
+  const logger = useEventLogger()
+
   useEffect(() => {
     if (requestAccessError) {
       dispatch(
         setAlert({ heading: requestAccessError.message, type: ALERT_ERROR })
       )
+      logger.error(requestAccessError.message)
     }
     dispatch(fetchSttList())
-  }, [dispatch, requestAccessError])
+  }, [dispatch, requestAccessError, logger])
 
   const setStt = (sttName) => {
     setProfileInfo((currentState) => ({
