@@ -194,7 +194,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return Response(
                 {
                     "error": (
-                        "Email verfied, but experienced internal issue "
+                        "Email verified, but experienced internal issue "
                         "with login/registration."
                     )
                 },
