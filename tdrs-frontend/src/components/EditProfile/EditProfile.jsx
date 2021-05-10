@@ -58,6 +58,7 @@ function EditProfile() {
   )
   const requestAccessError = useSelector((state) => state.requestAccess.error)
   const sttAssigned = useSelector((state) => state.auth.user.stt)
+  const sttList = useSelector((state) => state.stts.sttList)
 
   const dispatch = useDispatch()
 
@@ -134,7 +135,14 @@ function EditProfile() {
     setTouched(formValidation.touched)
 
     if (!Object.values(formValidation.errors).length) {
-      return dispatch(requestAccess(profileInfo))
+      return dispatch(
+        requestAccess({
+          ...profileInfo,
+          stt: sttList.find(
+            (stt) => stt.name.toLowerCase() === profileInfo.stt
+          ),
+        })
+      )
     }
     return setTimeout(() => errorRef.current.focus(), 0)
   }
@@ -185,12 +193,8 @@ function EditProfile() {
         >
           <STTComboBox
             selectStt={setStt}
-            error={errors.stt}
-            selectedStt={
-              profileInfo.stt &&
-              profileInfo.stt.name &&
-              profileInfo.stt.name.toLowerCase()
-            }
+            error={Boolean(errors.stt)}
+            selectedStt={profileInfo?.stt?.toLowerCase()}
             handleBlur={handleBlur}
           />
         </div>
