@@ -8,6 +8,7 @@ import {
   SET_SELECTED_YEAR,
   SET_SELECTED_STT,
   SET_FILE_LIST,
+  SET_SELECTED_QUARTER,
 } from '../actions/reports'
 
 const initialState = {
@@ -43,6 +44,7 @@ const initialState = {
   ],
   year: '',
   stt: '',
+  quarter: '',
 }
 
 describe('reducers/reports', () => {
@@ -146,6 +148,7 @@ describe('reducers/reports', () => {
       ],
       stt: '',
       year: '',
+      quarter: '',
     })
   })
 
@@ -191,6 +194,7 @@ describe('reducers/reports', () => {
       ],
       stt: '',
       year: '',
+      quarter: '',
     })
   })
 
@@ -238,6 +242,7 @@ describe('reducers/reports', () => {
       ],
       stt: '',
       year: '',
+      quarter: '',
     })
   })
 
@@ -277,7 +282,8 @@ describe('reducers/reports', () => {
             },
           ],
           stt: '',
-          year: 2020,
+          quarter: '',
+          year: '2020',
         },
         {
           type: CLEAR_ERROR,
@@ -319,7 +325,8 @@ describe('reducers/reports', () => {
         },
       ],
       stt: '',
-      year: 2020,
+      quarter: '',
+      year: '2020',
     })
   })
 
@@ -335,6 +342,64 @@ describe('reducers/reports', () => {
       files: initialState.files,
       year: '',
       stt: 'florida',
+      quarter: '',
+    })
+  })
+
+  it('should handle "SET_SELECTED_QUARTER"', () => {
+    expect(
+      reducer(undefined, {
+        type: SET_SELECTED_QUARTER,
+        payload: {
+          quarter: 'Q1',
+        },
+      })
+    ).toEqual({
+      files: initialState.files,
+      year: '',
+      stt: '',
+      quarter: 'Q1',
+    })
+
+    expect(
+      reducer(undefined, {
+        type: SET_SELECTED_QUARTER,
+        payload: {
+          quarter: 'Q2',
+        },
+      })
+    ).toEqual({
+      files: initialState.files,
+      year: '',
+      stt: '',
+      quarter: 'Q2',
+    })
+
+    expect(
+      reducer(undefined, {
+        type: SET_SELECTED_QUARTER,
+        payload: {
+          quarter: 'Q3',
+        },
+      })
+    ).toEqual({
+      files: initialState.files,
+      year: '',
+      stt: '',
+      quarter: 'Q3',
+    })
+    expect(
+      reducer(undefined, {
+        type: SET_SELECTED_QUARTER,
+        payload: {
+          quarter: 'Q4',
+        },
+      })
+    ).toEqual({
+      files: initialState.files,
+      year: '',
+      stt: '',
+      quarter: 'Q4',
     })
   })
 
@@ -350,6 +415,7 @@ describe('reducers/reports', () => {
       files: initialState.files,
       year: '2021',
       stt: '',
+      quarter: '',
     })
   })
 
@@ -394,12 +460,10 @@ describe('reducers/reports', () => {
   })
 
   it('should be able to update files with a new value and return those files', () => {
-    const state = initialState
-
     const uuid = uuidv4()
 
     const updatedFiles = getUpdatedFiles(
-      state,
+      initialState,
       'Test.txt',
       'Active Case Data',
       uuid,

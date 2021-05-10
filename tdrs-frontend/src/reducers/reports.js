@@ -10,6 +10,7 @@ import {
   DOWNLOAD_DIALOG_OPEN,
   SET_SELECTED_YEAR,
   SET_SELECTED_STT,
+  SET_SELECTED_QUARTER,
 } from '../actions/reports'
 
 const getFileIndex = (files, section) =>
@@ -72,6 +73,7 @@ const initialState = {
   ],
   year: '',
   stt: '',
+  quarter: '',
 }
 
 const reports = (state = initialState, action) => {
@@ -115,7 +117,7 @@ const reports = (state = initialState, action) => {
         null,
         error
       )
-      return { ...initialState, files: updatedFiles }
+      return { ...state, files: updatedFiles }
     }
     case CLEAR_ERROR: {
       const { section } = payload
@@ -136,6 +138,10 @@ const reports = (state = initialState, action) => {
     case SET_SELECTED_STT: {
       const { stt } = payload
       return { ...state, stt }
+    }
+    case SET_SELECTED_QUARTER: {
+      const { quarter } = payload
+      return { ...state, quarter }
     }
     default:
       return state

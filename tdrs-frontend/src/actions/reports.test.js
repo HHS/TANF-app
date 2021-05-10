@@ -4,7 +4,6 @@ import configureStore from 'redux-mock-store'
 import { v4 as uuidv4 } from 'uuid'
 
 import {
-  setYear,
   SET_SELECTED_YEAR,
   START_FILE_DOWNLOAD,
   SET_FILE,
@@ -13,7 +12,10 @@ import {
   DOWNLOAD_DIALOG_OPEN,
   SET_FILE_ERROR,
   SET_SELECTED_STT,
+  SET_SELECTED_QUARTER,
+  setQuarter,
   setStt,
+  setYear,
   upload,
   download,
   getAvailableFileList,
@@ -150,6 +152,18 @@ describe('actions/reports', () => {
     expect(actions[0].type).toBe(SET_SELECTED_STT)
     expect(actions[0].payload).toStrictEqual({
       stt: 'florida',
+    })
+  })
+
+  it('should dispatch SET_SELECTED_QUARTER', async () => {
+    const store = mockStore()
+
+    await store.dispatch(setQuarter('Q2'))
+
+    const actions = store.getActions()
+    expect(actions[0].type).toBe(SET_SELECTED_QUARTER)
+    expect(actions[0].payload).toStrictEqual({
+      quarter: 'Q2',
     })
   })
 })
