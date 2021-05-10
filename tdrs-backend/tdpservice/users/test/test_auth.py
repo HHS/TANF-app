@@ -247,7 +247,7 @@ def test_login_with_general_exception(mocker):
 def test_login_with_inactive_user(mocker, api_client, inactive_user):
     """Login with inactive user should error and return message."""
     os.environ["JWT_KEY"] = test_private_key
-    inactive_user.username = "test@example.com"
+    inactive_user.username = "test_inactive@example.com"
     inactive_user.save()
     nonce = "testnonce"
     state = "teststate"
@@ -261,7 +261,7 @@ def test_login_with_inactive_user(mocker, api_client, inactive_user):
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
-        "email": "test@example.com",
+        "email": "test_inactive@example.com",
         "email_verified": True,
         "nonce": nonce,
         "iss": "https://idp.int.identitysandbox.gov",
@@ -290,7 +290,7 @@ def test_login_with_inactive_user(mocker, api_client, inactive_user):
 def test_login_with_existing_user(mocker, api_client, user):
     """Login should work with existing user."""
     os.environ["JWT_KEY"] = test_private_key
-    user.username = "test@example.com"
+    user.username = "test_existing@example.com"
     user.save()
     nonce = "testnonce"
     state = "teststate"
@@ -304,7 +304,7 @@ def test_login_with_existing_user(mocker, api_client, user):
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
-        "email": "test@example.com",
+        "email": "test_existing@example.com",
         "email_verified": True,
         "nonce": nonce,
         "iss": "https://idp.int.identitysandbox.gov",
