@@ -15,8 +15,6 @@ services:
       - POSTGRES_PASSWORD=something_secure
       - POSTGRES_DB=tdrs_test
       - POSTGRES_PORT=5432
-    ports:
-      - "5432:5432"
 
   clamav-rest:
     image: rafttech/clamav-rest:0.103.2
