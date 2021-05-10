@@ -63,9 +63,9 @@ describe('actions/reports', () => {
 
   it('should dispatch OPEN_FILE_DIALOG when a file has been successfully downloaded', async () => {
     window.URL.createObjectURL = jest.fn(() => null)
-    axios.get.mockImplementationOnce(() => 
+    axios.get.mockImplementationOnce(() =>
       Promise.resolve({
-        data: 'Some text'
+        data: 'Some text',
       })
     )
     const store = mockStore()
