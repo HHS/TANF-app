@@ -1,6 +1,6 @@
-// import axios from 'axios'
 import { SET_AUTH } from './auth'
 import axiosInstance from '../axios-instance'
+import { logErrorToServer } from '../utils/eventLogger'
 
 export const PATCH_REQUEST_ACCESS = 'PATCH_REQUEST_ACCESS'
 export const SET_REQUEST_ACCESS = 'SET_REQUEST_ACCESS'
@@ -28,6 +28,7 @@ export const requestAccess = ({ firstName, lastName, stt: { id } }) => async (
       dispatch({ type: CLEAR_REQUEST_ACCESS })
     }
   } catch (error) {
+    logErrorToServer(SET_REQUEST_ACCESS_ERROR)
     dispatch({ type: SET_REQUEST_ACCESS_ERROR, payload: { error } })
   }
 }
