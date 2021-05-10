@@ -265,7 +265,7 @@ def test_login_with_inactive_user(mocker, api_client, inactive_user):
         "email_verified": True,
         "nonce": nonce,
         "iss": "https://idp.int.identitysandbox.gov",
-        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "sub": inactive_user.sub,
         "verified_at": 1577854800,
     }
     mock_post.return_value = MockRequest(data=token)
@@ -308,7 +308,7 @@ def test_login_with_existing_user(mocker, api_client, user):
         "email_verified": True,
         "nonce": nonce,
         "iss": "https://idp.int.identitysandbox.gov",
-        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+        "sub": user.sub,
         "verified_at": 1577854800,
     }
     mock_post.return_value = MockRequest(data=token)
