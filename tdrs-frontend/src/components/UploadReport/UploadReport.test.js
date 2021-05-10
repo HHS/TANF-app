@@ -8,10 +8,10 @@ import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
 
 import {
-  PREVIEW_HEADING_CLASS     ,
+  PREVIEW_HEADING_CLASS,
   GENERIC_PREVIEW_CLASS_NAME,
-  GENERIC_PREVIEW_CLASS    ,
-} from "../FileUpload/utils"
+  GENERIC_PREVIEW_CLASS,
+} from '../FileUpload/utils'
 
 import UploadReport from './UploadReport'
 
@@ -66,7 +66,7 @@ describe('UploadReport', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByLabelText,container } = render(
+    const { getByLabelText, container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
@@ -85,12 +85,12 @@ describe('UploadReport', () => {
     expect(store.dispatch).toHaveBeenCalledTimes(3)
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
   })
-  it('should prevent upload of file with invalid extension',() => {
+  it('should prevent upload of file with invalid extension', () => {
     const store = mockStore(initialState)
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByLabelText,container } = render(
+    const { getByLabelText, container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
@@ -99,7 +99,7 @@ describe('UploadReport', () => {
     const fileInput = getByLabelText('Section 1 - Active Case Data')
 
     const newFile = new File(['<div>test</div>'], 'test.html', {
-      type: 'text/html'
+      type: 'text/html',
     })
 
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
@@ -111,7 +111,6 @@ describe('UploadReport', () => {
 
     expect(store.dispatch).toHaveBeenCalledTimes(3)
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
-
   })
 
   it('should display a download button when the file is available for download.', () => {
@@ -131,7 +130,7 @@ describe('UploadReport', () => {
     //expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
 
-  it('should dispatch download thing.',() => {
+  it('should dispatch download thing.', () => {
     const store = mockStore(initialState)
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
@@ -148,7 +147,7 @@ describe('UploadReport', () => {
     expect(store.dispatch).toHaveBeenCalledTimes(3)
   })
 
-  it('should render a preview when there is a file available to download',(done) => {
+  it('should render a preview when there is a file available to download', (done) => {
     const store = mockStore(initialState)
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
@@ -159,7 +158,6 @@ describe('UploadReport', () => {
       </Provider>
     )
     setTimeout(() => {
-
       const headings = container.querySelectorAll(`.${PREVIEW_HEADING_CLASS}`)
       expect(headings.length).toBeTruthy()
 
@@ -167,8 +165,7 @@ describe('UploadReport', () => {
       // expect(imgs.length).toBe(2)
 
       done()
-    },10)
-
+    }, 10)
   })
 
   it('should render a div with class "usa-form-group--error" if there is an error', () => {
