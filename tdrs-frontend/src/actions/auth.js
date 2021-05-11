@@ -1,4 +1,5 @@
 import axiosInstance from '../axios-instance'
+import { logErrorToServer } from '../utils/eventLogger'
 
 export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
@@ -55,6 +56,7 @@ export const fetchAuth = () => async (dispatch) => {
       dispatch({ type: CLEAR_AUTH })
     }
   } catch (error) {
+    logErrorToServer(SET_AUTH_ERROR)
     dispatch({ type: SET_AUTH_ERROR, payload: { error } })
   }
 }

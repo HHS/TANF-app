@@ -7,6 +7,7 @@ from tdpservice.clients import ClamAVClient
 
 @pytest.fixture
 def clamav_client(clamav_url):
+    """HTTP Client used to send files to ClamAV-REST."""
     av_client = ClamAVClient(endpoint_url=clamav_url)
     return av_client
 
@@ -48,8 +49,3 @@ def test_clamav_rejects_infected_files(
     # Send a test file that will be treated as "infected"
     is_file_clean = clamav_client.scan_file(infected_file, fake_file_name)
     assert is_file_clean is False
-
-
-def test_clamav_rejects_invalid_files():
-    """TODO"""
-    pass

@@ -18,7 +18,7 @@ COPY . /tdpapp
 
 RUN groupadd -g ${gid} ${group} && useradd -u ${uid} -g ${group} -s /bin/sh ${user}
 
-RUN chown -R tdpuser /tdpapp && chmod u+x  gunicorn_start.sh
+RUN chown -R tdpuser /tdpapp && chmod u+x gunicorn_start.sh wait_for_services.sh
 
 
 CMD ["./gunicorn_start.sh"]

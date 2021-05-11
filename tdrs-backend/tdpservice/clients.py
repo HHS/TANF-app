@@ -13,7 +13,11 @@ logger.setLevel(logging.DEBUG)
 
 
 class ClamAVClient:
+    """An HTTP client that can be used to send files to a ClamAV REST server."""
+
     class ServiceUnavailable(Exception):
+        """Raised when the target ClamAV REST server is unavailable."""
+
         pass
 
     # https://github.com/raft-tech/clamav-rest#status-codes
@@ -31,6 +35,7 @@ class ClamAVClient:
         self.session = self.init_session()
 
     def init_session(self):
+        """Create a new request session that can retry failed connections."""
         session = Session()
         retries = Retry(
             backoff_factor=settings.AV_SCAN_BACKOFF_FACTOR,
@@ -41,6 +46,15 @@ class ClamAVClient:
         return session
 
     def scan_file(self, file, file_name) -> bool:
+        """Scan a file for virus infections.
+
+        :param file:
+            The file or file-like object that should be scanned
+        :param file_name:
+            The name of the target file (str).
+        :returns is_file_clean:
+            A boolean indicating whether or not the file passed the ClamAV scan
+        """
         logger.debug(f'Initiating virus scan for file: {file_name}')
         try:
             scan_response = self.session.post(
