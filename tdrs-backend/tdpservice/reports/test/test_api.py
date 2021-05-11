@@ -6,6 +6,7 @@ from rest_framework import status
 
 from ..models import ReportFile
 
+
 @pytest.mark.django_db
 def test_create_report_file_entry(api_client, ofa_admin):
     """Test ability to create report file metadata registry."""
@@ -112,7 +113,26 @@ def test_reports_data_prepper_not_allowed(api_client, data_prepper):
         "quarter": "Q1",
         "slug": uuid.uuid4(),
         "user": user.id,
-        "stt": int(user.stt.id)+1,
+        "stt": int(user.stt.id) + 1,
+        "year": 2020,
+        "section": "Active Case Data",
+    }
+
+    response = api_client.post("/v1/reports/", data)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_reports_inactive_user_not_allowed(api_client, inactive_user):
+    """Test that an inactive user can't add reports at all."""
+    user = inactive_user
+    api_client.login(username=user.username, password="test_password")
+    data = {
+        "original_filename": "report.txt",
+        "quarter": "Q1",
+        "slug": uuid.uuid4(),
+        "user": user.id,
+        "stt": user.stt.id,
         "year": 2020,
         "section": "Active Case Data",
     }
