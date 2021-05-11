@@ -110,4 +110,4 @@ class ReportFile(File):
 
         return self.objects.filter(
             version=version, year=year, quarter=quarter, section=section, stt=stt,
-        )[0]
+        ).first()
