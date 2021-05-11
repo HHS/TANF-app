@@ -178,7 +178,7 @@ def test_list_report_years(api_client, data_prepper):
     ReportFile.create_new_version(data3)
     api_client.login(username=user.username, password="test_password")
 
-    response = api_client.get(f"/v1/reports/years/{str(user.stt.id)}")
+    response = api_client.get("/v1/reports/years")
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data == [
@@ -235,3 +235,48 @@ def test_list_ofa_admin_report_years(api_client, ofa_admin, stt):
         2021,
         2022
     ]
+
+
+@pytest.mark.django_db
+def test_list_ofa_admin_report_years_positional_stt(api_client, ofa_admin, stt):
+    """Test list year fail for OFA admin when no STT is provided"""
+    user = ofa_admin
+
+    data1 = {
+        "original_filename": "report.txt",
+        "quarter": "Q1",
+        "slug": str(uuid.uuid4()),
+        "user": user,
+        "stt": stt,
+        "year": 2020,
+        "section": "Active Case Data",
+    }
+
+    data2 = {
+        "original_filename": "report.txt",
+        "quarter": "Q1",
+        "slug": str(uuid.uuid4()),
+        "user": user,
+        "stt": stt,
+        "year": 2021,
+        "section": "Active Case Data",
+    }
+
+    data3 = {
+        "original_filename": "report.txt",
+        "quarter": "Q1",
+        "slug": str(uuid.uuid4()),
+        "user": user,
+        "stt": stt,
+        "year": 2022,
+        "section": "Active Case Data",
+    }
+    ReportFile.create_new_version(data1)
+    ReportFile.create_new_version(data2)
+    ReportFile.create_new_version(data3)
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get("/v1/reports/years")
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

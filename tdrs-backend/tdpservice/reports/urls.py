@@ -10,14 +10,15 @@ router.register("", views.ReportFileViewSet)
 
 urlpatterns = [
     path(
-        "years/<int:stt>",
-        views.GetYearList.as_view(),
-        name="get-year-list-admin",
-    ),
-    path(
         "years",
         views.GetYearList.as_view(),
         name="get-year-list",
+    ),
+
+    path(
+        "years/<int:stt>",
+        views.GetYearList.as_view(),
+        name="get-year-list-admin",
     )
 ]
 
