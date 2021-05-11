@@ -1,3 +1,5 @@
+import { logErrorToServer } from '../utils/eventLogger'
+
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
 
@@ -106,6 +108,8 @@ export const upload = ({ file, section }) => async (dispatch) => {
       type: SET_FILE_ERROR,
       payload: { error: Error({ message: 'something went wrong' }), section },
     })
+    logErrorToServer(SET_FILE_ERROR)
+    dispatch({ type: SET_FILE_ERROR, payload: { error, section } })
     return false
   }
 

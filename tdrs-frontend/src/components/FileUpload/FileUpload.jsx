@@ -18,7 +18,7 @@ import { handlePreview, getTargetClassName } from './utils'
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
 
-function FileUpload({ section, setlocalAlertState }) {
+function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
   const [inputHasRendered, setInputHasRendered] = useState(false)
@@ -73,7 +73,7 @@ function FileUpload({ section, setlocalAlertState }) {
   const inputRef = useRef(null)
 
   const validateAndUploadFile = (event) => {
-    setlocalAlertState({
+    setLocalAlertState({
       active: false,
       type: null,
       message: null,
@@ -218,7 +218,7 @@ function FileUpload({ section, setlocalAlertState }) {
 
 FileUpload.propTypes = {
   section: PropTypes.string.isRequired,
-  setlocalAlertState: PropTypes.func.isRequired,
+  setLocalAlertState: PropTypes.func.isRequired,
 }
 
 export default FileUpload

@@ -37,7 +37,7 @@ class ReportFile(File):
         """Enum for report section."""
 
         ACTIVE_CASE_DATA = "Active Case Data"
-        CLOSE_CASE_DATA = "Close Case Data"
+        CLOSED_CASE_DATA = "Closed Case Data"
         AGGREGATE_DATA = "Aggregate Data"
         STRATUM_DATA = "Stratum Data"
 
