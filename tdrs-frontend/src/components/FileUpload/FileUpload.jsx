@@ -195,7 +195,7 @@ function FileUpload({ section, setLocalAlertState }) {
         aria-hidden="false"
         data-errormessage={INVALID_FILE_ERROR}
       />
-      <div style={{ marginTop: '25px', marginTop: '20px' }}>
+      <div style={{ marginTop: '25px' }}>
         {hasFile ? (
           <Button
             className="tanf-file-download-btn"
