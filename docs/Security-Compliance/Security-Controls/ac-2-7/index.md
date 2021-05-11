@@ -20,7 +20,7 @@ c. If the status of a privileged account changes (inactive or terminated), the S
 
 #### Related Files
 
-[This migration](tdrs-backend/tdpservice/users/migrations/0006_auto_20201117_1717.py) 
+[This migration](https://github.com/HHS/TANF-app/blob/main/tdrs-backend/tdpservice/users/migrations/0006_auto_20201117_1717.py) 
 adds three roles by which privileged use will be established. Users without a role
 will be able to log in and request access, but that is all. Users assigned the
 `Data Prepper` role will have the most basic set of privileges, allowing them to 

@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  node: circleci/node@4.2.1
 jobs:
   test-backend:
     machine:
@@ -13,11 +15,8 @@ jobs:
           name: "Test: Build and Spin-up Django API Service"
           command: "cd tdrs-backend; docker-compose up -d --build"
       - run:
-          name: "Tear Down Django API Service"
-          command: "cd tdrs-backend; docker-compose down "
-      - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
-          command: "cd tdrs-backend; docker-compose run web sh -c \"pytest && pytest --cov-report=xml\""
+          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"pytest --cov-report=xml\""
       - run:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
@@ -32,24 +31,30 @@ jobs:
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh"
+      - store_artifacts:
+          path: tdrs-backend/reports/owasp_report.html
   test-frontend:
     working_directory: ~/tdp-apps
-    docker:
-      - image: cypress/base:10
-        user : root
+    machine:
+      docker_layer_caching: false
     steps:
-      - setup_remote_docker:
-         docker_layer_caching: false
       - checkout
-      - run:
-          name: 'Ensure docker exists,otherwise install it.'
-          command: "./scripts/docker-check.sh"
       - run:
           name: 'Ensure docker-compose exists,otherwise install it.'
           command: "./scripts/docker-compose-check.sh"
-      - run:
-          name: "Install Package Dependencies"
-          command: "cd tdrs-frontend; yarn"
+      - run: 
+          name: "Install Node.JS"
+          command: |
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install v12.18
+            nvm alias default v12.18
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+      - node/install-yarn
+      - node/install-packages:
+          app-dir: tdrs-frontend
+          cache-path: ~/.cache
+          pkg-manager: yarn
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
@@ -73,6 +78,8 @@ jobs:
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-frontend; ./zap-scanner.sh"
+      - store_artifacts:
+          path: tdrs-frontend/reports/owasp_report.html
   deploy:
     working_directory: ~/tdp-deploy
     docker:
@@ -121,7 +128,7 @@ jobs:
           name:  "Push Frontend Image to Docker Hub"
           command: "docker push lfrohlich/tdp-frontend:$DOCKER_TAG"
       - run:
-          name: deploy to cloud.gov
+          name: "Deploy to Cloud.gov"
           command: |
             # Map certain branches to spaces, otherwise default to the Development space.
             # This lets you have dev/staging/main branches that automatically go to the right place.
@@ -162,7 +169,18 @@ jobs:
             cf api https://api.fr.cloud.gov
             cf auth "$CF_USERNAME" "$CF_PASSWORD"
             cf target -o $CF_ORG -s "$CF_SPACE"
-            ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH
+
+            # First delete the existing implementation of clamav-rest so we don't exhaust memory quota
+            cf delete -r clamav-rest -f
+
+            # Deploy ClamAV REST server
+            cf push clamav-rest -f tdrs-backend/manifest_clamav.yml --var cf-space=$CF_SPACE
+
+            # Deploy frontend and backend applications
+            ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH $CF_SPACE
+
+            # Enable direct communication over internal routes between backend and clamav-rest containers
+            cf add-network-policy $CGHOSTNAME_BACKEND clamav-rest -s $CF_SPACE -o $CF_ORG --protocol tcp --port 9000
 workflows:
   build-and-test:
     jobs:

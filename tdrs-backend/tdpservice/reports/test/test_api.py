@@ -120,6 +120,25 @@ def test_reports_data_prepper_not_allowed(api_client, data_prepper):
     response = api_client.post("/v1/reports/", data)
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
+
+@pytest.mark.django_db
+def test_reports_inactive_user_not_allowed(api_client, inactive_user):
+    """Test that an inactive user can't add reports at all."""
+    user = inactive_user
+    api_client.login(username=user.username, password="test_password")
+    data = {
+        "original_filename": "report.txt",
+        "quarter": "Q1",
+        "slug": uuid.uuid4(),
+        "user": user.id,
+        "stt": user.stt.id,
+        "year": 2020,
+        "section": "Active Case Data",
+    }
+
+    response = api_client.post("/v1/reports/", data)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
 @pytest.mark.django_db
 def test_list_report_years(api_client, data_prepper):
     """Test list of years for which there exist a report as a data prepper."""

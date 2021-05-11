@@ -9,7 +9,8 @@ import { ALERT_ERROR } from '../Alert'
 
 import Button from '../Button'
 import FormGroup from '../FormGroup'
-import ComboBox from '../ComboBox'
+
+import STTComboBox from '../STTComboBox'
 
 /**
  *
@@ -52,12 +53,12 @@ export const validation = (fieldName, fieldValue) => {
 
 function EditProfile() {
   const errorRef = useRef(null)
-  const sttList = useSelector((state) => state.stts.sttList)
   const requestedAccess = useSelector(
     (state) => state.requestAccess.requestAccess
   )
   const requestAccessError = useSelector((state) => state.requestAccess.error)
   const sttAssigned = useSelector((state) => state.auth.user.stt)
+  const sttList = useSelector((state) => state.stts.sttList)
 
   const dispatch = useDispatch()
 
@@ -81,9 +82,10 @@ function EditProfile() {
   }, [dispatch, requestAccessError])
 
   const setStt = (sttName) => {
-    let selectedStt = sttList.find((stt) => sttName === stt.name.toLowerCase())
-    if (!selectedStt) selectedStt = ''
-    setProfileInfo({ ...profileInfo, stt: selectedStt })
+    setProfileInfo((currentState) => ({
+      ...currentState,
+      stt: sttName.toLowerCase(),
+    }))
   }
 
   const handleChange = ({ name, value }) => {
@@ -130,7 +132,14 @@ function EditProfile() {
     setTouched(formValidation.touched)
 
     if (!Object.values(formValidation.errors).length) {
-      return dispatch(requestAccess(profileInfo))
+      return dispatch(
+        requestAccess({
+          ...profileInfo,
+          stt: sttList.find(
+            (stt) => stt.name.toLowerCase() === profileInfo.stt
+          ),
+        })
+      )
     }
     return setTimeout(() => errorRef.current.focus(), 0)
   }
@@ -179,29 +188,12 @@ function EditProfile() {
             errors.stt ? 'usa-form-group--error' : ''
           }`}
         >
-          <ComboBox
-            name="stt"
-            error={errors.stt}
-            handleSelect={setStt}
-            selected={
-              profileInfo.stt &&
-              profileInfo.stt.name &&
-              profileInfo.stt.name.toLowerCase()
-            }
+          <STTComboBox
+            selectStt={setStt}
+            error={Boolean(errors.stt)}
+            selectedStt={profileInfo?.stt?.toLowerCase()}
             handleBlur={handleBlur}
-            placeholder="- Select or Search -"
-          >
-            <option value="">Select an STT</option>
-            {sttList.map((stt) => (
-              <option
-                className="sttOption"
-                key={stt.id}
-                value={stt.name.toLowerCase()}
-              >
-                {stt.name}
-              </option>
-            ))}
-          </ComboBox>
+          />
         </div>
         <Button type="submit" className="width-full request-access-button">
           Request Access
