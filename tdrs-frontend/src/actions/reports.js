@@ -13,8 +13,6 @@ export const FILE_DOWNLOAD_ERROR = 'FILE_DOWNLOAD_ERROR'
 
 export const FETCH_FILE_LIST = 'FETCH_FILE_LIST'
 export const SET_FILE_LIST = 'SET_FILE_LIST'
-export const FETCH_FILE_LIST_ERROR = 'FETCH_FILE_LIST_ERROR'
-export const DOWNLOAD_DIALOG_OPEN = 'DOWNLOAD_DIALOG_OPEN'
 
 export const clearFile = ({ section }) => (dispatch) => {
   dispatch({ type: CLEAR_FILE, payload: { section } })
@@ -29,8 +27,10 @@ export const clearError = ({ section }) => (dispatch) => {
 export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
   dispatch
 ) => {
-  dispatch({
-    type: FETCH_FILE_LIST,
+  const response = await axios({
+    url: `/mock/reports/${year}/${quarter}`,
+    method: 'get',
+    responseType: 'json',
   })
   try {
     const response = await axios.get(`/mock_api/reports/${year}/${quarter}`, {

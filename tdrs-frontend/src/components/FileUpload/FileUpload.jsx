@@ -44,7 +44,7 @@ function FileUpload({ section, setLocalAlertState }) {
 
   const formattedSectionName = selectedFile.section
     .split(' ')
-    .map((s) => s.toLowerCase())
+    .map((word) => word.toLowerCase())
     .join('-')
 
   const targetClassName = getTargetClassName(formattedSectionName)

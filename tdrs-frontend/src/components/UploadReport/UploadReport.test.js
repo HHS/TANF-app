@@ -118,11 +118,15 @@ describe('UploadReport', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { container, getByLabelText } = render(
+    const { getByLabelText } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
     )
+
+    const fileInputs = getByLabelText('Section 1 - Active Case Data')
+
+    const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
 
     const buttons = container.querySelectorAll('.tanf-file-download-btn')
     expect(buttons.length).toBe(2)

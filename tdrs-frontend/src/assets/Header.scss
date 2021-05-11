@@ -6,7 +6,7 @@
   color: $accent-magenta;
 }
 
-.usa-header--extended .usa-nav__primary-item > .usa-current::after,
+.usa-header--extended .usa-nav__primary-item > .usa-current::after, 
 .usa-header--extended .usa-nav__primary-item > .usa-nav__link:hover::after {
   background-color: $accent-magenta;
 }
@@ -18,8 +18,7 @@
   }
 }
 
-.usa-menu-btn,
-.usa-menu-btn:hover {
+.usa-menu-btn, .usa-menu-btn:hover {
   background-color: $primary-medium-blue;
 }
 
