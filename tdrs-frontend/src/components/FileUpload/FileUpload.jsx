@@ -58,7 +58,7 @@ function FileUpload({ section, setLocalAlertState }) {
       }
     }
     if (hasFile) trySettingPreview()
-  }, [hasFile])
+  }, [hasFile, fileName, handlePreview, targetClassName])
 
   const downloadFile = ({ target }) => {
     dispatch(clearError({ section: sectionName }))
