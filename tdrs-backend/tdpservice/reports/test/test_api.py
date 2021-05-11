@@ -239,7 +239,7 @@ def test_list_ofa_admin_report_years(api_client, ofa_admin, stt):
 
 @pytest.mark.django_db
 def test_list_ofa_admin_report_years_positional_stt(api_client, ofa_admin, stt):
-    """Test list year fail for OFA admin when no STT is provided"""
+    """Test list year fail for OFA admin when no STT is provided."""
     user = ofa_admin
 
     data1 = {
