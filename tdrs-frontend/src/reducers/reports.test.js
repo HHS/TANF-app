@@ -101,7 +101,6 @@ describe('reducers/reports', () => {
       year: '',
     })
   })
-  it('should handle END_FILE_DOWNLOAD', () => {})
 
   it('should handle SET_FILE', () => {
     const uuid = uuidv4()
