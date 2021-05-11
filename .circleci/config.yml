@@ -39,6 +39,8 @@ commands:
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
 
+  install-yarn: node/install-yarn
+
   sudo-check:
     steps:
       - run:
@@ -85,6 +87,7 @@ commands:
 
     steps:
       - install-nodejs
+      - install-yarn
       - run: |
           bash ./scripts/deploy-frontend.sh \
             <<parameters.deploy-strategy>> \
@@ -182,7 +185,7 @@ jobs:
       - checkout
       - docker-compose-check
       - install-nodejs
-      - node/install-yarn
+      - install-yarn
       - node/install-packages:
           app-dir: tdrs-frontend
           cache-path: ~/.cache
@@ -214,14 +217,14 @@ jobs:
           path: tdrs-frontend/reports/owasp_report.html
 
   deploy-dev:
-    executor: docker-executor
+    executor: machine-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov
 
   deploy-staging:
     working_directory: ~/tdp-deploy
-    executor: docker-executor
+    executor: machine-executor
     steps:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
@@ -231,7 +234,7 @@ jobs:
           cf-username: CF_USERNAME_STAGING
 
   deploy-prod:
-    executor: docker-executor
+    executor: machine-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
