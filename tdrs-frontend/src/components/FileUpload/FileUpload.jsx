@@ -21,16 +21,10 @@ const INVALID_FILE_ERROR =
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
-  const [inputHasRendered, setInputHasRendered] = useState(false)
-  const { files, year, quarter, data, downloadedFile } = useSelector(
+  const { files, year, downloadedFile } = useSelector(
     (state) => state.reports
   )
-  const isDownloaded = files?.some(
-    (file) =>
-      file.section === downloadedFile?.section &&
-      file.year === downloadedFile?.year &&
-      file.quarter === downloadedFile?.quarter
-  )
+
   const dispatch = useDispatch()
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
