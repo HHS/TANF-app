@@ -77,5 +77,4 @@ Production environment key distribution will be handled by Government authorized
 
 **Note** 
 - We will need to update this document with the link to login to the login.gov production environment setup when we have access to it.
-- More information on `ssh-keygen` can be found at [ssh.com](https://www.ssh.com/academy/ssh/keygen)
 - More information on `openssl` can be found at [openssl.org](https://www.openssl.org/docs/manmaster/man1/openssl.html)
