@@ -112,7 +112,7 @@ commands:
       - run:
           name: Enable internal route between backend and clamav-rest apps
           command: |
-            cf add-network-policy <<parameters.backend_appname>> clamav-rest \
+            cf add-network-policy <<parameters.backend-appname>> clamav-rest \
               -s <<parameters.cf-space>> \
               -o ${<<parameters.cf-org>>} \
               --protocol tcp
