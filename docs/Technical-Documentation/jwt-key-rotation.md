@@ -32,7 +32,7 @@ You can now check the contents of your keys with these commands
 ```bash=
 cat jwtRS256prv.pem
 # returns private key
-cat jwtRS256.key.pub
+cat jwtRS256pub.crt
 # returns public key
 ```
 
