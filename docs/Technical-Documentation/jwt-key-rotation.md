@@ -10,7 +10,7 @@ To maintain good security, we will periodically rotate the JWT keys used to cont
 
 In your Mac terminal (or bash terminal in Windows), enter the following command:
 ```bash=
-ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
+openssl req -nodes -x509 -days 90 -newkey rsa:2048 -keyout jwtRS256prv.pem -out jwtRS256pub.crt
 ```
 You will receive the following response. Do not add a passphrase when prompted.
 ```
