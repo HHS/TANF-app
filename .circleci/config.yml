@@ -19,19 +19,19 @@ commands:
   cf-check:
     steps:
       - run:
-          name: 'Ensure cf cli is installed, otherwise install it.'
-          command: "./scripts/cf-check.sh"
+          name: Ensure cf cli is installed, otherwise install it.
+          command: ./scripts/cf-check.sh
 
   docker-compose-check:
     steps:
       - run:
-          name: 'Ensure docker-compose exists,otherwise install it.'
-          command: "./scripts/docker-compose-check.sh"
+          name: Ensure docker-compose exists,otherwise install it.
+          command: ./scripts/docker-compose-check.sh
 
   install-nodejs:
     steps:
       - run:
-          name: "Install Node.JS"
+          name: Install Node.JS
           command: |
             source /opt/circleci/.nvm/nvm.sh
             nvm install v12.18
@@ -44,14 +44,14 @@ commands:
   sudo-check:
     steps:
       - run:
-          name: 'Ensure sudo is installed, otherwise install it.'
-          command: "./scripts/sudo-check.sh"
+          name: Ensure sudo is installed, otherwise install it.
+          command: ./scripts/sudo-check.sh
 
   ###
   # Deployment commands
   #
   login-cloud-dot-gov:
-    description: Authenticates with Cloud.gov and sets appropriate targets
+    description: Authenticates with Cloud.gov and sets org and space targets
     parameters:
       cf-password:
         type: env_var_name
@@ -66,12 +66,57 @@ commands:
         type: env_var_name
         default: CF_USERNAME_DEV
     steps:
+      - run:
+          name: Login to Cloud.gov and set application targets
+          command: |
+            cf login -a https://api.fr.cloud.gov \
+              -u ${<<parameters.cf-username>>} \
+              -p ${<<parameters.cf-password>>} \
+              -o ${<<parameters.cf-org>>} \
+              -s <<parameters.cf-space>>
+
+  deploy-backend:
+    parameters:
+      deploy-strategy:
+        default: rolling
+        type: string
+      backend-appname:
+        default: tdp-backend
+        type: string
+    steps:
       - run: |
-          cf login -a https://api.fr.cloud.gov \
-            -u ${<<parameters.cf-username>>} \
-            -p ${<<parameters.cf-password>>} \
-            -o ${<<parameters.cf-org>>} \
-            -s <<parameters.cf-space>>
+          bash ./scripts/deploy-backend.sh \
+            <<parameters.deploy-strategy>> \
+            <<parameters.backend-appname>>
+
+  deploy-clamav:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+    steps:
+      - run:
+          name: Delete existing ClamAV REST application
+          command: cf delete -r clamav-rest -f
+      - run:
+          name: Deploy ClamAV REST application
+          command: |
+            cf push clamav-rest -f tdrs-backend/manifest.yml \
+              --var cf-space=<<parameters.cf-space>>
+      - run:
+          name: Enable internal route between backend and clamav-rest apps
+          command: |
+            cf add-network-policy <<parameters.backend_appname>> clamav-rest \
+              -s <<parameters.cf-space>> \
+              -o ${<<parameters.cf-org>>} \
+              --protocol tcp
+              --port 9000
 
   deploy-frontend:
     parameters:
@@ -92,20 +137,6 @@ commands:
           bash ./scripts/deploy-frontend.sh \
             <<parameters.deploy-strategy>> \
             <<parameters.frontend-appname>> \
-            <<parameters.backend-appname>>
-
-  deploy-backend:
-    parameters:
-      deploy-strategy:
-        default: "rolling"
-        type: string
-      backend-appname:
-        default: "tdp-backend"
-        type: string
-    steps:
-      - run: |
-          bash ./scripts/deploy-backend.sh \
-            <<parameters.deploy-strategy>> \
             <<parameters.backend-appname>>
 
   deploy-cloud-dot-gov:
@@ -140,13 +171,17 @@ commands:
           cf-org: <<parameters.cf-org>>
           cf-space: <<parameters.cf-space>>
           cf-username: <<parameters.cf-username>>
+      - deploy-backend:
+          backend-appname: <<parameters.backend-appname>>
+          deploy-strategy: <<parameters.deploy-strategy>>
+      - deploy-clamav-rest:
+          backend-appname: <<parameters.backend-appname>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
       - deploy-frontend:
           backend-appname: <<parameters.backend-appname>>
           deploy-strategy: <<parameters.deploy-strategy>>
           frontend-appname: <<parameters.frontend-appname>>
-      - deploy-backend:
-          backend-appname: <<parameters.backend-appname>>
-          deploy-strategy: <<parameters.deploy-strategy>>
 
 jobs:
   test-backend:
