@@ -315,5 +315,20 @@ class Common(Configuration):
     logger = logging.getLogger()
     logger.addHandler(logging.StreamHandler())
 
+    ###
     # AV Scanning Settings
+    #
+
+    # The URL endpoint to send AV scan requests to (clamav-rest)
     AV_SCAN_URL = os.getenv('AV_SCAN_URL')
+
+    # The factor used to determine how long to wait before retrying failed scans
+    # NOTE: This value exponentially increases up to the maximum retries allowed
+    # algo: {backoff factor} * (2 ** ({number of total retries} - 1))
+    AV_SCAN_BACKOFF_FACTOR = os.getenv('AV_SCAN_BACKOFF_FACTOR', 1)
+
+    # The maximum number of times to retry failed virus scans
+    AV_SCAN_MAX_RETRIES = os.getenv('AV_SCAN_MAX_RETRIES', 5)
+
+    # The number of seconds to wait for socket response from clamav-rest
+    AV_SCAN_TIMEOUT = os.getenv('AV_SCAN_TIMEOUT', 30)
