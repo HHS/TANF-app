@@ -78,18 +78,32 @@ commands:
               -o ${<<parameters.cf-org>>} \
               -s <<parameters.cf-space>>
 
+  get-app-deploy-strategy:
+    parameters:
+      appname:
+        type: string
+    steps:
+      - run:
+          name: Determine deploy strategy
+          command: |
+            cf app <<parameters.appname>>
+            if [ $? = 1 ]; then
+              echo "export DEPLOY_STRATEGY=initial" >> $BASH_ENV
+            else;
+              echo "export DEPLOY_STRATEGY=rolling" >> $BASH_ENV
+            fi
+
   deploy-backend:
     parameters:
-      deploy-strategy:
-        default: rolling
-        type: string
       backend-appname:
         default: tdp-backend
         type: string
     steps:
+      - get-app-deploy-strategy:
+          appname: <<parameters.frontend-appname>>
       - run: |
           bash ./scripts/deploy-backend.sh \
-            <<parameters.deploy-strategy>> \
+            $DEPLOY_STRATEGY \
             <<parameters.backend-appname>>
 
   deploy-clamav:
@@ -123,9 +137,6 @@ commands:
 
   deploy-frontend:
     parameters:
-      deploy-strategy:
-        default: "rolling"
-        type: string
       backend-appname:
         default: "tdp-backend"
         type: string
@@ -136,9 +147,11 @@ commands:
       - install-nodejs-docker:
           install-yarn: true
           node-version: "12.18"
+      - get-app-deploy-strategy:
+          appname: <<parameters.frontend-appname>>
       - run: |
           bash ./scripts/deploy-frontend.sh \
-            <<parameters.deploy-strategy>> \
+            $DEPLOY_STRATEGY \
             <<parameters.frontend-appname>> \
             <<parameters.backend-appname>>
 
@@ -159,9 +172,6 @@ commands:
       cf-username:
         default: CF_USERNAME_DEV
         type: env_var_name
-      deploy-strategy:
-        default: rolling
-        type: string
       frontend-appname:
         default: tdp-frontend
         type: string
@@ -176,14 +186,12 @@ commands:
           cf-username: <<parameters.cf-username>>
       - deploy-backend:
           backend-appname: <<parameters.backend-appname>>
-          deploy-strategy: <<parameters.deploy-strategy>>
       - deploy-clamav:
           backend-appname: <<parameters.backend-appname>>
           cf-org: <<parameters.cf-org>>
           cf-space: <<parameters.cf-space>>
       - deploy-frontend:
           backend-appname: <<parameters.backend-appname>>
-          deploy-strategy: <<parameters.deploy-strategy>>
           frontend-appname: <<parameters.frontend-appname>>
 
 jobs:
