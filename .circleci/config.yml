@@ -28,7 +28,12 @@ commands:
           name: Ensure docker-compose exists,otherwise install it.
           command: ./scripts/docker-compose-check.sh
 
-  install-nodejs:
+  install-nodejs-docker: node/install
+
+  install-nodejs-machine:
+    description: |
+      Installs our target version of Node.JS using NVM (Node Version Manager)
+      from the install location provided by machine executor images.
     steps:
       - run:
           name: Install Node.JS
@@ -38,8 +43,6 @@ commands:
             nvm alias default v12.18
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
-
-  install-yarn: node/install-yarn
 
   sudo-check:
     steps:
@@ -129,10 +132,10 @@ commands:
       frontend-appname:
         default: "tdp-frontend"
         type: string
-
     steps:
-      - install-nodejs
-      - install-yarn
+      - install-nodejs-docker:
+          install-yarn: true
+          node-version: "12.18"
       - run: |
           bash ./scripts/deploy-frontend.sh \
             <<parameters.deploy-strategy>> \
@@ -219,8 +222,8 @@ jobs:
     steps:
       - checkout
       - docker-compose-check
-      - install-nodejs
-      - install-yarn
+      - install-nodejs-machine
+      - node/install-yarn
       - node/install-packages:
           app-dir: tdrs-frontend
           cache-path: ~/.cache
@@ -252,14 +255,14 @@ jobs:
           path: tdrs-frontend/reports/owasp_report.html
 
   deploy-dev:
-    executor: machine-executor
+    executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov
 
   deploy-staging:
     working_directory: ~/tdp-deploy
-    executor: machine-executor
+    executor: docker-executor
     steps:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
@@ -269,7 +272,7 @@ jobs:
           cf-username: CF_USERNAME_STAGING
 
   deploy-prod:
-    executor: machine-executor
+    executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
