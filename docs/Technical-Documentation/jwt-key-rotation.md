@@ -53,7 +53,7 @@ cat jwtRS256prv.pem.base64
 
 NOTE: Linux users must disable line wrapping by adding the argument `-w 0` to get a properly formatted one-line value.
 ```bash
-openssl enc -base64 -w 0 -in jwtRS256.key -out jwtRS256.key.base64
+openssl enc -base64 -w 0 -in jwtRS256prv.pem -out jwtRS256prv.pem.base64
 cat jwtRS256.key.base64
 ```
 
