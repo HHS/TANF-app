@@ -100,7 +100,7 @@ commands:
         type: string
     steps:
       - get-app-deploy-strategy:
-          appname: <<parameters.frontend-appname>>
+          appname: <<parameters.backend-appname>>
       - run: |
           bash ./scripts/deploy-backend.sh \
             $DEPLOY_STRATEGY \
