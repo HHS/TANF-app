@@ -30,7 +30,7 @@ openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
 
 You can now check the contents of your keys with these commands
 ```bash=
-cat jwtRS256.key
+cat jwtRS256prv.pem
 # returns private key
 cat jwtRS256.key.pub
 # returns public key
