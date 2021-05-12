@@ -43,7 +43,7 @@ We use Base64 Encoded Private Keys to make it easier to save to cloud environmen
 ```bash
 openssl enc -base64 -in jwtRS256prv.pem -out jwtRS256prv.pem.base64
 
-cat jwtRS256.key.base64
+cat jwtRS256prv.pem.base64
 ```
 
 NOTE: Linux users must disable line wrapping by adding the argument `-w 0` to get a properly formatted one-line value.
