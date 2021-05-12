@@ -174,7 +174,7 @@ commands:
       - deploy-backend:
           backend-appname: <<parameters.backend-appname>>
           deploy-strategy: <<parameters.deploy-strategy>>
-      - deploy-clamav-rest:
+      - deploy-clamav:
           backend-appname: <<parameters.backend-appname>>
           cf-org: <<parameters.cf-org>>
           cf-space: <<parameters.cf-space>>
