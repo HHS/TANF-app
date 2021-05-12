@@ -87,7 +87,8 @@ commands:
           name: Determine deploy strategy
           command: |
             cf app <<parameters.appname>>
-            if [ $? = 1 ]; then
+            EXIT=$?
+            if [ $EXIT = 1 ]; then
               echo "export DEPLOY_STRATEGY=initial" >> $BASH_ENV
             else;
               echo "export DEPLOY_STRATEGY=rolling" >> $BASH_ENV
