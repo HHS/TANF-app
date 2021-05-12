@@ -86,9 +86,10 @@ commands:
       - run:
           name: Determine deploy strategy
           command: |
-            cf app <<parameters.appname>>
-            EXIT=$?
-            if [ $EXIT = 1 ]; then
+            # NOTE: The || true is included to suppress exit codes which would
+            #       cause the step to exit early due to use of pipefail
+            APP_GUID=$(cf app <<parameters.appname>> || true)
+            if [ "$APP_GUID" == "FAILED" ]; then
               echo "export DEPLOY_STRATEGY=initial" >> $BASH_ENV
             else;
               echo "export DEPLOY_STRATEGY=rolling" >> $BASH_ENV
