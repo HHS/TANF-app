@@ -1,5 +1,6 @@
 import React from 'react'
-import { Switch, Route, useLocation } from 'react-router-dom'
+import { Switch, Route } from 'react-router-dom'
+import NoMatch from '../NoMatch'
 import SplashPage from '../SplashPage'
 import EditProfile from '../EditProfile'
 import PrivateRoute from '../PrivateRoute'
@@ -7,20 +8,6 @@ import LoginCallback from '../LoginCallback'
 import Request from '../Request'
 import Reports from '../Reports'
 
-/** This component renders a message signaling to the user that this
- * page does not exist.
- */
-function NoMatch() {
-  let location = useLocation()
-
-  return (
-    <div>
-      <h3>
-        No match for <code>{location.pathname}</code>
-      </h3>
-    </div>
-  )
-}
 
 /**
  * This component renders the routes for the app.
