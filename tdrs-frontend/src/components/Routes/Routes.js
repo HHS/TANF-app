@@ -8,7 +8,6 @@ import LoginCallback from '../LoginCallback'
 import Request from '../Request'
 import Reports from '../Reports'
 
-
 /**
  * This component renders the routes for the app.
  * Routes have the 'exact' prop, so the order of routes

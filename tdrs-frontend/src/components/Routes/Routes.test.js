@@ -13,7 +13,7 @@ import EditProfile from '../EditProfile'
 describe('Routes.js', () => {
   const mockStore = configureStore([thunk])
 
-  it('routes to a 404 page when there is no matching route',() => {
+  it('routes to a 404 page when there is no matching route', () => {
     const store = mockStore({
       auth: { authenticated: false },
       stts: { sttList: [], loading: false },
