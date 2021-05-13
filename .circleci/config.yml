@@ -6,7 +6,7 @@ orbs:
 executors:
   docker-executor:
     docker:
-      - image: cimg/python:3.8.10-node
+      - image: cimg/python:3.8.10
         user: root
   machine-executor:
     machine:
@@ -28,7 +28,12 @@ commands:
           name: Ensure docker-compose exists,otherwise install it.
           command: ./scripts/docker-compose-check.sh
 
-  install-nodejs-docker: node/install
+  # This allows us to use the orb stanza for node/install within other commands
+  # NOTE: This doesn't work correctly on machine executors
+  install-nodejs: node/install
+
+  # This allows us to use the node orb to install packages within other commands
+  install-nodejs-packages: node/install-packages
 
   install-nodejs-machine:
     description: |
@@ -88,7 +93,7 @@ commands:
           command: |
             # NOTE: The || true is a no-op included to suppress exit codes which
             #       would cause the step to exit early due to use of pipefail
-            APP_GUID=$(cf app <<parameters.appname>> || true)
+            APP_GUID=$(cf app <<parameters.appname>> --guid || true)
             if [ "$APP_GUID" == "FAILED" ]; then
               echo "export DEPLOY_STRATEGY=initial" >> $BASH_ENV
             else
@@ -126,7 +131,7 @@ commands:
       - run:
           name: Deploy ClamAV REST application
           command: |
-            cf push clamav-rest -f tdrs-backend/manifest.yml \
+            cf push clamav-rest -f tdrs-backend/manifest.clamav.yml \
               --var cf-space=<<parameters.cf-space>>
       - run:
           name: Enable internal route between backend and clamav-rest apps
@@ -134,21 +139,24 @@ commands:
             cf add-network-policy <<parameters.backend-appname>> clamav-rest \
               -s <<parameters.cf-space>> \
               -o ${<<parameters.cf-org>>} \
-              --protocol tcp
+              --protocol tcp \
               --port 9000
 
   deploy-frontend:
     parameters:
       backend-appname:
-        default: "tdp-backend"
+        default: tdp-backend
         type: string
       frontend-appname:
-        default: "tdp-frontend"
+        default: tdp-frontend
         type: string
     steps:
-      - install-nodejs-docker:
+      - install-nodejs:
           install-yarn: true
           node-version: "12.18"
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+          pkg-manager: yarn
       - get-app-deploy-strategy:
           appname: <<parameters.frontend-appname>>
       - run: |
@@ -234,7 +242,7 @@ jobs:
       - docker-compose-check
       - install-nodejs-machine
       - node/install-yarn
-      - node/install-packages:
+      - install-nodejs-packages:
           app-dir: tdrs-frontend
           cache-path: ~/.cache
           pkg-manager: yarn

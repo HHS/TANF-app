@@ -18,7 +18,7 @@ update_frontend()
 
     echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
     echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
-    yarn build:production
+    yarn build
     unlink .env.production
     mkdir deployment
 
