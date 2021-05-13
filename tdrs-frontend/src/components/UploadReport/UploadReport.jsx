@@ -106,11 +106,21 @@ function UploadReport({ handleCancel, header, stt }) {
         })
         clearErrorState()
 
+        const submittedFiles = responses.map(
+          (response) =>
+            `${response?.data?.original_filename} (${response?.data?.extension})`
+        )
+
         // Create LogEntries in Django for each created ReportFile
-        logger.alert(`Submitted data file(s)`, {
-          files: responses.map((response) => response?.data?.id),
-          activity: 'upload',
-        })
+        logger.alert(
+          `Submitted ${
+            submittedFiles.length
+          } data file(s): ${submittedFiles.join(', ')}`,
+          {
+            files: responses.map((response) => response?.data?.id),
+            activity: 'upload',
+          }
+        )
       })
       .catch((error) => console.error(error))
   }

@@ -46,12 +46,12 @@ def test_log_output(api_client, ofa_admin, caplog):
         "section": "Active Case Data",
         "timestamp": "2021-04-26T18:32:43.330Z",
         "type": "alert",
-        "message": "User submitted file(s)",
+        "message": "User submitted 1 file(s)",
     }
 
     api_client.post("/v1/logs/", data)
 
-    assert "User submitted file(s)" in caplog.text
+    assert "User submitted 1 file(s)" in caplog.text
 
 
 @pytest.mark.django_db
