@@ -81,7 +81,6 @@ function EditProfile() {
       )
       logger.error(requestAccessError.message)
     }
-    dispatch(fetchSttList())
   }, [dispatch, requestAccessError, logger])
 
   const setStt = (sttName) => {
