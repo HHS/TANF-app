@@ -1,4 +1,3 @@
-
 import { useLocation } from 'react-router-dom'
 
 /** This component renders a message signaling to the user that this
