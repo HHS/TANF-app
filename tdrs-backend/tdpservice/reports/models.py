@@ -71,6 +71,7 @@ class ReportFile(File):
                 name="constraint_name",
             )
         ]
+
     created_at = models.DateTimeField(auto_now_add=True)
     quarter = models.CharField(max_length=16,
                                blank=False,
@@ -100,8 +101,6 @@ class ReportFile(File):
     file = models.FileField(upload_to=get_s3_upload_path,
                             null=True,
                             blank=True)
-
-    # In [43]: report.file._file.obj.download_fileobj(filel, ExtraArgs={'VersionId': 'b47b4b60-3bd9-4c2e-a08d-0de530e627c4'})
 
     @classmethod
     def create_new_version(self, data):
