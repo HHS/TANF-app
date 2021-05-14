@@ -7,6 +7,7 @@ from .models import ReportFile
 
 from .errors import ImmutabilityError
 
+
 class ReportFileSerializer(serializers.ModelSerializer):
     """Serializer for Report files."""
 
@@ -18,6 +19,7 @@ class ReportFileSerializer(serializers.ModelSerializer):
 
         model = ReportFile
         fields = [
+            "id",
             "original_filename",
             "slug",
             "extension",
