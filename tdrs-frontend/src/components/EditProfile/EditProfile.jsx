@@ -148,8 +148,6 @@ function EditProfile() {
     return <Redirect to="/request" />
   }
 
-  console.log(profileInfo)
-
   return (
     <>
       <p className="margin-top-1 margin-bottom-4">
