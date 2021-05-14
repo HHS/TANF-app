@@ -30,6 +30,9 @@ export const clearError = ({ section }) => (dispatch) => {
 export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
   dispatch
 ) => {
+  dispatch({
+    type: FETCH_FILE_LIST,
+  })
   try {
     const response = await axios.get(`/mock_api/reports/${year}/${quarter}`, {
       responseType: 'json',

@@ -2,7 +2,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
-import { getAvailableFileList } from '../../actions/reports'
+import {
+  getAvailableFileList,
+  triggerDownloadDialog,
+} from '../../actions/reports'
 
 import classNames from 'classnames'
 import Button from '../Button'
@@ -39,11 +42,9 @@ function UploadReport({ handleCancel, header, stt }) {
     headerRef.current.focus()
   }, [])
 
-  useEffect(() => dispatch(getAvailableFileList({ selectedYear })), [
-    dispatch,
-    getAvailableFileList,
-    selectedYear,
-  ])
+  useEffect(() => {
+    dispatch(getAvailableFileList({ year: selectedYear }))
+  }, [dispatch, getAvailableFileList, selectedYear])
 
   const fileUploadSections = [
     'Active Case Data',
