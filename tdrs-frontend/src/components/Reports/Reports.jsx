@@ -44,41 +44,46 @@ function Reports() {
 
   const currentStt = isOFAAdmin ? selectedStt : userProfileStt
 
+  const stt = sttList?.find((stt) => stt?.name === currentStt)
+  const [submittedHeader, setSubmittedHeader] = useState('')
+
+  const errorsCount = formValidation.errors
+
+  const missingStt = !isOFAAdmin && !currentStt
+
   const handleSearch = () => {
-    if (!isUploadReportToggled) {
-      // Clear previous errors
-      setFormValidationState({})
-      // Filter out non-truthy values
+    // Clear previous errors
+    setFormValidationState({})
+    // Filter out non-truthy values
 
-      const form = [selectedYear, currentStt, selectedQuarter].filter(Boolean)
+    const form = [selectedYear, currentStt, selectedQuarter].filter(Boolean)
+    const reportHeader = `${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
 
-      if (form.length === 3) {
-        setIsToggled(true)
-      } else {
-        // create error state
-        setFormValidationState({
-          year: !selectedYear,
-          stt: !currentStt,
-          quarter: !selectedQuarter,
-          errors: 3 - form.length,
-        })
-        setTouched({
-          year: true,
-          stt: true,
-          quarter: true,
-        })
-      }
+    if (form.length === 3) {
+      setIsToggled(true)
+      setSubmittedHeader(reportHeader)
+    } else {
+      // create error state
+      setFormValidationState({
+        year: !selectedYear,
+        stt: !currentStt,
+        quarter: !selectedQuarter,
+        errors: 3 - form.length,
+      })
+      setTouched({
+        year: true,
+        stt: true,
+        quarter: true,
+      })
     }
   }
 
   const selectYear = ({ target: { value } }) => {
-    setIsToggled(false)
     dispatch(setYear(value))
     setTouched((currentForm) => ({ ...currentForm, year: true }))
   }
 
   const selectQuarter = ({ target: { value } }) => {
-    setIsToggled(false)
     dispatch(setQuarter(value))
     setTouched((currentForm) => ({ ...currentForm, quarter: true }))
   }
@@ -86,7 +91,6 @@ function Reports() {
   // prefer => `auth.user.stt`
 
   const selectStt = (value) => {
-    setIsToggled(false)
     dispatch(setStt(value))
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
   }
@@ -121,13 +125,6 @@ function Reports() {
     setFormValidationState,
     touched,
   ])
-
-  const stt = sttList?.find((stt) => stt?.name === currentStt)
-  const reportHeader = `${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
-
-  const errorsCount = formValidation.errors
-
-  const missingStt = !isOFAAdmin && !currentStt
 
   return (
     <>
@@ -241,7 +238,7 @@ function Reports() {
       {isUploadReportToggled && (
         <UploadReport
           stt={stt?.id}
-          header={reportHeader}
+          header={submittedHeader}
           handleCancel={() => setIsToggled(false)}
         />
       )}
