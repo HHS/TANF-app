@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 
@@ -51,6 +51,8 @@ function Reports() {
 
   const missingStt = !isOFAAdmin && !currentStt
 
+  const errorsRef = useRef(null)
+
   const handleSearch = () => {
     // Clear previous errors
     setFormValidationState({})
@@ -75,6 +77,7 @@ function Reports() {
         stt: true,
         quarter: true,
       })
+      setTimeout(() => errorsRef.current.focus(), 0)
     }
   }
 
@@ -125,7 +128,7 @@ function Reports() {
     setFormValidationState,
     touched,
   ])
-
+  console.log('asda')
   return (
     <>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
@@ -135,7 +138,12 @@ function Reports() {
           </div>
         )}
         {Boolean(formValidation.errors) && (
-          <div className="margin-top-4 usa-error-message" role="alert">
+          <div
+            className="margin-top-4 usa-error-message"
+            role="alert"
+            ref={errorsRef}
+            tabIndex="-1"
+          >
             There {errorsCount === 1 ? 'is' : 'are'} {formValidation.errors}{' '}
             error(s) in this form
           </div>
