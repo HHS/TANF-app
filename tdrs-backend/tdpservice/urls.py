@@ -15,6 +15,7 @@ from .users.api.login_redirect_oidc import LoginRedirectOIDC
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
 from django.contrib.auth.decorators import login_required
+from .core.views import write_logs
 
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
@@ -29,6 +30,7 @@ urlpatterns = [
     path("", include("tdpservice.users.urls")),
     path("stts/", include("tdpservice.stts.urls")),
     path("reports/", include("tdpservice.reports.urls")),
+    path("logs/", write_logs),
     # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
     re_path(
         r"^$", RedirectView.as_view(url=reverse_lazy("test_api-root"), permanent=False)

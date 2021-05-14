@@ -26,7 +26,7 @@ class File(models.Model):
     slug = models.CharField(max_length=256, blank=False, null=False)
     # Not all files will have the correct extension,
     # or even have one at all. The UI will provide this information
-    # seperately
+    # separately
     extension = models.CharField(max_length=8, default="txt")
 
 
@@ -37,7 +37,7 @@ class ReportFile(File):
         """Enum for report section."""
 
         ACTIVE_CASE_DATA = "Active Case Data"
-        CLOSE_CASE_DATA = "Close Case Data"
+        CLOSED_CASE_DATA = "Closed Case Data"
         AGGREGATE_DATA = "Aggregate Data"
         STRATUM_DATA = "Stratum Data"
 

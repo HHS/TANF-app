@@ -6,5 +6,5 @@ from django.apps import AppConfig
 class SttsConfig(AppConfig):
     """Define STTS properties."""
 
-    name = "stts"
+    name = "tdpservice.stts"
     verbose_name = "States, Tribes and Territories"

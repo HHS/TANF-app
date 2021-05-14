@@ -239,7 +239,7 @@ def test_login_with_general_exception(mocker):
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.data == {
         "error": (
-            "Email verfied, but experienced internal issue " "with login/registration."
+            "Email verified, but experienced internal issue " "with login/registration."
         )
     }
 
