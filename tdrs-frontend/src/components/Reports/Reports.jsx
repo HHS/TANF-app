@@ -127,9 +127,16 @@ function Reports() {
 
   const errorsCount = formValidation.errors
 
+  const missingStt = !isOFAAdmin && !currentStt
+
   return (
     <>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
+        {missingStt && (
+          <div className="margin-top-4 usa-error-message" role="alert">
+            An STT is not set for this user.
+          </div>
+        )}
         {Boolean(formValidation.errors) && (
           <div className="margin-top-4 usa-error-message" role="alert">
             There {errorsCount === 1 ? 'is' : 'are'} {formValidation.errors}{' '}
