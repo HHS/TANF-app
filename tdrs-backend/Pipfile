@@ -43,6 +43,7 @@ python-dotenv = "~=0.15.0"
 requests = "~=2.25.0"
 django-admin-logs = "~=1.0.1"
 drf-yasg = "~=1.20.0"
+wait-for-it = "==2.2.0"
 
 [requires]
 python_version = "3.8"

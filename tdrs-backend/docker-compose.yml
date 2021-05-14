@@ -56,7 +56,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.local
     command: >
-      bash -c "python wait_for_postgres.py &&
+      bash -c "./wait_for_services.sh &&
                ./gunicorn_start.sh"
     ports:
       - "8080:8080"
