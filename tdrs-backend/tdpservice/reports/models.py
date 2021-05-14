@@ -39,7 +39,7 @@ class File(models.Model):
     slug = models.CharField(max_length=256, blank=False, null=False)
     # Not all files will have the correct extension,
     # or even have one at all. The UI will provide this information
-    # seperately
+    # separately
     extension = models.CharField(max_length=8, default="txt")
 
 
