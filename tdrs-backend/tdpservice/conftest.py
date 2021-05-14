@@ -1,14 +1,17 @@
 """Globally available pytest fixtures."""
+import pytest
+from django.contrib.admin.models import LogEntry
+from django.contrib.admin.sites import AdminSite
 from io import StringIO
 from tempfile import NamedTemporaryFile
 
 from django.contrib.auth.models import Group
 from factory.faker import faker
 from rest_framework.test import APIClient
-import pytest
 
-from tdpservice.reports.test.factories import ReportFileFactory
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
+from tdpservice.core.admin import LogEntryAdmin
+from tdpservice.reports.test.factories import ReportFileFactory
 from tdpservice.users.test.factories import (
     UserFactory,
     AdminUserFactory,
@@ -144,3 +147,9 @@ def infected_data_file(infected_file):
 def report():
     """Return a report file."""
     return ReportFileFactory.create()
+
+
+@pytest.fixture
+def admin():
+    """Return a custom LogEntryAdmin."""
+    return LogEntryAdmin(LogEntry, AdminSite())
