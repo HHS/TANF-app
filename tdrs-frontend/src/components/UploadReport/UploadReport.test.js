@@ -7,11 +7,7 @@ import axios from 'axios'
 
 import { v4 as uuidv4 } from 'uuid'
 
-import {
-  PREVIEW_HEADING_CLASS,
-  GENERIC_PREVIEW_CLASS_NAME,
-  GENERIC_PREVIEW_CLASS,
-} from '../FileUpload/utils'
+import { PREVIEW_HEADING_CLASS } from '../FileUpload/utils'
 
 import UploadReport from './UploadReport'
 
@@ -118,20 +114,14 @@ describe('UploadReport', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { getByLabelText } = render(
+    const { container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
     )
 
-    const fileInputs = getByLabelText('Section 1 - Active Case Data')
-
-    const newFile = new File(['test'], 'test.txt', { type: 'text/plain' })
-
     const buttons = container.querySelectorAll('.tanf-file-download-btn')
     expect(buttons.length).toBe(2)
-
-    //expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
 
   it('should dispatch download thing.', () => {
@@ -139,7 +129,7 @@ describe('UploadReport', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { container, getByLabelText } = render(
+    const { container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
@@ -156,7 +146,7 @@ describe('UploadReport', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
-    const { container, getByLabelText } = render(
+    const { container } = render(
       <Provider store={store}>
         <UploadReport handleCancel={handleCancel} />
       </Provider>
@@ -164,9 +154,6 @@ describe('UploadReport', () => {
     setTimeout(() => {
       const headings = container.querySelectorAll(`.${PREVIEW_HEADING_CLASS}`)
       expect(headings.length).toBeTruthy()
-
-      // const imgs = container.querySelectorAll(`.${GENERIC_PREVIEW_CLASS_NAME} .${GENERIC_PREVIEW_CLASS}`)
-      // expect(imgs.length).toBe(2)
 
       done()
     }, 10)

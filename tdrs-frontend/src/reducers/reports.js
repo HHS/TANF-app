@@ -6,6 +6,7 @@ import {
   SET_SELECTED_YEAR,
   SET_SELECTED_STT,
   SET_SELECTED_QUARTER,
+  SET_FILE_LIST,
 } from '../actions/reports'
 
 const getFileIndex = (files, section) =>
