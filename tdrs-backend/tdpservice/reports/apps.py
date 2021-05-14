@@ -5,5 +5,5 @@ from django.apps import AppConfig
 class ReportsConfig(AppConfig):
     """Define Report properties."""
 
-    name = "reports"
+    name = "tdpservice.reports"
     verbose_name = "Reports"
