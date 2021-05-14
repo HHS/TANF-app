@@ -9,9 +9,11 @@ def is_own_stt(request, view):
         request.user.stt.id == request.data['stt']
     )
 
+
 def is_in_group(user, group_name):
     """Take a user and a group name, and returns `True` if the user is in that group."""
     return user.groups.filter(name=group_name).exists()
+
 
 class IsUser(permissions.BasePermission):
     """Object-level permission to only allow owners of an object to edit it."""
