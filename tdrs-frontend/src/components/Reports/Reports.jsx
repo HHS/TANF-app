@@ -128,7 +128,7 @@ function Reports() {
     setFormValidationState,
     touched,
   ])
-  console.log('asda')
+
   return (
     <>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
