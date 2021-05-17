@@ -2,8 +2,10 @@
 import os
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Max
+from storages.backends.s3boto3 import S3Boto3Storage
 
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
@@ -98,9 +100,16 @@ class ReportFile(File):
 
     # NOTE: `file` is only temporarily nullable until we complete the issue:
     # https://github.com/raft-tech/TANF-app/issues/755
-    file = models.FileField(upload_to=get_s3_upload_path,
-                            null=True,
-                            blank=True)
+    file = models.FileField(
+        storage=S3Boto3Storage(
+            # Ensure that these files are not saved to the same bucket as the
+            # staticfiles generated for Django admin
+            bucket_name=settings.DATA_FILES_AWS_STORAGE_BUCKET_NAME
+        ),
+        upload_to=get_s3_upload_path,
+        null=True,
+        blank=True
+    )
 
     @classmethod
     def create_new_version(self, data):

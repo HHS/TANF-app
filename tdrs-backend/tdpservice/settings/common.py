@@ -177,6 +177,9 @@ class Common(Configuration):
     # http://django-storages.readthedocs.org/en/latest/index.html
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
+    # Store uploaded Data Files in a separate AWS Bucket
+    DATA_FILES_AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_BUCKET')
+
     # Media files
     MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")
     MEDIA_URL = "/media/"
