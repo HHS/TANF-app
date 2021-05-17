@@ -40,7 +40,7 @@ This was done to facilitate a quick view of the status of the default Github rep
 
 ## Consequences
 
-Due to limitations imposed by Github and occasional slow sever response times from GitHub, some badges might require a page refresh to load.
+Due to limitations imposed by Github and occasional slow server response times from GitHub, some badges might require a page refresh to load.
 
 ## Dependabot Security Analysis
 
