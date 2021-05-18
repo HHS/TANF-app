@@ -86,7 +86,7 @@ also view the date and time the user joined and when they last logged in.
 
 **Description**
 
-For the OFA MVP, we will need to assign the Django built-in roles of `superuser` and `staff` to the deployed applicataion.
+For the OFA MVP, we will need to assign the Django built-in roles of `superuser` and `staff` to the deployed application.
 This will be needed for users to have access to the Django Admin interface detailed above.
 
 This guide will provide instructions on how to define them in local and deployed environments. 
@@ -135,7 +135,7 @@ data_prepper.user_set.add(user)
 ```
  
  
- **Deployed Evironment**
+ **Deployed Environment**
 	
 1.) Users targeted for Superuser creation will have to be manually elevated by system administrators with access to the intended Cloud.gov environment. 
 
