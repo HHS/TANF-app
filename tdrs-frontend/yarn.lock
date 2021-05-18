@@ -8467,7 +8467,7 @@ lodash.compact@^3.0.1:
   resolved "https://registry.yarnpkg.com/lodash.compact/-/lodash.compact-3.0.1.tgz#540ce3837745975807471e16b4a2ba21e7256ca5"
   integrity sha1-VAzjg3dFl1gHRx4WtKK6IeclbKU=
 
-lodash.debounce@^4.0.7, lodash.debounce@^4.0.8:
+lodash.debounce@^4.0.8:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
   integrity sha1-gteb/zCmfEAF/9XiUVMArZyk168=
@@ -13373,16 +13373,15 @@ use@^3.1.0:
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"
   integrity sha512-cwESVXlO3url9YWlFW/TA9cshCEhtu7IKJ/p5soJ/gGpj7vbvFrAY/eIioQ6Dw23KjZhYgiIo8HOs1nQ2vr/oQ==
 
-uswds@2.11.1:
-  version "2.11.1"
-  resolved "https://registry.yarnpkg.com/uswds/-/uswds-2.11.1.tgz#3061ca8d958d6cbcd1f08e1d760e2028c3d025df"
-  integrity sha512-yhLTik8AuiLdp+e7/v84unn1PF3f+qtYjcdsFRjy8+7TI2mTa4wk8/5oDaMJnk1LMA3tSQNkmxGetmOS1q4zXA==
+uswds@2.11.2:
+  version "2.11.2"
+  resolved "https://registry.yarnpkg.com/uswds/-/uswds-2.11.2.tgz#bf5ff132f6324c0939d01b7eefebde340c22dcec"
+  integrity sha512-JISTXCjPIlrufbObIifjrMDn5jF9bbLu7UYhGWmEs9iqB6Z2KDCXHVoBUyzMmIrIjW/UWWYHZzPqOOHO6/IMCQ==
   dependencies:
     classlist-polyfill "^1.0.3"
     del "^6.0.0"
     domready "^1.0.8"
     elem-dataset "^2.0.0"
-    lodash.debounce "^4.0.7"
     object-assign "^4.1.1"
     receptor "^1.0.0"
     resolve-id-refs "^0.1.0"
