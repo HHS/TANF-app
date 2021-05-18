@@ -191,7 +191,7 @@ describe('Reports', () => {
     expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
   })
 
-  it('should de-render the UploadReports form after it has been toggled but the year is changed', () => {
+  it('should not de-render the UploadReports form after it has been toggled but the year is changed', () => {
     const store = mockStore({
       ...initialState,
       reports: {
@@ -222,7 +222,7 @@ describe('Reports', () => {
       },
     })
 
-    expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
+    expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
   })
 
   it('should de-render when Cancel is clicked', () => {
