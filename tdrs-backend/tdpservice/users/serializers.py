@@ -4,7 +4,6 @@ import logging
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 
-
 from .models import User
 from tdpservice.stts.serializers import STTUpdateSerializer
 
@@ -56,6 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("username",)
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for setting a user's profile."""
 
@@ -69,7 +69,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = User
-        fields = ["id", "first_name", "last_name", "email", "stt", "roles"]
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "stt",
+            "roles",
+            "is_active"
+        ]
 
         """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {
