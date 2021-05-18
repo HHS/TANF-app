@@ -19,9 +19,8 @@ Backend API Service for TDP. Deployed to Cloud.gov at https://tdp-backend.app.cl
 
   **Login is dependent on the [tdrs-frontend](../tdrs-frontend/README.md) service. You will need a local instance of that application running.**
   
-This project uses a Pipfile for dependency management. However, due to the limitations of the [Snyk Github Integration Supported Files](https://support.snyk.io/hc/en-us/articles/360000911957-Language-support) we must continue to support a requirements.txt for the time being.
+This project uses a Pipfile for dependency management.
 
-  
 ### Local Development Options
 
 **Commands are to be executed from within the `tdrs-backend` directory**
