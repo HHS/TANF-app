@@ -122,8 +122,8 @@ function Reports() {
     touched,
   ])
 
-  const stt = sttList?.find((stt) => stt?.name?.toLowerCase() === currentStt)
-  const reportHeader = `${stt?.name} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
+  const stt = sttList?.find((stt) => stt?.name === currentStt)
+  const reportHeader = `${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
 
   const errorsCount = formValidation.errors
 
