@@ -19,13 +19,13 @@ e. Shares information obtained from the vulnerability scanning process and secur
 
 a. As part of the TDP Test Plan, security scans are completed on an ongoing basis, throughout the Continuous Integration (CI).  Automated scans are run on every push, pull request and merge on GitHub.  
 
-b. Security scanning is completed using OWASP ZAP dynamic security scans and Snyk vulnerability dependency scanning.  Snyk will automatically open Pull Requests if there is a vulnerability dependency.  If there are no findings, no Pull Requests will be opened.  OWASP Zap scans are the last step for each CI run.  The results for the scans are summarized and accessed through CircleCI.  If vulnerabilities are found in the scan results, the code will be prevented from being deployed until the vulnerabilities are remediated.
+b. Security scanning is completed using OWASP ZAP dynamic security scans and Dependabot vulnerability dependency scanning.  Dependabot will automatically open Pull Requests if there is a vulnerability dependency.  If there are no findings, no Pull Requests will be opened.  OWASP Zap scans are the last step for each CI run.  The results for the scans are summarized and accessed through CircleCI.  If vulnerabilities are found in the scan results, the code will be prevented from being deployed until the vulnerabilities are remediated.
 
 c. Summaries of the security scan reports are reviewed in CircleCI. (see screenshot of summaries of scan reports below)  
 
 ![screenshot - Summaries of security scan reports](images/owasp.png)
 
-d. Summaries of the security scan reports are available in CircleCI.  If there are any vulnerability dependencies found by Snyk, pull requests are automatically opened.  These pull requests are reviewed and remediated as necessary.  
+d. Summaries of the security scan reports are available in CircleCI.  If there are any vulnerability dependencies found by Dependabot, pull requests are automatically opened.  These pull requests are reviewed and remediated as necessary.
 
 e. Information from the scan reports and control assessments are shared with the appropriate security stakeholders and are available for review in CircleCI. 
 	
