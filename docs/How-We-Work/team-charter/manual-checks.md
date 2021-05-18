@@ -47,11 +47,11 @@ Review CircleCI output to ensure there are no issues with the code being deploye
 ### Other items to document
 
 - Non-inherited 800-53 system security controls in Open Control, OSCAL, and HHS Section 508 Product Assessment Template
-- For any security vulnerabilities that are being ignored or have false positives found via Snyk or Zap, review to ensure granular details to describe Snyk vulnerabilities, what we did to investigate, and what is the mitigation plan.
+- For any security vulnerabilities that are being ignored or have false positives found via Dependabot or Zap, review to ensure granular details to describe Dependabot/Zap vulnerabilities, what we did to investigate, and what is the mitigation plan.
 
 ## Deliverable 7: Secure
 
-Review to ensure any false positives are documented and granular details on describe the Snyk vulnerabilities, what we did to investigate, and what is the mitigation plan. These details will be documented in the readme.
+Review to ensure any false positives are documented and granular details on describe the Dependabot vulnerabilities, what we did to investigate, and what is the mitigation plan. These details will be documented in the readme.
 
 ## Deliverable 8: User Research
 

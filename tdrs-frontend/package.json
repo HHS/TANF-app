@@ -44,7 +44,6 @@
     "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
-    "snyk": "snyk test",
     "test:accessibility": "concurrently -k -s first 'yarn start:ci' 'wait-on http://localhost:3000/ && yarn pa11y-ci --config .pa11yci.json'",
     "eject": "react-scripts eject",
     "lint": "eslint src/ && echo 'Lint complete.'"
@@ -82,7 +81,6 @@
     "prettier": "^2.0.5",
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
-    "snyk": "^1.385.0",
     "wait-on": "^5.3.0"
   },
   "jest": {
