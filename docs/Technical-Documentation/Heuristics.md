@@ -77,7 +77,7 @@ Understanding code quality and maintainability requires examining the code itsel
       </tr>
       <tr valign="top">
         <td class="col-indicator">Code is free of known vulnerabilities </td>
-        <td class="col-good-sign">Third-party dependencies are routinely checked for known-vulnerable versions. The app as a whole is analyzed by an automated security tool (e.g., snyk and OWASP) for common kinds of vulnerabilities.
+        <td class="col-good-sign">Third-party dependencies are routinely checked for known-vulnerable versions. The app as a whole is analyzed by an automated security tool (e.g., Dependabot and OWASP) for common kinds of vulnerabilities.
         <br><br>When vulnerabilities are found, the developer team takes time to investigate the impact and remediate or mitigate the vulnerability. <br><br><b>Non dev:</b> Have the dev team create an integration with Github or MSTeams that reports whenever there are vulnerabilities. The developers should be able to discuss with you what those are and how they are being mitigated. </td>
         <td class="col-bad-sign">Vulnerable dependencies are ignored without good reason (e.g., ignoring a vulnerability in a development-only dependency may be fine). Ignoring reports from security scanning tools. </td>
       </tr>
