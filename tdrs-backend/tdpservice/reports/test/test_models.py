@@ -2,6 +2,7 @@
 import pytest
 from ..models import ReportFile
 
+
 @pytest.mark.django_db
 def test_create_new_report_version(report):
     """Test version incrementing logic for report files."""
@@ -16,6 +17,7 @@ def test_create_new_report_version(report):
         "user": report.user,
     })
     assert new_version.version == report.version + 1
+
 
 @pytest.mark.django_db
 def test_find_latest_version(report):

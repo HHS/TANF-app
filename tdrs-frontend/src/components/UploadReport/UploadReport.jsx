@@ -106,14 +106,29 @@ function UploadReport({ handleCancel, header, stt }) {
     )
 
     Promise.all(uploadRequests)
-      .then(() => {
+      .then((responses) => {
         setLocalAlertState({
           active: true,
           type: 'success',
           message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
         })
         clearErrorState()
-        logger.alert(`Submitted data files`)
+
+        const submittedFiles = responses.map(
+          (response) =>
+            `${response?.data?.original_filename} (${response?.data?.extension})`
+        )
+
+        // Create LogEntries in Django for each created ReportFile
+        logger.alert(
+          `Submitted ${
+            submittedFiles.length
+          } data file(s): ${submittedFiles.join(', ')}`,
+          {
+            files: responses.map((response) => response?.data?.id),
+            activity: 'upload',
+          }
+        )
       })
       .catch((error) => console.error(error))
   }
