@@ -13,6 +13,7 @@ import Button from '../Button'
 function SplashPage() {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)
+  const isInactive = useSelector((state) => state.auth.inactive)
 
   const handleClick = (event) => {
     event.preventDefault()
@@ -31,6 +32,16 @@ function SplashPage() {
     <>
       <section className="usa-hero" aria-label="Introduction">
         <div className="grid-container">
+          {isInactive && (
+            <div className="usa-alert usa-alert--slim usa-alert--error">
+              <div className="usa-alert__body" role="alert">
+                <h3 className="usa-alert__heading">Inactive Account</h3>
+                <p className="usa-alert__text">
+                  Please email tanfdata@acf.hhs.gov to reactivate your account.
+                </p>
+              </div>
+            </div>
+          )}
           <div className="usa-hero__callout">
             <h1 className="usa-hero__heading">
               <span className="usa-hero__heading--alt font-serif-2xl margin-bottom-5">

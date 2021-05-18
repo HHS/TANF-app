@@ -3,12 +3,14 @@ import {
   SET_AUTH,
   SET_AUTH_ERROR,
   CLEAR_AUTH,
+  SET_INACTIVE_ALERT,
 } from '../actions/auth'
 
 const initialState = {
   user: null,
   loading: false,
   authenticated: false,
+  inactive: false,
 }
 
 /**
@@ -40,6 +42,12 @@ const auth = (state = initialState, action) => {
       return {
         ...initialState,
         error,
+      }
+    }
+    case SET_INACTIVE_ALERT: {
+      return {
+        ...initialState,
+        inactive: true,
       }
     }
     case CLEAR_AUTH:

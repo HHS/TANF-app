@@ -5,6 +5,7 @@ export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
 export const SET_AUTH_ERROR = 'SET_AUTH_ERROR'
 export const CLEAR_AUTH = 'CLEAR_AUTH'
+export const SET_INACTIVE_ALERT = 'SET_INACTIVE_ALERT'
 
 /**
  * This action fires an HTTP GET request to the API
@@ -38,6 +39,7 @@ export const CLEAR_AUTH = 'CLEAR_AUTH'
  */
 
 export const fetchAuth = () => async (dispatch) => {
+  // dispatch({ type: CLEAR_AUTH })
   dispatch({ type: FETCH_AUTH })
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
@@ -49,11 +51,11 @@ export const fetchAuth = () => async (dispatch) => {
 
     // Work around for csrf cookie issue we encountered in production.
     axiosInstance.defaults.headers['X-CSRFToken'] = csrf
-
+    console.log({ user })
     if (user?.is_active) {
       dispatch({ type: SET_AUTH, payload: { user } })
     } else {
-      dispatch({ type: CLEAR_AUTH })
+      dispatch({ type: SET_INACTIVE_ALERT })
     }
   } catch (error) {
     logErrorToServer(SET_AUTH_ERROR)
