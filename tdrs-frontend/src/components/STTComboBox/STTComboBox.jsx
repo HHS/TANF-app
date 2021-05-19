@@ -36,11 +36,7 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
         - Select or Search -
       </option>
       {sttList.map((stt) => (
-        <option
-          className="sttOption"
-          key={stt.id}
-          value={stt.name.toLowerCase()}
-        >
+        <option className="sttOption" key={stt.id} value={stt.name}>
           {stt.name}
         </option>
       ))}
