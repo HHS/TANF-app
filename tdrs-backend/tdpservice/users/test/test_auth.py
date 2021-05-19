@@ -267,7 +267,7 @@ def test_login_with_inactive_user(mocker, api_client, inactive_user):
         "email_verified": True,
         "nonce": nonce,
         "iss": "https://idp.int.identitysandbox.gov",
-        "sub": inactive_user.sub,
+        "sub": inactive_user.login_gov_uuid,
         "verified_at": 1577854800,
     }
     mock_post.return_value = MockRequest(data=token)
@@ -310,7 +310,7 @@ def test_login_with_existing_user(mocker, api_client, user):
         "email_verified": True,
         "nonce": nonce,
         "iss": "https://idp.int.identitysandbox.gov",
-        "sub": user.sub,
+        "sub": user.login_gov_uuid,
         "verified_at": 1577854800,
     }
     mock_post.return_value = MockRequest(data=token)
@@ -350,7 +350,7 @@ def test_login_with_old_email(mocker, api_client, user):
         "email_verified": True,
         "nonce": nonce,
         "iss": "https://idp.int.identitysandbox.gov",
-        "sub": user.sub,
+        "sub": user.login_gov_uuid,
         "verified_at": 1577854800,
     }
     mock_post.return_value = MockRequest(data=token)
@@ -377,7 +377,7 @@ def test_login_with_initial_superuser(mocker, api_client, user):
     os.environ["JWT_KEY"] = test_private_key
     os.environ["DJANGO_SU_NAME"] = "test_superuser@example.com"
     user.username = "test_superuser@example.com"
-    user.sub = None
+    user.login_gov_uuid = None
     user.save()
     nonce = "testnonce"
     state = "teststate"
@@ -412,7 +412,7 @@ def test_login_with_initial_superuser(mocker, api_client, user):
     response = view(request)
 
     user = User.objects.get(username="test_superuser@example.com")
-    assert str(user.sub) == decoded_token["sub"]
+    assert str(user.login_gov_uuid) == decoded_token["sub"]
     assert response.status_code == status.HTTP_302_FOUND
 
 

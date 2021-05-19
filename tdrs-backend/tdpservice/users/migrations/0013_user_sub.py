@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='user',
-            name='sub',
+            name='login_gov_uuid',
             field=models.UUIDField(blank=True, editable=False, null=True, unique=True),
         ),
     ]

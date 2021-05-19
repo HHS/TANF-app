@@ -76,9 +76,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 self, username=email
             )
 
-            if initial_user.sub is None:
+            if initial_user.login_gov_uuid is None:
                 # Save the `sub` to the superuser.
-                initial_user.sub = sub
+                initial_user.login_gov_uuid = sub
                 initial_user.save()
 
                 # Login with the new superuser.
@@ -106,7 +106,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             )
         else:
             User = get_user_model()
-            user = User.objects.create_user(email, email=email, sub=sub)
+            user = User.objects.create_user(email, email=email, login_gov_uuid=sub)
             user.set_unusable_password()
             user.save()
             self.login_user(request, user, "User Created")

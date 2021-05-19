@@ -14,7 +14,7 @@ class CustomAuthentication(BaseAuthentication):
 
         if user_id:
             try:
-                return User.objects.get(sub=user_id)
+                return User.objects.get(login_gov_uuid=user_id)
             except User.DoesNotExist:
                 return None
 
