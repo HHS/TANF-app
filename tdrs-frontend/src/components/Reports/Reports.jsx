@@ -56,14 +56,18 @@ function Reports() {
   const handleSearch = () => {
     // Clear previous errors
     setFormValidationState({})
-    // Filter out non-truthy values
 
+    // Filter out non-truthy values
     const form = [selectedYear, currentStt, selectedQuarter].filter(Boolean)
     const reportHeader = `${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
 
     if (form.length === 3) {
-      setIsToggled(true)
+      if (isUploadReportToggled) {
+        setIsToggled(false)
+      }
+
       setSubmittedHeader(reportHeader)
+      setTimeout(() => setIsToggled(true), 0)
     } else {
       // create error state
       setFormValidationState({
@@ -77,6 +81,7 @@ function Reports() {
         stt: true,
         quarter: true,
       })
+      // Focus on the newly rendered error message.
       setTimeout(() => errorsRef.current.focus(), 0)
     }
   }
