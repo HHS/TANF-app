@@ -164,7 +164,7 @@ describe('Reports', () => {
     expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
   })
 
-  it('should render the UploadReports form when a year is selected and Search button is clicked', () => {
+  it('should render the UploadReports form when a year is selected and Search button is clicked', async () => {
     const store = mockStore({
       ...initialState,
       reports: {
@@ -184,14 +184,15 @@ describe('Reports', () => {
     expect(queryByText('Section 1 - Active Case Data')).not.toBeInTheDocument()
 
     fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-    expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-    expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
-    expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
-    expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+      expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
+      expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
+      expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+    })
   })
 
-  it('should not de-render the UploadReports form after it has been toggled but the year is changed', () => {
+  it('should not de-render the UploadReports form after it has been toggled but the year is changed', async () => {
     const store = mockStore({
       ...initialState,
       reports: {
@@ -212,7 +213,9 @@ describe('Reports', () => {
 
     fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
-    expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    })
 
     const select = getByLabelText(/Fiscal Year/)
 
@@ -225,7 +228,7 @@ describe('Reports', () => {
     expect(queryByText('Section 1 - Active Case Data')).toBeInTheDocument()
   })
 
-  it('should de-render when Cancel is clicked', () => {
+  it('should de-render when Cancel is clicked', async () => {
     const store = mockStore({
       ...initialState,
       reports: {
@@ -243,8 +246,9 @@ describe('Reports', () => {
     )
 
     fireEvent.click(getByText(/Search/, { selector: 'button' }))
-
-    expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+    })
 
     fireEvent.click(getByText(/Cancel/))
 
