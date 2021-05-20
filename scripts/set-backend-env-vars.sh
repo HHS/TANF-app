@@ -1,7 +1,4 @@
-
-set -o allexport
-[[ -f ./tdrs-backend/.env.production ]] && source ./tdrs-backend/.env.production
-set +o
+#!/usr/bin/env bash
 
 CGAPPNAME_BACKEND=$1
 
