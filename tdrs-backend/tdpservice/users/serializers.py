@@ -76,7 +76,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "email",
             "stt",
             "roles",
-            "is_active"
+            "inactive_account",
         ]
 
         """Enforce first and last name to be in API call and not empty"""

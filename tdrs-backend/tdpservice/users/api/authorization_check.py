@@ -22,6 +22,8 @@ class AuthorizationCheck(APIView):
     def get(self, request, *args, **kwargs):
         """Handle get request and verify user is authorized."""
         user = request.user
+        logger.info("AUTH_CHECK")
+        logger.info(str(user))
         serializer = UserProfileSerializer(user)
         if user.is_authenticated:
             auth_params = {

@@ -43,19 +43,21 @@ export const fetchAuth = () => async (dispatch) => {
   dispatch({ type: FETCH_AUTH })
   try {
     const URL = `${process.env.REACT_APP_BACKEND_URL}/auth_check`
-    const {
-      data: { user, csrf },
-    } = await axiosInstance.get(URL, {
+    const { data } = await axiosInstance.get(URL, {
       withCredentials: true,
     })
 
+    const { user, csrf } = data
+
     // Work around for csrf cookie issue we encountered in production.
     axiosInstance.defaults.headers['X-CSRFToken'] = csrf
-    console.log({ user })
-    if (user?.is_active) {
-      dispatch({ type: SET_AUTH, payload: { user } })
-    } else {
+    console.log({ data })
+    if (!user) {
+      dispatch({ type: CLEAR_AUTH })
+    } else if (user?.inactive_account) {
       dispatch({ type: SET_INACTIVE_ALERT })
+    } else {
+      dispatch({ type: SET_AUTH, payload: { user } })
     }
   } catch (error) {
     logErrorToServer(SET_AUTH_ERROR)
