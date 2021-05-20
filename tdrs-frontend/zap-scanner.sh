@@ -25,6 +25,7 @@ docker-compose run zaproxy zap-full-scan.py \
 	-t http://tdp-frontend \
 	-m 5 \
 	-z "${ZAP_CONFIG}" \
+  -c "zap.conf" \
 	-r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
 
 # The `grep -q` piped to the end of the previous command will return a
