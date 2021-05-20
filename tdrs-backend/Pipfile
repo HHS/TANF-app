@@ -4,7 +4,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-black = "==19.10b0"
 mkdocs = "*"
 factory-boy = "*"
 flake8 = "*"
@@ -37,7 +36,6 @@ ipython = "~=7.19.0"
 jwcrypto = "~=0.8"
 markdown = "~=3.3.3"
 psycopg2-binary = "~=2.8.6"
-ptpython = "~=3.0.7"
 pyjwt = "==1.7.1"
 python-dotenv = "~=0.15.0"
 requests = "~=2.25.0"
