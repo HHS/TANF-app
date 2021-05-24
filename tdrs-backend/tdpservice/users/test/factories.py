@@ -24,6 +24,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     is_staff = False
     is_superuser = False
     stt = factory.SubFactory(STTFactory)
+    inactive_account = False
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
