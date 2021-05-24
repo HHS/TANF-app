@@ -19,8 +19,8 @@ class Local(Common):
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
     if Common.USE_LOCALSTACK:
-        AWS_ACCESS_KEY_ID = "test"
-        AWS_SECRET_ACCESS_KEY = "test"
+        AWS_S3_ACCESS_KEY_ID = "test"
+        AWS_S3_SECRET_ACCESS_KEY = "test"
         AWS_S3_ENDPOINT_URL = "http://localstack:4566"
 
     Common.LOGGING['loggers']['root'] = {
