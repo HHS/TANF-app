@@ -2,6 +2,7 @@
 wait-for-it \
     --service http://clamav-rest:9000 \
     --service http://localstack:4566 \
+    --timeout 60 \
     -- echo "ClamAV and Localstack are ready!"
 
 # NOTE: Consider deprecating this script and using the above command instead.
