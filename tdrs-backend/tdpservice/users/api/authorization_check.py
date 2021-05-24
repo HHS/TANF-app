@@ -26,6 +26,7 @@ class AuthorizationCheck(APIView):
         logger.info("AUTH_CHECK")
         logger.info(str(user))
         serializer = UserProfileSerializer(user)
+
         if user.is_authenticated:
             if user.inactive_account:
                 logout(request)
