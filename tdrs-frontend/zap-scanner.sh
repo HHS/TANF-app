@@ -35,6 +35,7 @@ else
                    -z "${ZAP_CONFIG}" \
                    -c "zap.conf" \
                    -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
+fi
 
 # The `grep -q` piped to the end of the previous command will return a
 # 0 exit code if the term is found and 1 otherwise.
