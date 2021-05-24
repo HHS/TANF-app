@@ -18,12 +18,11 @@ docker-compose up -d --build
     echo "================== OWASP ZAP tests =================="
     chmod 777 $(pwd)/reports
     # check if running in circle CI
-    if [ -z "${CIRCLE_BRANCH+x}"]; then
+    if [ -z "${CIRCLE_BRANCH+x}" ]; then
         docker-compose run zaproxy zap-full-scan.py \
                        -t http://web:8080/ \
                        -m 5 \
                        -z "${ZAP_CONFIG}" \
-                       -c "zap.conf" \
                        -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
     else
         docker-compose run zaproxy zap-full-scan.py \
