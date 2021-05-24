@@ -46,14 +46,12 @@ export const fetchAuth = () => async (dispatch) => {
       withCredentials: true,
     })
 
-    // Work around for csrf cookie issue we encountered in production.
-    console.log({ data })
-
     if (data?.inactive) {
       dispatch({ type: SET_INACTIVE_ACCOUNT })
     } else if (data?.user) {
       const { user, csrf } = data
 
+      // Work around for csrf cookie issue we encountered in production.
       axiosInstance.defaults.headers['X-CSRFToken'] = csrf
       dispatch({ type: SET_AUTH, payload: { user } })
     } else {

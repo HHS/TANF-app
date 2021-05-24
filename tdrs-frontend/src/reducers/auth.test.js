@@ -4,14 +4,16 @@ import {
   SET_AUTH,
   SET_AUTH_ERROR,
   CLEAR_AUTH,
+  SET_INACTIVE_ACCOUNT,
 } from '../actions/auth'
 
-describe('recucers/auth', () => {
+describe('reducers/auth', () => {
   it('should return the initial state', () => {
     expect(reducer(undefined, {})).toEqual({
       user: null,
       loading: false,
       authenticated: false,
+      inactive: false,
     })
   })
 
@@ -24,6 +26,7 @@ describe('recucers/auth', () => {
       user: null,
       loading: true,
       authenticated: false,
+      inactive: false,
     })
   })
 
@@ -34,6 +37,7 @@ describe('recucers/auth', () => {
           user: null,
           loading: true,
           authenticated: false,
+          inactive: false,
         },
         {
           type: SET_AUTH,
@@ -44,6 +48,7 @@ describe('recucers/auth', () => {
       user: { email: 'hi@bye.com' },
       loading: false,
       authenticated: true,
+      inactive: false,
     })
   })
 
@@ -54,6 +59,7 @@ describe('recucers/auth', () => {
           user: { email: 'hi@bye.com' },
           loading: false,
           authenticated: true,
+          inactive: false,
         },
         {
           type: CLEAR_AUTH,
@@ -63,6 +69,7 @@ describe('recucers/auth', () => {
       user: null,
       loading: false,
       authenticated: false,
+      inactive: false,
     })
   })
 
@@ -77,6 +84,7 @@ describe('recucers/auth', () => {
       loading: false,
       authenticated: false,
       error: 'something went wrong',
+      inactive: false,
     })
   })
 
@@ -87,6 +95,7 @@ describe('recucers/auth', () => {
           user: { email: 'hi@bye.com' },
           loading: false,
           authenticated: true,
+          inactive: false,
         },
         {
           type: SET_AUTH_ERROR,
@@ -98,6 +107,28 @@ describe('recucers/auth', () => {
       loading: false,
       authenticated: false,
       error: 'something went wrong',
+      inactive: false,
+    })
+  })
+
+  it('should handle SET_INACTIVE_ACCOUNT', () => {
+    expect(
+      reducer(
+        {
+          user: { email: 'hi@bye.com' },
+          loading: false,
+          authenticated: true,
+          inactive: false,
+        },
+        {
+          type: SET_INACTIVE_ACCOUNT,
+        }
+      )
+    ).toEqual({
+      user: null,
+      loading: false,
+      authenticated: false,
+      inactive: true,
     })
   })
 })
