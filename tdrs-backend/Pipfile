@@ -19,7 +19,7 @@ pygraphviz = "*"
 
 [packages]
 boto3 = "~=1.16.35"
-cryptography = "~=3.3.1"
+cryptography = "~=3.4.7"
 django = "~=3.1"
 django-configurations = "~=2.2"
 django-cors-headers = "~=3.6.0"
