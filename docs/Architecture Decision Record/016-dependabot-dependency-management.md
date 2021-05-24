@@ -3,7 +3,7 @@ Date: 2021-05-14 (yyyy-mm-dd)
 
 ## Status
 
-Pending
+Approved
 
 ## Context
 
