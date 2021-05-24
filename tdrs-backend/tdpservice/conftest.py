@@ -3,9 +3,9 @@ import pytest
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.sites import AdminSite
 from io import StringIO
-from tempfile import NamedTemporaryFile
 import uuid
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Group
 from factory.faker import faker
 from rest_framework.test import APIClient
@@ -107,48 +107,41 @@ def infected_file():
     )
 
 
-def create_temporary_file(
-    file_contents: str,
-    suffix: str = '.txt'
-) -> NamedTemporaryFile:
+def create_temporary_file(file, file_name) -> SimpleUploadedFile:
     """Create a temporary file with an explicit name from a given string."""
-    file = NamedTemporaryFile(suffix=suffix)
-    file_contents_bytes = str.encode(file_contents)
-    file.write(file_contents_bytes)
     file.seek(0)
-
-    return file
+    file_contents = file.read().encode()
+    return SimpleUploadedFile(file_name, file_contents)
 
 
 @pytest.fixture
-def data_file(fake_file):
+def data_file(fake_file, fake_file_name):
     """Temporary file for testing file uploads."""
-    return create_temporary_file(fake_file.read())
+    return create_temporary_file(fake_file, fake_file_name)
 
 
 @pytest.fixture
-def other_data_file(fake_file):
+def other_data_file(fake_file, fake_file_name):
     """Additional temporary file for testing file uploads.
 
     Since temporary files are destroyed as soon as they are closed and fixtures
     are only run once per function by default we need to have a second file
     available for tests that perform multiple uploads.
     """
-    fake_file.seek(0)
-    return create_temporary_file(fake_file.read())
+    return create_temporary_file(fake_file, fake_file_name)
 
 
 @pytest.fixture
-def infected_data_file(infected_file):
+def infected_data_file(infected_file, fake_file_name):
     """Temporary file intended to be marked as infected by ClamAV-REST."""
-    return create_temporary_file(infected_file.read())
+    return create_temporary_file(infected_file, fake_file_name)
 
 
 @pytest.fixture
 def base_report_data(fake_file_name, user):
     return {
         "original_filename": fake_file_name,
-        "slug": uuid.uuid4(),
+        "slug": str(uuid.uuid4()),
         "extension": "txt",
         "section": "Active Case Data",
         "user": str(user.id),

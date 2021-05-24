@@ -21,6 +21,12 @@ def get_s3_upload_path(instance, filename):
     )
 
 
+class DataFilesS3Storage(S3Boto3Storage):
+    # Ensure that these files are not saved to the same bucket as the
+    # staticfiles generated for Django admin
+    bucket_name = settings.DATA_FILES_AWS_STORAGE_BUCKET_NAME
+
+
 # The Report File model was starting to explode, and I think that keeping this logic
 # in its own abstract class is better for documentation purposes.
 class File(models.Model):
@@ -101,11 +107,7 @@ class ReportFile(File):
     # NOTE: `file` is only temporarily nullable until we complete the issue:
     # https://github.com/raft-tech/TANF-app/issues/755
     file = models.FileField(
-        storage=S3Boto3Storage(
-            # Ensure that these files are not saved to the same bucket as the
-            # staticfiles generated for Django admin
-            bucket_name=settings.DATA_FILES_AWS_STORAGE_BUCKET_NAME
-        ),
+        storage=DataFilesS3Storage,
         upload_to=get_s3_upload_path,
         null=True,
         blank=True
