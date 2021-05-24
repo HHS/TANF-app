@@ -7,7 +7,18 @@ updates:
     directory: "/tdrs-frontend"
     schedule:
       interval: "daily"
+    target-branch: "raft-tdp-main"
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "raft review"
+
   - package-ecosystem: "pip"
     directory: "/tdrs-backend"
     schedule:
       interval: "daily"
+    target-branch: "raft-tdp-main"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "raft review"
