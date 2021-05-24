@@ -1,6 +1,7 @@
 """Check if user is authorized."""
 import logging
 
+from django.contrib.auth import logout
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -26,6 +27,13 @@ class AuthorizationCheck(APIView):
         logger.info(str(user))
         serializer = UserProfileSerializer(user)
         if user.is_authenticated:
+            if user.inactive_account:
+                logout(request)
+                response = Response({"authenticated": False, "inactive": True})
+                response.delete_cookie("id_token")
+                logger.info("Auth check FAIL for INACTIVE user on %s", timezone.now())
+                return response
+
             auth_params = {
                 "authenticated": True,
                 "user": serializer.data,
