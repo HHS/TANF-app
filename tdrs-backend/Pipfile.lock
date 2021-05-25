@@ -32,18 +32,18 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:1c0003609e63e8cff51dee7a49e904bcdb20e140b5f7a10a03006289fd8c8dc1",
-                "sha256:c919dac9773115025e1e2a7e462f60ca082e322bb6f4354247523e4226133b0b"
+                "sha256:1815748c9409e6d9a13a88a4f59c49d42c5d873a116c95ef18092ed3bd20b1c5",
+                "sha256:ccc2c2e412d31b9e542c525764c059f7523cf5268b0ce3c5b244f4df29367d9c"
             ],
             "index": "pypi",
-            "version": "==1.16.63"
+            "version": "==1.17.79"
         },
         "botocore": {
             "hashes": [
-                "sha256:ad4adfcc195b5401d84b0c65d3a89e507c1d54c201879c8761ff10ef5c361e21",
-                "sha256:d3694f6ef918def8082513e5ef309cd6cd83b612e9984e3a66e8adc98c650a92"
+                "sha256:7518c3f028123f2c770cf1e568f24877259e0ec03badef657174fa93392a9e6a",
+                "sha256:b69c96f210a79f544c6dea923f708873121c174b8b4d72babd725328bf53e3d2"
             ],
-            "version": "==1.19.63"
+            "version": "==1.20.79"
         },
         "certifi": {
             "hashes": [
@@ -571,10 +571,10 @@
         },
         "s3transfer": {
             "hashes": [
-                "sha256:35627b86af8ff97e7ac27975fe0a98a312814b46c6333d8a6b889627bcd80994",
-                "sha256:efa5bd92a897b6a8d5c1383828dca3d52d0790e0756d49740563a3fb6ed03246"
+                "sha256:9b3752887a2880690ce628bc263d6d13a3864083aeacff4890c1c9839a5eb0bc",
+                "sha256:cb022f4b16551edebbb31a377d3f09600dbada7363d8c5db7976e7f47732e1b2"
             ],
-            "version": "==0.3.7"
+            "version": "==0.4.2"
         },
         "six": {
             "hashes": [
@@ -616,7 +616,6 @@
                 "sha256:2f4da4594db7e1e110a944bb1b551fdf4e6c136ad42e4234131391e21eb5b0df",
                 "sha256:e7b021f7241115872f92f43c6508082facffbd1c048e3c6e2bb9c2a157e28937"
             ],
-            "markers": "python_version != '3.4'",
             "version": "==1.26.4"
         },
         "wait-for-it": {
@@ -1136,10 +1135,10 @@
         },
         "tqdm": {
             "hashes": [
-                "sha256:daec693491c52e9498632dfbe9ccfc4882a557f5fa08982db1b4d3adbe0887c3",
-                "sha256:ebdebdb95e3477ceea267decfc0784859aa3df3e27e22d23b83e9b272bf157ae"
+                "sha256:736524215c690621b06fc89d0310a49822d75e599fcd0feb7cc742b98d692493",
+                "sha256:cd5791b5d7c3f2f1819efc81d36eb719a38e0906a7380365c556779f585ea042"
             ],
-            "version": "==4.60.0"
+            "version": "==4.61.0"
         }
     }
 }
