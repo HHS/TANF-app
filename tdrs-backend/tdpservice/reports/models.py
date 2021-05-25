@@ -1,6 +1,5 @@
 """Define report models."""
 import os
-import uuid
 
 from django.conf import settings
 from django.db import models
@@ -12,9 +11,7 @@ from tdpservice.users.models import User
 
 
 def get_s3_upload_path(instance, filename):
-    """Produce an upload path for S3 files that is guaranteed to be unique
-    per STT and Quarter.
-    """
+    """Produce a unique upload path for S3 files for a given STT and Quarter."""
     return os.path.join(
         f'data_files/{instance.stt.id}/{instance.quarter}',
         filename
@@ -22,8 +19,12 @@ def get_s3_upload_path(instance, filename):
 
 
 class DataFilesS3Storage(S3Boto3Storage):
-    # Ensure that these files are not saved to the same bucket as the
-    # staticfiles generated for Django admin
+    """An S3 backed storage provider for user uploaded Data Files.
+
+    This class is used instead of the built-in to allow specifying a distinct
+    bucket from the one used to store Django Admin static files.
+    """
+
     bucket_name = settings.DATA_FILES_AWS_STORAGE_BUCKET_NAME
 
 

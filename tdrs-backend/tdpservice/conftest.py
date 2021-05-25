@@ -139,6 +139,7 @@ def infected_data_file(infected_file, fake_file_name):
 
 @pytest.fixture
 def base_report_data(fake_file_name, user):
+    """Return report creation data without a file."""
     return {
         "original_filename": fake_file_name,
         "slug": str(uuid.uuid4()),

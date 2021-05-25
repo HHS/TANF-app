@@ -7,28 +7,41 @@ from tdpservice.reports.models import ReportFile
 
 @pytest.mark.usefixtures('db')
 class ReportFileAPITestBase:
+    """A base test class for tests that interact with the ReportFileViewSet.
+
+    Provides several fixtures and methods that are commonly used between tests.
+    Intended to simplify creating tests for different user flows.
+    """
+
     root_url = '/v1/reports/'
 
     @pytest.fixture
     def user(self):
-        """This fixture must be overridden in each child test class."""
+        """User instance that will be used to log in to the API client.
+
+        This fixture must be overridden in each child test class.
+        """
         raise NotImplementedError()
 
     @pytest.fixture
     def api_client(self, api_client, user):
+        """Provide an API client that is logged in with the specified user."""
         api_client.login(username=user.username, password='test_password')
         return api_client
 
     @staticmethod
     def assert_report_created(response):
+        """Assert that the report was created."""
         assert response.status_code == status.HTTP_201_CREATED
 
     @staticmethod
     def assert_report_rejected(response):
+        """Assert that a given report submission was rejected."""
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @staticmethod
     def assert_report_exists(report_data, version, user):
+        """Confirm that a report matching the provided data exists in the DB."""
         assert ReportFile.objects.filter(
             slug=report_data["slug"],
             year=report_data["year"],
@@ -38,6 +51,7 @@ class ReportFileAPITestBase:
         ).exists()
 
     def post_report_file(self, api_client, report_data):
+        """Submit a report with the given data."""
         return api_client.post(
             self.root_url,
             report_data,
@@ -46,6 +60,8 @@ class ReportFileAPITestBase:
 
 
 class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
+    """Test ReportFileViewSet as an OFA Admin user."""
+
     @pytest.fixture
     def user(self, ofa_admin):
         """Override the default user with ofa_admin for our tests."""
@@ -57,7 +73,13 @@ class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
         self.assert_report_created(response)
         self.assert_report_exists(report_data, 1, user)
 
-    def test_report_file_version_increment(self, api_client, report_data, other_report_data, user):
+    def test_report_file_version_increment(
+        self,
+        api_client,
+        report_data,
+        other_report_data,
+        user
+    ):
         """Test that report file version numbers incremented."""
         response1 = self.post_report_file(api_client, report_data)
         response2 = self.post_report_file(api_client, other_report_data)
@@ -70,6 +92,8 @@ class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
 
 
 class TestReportFileAPIAsDataPrepper(ReportFileAPITestBase):
+    """Test ReportFileViewSet as a Data Prepper user."""
+
     @pytest.fixture
     def user(self, data_prepper):
         """Override the default user with data_prepper for our tests."""
@@ -90,6 +114,8 @@ class TestReportFileAPIAsDataPrepper(ReportFileAPITestBase):
 
 
 class TestReportFileAPIAsInactiveUser(ReportFileAPITestBase):
+    """Test ReportFileViewSet as an inactive user."""
+
     @pytest.fixture
     def user(self, inactive_user):
         """Override the default user with inactive_user for our tests."""
