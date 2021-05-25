@@ -1,5 +1,10 @@
 #!/bin/sh
 
+
+ENVIRONMENT=$1
+
+echo zap env "$ENVIRONMENT" thing
+
 if command -v sha256sum >/dev/null ; then
 	SHASUM=sha256sum
 elif command -v shasum >/dev/null ; then
@@ -22,18 +27,21 @@ chmod 777 $(pwd)/reports
 
 # check if running in circle CI
 
-if [ -z "${CIRCLE_BRANCH+x}" ]; then
+
+if [ "$ENVIRONMENT" == "circle" ]; then
+    echo "Config file $ENVIRONMENT"
     docker-compose run zaproxy zap-full-scan.py \
-                   -t http://web:8080/ \
-                   -m 5 \
-                   -z "${ZAP_CONFIG}" \
-                   -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
-else
-    docker-compose run zaproxy zap-full-scan.py \
-                   -t http://web:8080/ \
+                   -t http://tdp-frontend/ \
                    -m 5 \
                    -z "${ZAP_CONFIG}" \
                    -c "zap.conf" \
+                   -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
+else
+    echo "No config file"
+    docker-compose run zaproxy zap-full-scan.py \
+                   -t http://tdp-frontend/ \
+                   -m 5 \
+                   -z "${ZAP_CONFIG}" \
                    -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
 fi
 
