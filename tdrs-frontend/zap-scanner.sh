@@ -28,7 +28,7 @@ chmod 777 $(pwd)/reports
 # check if running in circle CI
 
 
-if [ "$ENVIRONMENT" == "circle" ]; then
+if [ "$ENVIRONMENT" = "circle" ]; then
     echo "Config file $ENVIRONMENT"
     docker-compose run zaproxy zap-full-scan.py \
                    -t http://tdp-frontend/ \
