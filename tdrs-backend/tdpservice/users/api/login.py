@@ -70,6 +70,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             self.login_user(request, user, "User Found")
         elif user and user.inactive_account:
             self.login_user(request, user, "Inactive User Found")
+        elif user and not user.is_active:
+            raise InactiveUser(
+                f'Login failed, user account is inactive: {user.username}'
+            )
         else:
             User = get_user_model()
             user = User.objects.create_user(decoded_payload["email"])
@@ -146,6 +150,15 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         try:
             user = self.handle_user(request, id_token, decoded_payload)
             return response_redirect(user, id_token)
+
+        except InactiveUser as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         except Exception as e:
             logger.exception(f"Error attempting to login/register user:  {e} at...")
