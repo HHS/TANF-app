@@ -21,17 +21,19 @@ echo "================== OWASP ZAP tests =================="
 chmod 777 $(pwd)/reports
 # check if running in circle CI
 if [ "$ENVIRONMENT" = "circle" ]; then
-    docker-compose run zaproxy zap-full-scan.py \
-                    -t http://web:8080/ \
-                    -m 5 \
-                    -z "${ZAP_CONFIG}" \
-                    -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
-else
+    echo "Config file"
     docker-compose run zaproxy zap-full-scan.py \
                     -t http://web:8080/ \
                     -m 5 \
                     -z "${ZAP_CONFIG}" \
                     -c "zap.conf" \
+                    -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
+else
+    echo "No config file"
+    docker-compose run zaproxy zap-full-scan.py \
+                    -t http://web/ \
+                    -m 5 \
+                    -z "${ZAP_CONFIG}" \
                     -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
 fi
 
