@@ -72,6 +72,12 @@ class StaffUserFactory(UserFactory):
 
 
 class InactiveUserFactory(UserFactory):
-    """Generate inactive user."""
+    """Generate inactive user, from Django's context."""
 
     is_active = False
+
+
+class InactiveAccountUserFactory(UserFactory):
+    """Generate user with account deemed `inactive`."""
+
+    inactive_account = True
