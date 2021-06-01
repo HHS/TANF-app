@@ -13,7 +13,7 @@ class UserForm(forms.ModelForm):
         """Define customizations."""
 
         model = User
-        exclude = ['password', 'user_permissions']
+        exclude = ['password', 'user_permissions', 'is_active']
         readonly_fields = ['last_login', 'date_joined']
 
 

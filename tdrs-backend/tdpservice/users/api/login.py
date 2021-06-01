@@ -67,9 +67,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         )
 
         if user and user.is_active:
-            self.login_user(request, user, "User Found")
-        elif user and user.inactive_account:
-            self.login_user(request, user, "Inactive User Found")
+            if user.inactive_account:
+                self.login_user(request, user, "Inactive User Found")
+            else:
+                self.login_user(request, user, "User Found")
         elif user and not user.is_active:
             raise InactiveUser(
                 f'Login failed, user account is inactive: {user.username}'

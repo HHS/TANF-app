@@ -21,7 +21,7 @@ class User(AbstractUser):
     # we send user's on the client, (which is not practical with the `is_active` field).
     inactive_account = models.BooleanField(
         _('inactive_account'),
-        default=True,
+        default=False,
         help_text=_(
             'Designates whether this user should be treated as active. '
             'Unselect this instead of deleting accounts.'
