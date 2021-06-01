@@ -23,7 +23,7 @@ Below are a list of steps the team is taking to help mitigate the incidence of s
 - At a minimum, ACF and vendor Tech Leads should be subscribed to tech tools we use to stay up-to-date on news that could impact project security. This includes: CircleCi, CodeCov, [insert others that are relevant]
 - As part of ACF Tech Lead's periodic review of environment variables, secret key rotation will be coordinated.
 
-### Longer-term solutions to be implemented (these are housed under epic #972):
+### Longer-term solutions to be implemented (these are housed under epic #972 ):
 - Automated tool will be added to detect secret keys before changes are committed project repo (#965) 
 - Add .dockerconfig file as an extra layer of security against accidentally leaking secrets (#544)
 - Automated testing step will be added in CircleCI to check for secret keys (#966)
@@ -41,6 +41,5 @@ Any member of the TDP who notices secret key leakage should alert the full TDP p
     - how the leakage occurred (if known)
     - preliminary assessment of the scope of the leakage (e.g. was PII compromised? exposed?)
     - Next steps (e.g. schedule mtg to discuss incident response plan, rotate keys, etc.)
-
 
 
