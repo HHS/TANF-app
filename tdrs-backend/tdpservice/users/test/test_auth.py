@@ -529,6 +529,7 @@ def test_generate_token_endpoint_parameters():
 
 
 def test_token_auth_decode_payload():
+    """Test ID token decoding functionality."""
     decoded_token = TokenAuthorizationOIDC.decode_payload(
         os.environ['MOCK_TOKEN'],
         # Since these tokens are short lived our MOCK_TOKEN used for tests
