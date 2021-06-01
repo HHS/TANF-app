@@ -74,10 +74,8 @@ def test_auth_check_returns_user_stt(api_client, user):
 
 
 @pytest.mark.django_db
-def test_auth_check_returns_user_stt(api_client, inactive_account_user):
-    """If user is authenticated but deactivated, return a response indicating
-    the user is inactive.
-    """
+def test_auth_check_inactive_account(api_client, inactive_account_user):
+    """If user is deactivated, return a response indicating the user is inactive."""
     api_client.login(username=inactive_account_user.username, password="test_password")
     response = api_client.get(reverse("authorization-check"))
     assert response.data["authenticated"] is False
