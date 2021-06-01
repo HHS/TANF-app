@@ -6,7 +6,7 @@ The goal of these efforts is to help prevent unintended secret key leakage. Thou
 
 ## What are secret keys, and how can these be leaked?
 
-As described [here](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Architecture%20Decision%20Record/004-configuration-by-environment-variable.md), the TDP system is configured by environment variables. [Environment variables](https://medium.com/chingu/an-introduction-to-environment-variables-and-how-to-use-them-f602f66d15fa)) help minimize the risk of running into unexpected issues when changes are made to the system. Some of these environment variables are senstive because these are used to authorize access to TDP. We refer to these as "Secret keys". 
+As described [here](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Architecture%20Decision%20Record/004-configuration-by-environment-variable.md), the TDP system is configured by environment variables. [Environment variables](https://medium.com/chingu/an-introduction-to-environment-variables-and-how-to-use-them-f602f66d15fa) help minimize the risk of running into unexpected issues when changes are made to the system. Some of these environment variables are senstive because these are used to authorize access to TDP. We refer to these as "Secret keys". 
 
 If secret keys are leaked/exposed, this can not only change how the TDP system functions, but this also compromises the security of the data files flowing through the system (and the individuals and families represented in these data). There are two primary avenues that secret key leakage can happen: 
 - a security breach in one or more of the project [tools](https://about.codecov.io/security-update/) that use the secret keys(*relatively speaking, this is more challenging to prevent*), or 
@@ -41,5 +41,4 @@ Any member of the TDP who notices secret key leakage should alert the full TDP p
     - how the leakage occurred (if known)
     - preliminary assessment of the scope of the leakage (e.g. was PII compromised? exposed?)
     - Next steps (e.g. schedule mtg to discuss incident response plan, rotate keys, etc.)
-
 
