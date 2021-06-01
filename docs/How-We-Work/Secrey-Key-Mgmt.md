@@ -28,7 +28,7 @@ Below are a list of steps the team is taking to help mitigate the incidence of s
 - Add .dockerconfig file as an extra layer of security against accidentally leaking secrets as part of local development (#544)
 - Automated testing step will be added in CircleCI to check for secret keys and stop the CI process if keys are detected (#966)
 - `DJANGO_SECRET_KEY` is automatically generated for initial deployments to Cloud.gov (#967)
-- (#968)
+- Perform validation on Codecov Bash Uploader script during CI steps to ensure that it has not been tampered with before allowing it to execute in CI. (#968)
 - (#969)
 
 ## Communication protocol if secret keys are leaked
