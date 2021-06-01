@@ -26,7 +26,7 @@ Below are a list of steps the team is taking to help mitigate the incidence of s
 ### Longer-term solutions to be implemented (these are housed under epic #972 ):
 - Automated tool will be added to detect secret keys before changes are committed project repo (#965) 
 - Add .dockerconfig file as an extra layer of security against accidentally leaking secrets (#544)
-- Automated testing step will be added in CircleCI to check for secret keys (#966)
+- Automated testing step will be added in CircleCI to check for secret keys and stop the CI process if keys are detected (#966)
 - (#967)
 - (#968)
 - (#969)
