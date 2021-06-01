@@ -29,7 +29,7 @@ Below are a list of steps the team is taking to help mitigate the incidence of s
 - Automated testing step will be added in CircleCI to check for secret keys and stop the CI process if keys are detected (#966)
 - `DJANGO_SECRET_KEY` is automatically generated for initial deployments to Cloud.gov (#967)
 - Perform validation on Codecov Bash Uploader script during CI steps to ensure that it has not been tampered with before allowing it to execute in CI. (#968)
-- (#969)
+- The `JWT_KEY (JWT_CERT_TEST)`  that is used for testing will be dynamically generated to....(#969)
 
 ## Communication protocol if secret keys are leaked
 Any member of the TDP who notices secret key leakage should alert the full TDP project team immediately as follows:
