@@ -73,7 +73,7 @@ def inactive_user():
 
 
 @pytest.fixture
-def inactive_account_user():
+def deactivated_user():
     """Return a user with an inactive account."""
     return InactiveAccountUserFactory.create()
 

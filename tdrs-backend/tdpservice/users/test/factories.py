@@ -24,7 +24,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     is_staff = False
     is_superuser = False
     stt = factory.SubFactory(STTFactory)
-    inactive_account = False
+    deactivated = False
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -80,4 +80,4 @@ class InactiveUserFactory(UserFactory):
 class InactiveAccountUserFactory(UserFactory):
     """Generate user with account deemed `inactive`."""
 
-    inactive_account = True
+    deactivated = True

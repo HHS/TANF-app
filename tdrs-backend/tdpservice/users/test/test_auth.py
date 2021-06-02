@@ -248,7 +248,7 @@ def test_login_with_inactive_user(mocker, api_client, inactive_user):
     """
     Login with inactive user should error and return message.
 
-    Note this test considers the `is_active` field, and *not* `inactive_account`,
+    Note this test considers the `is_active` field, and *not* `deactivated`,
     which are different.
     """
     os.environ["JWT_KEY"] = test_private_key

@@ -71,7 +71,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         )
 
         if user and user.is_active:
-            if user.inactive_account:
+            if user.deactivated:
                 self.login_user(request, user, "Inactive User Found")
             else:
                 self.login_user(request, user, "User Found")

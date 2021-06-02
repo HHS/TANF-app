@@ -8,7 +8,7 @@ import {
   SET_AUTH,
   CLEAR_AUTH,
   SET_AUTH_ERROR,
-  SET_INACTIVE_ACCOUNT,
+  SET_DEACTIVATED,
 } from './auth'
 
 describe('actions/auth.js', () => {
@@ -78,6 +78,6 @@ describe('actions/auth.js', () => {
 
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_AUTH)
-    expect(actions[1].type).toBe(SET_INACTIVE_ACCOUNT)
+    expect(actions[1].type).toBe(SET_DEACTIVATED)
   })
 })

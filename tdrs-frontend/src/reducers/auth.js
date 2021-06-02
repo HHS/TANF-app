@@ -3,7 +3,7 @@ import {
   SET_AUTH,
   SET_AUTH_ERROR,
   CLEAR_AUTH,
-  SET_INACTIVE_ACCOUNT,
+  SET_DEACTIVATED,
 } from '../actions/auth'
 
 const initialState = {
@@ -44,7 +44,7 @@ const auth = (state = initialState, action) => {
         error,
       }
     }
-    case SET_INACTIVE_ACCOUNT: {
+    case SET_DEACTIVATED: {
       return {
         ...initialState,
         inactive: true,

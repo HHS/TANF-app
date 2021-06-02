@@ -4,7 +4,7 @@ import {
   SET_AUTH,
   SET_AUTH_ERROR,
   CLEAR_AUTH,
-  SET_INACTIVE_ACCOUNT,
+  SET_DEACTIVATED,
 } from '../actions/auth'
 
 describe('reducers/auth', () => {
@@ -111,7 +111,7 @@ describe('reducers/auth', () => {
     })
   })
 
-  it('should handle SET_INACTIVE_ACCOUNT', () => {
+  it('should handle SET_DEACTIVATED', () => {
     expect(
       reducer(
         {
@@ -121,7 +121,7 @@ describe('reducers/auth', () => {
           inactive: false,
         },
         {
-          type: SET_INACTIVE_ACCOUNT,
+          type: SET_DEACTIVATED,
         }
       )
     ).toEqual({

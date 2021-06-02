@@ -26,7 +26,8 @@ class AuthorizationCheck(APIView):
         serializer = UserProfileSerializer(user)
 
         if user.is_authenticated:
-            if user.inactive_account:
+            # Check if the user is deactivated in our system before passing auth params.
+            if user.deactivated:
                 logout(request)
                 response = Response({"authenticated": False, "inactive": True})
                 response.delete_cookie("id_token")

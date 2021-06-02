@@ -15,12 +15,12 @@ class User(AbstractUser):
     stt = models.ForeignKey(STT, on_delete=models.CASCADE, blank=True, null=True)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
 
-    # Note this is different from the `is_active` that comes from AbstractUser.
+    # Note this is handled differently than `is_active`, which comes from AbstractUser.
     # Django will totally prevent a user with is_active=True from authorizing.
-    # This field `inactive_account` helps facilitate the "Inactive Account" message
-    # we send user's on the client, (which is not practical with the `is_active` field).
-    inactive_account = models.BooleanField(
-        _('inactive_account'),
+    # This field `deactivated` helps us to notify the user client-side of their status
+    # with an "Inactive Account" message.
+    deactivated = models.BooleanField(
+        _('deactivated'),
         default=False,
         help_text=_(
             'Designates whether this user should be treated as active. '

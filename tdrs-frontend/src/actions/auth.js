@@ -5,7 +5,7 @@ export const FETCH_AUTH = 'FETCH_AUTH'
 export const SET_AUTH = 'SET_AUTH'
 export const SET_AUTH_ERROR = 'SET_AUTH_ERROR'
 export const CLEAR_AUTH = 'CLEAR_AUTH'
-export const SET_INACTIVE_ACCOUNT = 'SET_INACTIVE_ACCOUNT'
+export const SET_DEACTIVATED = 'SET_DEACTIVATED'
 
 /**
  * This action fires an HTTP GET request to the API
@@ -47,7 +47,7 @@ export const fetchAuth = () => async (dispatch) => {
     })
 
     if (data?.inactive) {
-      dispatch({ type: SET_INACTIVE_ACCOUNT })
+      dispatch({ type: SET_DEACTIVATED })
     } else if (data?.user) {
       const { user, csrf } = data
 
