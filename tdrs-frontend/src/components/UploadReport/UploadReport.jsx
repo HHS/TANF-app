@@ -10,6 +10,7 @@ import FileUpload from '../FileUpload'
 import axiosInstance from '../../axios-instance'
 import { clearError } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
+import { fileUploadSections } from '../../reducers/reports'
 
 function UploadReport({ handleCancel, header, stt }) {
   // The currently selected year from the reportingYears dropdown
@@ -37,13 +38,6 @@ function UploadReport({ handleCancel, header, stt }) {
   useEffect(() => {
     headerRef.current.focus()
   }, [])
-
-  const fileUploadSections = [
-    'Active Case Data',
-    'Closed Case Data',
-    'Aggregate Data',
-    'Stratum Data',
-  ]
 
   const filteredFiles = files.filter((file) => file.fileName)
   const uploadedSections = filteredFiles
