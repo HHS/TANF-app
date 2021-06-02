@@ -17,6 +17,14 @@ const getFileIndex = (files, section) =>
   files.findIndex((currentFile) => currentFile.section === section)
 const getFile = (files, section) =>
   files.find((currentFile) => currentFile.section === section)
+
+export const fileUploadSections = [
+  'Active Case Data',
+  'Closed Case Data',
+  'Aggregate Data',
+  'Stratum Data',
+]
+
 export const getUpdatedFiles = (
   state,
   fileName,
@@ -41,36 +49,13 @@ export const getUpdatedFiles = (
 }
 
 const initialState = {
-  files: [
-    {
-      section: 'Active Case Data',
-      fileName: null,
-      error: null,
-      uuid: null,
-      fileType: null,
-    },
-    {
-      section: 'Closed Case Data',
-      fileName: null,
-      error: null,
-      uuid: null,
-      fileType: null,
-    },
-    {
-      section: 'Aggregate Data',
-      fileName: null,
-      error: null,
-      uuid: null,
-      fileType: null,
-    },
-    {
-      section: 'Stratum Data',
-      fileName: null,
-      error: null,
-      uuid: null,
-      fileType: null,
-    },
-  ],
+  files: fileUploadSections.map((section) => ({
+    section,
+    fileName: null,
+    error: null,
+    uuid: null,
+    fileType: null,
+  })),
   year: '',
   stt: '',
   quarter: '',
