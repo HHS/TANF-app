@@ -616,3 +616,21 @@ def test_generate_token_endpoint_parameters():
     assert "client_assertion_type" in params
     assert "code=test_code" in params
     assert "grant_type=authorization_code" in params
+
+
+def test_token_auth_decode_payload():
+    """Test ID token decoding functionality."""
+    decoded_token = TokenAuthorizationOIDC.decode_payload(
+        os.environ['MOCK_TOKEN'],
+        # Since these tokens are short lived our MOCK_TOKEN used for tests
+        # is expired and would need to be refreshed on each test run, to work
+        # around that we will disable signature verification for this test.
+        # TODO: Consider writing code to generate MOCK_TOKEN on demand
+        options={'verify_signature': False}
+    )
+
+    # Assert the token was decoded correctly and contains necessary properties
+    assert decoded_token is not None
+    assert 'nonce' in decoded_token
+    assert 'sub' in decoded_token
+    assert 'login.gov' in decoded_token.get('iss', '')
