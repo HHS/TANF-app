@@ -35,8 +35,12 @@ class InactiveUser(Exception):
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define methods for handling login request from login.gov."""
 
-    def decode_payload(self, id_token):
+    @staticmethod
+    def decode_payload(id_token, options=None):
         """Decode the payload."""
+        if not options:
+            options = {'verify_nbf': False}
+
         cert_str = generate_jwt_from_jwks()
 
         # issuer: issuer of the response
@@ -47,10 +51,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 key=cert_str,
                 issuer=os.environ["OIDC_OP_ISSUER"],
                 audience=os.environ["CLIENT_ID"],
-                algorithm="RS256",
+                algorithms=["RS256"],
                 subject=None,
                 access_token=None,
-                options={"verify_nbf": False},
+                options=options,
             )
             return decoded_payload
         except jwt.ExpiredSignatureError:
