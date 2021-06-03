@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0012_add_initial_super_user'),
+        ('users', '0013_user_sub'),
     ]
 
     operations = [
