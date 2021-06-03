@@ -165,38 +165,12 @@ def test_list_report_years(api_client, data_prepper):
     """Test list of years for which there exist a report as a data prepper."""
     user = data_prepper
 
-    data1 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": user.stt,
-        "year": 2020,
-        "section": "Active Case Data",
-    }
+    reports = multi_year_report_data(user, user.stt)
 
-    data2 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": user.stt,
-        "year": 2021,
-        "section": "Active Case Data",
-    }
+    ReportFile.create_new_version(reports[0])
+    ReportFile.create_new_version(reports[1])
+    ReportFile.create_new_version(reports[2])
 
-    data3 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": user.stt,
-        "year": 2022,
-        "section": "Active Case Data",
-    }
-    ReportFile.create_new_version(data1)
-    ReportFile.create_new_version(data2)
-    ReportFile.create_new_version(data3)
     api_client.login(username=user.username, password="test_password")
 
     response = api_client.get("/v1/reports/years")
@@ -213,38 +187,11 @@ def test_list_ofa_admin_report_years(api_client, ofa_admin, stt):
     """Test list of years for which there exist a report as an OFA admin."""
     user = ofa_admin
 
-    data1 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": stt,
-        "year": 2020,
-        "section": "Active Case Data",
-    }
+    reports = multi_year_report_data(user, stt)
 
-    data2 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": stt,
-        "year": 2021,
-        "section": "Active Case Data",
-    }
-
-    data3 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": stt,
-        "year": 2022,
-        "section": "Active Case Data",
-    }
-    ReportFile.create_new_version(data1)
-    ReportFile.create_new_version(data2)
-    ReportFile.create_new_version(data3)
+    ReportFile.create_new_version(reports[0])
+    ReportFile.create_new_version(reports[1])
+    ReportFile.create_new_version(reports[2])
 
     api_client.login(username=user.username, password="test_password")
 
@@ -263,35 +210,8 @@ def test_list_ofa_admin_report_years_positional_stt(api_client, ofa_admin, stt):
     """Test list year fail for OFA admin when no STT is provided."""
     user = ofa_admin
 
-    data1 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": stt,
-        "year": 2020,
-        "section": "Active Case Data",
-    }
+    data1, data2, data3 = multi_year_report_data(user, stt)
 
-    data2 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": stt,
-        "year": 2021,
-        "section": "Active Case Data",
-    }
-
-    data3 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user,
-        "stt": stt,
-        "year": 2022,
-        "section": "Active Case Data",
-    }
     ReportFile.create_new_version(data1)
     ReportFile.create_new_version(data2)
     ReportFile.create_new_version(data3)
