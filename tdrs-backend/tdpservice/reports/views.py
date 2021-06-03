@@ -24,7 +24,6 @@ class GetYearList(APIView):
         user = request.user
         is_ofa_admin = user.groups.filter(name="OFA Admin").exists()
 
-
         stt_id = kargs.get('stt') if (is_ofa_admin) else user.stt.id
 
         available_years = ReportFile.objects.filter(
