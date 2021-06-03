@@ -2,11 +2,6 @@
 version: "3"
 
 services:
-  localstack:
-    environment:
-      - DATA_DIR=/tmp/localstack/data
-    volumes:
-      - localstack_data:/tmp/localstack
   web:
     env_file:
       - .env

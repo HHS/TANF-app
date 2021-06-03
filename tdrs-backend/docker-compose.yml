@@ -27,11 +27,13 @@ services:
     image: localstack/localstack:0.12.9
     environment:
       - SERVICES=s3
+      - DATA_DIR=/tmp/localstack/data
       - AWS_BUCKET
       - AWS_REGION_NAME
     ports:
       - "4566:4566"
     volumes:
+      - localstack_data:/tmp/localstack
       # Copy in the Localstack setup script to configure any buckets needed
       - ./localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
