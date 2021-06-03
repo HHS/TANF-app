@@ -7,6 +7,26 @@ from rest_framework import status
 from ..models import ReportFile
 
 
+def multi_year_report_data(user, stt):
+    return [{"original_filename": "report.txt",
+             "quarter": "Q1",
+             "user": user,
+             "stt": stt,
+             "year": 2020,
+             "section": "Active Case Data", },
+            {"original_filename": "report.txt",
+             "quarter": "Q1",
+             "user": user,
+             "stt": stt,
+             "year": 2021,
+             "section": "Active Case Data", },
+            {"original_filename": "report.txt",
+             "quarter": "Q1",
+             "user": user,
+             "stt": stt,
+             "year": 2022,
+             "section": "Active Case Data", }]
+
 @pytest.mark.django_db
 def test_create_report_file_entry(api_client, ofa_admin):
     """Test ability to create report file metadata registry."""
