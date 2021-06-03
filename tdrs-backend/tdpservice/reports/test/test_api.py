@@ -8,6 +8,7 @@ from ..models import ReportFile
 
 
 def multi_year_report_data(user, stt):
+    """Return report data that encompasses multiple years."""
     return [{"original_filename": "report.txt",
              "quarter": "Q1",
              "user": user,
@@ -220,7 +221,7 @@ def test_list_ofa_admin_report_years_positional_stt(api_client, ofa_admin, stt):
 
     response = api_client.get("/v1/reports/years")
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 @pytest.mark.django_db

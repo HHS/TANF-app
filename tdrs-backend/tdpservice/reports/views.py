@@ -21,13 +21,9 @@ class GetYearList(APIView):
 
     def get(self, request, **kargs):
         """Handle get action for get list of years there are reports."""
-
         user = request.user
         is_ofa_admin = user.groups.filter(name="OFA Admin").exists()
 
-        if ((not kargs.get('stt') and is_ofa_admin)
-                or (not user.stt and not is_ofa_admin)):
-            return Response(status=422)
 
         stt_id = kargs.get('stt') if (is_ofa_admin) else user.stt.id
 
