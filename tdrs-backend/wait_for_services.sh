@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 wait-for-it \
     --service http://clamav-rest:9000 \
-    --service http://localstack:4566 \
+    --service http://localstack:4566/health \
     --timeout 60 \
     -- echo "ClamAV and Localstack are ready!"
 
