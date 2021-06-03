@@ -5,8 +5,6 @@ services:
   zaproxy:
     image: owasp/zap2docker-weekly
     command: sleep 3600
-    depends_on:
-      - web
     volumes:
       - ./reports:/zap/wrk/:rw
 
