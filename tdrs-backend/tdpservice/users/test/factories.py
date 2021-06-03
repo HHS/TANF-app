@@ -56,6 +56,12 @@ class STTUserFactory(BaseUserFactory):
     # were calling the `populate_stt` command.
     stt = None
 
+class AdminSTTUserFactory(STTUserFactory):
+    """Generate an admin user who has no stt assigned."""
+
+    is_staff = True
+    is_superuser = True
+
 
 class AdminUserFactory(UserFactory):
     """Generate Admin User."""
