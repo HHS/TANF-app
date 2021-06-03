@@ -7,7 +7,11 @@ def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
     is_data_prepper = is_in_group(request.user, 'Data Prepper')
     requested_stt = view.kwargs.get('stt', request.data.get('stt'))
-    user_stt = request.user.stt.id if hasattr(request.user, 'stt') else None
+    user_stt = (
+        getattr(request.user.stt, 'id')
+        if (hasattr(request.user, 'stt') and request.user.stt is not None)
+        else None
+    )
 
     return is_data_prepper and user_stt and (requested_stt in [None, user_stt])
 
