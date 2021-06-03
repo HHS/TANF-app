@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 
-import { fetchSttList } from '../../actions/sttList'
 import { requestAccess } from '../../actions/requestAccess'
 import { setAlert } from '../../actions/alert'
 import { ALERT_ERROR } from '../Alert'
@@ -81,13 +80,12 @@ function EditProfile() {
       )
       logger.error(requestAccessError.message)
     }
-    dispatch(fetchSttList())
   }, [dispatch, requestAccessError, logger])
 
   const setStt = (sttName) => {
     setProfileInfo((currentState) => ({
       ...currentState,
-      stt: sttName.toLowerCase(),
+      stt: sttName,
     }))
   }
 
@@ -138,9 +136,7 @@ function EditProfile() {
       return dispatch(
         requestAccess({
           ...profileInfo,
-          stt: sttList.find(
-            (stt) => stt.name.toLowerCase() === profileInfo.stt
-          ),
+          stt: sttList.find((stt) => stt.name === profileInfo.stt),
         })
       )
     }
@@ -194,7 +190,7 @@ function EditProfile() {
           <STTComboBox
             selectStt={setStt}
             error={Boolean(errors.stt)}
-            selectedStt={profileInfo?.stt?.toLowerCase()}
+            selectedStt={profileInfo?.stt}
             handleBlur={handleBlur}
           />
         </div>
