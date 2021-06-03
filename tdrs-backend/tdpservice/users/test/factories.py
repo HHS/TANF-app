@@ -24,6 +24,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     is_staff = False
     is_superuser = False
     stt = factory.SubFactory(STTFactory)
+    login_gov_uuid = factory.Faker("uuid4")
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
