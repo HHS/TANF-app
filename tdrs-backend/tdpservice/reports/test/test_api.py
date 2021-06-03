@@ -221,3 +221,33 @@ def test_list_ofa_admin_report_years_positional_stt(api_client, ofa_admin, stt):
     response = api_client.get("/v1/reports/years")
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.django_db
+def test_list_ofa_admin_report_years_no_self_stt(api_client, ofa_admin_stt_user, stt):
+    """Test OFA Admin with no stt assigned can view list of years."""
+    user = ofa_admin_stt_user
+
+    data1, data2, data3 = multi_year_report_data(user, stt)
+
+    assert user.stt is None
+
+    ReportFile.create_new_version(data1)
+    ReportFile.create_new_version(data2)
+    ReportFile.create_new_version(data3)
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get(f"/v1/reports/years/{stt.id}")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    assert response.data == [
+        2020,
+        2021,
+        2022
+    ]
+
+
+# @pytest.mark.django_db
+# def test_
