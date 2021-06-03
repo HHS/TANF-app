@@ -78,7 +78,7 @@ class InactiveUserFactory(UserFactory):
     is_active = False
 
 
-class InactiveAccountUserFactory(UserFactory):
+class DeactivatedUserFactory(UserFactory):
     """Generate user with account deemed `inactive`."""
 
     deactivated = True
