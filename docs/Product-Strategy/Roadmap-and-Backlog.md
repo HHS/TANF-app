@@ -1,12 +1,12 @@
 _updated June 2021_
 # Product Roadmap
-Our [roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1617994644349/6047bad9ed365b22986e52f5d9f01aac32286ae9) :lock: represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem.
+Our [roadmap](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1617994644349/6047bad9ed365b22986e52f5d9f01aac32286ae9) :lock:represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem.
 
 We consider ATO, Release 1 and Release 2 commitments that the team will deliver on at this time. There might be a few shifts in approach, timing or scope, but in general, these outcomes will be worked on by the team. Metrics for success will be added as they are defined for releases.
 
 Beyond that, we're still discovering and planning on what best serves our users. This doc will continue to be updated as we make decisions and scope releases. 
 
-## ATO, _3 year ATO granted on May 20, 2021_  
+## ATO  
 Value Delivered: Get approval for the authority to operate and create a production environment. 
 
 | Outcome | Status | 
@@ -14,7 +14,7 @@ Value Delivered: Get approval for the authority to operate and create a producti
 | User can log in using login.gov | Complete
 | Users with appropriate privileges can manage users | Complete
 | Users can upload data files by section and quarter | Complete
-| Users with appropriate privileges can download files that were previously uploaded     | Complete
+| Users with appropriate privileges can download files that were previously uploaded     | In Review
 |Create production environment | In Progress
 
 ## Release 1 (fka OFA MVP) Scope
@@ -27,6 +27,7 @@ The team is also investigating options for optimizing permission management and 
 | -------- | ------- | 
 | Privileged ACF users are required to login with PIV/CAC credentials | Researching
 | Permissions Configuration | Ready to be started
+| Secret key leakage prevention | Ready to be started
 
 
 ## Release 2 (fka Tribal MVP) Scope
