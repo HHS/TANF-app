@@ -222,11 +222,6 @@ jobs:
           name:  "Test: Execute Python Linting Test"
           command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
       - run:
-          name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-backend; ./zap-scanner.sh"
-      - store_artifacts:
-          path: tdrs-backend/reports/owasp_report.html
-      - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
           command: "cd tdrs-backend; docker-compose run --rm web bash -c \"pytest --cov-report=xml\""
       - run:
@@ -237,6 +232,11 @@ jobs:
             elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
               cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
             fi
+      - run:
+          name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
+          command: "cd tdrs-backend; ./zap-scanner.sh"
+      - store_artifacts:
+          path: tdrs-backend/reports/owasp_report.html
 
   test-frontend:
     executor: machine-executor
