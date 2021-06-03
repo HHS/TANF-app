@@ -248,7 +248,3 @@ def test_list_ofa_admin_report_years_no_self_stt(api_client, ofa_admin_stt_user,
         2021,
         2022
     ]
-
-
-# @pytest.mark.django_db
-# def test_
