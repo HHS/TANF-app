@@ -5,9 +5,11 @@ from rest_framework import permissions
 
 def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
-    return is_in_group(request.user, "Data Prepper") and (
-        request.user.stt.id == view.kwargs.get("stt", request.data.get("stt"))
-    )
+    is_data_prepper = is_in_group(request.user, 'Data Prepper')
+    requested_stt = view.kwargs.get('stt', request.data.get('stt'))
+    user_stt = request.user.stt.id if hasattr(request.user, 'stt') else None
+
+    return is_data_prepper and user_stt and (requested_stt in [None, user_stt])
 
 
 def is_in_group(user, group_name):
