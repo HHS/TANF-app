@@ -507,7 +507,7 @@ describe('EditProfile', () => {
 
     const select = wrapper.find('.usa-select')
     select.simulate('change', {
-      target: { name: 'stt', value: 'alaska' },
+      target: { name: 'stt', value: 'Alaska' },
     })
 
     const form = wrapper.find('.usa-form').hostNodes()

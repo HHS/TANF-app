@@ -85,7 +85,7 @@ function EditProfile() {
   const setStt = (sttName) => {
     setProfileInfo((currentState) => ({
       ...currentState,
-      stt: sttName.toLowerCase(),
+      stt: sttName,
     }))
   }
 
@@ -136,9 +136,7 @@ function EditProfile() {
       return dispatch(
         requestAccess({
           ...profileInfo,
-          stt: sttList.find(
-            (stt) => stt.name.toLowerCase() === profileInfo.stt
-          ),
+          stt: sttList.find((stt) => stt.name === profileInfo.stt),
         })
       )
     }
@@ -192,7 +190,7 @@ function EditProfile() {
           <STTComboBox
             selectStt={setStt}
             error={Boolean(errors.stt)}
-            selectedStt={profileInfo?.stt?.toLowerCase()}
+            selectedStt={profileInfo?.stt}
             handleBlur={handleBlur}
           />
         </div>

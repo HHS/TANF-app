@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 
@@ -44,41 +44,54 @@ function Reports() {
 
   const currentStt = isOFAAdmin ? selectedStt : userProfileStt
 
+  const stt = sttList?.find((stt) => stt?.name === currentStt)
+  const [submittedHeader, setSubmittedHeader] = useState('')
+
+  const errorsCount = formValidation.errors
+
+  const missingStt = !isOFAAdmin && !currentStt
+
+  const errorsRef = useRef(null)
+
   const handleSearch = () => {
-    if (!isUploadReportToggled) {
-      // Clear previous errors
-      setFormValidationState({})
-      // Filter out non-truthy values
+    // Clear previous errors
+    setFormValidationState({})
 
-      const form = [selectedYear, currentStt, selectedQuarter].filter(Boolean)
+    // Filter out non-truthy values
+    const form = [selectedYear, currentStt, selectedQuarter].filter(Boolean)
+    const reportHeader = `${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
 
-      if (form.length === 3) {
-        setIsToggled(true)
-      } else {
-        // create error state
-        setFormValidationState({
-          year: !selectedYear,
-          stt: !currentStt,
-          quarter: !selectedQuarter,
-          errors: 3 - form.length,
-        })
-        setTouched({
-          year: true,
-          stt: true,
-          quarter: true,
-        })
+    if (form.length === 3) {
+      if (isUploadReportToggled) {
+        setIsToggled(false)
       }
+
+      setSubmittedHeader(reportHeader)
+      setTimeout(() => setIsToggled(true), 0)
+    } else {
+      // create error state
+      setFormValidationState({
+        year: !selectedYear,
+        stt: !currentStt,
+        quarter: !selectedQuarter,
+        errors: 3 - form.length,
+      })
+      setTouched({
+        year: true,
+        stt: true,
+        quarter: true,
+      })
+      // Focus on the newly rendered error message.
+      setTimeout(() => errorsRef.current.focus(), 0)
     }
   }
 
   const selectYear = ({ target: { value } }) => {
-    setIsToggled(false)
     dispatch(setYear(value))
     setTouched((currentForm) => ({ ...currentForm, year: true }))
   }
 
   const selectQuarter = ({ target: { value } }) => {
-    setIsToggled(false)
     dispatch(setQuarter(value))
     setTouched((currentForm) => ({ ...currentForm, quarter: true }))
   }
@@ -86,7 +99,6 @@ function Reports() {
   // prefer => `auth.user.stt`
 
   const selectStt = (value) => {
-    setIsToggled(false)
     dispatch(setStt(value))
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
   }
@@ -122,16 +134,21 @@ function Reports() {
     touched,
   ])
 
-  const stt = sttList?.find((stt) => stt?.name === currentStt)
-  const reportHeader = `${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
-
-  const errorsCount = formValidation.errors
-
   return (
     <>
       <div className={classNames({ 'border-bottom': isUploadReportToggled })}>
-        {Boolean(formValidation.errors) && (
+        {missingStt && (
           <div className="margin-top-4 usa-error-message" role="alert">
+            An STT is not set for this user.
+          </div>
+        )}
+        {Boolean(formValidation.errors) && (
+          <div
+            className="margin-top-4 usa-error-message"
+            role="alert"
+            ref={errorsRef}
+            tabIndex="-1"
+          >
             There {errorsCount === 1 ? 'is' : 'are'} {formValidation.errors}{' '}
             error(s) in this form
           </div>
@@ -234,7 +251,7 @@ function Reports() {
       {isUploadReportToggled && (
         <UploadReport
           stt={stt?.id}
-          header={reportHeader}
+          header={submittedHeader}
           handleCancel={() => setIsToggled(false)}
         />
       )}
