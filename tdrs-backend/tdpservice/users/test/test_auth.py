@@ -91,12 +91,12 @@ def test_auth_update(api_client, user):
     api_client.login(username=user.username, password="test_password")
 
     api_client.get("/v1/auth_check")
-    c1 = api_client.cookies.get('id_token')
+    c1 = api_client.cookies.get("id_token")
     e1 = datetime.datetime.strptime(c1["expires"], "%a, %d %b %Y %H:%M:%S %Z")
     time.sleep(1)
 
     api_client.get("/v1/auth_check")
-    c2 = api_client.cookies.get('id_token')
+    c2 = api_client.cookies.get("id_token")
     e2 = datetime.datetime.strptime(c2["expires"], "%a, %d %b %Y %H:%M:%S %Z")
 
     assert e1 < e2

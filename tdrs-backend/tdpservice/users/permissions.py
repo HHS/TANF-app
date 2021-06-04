@@ -5,9 +5,15 @@ from rest_framework import permissions
 
 def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
-    return is_in_group(request.user, "Data Prepper") and (
-        request.user.stt.id == request.data['stt']
+    is_data_prepper = is_in_group(request.user, 'Data Prepper')
+    requested_stt = view.kwargs.get('stt', request.data.get('stt'))
+    user_stt = (
+        getattr(request.user.stt, 'id')
+        if (hasattr(request.user, 'stt') and request.user.stt is not None)
+        else None
     )
+
+    return is_data_prepper and user_stt and (requested_stt in [None, user_stt])
 
 
 def is_in_group(user, group_name):
@@ -49,6 +55,17 @@ class IsDataPrepper(permissions.BasePermission):
     def has_permission(self, request, view):
         """Check if a user is a data prepper."""
         return is_in_group(request.user, "Data Prepper")
+
+
+class CanDownloadReport(permissions.BasePermission):
+    """Permission for report download."""
+
+    def has_permission(self, request, view):
+        """Check if a user can download file."""
+        is_ofa_admin = bool(
+            is_in_group(request.user, 'OFA Admin') and view.kwargs.get('stt')
+        )
+        return is_ofa_admin or is_own_stt(request, view)
 
 
 class CanUploadReport(permissions.BasePermission):
