@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import fileType from 'file-type/browser'
@@ -21,7 +21,7 @@ const INVALID_FILE_ERROR =
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
-  const { files, year, downloadedFile } = useSelector((state) => state.reports)
+  const { files, year } = useSelector((state) => state.reports)
 
   const dispatch = useDispatch()
 
@@ -56,7 +56,7 @@ function FileUpload({ section, setLocalAlertState }) {
       }
     }
     if (hasFile) trySettingPreview()
-  }, [hasFile, fileName, handlePreview, targetClassName])
+  }, [hasFile, fileName, targetClassName])
 
   const downloadFile = ({ target }) => {
     dispatch(clearError({ section: sectionName }))
