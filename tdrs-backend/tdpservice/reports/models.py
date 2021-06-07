@@ -94,16 +94,12 @@ class ReportFile(File):
 
     version = models.IntegerField()
 
-    user = models.ForeignKey(User,
-                             on_delete=models.CASCADE,
-                             related_name="user",
-                             blank=False,
-                             null=False)
-    stt = models.ForeignKey(STT,
-                            on_delete=models.CASCADE,
-                            related_name="sttRef",
-                            blank=False,
-                            null=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="user", blank=False, null=False
+    )
+    stt = models.ForeignKey(
+        STT, on_delete=models.CASCADE, related_name="sttRef", blank=False, null=False
+    )
 
     # NOTE: `file` is only temporarily nullable until we complete the issue:
     # https://github.com/raft-tech/TANF-app/issues/755
@@ -120,24 +116,24 @@ class ReportFile(File):
         # EDGE CASE
         # We may need to try to get this all in one sql query
         # if we ever encounter race conditions.
-        version = (self.find_latest_version_number(year=data['year'],
-                                                   quarter=data['quarter'],
-                                                   section=data['section'],
-                                                   stt=data['stt']) or 0) + 1
+        version = (
+            self.find_latest_version_number(
+                year=data["year"],
+                quarter=data["quarter"],
+                section=data["section"],
+                stt=data["stt"],
+            )
+            or 0
+        ) + 1
 
-        return ReportFile.objects.create(
-            version=version,
-            **data,
-        )
+        return ReportFile.objects.create(version=version, **data,)
 
     @classmethod
     def find_latest_version_number(self, year, quarter, section, stt):
         """Locate the latest version number in a series of report files."""
-        return self.objects.filter(stt=stt,
-                                   year=year,
-                                   quarter=quarter,
-                                   section=section).aggregate(
-                                       Max("version"))['version__max']
+        return self.objects.filter(
+            stt=stt, year=year, quarter=quarter, section=section
+        ).aggregate(Max("version"))["version__max"]
 
     @classmethod
     def find_latest_version(self, year, quarter, section, stt):
@@ -145,9 +141,5 @@ class ReportFile(File):
         version = self.find_latest_version_number(year, quarter, section, stt)
 
         return self.objects.filter(
-            version=version,
-            year=year,
-            quarter=quarter,
-            section=section,
-            stt=stt,
-        )[0]
+            version=version, year=year, quarter=quarter, section=section, stt=stt,
+        ).first()

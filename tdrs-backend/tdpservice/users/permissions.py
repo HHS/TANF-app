@@ -3,11 +3,17 @@
 from rest_framework import permissions
 
 
-def is_own_stt(request):
+def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
-    return is_in_group(request.user, "Data Prepper") and (
-        request.user.stt.id == int(request.data['stt'])
+    is_data_prepper = is_in_group(request.user, 'Data Prepper')
+    requested_stt = view.kwargs.get('stt', request.data.get('stt'))
+    user_stt = (
+        getattr(request.user.stt, 'id')
+        if (hasattr(request.user, 'stt') and request.user.stt is not None)
+        else None
     )
+
+    return is_data_prepper and user_stt and (requested_stt in [None, user_stt])
 
 
 def is_in_group(user, group_name):
@@ -51,6 +57,17 @@ class IsDataPrepper(permissions.BasePermission):
         return is_in_group(request.user, "Data Prepper")
 
 
+class CanDownloadReport(permissions.BasePermission):
+    """Permission for report download."""
+
+    def has_permission(self, request, view):
+        """Check if a user can download file."""
+        is_ofa_admin = bool(
+            is_in_group(request.user, 'OFA Admin') and view.kwargs.get('stt')
+        )
+        return is_ofa_admin or is_own_stt(request, view)
+
+
 class CanUploadReport(permissions.BasePermission):
     """Permission for report uploads."""
 
@@ -60,4 +77,7 @@ class CanUploadReport(permissions.BasePermission):
 
         If they are a data prepper, ensures the STT is their own.
         """
-        return is_in_group(request.user, "OFA Admin") or is_own_stt(request)
+        return (
+            is_in_group(request.user, "OFA Admin") or
+            is_own_stt(request, view)
+        )
