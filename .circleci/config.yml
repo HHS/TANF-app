@@ -229,7 +229,7 @@ jobs:
               until \$(awslocal s3api head-bucket --bucket \$AWS_BUCKET); do \
                 ((c++)) && ((c==10)) && exit 1; \
                 sleep 5; \
-              done"
+              done; echo \"S3 bucket is available\""
       - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
           command: "cd tdrs-backend; docker-compose run --rm web bash -c \"pytest --cov-report=xml\""
