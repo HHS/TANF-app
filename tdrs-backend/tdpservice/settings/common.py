@@ -98,7 +98,7 @@ class Common(Configuration):
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "corsheaders.middleware.CorsMiddleware",
-        "tdpservice.users.api.middleware.AuthUpdateMiddleware"
+        "tdpservice.users.api.middleware.AuthUpdateMiddleware",
     )
 
     ALLOWED_HOSTS = ["*"]

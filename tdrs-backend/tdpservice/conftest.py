@@ -18,6 +18,7 @@ from tdpservice.users.test.factories import (
     StaffUserFactory,
     STTUserFactory,
     InactiveUserFactory,
+    AdminSTTUserFactory,
     DeactivatedUserFactory,
 )
 
@@ -40,6 +41,11 @@ def user():
 def stt_user():
     """Return a user without an STT for STT tests."""
     return STTUserFactory.create()
+
+@pytest.fixture
+def ofa_admin_stt_user():
+    """Return an admin user without an STT for Data Report tests."""
+    return AdminSTTUserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
 
 
 @pytest.fixture

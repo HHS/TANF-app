@@ -7,6 +7,27 @@ from rest_framework import status
 from ..models import ReportFile
 
 
+def multi_year_report_data(user, stt):
+    """Return report data that encompasses multiple years."""
+    return [{"original_filename": "report.txt",
+             "quarter": "Q1",
+             "user": user,
+             "stt": stt,
+             "year": 2020,
+             "section": "Active Case Data", },
+            {"original_filename": "report.txt",
+             "quarter": "Q1",
+             "user": user,
+             "stt": stt,
+             "year": 2021,
+             "section": "Active Case Data", },
+            {"original_filename": "report.txt",
+             "quarter": "Q1",
+             "user": user,
+             "stt": stt,
+             "year": 2022,
+             "section": "Active Case Data", }]
+
 @pytest.mark.django_db
 def test_create_report_file_entry(api_client, ofa_admin):
     """Test ability to create report file metadata registry."""
@@ -15,7 +36,7 @@ def test_create_report_file_entry(api_client, ofa_admin):
     data = {
         "original_filename": "report.txt",
         "quarter": "Q1",
-        "slug": uuid.uuid4(),
+        "slug": str(uuid.uuid4()),
         "user": user.id,
         "stt": user.stt.id,
         "year": 2020,
@@ -139,3 +160,91 @@ def test_reports_inactive_user_not_allowed(api_client, inactive_user):
 
     response = api_client.post("/v1/reports/", data)
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+@pytest.mark.django_db
+def test_list_report_years(api_client, data_prepper):
+    """Test list of years for which there exist a report as a data prepper."""
+    user = data_prepper
+
+    reports = multi_year_report_data(user, user.stt)
+
+    ReportFile.create_new_version(reports[0])
+    ReportFile.create_new_version(reports[1])
+    ReportFile.create_new_version(reports[2])
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get("/v1/reports/years")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == [
+        2020,
+        2021,
+        2022
+    ]
+
+@pytest.mark.django_db
+def test_list_ofa_admin_report_years(api_client, ofa_admin, stt):
+    """Test list of years for which there exist a report as an OFA admin."""
+    user = ofa_admin
+
+    reports = multi_year_report_data(user, stt)
+
+    ReportFile.create_new_version(reports[0])
+    ReportFile.create_new_version(reports[1])
+    ReportFile.create_new_version(reports[2])
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get(f"/v1/reports/years/{stt.id}")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == [
+        2020,
+        2021,
+        2022
+    ]
+
+
+@pytest.mark.django_db
+def test_list_ofa_admin_report_years_positional_stt(api_client, ofa_admin, stt):
+    """Test list year fail for OFA admin when no STT is provided."""
+    user = ofa_admin
+
+    data1, data2, data3 = multi_year_report_data(user, stt)
+
+    ReportFile.create_new_version(data1)
+    ReportFile.create_new_version(data2)
+    ReportFile.create_new_version(data3)
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get("/v1/reports/years")
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_list_ofa_admin_report_years_no_self_stt(api_client, ofa_admin_stt_user, stt):
+    """Test OFA Admin with no stt assigned can view list of years."""
+    user = ofa_admin_stt_user
+
+    data1, data2, data3 = multi_year_report_data(user, stt)
+
+    assert user.stt is None
+
+    ReportFile.create_new_version(data1)
+    ReportFile.create_new_version(data2)
+    ReportFile.create_new_version(data3)
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get(f"/v1/reports/years/{stt.id}")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    assert response.data == [
+        2020,
+        2021,
+        2022
+    ]
