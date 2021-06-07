@@ -40,7 +40,7 @@ function SplashPage() {
             <div className="usa-alert usa-alert--slim usa-alert--error margin-bottom-4">
               <div className="usa-alert__body">
                 <h3
-                  tabIndex="0"
+                  tabIndex="-1"
                   className="usa-alert__heading"
                   ref={alertRef}
                   aria-describedby="errorLabel"
