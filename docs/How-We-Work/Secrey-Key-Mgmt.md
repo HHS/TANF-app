@@ -20,7 +20,7 @@ Below are a list of steps the team is taking to help mitigate the incidence of s
 - Prioritize updating [gitignore](https://git-scm.com/docs/gitignore) before submitting any follow-on PRs that involve use of files that include secret keys. This will prevent any files that contain secret keys from being committed to the repo. 
 - Secret keys are to be retrieved from cloud.gov for local development purposes. Cloud.gov is a platform that requires these keys, and the dev team has access to the keys stored in the dev environment space. Therefore, this is a more secure approach for retrieving keys than relying on team members to share keys across other platforms/tools.  
 - No production keys will be stored on local machines, since this is unnecessary for development work.  In the event of unintended secret key leakage, this would have no impact on the production environment. Only people who have access to the production space in Cloud.gov will have access to prod keys.
-- At a minimum, ACF and vendor Tech Leads should be subscribed to tech tools we use to stay up-to-date on news that could impact project security. This includes: CircleCi, CodeCov, [*insert others that are relevant*]
+- At a minimum, ACF and vendor Tech Leads should be subscribed to tech tools we use to stay up-to-date on news that could impact project security. This includes: CircleCi, CodeCov, GitHub, Cloud.gov, Docker
 - As part of ACF Tech Lead's periodic review of environment variables, secret key rotation will be coordinated.
 
 ### Longer-term solutions to be implemented (these are housed under epic #972 ):
