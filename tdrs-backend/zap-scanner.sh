@@ -9,7 +9,7 @@
 
 echo "================== OWASP ZAP tests =================="
 chmod 777 $(pwd)/reports
-docker-compose exec zaproxy zap-full-scan.py \
+docker-compose run zaproxy zap-full-scan.py \
     -t http://web:8080/ \
     -m 5 \
     -z "${ZAP_CONFIG}" \
