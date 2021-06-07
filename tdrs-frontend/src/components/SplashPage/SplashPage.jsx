@@ -32,8 +32,6 @@ function SplashPage() {
     return null
   }
 
-  // adasdasdas asdasd
-
   return (
     <>
       <section className="usa-hero" aria-label="Introduction">
@@ -46,7 +44,6 @@ function SplashPage() {
                   className="usa-alert__heading"
                   ref={alertRef}
                   aria-describedby="errorLabel"
-                  id="errorLabelHeader"
                 >
                   Inactive Account
                 </h3>
@@ -56,15 +53,10 @@ function SplashPage() {
               </div>
             </div>
           )}
-          <label
-            id="errorLabel"
-            aria-hidden="true"
-            htmlFor="errorLabelHeader"
-            className="visually-hidden"
-          >
+          <span id="errorLabel" aria-hidden="true" className="visually-hidden">
             Inactive Account. Please email tanfdata@acf.hhs.gov to reactivate
             your account.
-          </label>
+          </span>
 
           <div className="usa-hero__callout">
             <h1 className="usa-hero__heading">
