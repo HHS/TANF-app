@@ -61,3 +61,16 @@ class CanUploadReport(permissions.BasePermission):
         If they are a data prepper, ensures the STT is their own.
         """
         return is_in_group(request.user, "OFA Admin") or is_own_stt(request)
+
+class CanDownloadReport(permissions.BasePermission):
+    """Permission for report download."""
+
+    def has_permission(self, request, view):
+        """Check if a user can download file."""
+        if is_in_group(request.user, "OFA Admin") and view.kwargs.get("stt"):
+            return True
+        elif request.user.is_authenticated:
+            return True
+        else:
+            return False
+
