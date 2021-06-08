@@ -24,7 +24,7 @@ update_frontend()
 
     cp -r build deployment/public
     cp  nginx/buildpack.nginx.conf deployment/nginx.conf
-    cp nginx/nginx.conf deployment/locations.conf
+    cp nginx/locations.conf deployment/locations.conf
     cp  nginx/mime.types deployment/mime.types
 
     cp manifest.buildpack.yml deployment/manifest.buildpack.yml
