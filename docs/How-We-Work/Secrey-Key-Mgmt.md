@@ -31,7 +31,7 @@ Below are a list of steps the team is taking to help mitigate the incidence of s
   - This will ensure that the key is not shared across any environments and never needs to be exposed to developers or stored outside of Cloud.gov.
 - Perform validation on Codecov Bash Uploader script during CI steps to ensure that it has not been tampered with before allowing it to execute in CI. (#968)
 - The `JWT_KEY (JWT_CERT_TEST)`  that is used for testing will be dynamically generated to allow us to reduce the number of keys stored in CI/CD environment variables. (#969)
-
+- Secret keys will be rotated whenever team members rotate off the project. We will soon be leveraging Terraform to automate provisioning of services (e.g. S3, RDS) and eventually to manage users with access to our cloud.gov environments, so the vision is to automate the process of rotating secret keys whenever our user list changes.  
 ## Communication protocol if secret keys are leaked
 Any member of the TDP who notices secret key leakage should alert the full TDP project team immediately as follows:
 
