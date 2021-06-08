@@ -34,7 +34,7 @@ Below are a list of steps the team is taking to help mitigate the incidence of s
 ## Communication protocol if secret keys are leaked
 Any member of the TDP who notices secret key leakage should alert the full TDP project team immediately as follows:
 
-- Send alert via Microsoft Teams `General` channel and be sure to cc: Product Owner, ACF Tech Lead, Product Manager, vendor Tech Lead. 
+- Send alert via Microsoft Teams `General` channel and be sure to cc: Product Owner, ACF Tech Lead, Product Manager, vendor Tech Lead. If Teams isn't available, please send an email and also alert team members via Mattermost. 
 
 - Include details of the leakage, which should include:
     - where the leakage ocurred
