@@ -48,7 +48,11 @@ function SplashPage() {
                   Inactive Account
                 </h3>
                 <p className="usa-alert__text" id="errorLabel">
-                  Please email tanfdata@acf.hhs.gov to reactivate your account.
+                  Please email{' '}
+                  <a className="usa-link" href="mailto: tanfdata@acf.hhs.gov">
+                    tanfdata@acf.hhs.gov
+                  </a>{' '}
+                  to reactivate your account.
                 </p>
               </div>
             </div>
