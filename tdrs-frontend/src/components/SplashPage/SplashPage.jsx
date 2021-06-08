@@ -32,8 +32,6 @@ function SplashPage() {
     return null
   }
 
-  //asdasdas
-
   return (
     <>
       <section className="usa-hero" aria-label="Introduction">
