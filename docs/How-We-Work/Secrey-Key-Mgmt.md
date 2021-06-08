@@ -23,7 +23,7 @@ Below are a list of steps the team is taking to help mitigate the incidence of s
 - At a minimum, ACF and vendor Tech Leads should be subscribed to tech tools we use to stay up-to-date on news that could impact project security. This includes: CircleCi, CodeCov, GitHub, Cloud.gov, Docker
 - As part of ACF Tech Lead's periodic review of environment variables, secret key rotation will be coordinated.
 
-### Longer-term solutions to be implemented (these are housed under epic #972 ):
+### Longer-term solutions to be implemented (these are housed under epic [#972](https://github.com/raft-tech/TANF-app/issues/972):
 - Automated tool will be added to detect secret keys before local developers can commit changes to project repo (#965) 
 - Add .dockerconfig file as an extra layer of security against accidentally leaking secrets as part of local development (#544)
 - Automated testing step will be added in CircleCI to check for secret keys and stop the CI process if keys are detected (#966)
