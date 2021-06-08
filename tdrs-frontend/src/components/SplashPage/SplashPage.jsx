@@ -21,8 +21,10 @@ function SplashPage() {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
   }
   useEffect(() => {
-    setTimeout(() => alertRef?.current?.focus(), 2)
-  }, [alertRef])
+    if (isInactive) {
+      setTimeout(() => alertRef?.current?.focus(), 2)
+    }
+  }, [alertRef, isInactive])
 
   if (authenticated) {
     return <Redirect to="/edit-profile" />
