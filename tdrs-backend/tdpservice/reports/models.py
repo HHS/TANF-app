@@ -1,22 +1,31 @@
 """Define report models."""
 import os
-import uuid
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Max
+from storages.backends.s3boto3 import S3Boto3Storage
 
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
 
 def get_s3_upload_path(instance, filename):
-    """Produce an upload path for S3 files that is guaranteed to be unique
-    per STT and Quarter.
-    """
+    """Produce a unique upload path for S3 files for a given STT and Quarter."""
     return os.path.join(
         f'data_files/{instance.stt.id}/{instance.quarter}',
         filename
     )
+
+
+class DataFilesS3Storage(S3Boto3Storage):
+    """An S3 backed storage provider for user uploaded Data Files.
+
+    This class is used instead of the built-in to allow specifying a distinct
+    bucket from the one used to store Django Admin static files.
+    """
+
+    bucket_name = settings.DATA_FILES_AWS_STORAGE_BUCKET_NAME
 
 
 # The Report File model was starting to explode, and I think that keeping this logic
@@ -39,7 +48,7 @@ class File(models.Model):
     slug = models.CharField(max_length=256, blank=False, null=False)
     # Not all files will have the correct extension,
     # or even have one at all. The UI will provide this information
-    # seperately
+    # separately
     extension = models.CharField(max_length=8, default="txt")
 
 
@@ -71,6 +80,7 @@ class ReportFile(File):
                 name="constraint_name",
             )
         ]
+
     created_at = models.DateTimeField(auto_now_add=True)
     quarter = models.CharField(max_length=16,
                                blank=False,
@@ -84,24 +94,21 @@ class ReportFile(File):
 
     version = models.IntegerField()
 
-    user = models.ForeignKey(User,
-                             on_delete=models.CASCADE,
-                             related_name="user",
-                             blank=False,
-                             null=False)
-    stt = models.ForeignKey(STT,
-                            on_delete=models.CASCADE,
-                            related_name="sttRef",
-                            blank=False,
-                            null=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="user", blank=False, null=False
+    )
+    stt = models.ForeignKey(
+        STT, on_delete=models.CASCADE, related_name="sttRef", blank=False, null=False
+    )
 
     # NOTE: `file` is only temporarily nullable until we complete the issue:
     # https://github.com/raft-tech/TANF-app/issues/755
-    file = models.FileField(upload_to=get_s3_upload_path,
-                            null=True,
-                            blank=True)
-
-    # In [43]: report.file._file.obj.download_fileobj(filel, ExtraArgs={'VersionId': 'b47b4b60-3bd9-4c2e-a08d-0de530e627c4'})
+    file = models.FileField(
+        storage=DataFilesS3Storage,
+        upload_to=get_s3_upload_path,
+        null=True,
+        blank=True
+    )
 
     @classmethod
     def create_new_version(self, data):
@@ -109,24 +116,24 @@ class ReportFile(File):
         # EDGE CASE
         # We may need to try to get this all in one sql query
         # if we ever encounter race conditions.
-        version = (self.find_latest_version_number(year=data['year'],
-                                                   quarter=data['quarter'],
-                                                   section=data['section'],
-                                                   stt=data['stt']) or 0) + 1
+        version = (
+            self.find_latest_version_number(
+                year=data["year"],
+                quarter=data["quarter"],
+                section=data["section"],
+                stt=data["stt"],
+            )
+            or 0
+        ) + 1
 
-        return ReportFile.objects.create(
-            version=version,
-            **data,
-        )
+        return ReportFile.objects.create(version=version, **data,)
 
     @classmethod
     def find_latest_version_number(self, year, quarter, section, stt):
         """Locate the latest version number in a series of report files."""
-        return self.objects.filter(stt=stt,
-                                   year=year,
-                                   quarter=quarter,
-                                   section=section).aggregate(
-                                       Max("version"))['version__max']
+        return self.objects.filter(
+            stt=stt, year=year, quarter=quarter, section=section
+        ).aggregate(Max("version"))["version__max"]
 
     @classmethod
     def find_latest_version(self, year, quarter, section, stt):
@@ -134,9 +141,5 @@ class ReportFile(File):
         version = self.find_latest_version_number(year, quarter, section, stt)
 
         return self.objects.filter(
-            version=version,
-            year=year,
-            quarter=quarter,
-            section=section,
-            stt=stt,
-        )[0]
+            version=version, year=year, quarter=quarter, section=section, stt=stt,
+        ).first()

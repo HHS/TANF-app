@@ -7,28 +7,41 @@ from tdpservice.reports.models import ReportFile
 
 @pytest.mark.usefixtures('db')
 class ReportFileAPITestBase:
+    """A base test class for tests that interact with the ReportFileViewSet.
+
+    Provides several fixtures and methods that are commonly used between tests.
+    Intended to simplify creating tests for different user flows.
+    """
+
     root_url = '/v1/reports/'
 
     @pytest.fixture
     def user(self):
-        """This fixture must be overridden in each child test class."""
+        """User instance that will be used to log in to the API client.
+
+        This fixture must be overridden in each child test class.
+        """
         raise NotImplementedError()
 
     @pytest.fixture
     def api_client(self, api_client, user):
+        """Provide an API client that is logged in with the specified user."""
         api_client.login(username=user.username, password='test_password')
         return api_client
 
     @staticmethod
     def assert_report_created(response):
+        """Assert that the report was created."""
         assert response.status_code == status.HTTP_201_CREATED
 
     @staticmethod
     def assert_report_rejected(response):
+        """Assert that a given report submission was rejected."""
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @staticmethod
     def assert_report_exists(report_data, version, user):
+        """Confirm that a report matching the provided data exists in the DB."""
         assert ReportFile.objects.filter(
             slug=report_data["slug"],
             year=report_data["year"],
@@ -38,6 +51,7 @@ class ReportFileAPITestBase:
         ).exists()
 
     def post_report_file(self, api_client, report_data):
+        """Submit a report with the given data."""
         return api_client.post(
             self.root_url,
             report_data,
@@ -46,6 +60,8 @@ class ReportFileAPITestBase:
 
 
 class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
+    """Test ReportFileViewSet as an OFA Admin user."""
+
     @pytest.fixture
     def user(self, ofa_admin):
         """Override the default user with ofa_admin for our tests."""
@@ -57,7 +73,13 @@ class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
         self.assert_report_created(response)
         self.assert_report_exists(report_data, 1, user)
 
-    def test_report_file_version_increment(self, api_client, report_data, other_report_data, user):
+    def test_report_file_version_increment(
+        self,
+        api_client,
+        report_data,
+        other_report_data,
+        user
+    ):
         """Test that report file version numbers incremented."""
         response1 = self.post_report_file(api_client, report_data)
         response2 = self.post_report_file(api_client, other_report_data)
@@ -70,6 +92,8 @@ class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
 
 
 class TestReportFileAPIAsDataPrepper(ReportFileAPITestBase):
+    """Test ReportFileViewSet as a Data Prepper user."""
+
     @pytest.fixture
     def user(self, data_prepper):
         """Override the default user with data_prepper for our tests."""
@@ -90,6 +114,8 @@ class TestReportFileAPIAsDataPrepper(ReportFileAPITestBase):
 
 
 class TestReportFileAPIAsInactiveUser(ReportFileAPITestBase):
+    """Test ReportFileViewSet as an inactive user."""
+
     @pytest.fixture
     def user(self, inactive_user):
         """Override the default user with inactive_user for our tests."""
@@ -104,3 +130,115 @@ class TestReportFileAPIAsInactiveUser(ReportFileAPITestBase):
         """Test that an inactive user can't add reports at all."""
         response = self.post_report_file(api_client, report_data)
         self.assert_report_rejected(response)
+
+
+def multi_year_report_data(user, stt):
+    """Return report data that encompasses multiple years."""
+    return [{"original_filename": "report.txt",
+             "quarter": "Q1",
+             "user": user,
+             "stt": stt,
+             "year": 2020,
+             "section": "Active Case Data", },
+            {"original_filename": "report.txt",
+             "quarter": "Q1",
+             "user": user,
+             "stt": stt,
+             "year": 2021,
+             "section": "Active Case Data", },
+            {"original_filename": "report.txt",
+             "quarter": "Q1",
+             "user": user,
+             "stt": stt,
+             "year": 2022,
+             "section": "Active Case Data", }]
+
+
+@pytest.mark.django_db
+def test_list_report_years(api_client, data_prepper):
+    """Test list of years for which there exist a report as a data prepper."""
+    user = data_prepper
+
+    reports = multi_year_report_data(user, user.stt)
+
+    ReportFile.create_new_version(reports[0])
+    ReportFile.create_new_version(reports[1])
+    ReportFile.create_new_version(reports[2])
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get("/v1/reports/years")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == [
+        2020,
+        2021,
+        2022
+    ]
+
+
+@pytest.mark.django_db
+def test_list_ofa_admin_report_years(api_client, ofa_admin, stt):
+    """Test list of years for which there exist a report as an OFA admin."""
+    user = ofa_admin
+
+    reports = multi_year_report_data(user, stt)
+
+    ReportFile.create_new_version(reports[0])
+    ReportFile.create_new_version(reports[1])
+    ReportFile.create_new_version(reports[2])
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get(f"/v1/reports/years/{stt.id}")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == [
+        2020,
+        2021,
+        2022
+    ]
+
+
+@pytest.mark.django_db
+def test_list_ofa_admin_report_years_positional_stt(api_client, ofa_admin, stt):
+    """Test list year fail for OFA admin when no STT is provided."""
+    user = ofa_admin
+
+    data1, data2, data3 = multi_year_report_data(user, stt)
+
+    ReportFile.create_new_version(data1)
+    ReportFile.create_new_version(data2)
+    ReportFile.create_new_version(data3)
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get("/v1/reports/years")
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_list_ofa_admin_report_years_no_self_stt(api_client, ofa_admin_stt_user, stt):
+    """Test OFA Admin with no stt assigned can view list of years."""
+    user = ofa_admin_stt_user
+
+    data1, data2, data3 = multi_year_report_data(user, stt)
+
+    assert user.stt is None
+
+    ReportFile.create_new_version(data1)
+    ReportFile.create_new_version(data2)
+    ReportFile.create_new_version(data3)
+
+    api_client.login(username=user.username, password="test_password")
+
+    response = api_client.get(f"/v1/reports/years/{stt.id}")
+
+    assert response.status_code == status.HTTP_200_OK
+
+    assert response.data == [
+        2020,
+        2021,
+        2022
+    ]

@@ -1,21 +1,25 @@
 """Globally available pytest fixtures."""
+import pytest
+from django.contrib.admin.models import LogEntry
+from django.contrib.admin.sites import AdminSite
 from io import StringIO
-from tempfile import NamedTemporaryFile
 import uuid
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Group
 from factory.faker import faker
 from rest_framework.test import APIClient
-import pytest
 
-from tdpservice.reports.test.factories import ReportFileFactory
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
+from tdpservice.core.admin import LogEntryAdmin
+from tdpservice.reports.test.factories import ReportFileFactory
 from tdpservice.users.test.factories import (
     UserFactory,
     AdminUserFactory,
     StaffUserFactory,
     STTUserFactory,
-    InactiveUserFactory
+    InactiveUserFactory,
+    AdminSTTUserFactory
 )
 
 _faker = faker.Faker()
@@ -37,6 +41,11 @@ def user():
 def stt_user():
     """Return a user without an STT for STT tests."""
     return STTUserFactory.create()
+
+@pytest.fixture
+def ofa_admin_stt_user():
+    """Return an admin user without an STT for Data Report tests."""
+    return AdminSTTUserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
 
 
 @pytest.fixture
@@ -104,48 +113,42 @@ def infected_file():
     )
 
 
-def create_temporary_file(
-    file_contents: str,
-    suffix: str = '.txt'
-) -> NamedTemporaryFile:
+def create_temporary_file(file, file_name) -> SimpleUploadedFile:
     """Create a temporary file with an explicit name from a given string."""
-    file = NamedTemporaryFile(suffix=suffix)
-    file_contents_bytes = str.encode(file_contents)
-    file.write(file_contents_bytes)
     file.seek(0)
-
-    return file
+    file_contents = file.read().encode()
+    return SimpleUploadedFile(file_name, file_contents)
 
 
 @pytest.fixture
-def data_file(fake_file):
+def data_file(fake_file, fake_file_name):
     """Temporary file for testing file uploads."""
-    return create_temporary_file(fake_file.read())
+    return create_temporary_file(fake_file, fake_file_name)
 
 
 @pytest.fixture
-def other_data_file(fake_file):
+def other_data_file(fake_file, fake_file_name):
     """Additional temporary file for testing file uploads.
 
     Since temporary files are destroyed as soon as they are closed and fixtures
     are only run once per function by default we need to have a second file
     available for tests that perform multiple uploads.
     """
-    fake_file.seek(0)
-    return create_temporary_file(fake_file.read())
+    return create_temporary_file(fake_file, fake_file_name)
 
 
 @pytest.fixture
-def infected_data_file(infected_file):
+def infected_data_file(infected_file, fake_file_name):
     """Temporary file intended to be marked as infected by ClamAV-REST."""
-    return create_temporary_file(infected_file.read())
+    return create_temporary_file(infected_file, fake_file_name)
 
 
 @pytest.fixture
 def base_report_data(fake_file_name, user):
+    """Return report creation data without a file."""
     return {
         "original_filename": fake_file_name,
-        "slug": uuid.uuid4(),
+        "slug": str(uuid.uuid4()),
         "extension": "txt",
         "section": "Active Case Data",
         "user": str(user.id),
@@ -186,3 +189,9 @@ def infected_report_data(base_report_data, infected_data_file):
 def report():
     """Return a report file."""
     return ReportFileFactory.create()
+
+
+@pytest.fixture
+def admin():
+    """Return a custom LogEntryAdmin."""
+    return LogEntryAdmin(LogEntry, AdminSite())

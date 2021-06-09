@@ -1,0 +1,11 @@
+---
+version: 1
+applications:
+- name: tdp-frontend
+  buildpacks:
+    - nginx_buildpack
+  memory: 32M
+  instances: 1
+  disk_quota: 256M
+  timeout: 180
+

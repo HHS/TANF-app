@@ -14,6 +14,12 @@ class User(AbstractUser):
     stt = models.ForeignKey(STT, on_delete=models.CASCADE, blank=True, null=True)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
 
+    # The unique `sub` UUID from decoded login.gov payloads.
+    login_gov_uuid = models.UUIDField(editable=False,
+                                      blank=True,
+                                      null=True,
+                                      unique=True)
+
     def __str__(self):
         """Return the username as the string representation of the object."""
         return self.username

@@ -10,6 +10,7 @@ import FileUpload from '../FileUpload'
 import axiosInstance from '../../axios-instance'
 import { clearError } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
+import { fileUploadSections } from '../../reducers/reports'
 
 function UploadReport({ handleCancel, header, stt }) {
   // The currently selected year from the reportingYears dropdown
@@ -37,13 +38,6 @@ function UploadReport({ handleCancel, header, stt }) {
   useEffect(() => {
     headerRef.current.focus()
   }, [])
-
-  const fileUploadSections = [
-    'Active Case Data',
-    'Closed Case Data',
-    'Aggregate Data',
-    'Stratum Data',
-  ]
 
   const filteredFiles = files.filter((file) => file.fileName)
   const uploadedSections = filteredFiles
@@ -98,14 +92,29 @@ function UploadReport({ handleCancel, header, stt }) {
     )
 
     Promise.all(uploadRequests)
-      .then(() => {
+      .then((responses) => {
         setLocalAlertState({
           active: true,
           type: 'success',
           message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
         })
         clearErrorState()
-        logger.alert(`Submitted data files`)
+
+        const submittedFiles = responses.map(
+          (response) =>
+            `${response?.data?.original_filename} (${response?.data?.extension})`
+        )
+
+        // Create LogEntries in Django for each created ReportFile
+        logger.alert(
+          `Submitted ${
+            submittedFiles.length
+          } data file(s): ${submittedFiles.join(', ')}`,
+          {
+            files: responses.map((response) => response?.data?.id),
+            activity: 'upload',
+          }
+        )
       })
       .catch((error) => console.error(error))
   }

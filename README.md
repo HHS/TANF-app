@@ -3,8 +3,7 @@
 || Raft-Tech(raft-tdp-main) |  HHS(main) |
 |---|---|---|
 |**Build**| [![CircleCI-Dev](https://circleci.com/gh/raft-tech/TANF-app/tree/raft-tdp-main.svg?style=shield)](https://circleci.com/gh/raft-tech/TANF-app/tree/raft-tdp-main) | [![CircleCI-HHS](https://circleci.com/gh/HHS/TANF-app/tree/main.svg?style=shield)](https://circleci.com/gh/HHS/TANF-app/tree/main)|
-|**Security Frontend**| [![Security-Frontend-Dev](https://snyk.io/test/github/raft-tech/TANF-app/badge.svg)](https://snyk.io/test/github/raft-tech/TANF-app)  | [![Security-Frontend-HHS](https://snyk.io/test/github/HHS/TANF-app/badge.svg)](https://snyk.io/test/github/HHS/TANF-app)|
-|**Security Backend**| [![Security-Backend-Dev](https://snyk.io/test/github/raft-tech/TANF-app/badge.svg?targetFile=tdrs-backend/requirements.txt)](https://snyk.io/test/github/raft-tech/TANF-app) | [![Security-Backend-HHS](https://snyk.io/test/github/HHS/TANF-app/badge.svg?targetFile=tdrs-backend/requirements.txt)](https://snyk.io/test/github/HHS/TANF-app)
+|**Security**| [Dependabot-Dev](https://github.com/raft-tech/TANF-app/security/dependabot) | [Advisories-HHS](https://github.com/HHS/TANF-app/security/advisories) |
 |**Frontend Coverage**| [![Codecov-Frontend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main/graph/badge.svg?flag=dev-frontend)](https://codecov.io/gh/raft-tech/TANF-app?flag=dev-frontend) | [![Codeco-Frontend-HHS](https://codecov.io/gh/HHS/TANF-app/branch/main/graph/badge.svg?flag=main-frontend)](https://codecov.io/gh/HHS/TANF-app?flag=main-frontend)   |
 |**Backend Coverage**|  [![Codecov-Backend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main/graph/badge.svg?flag=dev-backend)](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main?flag=dev-backend)|   [![Codecov-Backend-HHS]( https://codecov.io/gh/HHS/TANF-app/branch/main/graph/badge.svg?flag=main-backend)](https://codecov.io/gh/HHS/TANF-app/branch/main?flag=main-backend) |
 
@@ -97,6 +96,30 @@ Which deployment environment within Cloud.gov the deploy job targets depends on 
 
 Note that the Production environment is omitted above, since `main` is a protected branch commits can't be made directly
 to it so there is no path to be able to deploy straight to Production from labels on PRs.
+
+#### Deploying from local environments
+* NOTE: This only applies to deployments targeting the tanf-dev space.
+
+In the case where a developer needs to make changes to the actual scripts used by Circle CI for deployments (found in
+the /scripts folder at the root of this project) these scripts can also be run locally provided that
+the developer has an active account in Cloud.gov and has been granted the "Developer" role.
+
+You must first install the [Cloud Foundry CLI tool](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
+
+There are several environment variables that may be needed for the backend depending on the deployment strategy used
+which must be kept secret and as such should not be stored anywhere outside of Cloud.gov / Circle CI. In order to
+retrieve these values to supply to the deploy script you can use the following commands:
+```
+cf api https://api.fr.cloud.gov
+cf login --sso
+
+cf env tdp-backend
+```
+Before running your target script export any wanted variables from the output of that last command to your current shell
+by running:
+```
+export MY_VAR=[VALUE]
+```
 
 #### Communication around Deployments
 

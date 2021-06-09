@@ -21,7 +21,7 @@ ALLOWED_FILE_CONTENT_TYPES = [
 
 
 def _get_unsupported_msg(_type, value, supported_options):
-    """Constructs a message to convey an unsupported operation."""
+    """Construct a message to convey an unsupported operation."""
     return (
         f'Unsupported {_type}: {value}, supported {pluralize(_type)} '
         f'are: {supported_options}'
@@ -29,6 +29,7 @@ def _get_unsupported_msg(_type, value, supported_options):
 
 
 def validate_file_content_type(file):
+    """Validate the content type of a file is in our supported list."""
     file_content_type = file.content_type
 
     if file_content_type not in ALLOWED_FILE_CONTENT_TYPES:
@@ -41,6 +42,7 @@ def validate_file_content_type(file):
 
 
 def validate_file_extension(file):
+    """Validate the file extension of a file is in our supported list."""
     file_extension = (
         file.name.split('.')[-1].lower() if '.' in file.name else None
     )
@@ -55,6 +57,7 @@ def validate_file_extension(file):
 
 
 def validate_file_infection(file):
+    """Validate file is not infected by scanning with ClamAV."""
     av_client = ClamAVClient()
     try:
         is_file_clean = av_client.scan_file(file, file.name)
@@ -71,6 +74,7 @@ def validate_file_infection(file):
 
 
 def validate_data_file(file):
+    """Perform all validation steps on a given file."""
     validate_file_extension(file)
     validate_file_content_type(file)
     validate_file_infection(file)

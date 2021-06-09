@@ -6,26 +6,21 @@ from ..errors import ImmutabilityError
 
 
 @pytest.mark.django_db
-def test_serializer_with_valid_data(report, data_file):
+def test_serializer_with_valid_data(report_data):
     """If a serializer has valid data it will return a valid object."""
-    get_serializer = ReportFileSerializer(report)
-    create_serializer = ReportFileSerializer(data={
-        'file': data_file,
-        **get_serializer.data
-    })
+    create_serializer = ReportFileSerializer(data=report_data)
     create_serializer.is_valid(raise_exception=True)
     assert create_serializer.is_valid() is True
 
 
 @pytest.mark.django_db
-def test_serializer_increment_create(report):
+def test_serializer_increment_create(report_data, other_report_data):
     """Test serializer produces reports with correct version."""
-    get_serializer = ReportFileSerializer(report)
-    serializer_1 = ReportFileSerializer(data=get_serializer.data)
+    serializer_1 = ReportFileSerializer(data=report_data)
     assert serializer_1.is_valid() is True
     report_1 = serializer_1.save()
 
-    serializer_2 = ReportFileSerializer(data=get_serializer.data)
+    serializer_2 = ReportFileSerializer(data=other_report_data)
     assert serializer_2.is_valid() is True
     report_2 = serializer_2.save()
 
@@ -51,10 +46,9 @@ def test_immutability_of_report(report):
 
 
 @pytest.mark.django_db
-def test_created_at(report):
+def test_created_at(report_data):
     """If a serializer has valid data it will return a valid object."""
-    get_serializer = ReportFileSerializer(report)
-    create_serializer = ReportFileSerializer(data=get_serializer.data)
+    create_serializer = ReportFileSerializer(data=report_data)
     assert create_serializer.is_valid() is True
     report = create_serializer.save()
 

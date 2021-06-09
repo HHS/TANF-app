@@ -77,8 +77,7 @@ def generate_client_assertion():
         # set token expiration to be 1 minute from current time
         "exp": int(round(time.time() * 1000)) + 60000,
     }
-    encoded_jwt = jwt.encode(payload, key=private_key, algorithm="RS256")
-    return encoded_jwt.decode("UTF-8")
+    return jwt.encode(payload, key=private_key, algorithm="RS256")
 
 
 """

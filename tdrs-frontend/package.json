@@ -44,7 +44,6 @@
     "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
-    "snyk": "snyk test",
     "test:accessibility": "concurrently -k -s first 'yarn start:ci' 'wait-on http://localhost:3000/ && yarn pa11y-ci --config .pa11yci.json'",
     "eject": "react-scripts eject",
     "lint": "eslint src/ && echo 'Lint complete.'"
@@ -66,15 +65,14 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^11.2.6",
-    "@testing-library/user-event": "^7.1.2",
-    "concurrently": "^6.0.0",
+    "@testing-library/react": "^11.2.7",
+    "concurrently": "^6.2.0",
     "cypress": "^4.12.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^7.22.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-cypress": "^2.11.2",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-cypress": "^2.11.3",
     "eslint-plugin-prettier": "^3.1.4",
     "jest-enzyme": "^7.1.2",
     "node-sass": "^5.0.0",
@@ -82,7 +80,6 @@
     "prettier": "^2.0.5",
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
-    "snyk": "^1.385.0",
     "wait-on": "^5.3.0"
   },
   "jest": {

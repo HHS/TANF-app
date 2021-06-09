@@ -99,7 +99,7 @@ class Common(Configuration):
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "corsheaders.middleware.CorsMiddleware",
-        "tdpservice.users.api.middleware.AuthUpdateMiddleware"
+        "tdpservice.users.api.middleware.AuthUpdateMiddleware",
     )
 
     ALLOWED_HOSTS = ["*"]
@@ -176,6 +176,9 @@ class Common(Configuration):
     # Store uploaded files in S3
     # http://django-storages.readthedocs.org/en/latest/index.html
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+    # Store uploaded Data Files in a separate AWS Bucket
+    DATA_FILES_AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_BUCKET')
 
     # Media files
     MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")
@@ -278,6 +281,7 @@ class Common(Configuration):
     # of API POST calls to prevent false negative authorization errors.
     # https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
     CSRF_COOKIE_HTTPONLY = False
+    CSRF_TRUSTED_ORIGINS = ['.app.cloud.gov', '.acf.hhs.gov']
 
     SESSION_COOKIE_PATH = "/;HttpOnly"
 
