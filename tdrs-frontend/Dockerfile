@@ -39,6 +39,7 @@ COPY --from=build /home/node/app/build /usr/share/nginx/html
 # it's necessary to overwrite the default nginx configurations:
 # remove default nginx configuration file, replace with custom conf
 RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx/nginx.conf /etc/nginx/conf.d
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx/locations.conf /etc/nginx/locations.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
