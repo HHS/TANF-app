@@ -220,7 +220,7 @@ function Reports() {
                 </div>
               )}
               {/* eslint-disable-next-line */}
-            <select
+              <select
                 className={classNames('usa-select maxw-mobile', {
                   'usa-combo-box__input--error': formValidation.quarter,
                 })}
