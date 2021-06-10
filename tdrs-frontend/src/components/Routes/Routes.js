@@ -1,5 +1,6 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
+import NoMatch from '../NoMatch'
 import SplashPage from '../SplashPage'
 import EditProfile from '../EditProfile'
 import PrivateRoute from '../PrivateRoute'
@@ -30,6 +31,9 @@ const Routes = () => {
       <PrivateRoute exact title="TANF Data Files" path="/data-files">
         <Reports />
       </PrivateRoute>
+      <Route path="*">
+        <NoMatch />
+      </Route>
     </Switch>
   )
 }
