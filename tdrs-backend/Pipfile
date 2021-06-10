@@ -16,6 +16,8 @@ pytest-django = "*"
 pytest-mock = "*"
 pyparsing = "*"
 pygraphviz = "*"
+awscli = "*"
+awscli-local = "*"
 
 [packages]
 boto3 = "~=1.17.79"
