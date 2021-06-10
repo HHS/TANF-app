@@ -7,8 +7,12 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 
+from tdpservice.reports.serializers import (
+    ReportFileSerializer,
+    DownloadReportFileSerializer
+)
 from tdpservice.reports.models import ReportFile
-from tdpservice.reports.serializers import ReportFileSerializer, DownloadReportFileSerializer
+
 from tdpservice.users.permissions import CanDownloadReport, CanUploadReport
 
 from django.http import StreamingHttpResponse
