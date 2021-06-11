@@ -507,19 +507,15 @@ describe('EditProfile', () => {
 
     const select = wrapper.find('.usa-select')
     select.simulate('change', {
-      target: { name: 'stt', value: 'alaska' },
+      target: { name: 'stt', value: 'Alaska' },
     })
-
-    // There should be four dispatches, three called `onChange` during
-    // the above selections, and 1 to fetch the STT list
-    expect(store.dispatch).toHaveBeenCalledTimes(4)
 
     const form = wrapper.find('.usa-form').hostNodes()
     form.simulate('submit', {
       preventDefault: () => {},
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(6)
+    expect(store.dispatch).toHaveBeenCalledTimes(1)
   })
 
   it('should dispatch "setAlert" when form is submitted and there is an error', () => {
@@ -560,7 +556,6 @@ describe('EditProfile', () => {
         <EditProfile />
       </Provider>
     )
-    // Account for the internal dispatch to fetch stts
-    expect(store.dispatch).toHaveBeenCalledTimes(2)
+    expect(store.dispatch).toHaveBeenCalledTimes(1)
   })
 })
