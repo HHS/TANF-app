@@ -56,7 +56,6 @@ A contributor to the TDP project would always use the following steps to propose
      * posts that PR is ready for QASP review in GitNotify channel in Teams and tags appropriate government reviewer.
 18. For PRs with `qasp-review` label, the appropriate government reviewer performs the review and/or requests changes. **GOAL** 5 days: 3 days to perform the review and 2 days to implement the requested changes.
     * When changes are asked for, the changes are made by the contributor. Raft reviewers should internalize the changes asked by the Government such that the same feedback is already incorporated and/or caught in future (continuous improvement)
-    * When security controls are approved by the Government, the Government reviewer will ask for additional reviews to be performed by OCIO
 19. When satisfied, the Government reviewer `approves` the PR and tags with the  `ready-to-merge` label. Government reviewer posts that PR is ready to merge in GitNotify channel on Teams.   
 20. The contributor clicks Merge into `raft-tdp-main`
 21. The contributor:
