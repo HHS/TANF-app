@@ -58,7 +58,7 @@ A contributor to the TDP project would always use the following steps to propose
     * When changes are asked for, the changes are made by the contributor. Raft reviewers should internalize the changes asked by the Government such that the same feedback is already incorporated and/or caught in future (continuous improvement)
 19. When satisfied, the Government reviewer `approves` the PR and tags with the  `ready-to-merge` label. Government reviewer posts that PR is ready to merge in GitNotify channel on Teams.   
 20. `abottoms-coder` clicks Merge into `raft-tdp-main`
-21. The contributor:
+21. `abottoms-coder` (or his back-up):
     * opens a PR from `raft-tdp-main` to `HHS:main`
     * Updates the PR template to change `addresses` to `closes` so that issue [can be automatically closed when the Government merges](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
     * Ensures the CI/CD pipelines are green
