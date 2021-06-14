@@ -95,6 +95,29 @@ class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
         """Override the default user with ofa_admin for our tests."""
         return ofa_admin
 
+    def test_get_report_file_meta_data(self, api_client, report_data, user):
+        """Assert the meta data the api provides is as expected."""
+        response = self.post_report_file(api_client, report_data)
+        report_id = response.data['id']
+        assert ReportFile.objects.get(id=report_id)
+        response = self.get_report_file(api_client, report_id)
+
+        assert response.data['id'] == report_id
+
+        assert str(response.data['user']) == report_data['user']
+
+        assert response.data['quarter'] == report_data['quarter']
+        assert response.data['stt'] == report_data['stt']
+        assert response.data['year'] == report_data['year']
+
+    def test_download_report_file(self, api_client, report_data, user):
+        """Test that the file is transmitted with out errors."""
+        response = self.post_report_file(api_client, report_data)
+        report_id = response.data['id']
+        response = self.download_file(api_client, report_id)
+
+        assert response.status_code == status.HTTP_200_OK
+
     def test_create_report_file_entry(self, api_client, report_data, user):
         """Test ability to create report file metadata registry."""
         response = self.post_report_file(api_client, report_data)
