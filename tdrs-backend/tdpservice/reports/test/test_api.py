@@ -31,6 +31,7 @@ class ReportFileAPITestBase:
 
     @staticmethod
     def get_report_record(report_data, version, user):
+        """Retrieve a report record using unique constraints"""
         return ReportFile.objects.filter(
             slug=report_data["slug"],
             year=report_data["year"],
@@ -75,17 +76,14 @@ class ReportFileAPITestBase:
         )
 
     def get_report_file(self, api_client, report_id):
+        """Get report file meta data."""
         return api_client.get(
             f"{self.root_url}{report_id}/"
         )
 
     def download_file(self, api_client, report_id):
-        url = f"{self.root_url}{report_id}/download/"
-        print(url)
-        return api_client.get(
-            url
-        )
-
+        """Stream a file for download."""
+        return api_client.get(f"{self.root_url}{report_id}/download/")
 
 class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
     """Test ReportFileViewSet as an OFA Admin user."""
