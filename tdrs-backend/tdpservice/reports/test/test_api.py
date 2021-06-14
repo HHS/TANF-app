@@ -30,6 +30,16 @@ class ReportFileAPITestBase:
         return api_client
 
     @staticmethod
+    def get_report_record(report_data, version, user):
+        return ReportFile.objects.filter(
+            slug=report_data["slug"],
+            year=report_data["year"],
+            section=report_data["section"],
+            version=version,
+            user=user,
+        )
+
+    @staticmethod
     def assert_report_created(response):
         """Assert that the report was created."""
         assert response.status_code == status.HTTP_201_CREATED
@@ -56,6 +66,24 @@ class ReportFileAPITestBase:
             self.root_url,
             report_data,
             format='multipart'
+        )
+
+    def get_report_files(self, api_client):
+        """Submit a report with the given data."""
+        return api_client.get(
+            self.root_url
+        )
+
+    def get_report_file(self, api_client, report_id):
+        return api_client.get(
+            f"{self.root_url}{report_id}/"
+        )
+
+    def download_file(self, api_client, report_id):
+        url = f"{self.root_url}{report_id}/download/"
+        print(url)
+        return api_client.get(
+            url
         )
 
 
