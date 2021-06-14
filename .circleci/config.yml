@@ -2,6 +2,8 @@ version: 2.1
 
 orbs:
   node: circleci/node@4.2.1
+  terraform: circleci/terraform@2.1.0
+  jq: circleci/jq@2.2.0
 
 executors:
   docker-executor:
@@ -25,7 +27,7 @@ commands:
   docker-compose-check:
     steps:
       - run:
-          name: Ensure docker-compose exists,otherwise install it.
+          name: Ensure docker-compose exists, otherwise install it.
           command: ./scripts/docker-compose-check.sh
 
   # This allows us to use the orb stanza for node/install within other commands
@@ -208,6 +210,70 @@ commands:
           backend-appname: <<parameters.backend-appname>>
           frontend-appname: <<parameters.frontend-appname>>
 
+  deploy-infrastructure:
+    parameters:
+      cf-env:
+        type: string
+        default: dev
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk update
+            apk add jq
+            apk add cloudfoundry-cli  --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - run:
+          name: Prepare Environment Variables
+          command: |
+            {
+              echo "env = \"<<parameters.cf-env>>\""
+              echo "cf_password = \"$<<parameters.cf-password>>\""
+              echo "cf_user = \"$<<parameters.cf-username>>\""
+              echo "cf_space_name = \"<<parameters.cf-space>>\""
+            } >> ./variables.tfvars
+
+      - run:
+          name: Export S3 Credentials
+          command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
+            {
+              echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)\""
+              echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
+              echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
+            } >> ./backend_config.tfvars
+
+      - terraform/init:
+          path: ./terraform
+          backend_config_file: ./backend_config.tfvars
+      - terraform/validate:
+          path: ./terraform
+      - terraform/fmt:
+          path: ./terraform
+      - terraform/plan:
+          path: ./terraform
+          var_file: ./variables.tfvars
+      - terraform/apply:
+          path: ./terraform
+          var_file: ./variables.tfvars
+
 jobs:
   test-backend:
     executor: machine-executor
@@ -276,22 +342,38 @@ jobs:
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
 
+  deploy-infrastructure-dev:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure
+
   deploy-dev:
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov
 
-  deploy-staging:
+  deploy-infrastructure-staging:
+    executor: terraform/default
     working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-env: staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+
+  deploy-staging:
     executor: docker-executor
+    working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
           frontend-appname: tdp-frontend-staging
           cf-password: CF_PASSWORD_STAGING
-          cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
 
   deploy-prod:
     executor: docker-executor
@@ -299,22 +381,36 @@ jobs:
     steps:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-prod
-          cf-password: CF_PASSWORD_PROD
-          cf-space: tanf-prod
-          cf-username: CF_USERNAME_PROD
           frontend-appname: tdp-frontend-prod
+          cf-password: CF_PASSWORD_PROD
+          cf-username: CF_USERNAME_PROD
+          cf-space: tanf-prod
 
 workflows:
   build-and-test:
     jobs:
+      - deploy-infrastructure-dev
       - test-backend
       - test-frontend
       - deploy-dev:
           requires:
-            - test-backend
-            - test-frontend
+            - deploy-infrastructure-dev
           filters:
             branches:
               only:
                 - raft-review
+
+
+      - deploy-infrastructure-staging:
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
+
+      - deploy-staging:
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
                 - raft-tdp-main

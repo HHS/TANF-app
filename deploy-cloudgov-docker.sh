@@ -47,7 +47,7 @@ service_exists()
 }
 
 
-# Performs a normal deployment unless rolling is specified in the fucntion call
+# Performs a normal deployment unless rolling is specified in the function call
 update_frontend()
 {
 	if [ "$1" = "rolling" ] ; then
@@ -61,7 +61,7 @@ update_frontend()
 	cf map-route $CGHOSTNAME_FRONTEND app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
 }
 
-# Performs a normal deployment unless rolling is specified in the fucntion call
+# Performs a normal deployment unless rolling is specified in the function call
 update_backend()
 {
 	if [ "$1" = "rolling" ] ; then
