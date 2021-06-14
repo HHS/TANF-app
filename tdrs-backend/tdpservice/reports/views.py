@@ -32,10 +32,11 @@ class ReportFileViewSet(ModelViewSet):
     @action(methods=["get"], detail=True)
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
-        record = DownloadReportFileSerializer(id=pk)
+        record = DownloadReportFileSerializer(ReportFile.objects.get(id=pk))
 
-        response = StreamingHttpResponse(streaming_content=record.file)
-        response['Content-Disposition'] = f'attachement; filename="{record.file_name}"'
+        response = StreamingHttpResponse(streaming_content=record.data['file'])
+        file_name = record.data['original_filename']
+        response['Content-Disposition'] = f'attachement; filename="{file_name}"'
         return response
 
 
