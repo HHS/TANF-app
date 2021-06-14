@@ -153,7 +153,7 @@ def base_report_data(fake_file_name, user):
         "section": "Active Case Data",
         "user": str(user.id),
         "quarter": "Q1",
-        "year": "2020",
+        "year": 2020,
         "stt": int(user.stt.id)
     }
 
