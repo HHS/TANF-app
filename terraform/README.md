@@ -119,10 +119,6 @@ These instructions describe the creation of a new S3 bucket to hold Terraform's 
 
 <!-- Links -->
 
-[aws-config]: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config
-[aws-install]: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html
-[cloudgov-bind]: https://cloud.gov/docs/deployment/managed-services/#bind-the-service-instance
-[cloudgov-deployer]: https://cloud.gov/docs/services/cloud-gov-service-account/
 [cloudgov-service-keys]: https://cloud.gov/docs/services/s3/#interacting-with-your-s3-bucket-from-outside-cloudgov
 [cf-install]: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html
 [tf]: https://www.terraform.io/downloads.html
