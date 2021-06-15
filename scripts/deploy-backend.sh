@@ -50,10 +50,11 @@ update_backend()
 }
 
 bind_backend_to_services() {
-    cf bind-service "$CGHOSTNAME_BACKEND" tdp-django-static-sandbox
-    cf bind-service "$CGHOSTNAME_BACKEND" tdp-storage-sandbox
-    cf bind-service "$CGHOSTNAME_BACKEND" tanf-storage
-    cf bind-service "$CGHOSTNAME_BACKEND" tdp-db
+		env=${$CF_SPACE"#tanf-"}
+    cf bind-service "$CGHOSTNAME_BACKEND" "tdp-static-sandbox-${env}"
+    cf bind-service "$CGHOSTNAME_BACKEND" "tdp-storage-sandbox-${env}"
+    cf bind-service "$CGHOSTNAME_BACKEND" "tanf-storage-${env}"
+    cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}"
 
     bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND"
 
