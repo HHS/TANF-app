@@ -379,10 +379,10 @@ jobs:
     steps:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-prod
-          frontend-appname: tdp-frontend-prod
           cf-password: CF_PASSWORD_PROD
-          cf-username: CF_USERNAME_PROD
           cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
+          frontend-appname: tdp-frontend-prod
 
 workflows:
   build-and-test:
