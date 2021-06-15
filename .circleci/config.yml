@@ -238,20 +238,10 @@ commands:
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-org: <<parameters.cf-org>>
-          cf-space: <<parameters.cf-space>>
+          cf-space: tanf-dev
           cf-username: <<parameters.cf-username>>
       - run:
-          name: Prepare Environment Variables
-          command: |
-            {
-              echo "env = \"<<parameters.cf-env>>\""
-              echo "cf_password = \"$<<parameters.cf-password>>\""
-              echo "cf_user = \"$<<parameters.cf-username>>\""
-              echo "cf_space_name = \"<<parameters.cf-space>>\""
-            } >> ./variables.tfvars
-
-      - run:
-          name: Export S3 Credentials
+          name: Export S3 Credentials for TFState
           command: |
             S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
             {
@@ -259,6 +249,15 @@ commands:
               echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
               echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
             } >> ./backend_config.tfvars
+      - run:
+          name: Prepare Terraform Variables
+          command: |
+            {
+              echo "env = \"<<parameters.cf-env>>\""
+              echo "cf_password = \"$<<parameters.cf-password>>\""
+              echo "cf_user = \"$<<parameters.cf-username>>\""
+              echo "cf_space_name = \"<<parameters.cf-space>>\""
+            } >> ./variables.tfvars
 
       - terraform/init:
           path: ./terraform

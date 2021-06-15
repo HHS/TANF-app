@@ -12,7 +12,7 @@ terraform {
 
   backend "s3" {
     bucket  = "cg-5940b4e1-0f70-44fc-b8df-9ec9be33c3a2"
-    key     = "terraform.tfstate.dev"
+    key     = "terraform.tfstate.${var.env}"
     encrypt = true
     region  = "us-gov-west-1"
   }
