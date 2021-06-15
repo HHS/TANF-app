@@ -1,6 +1,6 @@
 # Terraform
 
-These docs are verbose because this is technology with which developers will rarely interact. I suggest you settle in for a nice long read with your favorite drink of choice.
+These docs are verbose because this is technology with which developers will rarely interact. I suggest you read them entirely before attempting to run any listed commands.
 
 ## Prior Art
 
@@ -26,6 +26,14 @@ Terraform integrates into our CircleCI pipeline via the [Terraform orb][orb], an
 
 We use an S3 bucket created by Cloud Foundry in Cloud.gov as our remote backend for Terraform. This backend maintains the "state" of Terraform and makes it possible for us to make automated deployments based on changes to the Terraform configuration files. **This is the only part of our infrastructure that must be manually configured.**
 
+Note that a single S3 bucket maintains the Terraform State for both the development and staging environments, and this instance is deployed in the development space.
+
+|   | development  | staging  | production | 
+|---|---|---|---|
+| S3 Key | `terraform.tfstate.dev`   | `terraform.tfstate.staging`  | `terraform.tfstate.prod`  |
+| Service Space | `tanf-dev`  | `tanf-dev`  | `tanf-prod`  |
+
+
 ## Local Set Up For Manual Deployments
 
 Sometimes a developer will need to run Terraform locally to perform manual operations. Perhaps a new TF State S3 bucket needs to be created in another environment, or there are new services or other major configuration changes that need to be tested first.
@@ -46,8 +54,8 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
        cf login -a api.fr.cloud.gov --sso
        # Follow temporary authorization code prompt.
        
-       # Select the target org (probably hhs-acf-prototyping), 
-       # and the space within which you want to build infrastructure.
+       # Select the target org (probably `hhs-acf-prototyping`), 
+       # and the space within which you want to provision infrastructure.
        
        # Spaces:
        # dev = tanf-dev
@@ -69,11 +77,19 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
    # cf_user = "some-dev-user"
    # cf_password = "some-dev-password"
    # cf_space_name = "tanf-dev"
-   #
    ```
+   
+5. **Update backend**
+   
+   If you do not intend to make changes to the remote Terraform State for a respective environment, you should set a local backend in `main.tf`: 
+    
+   ```
+   backend "local" { }
+   ```
+
 ### Terraform State S3 Bucket
 
-The service key details provide you with the credentials that are used with common file transfer programs by humans or configured in external systems. Typically, you would create a unique service key for each external client of the bucket to make it easy to rotate credentials in case they are leaked.
+These instructions describe the creation of a new S3 bucket to hold Terraform's state. _This need only be done once per environment_ (note that currently development and staging environments share a single S3 bucket that exists in the development space). This is the only true manual steps that needs to be taken upon the initial application deployment in new environments. This should only need to be done at the beginning of a deployed app's lifetime. 
 
 1. **Create S3 Bucket for Terraform State**
 
@@ -82,10 +98,13 @@ The service key details provide you with the credentials that are used with comm
    ```
 
 1. **Create service key**
+   
+   Now we need a new service key with which to authenticate to our Cloud.gov S3 bucket from CircleCI.
 
    ```bash
    cf create-service-key tdp-tf-states tdp-tf-key
    ```
+   The service key details provide you with the credentials that are used with common file transfer programs by humans or configured in external systems. Typically, you would create a unique service key for each external client of the bucket to make it easy to rotate credentials in case they are leaked.
 
    > To later revoke access (e.g. when no longer required, or when compromised), you can run `cf delete-service-key tdp-tf-states tdp-tf-key`.
 
