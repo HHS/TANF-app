@@ -212,9 +212,9 @@ commands:
 
   deploy-infrastructure:
     parameters:
-      cf-env:
+      tf-path:
         type: string
-        default: dev
+        default: ./terraform/dev
       cf-password:
         type: env_var_name
         default: CF_PASSWORD_DEV
@@ -234,7 +234,7 @@ commands:
           command: |
             apk update
             apk add jq
-            apk add cloudfoundry-cli  --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+            apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-org: <<parameters.cf-org>>
@@ -253,24 +253,23 @@ commands:
           name: Prepare Terraform Variables
           command: |
             {
-              echo "env = \"<<parameters.cf-env>>\""
               echo "cf_password = \"$<<parameters.cf-password>>\""
               echo "cf_user = \"$<<parameters.cf-username>>\""
               echo "cf_space_name = \"<<parameters.cf-space>>\""
             } >> ./variables.tfvars
 
       - terraform/init:
-          path: ./terraform
+          path: <<parameters.tf-path>>
           backend_config_file: ./backend_config.tfvars
       - terraform/validate:
-          path: ./terraform
+          path: <<parameters.tf-path>>
       - terraform/fmt:
-          path: ./terraform
+          path: <<parameters.tf-path>>
       - terraform/plan:
-          path: ./terraform
+          path: <<parameters.tf-path>>
           var_file: ./variables.tfvars
       - terraform/apply:
-          path: ./terraform
+          path: <<parameters.tf-path>>
           var_file: ./variables.tfvars
 
 jobs:
@@ -358,10 +357,10 @@ jobs:
     working_directory: ~/tdp-deploy
     steps:
       - deploy-infrastructure:
-          cf-env: staging
           cf-password: CF_PASSWORD_STAGING
           cf-username: CF_USERNAME_STAGING
           cf-space: tanf-staging
+          tf-path: ./terraform/staging
 
   deploy-staging:
     executor: docker-executor

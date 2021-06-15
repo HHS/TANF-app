@@ -12,7 +12,7 @@ terraform {
 
   backend "s3" {
     bucket  = "cg-5940b4e1-0f70-44fc-b8df-9ec9be33c3a2"
-    key     = "terraform.tfstate.${var.env}"
+    key     = "terraform.tfstate.staging"
     encrypt = true
     region  = "us-gov-west-1"
   }
@@ -48,7 +48,7 @@ data "cloudfoundry_service" "rds" {
 }
 
 resource "cloudfoundry_service_instance" "database" {
-  name             = "tdp-db-${var.env}"
+  name             = "tdp-db-staging"
   space            = data.cloudfoundry_space.space.id
   service_plan     = data.cloudfoundry_service.rds.service_plans["micro-psql"]
   recursive_delete = true
@@ -63,14 +63,14 @@ data "cloudfoundry_service" "s3" {
 }
 
 resource "cloudfoundry_service_instance" "static_sandbox" {
-  name             = "tdp-static-sandbox-${var.env}"
+  name             = "tdp-static-sandbox-staging"
   space            = data.cloudfoundry_space.space.id
   service_plan     = data.cloudfoundry_service.s3.service_plans["basic"]
   recursive_delete = true
 }
 
 resource "cloudfoundry_service_instance" "storage_sandbox" {
-  name             = "tdp-storage-sandbox-${var.env}"
+  name             = "tdp-storage-sandbox-staging"
   space            = data.cloudfoundry_space.space.id
   service_plan     = data.cloudfoundry_service.s3.service_plans["basic"]
   recursive_delete = true

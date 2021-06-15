@@ -16,16 +16,10 @@ variable "cf_org_name" {
   default     = "hhs-acf-prototyping"
 }
 
-variable "env" {
-  type        = string
-  description = "deployment environment in shortened form (dev, staging, prod)"
-  default     = "dev"
-}
-
 variable "cf_space_name" {
   type        = string
   description = "cloud.gov space name"
-  default     = "tanf-dev"
+  default     = "tanf-staging"
 }
 
 variable "cf_user" {
