@@ -9,13 +9,14 @@ from rest_framework.decorators import action
 
 from tdpservice.reports.serializers import (
     ReportFileSerializer,
-    DownloadReportFileSerializer
 )
 from tdpservice.reports.models import ReportFile
 
 from tdpservice.users.permissions import CanDownloadReport, CanUploadReport
 
 from django.http import StreamingHttpResponse
+
+from wsgiref.util import FileWrapper
 
 logger = logging.getLogger()
 
