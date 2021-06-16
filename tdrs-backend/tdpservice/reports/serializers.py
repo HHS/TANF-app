@@ -44,20 +44,3 @@ class ReportFileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Throw an error if a user tries to update a report."""
         raise ImmutabilityError(instance, validated_data)
-
-
-class DownloadReportFileSerializer(serializers.ModelSerializer):
-    """Serializer for Report files."""
-
-    file = serializers.FileField(
-        read_only=True,
-    )
-
-    class Meta:
-        """Metadata."""
-
-        model = ReportFile
-        fields = [
-            "file",
-            "original_filename",
-        ]
