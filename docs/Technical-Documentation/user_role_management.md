@@ -90,7 +90,7 @@ For the OFA MVP, we will need to assign the Django built-in roles of `superuser`
 This will be needed for users to have access to the Django Admin interface detailed above.
 
 This guide will provide instructions on how to define them in local and deployed environments. 
-Access to the CLI is strictly controlled by the Product Owner.
+Access to the CLI is strictly controlled by the Product Owner. 
 
 
 **Local Development**
@@ -147,11 +147,11 @@ data_prepper.user_set.add(user)
 
 3.) After moving into the `tdpapp` directory, the admin will then have to set the alias for the python executable if it has not been set and execute the shell script to promote the existing user.
 
-Commands to move to the correct directory and make python available 
-```bash
-cd ../tdpapp
-alias pytemp='/usr/local/bin/python3.7'
-pytemp manage.py shell
+Commands to move to the correct directory and make python available  
+```bash 
+cd ../tdpapp 
+alias pytemp='/usr/local/bin/python3.7' 
+pytemp manage.py shell 
 ```
 
 Python script to promote the targer user to `superuser`: 
