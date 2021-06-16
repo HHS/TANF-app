@@ -110,7 +110,7 @@ s3_client.generate_presigned_url(**params)
 1. Run local unit tests by executing the following command.
 
 ```bash
-$ docker-compose run web sh -c "pytest"
+$ docker-compose run --rm web bash -c "./wait_for_services.sh && pytest"
 ```
 
 2. Run local linting tests by executing the following command:
