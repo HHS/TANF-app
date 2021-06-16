@@ -39,7 +39,7 @@ _Alternatively_
 ### Group List
 
 - Clicking on "Groups" from the Admin Home page gives you a list of all of the existing groups.
-- Current groups listed are "OFA Admin" and "Data Prepper".
+- Current groups listed are "System Admin", "OFA Admin" , and "Data Prepper" (this will be updated when [#940](https://github.com/raft-tech/TANF-app/issues/940) is addressed).
 
 ![](images/group_list.png)
 
@@ -77,7 +77,7 @@ _Alternatively_
 
 - When you click on a user from the User List, you can edit that user's information, including
 first name, last name and username, as well as the user's Active Status, Superuser Status, Staff Status, assigned Groups, STT and Region. You can
-also view the date and time the user joined and when they last logged in.
+also view the user's login.gov UUID, as well as the date and time the user joined and when they last logged in. Note: now that TDP users are identified via their login.gov [UUID](https://github.com/raft-tech/TANF-app/pull/894), any backend changes to the user's first, last, and username will be overwritten by these fields from the user's login.gov account the next time the user logs into TDP. 
 
 ![](images/admin_users.png)
 
