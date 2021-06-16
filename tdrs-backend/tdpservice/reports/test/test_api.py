@@ -116,6 +116,9 @@ class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
 
         assert response.status_code == status.HTTP_200_OK
 
+        report_file = ReportFile.objects.get(id=report_id)
+        assert b''.join(response.streaming_content) == report_file.file.read()
+
     def test_create_report_file_entry(self, api_client, report_data, user):
         """Test ability to create report file metadata registry."""
         response = self.post_report_file(api_client, report_data)
