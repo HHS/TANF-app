@@ -1,5 +1,5 @@
-# This file contains modified versions of code from:
-# https://github.com/uswds/uswds/blob/develop/src/js/components/file-input.js
+//This file contains modified versions of code from:
+//https://github.com/uswds/uswds/blob/develop/src/js/components/file-input.js
 export const PREFIX = 'usa'
 
 export const PREVIEW_HEADING_CLASS = `${PREFIX}-file-input__preview-heading`
