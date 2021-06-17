@@ -8,7 +8,7 @@
 * Jorge Gonzalez, Raft, frontend engineer
 * Aaron Beavers, Raft, backend engineer
 * Dmitri Knapp, Raft, visual designer
-* Shubhi Mishra, Raft, design lead + facilitator
+* Shubhi Mishra, Raft, design lead
 * Miles Reiter, Raft, user researcher
 * Angela Milash, Raft, product manager
 * John Willis, Raft, technical oversight support
@@ -60,4 +60,3 @@
 * Timothy Spencer, 18F, consulting engineer
 * Abbey Kos, 18F, research consultant
 * Randy Hart, 18F, acquisition consultant
-
