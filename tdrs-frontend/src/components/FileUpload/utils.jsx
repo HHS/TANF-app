@@ -11,9 +11,53 @@ export const GENERIC_PREVIEW_CLASS = `${GENERIC_PREVIEW_CLASS_NAME}--generic`
 
 export const HIDDEN_CLASS = 'display-none'
 export const INSTRUCTIONS_CLASS = `${PREFIX}-file-input__instructions`
+export const INVALID_FILE_CLASS = 'has-invalid-file'
+export const ACCEPTED_FILE_MESSAGE_CLASS = `${PREFIX}-file-input__accepted-files-message`
 
 const SPACER_GIF =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+
+/**
+ * Removes image previews, we want to start with a clean list every time files are added to the file input
+ * @param {HTMLElement} dropTarget - target area div that encases the input
+ * @param {HTMLElement} instructions - text to inform users to drag or select files
+ */
+const removeOldPreviews = (dropTarget, instructions) => {
+  const filePreviews = dropTarget.querySelectorAll(`.${PREVIEW_CLASS}`)
+  const currentPreviewHeading = dropTarget.querySelector(
+    `.${PREVIEW_HEADING_CLASS}`
+  )
+  const currentErrorMessage = dropTarget.querySelector(
+    `.${ACCEPTED_FILE_MESSAGE_CLASS}`
+  )
+
+  /**
+   * finds the parent of the passed node and removes the child
+   * @param {HTMLElement} node
+   */
+  const removeImages = (node) => {
+    node.parentNode.removeChild(node)
+  }
+
+  // Remove the heading above the previews
+  if (currentPreviewHeading) {
+    currentPreviewHeading.outerHTML = ''
+  }
+
+  // Remove existing error messages
+  if (currentErrorMessage) {
+    currentErrorMessage.outerHTML = ''
+    dropTarget.classList.remove(INVALID_FILE_CLASS)
+  }
+
+  // Get rid of existing previews if they exist, show instructions
+  if (filePreviews !== null) {
+    if (instructions) {
+      instructions.classList.remove(HIDDEN_CLASS)
+    }
+    Array.prototype.forEach.call(filePreviews, removeImages)
+  }
+}
 
 export const getTargetClassName = (formattedSectionName) =>
   `.${TARGET_CLASS} input#${formattedSectionName}`
@@ -24,6 +68,8 @@ export const handlePreview = (fileName, targetClassName) => {
 
   const instructions = dropTarget?.getElementsByClassName(INSTRUCTIONS_CLASS)[0]
   const filePreviewsHeading = document.createElement('div')
+
+  removeOldPreviews(dropTarget, instructions)
 
   // guard against the case that uswd has not yet rendered this
   if (!dropTarget || !instructions) return false
