@@ -31,7 +31,7 @@ class ReportFileAPITestBase:
 
     @staticmethod
     def get_report_record(report_data, version, user):
-        """Retrieve a report record using unique constraints"""
+        """Retrieve a report record using unique constraints."""
         return ReportFile.objects.filter(
             slug=report_data["slug"],
             year=report_data["year"],
