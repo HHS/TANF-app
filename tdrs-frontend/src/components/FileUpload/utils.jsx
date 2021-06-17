@@ -69,10 +69,11 @@ export const handlePreview = (fileName, targetClassName) => {
   const instructions = dropTarget?.getElementsByClassName(INSTRUCTIONS_CLASS)[0]
   const filePreviewsHeading = document.createElement('div')
 
-  removeOldPreviews(dropTarget, instructions)
 
   // guard against the case that uswd has not yet rendered this
   if (!dropTarget || !instructions) return false
+
+  removeOldPreviews(dropTarget, instructions)
 
   instructions.insertAdjacentHTML(
     'afterend',
