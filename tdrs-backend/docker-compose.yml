@@ -37,7 +37,7 @@ services:
     volumes:
       - localstack_data:/tmp/localstack
       # Copy in the Localstack setup script to configure any buckets needed
-      - ./localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
+      - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   web:
     restart: always
