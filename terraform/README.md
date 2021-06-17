@@ -73,19 +73,21 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
    # Should generate a file `variables.tfvars` in the current directory.
    # Your file should look something like this:
    #
-   # env = "dev"
    # cf_user = "some-dev-user"
    # cf_password = "some-dev-password"
    # cf_space_name = "tanf-dev"
    ```
    
-5. **Update backend**
-   
-   If you do not intend to make changes to the remote Terraform State for a respective environment, you should set a local backend in `main.tf`: 
-    
-   ```
-   backend "local" { }
-   ```
+## Test Deployment in Development
+
+- Follow the instructions above and ensure the `variables.tfvars` file has been generated with proper values.
+- `cd` into `/terraform/dev`
+- Run `terraform init`
+- Run `terraform destroy -var-file variables.tfvars` to clear the current deployment (if there is one).
+- Run `terraform plan -out tfapply -var-file variables.tfvars` to create a new execution plan.
+- Run `terraform apply "tfapply"` to create the new infrastructure.
+
+A similar test deployment can also be executed from the `/scripts/deploy-infrastructure-dev.sh` script, albeit without the `destroy` step.
 
 ### Terraform State S3 Bucket
 

@@ -12,12 +12,10 @@ CF_USERNAME_DEV=$(echo "$KEYS_JSON" | jq -r '.username')
 CF_PASSWORD_DEV=$(echo "$KEYS_JSON" | jq -r '.password')
 
 CF_SPACE="tanf-dev"
-CF_ENV="dev"
 
 touch variables.tfvars
 {
-	echo  "env = \"$CF_ENV\""
 	echo "cf_password = \"$CF_PASSWORD_DEV\""
 	echo "cf_user = \"$CF_USERNAME_DEV\""
 	echo "cf_space_name = \"$CF_SPACE\""
-} >> variables.tfvars
+} >> ./dev/variables.tfvars
