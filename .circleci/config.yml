@@ -255,7 +255,7 @@ jobs:
           command: "cd tdrs-frontend; yarn lint"
       - run:
           name: "Run Pa11y Accessibility Tests"
-          command: "cd tdrs-frontend; yarn test:accessibility"
+          command: "cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility"
       - run:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
