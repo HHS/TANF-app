@@ -38,9 +38,9 @@ A contributor to the TDP project would always use the following steps to propose
     * Update the title to remove `WIP`, change the PR to [Ready for Review](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/changing-the-stage-of-a-pull-request), assign label `raft-review`.
     * If your PR is against a branch other than `raft-tdp-main` keep it as a draft PR and add the tag `blocked` until the other branch is merged. 
 13. Assign a reviewer: 
-    * For development work, assign **at least two** Raft developers with one of them being `carltonsmith` or `jtwillis92` (**but not both**).
-    * For research and design assign `shubhi-raft` and `jenewingpierce`
-    * For security controls assign `carltonsmith`
+    * For development work, assign **at least two** Raft developers with one of them being `abottoms-coder` or `jtwillis92` (**but not both**).
+    * For research and design assign `shubhi-raft` 
+    * For security controls assign `abottoms-coder`
     * For documentation submitted by the Government tag `lfrohlich` and `adpennington` and remove label `raft-review`
     * For documentation submissions and updates by raft assign `lfrohlich` and `adpennington` and add label `QASP review`
 14. For PRs with `raft-review` label, the appropriate reviewer performs the review and/or requests changes. **GOAL** 3 days: 2 days to perform the review and 1 day to implement the requested changes. 
@@ -50,7 +50,7 @@ A contributor to the TDP project would always use the following steps to propose
     * removes `raft-review` label
     * adds `qasp-review` label
     * assigns the Government as the reviewer:
-        * For backend and frontend development work assign `adpennington` and `alexsoble`
+        * For backend and frontend development work assign `adpennington`
         * For frontend work submitted for review but does not yet complete the epic, `adpennington` will sign off on Raft's a11y documentation (e.g. screen captures with VoiceOver utility, summary of review, etc.) and cc: `ttran-hub`
         * For frontend work submitted for review that completes the epic, `adpennington` will complete code review, tag `ttran-hub` + `iamjolly` via comment, and add `a11y` label to PR. Gov a11y review team will use accessibility insights for manual testing. More information about how and when this process will be carried out is described [here.](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/how-government-will-test-a11y.md) 
         * For research and design work assign `lfrohlich`
