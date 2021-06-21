@@ -61,9 +61,7 @@ services:
     volumes:
       - .:/tdpapp
     image: tdp
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.local
+    build: .
     command: >
       bash -c "./wait_for_services.sh &&
                ./gunicorn_start.sh"
