@@ -1,4 +1,4 @@
-version: "3"
+version: "3.4"
 services:
   zaproxy:
     image: owasp/zap2docker-weekly
@@ -15,7 +15,7 @@ services:
     tty: true        # docker run -t
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      target: nginx
     ports:
       - 3000:80
     volumes:
