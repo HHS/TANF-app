@@ -114,6 +114,11 @@ These instructions describe the creation of a new S3 bucket to hold Terraform's 
    ```bash
    cf service-key tdp-tf-states tdp-tf-key
    ```
+   
+#### Security
+   
+   The Terraform State S3 instance is set to be encrypted (see `main.tf#backend`). Amazon S3 [protects data at rest][s3] using 256-bit Advanced Encryption Standard. 
+
    > **Rotating credentials:**
    > 
    > The S3 service creates unique IAM credentials for each application binding or service key. To rotate credentials associated with an application binding, unbind and rebind the service instance to the application. To rotate credentials associated with a service key, delete and recreate the service key.
@@ -127,3 +132,4 @@ These instructions describe the creation of a new S3 bucket to hold Terraform's 
 [tf-vars]: https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files
 [orb]: https://circleci.com/developer/orbs/orb/circleci/terraform
 [language]: https://www.terraform.io/docs/language/index.html
+[s3]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingServerSideEncryption.html
