@@ -13,6 +13,7 @@ executors:
   machine-executor:
     machine:
       docker_layer_caching: false
+      image: ubuntu-2004:202104-01
 
 commands:
   ###
