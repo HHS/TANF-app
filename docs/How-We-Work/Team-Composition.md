@@ -3,19 +3,14 @@
 * Lauren Frohlich, OFA, product owner
 * Alexandra Pennington, OFA, tech lead
 
-**18F**
-* Alex Soble, 18F, consulting engineer
-* Brian Hurst, 18F, consulting engineer
-
 **Raft**
-* Carlton Smith, Raft, tech lead
+* Andrew Bottoms, Raft, tech lead
 * Jorge Gonzalez, Raft, frontend engineer
 * Aaron Beavers, Raft, backend engineer
 * Dmitri Knapp, Raft, visual designer
-* Shubhi Mishra, Raft, design lead + facilitator
+* Shubhi Mishra, Raft, design lead
 * Miles Reiter, Raft, user researcher
-* Jennifer Pierce, Raft, senior user researcher
-* Kati Nizzi, Raft, product manager
+* Angela Milash, Raft, product manager
 * John Willis, Raft, technical oversight support
 
 ## Subject Matter Experts
@@ -47,6 +42,11 @@
 
 ## Past Product Team Members
 (most recent first)
+* Kati Nizzi, Raft, product manager
+* Jennifer Pierce, Raft, senior user researcher
+* Alex Soble, 18F, consulting engineer
+* Carlton Smith, Raft, tech lead
+* Brian Hurst, 18F, consulting engineer
 * Spencer Hilvitz, Raft, front end engineer
 * Romelo Nafarette, Raft consultant, security controls subject matter expert
 * Pat Asata, Raft, tech lead
@@ -60,4 +60,3 @@
 * Timothy Spencer, 18F, consulting engineer
 * Abbey Kos, 18F, research consultant
 * Randy Hart, 18F, acquisition consultant
-
