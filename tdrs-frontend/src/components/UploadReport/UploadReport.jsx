@@ -2,10 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
-import {
-  
-} from '../../actions/reports'
-
 import classNames from 'classnames'
 import Button from '../Button'
 
