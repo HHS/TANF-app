@@ -3,8 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
 import {
-  getAvailableFileList,
-  triggerDownloadDialog,
+  
 } from '../../actions/reports'
 
 import classNames from 'classnames'
@@ -12,7 +11,7 @@ import Button from '../Button'
 
 import FileUpload from '../FileUpload'
 import axiosInstance from '../../axios-instance'
-import { clearError } from '../../actions/reports'
+import { getAvailableFileList, clearError } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 import { fileUploadSections } from '../../reducers/reports'
 
