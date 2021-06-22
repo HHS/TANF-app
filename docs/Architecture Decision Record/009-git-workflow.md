@@ -40,6 +40,7 @@ A contributor to the TDP project would always use the following steps to propose
 13. Assign a reviewer: 
     * For development work, assign **at least two** Raft developers with one of them being `abottoms-coder` or `jtwillis92` (**but not both**).
     * For research and design assign `shubhi-raft` and `dk-u`
+    * For security controls assign `abottoms-coder`
     * For documentation submitted by the Government tag `lfrohlich` and `adpennington` and remove label `raft-review`
     * For documentation submissions and updates by raft assign `lfrohlich` and `adpennington` and add label `QASP review`
 14. For PRs with `raft-review` label, the appropriate reviewer performs the review and/or requests changes. **GOAL** 3 days: 2 days to perform the review and 1 day to implement the requested changes. 
