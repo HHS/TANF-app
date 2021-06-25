@@ -8,7 +8,7 @@ import { MemoryRouter, Redirect } from 'react-router-dom'
 import SplashPage from './SplashPage'
 
 describe('SplashPage', () => {
-  const initialState = { auth: { authenticated: false } }
+  const initialState = { auth: { authenticated: false, inactive: false } }
   const mockStore = configureStore([thunk])
 
   it('renders a sign in header', () => {
@@ -30,6 +30,19 @@ describe('SplashPage', () => {
       </Provider>
     )
     expect(wrapper.find('h1')).not.toIncludeText('SplashPage to TDRS!')
+  })
+
+  it('renders an Inactive Account alert if the user authenticates with an inactive account', () => {
+    const store = mockStore({
+      auth: { authenticated: false, inactive: true },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <SplashPage />
+      </Provider>
+    )
+    const alert = wrapper.find('.usa-alert--error')
+    expect(alert.find('h3')).toIncludeText('Inactive Account')
   })
 
   it('redirects to API login endpoint when sign-in button is clicked', () => {

@@ -8,6 +8,7 @@ import {
   SET_AUTH,
   CLEAR_AUTH,
   SET_AUTH_ERROR,
+  SET_DEACTIVATED,
 } from './auth'
 
 describe('actions/auth.js', () => {
@@ -60,5 +61,23 @@ describe('actions/auth.js', () => {
     const actions = store.getActions()
     expect(actions[0].type).toBe(FETCH_AUTH)
     expect(actions[1].type).toBe(SET_AUTH_ERROR)
+  })
+
+  it('clears the auth state and triggers dispatches if the API returns `inactive`', async () => {
+    axios.get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: {
+          authenticated: false,
+          inactive: true,
+        },
+      })
+    )
+    const store = mockStore()
+
+    await store.dispatch(fetchAuth())
+
+    const actions = store.getActions()
+    expect(actions[0].type).toBe(FETCH_AUTH)
+    expect(actions[1].type).toBe(SET_DEACTIVATED)
   })
 })
