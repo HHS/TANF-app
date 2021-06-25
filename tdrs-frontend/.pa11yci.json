@@ -23,7 +23,21 @@
     },
     {
       "url": "http://localhost:3000/edit-profile",
-      "screenCapture": "pa11y-screenshots/edit-profile.png"      
+      "screenCapture": "pa11y-screenshots/edit-profile.png"
+    },
+    {
+      "url": "http://localhost:3000/request",
+      "screenCapture": "pa11y-screenshots/request.png"
+    },
+
+    {
+      "url": "http://localhost:3000/login",
+      "screenCapture": "pa11y-screenshots/login.png"
+    },
+
+    {
+      "url": "http://localhost:3000/data-files",
+      "screenCapture": "pa11y-screenshots/data-files.png"
     }
   ]
 }
