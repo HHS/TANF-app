@@ -50,7 +50,7 @@ update_backend()
 }
 
 bind_backend_to_services() {
-		env=${$CF_SPACE"#tanf-"}
+    env=${$CF_SPACE"#tanf-"}
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-static-sandbox-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-storage-sandbox-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tanf-storage-${env}"

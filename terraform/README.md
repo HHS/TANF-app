@@ -16,7 +16,7 @@ Adapted from: <https://github.com/HHS/Head-Start-TTADP#persistent-vs-ephemeral-i
 
 ### Infrastructure as Code
 
-A high-level configuration syntax, called [Terraform language][language], describes our infrastructure. This allows a blueprint of our system to be versioned and treated as we do any other code. This configuration can be acted on locally by a developer if deployments need to be created manually, but it is mostly and ideally executed by CirclCI.
+A high-level configuration syntax, called [Terraform language][language], describes our infrastructure. This allows a blueprint of our system to be versioned and treated as we do any other code. This configuration can be acted on locally by a developer if deployments need to be created manually, but it is mostly and ideally executed by CircleCI.
 
 ###  Terraform workflow
 
