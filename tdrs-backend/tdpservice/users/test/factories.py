@@ -25,6 +25,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     is_superuser = False
     stt = factory.SubFactory(STTFactory)
     login_gov_uuid = factory.Faker("uuid4")
+    deactivated = False
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -78,6 +79,12 @@ class StaffUserFactory(UserFactory):
 
 
 class InactiveUserFactory(UserFactory):
-    """Generate inactive user."""
+    """Generate inactive user, from Django's context."""
 
     is_active = False
+
+
+class DeactivatedUserFactory(UserFactory):
+    """Generate user with account deemed `inactive`."""
+
+    deactivated = True

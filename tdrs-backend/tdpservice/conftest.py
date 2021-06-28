@@ -19,7 +19,8 @@ from tdpservice.users.test.factories import (
     StaffUserFactory,
     STTUserFactory,
     InactiveUserFactory,
-    AdminSTTUserFactory
+    AdminSTTUserFactory,
+    DeactivatedUserFactory,
 )
 
 _faker = faker.Faker()
@@ -76,6 +77,12 @@ def staff_user():
 def inactive_user():
     """Return an inactive user."""
     return InactiveUserFactory.create()
+
+
+@pytest.fixture
+def deactivated_user():
+    """Return a user with an deactivated account."""
+    return DeactivatedUserFactory.create()
 
 
 @pytest.fixture
