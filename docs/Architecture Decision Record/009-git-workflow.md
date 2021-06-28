@@ -1,6 +1,6 @@
 # 9. Git Workflow
 
-Date: 2021-02-23 (_updated 2021-04-22_)
+Date: 2021-02-23 (_updated 2021-06-11_)
 
 ## Status
 
@@ -39,7 +39,7 @@ A contributor to the TDP project would always use the following steps to propose
     * If your PR is against a branch other than `raft-tdp-main` keep it as a draft PR and add the tag `blocked` until the other branch is merged. 
 13. Assign a reviewer: 
     * For development work, assign **at least two** Raft developers with one of them being `abottoms-coder` or `jtwillis92` (**but not both**).
-    * For research and design assign `shubhi-raft` 
+    * For research and design assign `shubhi-raft` and `dk-u`
     * For security controls assign `abottoms-coder`
     * For documentation submitted by the Government tag `lfrohlich` and `adpennington` and remove label `raft-review`
     * For documentation submissions and updates by raft assign `lfrohlich` and `adpennington` and add label `QASP review`
@@ -54,17 +54,16 @@ A contributor to the TDP project would always use the following steps to propose
         * For frontend work submitted for review but does not yet complete the epic, `adpennington` will sign off on Raft's a11y documentation (e.g. screen captures with VoiceOver utility, summary of review, etc.) and cc: `ttran-hub`
         * For frontend work submitted for review that completes the epic, `adpennington` will complete code review, tag `ttran-hub` + `iamjolly` via comment, and add `a11y` label to PR. Gov a11y review team will use accessibility insights for manual testing. More information about how and when this process will be carried out is described [here.](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/how-government-will-test-a11y.md) 
         * For research and design work assign `lfrohlich`
-        * For security controls assign `lfrohlich`
-18. For PRs with `qasp-review` label, the appropriate reviewer performs the review and/or requests changes. **GOAL** 5 days: 3 days to perform the review and 2 days to implement the requested changes.
+     * posts that PR is ready for QASP review in GitNotify channel in Teams and tags appropriate government reviewer.
+18. For PRs with `qasp-review` label, the appropriate government reviewer performs the review and/or requests changes. **GOAL** 5 days: 3 days to perform the review and 2 days to implement the requested changes.
     * When changes are asked for, the changes are made by the contributor. Raft reviewers should internalize the changes asked by the Government such that the same feedback is already incorporated and/or caught in future (continuous improvement)
-    * When security controls are approved by the Government, the Government reviewer will ask for additional reviews to be performed by OCIO
-19. When satisfied, the Government reviewer `approves` the PR
-20. The contributor clicks Merge into `raft-tdp-main`
-21. The contributor:
+19. When satisfied, the Government reviewer `approves` the PR and tags with the  `ready-to-merge` label. Government reviewer posts that PR is ready to merge in GitNotify channel on Teams.   
+20. `abottoms-coder` clicks Merge into `raft-tdp-main`
+21. `abottoms-coder` (or his back-up):
     * opens a PR from `raft-tdp-main` to `HHS:main`
     * Updates the PR template to change `addresses` to `closes` so that issue [can be automatically closed when the Government merges](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
     * Ensures the CI/CD pipelines are green
-    * Assigns the Government as reviewers and pings them on Teams to review/merge
+    * Assigns the Government as reviewers and pings them on Teams in GitNotify channel to review/merge
 26. PR is approved and merged to `HHS:main` by `adpennington` or `lfrohlich` **GOAL** 1 day from open date (by now the code is already approved by the Government)
 
 ## Consequences

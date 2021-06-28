@@ -5,6 +5,7 @@ import uuid
 from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 from tdpservice.stts.models import STT, Region
+from django.utils.translation import gettext_lazy as _
 
 
 class User(AbstractUser):
@@ -19,6 +20,19 @@ class User(AbstractUser):
                                       blank=True,
                                       null=True,
                                       unique=True)
+
+    # Note this is handled differently than `is_active`, which comes from AbstractUser.
+    # Django will totally prevent a user with is_active=True from authorizing.
+    # This field `deactivated` helps us to notify the user client-side of their status
+    # with an "Inactive Account" message.
+    deactivated = models.BooleanField(
+        _('deactivated'),
+        default=False,
+        help_text=_(
+            'Designates whether this user should be treated as active. '
+            'Unselect this instead of deleting accounts.'
+        ),
+    )
 
     def __str__(self):
         """Return the username as the string representation of the object."""
