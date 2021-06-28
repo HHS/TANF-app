@@ -252,6 +252,7 @@ jobs:
       - install-nodejs-packages:
           app-dir: tdrs-frontend
           cache-path: ~/.cache
+          cache-version: v2
           pkg-manager: yarn
       - run:
           name: "Run ESLint"
