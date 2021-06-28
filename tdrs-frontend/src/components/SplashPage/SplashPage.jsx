@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 
@@ -13,11 +13,18 @@ import Button from '../Button'
 function SplashPage() {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)
+  const isInactive = useSelector((state) => state.auth.inactive)
+  const alertRef = useRef(null)
 
   const handleClick = (event) => {
     event.preventDefault()
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
   }
+  useEffect(() => {
+    if (isInactive) {
+      setTimeout(() => alertRef?.current?.focus(), 2)
+    }
+  }, [alertRef, isInactive])
 
   if (authenticated) {
     return <Redirect to="/edit-profile" />
@@ -31,6 +38,27 @@ function SplashPage() {
     <>
       <section className="usa-hero" aria-label="Introduction">
         <div className="grid-container">
+          {isInactive && (
+            <div className="usa-alert usa-alert--slim usa-alert--error margin-bottom-4">
+              <div className="usa-alert__body">
+                <h3
+                  tabIndex="-1"
+                  className="usa-alert__heading"
+                  ref={alertRef}
+                  aria-describedby="errorLabel"
+                >
+                  Inactive Account
+                </h3>
+                <p className="usa-alert__text" id="errorLabel">
+                  Please email{' '}
+                  <a className="usa-link" href="mailto: tanfdata@acf.hhs.gov">
+                    tanfdata@acf.hhs.gov
+                  </a>{' '}
+                  to reactivate your account.
+                </p>
+              </div>
+            </div>
+          )}
           <div className="usa-hero__callout">
             <h1 className="usa-hero__heading">
               <span className="usa-hero__heading--alt font-serif-2xl margin-bottom-5">

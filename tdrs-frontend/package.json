@@ -91,6 +91,7 @@
       "!src/configureStore.js",
       "!src/mirage.js",
       "!src/middleware/logger.js",
+      "!src/utils/eventLogger.js",
       "!src/utils/createFileInputErrorState.js"
     ],
     "coverageThreshold": {
