@@ -80,12 +80,45 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
    
 ## Test Deployment in Development
 
-- Follow the instructions above and ensure the `variables.tfvars` file has been generated with proper values.
-- `cd` into `/terraform/dev`
-- Run `terraform init`
-- Run `terraform destroy -var-file variables.tfvars` to clear the current deployment (if there is one).
-- Run `terraform plan -out tfapply -var-file variables.tfvars` to create a new execution plan.
-- Run `terraform apply "tfapply"` to create the new infrastructure.
+1. Follow the instructions above and ensure the `variables.tfvars` file has been generated with proper values.
+1. `cd` into `/terraform/dev`
+
+1. Prepare terraform backend:
+   
+   **Remote vs. Local Backend:**
+   
+   If you merely wish to test some new changes without regards to the currently deployed remote state stored in the, you may want to use a "local" backend with Terraform.
+   ```terraform
+   terraform {
+    backend "local" {}
+   }
+   ```
+   
+   With this change, you should be able to run `terraform init` successfully.
+
+   **Get Remote S3 Credentials:**
+   
+   In the `/terraform` directory, you can run the `create_backend_vars.sh` script which can be modified with details of your current environment, and will yield a `backend_config.tfvars` file which must be later passed in to Terraform. For more on this, check out [terraform variable definitions][tf-vars].
+
+   ```bash
+   ./create_backend_vars.sh
+   
+   # Should generate a file `backend_config.tfvars` in the current directory.
+   # Your file should look something like this:
+   #
+   # access_key = "some-access-key"
+   # secret_key = "some-secret-key"
+   # region = "us-gov-west-1"
+   ```
+   
+   You can now run `terraform init -backend-config backend_config.tfvars` and load the remote state stored in S3 into your local Terraform config.
+
+1. Run `terraform init` if using a local backend, or `terraform init -backend-config backend_config.tfvars` with the remote backend.
+1. Run `terraform destroy -var-file variables.tfvars` to clear the current deployment (if there is one).
+   - If the current deployment isn't destroyed, `terraform apply` will fail later because the unique service instance names are already taken.
+   - Be cautious and weary of your target environment when destroying infrastructure.
+1. Run `terraform plan -out tfapply -var-file variables.tfvars` to create a new execution plan.
+1. Run `terraform apply "tfapply"` to create the new infrastructure.
 
 A similar test deployment can also be executed from the `/scripts/deploy-infrastructure-dev.sh` script, albeit without the `destroy` step.
 
