@@ -1,5 +1,6 @@
 """Validator functions which may be assigned to model fields."""
 import logging
+import re
 
 from django.core.exceptions import ValidationError
 from inflection import pluralize
@@ -10,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 # The default set of Extensions allowed for an uploaded file
 ALLOWED_FILE_EXTENSIONS = [
-    None,  # files with no extensions are allowed
+    r'(ms\d{2})',
+    r'(ts\d{2,3})',
     'txt',  # plain text files
 ]
 
@@ -41,13 +43,17 @@ def validate_file_content_type(file):
         raise ValidationError(msg)
 
 
-def validate_file_extension(file):
+def validate_file_extension(file_name: str):
     """Validate the file extension of a file is in our supported list."""
     file_extension = (
-        file.name.split('.')[-1].lower() if '.' in file.name else None
+        file_name.split('.')[-1].lower() if '.' in file_name else None
     )
 
-    if file_extension not in ALLOWED_FILE_EXTENSIONS:
+    allowed_ext_patterns = "|".join(ALLOWED_FILE_EXTENSIONS)
+    if (
+        file_extension is not None
+        and not re.match(allowed_ext_patterns, file_extension)
+    ):
         msg = _get_unsupported_msg(
             'file extension',
             file_extension,
@@ -75,6 +81,6 @@ def validate_file_infection(file):
 
 def validate_data_file(file):
     """Perform all validation steps on a given file."""
-    validate_file_extension(file)
+    validate_file_extension(file.name)
     validate_file_content_type(file)
     validate_file_infection(file)
