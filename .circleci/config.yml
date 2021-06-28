@@ -320,7 +320,7 @@ jobs:
           command: "cd tdrs-frontend; yarn lint"
       - run:
           name: "Run Pa11y Accessibility Tests"
-          command: "cd tdrs-frontend; yarn test:accessibility"
+          command: "cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility"
       - run:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
@@ -340,6 +340,20 @@ jobs:
           command: "cd tdrs-frontend; ./zap-scanner.sh"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/homepage.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/edit-profile.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/request.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/login.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/data-files.png
 
   deploy-infrastructure-dev:
     executor: terraform/default
