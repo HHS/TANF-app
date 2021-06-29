@@ -39,10 +39,8 @@ jobs:
       run: |
         IFS='-'     # hyphen (-) is set as delimiter
         read -ra ADDR <<< "${{ github.event.label.name }}"   # str is read into an array as tokens separated by IFS
-        for i in "${ADDR[@]}"; do   # access each element of array
-            echo "$i"
-        done
         DEPLOY_ENV=ADDR[1]
+        echo "::set-output name=DEPLOY_ENV::$DEPLOY_ENV"
         IFS=' '
     - name: Get PR Status Checks
       id: get-pr-checks
