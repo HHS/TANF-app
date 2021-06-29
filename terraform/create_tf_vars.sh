@@ -15,7 +15,7 @@ CF_SPACE="tanf-dev"
 
 touch variables.tfvars
 {
-	echo "cf_password = \"$CF_PASSWORD_DEV\""
-	echo "cf_user = \"$CF_USERNAME_DEV\""
-	echo "cf_space_name = \"$CF_SPACE\""
+  echo "cf_password = \"$CF_PASSWORD_DEV\""
+  echo "cf_user = \"$CF_USERNAME_DEV\""
+  echo "cf_space_name = \"$CF_SPACE\""
 } >> ./dev/variables.tfvars

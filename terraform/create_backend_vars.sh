@@ -13,7 +13,7 @@ SECRET_KEY=$(echo "${S3_CREDENTIALS}" | jq -r '.secret_access_key')
 REGION=$(echo "${S3_CREDENTIALS}" | jq -r '.region')
 
 {
-	echo "access_key = \"$ACCESS_KEY\""
-	echo "secret_key = \"$SECRET_KEY\""
-	echo "region = \"$REGION\""
+  echo "access_key = \"$ACCESS_KEY\""
+  echo "secret_key = \"$SECRET_KEY\""
+  echo "region = \"$REGION\""
 } >> ./dev/backend_config.tfvars
