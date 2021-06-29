@@ -385,8 +385,8 @@ jobs:
           backend-appname: tdp-backend-staging
           frontend-appname: tdp-frontend-staging
           cf-password: CF_PASSWORD_STAGING
-          cf-username: CF_USERNAME_STAGING
           cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
 
   deploy-prod:
     executor: docker-executor
@@ -402,11 +402,12 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - deploy-infrastructure-dev
       - test-backend
       - test-frontend
       - deploy-dev:
           requires:
+            - test-backend
+            - test-frontend
             - deploy-infrastructure-dev
           filters:
             branches:
