@@ -18,11 +18,6 @@ ALLOWED_FILE_EXTENSIONS = [
     'txt',  # plain text files
 ]
 
-# The default set of Content Types allowed for an uploaded file
-ALLOWED_FILE_CONTENT_TYPES = [
-    'text/plain',
-]
-
 
 def _get_unsupported_msg(_type, value, supported_options):
     """Construct a message to convey an unsupported operation."""
@@ -30,19 +25,6 @@ def _get_unsupported_msg(_type, value, supported_options):
         f'Unsupported {_type}: {value}, supported {pluralize(_type)} '
         f'are: {supported_options}'
     )
-
-
-def validate_file_content_type(file):
-    """Validate the content type of a file is in our supported list."""
-    file_content_type = file.content_type
-
-    if file_content_type not in ALLOWED_FILE_CONTENT_TYPES:
-        msg = _get_unsupported_msg(
-            'file content type',
-            file_content_type,
-            ALLOWED_FILE_CONTENT_TYPES
-        )
-        raise ValidationError(msg)
 
 
 def validate_file_extension(file_name: str):
@@ -84,5 +66,4 @@ def validate_file_infection(file):
 def validate_data_file(file):
     """Perform all validation steps on a given file."""
     validate_file_extension(file.name)
-    validate_file_content_type(file)
     validate_file_infection(file)
