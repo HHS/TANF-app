@@ -38,7 +38,7 @@ jobs:
       id: extract-deploy-env
       run: |
         IFS='-'     # hyphen (-) is set as delimiter
-        read -ra ADDR <<< ${{github.event.label.name}}   # str is read into an array as tokens separated by IFS
+        read -ra ADDR <<< "${{github.event.label.name}}"   # str is read into an array as tokens separated by IFS
         DEPLOY_ENV=ADDR[1]
         IFS=' '
     - name: Get PR Status Checks
