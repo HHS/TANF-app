@@ -404,6 +404,11 @@ workflows:
     jobs:
       - test-backend
       - test-frontend
+      - deploy-infrastructure-dev:
+          filters:
+            branches:
+              only:
+                - raft-review
       - deploy-dev:
           requires:
             - test-backend
@@ -413,13 +418,11 @@ workflows:
             branches:
               only:
                 - raft-review
-
       - deploy-infrastructure-staging:
           filters:
             branches:
               only:
                 - raft-tdp-main
-
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
