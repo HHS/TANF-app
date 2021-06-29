@@ -64,5 +64,5 @@ jobs:
       uses: Open-Source-Contrib/circle-ci-trigger-action@latest
       with:
         circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
-        circle_ci_job: deploy-${{ steps.get-pr-state.outputs.DEPLOY_ENV }}
+        circle_ci_job: deploy-${{ steps.extract-deploy-env.outputs.DEPLOY_ENV }}
         circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
