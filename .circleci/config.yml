@@ -319,6 +319,49 @@ jobs:
           cf-username: CF_USERNAME_PROD
           frontend-appname: tdp-frontend-prod
 
+  deploy-raft-review:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-raft-review
+          cf-password: CF_PASSWORD_RAFT_REVIEW
+          cf-space: tanf-dev
+          cf-username: CF_USERNAME_RAFT_REVIEW
+          frontend-appname: tdp-frontend-raft-review
+
+  deploy-qasp-review:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-qasp-review
+          cf-password: CF_PASSWORD_QASP_REVIEW
+          cf-space: tanf-dev
+          cf-username: CF_USERNAME_QASP_REVIEW
+          frontend-appname: tdp-frontend-qasp-review
+
+  deploy-a11y:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-a11y
+          cf-password: CF_PASSWORD_A11Y
+          cf-space: tanf-dev
+          cf-username: CF_USERNAME_A11Y
+          frontend-appname: tdp-frontend-a11y
+
+  deploy-sandbox:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-sandbox
+          cf-password: CF_PASSWORD_SANDBOX
+          cf-space: tanf-dev
+          cf-username: CF_USERNAME_SANDBOX
+          frontend-appname: tdp-frontend-sandbox
 workflows:
   build-and-test:
     jobs:
