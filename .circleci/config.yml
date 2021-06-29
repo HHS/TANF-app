@@ -319,21 +319,21 @@ jobs:
           cf-username: CF_USERNAME_PROD
           frontend-appname: tdp-frontend-prod
 
-  deploy-raft-review:
+  deploy-raft:
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
-          backend-appname: tdp-backend-raft-review
-          frontend-appname: tdp-frontend-raft-review
+          backend-appname: tdp-backend-raft
+          frontend-appname: tdp-frontend-raft
 
-  deploy-qasp-review:
+  deploy-qasp:
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
-          backend-appname: tdp-backend-qasp-review
-          frontend-appname: tdp-frontend-qasp-review
+          backend-appname: tdp-backend-qasp
+          frontend-appname: tdp-frontend-qasp
 
   deploy-a11y:
     executor: docker-executor
