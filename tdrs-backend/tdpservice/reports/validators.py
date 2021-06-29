@@ -10,9 +10,11 @@ from tdpservice.clients import ClamAVClient
 logger = logging.getLogger(__name__)
 
 # The default set of Extensions allowed for an uploaded file
+# Supports regex patterns as defined by standard library
+# https://docs.python.org/3/library/re.html#regular-expression-syntax
 ALLOWED_FILE_EXTENSIONS = [
-    r'(ms\d{2})',
-    r'(ts\d{2,3})',
+    r'^(ms\d{2})$',  # Files ending in .MS## where # is a digit 0-9
+    r'^(ts\d{2,3})$',  # Files ending in .TS## or .TS### where # is a digit 0-9
     'txt',  # plain text files
 ]
 
@@ -49,7 +51,7 @@ def validate_file_extension(file_name: str):
         file_name.split('.')[-1].lower() if '.' in file_name else None
     )
 
-    allowed_ext_patterns = "|".join(ALLOWED_FILE_EXTENSIONS)
+    allowed_ext_patterns = '|'.join(ALLOWED_FILE_EXTENSIONS)
     if (
         file_extension is not None
         and not re.match(allowed_ext_patterns, file_extension)

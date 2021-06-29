@@ -1,10 +1,8 @@
 """Tests for Reports Application."""
-from django.core.exceptions import ValidationError
 from rest_framework import status
 import pytest
 
 from tdpservice.reports.models import ReportFile
-from tdpservice.reports.validators import validate_file_extension
 
 
 @pytest.mark.usefixtures('db')
@@ -244,31 +242,3 @@ def test_list_ofa_admin_report_years_no_self_stt(api_client, ofa_admin_stt_user,
         2021,
         2022
     ]
-
-
-@pytest.mark.parametrize("file_name", [
-    'sample.txt',
-    'Sample',
-    'ADS.E2J.FTP4.TS06.txt',
-    'ADS.E2J.FTP4.TS06',
-    'ADS.E2J.FTP2.MS18',
-    'ADS.E2J.FTP1.TS278'
-])
-def test_accepts_valid_file_extensions(file_name):
-    try:
-        validate_file_extension(file_name)
-    except ValidationError as err:
-        pytest.fail(f'Received unexpected error: {err}')
-
-
-@pytest.mark.parametrize("file_name", [
-    'java.jar',
-    'mysql.bin',
-    'malicious.exe',
-    'exec.py',
-    'hax.pdf',
-    'types.ts'
-])
-def test_rejects_invalid_file_extensions(file_name):
-    with pytest.raises(ValidationError):
-        validate_file_extension(file_name)
