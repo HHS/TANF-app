@@ -407,16 +407,10 @@ workflows:
     jobs:
       - test-backend
       - test-frontend
-      - deploy-infrastructure-dev:
-          filters:
-            branches:
-              only:
-                - raft-review
       - deploy-dev:
           requires:
             - test-backend
             - test-frontend
-            - deploy-infrastructure-dev
           filters:
             branches:
               only:
