@@ -13,7 +13,11 @@ def is_own_stt(request, view):
         else None
     )
 
-    return is_data_prepper and user_stt and (requested_stt in [None, user_stt])
+    return (
+        is_data_prepper and
+        user_stt and
+        (requested_stt in [None, str(user_stt)])
+    )
 
 
 def is_in_group(user, group_name):
@@ -77,4 +81,7 @@ class CanUploadReport(permissions.BasePermission):
 
         If they are a data prepper, ensures the STT is their own.
         """
-        return is_in_group(request.user, "OFA Admin") or is_own_stt(request, view)
+        return (
+            is_in_group(request.user, "OFA Admin") or
+            is_own_stt(request, view)
+        )
