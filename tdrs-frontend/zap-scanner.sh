@@ -1,5 +1,10 @@
 #!/bin/sh
 
+
+ENVIRONMENT=$1
+
+echo zap env "$ENVIRONMENT" thing
+
 if command -v sha256sum >/dev/null ; then
 	SHASUM=sha256sum
 elif command -v shasum >/dev/null ; then
@@ -20,12 +25,25 @@ echo "================== OWASP ZAP tests =================="
 # Ensure the reports directory can be written to
 chmod 777 $(pwd)/reports
 
-# Run the ZAP scan and generate an HTML report
-docker-compose run zaproxy zap-full-scan.py \
-	-t http://tdp-frontend \
-	-m 5 \
-	-z "${ZAP_CONFIG}" \
-	-r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
+# check if running in circle CI
+
+
+if [ "$ENVIRONMENT" = "circle" ]; then
+    echo "Config file $ENVIRONMENT"
+    docker-compose run zaproxy zap-full-scan.py \
+                   -t http://tdp-frontend/ \
+                   -m 5 \
+                   -z "${ZAP_CONFIG}" \
+                   -c "zap.conf" \
+                   -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
+else
+    echo "No config file"
+    docker-compose run zaproxy zap-full-scan.py \
+                   -t http://tdp-frontend/ \
+                   -m 5 \
+                   -z "${ZAP_CONFIG}" \
+                   -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
+fi
 
 # The `grep -q` piped to the end of the previous command will return a
 # 0 exit code if the term is found and 1 otherwise.
