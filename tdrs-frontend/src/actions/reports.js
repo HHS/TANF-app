@@ -1,11 +1,20 @@
 import { logErrorToServer } from '../utils/eventLogger'
 
 import { v4 as uuidv4 } from 'uuid'
+import axios from 'axios'
 
 export const SET_FILE = 'SET_FILE'
 export const CLEAR_FILE = 'CLEAR_FILE'
 export const SET_FILE_ERROR = 'SET_FILE_ERROR'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
+
+export const START_FILE_DOWNLOAD = 'START_FILE_DOWNLOAD'
+export const FILE_DOWNLOAD_ERROR = 'FILE_DOWNLOAD_ERROR'
+
+export const FETCH_FILE_LIST = 'FETCH_FILE_LIST'
+export const SET_FILE_LIST = 'SET_FILE_LIST'
+export const FETCH_FILE_LIST_ERROR = 'FETCH_FILE_LIST_ERROR'
+export const DOWNLOAD_DIALOG_OPEN = 'DOWNLOAD_DIALOG_OPEN'
 
 export const clearFile = ({ section }) => (dispatch) => {
   dispatch({ type: CLEAR_FILE, payload: { section } })
@@ -13,6 +22,74 @@ export const clearFile = ({ section }) => (dispatch) => {
 
 export const clearError = ({ section }) => (dispatch) => {
   dispatch({ type: CLEAR_ERROR, payload: { section } })
+}
+/**
+   Get a list of files that can be downloaded, mainly used to decide
+   if the download button should be present.
+*/
+export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
+  dispatch
+) => {
+  dispatch({
+    type: FETCH_FILE_LIST,
+  })
+  try {
+    const response = await axios.get(`/mock_api/reports/${year}/${quarter}`, {
+      responseType: 'json',
+    })
+    dispatch({
+      type: SET_FILE_LIST,
+      payload: {
+        data: response.data,
+      },
+    })
+  } catch (error) {
+    dispatch({
+      type: FETCH_FILE_LIST_ERROR,
+      payload: {
+        error,
+        year,
+        quarter,
+      },
+    })
+  }
+}
+
+export const download = ({ year, quarter = 'Q1', section }) => async (
+  dispatch
+) => {
+  try {
+    if (!year) throw new Error('No year was provided to download action.')
+    dispatch({ type: START_FILE_DOWNLOAD })
+
+    const response = await axios.get(
+      `/mock_api/reports/data-files/${year}/${quarter}/${section}`,
+      {
+        responseType: 'blob',
+      }
+    )
+    const data = response.data
+
+    const url = window.URL.createObjectURL(new Blob([data]))
+    const link = document.createElement('a')
+
+    link.href = url
+    link.setAttribute('download', `${year}.${quarter}.${section}.txt`)
+
+    document.body.appendChild(link)
+
+    link.click()
+
+    document.body.removeChild(link)
+    dispatch({ type: DOWNLOAD_DIALOG_OPEN })
+  } catch (error) {
+    dispatch({
+      type: FILE_DOWNLOAD_ERROR,
+      payload: { error, year, quarter, section },
+    })
+    return false
+  }
+  return true
 }
 
 // Main Redux action to add files to the state

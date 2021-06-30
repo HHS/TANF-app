@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import fileType from 'file-type/browser'
@@ -7,8 +7,13 @@ import {
   clearFile,
   SET_FILE_ERROR,
   upload,
+  download,
 } from '../../actions/reports'
+
+import Button from '../Button'
+
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
+import { handlePreview, getTargetClassName } from './utils'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
@@ -16,11 +21,16 @@ const INVALID_FILE_ERROR =
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
-  const files = useSelector((state) => state.reports.files)
+  const { files, year } = useSelector((state) => state.reports)
+
   const dispatch = useDispatch()
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
+
+  const hasFile = files?.some((file) => {
+    return file.section === sectionName && file.uuid
+  })
 
   const selectedFile = files.find((file) => sectionName === file.section)
 
@@ -29,13 +39,29 @@ function FileUpload({ section, setLocalAlertState }) {
     .map((word) => word.toLowerCase())
     .join('-')
 
-  const fileName = selectedFile?.fileName
+  const targetClassName = getTargetClassName(formattedSectionName)
+
+  const fileName = selectedFile?.fileName || 'report.txt'
   const hasUploadedFile = Boolean(fileName)
 
   const ariaDescription = hasUploadedFile
     ? `Selected File ${selectedFile?.fileName}. To change the selected file, click this button.`
     : `Drag file here or choose from folder.`
 
+  useEffect(() => {
+    const trySettingPreview = () => {
+      const previewState = handlePreview(fileName, targetClassName)
+      if (!previewState) {
+        setTimeout(trySettingPreview, 100)
+      }
+    }
+    if (hasFile) trySettingPreview()
+  }, [hasFile, fileName, targetClassName])
+
+  const downloadFile = ({ target }) => {
+    dispatch(clearError({ section: sectionName }))
+    dispatch(download({ section: sectionName, year }))
+  }
   const inputRef = useRef(null)
 
   const validateAndUploadFile = (event) => {
@@ -167,6 +193,17 @@ function FileUpload({ section, setLocalAlertState }) {
         aria-hidden="false"
         data-errormessage={INVALID_FILE_ERROR}
       />
+      <div style={{ marginTop: '25px' }}>
+        {hasFile ? (
+          <Button
+            className="tanf-file-download-btn"
+            type="button"
+            onClick={downloadFile}
+          >
+            Download
+          </Button>
+        ) : null}
+      </div>
     </div>
   )
 }
