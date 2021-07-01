@@ -20,7 +20,7 @@ class UserForm(forms.ModelForm):
 class UserAdmin(admin.ModelAdmin):
     """Customize the user admin functions."""
 
-    exclude = ['password', 'user_permissions']
+    exclude = ['password', 'user_permissions', 'is_active']
     readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid']
     form = UserForm
 

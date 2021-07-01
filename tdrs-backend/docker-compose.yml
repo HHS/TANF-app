@@ -5,6 +5,8 @@ services:
   zaproxy:
     image: owasp/zap2docker-weekly
     command: sleep 3600
+    depends_on:
+      - web
     volumes:
       - ./reports:/zap/wrk/:rw
 
@@ -28,10 +30,14 @@ services:
     environment:
       - SERVICES=s3
       - DATA_DIR=/tmp/localstack/data
+      - AWS_BUCKET
+      - AWS_REGION_NAME
     ports:
       - "4566:4566"
     volumes:
       - localstack_data:/tmp/localstack
+      # Copy in the Localstack setup script to configure any buckets needed
+      - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   web:
     restart: always
@@ -45,16 +51,17 @@ services:
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
       - USE_LOCALSTACK=1
-      - JWT_KEY=${JWT_KEY}
-      - JWT_CERT_TEST=${JWT_CERT_TEST}
-      - DJANGO_SU_NAME=${DJANGO_SU_NAME}
       - AV_SCAN_URL=http://clamav-rest:9000/scan
+      - LOCALSTACK_HOST=localstack
+      - JWT_KEY
+      - JWT_CERT_TEST
+      - DJANGO_SU_NAME
+      - AWS_BUCKET
+      - AWS_REGION_NAME
     volumes:
       - .:/tdpapp
     image: tdp
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.local
+    build: .
     command: >
       bash -c "./wait_for_services.sh &&
                ./gunicorn_start.sh"

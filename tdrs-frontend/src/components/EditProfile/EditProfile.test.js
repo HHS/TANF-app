@@ -515,7 +515,7 @@ describe('EditProfile', () => {
       preventDefault: () => {},
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(1)
+    expect(store.dispatch).toHaveBeenCalled()
   })
 
   it('should dispatch "setAlert" when form is submitted and there is an error', () => {
@@ -556,6 +556,6 @@ describe('EditProfile', () => {
         <EditProfile />
       </Provider>
     )
-    expect(store.dispatch).toHaveBeenCalledTimes(1)
+    expect(store.dispatch).toHaveBeenCalled()
   })
 })

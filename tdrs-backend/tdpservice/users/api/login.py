@@ -103,7 +103,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 user.username = email
                 user.save()
 
-            self.login_user(request, user, "User Found")
+            if user.deactivated:
+                self.login_user(request, user, "Inactive User Found")
+            else:
+                self.login_user(request, user, "User Found")
         elif user and not user.is_active:
             raise InactiveUser(
                 f'Login failed, user account is inactive: {user.username}'
