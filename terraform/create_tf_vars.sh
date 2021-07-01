@@ -13,7 +13,6 @@ CF_PASSWORD_DEV=$(echo "$KEYS_JSON" | jq -r '.password')
 
 CF_SPACE="tanf-dev"
 
-touch variables.tfvars
 {
   echo "cf_password = \"$CF_PASSWORD_DEV\""
   echo "cf_user = \"$CF_USERNAME_DEV\""
