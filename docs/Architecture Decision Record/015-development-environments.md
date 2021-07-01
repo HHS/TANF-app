@@ -17,14 +17,14 @@ We propose setting up four separate apps in the dev environment
 
 _This does not reflect the current state, but a proposed future state_
 
-| Dev Site | App Name | Purpose |
+| Dev Site | App Name(s) | Purpose |
 | -------- | -------- | -------- |
-| Sandbox     | tdp-dev-sandbox     | Space for devs to test in a deployed environment    |
-| A11y | tdp-dev-a11y | Space for accessibility testing |
-| QASP | tdp-dev-qasp | Space for QASP review |
-| raft | tdp-dev-raft | Space for raft review |
+| Sandbox     | tdp-frontend-sandbox & tdp-backend-sandbox     | Space for devs to test in a deployed environment    |
+| A11y | tdp-frontend-a11y & tdp-backend-a11y | Space for accessibility testing |
+| QASP | tdp-frontend-qasp & tdp-backend-qasp | Space for QASP review |
+| raft | tdp-frontend-raft & tdp-backend-raft | Space for raft review |
 
-We could very easily add three new labels for deploying to the different environments, and this would cut down significantly on needing to wait for a space to deploy a branch we are working on. Additionally, the backend deployments are currently set for 2GB of space with only approximately 600MB used. We can safely reduce it to 1GB. The frontend is currently allocated 256MB of space, while only using 27MB. This can be safely reduced to 128MB. This will reduce our currently allocated space by half, ensuring that all four proposed dev space applications will run smoothly.
+We could very easily add three new labels for deploying to the different environments, and this would cut down significantly on needing to wait for a space to deploy a branch we are working on. Additionally, the backend deployments are currently set for 2GB of memory with only approximately 600MB used. We can safely reduce it to 1GB. The frontend is currently allocated 256MB of memory, while only using 27MB. This can be safely reduced to 128MB. This will reduce our currently allocated memory by half, ensuring that all four proposed dev space applications will run smoothly.
 
 ## Consequences
 
