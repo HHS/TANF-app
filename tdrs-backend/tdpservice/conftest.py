@@ -92,6 +92,12 @@ def stt():
 
 
 @pytest.fixture
+def other_stt():
+    """Return a secondary STT."""
+    return STTFactory.create()
+
+
+@pytest.fixture
 def region():
     """Return a region."""
     return RegionFactory.create()

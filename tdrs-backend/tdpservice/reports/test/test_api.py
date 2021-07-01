@@ -51,6 +51,12 @@ class ReportFileAPITestBase:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     @staticmethod
+    def assert_report_content_matches(response, report_id):
+        """Assert that the report download has the expected content."""
+        report_file = ReportFile.objects.get(id=report_id)
+        assert b''.join(response.streaming_content) == report_file.file.read()
+
+    @staticmethod
     def assert_report_exists(report_data, version, user):
         """Confirm that a report matching the provided data exists in the DB."""
         assert ReportFile.objects.filter(
@@ -85,6 +91,7 @@ class ReportFileAPITestBase:
         """Stream a file for download."""
         return api_client.get(f"{self.root_url}{report_id}/download/")
 
+
 class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
     """Test ReportFileViewSet as an OFA Admin user."""
 
@@ -115,9 +122,7 @@ class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
         response = self.download_file(api_client, report_id)
 
         assert response.status_code == status.HTTP_200_OK
-
-        report_file = ReportFile.objects.get(id=report_id)
-        assert b''.join(response.streaming_content) == report_file.file.read()
+        self.assert_report_content_matches(response, report_id)
 
     def test_create_report_file_entry(self, api_client, report_data, user):
         """Test ability to create report file metadata registry."""
@@ -163,6 +168,35 @@ class TestReportFileAPIAsDataPrepper(ReportFileAPITestBase):
 
         response = self.post_report_file(api_client, report_data)
         self.assert_report_rejected(response)
+
+    def test_download_report_file_for_own_stt(self, api_client, report_data, user):
+        """Test that the file is downloaded as expected for a Data Prepper's set STT."""
+        response = self.post_report_file(api_client, report_data)
+        report_id = response.data['id']
+        response = self.download_file(api_client, report_id)
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_report_content_matches(response, report_id)
+
+    def test_download_report_file_rejected_for_other_stt(
+        self,
+        api_client,
+        report_data,
+        other_stt,
+        user
+    ):
+        """Test that the download is rejected when user's STT doesn't match."""
+        response = self.post_report_file(api_client, report_data)
+        report_id = response.data['id']
+
+        # Update the STT to something other than the user's
+        report_file = ReportFile.objects.get(id=report_id)
+        report_file.stt = other_stt
+        report_file.save()
+
+        response = self.download_file(api_client, report_id)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 class TestReportFileAPIAsInactiveUser(ReportFileAPITestBase):
@@ -267,7 +301,7 @@ def test_list_ofa_admin_report_years_positional_stt(api_client, ofa_admin, stt):
 
     response = api_client.get("/v1/reports/years")
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
