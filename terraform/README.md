@@ -70,7 +70,7 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
    ```bash
    ./create_tf_vars.sh
    
-   # Should generate a file `variables.tfvars` in the current directory.
+   # Should generate a file `variables.tfvars` in the `/terraform/dev` directory.
    # Your file should look something like this:
    #
    # cf_user = "some-dev-user"
