@@ -29,11 +29,19 @@ on:
       - labeled
 jobs:
   pr_labeled_deployment:
-    if: github.event.label.name == 'Deploy with CircleCI'
+    if: startsWith(github.event.label.name, 'Deploy with CircleCI')
     runs-on: ubuntu-latest
     name: Initiate deploy job in CircleCI
     steps:
     - uses: actions/checkout@v2
+    - name: Extract Deploy ENV
+      id: extract-deploy-env
+      run: |
+        IFS='-'     # hyphen (-) is set as delimiter
+        read -ra ADDR <<< "${{ github.event.label.name }}"   # str is read into an array as tokens separated by IFS
+        DEPLOY_ENV="${ADDR[1]}"
+        echo "::set-output name=DEPLOY_ENV::$DEPLOY_ENV"
+        IFS=' '
     - name: Get PR Status Checks
       id: get-pr-checks
       uses: octokit/request-action@v2.x
@@ -56,5 +64,5 @@ jobs:
       uses: Open-Source-Contrib/circle-ci-trigger-action@latest
       with:
         circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
-        circle_ci_job: deploy-dev
+        circle_ci_job: deploy-${{ steps.extract-deploy-env.outputs.DEPLOY_ENV }}
         circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
