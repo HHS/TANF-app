@@ -92,6 +92,12 @@ def stt():
 
 
 @pytest.fixture
+def other_stt():
+    """Return a secondary STT."""
+    return STTFactory.create()
+
+
+@pytest.fixture
 def region():
     """Return a region."""
     return RegionFactory.create()
@@ -160,7 +166,7 @@ def base_report_data(fake_file_name, user):
         "section": "Active Case Data",
         "user": str(user.id),
         "quarter": "Q1",
-        "year": "2020",
+        "year": 2020,
         "stt": int(user.stt.id)
     }
 
