@@ -117,8 +117,6 @@ Our Error Data workshops also identified linking element errors (which are relat
 | Reggie       | A grantee program employee who mistakenly receives access he shouldn't have; potentially access to admin functions or access to a grantee he's not associated to. Reggie is most likely to fall underneath the top level Dan persona, but could potentially be a subtype of any of them. |
 | Gabbie       | An employee at any level who either intentionally or accidentally spreads privileged information to the public. Her motivations range from a desire for validation by peers to negligence concerning what information is cleared for public consumption. |
 
-[Insert here tactics/controls list if we want it in the public repo] 
-
 **Project Impact(s)**
 
 - We prioritized Dan and Malcolm for use in short term follow-on workshops; these could potentially include stakeholders from outside the project team so as to better identify risks and collaborate on controls.  
