@@ -8,7 +8,7 @@ Research Round 6
 **Table of Contents:**
 
 - [Who we talked to](#who-we-talked-to)
-- [What we did](#what-we-wanted-to-learn)
+- [What we did](#what-we-did)
 - [What we learned](#what-we-learned)
 - [What's next](#whats-next)
 
