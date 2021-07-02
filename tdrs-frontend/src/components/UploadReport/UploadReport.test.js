@@ -109,7 +109,7 @@ describe('UploadReport', () => {
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
   })
 
-  it('should display a download button when the file is available for download.', () => {
+  it('should display a download button when the file is available for download', () => {
     const store = mockStore(initialState)
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
@@ -124,7 +124,7 @@ describe('UploadReport', () => {
     expect(buttons.length).toBe(2)
   })
 
-  it('should dispatch download thing.', () => {
+  it('should dispatch on click of file download button', () => {
     const store = mockStore(initialState)
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)

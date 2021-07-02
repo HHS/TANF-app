@@ -70,6 +70,9 @@ export const download = ({ year, quarter = 'Q1', section }) => async (
     )
     const data = response.data
 
+    // Create a link and associate it with the blob returned from the file
+    // download - this allows us to trigger the file download dialog without
+    // having to change the route or reload the page.
     const url = window.URL.createObjectURL(new Blob([data]))
     const link = document.createElement('a')
 
@@ -78,8 +81,10 @@ export const download = ({ year, quarter = 'Q1', section }) => async (
 
     document.body.appendChild(link)
 
+    // Click the link to actually prompt the file download
     link.click()
 
+    // Cleanup afterwards to prevent unwanted side effects
     document.body.removeChild(link)
     dispatch({ type: DOWNLOAD_DIALOG_OPEN })
   } catch (error) {
