@@ -68,10 +68,9 @@ Round 6 research included participants representing:
 
 **Jump to**:
 
-- [We identified two categories of errors more useful than Fatal/Warning to help structure our thinking and ideation]()
-- [A segment of errors (including both errors of entry and errors of conversion) can block other errors from being able to be validated by the system.](#)
-- [We aligned around six Evil User personas, brainstormed a list of tactics they could use, and identified security controls that might mitigate those tactics. ]()
-- [We brainstormed a variety of potential system-compromising tactics and security controls or strategies that might mitigate them.](#)
+- [We identified two categories of errors more useful than Fatal/Warning to help structure our thinking and ideation](#we-identified-two-categories-of-errors-more-useful-than-fatalwarning-to-help-structure-our-thinking-and-ideation)
+- [A segment of errors (including both errors of entry and errors of conversion) can block other errors from being able to be validated by the system.](#a-segment-of-errors-including-both-errors-of-entry-and-errors-of-conversion-can-block-other-errors-from-being-able-to-be-validated-by-the-system)
+- [We aligned around six Evil User personas, brainstormed a list of tactics they could use, and identified security controls that might mitigate those tactics. ](#we-aligned-around-six-evil-user-personas-brainstormed-a-list-of-tactics-they-could-use-and-identified-security-controls-that-might-mitigate-those-tactics)
 
 ---
 
