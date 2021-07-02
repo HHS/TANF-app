@@ -141,6 +141,8 @@ function FileUpload({ section, setLocalAlertState }) {
           }
         })
 
+        console.log({ file })
+
         // At this point we can reasonably conclude the file is a text file.
         // Add the file to the redux state
         dispatch(

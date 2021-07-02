@@ -78,21 +78,32 @@ function UploadReport({ handleCancel, header, stt }) {
       return
     }
 
-    const uploadRequests = filteredFiles.map((file) =>
-      axiosInstance.post(
+    console.log({ filteredFiles })
+
+    const uploadRequests = filteredFiles.map((file) => {
+      const formData = new FormData()
+      const dataFile = {
+        file: file.file,
+        original_filename: file.fileName,
+        slug: file.uuid,
+        user: user.id,
+        year: selectedYear,
+        stt,
+        quarter: selectedQuarter,
+        section: file.section,
+      }
+      for (const [key, value] of Object.entries(dataFile)) {
+        formData.append(key, value)
+      }
+      return axiosInstance.post(
         `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+        formData,
         {
-          original_filename: file.fileName,
-          slug: file.uuid,
-          user: user.id,
-          year: selectedYear,
-          stt,
-          quarter: selectedQuarter,
-          section: file.section,
-        },
-        { withCredentials: true }
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true,
+        }
       )
-    )
+    })
 
     Promise.all(uploadRequests)
       .then((responses) => {

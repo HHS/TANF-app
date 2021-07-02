@@ -34,13 +34,17 @@ export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
     type: FETCH_FILE_LIST,
   })
   try {
-    const response = await axios.get(`/mock_api/reports/${year}/${quarter}`, {
-      responseType: 'json',
-    })
+    const response = await axios.get(
+      `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+      {
+        responseType: 'json',
+      }
+    )
+    console.log(response.data)
     dispatch({
       type: SET_FILE_LIST,
       payload: {
-        data: response.data,
+        data: response.data.results,
       },
     })
   } catch (error) {
@@ -103,6 +107,7 @@ export const upload = ({ file, section }) => async (dispatch) => {
     dispatch({
       type: SET_FILE,
       payload: {
+        file: file,
         fileName: file.name,
         fileType: file.type,
         section,

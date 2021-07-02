@@ -22,6 +22,7 @@ export const fileUploadSections = [
 ]
 
 export const getUpdatedFiles = (
+  file,
   state,
   fileName,
   section,
@@ -33,6 +34,7 @@ export const getUpdatedFiles = (
   const oldFileIndex = getFileIndex(state.files, section)
   const updatedFiles = [...state.files]
   updatedFiles[oldFileIndex] = {
+    file,
     section,
     fileName,
     data,
@@ -61,8 +63,9 @@ const reports = (state = initialState, action) => {
   const { type, payload = {} } = action
   switch (type) {
     case SET_FILE: {
-      const { fileName, section, uuid, fileType } = payload
+      const { file, fileName, section, uuid, fileType } = payload
       const updatedFiles = getUpdatedFiles(
+        file,
         state,
         fileName,
         section,
@@ -76,6 +79,7 @@ const reports = (state = initialState, action) => {
       return {
         ...state,
         files: state.files.map((file) => {
+          console.log({ data, section: file.section })
           const dataFile = getFile(data, file.section)
           if (dataFile) {
             return dataFile
@@ -85,12 +89,13 @@ const reports = (state = initialState, action) => {
     }
     case CLEAR_FILE: {
       const { section } = payload
-      const updatedFiles = getUpdatedFiles(state, null, section, null)
+      const updatedFiles = getUpdatedFiles(null, state, null, section, null)
       return { ...state, files: updatedFiles }
     }
     case SET_FILE_ERROR: {
       const { error, section } = payload
       const updatedFiles = getUpdatedFiles(
+        null,
         state,
         null,
         section,
@@ -104,6 +109,7 @@ const reports = (state = initialState, action) => {
       const { section } = payload
       const file = getFile(state.files, section)
       const updatedFiles = getUpdatedFiles(
+        file,
         state,
         file.fileName,
         section,
