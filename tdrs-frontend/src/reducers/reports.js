@@ -79,11 +79,15 @@ const reports = (state = initialState, action) => {
       return {
         ...state,
         files: state.files.map((file) => {
-          console.log({ data, section: file.section })
           const dataFile = getFile(data, file.section)
-          if (dataFile) {
-            return dataFile
-          } else return file
+          return dataFile
+            ? {
+                fileName: dataFile.original_filename,
+                fileType: dataFile.extension,
+                section: dataFile.section,
+                uuid: dataFile.slug,
+              }
+            : file
         }),
       }
     }

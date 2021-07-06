@@ -76,7 +76,7 @@ class ReportFilePermissions(permissions.BasePermission):
         This is used in cases where we call .get_object() to retrieve a report
         and do not have the STT available in the request, ie. report was
         requested for download via the ID of the report. This is not called
-        on POST requests (creating new reports).
+        on POST requests (creating new reports) or for a list of reports.
         """
         is_ofa_admin = is_in_group(request.user, "OFA Admin")
         is_data_prepper = is_in_group(request.user, 'Data Prepper')

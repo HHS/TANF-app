@@ -35,12 +35,11 @@ export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
   })
   try {
     const response = await axios.get(
-      `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+      `${process.env.REACT_APP_BACKEND_URL}/reports/?year=${year}&quarter=${quarter}`,
       {
         responseType: 'json',
       }
     )
-    console.log(response.data)
     dispatch({
       type: SET_FILE_LIST,
       payload: {

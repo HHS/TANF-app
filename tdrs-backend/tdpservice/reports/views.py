@@ -12,7 +12,7 @@ from wsgiref.util import FileWrapper
 
 from tdpservice.reports.serializers import ReportFileSerializer
 from tdpservice.reports.models import ReportFile
-from tdpservice.users.permissions import ReportFilePermissions
+from tdpservice.users.permissions import ReportFilePermissions, is_in_group
 
 logger = logging.getLogger()
 
@@ -21,10 +21,28 @@ class ReportFileViewSet(ModelViewSet):
     """Report file views."""
 
     http_method_names = ['get', 'post', 'head']
+    filterset_fields = ['year', 'quarter']
     parser_classes = [MultiPartParser]
     permission_classes = [ReportFilePermissions]
     serializer_class = ReportFileSerializer
+
+    # TODO: Handle versioning in queryset
+    # Ref: https://github.com/raft-tech/TANF-app/issues/1007
     queryset = ReportFile.objects.all()
+
+    # NOTE: This is a temporary hack to make sure the latest version of the file
+    # is the one presented in the UI. Once we implement the above linked issue
+    # we will be able to appropriately refer to the latest versions only.
+    ordering = ['-version']
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # Ensure Data Preppers can only see reports for their STT
+        if is_in_group(user, 'Data Prepper'):
+            return self.queryset.filter(stt_id=user.stt_id)
+
+        return self.queryset
 
     @action(methods=["get"], detail=True)
     def download(self, request, pk=None):
