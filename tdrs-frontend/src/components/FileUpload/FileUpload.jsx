@@ -202,7 +202,7 @@ function FileUpload({ section, setLocalAlertState }) {
             type="button"
             onClick={downloadFile}
           >
-            Download
+            Download Section {sectionNumber}
           </Button>
         ) : null}
       </div>
