@@ -220,8 +220,13 @@ jobs:
           name: "Test: Build and Spin-up Django API Service"
           command: "cd tdrs-backend; docker-compose up -d --build"
       - run:
+          name:  "Test: Execute Python Linting Test"
+          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
+      - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
-          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"pytest --cov-report=xml\""
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
       - run:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
@@ -230,9 +235,6 @@ jobs:
             elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
               cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
             fi
-      - run:
-          name:  "Test: Execute Python Linting Test"
-          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh circle"
@@ -250,6 +252,7 @@ jobs:
       - install-nodejs-packages:
           app-dir: tdrs-frontend
           cache-path: ~/.cache
+          cache-version: v2
           pkg-manager: yarn
       - run:
           name: "Run ESLint"
@@ -319,6 +322,37 @@ jobs:
           cf-username: CF_USERNAME_PROD
           frontend-appname: tdp-frontend-prod
 
+  deploy-raft:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-raft
+          frontend-appname: tdp-frontend-raft
+
+  deploy-qasp:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-qasp
+          frontend-appname: tdp-frontend-qasp
+
+  deploy-a11y:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-a11y
+          frontend-appname: tdp-frontend-a11y
+
+  deploy-sandbox:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-sandbox
+          frontend-appname: tdp-frontend-sandbox
 workflows:
   build-and-test:
     jobs:

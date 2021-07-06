@@ -7,13 +7,13 @@ def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
     is_data_prepper = is_in_group(request.user, 'Data Prepper')
     requested_stt = view.kwargs.get('stt', request.data.get('stt'))
-    user_stt = (
-        getattr(request.user.stt, 'id')
-        if (hasattr(request.user, 'stt') and request.user.stt is not None)
-        else None
-    )
+    user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
 
-    return is_data_prepper and user_stt and (requested_stt in [None, user_stt])
+    return bool(
+        is_data_prepper and
+        user_stt is not None and
+        (requested_stt in [None, str(user_stt)])
+    )
 
 
 def is_in_group(user, group_name):
@@ -57,24 +57,29 @@ class IsDataPrepper(permissions.BasePermission):
         return is_in_group(request.user, "Data Prepper")
 
 
-class CanDownloadReport(permissions.BasePermission):
-    """Permission for report download."""
+class ReportFilePermissions(permissions.BasePermission):
+    """Permission for report downloads & uploads."""
 
     def has_permission(self, request, view):
-        """Check if a user can download file."""
-        is_ofa_admin = bool(
-            is_in_group(request.user, 'OFA Admin') and view.kwargs.get('stt')
-        )
-        return is_ofa_admin or is_own_stt(request, view)
-
-
-class CanUploadReport(permissions.BasePermission):
-    """Permission for report uploads."""
-
-    def has_permission(self, request, view):
-        """
-        Check if a user is a data prepper or an admin.
+        """Check if a user is a data prepper or an admin.
 
         If they are a data prepper, ensures the STT is their own.
         """
-        return is_in_group(request.user, "OFA Admin") or is_own_stt(request, view)
+        return (
+            is_in_group(request.user, "OFA Admin") or
+            is_own_stt(request, view)
+        )
+
+    def has_object_permission(self, request, view, obj):
+        """Check if a user can interact with a specific file, based on STT.
+
+        This is used in cases where we call .get_object() to retrieve a report
+        and do not have the STT available in the request, ie. report was
+        requested for download via the ID of the report. This is not called
+        on POST requests (creating new reports).
+        """
+        is_ofa_admin = is_in_group(request.user, "OFA Admin")
+        is_data_prepper = is_in_group(request.user, 'Data Prepper')
+        user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
+
+        return is_ofa_admin or (is_data_prepper and user_stt == obj.stt_id)
