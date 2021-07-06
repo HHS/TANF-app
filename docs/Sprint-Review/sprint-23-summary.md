@@ -15,7 +15,7 @@ Finish up ATO Functionality
 - Wrap up OWASP Scan tickets (#879, #865)
 
 Make decisions on upcoming releases
-- Cron Job options for release 2 (#1011)
+- File transfer options for release 2 (#1011)
 - NextGen XMS direction for release 1 (Epic #902, #638)
 
 UX Planning sprint (#993)
