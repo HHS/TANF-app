@@ -94,7 +94,7 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
    }
    ```
    
-   With this change, you should be able to run `terraform init` successfully.
+   With this change to `main.tf`, you should be able to run `terraform init` successfully.
 
    **Get Remote S3 Credentials:**
    
