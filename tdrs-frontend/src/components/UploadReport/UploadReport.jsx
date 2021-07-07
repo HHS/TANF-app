@@ -39,8 +39,10 @@ function UploadReport({ handleCancel, header, stt }) {
   }, [])
 
   useEffect(() => {
-    dispatch(getAvailableFileList({ year: selectedYear }))
-  }, [dispatch, selectedYear])
+    dispatch(
+      getAvailableFileList({ quarter: selectedQuarter, year: selectedYear })
+    )
+  }, [dispatch, selectedQuarter, selectedYear])
 
   const filteredFiles = files.filter((file) => file.fileName)
   const uploadedSections = filteredFiles

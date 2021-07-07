@@ -21,16 +21,17 @@ const INVALID_FILE_ERROR =
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
-  const { files, year } = useSelector((state) => state.reports)
+  const { files, quarter, year } = useSelector((state) => state.reports)
 
   const dispatch = useDispatch()
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
 
-  const hasFile = files?.some((file) => {
-    return file.section === sectionName && file.uuid
-  })
+  console.log({ year, quarter })
+  const hasFile = files?.some(
+    (file) => file.section === sectionName && file.uuid
+  )
 
   const selectedFile = files.find((file) => sectionName === file.section)
 
@@ -60,7 +61,7 @@ function FileUpload({ section, setLocalAlertState }) {
 
   const downloadFile = ({ target }) => {
     dispatch(clearError({ section: sectionName }))
-    dispatch(download({ section: sectionName, year }))
+    dispatch(download(selectedFile))
   }
   const inputRef = useRef(null)
 
@@ -71,13 +72,13 @@ function FileUpload({ section, setLocalAlertState }) {
       message: null,
     })
 
-    const { name } = event.target
+    const { name: section } = event.target
     const file = event.target.files[0]
 
     // Clear existing errors and the current
     // file in the state if the user is re-uploading
-    dispatch(clearError({ section: name }))
-    dispatch(clearFile({ section: name }))
+    dispatch(clearError({ section }))
+    dispatch(clearFile({ section }))
 
     // Get the the first 4 bytes of the file with which to check file signatures
     const blob = file.slice(0, 4)
@@ -115,7 +116,7 @@ function FileUpload({ section, setLocalAlertState }) {
               type: SET_FILE_ERROR,
               payload: {
                 error: { message: INVALID_FILE_ERROR },
-                section: name,
+                section,
               },
             })
             return
@@ -135,19 +136,17 @@ function FileUpload({ section, setLocalAlertState }) {
               type: SET_FILE_ERROR,
               payload: {
                 error: { message: INVALID_FILE_ERROR },
-                section: name,
+                section,
               },
             })
           }
         })
 
-        console.log({ file })
-
         // At this point we can reasonably conclude the file is a text file.
         // Add the file to the redux state
         dispatch(
           upload({
-            section: name,
+            section,
             file,
           })
         )
@@ -196,7 +195,7 @@ function FileUpload({ section, setLocalAlertState }) {
         data-errormessage={INVALID_FILE_ERROR}
       />
       <div style={{ marginTop: '25px' }}>
-        {hasFile ? (
+        {hasFile && selectedFile?.id ? (
           <Button
             className="tanf-file-download-btn"
             type="button"

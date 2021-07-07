@@ -36,13 +36,19 @@ class ReportFileViewSet(ModelViewSet):
     ordering = ['-version']
 
     def get_queryset(self):
+        """Determine the queryset used to fetch records for users."""
         user = self.request.user
+
+        # OFA Admins can see reports for all STTs
+        if is_in_group(user, 'OFA Admin'):
+            return self.queryset
 
         # Ensure Data Preppers can only see reports for their STT
         if is_in_group(user, 'Data Prepper'):
             return self.queryset.filter(stt_id=user.stt_id)
 
-        return self.queryset
+        # If a user doesn't belong to either of these groups return no reports
+        return self.queryset.none()
 
     @action(methods=["get"], detail=True)
     def download(self, request, pk=None):

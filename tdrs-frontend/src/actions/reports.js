@@ -3,8 +3,11 @@ import { logErrorToServer } from '../utils/eventLogger'
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
+
 export const SET_FILE = 'SET_FILE'
 export const CLEAR_FILE = 'CLEAR_FILE'
+export const CLEAR_FILE_LIST = 'CLEAR_FILE_LIST'
 export const SET_FILE_ERROR = 'SET_FILE_ERROR'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
 
@@ -20,9 +23,14 @@ export const clearFile = ({ section }) => (dispatch) => {
   dispatch({ type: CLEAR_FILE, payload: { section } })
 }
 
+export const clearFileList = () => (dispatch) => {
+  dispatch({ type: CLEAR_FILE_LIST })
+}
+
 export const clearError = ({ section }) => (dispatch) => {
   dispatch({ type: CLEAR_ERROR, payload: { section } })
 }
+
 /**
    Get a list of files that can be downloaded, mainly used to decide
    if the download button should be present.
@@ -35,7 +43,7 @@ export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
   })
   try {
     const response = await axios.get(
-      `${process.env.REACT_APP_BACKEND_URL}/reports/?year=${year}&quarter=${quarter}`,
+      `${BACKEND_URL}/reports/?year=${year}&quarter=${quarter}`,
       {
         responseType: 'json',
       }
@@ -43,7 +51,7 @@ export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
     dispatch({
       type: SET_FILE_LIST,
       payload: {
-        data: response.data.results,
+        data: response?.data?.results,
       },
     })
   } catch (error) {
@@ -58,19 +66,16 @@ export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
   }
 }
 
-export const download = ({ year, quarter = 'Q1', section }) => async (
+export const download = ({ id, quarter = 'Q1', section, year }) => async (
   dispatch
 ) => {
   try {
-    if (!year) throw new Error('No year was provided to download action.')
+    if (!id) throw new Error('No id was provided to download action.')
     dispatch({ type: START_FILE_DOWNLOAD })
 
-    const response = await axios.get(
-      `/mock_api/reports/data-files/${year}/${quarter}/${section}`,
-      {
-        responseType: 'blob',
-      }
-    )
+    const response = await axios.get(`${BACKEND_URL}/reports/${id}/download/`, {
+      responseType: 'blob',
+    })
     const data = response.data
 
     // Create a link and associate it with the blob returned from the file

@@ -7,6 +7,7 @@ import {
   SET_SELECTED_STT,
   SET_SELECTED_QUARTER,
   SET_FILE_LIST,
+  CLEAR_FILE_LIST,
 } from '../actions/reports'
 
 const getFileIndex = (files, section) =>
@@ -82,10 +83,13 @@ const reports = (state = initialState, action) => {
           const dataFile = getFile(data, file.section)
           return dataFile
             ? {
+                id: dataFile.id,
                 fileName: dataFile.original_filename,
                 fileType: dataFile.extension,
+                quarter: dataFile.quarter,
                 section: dataFile.section,
                 uuid: dataFile.slug,
+                year: dataFile.year,
               }
             : file
         }),
@@ -95,6 +99,9 @@ const reports = (state = initialState, action) => {
       const { section } = payload
       const updatedFiles = getUpdatedFiles(null, state, null, section, null)
       return { ...state, files: updatedFiles }
+    }
+    case CLEAR_FILE_LIST: {
+      return { ...state, files: initialState.files }
     }
     case SET_FILE_ERROR: {
       const { error, section } = payload
@@ -124,7 +131,7 @@ const reports = (state = initialState, action) => {
     }
     case SET_SELECTED_YEAR: {
       const { year } = payload
-      return { ...state, year }
+      return { ...state, year: parseInt(year) }
     }
     case SET_SELECTED_STT: {
       const { stt } = payload

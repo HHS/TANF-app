@@ -3,7 +3,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 
 import Button from '../Button'
-import { setYear, setStt, setQuarter } from '../../actions/reports'
+import {
+  clearFileList,
+  setYear,
+  setStt,
+  setQuarter,
+} from '../../actions/reports'
 import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
 import { fetchSttList } from '../../actions/sttList'
@@ -66,6 +71,7 @@ function Reports() {
         setIsToggled(false)
       }
 
+      dispatch(clearFileList())
       setSubmittedHeader(reportHeader)
       setTimeout(() => setIsToggled(true), 0)
     } else {
