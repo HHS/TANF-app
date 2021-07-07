@@ -39,14 +39,20 @@ Note that a single S3 bucket maintains the Terraform State for both the developm
 Sometimes a developer will need to run Terraform locally to perform manual operations. Perhaps a new TF State S3 bucket needs to be created in another environment, or there are new services or other major configuration changes that need to be tested first.
 
 1. **Install terraform**
+   - On macOS: `brew install terraform`
+   - On other platforms: [Download and install terraform][tf]
 
-    - On macOS: `brew install terraform`
-    - On other platforms: [Download and install terraform][tf]
-
-1. **Install Cloud Foundry CLI tool**
-
-    - On macOS: `brew install cloudfoundry/tap/cf-cli`
-    - On other platforms: [Download and install cf][cf-install]
+1. **Install Cloud Foundry CLI**
+   - On macOS: `brew install cloudfoundry/tap/cf-cli`
+   - On other platforms: [Download and install cf][cf-install]
+   
+1. **Install CircleCI local CLI**
+   - On macOS: `brew install circleci`
+   - On other platforms: [Download and install circleci][circleci]
+   
+1. **Install jq CLI**
+   - On macOS: `brew install jq`
+   - On other platforms: [Download and install jq][jq]
 
 1. **Login to Cloud Foundry**
     ```bash
@@ -166,3 +172,5 @@ These instructions describe the creation of a new S3 bucket to hold Terraform's 
 [orb]: https://circleci.com/developer/orbs/orb/circleci/terraform
 [language]: https://www.terraform.io/docs/language/index.html
 [s3]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingServerSideEncryption.html
+[jq]: https://stedolan.github.io/jq/download/
+[circleci]: https://circleci.com/docs/2.0/local-cli/
