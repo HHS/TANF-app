@@ -87,7 +87,7 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
    
    **Remote vs. Local Backend:**
    
-   If you merely wish to test some new changes without regards to the currently deployed remote state stored in the, you may want to use a "local" backend with Terraform.
+   If you merely wish to test some new changes without regards to the currently deployed state stored in the remote TF state S3 bucket, you may want to use a "local" backend with Terraform.
    ```terraform
    terraform {
     backend "local" {}
