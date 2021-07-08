@@ -236,11 +236,7 @@ commands:
             apk update
             apk add jq
             apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
-      - login-cloud-dot-gov:
-          cf-password: <<parameters.cf-password>>
-          cf-org: <<parameters.cf-org>>
-          cf-space: tanf-dev
-          cf-username: <<parameters.cf-username>>
+      - login-cloud-dot-gov
       - run:
           name: Export S3 Credentials for TFState
           command: |
