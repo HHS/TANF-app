@@ -3,7 +3,7 @@
 
 ### Updates
  - For the week of 6/22 was impacted by Raft team having an onsite all-hands. This resulted in less productivity due to folks being out for travel and the all hands meetings, effectively rendering our sprint a little over 50% productivity.
-- NextGen XMS decisions are still blocked by having information from the NextGen Team. We have discussed moving forward with Login.gov for the time being and deprioritizing the migration efforts since we continue to be blocked.
+- NextGen XMS decisions are still blocked by having information from the NextGen Team. We requested documentation by 7/12 and are planning to deprioritizing this work until it is unblocked, continuing to use login.gov in the meantime.
 - The team is able to assess and move foreward on planning for ACF/AMS as of end of this sprint.
 
 
