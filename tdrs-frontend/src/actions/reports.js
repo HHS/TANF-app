@@ -1,7 +1,9 @@
-import { logErrorToServer } from '../utils/eventLogger'
-
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
+
+import axiosInstance from '../axios-instance'
+import { logErrorToServer } from '../utils/eventLogger'
+import removeFileInputErrorState from '../utils/removeFileInputErrorState'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
 
@@ -119,16 +121,75 @@ export const upload = ({ file, section }) => async (dispatch) => {
       },
     })
   } catch (error) {
-    dispatch({
-      type: SET_FILE_ERROR,
-      payload: { error: Error({ message: 'something went wrong' }), section },
-    })
     logErrorToServer(SET_FILE_ERROR)
     dispatch({ type: SET_FILE_ERROR, payload: { error, section } })
     return false
   }
 
   return true
+}
+
+export const submit = ({
+  formattedSections,
+  logger,
+  quarter,
+  setLocalAlertState,
+  stt,
+  uploadedFiles,
+  user,
+  year,
+}) => async (dispatch) => {
+  const submissionRequests = uploadedFiles.map((file) => {
+    const formData = new FormData()
+    const dataFile = {
+      file: file.file,
+      original_filename: file.fileName,
+      slug: file.uuid,
+      user: user.id,
+      section: file.section,
+      year,
+      stt,
+      quarter,
+    }
+    for (const [key, value] of Object.entries(dataFile)) {
+      formData.append(key, value)
+    }
+    return axiosInstance.post(
+      `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
+      }
+    )
+  })
+
+  Promise.all(submissionRequests)
+    .then((responses) => {
+      setLocalAlertState({
+        active: true,
+        type: 'success',
+        message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
+      })
+      removeFileInputErrorState()
+
+      const submittedFiles = responses.map(
+        (response) =>
+          `${response?.data?.original_filename} (${response?.data?.extension})`
+      )
+
+      // Create LogEntries in Django for each created ReportFile
+      logger.alert(
+        `Submitted ${submittedFiles.length} data file(s): ${submittedFiles.join(
+          ', '
+        )}`,
+        {
+          files: responses.map((response) => response?.data?.id),
+          activity: 'upload',
+        }
+      )
+    })
+    .catch((error) => console.error(error))
 }
 
 export const SET_SELECTED_STT = 'SET_SELECTED_STT'

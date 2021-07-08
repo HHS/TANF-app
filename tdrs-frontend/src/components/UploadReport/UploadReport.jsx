@@ -6,8 +6,7 @@ import classNames from 'classnames'
 import Button from '../Button'
 
 import FileUpload from '../FileUpload'
-import axiosInstance from '../../axios-instance'
-import { getAvailableFileList, clearError } from '../../actions/reports'
+import { submit } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 import { fileUploadSections } from '../../reducers/reports'
 
@@ -21,6 +20,8 @@ function UploadReport({ handleCancel, header, stt }) {
   // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
 
+  // TODO: Move this to Redux state so we can modify this value outside of
+  // this component without having to pass the setter function around
   const [localAlert, setLocalAlertState] = useState({
     active: false,
     type: null,
@@ -38,14 +39,8 @@ function UploadReport({ handleCancel, header, stt }) {
     headerRef.current.focus()
   }, [])
 
-  useEffect(() => {
-    dispatch(
-      getAvailableFileList({ quarter: selectedQuarter, year: selectedYear })
-    )
-  }, [dispatch, selectedQuarter, selectedYear])
-
-  const filteredFiles = files.filter((file) => file.fileName)
-  const uploadedSections = filteredFiles
+  const uploadedFiles = files.filter((file) => file.fileName && !file.id)
+  const uploadedSections = uploadedFiles
     .map((file) => fileUploadSections.indexOf(file.section) + 1)
     .join(', ')
     .split(' ')
@@ -57,21 +52,10 @@ function UploadReport({ handleCancel, header, stt }) {
 
   const formattedSections = uploadedSections.join(' ')
 
-  const clearErrorState = () => {
-    for (const section of fileUploadSections) {
-      dispatch(clearError({ section }))
-    }
-
-    const errors = document.querySelectorAll('.has-invalid-file')
-    for (const error of errors) {
-      error?.classList?.remove('has-invalid-file')
-    }
-  }
-
   const onSubmit = async (event) => {
     event.preventDefault()
 
-    if (filteredFiles.length === 0) {
+    if (uploadedFiles.length === 0) {
       setLocalAlertState({
         active: true,
         type: 'error',
@@ -80,64 +64,18 @@ function UploadReport({ handleCancel, header, stt }) {
       return
     }
 
-    console.log({ filteredFiles })
-
-    const uploadRequests = filteredFiles.map((file) => {
-      const formData = new FormData()
-      const dataFile = {
-        file: file.file,
-        original_filename: file.fileName,
-        slug: file.uuid,
-        user: user.id,
-        year: selectedYear,
-        stt,
+    dispatch(
+      submit({
         quarter: selectedQuarter,
-        section: file.section,
-      }
-      for (const [key, value] of Object.entries(dataFile)) {
-        formData.append(key, value)
-      }
-      return axiosInstance.post(
-        `${process.env.REACT_APP_BACKEND_URL}/reports/`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        }
-      )
-    })
-
-    Promise.all(uploadRequests)
-      .then((responses) => {
-        setLocalAlertState({
-          active: true,
-          type: 'success',
-          message: `Successfully submitted section(s): ${formattedSections} on ${new Date().toDateString()}`,
-        })
-        clearErrorState()
-
-        const submittedFiles = responses.map(
-          (response) =>
-            `${response?.data?.original_filename} (${response?.data?.extension})`
-        )
-
-        // Create LogEntries in Django for each created ReportFile
-        logger.alert(
-          `Submitted ${
-            submittedFiles.length
-          } data file(s): ${submittedFiles.join(', ')}`,
-          {
-            files: responses.map((response) => response?.data?.id),
-            activity: 'upload',
-          }
-        )
+        year: selectedYear,
+        formattedSections,
+        logger,
+        setLocalAlertState,
+        stt,
+        uploadedFiles,
+        user,
       })
-      .catch((error) => console.error(error))
-  }
-
-  const onCancel = () => {
-    handleCancel()
-    clearErrorState()
+    )
   }
 
   useEffect(() => {
@@ -179,7 +117,7 @@ function UploadReport({ handleCancel, header, stt }) {
           <Button className="card:margin-y-1" type="submit">
             Submit Data Files
           </Button>
-          <Button className="cancel" type="button" onClick={onCancel}>
+          <Button className="cancel" type="button" onClick={handleCancel}>
             Cancel
           </Button>
         </div>

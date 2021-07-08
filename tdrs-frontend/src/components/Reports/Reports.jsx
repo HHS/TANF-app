@@ -8,6 +8,7 @@ import {
   setYear,
   setStt,
   setQuarter,
+  getAvailableFileList,
 } from '../../actions/reports'
 import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
@@ -67,12 +68,23 @@ function Reports() {
     const reportHeader = `${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
 
     if (form.length === 3) {
+      // Hide upload sections while submitting search
       if (isUploadReportToggled) {
         setIsToggled(false)
       }
 
+      // Clear existing file list from state to ensure fresh results
       dispatch(clearFileList())
+
+      // Retrieve the files matching the selected year and quarter.
+      dispatch(
+        getAvailableFileList({ quarter: selectedQuarter, year: selectedYear })
+      )
+
+      // Update the section header to reflect selections
       setSubmittedHeader(reportHeader)
+
+      // Restore upload sections to the page
       setTimeout(() => setIsToggled(true), 0)
     } else {
       // create error state
