@@ -6,7 +6,13 @@ import {
   SET_SELECTED_YEAR,
   SET_SELECTED_STT,
   SET_SELECTED_QUARTER,
+  SET_FILE_LIST,
 } from '../actions/reports'
+
+const getFileIndex = (files, section) =>
+  files.findIndex((currentFile) => currentFile.section === section)
+const getFile = (files, section) =>
+  files.find((currentFile) => currentFile.section === section)
 
 export const fileUploadSections = [
   'Active Case Data',
@@ -21,15 +27,15 @@ export const getUpdatedFiles = (
   section,
   uuid = null,
   fileType = null,
-  error = null
+  error = null,
+  data = ''
 ) => {
-  const oldFileIndex = state.files.findIndex(
-    (currentFile) => currentFile.section === section
-  )
+  const oldFileIndex = getFileIndex(state.files, section)
   const updatedFiles = [...state.files]
   updatedFiles[oldFileIndex] = {
     section,
     fileName,
+    data,
     error,
     uuid,
     fileType,
@@ -65,6 +71,18 @@ const reports = (state = initialState, action) => {
       )
       return { ...state, files: updatedFiles }
     }
+    case SET_FILE_LIST: {
+      const { data } = payload
+      return {
+        ...state,
+        files: state.files.map((file) => {
+          const dataFile = getFile(data, file.section)
+          if (dataFile) {
+            return dataFile
+          } else return file
+        }),
+      }
+    }
     case CLEAR_FILE: {
       const { section } = payload
       const updatedFiles = getUpdatedFiles(state, null, section, null)
@@ -84,7 +102,14 @@ const reports = (state = initialState, action) => {
     }
     case CLEAR_ERROR: {
       const { section } = payload
-      const updatedFiles = getUpdatedFiles(state, null, section, null)
+      const file = getFile(state.files, section)
+      const updatedFiles = getUpdatedFiles(
+        state,
+        file.fileName,
+        section,
+        file.uuid,
+        file.fileType
+      )
       return { ...state, files: updatedFiles }
     }
     case SET_SELECTED_YEAR: {
