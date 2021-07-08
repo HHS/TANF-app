@@ -17,7 +17,7 @@ Finish up ATO Functionality
 - Make decisions on upcoming releases
 - Cron Job options for release 2 (#1011)
 - NextGen XMS direction for release 1 (Epic #902, #638)
-- Document feasibility and high level estimated tasks that would be needed for ACF/AMS + Next Gen (Blocked) implementation.
+- Document feasibility and high level estimated tasks that would be needed for (1) ACF AMS or (2) ACF AMS/Next Gen (Blocked) implementation.
 
 ...Then
 Attend to Permissions for OFA Admins epic
