@@ -27,7 +27,6 @@ Work on DevOPs work for Production readiness
 
 ## Merged/Completed (Done/Demo, Closed)
 - Dependabot Mass Merge / Improvements [#1023](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1023)
-- As a dev/Tech Lead, I want to have automated deploys to production [#724](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/724)
 - Set up new dev environments: sandbox, raft-review, qasp-review, a11y [#848](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/848)
 
 ## Submitted (QASP Review, OCIO Review)
