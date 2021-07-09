@@ -51,7 +51,7 @@ update_backend()
 
 strip() {
     # Usage: strip "string" "pattern"
-    printf '%s\n' "${1/$2}"
+    printf '%s\n' "${1##$2}"
 }
 
 bind_backend_to_services() {
