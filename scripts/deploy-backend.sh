@@ -49,8 +49,14 @@ update_backend()
     cd ..
 }
 
+strip() {
+    # Usage: strip "string" "pattern"
+    printf '%s\n' "${1##$2}"
+}
+
 bind_backend_to_services() {
-    env=${$CF_SPACE"#tanf-"}
+    env=$(strip $CF_SPACE "tanf-")
+
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}"
