@@ -37,7 +37,7 @@ export const clearError = ({ section }) => (dispatch) => {
    Get a list of files that can be downloaded, mainly used to decide
    if the download button should be present.
 */
-export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
+export const getAvailableFileList = ({ quarter = 'Q1', stt, year }) => async (
   dispatch
 ) => {
   dispatch({
@@ -45,7 +45,7 @@ export const getAvailableFileList = ({ year, quarter = 'Q1' }) => async (
   })
   try {
     const response = await axios.get(
-      `${BACKEND_URL}/reports/?year=${year}&quarter=${quarter}`,
+      `${BACKEND_URL}/reports/?year=${year}&quarter=${quarter}&stt=${stt.id}`,
       {
         responseType: 'json',
       }

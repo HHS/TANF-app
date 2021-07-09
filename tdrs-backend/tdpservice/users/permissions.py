@@ -2,11 +2,26 @@
 
 from rest_framework import permissions
 
+#TEMP
+import logging
+logger = logging.getLogger(__name__)
+
 
 def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
     is_data_prepper = is_in_group(request.user, 'Data Prepper')
-    requested_stt = view.kwargs.get('stt', request.data.get('stt'))
+
+    # Depending on the request, the STT could be found in three different places
+    # sp we will merge all together and just do one check
+    requested_stt = {
+        **view.kwargs,
+        **request.data.dict(),
+        **request.query_params.dict()
+    }.get('stt')
+    # TODO: Fix this
+    logger.info(f'vk: {view.kwargs}, rd: {request.data.dict()}, rq: {request.query_params.dict()}')
+    logger.info(f'requested_stt: {requested_stt}')
+
     user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
 
     return bool(

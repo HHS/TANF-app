@@ -78,7 +78,11 @@ function Reports() {
 
       // Retrieve the files matching the selected year and quarter.
       dispatch(
-        getAvailableFileList({ quarter: selectedQuarter, year: selectedYear })
+        getAvailableFileList({
+          quarter: selectedQuarter,
+          year: selectedYear,
+          stt,
+        })
       )
 
       // Update the section header to reflect selections

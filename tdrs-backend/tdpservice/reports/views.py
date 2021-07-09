@@ -2,6 +2,7 @@
 import logging
 
 from django.http import StreamingHttpResponse
+from django_filters import rest_framework as filters
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
@@ -17,11 +18,20 @@ from tdpservice.users.permissions import ReportFilePermissions, is_in_group
 logger = logging.getLogger()
 
 
+class ReportFileFilter(filters.FilterSet):
+    """Filters that can be applied to GET requests as query parameters."""
+    stt = filters.NumberFilter(field_name='stt_id', required=True)
+
+    class Meta:
+        model = ReportFile
+        fields = ['stt', 'quarter', 'year']
+
+
 class ReportFileViewSet(ModelViewSet):
     """Report file views."""
 
     http_method_names = ['get', 'post', 'head']
-    filterset_fields = ['year', 'quarter']
+    filterset_class = ReportFileFilter
     parser_classes = [MultiPartParser]
     permission_classes = [ReportFilePermissions]
     serializer_class = ReportFileSerializer
@@ -35,20 +45,11 @@ class ReportFileViewSet(ModelViewSet):
     # we will be able to appropriately refer to the latest versions only.
     ordering = ['-version']
 
-    def get_queryset(self):
-        """Determine the queryset used to fetch records for users."""
-        user = self.request.user
-
-        # OFA Admins can see reports for all STTs
-        if is_in_group(user, 'OFA Admin'):
-            return self.queryset
-
-        # Ensure Data Preppers can only see reports for their STT
-        if is_in_group(user, 'Data Prepper'):
-            return self.queryset.filter(stt_id=user.stt_id)
-
-        # If a user doesn't belong to either of these groups return no reports
-        return self.queryset.none()
+    def filter_queryset(self, queryset):
+        """Only apply filters to the list action."""
+        if self.action != 'list':
+            self.filterset_class = None
+        return super().filter_queryset(queryset)
 
     @action(methods=["get"], detail=True)
     def download(self, request, pk=None):
