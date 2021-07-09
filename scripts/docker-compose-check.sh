@@ -1,4 +1,4 @@
- #!/bin/sh
+#!/bin/sh
 set -e
 if command -v docker-compose /dev/null 2>&1; then
 echo The command docker-compose is available
