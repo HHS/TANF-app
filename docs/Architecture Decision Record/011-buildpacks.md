@@ -33,3 +33,7 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
 **Notes**
 - Docker containers will still need to be maintained for local development and CI/CD
 - Docker containers will still need to be hardened for CI/CD
+
+## Restaging for updated buildpacks
+
+As described in #1045, cloud.gov will inform us that buildpacks we use have been updated to a newer version via e-mail to all users with their 'developer' role. The e-mail informs as to specific CloudFoundry CLI steps needed to restage the our applications with this newer version of our buildpack base. As we have already captured our deployment strategy process/commands in scripts/deploy-backend.sh, running that script is the only step necessary when our team receives this e-mail. 
