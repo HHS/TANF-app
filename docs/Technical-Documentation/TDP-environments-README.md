@@ -9,7 +9,9 @@
 | QASP | https://tdp-frontend-qasp.app.cloud.gov | https://tdp-backend-qasp.app.cloud.gov | Space for QASP review |
 | raft | https://tdp-frontend-raft.app.cloud.gov | https://tdp-backend-raft.app.cloud.gov | Space for raft review |
 
-### Common Dependencies
+### Dependencies 
+
+- `clamav-rest`
 
 **Cloud.gov AWS RDS `(tanf-dev)`**
 - `tdp-db-dev`
@@ -27,6 +29,10 @@ Unlike Development, the Staging environment contains a single frontend and backe
 | -------- | -------- | -------- |
 | https://tdp-frontend-staging.app.cloud.gov | https://tdp-backend-staging.app.cloud.gov     | Space for government users to test in a deployed, production-like environment    |
 
+### Dependencies 
+
+- `clamav-rest`
+
 **Cloud.gov AWS RDS `(tanf-staging)`**
 - `tdp-db-staging`
   
@@ -41,6 +47,14 @@ Unlike Development, the Staging environment contains a single frontend and backe
 
 Like Staging, there is only one Production deployment.
 
+| Frontend URL | Backend URL | Purpose |
+| -------- | -------- | -------- |
+| https://tdp-frontend-production.app.cloud.gov | https://tdp-backend-production.app.cloud.gov     | Production space for active users of the application.    |
+
+### Dependencies 
+
+- `clamav-rest`
+
 **Cloud.gov AWS RDS `(tanf-production)`**
 - `tdp-db-production`
   
@@ -49,10 +63,6 @@ Like Staging, there is only one Production deployment.
 - `tdp-datafiles-production`
 - `tdp-tf-states` - Stores the Terraform state files used to create and re-recreate services infrastructure.
 
-| Frontend URL | Backend URL | Purpose |
-| -------- | -------- | -------- |
-| https://tdp-frontend-production.app.cloud.gov | https://tdp-backend-production.app.cloud.gov     | Production space for active users of the application.    |
-
 ## External Dependencies
 
 These are shared across all environments.
@@ -60,3 +70,4 @@ These are shared across all environments.
 - [CircleCI](https://circleci.com/)
 - [Login.gov](https://login.gov/)
 - [Cloud.gov](https://cloud.gov/)
+- [ClamAV Rest](https://registry.hub.docker.com/r/rafttech/clamav-rest)
