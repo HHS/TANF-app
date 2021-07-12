@@ -92,3 +92,10 @@ tdrs-backend/htmlcov/*
 
 # VIM
 *.swp
+
+# Terraform
+.terraform
+tfapply
+*.tfvars
+*.lock.hcl
+*.tfstate

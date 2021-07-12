@@ -1,4 +1,5 @@
 import { createServer } from 'miragejs'
+import { v4 as uuidv4 } from 'uuid'
 
 export default function startMirage(
   { environment } = { environment: 'development' }
@@ -11,6 +12,23 @@ export default function startMirage(
 
       this.post('/reports/', () => {
         return 'Success'
+      })
+      this.get('/reports/data-files/:year/:quarter/:section', () => {
+        return 'some text'
+      })
+      this.get('/reports/:year/:quarter/', () => {
+        return [
+          {
+            fileName: 'test.txt',
+            section: 'Active Case Data',
+            uuid: uuidv4(),
+          },
+          {
+            fileName: 'testb.txt',
+            section: 'Closed Case Data',
+            uuid: uuidv4(),
+          },
+        ]
       })
 
       // Allow unhandled requests to pass through
