@@ -56,7 +56,7 @@ Work on DevOPs work for Production readiness
 - Verify Admin Permissions Hierarchy and Roles[#1058](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1058)
 - [Devops] Create a pa11y script which can login to the app to capture pages that require authentication [#1044](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1044)
 - Update ATO docs and corresponding code docs [#962](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/962)
-- As an OFA admin, I can download raw file [#89](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/89)
+- [EPIC] As an OFA admin, I can download raw file [#89](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/89)
 
 
 **Sprint To Do**
