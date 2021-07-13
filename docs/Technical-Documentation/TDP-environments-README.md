@@ -49,7 +49,7 @@ Like Staging, there is only one Production deployment.
 
 | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- |
-| https://tdp-frontend-production.app.cloud.gov | https://tdp-backend-production.app.cloud.gov     | Production space for active users of the application.    |
+| `tbd`` | `tbd`     | Production space for active users of the application.    |
 
 ### Dependencies 
 
