@@ -1,22 +1,292 @@
 version: 2.1
+
 orbs:
   node: circleci/node@4.2.1
-jobs:
-  test-backend:
+  terraform: circleci/terraform@2.1.0
+  jq: circleci/jq@2.2.0
+
+executors:
+  docker-executor:
+    docker:
+      - image: cimg/python:3.8.10
+        user: root
+  machine-executor:
     machine:
       docker_layer_caching: false
-    branches:
+      image: ubuntu-2004:202104-01
+
+commands:
+  ###
+  # General re-usable commands
+  #
+  cf-check:
+    steps:
+      - run:
+          name: Ensure cf cli is installed, otherwise install it.
+          command: ./scripts/cf-check.sh
+
+  docker-compose-check:
+    steps:
+      - run:
+          name: Ensure docker-compose exists, otherwise install it.
+          command: ./scripts/docker-compose-check.sh
+
+  # This allows us to use the orb stanza for node/install within other commands
+  # NOTE: This doesn't work correctly on machine executors
+  install-nodejs: node/install
+
+  # This allows us to use the node orb to install packages within other commands
+  install-nodejs-packages: node/install-packages
+
+  install-nodejs-machine:
+    description: |
+      Installs our target version of Node.JS using NVM (Node Version Manager)
+      from the install location provided by machine executor images.
+    steps:
+      - run:
+          name: Install Node.JS
+          command: |
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install v12.18
+            nvm alias default v12.18
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+
+  sudo-check:
+    steps:
+      - run:
+          name: Ensure sudo is installed, otherwise install it.
+          command: ./scripts/sudo-check.sh
+
+  ###
+  # Deployment commands
+  #
+  login-cloud-dot-gov:
+    description: Authenticates with Cloud.gov and sets org and space targets
+    parameters:
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+    steps:
+      - run:
+          name: Login to Cloud.gov and set application targets
+          command: |
+            cf login -a https://api.fr.cloud.gov \
+              -u ${<<parameters.cf-username>>} \
+              -p ${<<parameters.cf-password>>} \
+              -o ${<<parameters.cf-org>>} \
+              -s <<parameters.cf-space>>
+
+  get-app-deploy-strategy:
+    parameters:
+      appname:
+        type: string
+    steps:
+      - run:
+          name: Determine deploy strategy
+          command: |
+            # NOTE: The || true is a no-op included to suppress exit codes which
+            #       would cause the step to exit early due to use of pipefail
+            APP_GUID=$(cf app <<parameters.appname>> --guid || true)
+            if [ "$APP_GUID" == "FAILED" ]; then
+              echo "export DEPLOY_STRATEGY=initial" >> $BASH_ENV
+            else
+              echo "export DEPLOY_STRATEGY=rolling" >> $BASH_ENV
+            fi
+
+  deploy-backend:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+    steps:
+      - get-app-deploy-strategy:
+          appname: <<parameters.backend-appname>>
+      - run:
+          name: Deploy backend application
+          command: |
+            bash ./scripts/deploy-backend.sh \
+              $DEPLOY_STRATEGY \
+              <<parameters.backend-appname>>
+
+  deploy-clamav:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+    steps:
+      - run:
+          name: Delete existing ClamAV REST application
+          command: cf delete -r clamav-rest -f
+      - run:
+          name: Deploy ClamAV REST application
+          command: |
+            cf push clamav-rest -f tdrs-backend/manifest.clamav.yml \
+              --var cf-space=<<parameters.cf-space>>
+      - run:
+          name: Enable internal route between backend and clamav-rest apps
+          command: |
+            cf add-network-policy <<parameters.backend-appname>> clamav-rest \
+              -s <<parameters.cf-space>> \
+              -o ${<<parameters.cf-org>>} \
+              --protocol tcp \
+              --port 9000
+
+  deploy-frontend:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+    steps:
+      - install-nodejs:
+          install-yarn: true
+          node-version: "12.18"
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+          pkg-manager: yarn
+      - get-app-deploy-strategy:
+          appname: <<parameters.frontend-appname>>
+      - run:
+          name: Deploy frontend application
+          command: |
+            bash ./scripts/deploy-frontend.sh \
+              $DEPLOY_STRATEGY \
+              <<parameters.frontend-appname>> \
+              <<parameters.backend-appname>>
+
+  deploy-cloud-dot-gov:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-password:
+        default: CF_PASSWORD_DEV
+        type: env_var_name
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-username:
+        default: CF_USERNAME_DEV
+        type: env_var_name
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - deploy-backend:
+          backend-appname: <<parameters.backend-appname>>
+      - deploy-clamav:
+          backend-appname: <<parameters.backend-appname>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+      - deploy-frontend:
+          backend-appname: <<parameters.backend-appname>>
+          frontend-appname: <<parameters.frontend-appname>>
+
+  deploy-infrastructure:
+    parameters:
+      tf-path:
+        type: string
+        default: ./terraform/dev
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
     steps:
       - checkout
       - run:
-          name: 'Ensure docker-compose exists,otherwise install it.'
-          command: "./scripts/docker-compose-check.sh"
+          name: Install dependencies
+          command: |
+            apk update
+            apk add jq
+            apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+      - login-cloud-dot-gov
+      - run:
+          name: Export S3 Credentials for TFState
+          command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
+            {
+              echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)\""
+              echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
+              echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
+            } >> ./backend_config.tfvars
+      - run:
+          name: Prepare Terraform Variables
+          command: |
+            {
+              echo "cf_password = \"$<<parameters.cf-password>>\""
+              echo "cf_user = \"$<<parameters.cf-username>>\""
+              echo "cf_space_name = \"<<parameters.cf-space>>\""
+            } >> ./variables.tfvars
+
+      - terraform/init:
+          path: <<parameters.tf-path>>
+          backend_config_file: ./backend_config.tfvars
+      - terraform/validate:
+          path: <<parameters.tf-path>>
+      - terraform/fmt:
+          path: <<parameters.tf-path>>
+      - terraform/plan:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+      - terraform/apply:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+
+jobs:
+  test-backend:
+    executor: machine-executor
+    branches:
+    steps:
+      - checkout
+      - docker-compose-check
       - run:
           name: "Test: Build and Spin-up Django API Service"
           command: "cd tdrs-backend; docker-compose up -d --build"
       - run:
+          name:  "Test: Execute Python Linting Test"
+          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
+      - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
-          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"pytest --cov-report=xml\""
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
       - run:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
@@ -26,41 +296,30 @@ jobs:
               cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
             fi
       - run:
-          name:  "Test: Execute Python Linting Test"
-          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
-      - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-backend; ./zap-scanner.sh"
+          command: "cd tdrs-backend; ./zap-scanner.sh circle"
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
+
   test-frontend:
+    executor: machine-executor
     working_directory: ~/tdp-apps
-    machine:
-      docker_layer_caching: false
     steps:
       - checkout
-      - run:
-          name: 'Ensure docker-compose exists,otherwise install it.'
-          command: "./scripts/docker-compose-check.sh"
-      - run: 
-          name: "Install Node.JS"
-          command: |
-            source /opt/circleci/.nvm/nvm.sh
-            nvm install v12.18
-            nvm alias default v12.18
-            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
-            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+      - docker-compose-check
+      - install-nodejs-machine
       - node/install-yarn
-      - node/install-packages:
+      - install-nodejs-packages:
           app-dir: tdrs-frontend
           cache-path: ~/.cache
+          cache-version: v2
           pkg-manager: yarn
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
       - run:
           name: "Run Pa11y Accessibility Tests"
-          command: "cd tdrs-frontend; yarn test:accessibility"
+          command: "cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility"
       - run:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
@@ -77,121 +336,121 @@ jobs:
           command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-frontend; ./zap-scanner.sh"
+          command: "cd tdrs-frontend; ./zap-scanner.sh circle"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
-  deploy:
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/homepage.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/edit-profile.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/request.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/login.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/data-files.png
+
+  deploy-infrastructure-dev:
+    executor: terraform/default
     working_directory: ~/tdp-deploy
-    docker:
-      - image: circleci/python:3.8
-        user : root
     steps:
-      - setup_remote_docker:
-         docker_layer_caching: false
-      - checkout
-      - run:
-          name: 'Ensure sudo is installed, otherwise install it.'
-          command: "./scripts/sudo-check.sh"
-      - run:
-          name: 'Ensure cf cli is installed, otherwise install it.'
-          command: "./scripts/cf-check.sh"
-      - run:
-          name: "Log Into Docker"
-          command: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin"
-      - run:
-          name: "Setup DockerHub tag name"
-          command: |
-            # Docker will reject tag names that include the literal `/` character
-            # To work around this we replace that character in the CIRCLE_BRANCH name
-            # and expose that to future steps via CircleCI Bash Environment
-            echo "export DOCKER_TAG=`echo $CIRCLE_BRANCH | tr / -`" >> $BASH_ENV
-      - run:
-          name:  "Build Backend Docker image"
-          command: "cd tdrs-backend; docker build -t lfrohlich/tdp-backend:$DOCKER_TAG . -f ./docker/Dockerfile.dev"
-      - run:
-          name:  "Push Backend Image to Docker Hub"
-          command: "docker push lfrohlich/tdp-backend:$DOCKER_TAG"
-      - run:
-          name:  "Build Frontend Docker image"
-          command: |
-            # In order to support deploying to different environments we need
-            # to specify which Dockerfile gets used based on the current branch
-            if [ "$CIRCLE_BRANCH" == "raft-tdp-main" ]; then
-              DOCKERFILE="Dockerfile.staging"
-            else
-              DOCKERFILE="Dockerfile.dev"
-            fi
+      - deploy-infrastructure
 
-            cd tdrs-frontend
-            docker build -t lfrohlich/tdp-frontend:$DOCKER_TAG . -f $DOCKERFILE
-      - run:
-          name:  "Push Frontend Image to Docker Hub"
-          command: "docker push lfrohlich/tdp-frontend:$DOCKER_TAG"
-      - run:
-          name: "Deploy to Cloud.gov"
-          command: |
-            # Map certain branches to spaces, otherwise default to the Development space.
-            # This lets you have dev/staging/main branches that automatically go to the right place.
-            # NOTE: Only branches specified in the workflows at the bottom of this file will get
-            #       automatically deployed on merge.
-            export DOCKER_IMAGE_BACKEND="lfrohlich/tdp-backend:$DOCKER_TAG"
-            export DOCKER_IMAGE_FRONTEND="lfrohlich/tdp-frontend:$DOCKER_TAG"
-            if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              export CF_SPACE="tanf-prod"
-              export CF_USERNAME="$CF_USERNAME_PROD"
-              export CF_PASSWORD="$CF_PASSWORD_PROD"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_PROD"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_PROD"
-            elif [ "$CIRCLE_BRANCH" == "staging" ] ; then
-              export CF_SPACE="tanf-staging"
-              export CF_USERNAME="$CF_USERNAME_STAGING"
-              export CF_PASSWORD="$CF_PASSWORD_STAGING"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_STAGING"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_STAGING"
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              export CF_SPACE="tanf-dev"
-              export CF_USERNAME="$CF_USERNAME_DEV"
-              export CF_PASSWORD="$CF_PASSWORD_DEV"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_VENDOR_STAGING"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_VENDOR_STAGING"
-            else
-              export CF_SPACE="tanf-dev"
-              export CF_USERNAME="$CF_USERNAME_DEV"
-              export CF_PASSWORD="$CF_PASSWORD_DEV"
-              export CGHOSTNAME_BACKEND="$CGHOSTNAME_BACKEND_DEV"
-              export CGHOSTNAME_FRONTEND="$CGHOSTNAME_FRONTEND_DEV"
-            fi
-            if [ -z "$CF_ORG" ] ; then
-              echo CF_ORG not set, aborting
-              exit 1
-            fi
+  deploy-dev:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov
 
-            cf api https://api.fr.cloud.gov
-            cf auth "$CF_USERNAME" "$CF_PASSWORD"
-            cf target -o $CF_ORG -s "$CF_SPACE"
+  deploy-infrastructure-staging:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          tf-path: ./terraform/staging
 
-            # First delete the existing implementation of clamav-rest so we don't exhaust memory quota
-            cf delete -r clamav-rest -f
+  deploy-staging:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-staging
+          frontend-appname: tdp-frontend-staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
 
-            # Deploy ClamAV REST server
-            cf push clamav-rest -f tdrs-backend/manifest_clamav.yml --var cf-space=$CF_SPACE
+  deploy-prod:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
+          frontend-appname: tdp-frontend-prod
 
-            # Deploy frontend and backend applications
-            ./deploy-cloudgov-docker.sh rolling test $CGHOSTNAME_BACKEND $CGHOSTNAME_FRONTEND $DOCKER_IMAGE_BACKEND $DOCKER_IMAGE_FRONTEND $CIRCLE_BRANCH $CF_SPACE
+  deploy-raft:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-raft
+          frontend-appname: tdp-frontend-raft
 
-            # Enable direct communication over internal routes between backend and clamav-rest containers
-            cf add-network-policy $CGHOSTNAME_BACKEND clamav-rest -s $CF_SPACE -o $CF_ORG --protocol tcp --port 9000
+  deploy-qasp:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-qasp
+          frontend-appname: tdp-frontend-qasp
+
+  deploy-a11y:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-a11y
+          frontend-appname: tdp-frontend-a11y
+
+  deploy-sandbox:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-sandbox
+          frontend-appname: tdp-frontend-sandbox
 workflows:
   build-and-test:
     jobs:
       - test-backend
       - test-frontend
-      - deploy:
+      - deploy-dev:
           requires:
             - test-backend
             - test-frontend
           filters:
             branches:
               only:
-                - raft-tdp-main
                 - raft-review
+      - deploy-infrastructure-staging:
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
+      - deploy-staging:
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - raft-tdp-main

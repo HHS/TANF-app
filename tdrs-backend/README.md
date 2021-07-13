@@ -110,7 +110,7 @@ s3_client.generate_presigned_url(**params)
 1. Run local unit tests by executing the following command.
 
 ```bash
-$ docker-compose run web sh -c "pytest"
+$ docker-compose run --rm web bash -c "./wait_for_services.sh && pytest"
 ```
 
 2. Run local linting tests by executing the following command:
@@ -135,17 +135,7 @@ This will spin up a local instance of the backend service and execute a penetrat
 
 Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
 
-
-1.) Build and push a tagged docker image while on the the target Github branch:
-
-```bash
-$ docker build -t lfrohlich/tdp-backend:local . -f docker/Dockerfile.dev
-
-$ docker push lfrohlich/tdp-backend:local
-```
-
-
-2.) Log into your cloud.gov account and set your space and organization:
+1.) Log into your cloud.gov account and set your space and organization:
 
 ```bash
 $ cf login -a api.fr.cloud.gov --sso
@@ -167,18 +157,16 @@ Space (enter to skip): 1
 Targeted space <SPACE-1>.
 ```
 
-3.) Push the image to Cloud.gov (you will need to be in the same directory as`tdrs-backend/manifest.yml`):
-
-( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
+2.) Push the image to Cloud.gov (you will need to be in the same directory as`tdrs-backend/manifest.yml`):
 
 ```bash
- $ cf push tdp-backend -f manifest.yml --var docker-backend=lfrohlich/tdp-backend:local
+ $ cf push tdp-backend -f manifest.yml
 ```
 
-**Steps 4 and 5 are reserved for deployments to new environments**
+**Steps 3 and 4 are reserved for deployments to new environments**
 
 
-4.) You will then have to set all required environment variables via the cloud.gov GUI or the [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html) via commands like the following:
+3.) You will then have to set all required environment variables via the cloud.gov GUI or the [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html) via commands like the following:
 
  ```bash
  $ cf set-env tdp-backend JWT_KEY "$(cat key.pem)"
@@ -186,14 +174,14 @@ Targeted space <SPACE-1>.
  
 - **For the list of required environment variables please defer to the `.env.example` file
 
-5.) After this step you will need to bind the application to a Postgres RDS service if it has not been bound already: 
+4.) After this step you will need to bind the application to a Postgres RDS service if it has not been bound already: 
 ```bash
 $ cf bind-service tdp-backend tdp-db
 ```
 
 - **If a Postgres Service does not exist, create it using `cf create-service aws-rds shared-psql tdp-db`**
 
-6.) To apply this newly bound service or apply any changes made to environment variables you will need to restage the application:
+5.) To apply this newly bound service or apply any changes made to environment variables you will need to restage the application:
 ```bash
 $ cf restage tdp-backend
 ```

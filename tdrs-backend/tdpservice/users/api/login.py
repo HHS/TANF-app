@@ -35,8 +35,12 @@ class InactiveUser(Exception):
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define methods for handling login request from login.gov."""
 
-    def decode_payload(self, id_token):
+    @staticmethod
+    def decode_payload(id_token, options=None):
         """Decode the payload."""
+        if not options:
+            options = {'verify_nbf': False}
+
         cert_str = generate_jwt_from_jwks()
 
         # issuer: issuer of the response
@@ -47,10 +51,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 key=cert_str,
                 issuer=os.environ["OIDC_OP_ISSUER"],
                 audience=os.environ["CLIENT_ID"],
-                algorithm="RS256",
+                algorithms=["RS256"],
                 subject=None,
                 access_token=None,
-                options={"verify_nbf": False},
+                options=options,
             )
             return decoded_payload
         except jwt.ExpiredSignatureError:
@@ -62,19 +66,54 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         if "token" not in request.session:
             request.session["token"] = id_token
 
+        # Authenticate users with the unique "subject" `sub` UUID from the payload.
+        sub = decoded_payload["sub"]
+        email = decoded_payload["email"]
+
+        # First account for the initial superuser
+        if (su_username := os.environ.get('DJANGO_SU_NAME')) and su_username == email:
+            # If this is the initial login for the initial superuser,
+            # we must authenticate with their username since we have yet to save the
+            # user's `sub` UUID from the decoded payload, with which we will
+            # authenticate later.
+            initial_user = CustomAuthentication.authenticate(
+                self, username=email
+            )
+
+            if initial_user.login_gov_uuid is None:
+                # Save the `sub` to the superuser.
+                initial_user.login_gov_uuid = sub
+                initial_user.save()
+
+                # Login with the new superuser.
+                self.login_user(request, initial_user, "User Found")
+                return initial_user
+
+        # Authenticate with `sub` and not username, as user's can change their
+        # corresponding emails externally.
         user = CustomAuthentication.authenticate(
-            self, username=decoded_payload["email"]
+            self, user_id=sub
         )
 
         if user and user.is_active:
-            self.login_user(request, user, "User Found")
+            # User's are able to update their emails on login.gov
+            # Update the User with the latest email from the decoded_payload.
+            if user.username != email:
+                user.email = email
+                user.username = email
+                user.save()
+
+            if user.deactivated:
+                self.login_user(request, user, "Inactive User Found")
+            else:
+                self.login_user(request, user, "User Found")
         elif user and not user.is_active:
             raise InactiveUser(
                 f'Login failed, user account is inactive: {user.username}'
             )
         else:
             User = get_user_model()
-            user = User.objects.create_user(decoded_payload["email"])
+            user = User.objects.create_user(email, email=email, login_gov_uuid=sub)
             user.set_unusable_password()
             user.save()
             self.login_user(request, user, "User Created")

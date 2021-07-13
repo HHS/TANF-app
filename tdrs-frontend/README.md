@@ -145,18 +145,7 @@ The [Cypress guides](https://docs.cypress.io/guides/getting-started/writing-your
 
 Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
 
-1.) Build and push a tagged docker image while on the the target Github branch:
-
- (**Please note you need to be logged into docker for these operations**)
-
-```
-docker build -t lfrohlich/tdp-frontend:local . -f Dockerfile.dev
-
-docker push lfrohlich/tdp-frontend:local
-```
-
-
-2.) Log into your cloud.gov account and set your space and organization:
+1.) Log into your cloud.gov account and set your space and organization:
 
 ##### - **ORG: The target deployment organization as defined in cloud.gov Applications** 
 
@@ -181,12 +170,10 @@ Space (enter to skip): 1
 Targeted space <SPACE-1>.
 ```
 
-3.) Push the image to Cloud.gov (  you will need to be in the same directory as`tdrs-frontend/manifest.yml`):
-
-( **The `--var` parameter ingests a value into the ``((docker-frontend))`` environment variable in the manifest.yml**)
+2.) Push the image to Cloud.gov (  you will need to be in the same directory as`tdrs-frontend/manifest.yml`):
 
 ```bash
- cf push tdp-frontend -f manifest.yml --var docker-frontend=lfrohlich/tdp-frontend:local
+ cf push tdp-frontend -f manifest.yml
 ```
 
 4.) To apply any changes made to environment variables you will need to restage the application:

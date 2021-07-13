@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { fileInput } from 'uswds/src/js/components'
-
 import classNames from 'classnames'
 import Button from '../Button'
 
 import FileUpload from '../FileUpload'
 import axiosInstance from '../../axios-instance'
-import { clearError } from '../../actions/reports'
+import { getAvailableFileList, clearError } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
+import { fileUploadSections } from '../../reducers/reports'
 
 function UploadReport({ handleCancel, header, stt }) {
   // The currently selected year from the reportingYears dropdown
@@ -38,12 +38,9 @@ function UploadReport({ handleCancel, header, stt }) {
     headerRef.current.focus()
   }, [])
 
-  const fileUploadSections = [
-    'Active Case Data',
-    'Closed Case Data',
-    'Aggregate Data',
-    'Stratum Data',
-  ]
+  useEffect(() => {
+    dispatch(getAvailableFileList({ year: selectedYear }))
+  }, [dispatch, selectedYear])
 
   const filteredFiles = files.filter((file) => file.fileName)
   const uploadedSections = filteredFiles
