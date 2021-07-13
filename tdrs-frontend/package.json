@@ -44,7 +44,7 @@
     "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
-    "test:accessibility": "concurrently -k -s first 'yarn start:ci' 'wait-on http://localhost:3000/ && yarn pa11y-ci --config .pa11yci.json'",
+    "test:accessibility": "concurrently -k -s first 'REACT_APP_PA11Y_TEST=true yarn start:ci' 'wait-on http://localhost:3000/ && yarn pa11y-ci --config .pa11yci.json'",
     "eject": "react-scripts eject",
     "lint": "eslint src/ && echo 'Lint complete.'"
   },
