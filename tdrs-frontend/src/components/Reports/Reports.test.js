@@ -13,6 +13,7 @@ describe('Reports', () => {
       files: [
         {
           section: 'Active Case Data',
+          file: null,
           fileName: null,
           fileType: null,
           error: null,
@@ -20,6 +21,7 @@ describe('Reports', () => {
         },
         {
           section: 'Closed Case Data',
+          file: null,
           fileName: null,
           fileType: null,
           error: null,
@@ -27,6 +29,7 @@ describe('Reports', () => {
         },
         {
           section: 'Aggregate Data',
+          file: null,
           fileName: null,
           fileType: null,
           error: null,
@@ -34,6 +37,7 @@ describe('Reports', () => {
         },
         {
           section: 'Stratum Data',
+          file: null,
           fileName: null,
           fileType: null,
           error: null,
@@ -301,63 +305,13 @@ describe('Reports', () => {
         },
       })
     })
-    expect(store.dispatch).toHaveBeenCalledTimes(9)
+    expect(store.dispatch).toHaveBeenCalledTimes(10)
 
     // There should be 4 more dispatches upon making the submission,
     // one request to /reports for each file
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(13)
-  })
-
-  it('should add files to the redux state when uploading', async () => {
-    // Because mock-redux-store doesn't actually test reducers,
-    // we need to test this separately from the test above
-    const store = mockStore(initialState)
-
-    const file1 = makeTestFile('section1.txt')
-    const file2 = makeTestFile('section2.txt')
-    const file3 = makeTestFile('section3.txt')
-    const file4 = makeTestFile('section4.txt')
-
-    await store.dispatch(upload({ file: file1, section: 'Active Case Data' }))
-    await store.dispatch(upload({ file: file2, section: 'Closed Case Data' }))
-    await store.dispatch(upload({ file: file3, section: 'Aggregate Data' }))
-    await store.dispatch(upload({ file: file4, section: 'Stratum Data' }))
-
-    const actions = store.getActions()
-
-    expect(actions[0].type).toBe(SET_FILE)
-    expect(actions[0].payload).toStrictEqual({
-      fileName: 'section1.txt',
-      fileType: 'text/plain',
-      section: 'Active Case Data',
-      uuid: actions[0].payload.uuid,
-    })
-
-    expect(actions[1].type).toBe(SET_FILE)
-    expect(actions[1].payload).toStrictEqual({
-      fileName: 'section2.txt',
-      fileType: 'text/plain',
-      section: 'Closed Case Data',
-      uuid: actions[1].payload.uuid,
-    })
-
-    expect(actions[2].type).toBe(SET_FILE)
-    expect(actions[2].payload).toStrictEqual({
-      fileName: 'section3.txt',
-      fileType: 'text/plain',
-      section: 'Aggregate Data',
-      uuid: actions[2].payload.uuid,
-    })
-
-    expect(actions[3].type).toBe(SET_FILE)
-    expect(actions[3].payload).toStrictEqual({
-      fileName: 'section4.txt',
-      fileType: 'text/plain',
-      section: 'Stratum Data',
-      uuid: actions[3].payload.uuid,
-    })
+    expect(store.dispatch).toHaveBeenCalledTimes(14)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {
@@ -379,6 +333,7 @@ describe('Reports', () => {
 
     expect(actions[0].type).toBe(SET_FILE)
     expect(actions[0].payload).toStrictEqual({
+      file: file1,
       fileName: 'section1.txt',
       fileType: 'text/plain',
       section: 'Active Case Data',
@@ -387,6 +342,7 @@ describe('Reports', () => {
 
     expect(actions[1].type).toBe(SET_FILE)
     expect(actions[1].payload).toStrictEqual({
+      file: file2,
       fileName: 'section2.txt',
       fileType: 'text/plain',
       section: 'Closed Case Data',
@@ -395,6 +351,7 @@ describe('Reports', () => {
 
     expect(actions[2].type).toBe(SET_FILE)
     expect(actions[2].payload).toStrictEqual({
+      file: file3,
       fileName: 'section3.txt',
       fileType: 'text/plain',
       section: 'Aggregate Data',
@@ -403,6 +360,7 @@ describe('Reports', () => {
 
     expect(actions[3].type).toBe(SET_FILE)
     expect(actions[3].payload).toStrictEqual({
+      file: file4,
       fileName: 'section4.txt',
       fileType: 'text/plain',
       section: 'Stratum Data',

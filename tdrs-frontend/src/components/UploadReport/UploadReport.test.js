@@ -18,11 +18,13 @@ describe('UploadReport', () => {
       files: [
         {
           fileName: 'test.txt',
+          id: 1,
           section: 'Active Case Data',
           uuid: uuidv4(),
         },
         {
           fileName: 'testb.txt',
+          id: 2,
           section: 'Closed Case Data',
           uuid: uuidv4(),
         },
@@ -78,7 +80,7 @@ describe('UploadReport', () => {
       },
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(3)
+    expect(store.dispatch).toHaveBeenCalledTimes(2)
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
   })
   it('should prevent upload of file with invalid extension', () => {
@@ -105,7 +107,7 @@ describe('UploadReport', () => {
       },
     })
 
-    expect(store.dispatch).toHaveBeenCalledTimes(3)
+    expect(store.dispatch).toHaveBeenCalledTimes(2)
     expect(container.querySelectorAll('.has-invalid-file').length).toBe(0)
   })
 
@@ -116,7 +118,7 @@ describe('UploadReport', () => {
 
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} />
+        <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
@@ -131,14 +133,14 @@ describe('UploadReport', () => {
 
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} />
+        <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
 
     const buttons = container.querySelectorAll('.tanf-file-download-btn')
     buttons[0].click()
 
-    expect(store.dispatch).toHaveBeenCalledTimes(3)
+    expect(store.dispatch).toHaveBeenCalledTimes(2)
   })
 
   it('should render a preview when there is a file available to download', (done) => {
@@ -148,7 +150,7 @@ describe('UploadReport', () => {
 
     const { container } = render(
       <Provider store={store}>
-        <UploadReport handleCancel={handleCancel} />
+        <UploadReport handleCancel={handleCancel} header="Some header" />
       </Provider>
     )
     setTimeout(() => {

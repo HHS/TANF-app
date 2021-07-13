@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import fileType from 'file-type/browser'
+
 import {
   clearError,
   clearFile,
@@ -9,9 +10,7 @@ import {
   upload,
   download,
 } from '../../actions/reports'
-
 import Button from '../Button'
-
 import createFileInputErrorState from '../../utils/createFileInputErrorState'
 import { handlePreview, getTargetClassName } from './utils'
 
@@ -21,14 +20,13 @@ const INVALID_FILE_ERROR =
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
-  const { files, quarter, year } = useSelector((state) => state.reports)
+  const { files } = useSelector((state) => state.reports)
 
   const dispatch = useDispatch()
 
   // e.g. "1 - Active Case Data" => ["1", "Active Case Data"]
   const [sectionNumber, sectionName] = section.split(' - ')
 
-  console.log({ year, quarter })
   const hasFile = files?.some(
     (file) => file.section === sectionName && file.uuid
   )

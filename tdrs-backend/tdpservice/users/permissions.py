@@ -9,7 +9,7 @@ def is_own_stt(request, view):
     is_data_prepper = is_in_group(request.user, 'Data Prepper')
 
     # Depending on the request, the STT could be found in three different places
-    # sp we will merge all together and just do one check
+    # so we will merge all together and just do one check
     request_parameters = ChainMap(
         view.kwargs,
         request.query_params,

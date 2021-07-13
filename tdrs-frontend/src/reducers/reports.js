@@ -32,7 +32,7 @@ export const getUpdatedFiles = ({
   error = null,
   file = null,
 }) => {
-  const oldFileIndex = getFileIndex(state.files, section)
+  const oldFileIndex = getFileIndex(state?.files, section)
   const updatedFiles = [...state.files]
   updatedFiles[oldFileIndex] = {
     id,
@@ -122,7 +122,7 @@ const reports = (state = initialState, action) => {
     }
     case SET_SELECTED_YEAR: {
       const { year } = payload
-      return { ...state, year: parseInt(year) }
+      return { ...state, year }
     }
     case SET_SELECTED_STT: {
       const { stt } = payload
