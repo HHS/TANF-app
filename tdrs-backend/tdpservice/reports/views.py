@@ -13,16 +13,20 @@ from wsgiref.util import FileWrapper
 
 from tdpservice.reports.serializers import ReportFileSerializer
 from tdpservice.reports.models import ReportFile
-from tdpservice.users.permissions import ReportFilePermissions, is_in_group
+from tdpservice.users.permissions import ReportFilePermissions
 
 logger = logging.getLogger()
 
 
 class ReportFileFilter(filters.FilterSet):
     """Filters that can be applied to GET requests as query parameters."""
+
+    # Override the generated definition for the STT field so we can require it.
     stt = filters.NumberFilter(field_name='stt_id', required=True)
 
     class Meta:
+        """Class metadata linking to the ReportFile and fields accepted."""
+
         model = ReportFile
         fields = ['stt', 'quarter', 'year']
 

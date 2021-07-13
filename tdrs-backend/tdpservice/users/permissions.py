@@ -1,10 +1,7 @@
 """Set permissions for users."""
+from collections import ChainMap
 
 from rest_framework import permissions
-
-#TEMP
-import logging
-logger = logging.getLogger(__name__)
 
 
 def is_own_stt(request, view):
@@ -13,15 +10,12 @@ def is_own_stt(request, view):
 
     # Depending on the request, the STT could be found in three different places
     # sp we will merge all together and just do one check
-    requested_stt = {
-        **view.kwargs,
-        **request.data.dict(),
-        **request.query_params.dict()
-    }.get('stt')
-    # TODO: Fix this
-    logger.info(f'vk: {view.kwargs}, rd: {request.data.dict()}, rq: {request.query_params.dict()}')
-    logger.info(f'requested_stt: {requested_stt}')
-
+    request_parameters = ChainMap(
+        view.kwargs,
+        request.query_params,
+        request.data
+    )
+    requested_stt = request_parameters.get('stt')
     user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
 
     return bool(
