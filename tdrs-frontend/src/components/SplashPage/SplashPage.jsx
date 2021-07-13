@@ -26,7 +26,7 @@ function SplashPage() {
     }
   }, [alertRef, isInactive])
 
-  if (authenticated) {
+  if (authenticated && !process.env.REACT_APP_PA11Y_TEST) {
     return <Redirect to="/edit-profile" />
   }
 
