@@ -1,5 +1,10 @@
 import { createServer, Response } from 'miragejs'
-import faker from 'faker'
+import {
+  AUTH_CHECK_DATA,
+  FAILED_AUTH_CHECK_DATA,
+  STT_ALPHA_DATA,
+  REPORTS_DATA,
+} from './mirage.data.js'
 
 export default function startMirage(
   { environment } = { environment: 'development' }
