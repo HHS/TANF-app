@@ -15,10 +15,17 @@ function SplashPage() {
   const authLoading = useSelector((state) => state.auth.loading)
   const isInactive = useSelector((state) => state.auth.inactive)
   const alertRef = useRef(null)
+  console.log(process.env)
 
   const handleClick = (event) => {
-    event.preventDefault()
-    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+    if (process.env.REACT_APP_USE_MIRAGE) {
+      event.preventDefault()
+      window.localStorage.setItem('loggedIn', true)
+      window.location.reload()
+    } else {
+      event.preventDefault()
+      window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+    }
   }
   useEffect(() => {
     if (isInactive) {
@@ -26,6 +33,8 @@ function SplashPage() {
     }
   }, [alertRef, isInactive])
 
+  // Pa11y is not testing out authentication logic, by passing all auth checks during
+  // Pa11y tests allows us to just point to a page in the config like we have been doing.
   if (authenticated && !process.env.REACT_APP_PA11Y_TEST) {
     return <Redirect to="/edit-profile" />
   }

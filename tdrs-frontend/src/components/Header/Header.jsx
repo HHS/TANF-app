@@ -6,6 +6,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
 import NavItem from '../NavItem/NavItem'
 
+const SignoutLink = ({ user }) => (
+  <a
+    className="sign-out-link"
+    href={
+      user && user.email
+        ? `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
+        : `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+    }
+  >
+    <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
+    {user && user.email ? 'Sign Out' : 'Sign In'}
+  </a>
+)
 /**
  * This component is rendered on every page and contains the navigation bar.
  * When a user is authenticated, it will also display their email and will
@@ -92,20 +105,25 @@ function HeaderComp() {
                   )}
                 </li>
                 <li className="usa-nav__secondary-item">
-                  <a
-                    className="sign-out-link"
-                    href={
-                      user && user.email
-                        ? `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
-                        : `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+                  {(() => {
+                    if (process.env.REACT_APP_MOCK_API) {
+                      return (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            // localStorage converts all values to strings, so to get a falsy value
+                            // we pass in a blank string
+                            window.localStorage.setItem('loggedIn', '')
+                            window.location.reload()
+                          }}
+                        >
+                          <SignoutLink user={user} />
+                        </button>
+                      )
+                    } else {
+                      return <SignoutLink user={user} />
                     }
-                  >
-                    <FontAwesomeIcon
-                      className="margin-right-1"
-                      icon={faSignOutAlt}
-                    />
-                    {user && user.email ? 'Sign Out' : 'Sign In'}
-                  </a>
+                  })()}
                 </li>
               </ul>
             </div>

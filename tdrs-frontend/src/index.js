@@ -21,7 +21,10 @@ const store = configureStore()
 store.dispatch(fetchAuth())
 
 // Start the mirage server to stub some backend endpoints when running locally
-startMirage()
+
+if (process.env.REACT_APP_USE_MIRAGE || process.env.REACT_APP_PA11Y_TEST) {
+  startMirage()
+}
 
 ReactDOM.render(
   <Provider store={store}>
