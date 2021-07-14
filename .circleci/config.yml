@@ -2,6 +2,8 @@ version: 2.1
 
 orbs:
   node: circleci/node@4.2.1
+  terraform: circleci/terraform@2.1.0
+  jq: circleci/jq@2.2.0
 
 executors:
   docker-executor:
@@ -26,7 +28,7 @@ commands:
   docker-compose-check:
     steps:
       - run:
-          name: Ensure docker-compose exists,otherwise install it.
+          name: Ensure docker-compose exists, otherwise install it.
           command: ./scripts/docker-compose-check.sh
 
   # This allows us to use the orb stanza for node/install within other commands
@@ -209,6 +211,64 @@ commands:
           backend-appname: <<parameters.backend-appname>>
           frontend-appname: <<parameters.frontend-appname>>
 
+  deploy-infrastructure:
+    parameters:
+      tf-path:
+        type: string
+        default: ./terraform/dev
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk update
+            apk add jq
+            apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+      - login-cloud-dot-gov
+      - run:
+          name: Export S3 Credentials for TFState
+          command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
+            {
+              echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)\""
+              echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
+              echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
+            } >> ./backend_config.tfvars
+      - run:
+          name: Prepare Terraform Variables
+          command: |
+            {
+              echo "cf_password = \"$<<parameters.cf-password>>\""
+              echo "cf_user = \"$<<parameters.cf-username>>\""
+              echo "cf_space_name = \"<<parameters.cf-space>>\""
+            } >> ./variables.tfvars
+
+      - terraform/init:
+          path: <<parameters.tf-path>>
+          backend_config_file: ./backend_config.tfvars
+      - terraform/validate:
+          path: <<parameters.tf-path>>
+      - terraform/fmt:
+          path: <<parameters.tf-path>>
+      - terraform/plan:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+      - terraform/apply:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+
 jobs:
   test-backend:
     executor: machine-executor
@@ -294,15 +354,31 @@ jobs:
       - store_artifacts:
           path: tdrs-frontend/pa11y-screenshots/data-files.png
 
+  deploy-infrastructure-dev:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure
+
   deploy-dev:
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov
 
-  deploy-staging:
+  deploy-infrastructure-staging:
+    executor: terraform/default
     working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          tf-path: ./terraform/staging
+
+  deploy-staging:
     executor: docker-executor
+    working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
@@ -366,4 +442,15 @@ workflows:
             branches:
               only:
                 - raft-review
+      - deploy-infrastructure-staging:
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
+      - deploy-staging:
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
                 - raft-tdp-main
