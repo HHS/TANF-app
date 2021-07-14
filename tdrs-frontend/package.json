@@ -12,7 +12,7 @@
     "file-type": "^16.5.1",
     "history": "^4.7.2",
     "immutable": "^4.0.0-rc.14",
-    "include-media": "^1.4.9",
+    "include-media": "^1.4.10",
     "miragejs": "^0.1.41",
     "prop-types": "^15.7.2",
     "react": "^16.14.0",
