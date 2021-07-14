@@ -1066,24 +1066,28 @@ export const REPORTS_DATA = {
       original_filename: '2020.Q1.Active Case Data',
       slug: '2020.Q1.Active Case Data',
       extension: 'None',
-      user: '0bc79b40-56b4-4a0e-9f3a-1894235c59a5',
+      user: faker.datatype.uuid(),
       stt: 31,
       year: 2020,
       quarter: 'Q1',
       section: 'Active Case Data',
-      created_at: '2021-07-07T16:41:15+0000',
+      created_at: faker.date.past(),
     },
     {
       id: 2,
       original_filename: '2020.Q1.Active Case Data',
       slug: '2020.Q1.Active Case Data',
       extension: 'None',
-      user: '0bc79b40-56b4-4a0e-9f3a-1894235c59a5',
+      user: faker.datatype.uuid(),
       stt: 31,
       year: 2020,
       quarter: 'Q1',
       section: 'Active Case Data',
-      created_at: '2021-07-07T16:41:36+0000',
+      created_at: faker.date.past(),
     },
   ],
+}
+
+export const FAILED_AUTH_CHECK_DATA = {
+  authenticated: false,
 }
