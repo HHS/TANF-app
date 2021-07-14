@@ -76,7 +76,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "jest-enzyme": "^7.1.2",
     "node-sass": "^5.0.0",
-    "pa11y-ci": "^2.4.1",
+    "pa11y-ci": "^2.4.2",
     "prettier": "^2.0.5",
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
