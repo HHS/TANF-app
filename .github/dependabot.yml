@@ -7,18 +7,24 @@ updates:
     directory: "/tdrs-frontend"
     schedule:
       interval: "daily"
-    target-branch: "raft-tdp-main"
+    target-branch: "dependabot-mass-merge"
+    open-pull-requests-limit: 50
     labels:
       - "dependencies"
       - "frontend"
       - "raft review"
+    reviewers:
+      - "raft-tech/tdrs-developers"
 
   - package-ecosystem: "pip"
     directory: "/tdrs-backend"
     schedule:
       interval: "daily"
-    target-branch: "raft-tdp-main"
+    target-branch: "dependabot-mass-merge"
+    open-pull-requests-limit: 50
     labels:
       - "dependencies"
       - "backend"
       - "raft review"
+    reviewers:
+      - "raft-tech/tdrs-developers"
