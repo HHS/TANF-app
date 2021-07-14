@@ -11,7 +11,7 @@
     "connected-react-router": "^6.8.0",
     "file-type": "^16.3.0",
     "history": "^4.7.2",
-    "immutable": "^4.0.0-rc.12",
+    "immutable": "^4.0.0-rc.14",
     "include-media": "^1.4.9",
     "miragejs": "^0.1.41",
     "prop-types": "^15.7.2",
