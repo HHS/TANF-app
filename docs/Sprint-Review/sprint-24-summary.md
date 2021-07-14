@@ -15,7 +15,7 @@ Finish up ATO Functionality
 - Finish up file download & storage (#416, #818, #833, #834)
 - Wrap up OWASP Scan tickets (#879, #865, #907,  #1032)
 - Make decisions on upcoming releases
-- Cron Job options for release 2 (#1011)
+- File transfer options for release 2 (#1011)
 - NextGen XMS direction for release 1 (Epic #902, #638)
 - Document feasibility and high level estimated tasks that would be needed for (1) ACF AMS or (2) ACF AMS/Next Gen (Blocked) implementation.
 
