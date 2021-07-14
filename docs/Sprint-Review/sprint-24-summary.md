@@ -28,10 +28,10 @@ Work on DevOPs work for Production readiness
 ## Merged/Completed (Done/Demo, Closed)
 - Dependabot Mass Merge / Improvements [#1023](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1023)
 - Set up new dev environments: sandbox, raft-review, qasp-review, a11y [#848](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/848)
+- [Backend] Add endpoint to download a file from S3[#833](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/833)
 
 ## Submitted (QASP Review, OCIO Review)
 -[Frontend] Add a download button to the Data Files view [#416](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/416)
-- [Backend] Add endpoint to download a file from S3[#833](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/833)
 - Move vendor-staging in the dev space to staging in the staging space [#847](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/847)
 - As a dev, I want an automated, documented CI process to provision Cloud.gov brokered services[#609](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/609)
 - Issue 416: [Frontend] Add a download button to the Data Files view[#859](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/859)
