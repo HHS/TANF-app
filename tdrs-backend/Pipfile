@@ -20,7 +20,7 @@ pytest-django = "*"
 pytest-mock = "*"
 
 [packages]
-boto3 = "==1.17.103"
+boto3 = "==1.17.112"
 cryptography = "==3.4.7"
 dj-database-url = "==0.5.0"
 django = "==3.2.5"
@@ -42,7 +42,7 @@ jwcrypto = "==0.9.1"
 markdown = "==3.3.4"
 psycopg2-binary = "==2.9.1"
 pyjwt = "==2.1.0"
-requests = "==2.25.1"
+requests = "==2.26.0"
 wait-for-it = "==2.2.0"
 
 [requires]
