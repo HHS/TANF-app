@@ -1,4 +1,5 @@
 import { createServer, Response } from 'miragejs'
+import { v4 as uuidv4 } from 'uuid'
 import {
   AUTH_CHECK_DATA,
   FAILED_AUTH_CHECK_DATA,
@@ -32,6 +33,23 @@ export default function startMirage(
       })
       this.get('/stts/alpha', () => STT_ALPHA_DATA)
       this.get('/reports/', () => REPORTS_DATA)
+      this.get('/reports/data-files/:year/:quarter/:section', () => {
+        return 'some text'
+      })
+      this.get('/reports/:year/:quarter/', () => {
+        return [
+          {
+            fileName: 'test.txt',
+            section: 'Active Case Data',
+            uuid: uuidv4(),
+          },
+          {
+            fileName: 'testb.txt',
+            section: 'Closed Case Data',
+            uuid: uuidv4(),
+          },
+        ]
+      })
 
       // Allow unhandled requests to pass through
       this.passthrough(`${process.env.REACT_APP_BACKEND_URL}/**`)
