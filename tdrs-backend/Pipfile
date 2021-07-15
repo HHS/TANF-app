@@ -20,7 +20,7 @@ pytest-django = "*"
 pytest-mock = "*"
 
 [packages]
-boto3 = "==1.17.103"
+boto3 = "==1.17.112"
 cryptography = "==3.4.7"
 dj-database-url = "==0.5.0"
 django = "==3.2.5"
