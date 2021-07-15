@@ -41,7 +41,31 @@ As described in #1045, cloud.gov will inform us that buildpack(s) we use have be
 Below is the restaging process in full:
     1. Upon receipt of email from cloud.gov, restage against dev:
 ```bash
-$ bash scripts/deploy-backend.sh rolling tanf-dev
+user@host$ cf login -a api.fr.cloud.gov --sso
+API endpoint: api.fr.cloud.gov
+
+Temporary Authentication Code ( Get one at https://login.fr.cloud.gov/passcode ): 
+Authenticating...
+OK
+
+
+Targeted org hhs-acf-prototyping.
+
+Select a space:
+1. tanf-dev
+2. tanf-staging
+
+Space (enter to skip): 1
+Targeted space tanf-dev.
+
+API endpoint:   https://api.fr.cloud.gov
+API version:    3.101.0
+user:           abottoms@goraft.tech
+org:            hhs-acf-prototyping
+space:          tanf-dev 
+$ bash scripts/deploy-backend.sh rolling tdp-backend
+OR
+$ bash scripts/deploy-frontend.sh rolling tdp-frontend
 ```
     1. Inspect dev environment in cloud.gov for new buildpack versions after restage
     1. Inspect relevant official changelog(s):
