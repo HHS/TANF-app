@@ -121,6 +121,7 @@ class Common(Configuration):
     AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_BUCKET")
     AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
+    AWS_S3_REGION_NAME = os.getenv("AWS_REGION_NAME")
 
     # Those who will receive error notifications from django via email
     ADMINS = (("Admin1", "ADMIN_EMAIL_FIRST"), ("Admin2", "ADMIN_EMAIL_SECOND"))
