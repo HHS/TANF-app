@@ -4,10 +4,10 @@
 
 | Dev Site | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- | -------- |
-| Sandbox     | https://tdp-frontend-sandbox.app.cloud.gov | https://tdp-backend-sandbox.app.cloud.gov     | Space for devs to test in a deployed environment 
-| A11y | https://tdp-frontend-a11y.app.cloud.gov | https://tdp-backend-a11y.app.cloud.gov | Space for accessibility testing |
-| QASP | https://tdp-frontend-qasp.app.cloud.gov | https://tdp-backend-qasp.app.cloud.gov | Space for QASP review |
-| raft | https://tdp-frontend-raft.app.cloud.gov | https://tdp-backend-raft.app.cloud.gov | Space for raft review |
+| Sandbox     | https://tdp-frontend-sandbox.app.cloud.gov | https://tdp-backend-sandbox.app.cloud.gov/admin/     | Space for devs to test in a deployed environment 
+| A11y | https://tdp-frontend-a11y.app.cloud.gov | https://tdp-backend-a11y.app.cloud.gov/admin/ | Space for accessibility testing |
+| QASP | https://tdp-frontend-qasp.app.cloud.gov | https://tdp-backend-qasp.app.cloud.gov/admin/ | Space for QASP review |
+| raft | https://tdp-frontend-raft.app.cloud.gov | https://tdp-backend-raft.app.cloud.gov/admin/ | Space for raft review |
 
 ### Dependencies 
 
@@ -27,7 +27,7 @@ Unlike Development, the Staging environment contains a single frontend and backe
 
 | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- |
-| https://tdp-frontend-staging.app.cloud.gov | https://tdp-backend-staging.app.cloud.gov     | Space for government users to test in a deployed, production-like environment    |
+| https://tdp-frontend-staging.app.cloud.gov | https://tdp-backend-staging.app.cloud.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
 
 ### Dependencies 
 
@@ -49,7 +49,7 @@ Like Staging, there is only one Production deployment. Note that developers do *
 
 | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- |
-| https://tdp-frontend-production.app.cloud.gov | https://tdp-backend-production.app.cloud.gov     | Production space for active users of the application.    |
+| `tbd`` | `tbd`     | Production space for active users of the application.    |
 
 ### Dependencies 
 
