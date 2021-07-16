@@ -45,7 +45,7 @@ Unlike Development, the Staging environment contains a single frontend and backe
 
 ## Production
 
-Like Staging, there is only one Production deployment.
+Like Staging, there is only one Production deployment. Note that developers do *not* ever have access to production.
 
 | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- |
