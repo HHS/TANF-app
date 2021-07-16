@@ -11,14 +11,14 @@
 
 ### Dependencies 
 
-- `clamav-rest`
+- `clamav-rest` - Virus scanner REST service used to scan file uploads. 
 
 **Cloud.gov AWS RDS `(tanf-dev)`**
-- `tdp-db-dev`
+- `tdp-db-dev` - Stores application-level models (e.g. Users, Reports).
   
 **Cloud.gov AWS S3 `(tanf-dev)`**
-- `tdp-staticfiles-dev`
-- `tdp-datafiles-dev`
+- `tdp-staticfiles-dev` - Stores static HTML/CSS for Django Admin.
+- `tdp-datafiles-dev` - Stores the files uploaded by STTs.
 - `tdp-tf-states` - Stores the Terraform state files used to create and re-recreate services infrastructure.
 
 ## Staging
@@ -31,14 +31,14 @@ Unlike Development, the Staging environment contains a single frontend and backe
 
 ### Dependencies 
 
-- `clamav-rest`
+- `clamav-rest` - Virus scanner REST service used to scan file uploads. 
 
 **Cloud.gov AWS RDS `(tanf-staging)`**
-- `tdp-db-staging`
+- `tdp-db-staging` - Stores application-level models (e.g. Users, Reports).
   
 **Cloud.gov AWS S3 `(tanf-staging)`**
-- `tdp-staticfiles-staging`
-- `tdp-datafiles-staging`
+- `tdp-staticfiles-staging` - Stores static HTML/CSS for Django Admin.
+- `tdp-datafiles-staging` - Stores the files uploaded by STTs.
   
 **Cloud.gov AWS S3 `(tanf-dev)`**
 - `tdp-tf-states` - Stores the Terraform state files used to create and re-recreate services infrastructure. Note this S3 bucket lives in the development space.
@@ -53,14 +53,14 @@ Like Staging, there is only one Production deployment. Note that developers do *
 
 ### Dependencies 
 
-- `clamav-rest`
+- `clamav-rest` - Virus scanner REST service used to scan file uploads. 
 
 **Cloud.gov AWS RDS `(tanf-production)`**
-- `tdp-db-production`
+- `tdp-db-production` - Stores application-level models (e.g. Users, Reports).
   
 **Cloud.gov AWS S3 `(tanf-production)`**
-- `tdp-staticfiles-production`
-- `tdp-datafiles-production`
+- `tdp-staticfiles-production` - Stores static HTML/CSS for Django Admin.
+- `tdp-datafiles-production` - Stores the files uploaded by STTs.
 - `tdp-tf-states` - Stores the Terraform state files used to create and re-recreate services infrastructure.
 
 ## External Dependencies
