@@ -27,8 +27,15 @@ chmod 777 $(pwd)/reports
 
 # check if running in circle CI
 
-
-if [ "$ENVIRONMENT" = "circle" ]; then
+if [ "$ENVIRONMENT" = "nightly" ]; then
+    echo "Config file $ENVIRONMENT"
+    docker-compose run zaproxy zap-full-scan.py \
+                   -t https://tdp-frontend-staging.app.cloud.gov/ \
+                   -m 5 \
+                   -z "${ZAP_CONFIG}" \
+                   -c "zap.conf" \
+                   -r owasp_report.html | tee /dev/tty | grep -q "FAIL-NEW: 0"
+elif [ "$ENVIRONMENT" = "circle" ]; then
     echo "Config file $ENVIRONMENT"
     docker-compose run zaproxy zap-full-scan.py \
                    -t http://tdp-frontend/ \
