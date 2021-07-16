@@ -301,6 +301,15 @@ jobs:
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
 
+  prod-owasp-scan:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - docker-compose-check
+      - run:
+          name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
+          command: "cd tdrs-frontend; ./zap-scanner.sh circle"
   test-frontend:
     executor: machine-executor
     working_directory: ~/tdp-apps
@@ -430,6 +439,16 @@ jobs:
           backend-appname: tdp-backend-sandbox
           frontend-appname: tdp-frontend-sandbox
 workflows:
+  nightly:
+    jobs:
+      - prod-owasp-scan
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
   build-and-test:
     jobs:
       - test-backend
