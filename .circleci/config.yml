@@ -309,7 +309,7 @@ jobs:
       - docker-compose-check
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-frontend; ./zap-scanner.sh circle"
+          command: "cd tdrs-frontend; ./zap-scanner.sh nightly"
   test-frontend:
     executor: machine-executor
     working_directory: ~/tdp-apps
@@ -444,7 +444,7 @@ workflows:
       - prod-owasp-scan
     triggers:
       - schedule:
-          cron: "45 16 * * *"
+          cron: "45 17 * * *"
           filters:
             branches:
               only:
