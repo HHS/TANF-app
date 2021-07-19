@@ -444,11 +444,11 @@ workflows:
       - prod-owasp-scan
     triggers:
       - schedule:
-          cron: "0 0 * * *"
+          cron: "15 5 * * *"
           filters:
             branches:
               only:
-                - raft-tdp-main
+                - devops/1032/scheduled-owasp
   build-and-test:
     jobs:
       - test-backend
