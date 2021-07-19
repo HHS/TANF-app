@@ -310,6 +310,8 @@ jobs:
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-frontend; ./zap-scanner.sh nightly"
+      - store_artifacts:
+          path: tdrs-backend/reports/owasp_report.html
   test-frontend:
     executor: machine-executor
     working_directory: ~/tdp-apps
