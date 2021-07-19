@@ -1,11 +1,10 @@
 """Define report models."""
 import os
 
-from django.conf import settings
 from django.db import models
 from django.db.models import Max
-from storages.backends.s3boto3 import S3Boto3Storage
 
+from tdpservice.storage import DataFilesS3Storage
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -16,16 +15,6 @@ def get_s3_upload_path(instance, filename):
         f'data_files/{instance.stt.id}/{instance.quarter}',
         filename
     )
-
-
-class DataFilesS3Storage(S3Boto3Storage):
-    """An S3 backed storage provider for user uploaded Data Files.
-
-    This class is used instead of the built-in to allow specifying a distinct
-    bucket from the one used to store Django Admin static files.
-    """
-
-    bucket_name = settings.DATA_FILES_AWS_STORAGE_BUCKET_NAME
 
 
 # The Report File model was starting to explode, and I think that keeping this logic
