@@ -106,11 +106,11 @@
         },
         "charset-normalizer": {
             "hashes": [
-                "sha256:3c502a35807c9df35697b0f44b1d65008f83071ff29c69677c7c22573bc5a45a",
-                "sha256:951567c2f7433a70ab63f1be67e5ee05d3925d9423306ecb71a3b272757bcc95"
+                "sha256:88fce3fa5b1a84fdcb3f603d889f723d1dd89b26059d0123ca435570e848d5e1",
+                "sha256:c46c3ace2d744cfbdebceaa3c19ae691f53ae621b39fd7570f59d14fb7f2fd12"
             ],
             "markers": "python_version >= '3'",
-            "version": "==2.0.2"
+            "version": "==2.0.3"
         },
         "click": {
             "hashes": [
@@ -691,11 +691,11 @@
         },
         "awscli": {
             "hashes": [
-                "sha256:24c8a4b201589c6611dd43fff794b1701a46014e9ed60d8408d627bc37eaf89d",
-                "sha256:76e869d83aa190f3cffa2837f8a74ae9b088675b316967e3898aef57c98ad3b0"
+                "sha256:495fc246cca49f7ab9542546ac68863144050ac70eaf10d7dfebb5135420fb06",
+                "sha256:de9d3c3c1417db8ba3a96463c854c1a49649570094e8953fcf5c04fe36074bf2"
             ],
             "index": "pypi",
-            "version": "==1.20.0"
+            "version": "==1.20.1"
         },
         "awscli-local": {
             "hashes": [
