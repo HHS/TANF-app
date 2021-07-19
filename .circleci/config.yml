@@ -440,15 +440,16 @@ jobs:
           frontend-appname: tdp-frontend-sandbox
 workflows:
   nightly:
-    jobs:
-      - prod-owasp-scan
     triggers:
       - schedule:
           cron: "16 5 * * *"
           filters:
             branches:
               only:
-                - devops/1032/scheduled-owasp
+                - "devops/1032/scheduled-owasp"
+
+        jobs:
+          - prod-owasp-scan
   build-and-test:
     jobs:
       - test-backend
