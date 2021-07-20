@@ -4,7 +4,7 @@ import os
 from django.db import models
 from django.db.models import Max
 
-from tdpservice.storage import DataFilesS3Storage
+from tdpservice.backends import DataFilesS3Storage
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 

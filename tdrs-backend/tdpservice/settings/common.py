@@ -116,42 +116,19 @@ class Common(Configuration):
     # Whether to use localstack in place of a live AWS S3 environment
     USE_LOCALSTACK = bool(os.getenv("USE_LOCALSTACK", 0))
 
-    # AWS Access Keys
-    AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY")
-    AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_BUCKET")
-    AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
-
     # Those who will receive error notifications from django via email
     ADMINS = (("Admin1", "ADMIN_EMAIL_FIRST"), ("Admin2", "ADMIN_EMAIL_SECOND"))
-    if "VCAP_SERVICES" in os.environ:  # pragma: nocover
-        servicejson = os.environ["VCAP_SERVICES"]
-        services = json.loads(servicejson)
-        AWS_STORAGE_BUCKET_NAME = services["s3"][0]["credentials"]["bucket"]
-        AWS_S3_REGION_NAME = services["s3"][0]["credentials"]["region"]
-        AWS_ACCESS_KEY_ID = services["s3"][0]["credentials"]["access_key_id"]
-        AWS_SECRET_ACCESS_KEY = services["s3"][0]["credentials"]["secret_access_key"]
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": services["aws-rds"][0]["credentials"]["db_name"],
-                "USER": services["aws-rds"][0]["credentials"]["username"],
-                "PASSWORD": services["aws-rds"][0]["credentials"]["password"],
-                "HOST": services["aws-rds"][0]["credentials"]["host"],
-                "PORT": services["aws-rds"][0]["credentials"]["port"],
-            }
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT"),
         }
-    else:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": os.getenv("DB_NAME"),
-                "USER": os.getenv("DB_USER"),
-                "PASSWORD": os.getenv("DB_PASSWORD"),
-                "HOST": os.getenv("DB_HOST"),
-                "PORT": os.getenv("DB_PORT"),
-            }
-        }
+    }
 
     # General
     APPEND_SLASH = False
@@ -174,13 +151,6 @@ class Common(Configuration):
         "django.contrib.staticfiles.finders.FileSystemFinder",
         "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     )
-
-    # Store uploaded files in S3
-    # http://django-storages.readthedocs.org/en/latest/index.html
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
-    # Store uploaded Data Files in a separate AWS Bucket
-    DATA_FILES_AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_BUCKET')
 
     # Media files
     MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")
@@ -313,13 +283,6 @@ class Common(Configuration):
         "tdpservice.users.authentication.CustomAuthentication",
         "django.contrib.auth.backends.ModelBackend",
     )
-
-    # conditionally set which URI to go to
-    if "VCAP_APPLICATION" in os.environ:  # pragma: nocover
-        appjson = os.environ["VCAP_APPLICATION"]
-        appinfo = json.loads(appjson)
-        if len(appinfo["application_uris"]) > 0:
-            os.environ["BASE_URL"] = "https://" + appinfo["application_uris"][0] + "/v1"
 
     # CORS
     CORS_ALLOW_CREDENTIALS = True
