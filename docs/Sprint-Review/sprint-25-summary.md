@@ -8,7 +8,6 @@
 
 
 ## Sprint 25 Goals
-
 - Finish closing ATO functionality tickets
 - Focus on Secret Key Leakage Mitigation Epic
 - UX Ideation for Parsing Blocker Communications
@@ -17,6 +16,7 @@
 - Finish up Secret Key Leakage Mitigation Present recommendation re: authentication
 - TDP Permissions Epics (TDP Permissions Matrix, OFA Admins, PIV/CAC)
 - Continue work on Production readiness
+- UX Test Error Communication for Parsing Blockers
 
 ## Merged/Completed (Done/Demo, Closed)
 - Django Admin a11y Fixes (Sprint 1) [#973](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/973)
@@ -36,7 +36,8 @@
 
 
 **Blocked**
-N/A
+- Update ATO docs and corresponding code docs [#962](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/962)
+- SPIKE: File transfer options for Tribal MVP [#1011](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1011)
 
 **In Progress**
 - Django Admin a11y Fixes (Sprint 2)[#1053](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1053)
@@ -47,6 +48,7 @@ N/A
 - SPIKE: Authentication Feasibility Research [#1046](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1046)
 
 **Current Sprint Backlog**
+- As a dev, I need to know which authentication service we're using (login.gov vs. NextGen XMS) [#638](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/638)
 - [DevOps] Generate a new, random DJANGO_SECRET_KEY on initial Cloud.gov deployments or rebuilds [#967](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/967)
 - As a dev, I want an automated tool to prevent me from committing secret keys to the repo [#965](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/965)
 - [EPIC] Secret Key Leakage Mitigation [#972](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/972)
@@ -60,9 +62,9 @@ N/A
 ## Agenda for Sprint 25 Demo 
 - (UX Sprint 24) Current State Analysis of Error Communication and Regional Staff Workflow Validation [#1018](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1018) - Miles/ Dmitri
 - TDP Staging Site [#1051](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1051) - Jorge
-- Django Admin a11y Fixes (Sprint 1) [#973](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/973) - Jorge, locally
-- [Frontend] Hook upload and download to real API endpoints [#834](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/834) - John
-- [Devops] Allow pa11y to scan views that require authorization [#1044](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1044) - Aaron
+- Django Admin a11y Fixes (Sprint 1) [#973](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/973) - Jorge, locally 
+- (Pre QASP)[Frontend] Hook upload and download to real API endpoints [#834](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/834) - John
+- (Pre QASP)[Devops] Allow pa11y to scan views that require authorization [#1044](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1044) - Aaron
 
 
-[Link to Sprint 25 Milestone Details](https://github.com/raft-tech/TANF-app/milestone/26)
+[Link to Sprint 25 Milestone Details](https://github.com/raft-tech/TANF-app/milestone/28)
