@@ -10,8 +10,6 @@ class Local(Common):
     """Define class for local configuration settings."""
 
     DEBUG = True
-    # Testing
-    INSTALLED_APPS = Common.INSTALLED_APPS
 
     # Mail
     EMAIL_HOST = "localhost"
@@ -20,7 +18,6 @@ class Local(Common):
 
     if Common.USE_LOCALSTACK:
         localstack_dummy_key = "test"
-        DEFAULT_FILE_STORAGE = 'tdpservice.backends.DataFilesS3Storage'
         AWS_S3_DATAFILES_ACCESS_KEY = localstack_dummy_key
         AWS_S3_DATAFILES_SECRET_KEY = localstack_dummy_key
         AWS_S3_DATAFILES_BUCKET_NAME = 'tdp-datafiles-localstack'

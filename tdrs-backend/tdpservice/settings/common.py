@@ -152,6 +152,16 @@ class Common(Configuration):
         "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     )
 
+    # Store uploaded files in S3
+    # http://django-storages.readthedocs.org/en/latest/index.html
+    DEFAULT_FILE_STORAGE = 'tdpservice.backends.DataFilesS3Storage'
+    AWS_S3_DATAFILES_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY')
+    AWS_S3_DATAFILES_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_S3_DATAFILES_BUCKET_NAME = os.getenv('AWS_BUCKET')
+    AWS_S3_DATAFILES_REGION_NAME = os.getenv('AWS_REGION_NAME', 'us-gov-west-1')
+    AWS_S3_DATAFILES_ENDPOINT = \
+        f'https://s3-{AWS_S3_DATAFILES_REGION_NAME}.amazonaws.com'
+
     # Media files
     MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")
     MEDIA_URL = "/media/"
