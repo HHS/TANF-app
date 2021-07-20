@@ -1,10 +1,10 @@
+"""Storage backends available for use within tdpservice."""
 from django.conf import settings
 from storages.backends.s3boto3 import S3Boto3Storage
 
 
 class OverriddenCredentialsS3Storage(S3Boto3Storage):
-    """A S3 storage class that overrides default settings to use an explicitly
-    defined region and credentials.
+    """An S3 storage class that overrides default settings with explicit values.
 
     This is needed because S3Boto3Storage does not support using different
     credentials and regions between different S3 storage classes.

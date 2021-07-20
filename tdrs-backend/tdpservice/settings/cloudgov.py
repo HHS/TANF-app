@@ -7,14 +7,14 @@ from tdpservice.settings.common import Common
 
 
 def get_json_env_var(variable_name):
-    """TODO"""
+    """Retrieve and serialize a JSON environment variable."""
     return json.loads(
         os.getenv(variable_name, '{}')
     )
 
 
 def get_cloudgov_service_creds_by_instance_name(services, instance_name):
-    """TODO"""
+    """Retrieve credentials for a bound Cloud.gov service by instance name."""
     return next(
         (service.get('credentials', {}) for service in services
          if service.get('instance_name') == instance_name),
@@ -51,9 +51,6 @@ class CloudGov(Common):
         f'tdp-staticfiles-{cloudgov_space_suffix}'
     )
     ############################################################################
-
-    # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
-    ALLOWED_HOSTS = ['.app.cloud.gov']
 
     INSTALLED_APPS = (*Common.INSTALLED_APPS, 'gunicorn')
 
@@ -105,14 +102,19 @@ class CloudGov(Common):
 
 class Development(CloudGov):
     """Settings for applications deployed in the Cloud.gov dev space."""
-    pass
+
+    # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
+    ALLOWED_HOSTS = ['.app.cloud.gov']
 
 
 class Staging(CloudGov):
     """Settings for applications deployed in the Cloud.gov staging space."""
-    pass
+
+    ALLOWED_HOSTS = ['tdp-backend-staging.app.cloud.gov']
 
 
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
-    pass
+
+    # TODO: Add production ACF domain when known
+    ALLOWED_HOSTS = ['tdp-backend-production.app.cloud.gov']

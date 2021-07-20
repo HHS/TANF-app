@@ -1,6 +1,5 @@
 """Define settings for all environments."""
 
-import json
 import logging
 import os
 from distutils.util import strtobool

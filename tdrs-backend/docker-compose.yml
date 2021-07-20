@@ -52,7 +52,6 @@ services:
       - DJANGO_CONFIGURATION=Local
       - USE_LOCALSTACK=1
       - AV_SCAN_URL=http://clamav-rest:9000/scan
-      - LOCALSTACK_HOST=localstack
       - JWT_KEY
       - JWT_CERT_TEST
       - DJANGO_SU_NAME
