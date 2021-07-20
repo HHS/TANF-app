@@ -337,9 +337,6 @@ jobs:
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-frontend; ./zap-scanner.sh circle"
-      - run:
-          name: "Make directory for pa11y screenshots"
-          command: "mkdir ./pa11y-screenshots"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
       - store_artifacts:
