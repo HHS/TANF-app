@@ -47,7 +47,7 @@ class CloudGov(Common):
         f'tdp-datafiles-{cloudgov_space_suffix}'
     )
     s3_staticfiles_creds = get_cloudgov_service_creds_by_instance_name(
-        cloudgov_services['aws-rds'],
+        cloudgov_services['s3'],
         f'tdp-staticfiles-{cloudgov_space_suffix}'
     )
     ############################################################################
@@ -67,6 +67,9 @@ class CloudGov(Common):
             'PORT': database_creds['port']
         }
     }
+
+    # Localstack is always disabled in a cloud.gov environment
+    USE_LOCALSTACK = False
 
     ###
     # Store user uploaded data files in designated S3

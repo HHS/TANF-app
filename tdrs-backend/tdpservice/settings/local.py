@@ -16,7 +16,11 @@ class Local(Common):
     EMAIL_PORT = 1025
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-    if Common.USE_LOCALSTACK:
+    # Whether to use localstack in place of a live AWS S3 environment
+    # NOTE: Defaults to True when this settings module is in use
+    USE_LOCALSTACK = bool(os.getenv("USE_LOCALSTACK", 1))
+
+    if USE_LOCALSTACK:
         # To get s3 signed URLs to work with localstack we must pass in
         # dummy credentials of `test` per the docs
         # https://github.com/localstack/localstack#setting-up-local-region-and-credentials-to-run-localstack  # noqa

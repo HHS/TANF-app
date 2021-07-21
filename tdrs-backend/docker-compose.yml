@@ -50,9 +50,9 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
-      - USE_LOCALSTACK=1
-      - LOCALSTACK_HOST=localstack
       - AV_SCAN_URL=http://clamav-rest:9000/scan
+      - LOCALSTACK_HOST=localstack
+      - USE_LOCALSTACK
       - JWT_KEY
       - JWT_CERT_TEST
       - DJANGO_SU_NAME
