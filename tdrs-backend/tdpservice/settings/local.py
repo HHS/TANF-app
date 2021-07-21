@@ -1,5 +1,6 @@
 """Define configuration settings for local environment."""
 import os
+from distutils.util import strtobool
 
 from .common import Common
 
@@ -18,7 +19,7 @@ class Local(Common):
 
     # Whether to use localstack in place of a live AWS S3 environment
     # NOTE: Defaults to True when this settings module is in use
-    USE_LOCALSTACK = bool(os.getenv("USE_LOCALSTACK", 1))
+    USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "yes")))
 
     if USE_LOCALSTACK:
         # To get s3 signed URLs to work with localstack we must pass in

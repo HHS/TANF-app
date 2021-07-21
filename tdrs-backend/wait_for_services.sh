@@ -6,7 +6,7 @@ wait-for-it \
     -- echo "ClamAV and Localstack are ready!"
 
 # Wait for Localstack to create the necessary S3 bucket, if in use
-if [ "$USE_LOCALSTACK" -eq 1 ]; then
+if [ -z "$USE_LOCALSTACK" ] || [ "$USE_LOCALSTACK" = "yes" ]; then
     echo "Waiting 60 seconds for S3 bucket creation"
     # shellcheck disable=SC2091
     until $(
