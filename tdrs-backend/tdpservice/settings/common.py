@@ -151,6 +151,14 @@ class Common(Configuration):
         "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     )
 
+    # By default collectstatic will store files locally so these settings are
+    # not used but they must be defined, lest the server will fail to startup.
+    AWS_S3_STATICFILES_ACCESS_KEY = None
+    AWS_S3_STATICFILES_SECRET_KEY = None
+    AWS_S3_STATICFILES_BUCKET_NAME = None
+    AWS_S3_STATICFILES_ENDPOINT = None
+    AWS_S3_STATICFILES_REGION_NAME = None
+
     # Store uploaded files in S3
     # http://django-storages.readthedocs.org/en/latest/index.html
     DEFAULT_FILE_STORAGE = 'tdpservice.backends.DataFilesS3Storage'

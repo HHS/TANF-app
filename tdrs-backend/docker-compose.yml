@@ -51,6 +51,7 @@ services:
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
       - USE_LOCALSTACK=1
+      - LOCALSTACK_HOST=localstack
       - AV_SCAN_URL=http://clamav-rest:9000/scan
       - JWT_KEY
       - JWT_CERT_TEST
