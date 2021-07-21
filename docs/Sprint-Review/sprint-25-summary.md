@@ -14,7 +14,6 @@
 
 **[Next Sprint (26) Goals](https://github.com/raft-tech/TANF-app/milestone/29)** 
 - 
-- TDP Permissions Epics (TDP Permissions Matrix, OFA Admins, PIV/CAC)
 
 ## Merged/Completed (Done/Demo, Closed)
 - Django Admin a11y Fixes (Sprint 1) [#973](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/973)
