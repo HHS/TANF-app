@@ -15,7 +15,6 @@
 **Next Sprint (26) Goals:** 
 - Finish up Secret Key Leakage Mitigation Present recommendation re: authentication
 - TDP Permissions Epics (TDP Permissions Matrix, OFA Admins, PIV/CAC)
-- Continue work on Production readiness
 - UX Test Error Communication for Parsing Blockers
 
 ## Merged/Completed (Done/Demo, Closed)
