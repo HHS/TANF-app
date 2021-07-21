@@ -10,17 +10,18 @@ LOCALSTACK_URL = 'http://localstack:4566'
 
 @pytest.fixture
 def datafiles_backend():
+    """Return the storage backend for user uploaded Data Files."""
     return DataFilesS3Storage()
 
 
 @pytest.fixture
 def staticfiles_backend():
+    """Return the storage backend for Django Admin staticfiles."""
     return StaticFilesS3Storage()
 
 
 def test_datafiles_localstack_storage(datafiles_backend, settings):
     """Test DataFilesS3Storage uses localstack when USE_LOCALSTACK is True."""
-
     # USE_LOCALSTACK is True by default in test environments.
     assert settings.USE_LOCALSTACK is True
 
@@ -39,5 +40,6 @@ def test_datafiles_and_staticfiles_storages_have_distinct_credentials(
     datafiles_backend,
     staticfiles_backend
 ):
+    """Test that the credentials used differ between backends."""
     assert datafiles_backend.access_key != staticfiles_backend.access_key
     assert datafiles_backend.secret_key != staticfiles_backend.secret_key

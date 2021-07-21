@@ -5,7 +5,6 @@ from requests.packages.urllib3.util.retry import Retry
 from requests.sessions import Session
 import logging
 
-from boto3 import client
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
