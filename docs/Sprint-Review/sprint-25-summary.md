@@ -18,6 +18,7 @@
 ## Merged/Completed (Done/Demo, Closed)
 - Django Admin a11y Fixes (Sprint 1) [#973](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/973)
 - (UX Sprint 24) Current State Analysis of Error Communication and Regional Staff Workflow Validation [#1018](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1018)
+- Documentation of current staging environments for TDP [#1051](https://app.zenhub.com/workspaces/tdrs-product-backlog-5f2c6cdc7c0bb1001bdc43a5/issues/raft-tech/tanf-app/1051)
 
 ## Submitted (QASP Review, OCIO Review)
 - Dependabot Mass Merge / Improvements [#1023](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1023)
