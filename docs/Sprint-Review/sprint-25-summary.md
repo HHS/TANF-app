@@ -13,7 +13,7 @@
 - UX Ideation for Parsing Blocker Communications
 
 **Next Sprint (26) Goals:** 
-- Finish up Secret Key Leakage Mitigation Present recommendation re: authentication
+- 
 - TDP Permissions Epics (TDP Permissions Matrix, OFA Admins, PIV/CAC)
 - UX Test Error Communication for Parsing Blockers
 
