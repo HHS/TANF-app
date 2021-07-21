@@ -63,9 +63,16 @@ API version:    3.101.0
 user:           abottoms@goraft.tech
 org:            hhs-acf-prototyping
 space:          tanf-dev 
-$ bash scripts/deploy-backend.sh rolling tdp-backend
+$ cf restage tdp-backend-a11y
+$ cf restage tdp-backend-raft
+$ cf restage tdp-backend-qasp
+$ cf restage tdp-backend-sandbox
 OR
-$ bash scripts/deploy-frontend.sh rolling tdp-frontend
+$ cf restage tdp-frontend-a11y
+$ cf restage tdp-frontend-raft
+$ cf restage tdp-frontend-qasp
+$ cf restage tdp-frontend-sandbox
+
 ```
     1. Inspect dev environment in cloud.gov for new buildpack versions after restage
     1. Inspect relevant official changelog(s):
