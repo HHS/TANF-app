@@ -106,7 +106,7 @@ function HeaderComp() {
                 </li>
                 <li className="usa-nav__secondary-item">
                   {(() => {
-                    if (process.env.REACT_APP_MOCK_API) {
+                    if (process.env.REACT_APP_USE_MIRAGE) {
                       return (
                         <button
                           onClick={(e) => {
