@@ -119,25 +119,6 @@ function HeaderComp() {
                     </button>
                     : <SignoutLink user={user} />
                   )}
-                  {(() => {
-                    if (process.env.REACT_APP_USE_MIRAGE) {
-                      return (
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            // localStorage converts all values to strings, so to get a falsy value
-                            // we pass in a blank string
-                            window.localStorage.setItem('loggedIn', '')
-                            window.location.reload()
-                          }}
-                        >
-                          <SignoutLink user={user} />
-                        </button>
-                      )
-                    } else {
-                      return <SignoutLink user={user} />
-                    }
-                  })()}
                 </li>
               </ul>
             </div>
