@@ -15,7 +15,6 @@ function SplashPage() {
   const authLoading = useSelector((state) => state.auth.loading)
   const isInactive = useSelector((state) => state.auth.inactive)
   const alertRef = useRef(null)
-  console.log(process.env)
 
   const handleClick = (event) => {
     if (process.env.REACT_APP_USE_MIRAGE) {
