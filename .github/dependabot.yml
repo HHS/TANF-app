@@ -7,8 +7,7 @@ updates:
     directory: "/tdrs-frontend"
     schedule:
       interval: "daily"
-    target-branch: "dependabot-mass-merge"
-    open-pull-requests-limit: 50
+    target-branch: "raft-tdp-main"
     labels:
       - "dependencies"
       - "frontend"
@@ -20,8 +19,7 @@ updates:
     directory: "/tdrs-backend"
     schedule:
       interval: "daily"
-    target-branch: "dependabot-mass-merge"
-    open-pull-requests-limit: 50
+    target-branch: "raft-tdp-main"
     labels:
       - "dependencies"
       - "backend"
