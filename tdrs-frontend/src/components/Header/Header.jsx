@@ -105,6 +105,20 @@ function HeaderComp() {
                   )}
                 </li>
                 <li className="usa-nav__secondary-item">
+                  {(process.env.REACT_APP_USE_MIRAGE
+                    ? <button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        // localStorage converts all values to strings, so to get a falsy value
+                        // we pass in a blank string
+                        window.localStorage.setItem('loggedIn', '')
+                        window.location.reload()
+                      }}
+                    >
+                      <SignoutLink user={user} />
+                    </button>
+                    : <SignoutLink user={user} />
+                  )}
                   {(() => {
                     if (process.env.REACT_APP_USE_MIRAGE) {
                       return (
