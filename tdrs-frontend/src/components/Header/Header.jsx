@@ -105,8 +105,8 @@ function HeaderComp() {
                   )}
                 </li>
                 <li className="usa-nav__secondary-item">
-                  {(process.env.REACT_APP_USE_MIRAGE
-                    ? <button
+                  {process.env.REACT_APP_USE_MIRAGE ? (
+                    <button
                       onClick={(e) => {
                         e.preventDefault()
                         // localStorage converts all values to strings, so to get a falsy value
@@ -117,7 +117,8 @@ function HeaderComp() {
                     >
                       <SignoutLink user={user} />
                     </button>
-                    : <SignoutLink user={user} />
+                  ) : (
+                    <SignoutLink user={user} />
                   )}
                 </li>
               </ul>
