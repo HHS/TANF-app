@@ -1,12 +1,14 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-
+import { useSelector, useDispatch } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+
 import NavItem from '../NavItem/NavItem'
 
-const SignoutLink = ({ user }) => (
+import { setMockLoginState } from '../../actions/auth'
+
+const LoginLogoutLink = ({ user }) => (
   <a
     className="sign-out-link"
     href={
@@ -33,6 +35,8 @@ function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
+
+  const dispatch = useDispatch()
 
   const isSystemAdmin = () => {
     return user?.roles?.some((role) => role.name === 'System Admin')
@@ -105,20 +109,19 @@ function HeaderComp() {
                   )}
                 </li>
                 <li className="usa-nav__secondary-item">
-                  {process.env.REACT_APP_USE_MIRAGE ? (
+                  {!window.location.href.match(
+                    /https:\/\/.*\.app\.cloud\.gov/
+                  ) && process.env.REACT_APP_USE_MIRAGE ? (
                     <button
                       onClick={(e) => {
                         e.preventDefault()
-                        // localStorage converts all values to strings, so to get a falsy value
-                        // we pass in a blank string
-                        window.localStorage.setItem('loggedIn', '')
-                        window.location.reload()
+                        dispatch(setMockLoginState())
                       }}
                     >
-                      <SignoutLink user={user} />
+                      <LoginLogoutLink user={user} />
                     </button>
                   ) : (
-                    <SignoutLink user={user} />
+                    <LoginLogoutLink user={user} />
                   )}
                 </li>
               </ul>
