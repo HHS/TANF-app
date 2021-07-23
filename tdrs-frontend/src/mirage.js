@@ -1,4 +1,4 @@
-import { createServer, Response } from 'miragejs'
+import { createServer } from 'miragejs'
 import { v4 as uuidv4 } from 'uuid'
 import {
   AUTH_CHECK_DATA,
