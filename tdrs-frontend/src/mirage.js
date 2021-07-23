@@ -26,7 +26,9 @@ export default function startMirage(
           return FAILED_AUTH_CHECK_DATA
         }
       })
-      // if/when we add cypress tests, the rest of these routes will need some work done on them
+
+      // if/when we add cypress tests, the rest of these
+      // routes will need some work done on them
 
       this.patch('/users/set_profile', () => {
         return {}
