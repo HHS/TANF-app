@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { Redirect } from 'react-router-dom'
+
+import { setMockLoginState } from '../../actions/auth'
 
 import loginLogo from '../../assets/login-gov-logo.svg'
 import Button from '../Button'
@@ -15,12 +17,15 @@ function SplashPage() {
   const authLoading = useSelector((state) => state.auth.loading)
   const isInactive = useSelector((state) => state.auth.inactive)
   const alertRef = useRef(null)
+  const dispatch = useDispatch()
 
   const handleClick = (event) => {
-    if (process.env.REACT_APP_USE_MIRAGE) {
+    if (
+      !window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/) &&
+      process.env.REACT_APP_USE_MIRAGE
+    ) {
       event.preventDefault()
-      window.localStorage.setItem('loggedIn', true)
-      window.location.reload()
+      dispatch(setMockLoginState())
     } else {
       event.preventDefault()
       window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
