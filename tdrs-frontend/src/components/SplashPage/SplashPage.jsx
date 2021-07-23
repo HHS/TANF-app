@@ -37,8 +37,9 @@ function SplashPage() {
     }
   }, [alertRef, isInactive])
 
-  // Pa11y is not testing out authentication logic, by passing all auth checks during
-  // Pa11y tests allows us to just point to a page in the config like we have been doing.
+  // Pa11y is not testing out authentication logic, by passing all auth checks
+  // during Pa11y tests allows us to just point to a page in the config like
+  // we have been doing.
   if (authenticated && !process.env.REACT_APP_PA11Y_TEST) {
     return <Redirect to="/edit-profile" />
   }
