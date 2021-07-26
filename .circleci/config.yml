@@ -332,6 +332,11 @@ jobs:
               cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
             fi
       - run:
+          name: "Install lib bindings for Cypress"
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libgbm-dev
+      - run:
           name: "Run Cypress Integration Tests"
           command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
