@@ -322,14 +322,6 @@ jobs:
           component: backend
           coverage-report: ./coverage.xml
       - run:
-          name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
-          command: |
-            if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main-backend
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
-            fi
-      - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh circle"
       - store_artifacts:
