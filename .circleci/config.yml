@@ -70,10 +70,10 @@ commands:
         type: string
     steps:
       - run:
-          name: Ensure codecov uploader is installed, otherwise install it.
+          name: Ensure Codecov uploader is installed, otherwise install it.
           command: ./scripts/codecov-check.sh
       - run:
-          name: Determine Current Metric Flag
+          name: Determine Codecov metric flag
           command: |
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
               CURRENT_FLAG=main-<<parameters.component>>
@@ -83,7 +83,7 @@ commands:
             fi
             echo "export CURRENT_FLAG=$CURRENT_FLAG" >> $BASH_ENV
       - run:
-          name: Upload Code Coverage Report if Target Branch
+          name: Upload code coverage report if target branch
           command: |
             if [ -n "$CURRENT_FLAG" ]; then
               codecov -t "$CODECOV_TOKEN" -f <<parameters.coverage-report>> -F "$CURRENT_FLAG"
@@ -320,7 +320,7 @@ jobs:
             docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
       - upload-codecov:
           component: backend
-          coverage-report: ./coverage.xml
+          coverage-report: ./tdrs-backend/coverage.xml
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh circle"
@@ -351,7 +351,7 @@ jobs:
           command: "cd tdrs-frontend; yarn test:ci"
       - upload-codecov:
           component: frontend
-          coverage-report: ./coverage/lcof.info
+          coverage-report: ./tdrs-frontend/coverage/lcof.info
       - run:
           name: "Install lib bindings for Cypress"
           command: |
