@@ -56,9 +56,9 @@ def ofa_admin():
 
 
 @pytest.fixture
-def data_prepper():
-    """Return a data prepper user."""
-    return UserFactory.create(groups=(Group.objects.get(name="Data Prepper"),))
+def data_analyst():
+    """Return a data analyst user."""
+    return UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),))
 
 
 @pytest.fixture

@@ -12,6 +12,8 @@ updates:
       - "dependencies"
       - "frontend"
       - "raft review"
+    reviewers:
+      - "raft-tech/tdrs-developers"
 
   - package-ecosystem: "pip"
     directory: "/tdrs-backend"
@@ -22,3 +24,5 @@ updates:
       - "dependencies"
       - "backend"
       - "raft review"
+    reviewers:
+      - "raft-tech/tdrs-developers"
