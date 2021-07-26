@@ -455,7 +455,7 @@ workflows:
           filters:
             branches:
               only:
-                - raft-tdp-main
+                - devops/1032/scheduled-owasp
   build-and-test:
     jobs:
       - test-backend
