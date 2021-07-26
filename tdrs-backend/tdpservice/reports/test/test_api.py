@@ -148,29 +148,29 @@ class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
         self.assert_report_exists(other_report_data, 2, user)
 
 
-class TestReportFileAPIAsDataPrepper(ReportFileAPITestBase):
-    """Test ReportFileViewSet as a Data Prepper user."""
+class TestReportFileAPIAsDataAnalyst(ReportFileAPITestBase):
+    """Test ReportFileViewSet as a Data Analyst user."""
 
     @pytest.fixture
-    def user(self, data_prepper):
-        """Override the default user with data_prepper for our tests."""
-        return data_prepper
+    def user(self, data_analyst):
+        """Override the default user with data_analyst for our tests."""
+        return data_analyst
 
-    def test_reports_data_prepper_permission(self, api_client, report_data, user):
-        """Test that a Data Prepper is allowed to add reports to their own STT."""
+    def test_reports_data_analyst_permission(self, api_client, report_data, user):
+        """Test that a Data Analyst is allowed to add reports to their own STT."""
         response = self.post_report_file(api_client, report_data)
         self.assert_report_created(response)
         self.assert_report_exists(report_data, 1, user)
 
-    def test_reports_data_prepper_not_allowed(self, api_client, report_data, user):
-        """Test that Data preppers can't add reports to STTs other than their own."""
+    def test_reports_data_analyst_not_allowed(self, api_client, report_data, user):
+        """Test that Data Analysts can't add reports to STTs other than their own."""
         report_data['stt'] = report_data['stt'] + 1
 
         response = self.post_report_file(api_client, report_data)
         self.assert_report_rejected(response)
 
     def test_download_report_file_for_own_stt(self, api_client, report_data, user):
-        """Test that the file is downloaded as expected for a Data Prepper's set STT."""
+        """Test that the file is downloaded as expected for a Data Analyst's set STT."""
         response = self.post_report_file(api_client, report_data)
         report_id = response.data['id']
         response = self.download_file(api_client, report_id)
@@ -241,9 +241,9 @@ def multi_year_report_data(user, stt):
 
 
 @pytest.mark.django_db
-def test_list_report_years(api_client, data_prepper):
-    """Test list of years for which there exist a report as a data prepper."""
-    user = data_prepper
+def test_list_report_years(api_client, data_analyst):
+    """Test list of years for which there exist a report as a data analyst."""
+    user = data_analyst
 
     reports = multi_year_report_data(user, user.stt)
 
