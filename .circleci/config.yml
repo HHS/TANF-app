@@ -58,6 +58,37 @@ commands:
           name: Ensure sudo is installed, otherwise install it.
           command: ./scripts/sudo-check.sh
 
+  upload-codecov:
+    description: Uploads testing code coverage results to Codecov
+    parameters:
+      component:
+        description: The component of the application being tested, either backend or frontend.
+        type: enum
+        enum: ["backend", "frontend"]
+      coverage-report:
+        description: The path to the coverage report being uploaded.
+        type: string
+    steps:
+      - run:
+          name: Ensure codecov uploader is installed, otherwise install it.
+          command: ./scripts/codecov-check.sh
+      - run:
+          name: Determine Current Metric Flag
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              CURRENT_FLAG=main-<<parameters.component>>
+            # TODO: Revert this to raft-tdp-main after testing
+            elif [ "$CIRCLE_BRANCH" == "devops/968-codecov-validation" ] ; then
+              CURRENT_FLAG=dev-<<parameters.component>>
+            fi
+            echo "export CURRENT_FLAG=$CURRENT_FLAG" >> $BASH_ENV
+      - run:
+          name: Upload Code Coverage Report if Target Branch
+          command: |
+            if [ -n "$CURRENT_FLAG" ]; then
+              codecov -t "$CODECOV_TOKEN" -f <<parameters.coverage-report>> -F "$CURRENT_FLAG"
+            fi
+
   ###
   # Deployment commands
   #
@@ -287,6 +318,9 @@ jobs:
           command: |
             cd tdrs-backend;
             docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
+      - upload-codecov:
+          component: backend
+          coverage-report: ./coverage.xml
       - run:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
@@ -323,14 +357,9 @@ jobs:
       - run:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
-      - run:
-          name: "Upload Frontend Coverage Report to CodeCov If Target Branch"
-          command: |
-            if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main-frontend
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
-            fi
+      - upload-codecov:
+          component: frontend
+          coverage-report: ./coverage/lcof.info
       - run:
           name: "Install lib bindings for Cypress"
           command: |
