@@ -35,7 +35,7 @@ SPIKE: File transfer options for Tribal MVP [#1011](https://app.zenhub.com/works
 
 **Blocked**
 - Update ATO docs and corresponding code docs [#962](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/962)
-- SPIKE: File transfer options for Tribal MVP [#1011](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1011)
+- 
 
 **In Progress**
 - Django Admin a11y Fixes (Sprint 2)[#1053](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1053)
