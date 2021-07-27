@@ -4,7 +4,6 @@ import logging
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 
-
 from .models import User
 from tdpservice.stts.serializers import STTUpdateSerializer
 
@@ -55,6 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
         )
         read_only_fields = ("username",)
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer used for setting a user's profile."""

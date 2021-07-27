@@ -1,10 +1,221 @@
 """Tests for Reports Application."""
-import uuid
-
-import pytest
 from rest_framework import status
+import pytest
 
-from ..models import ReportFile
+from tdpservice.reports.models import ReportFile
+
+
+@pytest.mark.usefixtures('db')
+class ReportFileAPITestBase:
+    """A base test class for tests that interact with the ReportFileViewSet.
+
+    Provides several fixtures and methods that are commonly used between tests.
+    Intended to simplify creating tests for different user flows.
+    """
+
+    root_url = '/v1/reports/'
+
+    @pytest.fixture
+    def user(self):
+        """User instance that will be used to log in to the API client.
+
+        This fixture must be overridden in each child test class.
+        """
+        raise NotImplementedError()
+
+    @pytest.fixture
+    def api_client(self, api_client, user):
+        """Provide an API client that is logged in with the specified user."""
+        api_client.login(username=user.username, password='test_password')
+        return api_client
+
+    @staticmethod
+    def get_report_record(report_data, version, user):
+        """Retrieve a report record using unique constraints."""
+        return ReportFile.objects.filter(
+            slug=report_data["slug"],
+            year=report_data["year"],
+            section=report_data["section"],
+            version=version,
+            user=user,
+        )
+
+    @staticmethod
+    def assert_report_created(response):
+        """Assert that the report was created."""
+        assert response.status_code == status.HTTP_201_CREATED
+
+    @staticmethod
+    def assert_report_rejected(response):
+        """Assert that a given report submission was rejected."""
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @staticmethod
+    def assert_report_content_matches(response, report_id):
+        """Assert that the report download has the expected content."""
+        report_file = ReportFile.objects.get(id=report_id)
+        assert b''.join(response.streaming_content) == report_file.file.read()
+
+    @staticmethod
+    def assert_report_exists(report_data, version, user):
+        """Confirm that a report matching the provided data exists in the DB."""
+        assert ReportFile.objects.filter(
+            slug=report_data["slug"],
+            year=report_data["year"],
+            section=report_data["section"],
+            version=version,
+            user=user,
+        ).exists()
+
+    def post_report_file(self, api_client, report_data):
+        """Submit a report with the given data."""
+        return api_client.post(
+            self.root_url,
+            report_data,
+            format='multipart'
+        )
+
+    def get_report_files(self, api_client):
+        """Submit a report with the given data."""
+        return api_client.get(
+            self.root_url
+        )
+
+    def get_report_file(self, api_client, report_id):
+        """Get report file meta data."""
+        return api_client.get(
+            f"{self.root_url}{report_id}/"
+        )
+
+    def download_file(self, api_client, report_id):
+        """Stream a file for download."""
+        return api_client.get(f"{self.root_url}{report_id}/download/")
+
+
+class TestReportFileAPIAsOfaAdmin(ReportFileAPITestBase):
+    """Test ReportFileViewSet as an OFA Admin user."""
+
+    @pytest.fixture
+    def user(self, ofa_admin):
+        """Override the default user with ofa_admin for our tests."""
+        return ofa_admin
+
+    def test_get_report_file_meta_data(self, api_client, report_data, user):
+        """Assert the meta data the api provides is as expected."""
+        response = self.post_report_file(api_client, report_data)
+        report_id = response.data['id']
+        assert ReportFile.objects.get(id=report_id)
+        response = self.get_report_file(api_client, report_id)
+
+        assert response.data['id'] == report_id
+
+        assert str(response.data['user']) == report_data['user']
+
+        assert response.data['quarter'] == report_data['quarter']
+        assert response.data['stt'] == report_data['stt']
+        assert response.data['year'] == report_data['year']
+
+    def test_download_report_file(self, api_client, report_data, user):
+        """Test that the file is transmitted with out errors."""
+        response = self.post_report_file(api_client, report_data)
+        report_id = response.data['id']
+        response = self.download_file(api_client, report_id)
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_report_content_matches(response, report_id)
+
+    def test_create_report_file_entry(self, api_client, report_data, user):
+        """Test ability to create report file metadata registry."""
+        response = self.post_report_file(api_client, report_data)
+        self.assert_report_created(response)
+        self.assert_report_exists(report_data, 1, user)
+
+    def test_report_file_version_increment(
+        self,
+        api_client,
+        report_data,
+        other_report_data,
+        user
+    ):
+        """Test that report file version numbers incremented."""
+        response1 = self.post_report_file(api_client, report_data)
+        response2 = self.post_report_file(api_client, other_report_data)
+
+        self.assert_report_created(response1)
+        self.assert_report_created(response2)
+
+        self.assert_report_exists(report_data, 1, user)
+        self.assert_report_exists(other_report_data, 2, user)
+
+
+class TestReportFileAPIAsDataAnalyst(ReportFileAPITestBase):
+    """Test ReportFileViewSet as a Data Analyst user."""
+
+    @pytest.fixture
+    def user(self, data_analyst):
+        """Override the default user with data_analyst for our tests."""
+        return data_analyst
+
+    def test_reports_data_analyst_permission(self, api_client, report_data, user):
+        """Test that a Data Analyst is allowed to add reports to their own STT."""
+        response = self.post_report_file(api_client, report_data)
+        self.assert_report_created(response)
+        self.assert_report_exists(report_data, 1, user)
+
+    def test_reports_data_analyst_not_allowed(self, api_client, report_data, user):
+        """Test that Data Analysts can't add reports to STTs other than their own."""
+        report_data['stt'] = report_data['stt'] + 1
+
+        response = self.post_report_file(api_client, report_data)
+        self.assert_report_rejected(response)
+
+    def test_download_report_file_for_own_stt(self, api_client, report_data, user):
+        """Test that the file is downloaded as expected for a Data Analyst's set STT."""
+        response = self.post_report_file(api_client, report_data)
+        report_id = response.data['id']
+        response = self.download_file(api_client, report_id)
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_report_content_matches(response, report_id)
+
+    def test_download_report_file_rejected_for_other_stt(
+        self,
+        api_client,
+        report_data,
+        other_stt,
+        user
+    ):
+        """Test that the download is rejected when user's STT doesn't match."""
+        response = self.post_report_file(api_client, report_data)
+        report_id = response.data['id']
+
+        # Update the STT to something other than the user's
+        report_file = ReportFile.objects.get(id=report_id)
+        report_file.stt = other_stt
+        report_file.save()
+
+        response = self.download_file(api_client, report_id)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+class TestReportFileAPIAsInactiveUser(ReportFileAPITestBase):
+    """Test ReportFileViewSet as an inactive user."""
+
+    @pytest.fixture
+    def user(self, inactive_user):
+        """Override the default user with inactive_user for our tests."""
+        return inactive_user
+
+    def test_reports_inactive_user_not_allowed(
+        self,
+        api_client,
+        inactive_user,
+        report_data
+    ):
+        """Test that an inactive user can't add reports at all."""
+        response = self.post_report_file(api_client, report_data)
+        self.assert_report_rejected(response)
 
 
 def multi_year_report_data(user, stt):
@@ -28,143 +239,11 @@ def multi_year_report_data(user, stt):
              "year": 2022,
              "section": "Active Case Data", }]
 
-@pytest.mark.django_db
-def test_create_report_file_entry(api_client, ofa_admin):
-    """Test ability to create report file metadata registry."""
-    user = ofa_admin
-    api_client.login(username=user.username, password="test_password")
-    data = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user.id,
-        "stt": user.stt.id,
-        "year": 2020,
-        "section": "Active Case Data",
-    }
-    response = api_client.post("/v1/reports/", data)
-    assert response.status_code == status.HTTP_201_CREATED
-    assert response.data["slug"] == str(data["slug"])
-
-    assert ReportFile.objects.filter(
-        slug=data["slug"],
-        year=data["year"],
-        section=data["section"],
-        version=1,
-        user=user,
-    ).exists()
-
 
 @pytest.mark.django_db
-def test_report_file_version_increment(api_client, ofa_admin):
-    """Test that report file version numbers incremented."""
-    user = ofa_admin
-    api_client.login(username=user.username, password="test_password")
-    data1 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": str(uuid.uuid4()),
-        "user": user.id,
-        "stt": user.stt.id,
-        "year": 2020,
-        "section": "Active Case Data",
-    }
-    data2 = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": data1["slug"],
-        "user": user.id,
-        "stt": user.stt.id,
-        "year": 2020,
-        "section": "Active Case Data",
-    }
-
-    response1 = api_client.post("/v1/reports/", data1)
-    response2 = api_client.post("/v1/reports/", data2)
-
-    assert response1.status_code == status.HTTP_201_CREATED
-    assert response1.data["slug"] == data1["slug"]
-
-    assert response2.status_code == status.HTTP_201_CREATED
-    assert response2.data["slug"] == data2["slug"]
-
-    assert ReportFile.objects.filter(
-        slug=data1["slug"],
-        year=data1["year"],
-        section=data1["section"],
-        version=1,
-        user=user,
-    ).exists()
-
-    assert ReportFile.objects.filter(
-        slug=data1["slug"],
-        year=data1["year"],
-        section=data1["section"],
-        version=2,
-        user=user,
-    ).exists()
-
-
-@pytest.mark.django_db
-def test_reports_data_prepper_permission(api_client, data_prepper):
-    """Test that a Data Prepper is allowed to add reports to their own STT."""
-    user = data_prepper
-    api_client.login(username=user.username, password="test_password")
-    data = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": uuid.uuid4(),
-        "user": user.id,
-        "stt": int(user.stt.id),
-        "year": 2020,
-        "section": "Active Case Data",
-    }
-
-    response = api_client.post("/v1/reports/", data)
-    assert response.status_code == status.HTTP_201_CREATED
-
-
-@pytest.mark.django_db
-def test_reports_data_prepper_not_allowed(api_client, data_prepper):
-    """Test that Data preppers can't add reports to STTs other than their own."""
-    user = data_prepper
-    api_client.login(username=user.username, password="test_password")
-    data = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": uuid.uuid4(),
-        "user": user.id,
-        "stt": int(user.stt.id) + 1,
-        "year": 2020,
-        "section": "Active Case Data",
-    }
-
-    response = api_client.post("/v1/reports/", data)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-
-
-@pytest.mark.django_db
-def test_reports_inactive_user_not_allowed(api_client, inactive_user):
-    """Test that an inactive user can't add reports at all."""
-    user = inactive_user
-    api_client.login(username=user.username, password="test_password")
-    data = {
-        "original_filename": "report.txt",
-        "quarter": "Q1",
-        "slug": uuid.uuid4(),
-        "user": user.id,
-        "stt": user.stt.id,
-        "year": 2020,
-        "section": "Active Case Data",
-    }
-
-    response = api_client.post("/v1/reports/", data)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-
-@pytest.mark.django_db
-def test_list_report_years(api_client, data_prepper):
-    """Test list of years for which there exist a report as a data prepper."""
-    user = data_prepper
+def test_list_report_years(api_client, data_analyst):
+    """Test list of years for which there exist a report as a data analyst."""
+    user = data_analyst
 
     reports = multi_year_report_data(user, user.stt)
 
@@ -182,6 +261,7 @@ def test_list_report_years(api_client, data_prepper):
         2021,
         2022
     ]
+
 
 @pytest.mark.django_db
 def test_list_ofa_admin_report_years(api_client, ofa_admin, stt):
@@ -221,7 +301,7 @@ def test_list_ofa_admin_report_years_positional_stt(api_client, ofa_admin, stt):
 
     response = api_client.get("/v1/reports/years")
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db

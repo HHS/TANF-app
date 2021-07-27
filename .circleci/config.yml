@@ -2,6 +2,8 @@ version: 2.1
 
 orbs:
   node: circleci/node@4.2.1
+  terraform: circleci/terraform@2.1.0
+  jq: circleci/jq@2.2.0
 
 executors:
   docker-executor:
@@ -11,6 +13,7 @@ executors:
   machine-executor:
     machine:
       docker_layer_caching: false
+      image: ubuntu-2004:202104-01
 
 commands:
   ###
@@ -25,7 +28,7 @@ commands:
   docker-compose-check:
     steps:
       - run:
-          name: Ensure docker-compose exists,otherwise install it.
+          name: Ensure docker-compose exists, otherwise install it.
           command: ./scripts/docker-compose-check.sh
 
   # This allows us to use the orb stanza for node/install within other commands
@@ -208,6 +211,64 @@ commands:
           backend-appname: <<parameters.backend-appname>>
           frontend-appname: <<parameters.frontend-appname>>
 
+  deploy-infrastructure:
+    parameters:
+      tf-path:
+        type: string
+        default: ./terraform/dev
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk update
+            apk add jq
+            apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+      - login-cloud-dot-gov
+      - run:
+          name: Export S3 Credentials for TFState
+          command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
+            {
+              echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)\""
+              echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
+              echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
+            } >> ./backend_config.tfvars
+      - run:
+          name: Prepare Terraform Variables
+          command: |
+            {
+              echo "cf_password = \"$<<parameters.cf-password>>\""
+              echo "cf_user = \"$<<parameters.cf-username>>\""
+              echo "cf_space_name = \"<<parameters.cf-space>>\""
+            } >> ./variables.tfvars
+
+      - terraform/init:
+          path: <<parameters.tf-path>>
+          backend_config_file: ./backend_config.tfvars
+      - terraform/validate:
+          path: <<parameters.tf-path>>
+      - terraform/fmt:
+          path: <<parameters.tf-path>>
+      - terraform/plan:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+      - terraform/apply:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+
 jobs:
   test-backend:
     executor: machine-executor
@@ -219,8 +280,13 @@ jobs:
           name: "Test: Build and Spin-up Django API Service"
           command: "cd tdrs-backend; docker-compose up -d --build"
       - run:
+          name:  "Test: Execute Python Linting Test"
+          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
+      - run:
           name: "Test: Run Unit Tests And Create Code Coverage Report"
-          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"pytest --cov-report=xml\""
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
       - run:
           name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
           command: |
@@ -230,11 +296,8 @@ jobs:
               cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
             fi
       - run:
-          name:  "Test: Execute Python Linting Test"
-          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
-      - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-backend; ./zap-scanner.sh"
+          command: "cd tdrs-backend; ./zap-scanner.sh circle"
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
 
@@ -249,13 +312,14 @@ jobs:
       - install-nodejs-packages:
           app-dir: tdrs-frontend
           cache-path: ~/.cache
+          cache-version: v2
           pkg-manager: yarn
       - run:
           name: "Run ESLint"
           command: "cd tdrs-frontend; yarn lint"
       - run:
           name: "Run Pa11y Accessibility Tests"
-          command: "cd tdrs-frontend; yarn test:accessibility"
+          command: "cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility"
       - run:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
@@ -268,13 +332,38 @@ jobs:
               cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
             fi
       - run:
+          name: "Install lib bindings for Cypress"
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libgbm-dev
+      - run:
           name: "Run Cypress Integration Tests"
           command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-frontend; ./zap-scanner.sh"
+          command: "cd tdrs-frontend; ./zap-scanner.sh circle"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/homepage.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/edit-profile.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/request.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/login.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/data-files.png
+
+  deploy-infrastructure-dev:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure
 
   deploy-dev:
     executor: docker-executor
@@ -282,9 +371,19 @@ jobs:
     steps:
       - deploy-cloud-dot-gov
 
-  deploy-staging:
+  deploy-infrastructure-staging:
+    executor: terraform/default
     working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          tf-path: ./terraform/staging
+
+  deploy-staging:
     executor: docker-executor
+    working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
@@ -304,6 +403,37 @@ jobs:
           cf-username: CF_USERNAME_PROD
           frontend-appname: tdp-frontend-prod
 
+  deploy-raft:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-raft
+          frontend-appname: tdp-frontend-raft
+
+  deploy-qasp:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-qasp
+          frontend-appname: tdp-frontend-qasp
+
+  deploy-a11y:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-a11y
+          frontend-appname: tdp-frontend-a11y
+
+  deploy-sandbox:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-sandbox
+          frontend-appname: tdp-frontend-sandbox
 workflows:
   build-and-test:
     jobs:
@@ -317,4 +447,15 @@ workflows:
             branches:
               only:
                 - raft-review
+      - deploy-infrastructure-staging:
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
+      - deploy-staging:
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
                 - raft-tdp-main
