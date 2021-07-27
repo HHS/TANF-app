@@ -19,6 +19,9 @@ else
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
 fi
 
+# Dynamically generate a new DJANGO_SECRET_KEY
+DJANGO_SECRET_KEY=$(python -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
+
 echo "Setting environment variables for $CGAPPNAME_BACKEND"
 
 cf set-env "$CGAPPNAME_BACKEND" ACR_VALUES "$ACR_VALUES"
