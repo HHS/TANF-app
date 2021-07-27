@@ -26,8 +26,6 @@ elif command -v shasum >/dev/null ; then
 	SHASUM=shasum
 fi
 
-docker-compose down
-docker-compose up -d --build
 
 # do an OWASP ZAP scan
 export ZAP_CONFIG=" \
@@ -37,10 +35,13 @@ export ZAP_CONFIG=" \
   -config spider.postform=true"
 
 echo "================== OWASP ZAP tests =================="
-# Ensure the reports directory can be written to
-chmod 777 $REPORT_DIR
-
 cd $TARGET_DIR
+
+docker-compose down
+docker-compose up -d --build
+
+# Ensure the reports directory can be written to
+chmod 777 $(pwd)/reports
 
 if [ -z ${CONFIG_FILE+x} ]; then
     echo "Config file $ENVIRONMENT"
