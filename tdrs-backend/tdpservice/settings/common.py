@@ -121,6 +121,7 @@ class Common(Configuration):
     AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_BUCKET")
     AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
+    AWS_S3_REGION_NAME = os.getenv("AWS_REGION_NAME")
 
     # Those who will receive error notifications from django via email
     ADMINS = (("Admin1", "ADMIN_EMAIL_FIRST"), ("Admin2", "ADMIN_EMAIL_SECOND"))
@@ -154,7 +155,7 @@ class Common(Configuration):
         }
 
     # General
-    APPEND_SLASH = False
+    APPEND_SLASH = True
     TIME_ZONE = "UTC"
     LANGUAGE_CODE = "en-us"
     # If you set this to False, Django will make some optimizations so as not
@@ -302,6 +303,9 @@ class Common(Configuration):
             "rest_framework.authentication.SessionAuthentication",
             "rest_framework.authentication.TokenAuthentication",
         ),
+        "DEFAULT_FILTER_BACKENDS": [
+            "django_filters.rest_framework.DjangoFilterBackend",
+        ],
         "TEST_REQUEST_DEFAULT_FORMAT": "json",
         "TEST_REQUEST_RENDERER_CLASSES": [
             "rest_framework.renderers.MultiPartRenderer",
