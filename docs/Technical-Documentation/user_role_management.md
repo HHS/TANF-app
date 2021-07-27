@@ -39,7 +39,7 @@ _Alternatively_
 ### Group List
 
 - Clicking on "Groups" from the Admin Home page gives you a list of all of the existing groups.
-- Current groups listed are "System Admin", "OFA Admin" , and "Data Prepper" (this will be updated when [#940](https://github.com/raft-tech/TANF-app/issues/940) is addressed).
+- Current groups listed are "System Admin", "OFA Admin" , and "Data Analyst".
 
 ![](images/group_list.png)
 
