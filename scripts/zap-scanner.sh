@@ -4,24 +4,18 @@
 TARGET=$1
 ENVIRONMENT=$2
 
-TARGET_DIR="${$(pwd)}tdrs-$TARGET"
+TARGET_DIR="$(pwd)/tdrs-$TARGET"
 REPORT_NAME=owasp_report.html
 REPORTS_DIR="$TARGET_DIR/reports"
-REPORT_PATH="$REPORTS_DIR/$REPORT_NAME"
 
-cd $TARGET_DIR
 
 
 if [ "$ENVIRONMENT" = "nightly" ]; then
-
-    CONFIG_FILE="$REPORTS_DIR/zap.conf"
     APP_URL="https://tdp-$TARGET-staging.app.cloud.gov/"
-
+    CONFIG_FILE="zap.conf"
 elif [ "$ENVIRONMENT" = "circle" ]; then
-
-    CONFIG_FILE="$REPORTS_DIR/zap.conf"
     APP_URL="http://tdp-$TARGET/"
-
+    CONFIG_FILE="zap.conf"
 else
     APP_URL="http://tdp-$TARGET/"
 fi
@@ -44,7 +38,9 @@ export ZAP_CONFIG=" \
 
 echo "================== OWASP ZAP tests =================="
 # Ensure the reports directory can be written to
-chmod 777 $REPORT_PATH
+chmod 777 $REPORT_DIR
+
+cd $TARGET_DIR
 
 if [ -z ${CONFIG_FILE+x} ]; then
     echo "Config file $ENVIRONMENT"
@@ -53,7 +49,7 @@ if [ -z ${CONFIG_FILE+x} ]; then
                    -m 5 \
                    -z "${ZAP_CONFIG}" \
                    -c "$CONFIG_FILE" \
-                   -r  "$REPORT_PATH"  | tee /dev/tty | grep -q "FAIL-NEW: 0"
+                   -r  "$REPORT_NAME"  | tee /dev/tty | grep -q "FAIL-NEW: 0"
 else
 
     echo "No config file"
@@ -61,7 +57,7 @@ else
                    -t $APP_URL \
                    -m 5 \
                    -z "${ZAP_CONFIG}" \
-                   -r "$REPORT_PATH" | tee /dev/tty | grep -q "FAIL-NEW: 0"
+                   -r "$REPORT_NAME" | tee /dev/tty | grep -q "FAIL-NEW: 0"
 fi
 
 
