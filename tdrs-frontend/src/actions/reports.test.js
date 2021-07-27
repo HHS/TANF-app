@@ -40,6 +40,7 @@ describe('actions/reports', () => {
 
     expect(actions[0].type).toBe(SET_FILE)
     expect(actions[0].payload).toStrictEqual({
+      file: { name: 'HELLO', type: 'text/plain' },
       fileName: 'HELLO',
       fileType: 'text/plain',
       section: 'Active Case Data',
@@ -57,10 +58,10 @@ describe('actions/reports', () => {
     const actions = store.getActions()
 
     expect(actions[0].type).toBe(SET_FILE_ERROR)
-    expect(actions[0].payload).toStrictEqual({
-      error: Error({ message: 'something went wrong' }),
-      section: 'Active Case Data',
-    })
+    expect(actions[0].payload).toHaveProperty(
+      'error',
+      TypeError("Cannot read property 'name' of undefined")
+    )
   })
 
   it('should dispatch OPEN_FILE_DIALOG when a file has been successfully downloaded', async () => {
@@ -74,7 +75,7 @@ describe('actions/reports', () => {
 
     await store.dispatch(
       download({
-        year: 2020,
+        id: 1,
         section: 'Active Case Data',
       })
     )
@@ -109,6 +110,7 @@ describe('actions/reports', () => {
 
     await store.dispatch(
       getAvailableFileList({
+        stt: { id: 10 },
         year: 2020,
       })
     )
