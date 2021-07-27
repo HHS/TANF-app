@@ -6,7 +6,7 @@ ENVIRONMENT=$2
 
 TARGET_DIR="./tdrs-$TARGET"
 REPORT_NAME=owasp_report.html
-REPORTS_DIR="tdrs-$target/reports"
+REPORTS_DIR="$TARGET_DIR/reports"
 REPORT_PATH="$REPORTS_DIR/$REPORT_NAME"
 
 cd $TARGET_DIR
