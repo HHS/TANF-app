@@ -77,8 +77,7 @@ commands:
           command: |
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
               CURRENT_FLAG=main-<<parameters.component>>
-            # TODO: Revert this to raft-tdp-main after testing
-            elif [ "$CIRCLE_BRANCH" == "devops/968-codecov-validation" ] ; then
+            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
               CURRENT_FLAG=dev-<<parameters.component>>
             fi
             echo "export CURRENT_FLAG=$CURRENT_FLAG" >> $BASH_ENV
