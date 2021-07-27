@@ -26,9 +26,9 @@ def test_permission_list_not_found(api_client, create_test_users):
 
 # @pytest.mark.django_db
 # def test_permission_list_unauthorized(api_client, create_test_users):
-#     """Test data prepper does not have access."""
+#     """Test data analyst does not have access."""
 #     # Django comes with some permissions, so we'll just test those.
-#     api_client.login(username="test__data_prepper", password="test_password")
+#     api_client.login(username="test__data_analyst", password="test_password")
 #     response = api_client.get("/v1/permissions/")
 #     assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -45,8 +45,8 @@ def test_permission_create_not_found(api_client, create_test_users):
 
 # @pytest.mark.django_db
 # def test_permission_create_unauthorized(api_client, create_test_users):
-#     """Test data prepper does not have access."""
-#     api_client.login(username="test__data_prepper", password="test_password")
+#     """Test data analyst does not have access."""
+#     api_client.login(username="test__data_analyst", password="test_password")
 #     response = api_client.post(
 #         "/v1/permissions/", {"codename": "foo", "name": "Foo", "content_type": None}
 #     )
@@ -85,9 +85,9 @@ def test_permission_update_not_found(api_client, create_test_users):
 
 # @pytest.mark.django_db
 # def test_permission_update_unauthorized(api_client, create_test_users):
-#     """Test data prepper does not have access."""
+#     """Test data analyst does not have access."""
 #     permission = Permission.objects.first()
-#     api_client.login(username="test__data_prepper", password="test_password")
+#     api_client.login(username="test__data_analyst", password="test_password")
 #     response = api_client.patch(
 #         f"/v1/permissions/{permission.id}/", {"codename": "foo"}
 #     )
@@ -105,8 +105,8 @@ def test_permission_delete_not_found(api_client, create_test_users):
 
 # @pytest.mark.django_db
 # def test_permission_delete_unauthorized(api_client, create_test_users):
-#     """Test data prepper does not have access."""
+#     """Test data analyst does not have access."""
 #     permission = Permission.objects.first()
-#     api_client.login(username="test__data_prepper", password="test_password")
+#     api_client.login(username="test__data_analyst", password="test_password")
 #     response = api_client.delete(f"/v1/permissions/{permission.id}/")
 #     assert response.status_code == status.HTTP_403_FORBIDDEN
