@@ -42,7 +42,6 @@ services:
   web:
     restart: always
     environment:
-      - DJANGO_SECRET_KEY=local
       - DB_USER=tdpuser
       - DB_PASSWORD=something_secure
       - DB_NAME=tdrs_test
