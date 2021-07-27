@@ -22,7 +22,7 @@ fi
 
 # Dynamically set DJANGO_CONFIGURATION based on Cloud.gov Space
 DJANGO_SETTINGS_MODULE="tdpservice.settings.cloudgov"
-if [ "$CG_SPACE" = "tanf-production" ]; then
+if [ "$CG_SPACE" = "tanf-prod" ]; then
   DJANGO_CONFIGURATION="Production"
 elif [ "$CG_SPACE" = "tanf-staging" ]; then
   DJANGO_CONFIGURATION="Staging"
