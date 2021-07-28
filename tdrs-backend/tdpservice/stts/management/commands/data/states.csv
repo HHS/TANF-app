@@ -1,52 +1,52 @@
-Code,Name,Region
-AL,Alabama,4
-AK,Alaska,10
-AZ,Arizona,9
-AR,Arkansas,6
-CA,California,9
-CO,Colorado,8
-CT,Connecticut,1
-DE,Delaware,3
-DC,District of Columbia,3
-FL,Florida,4
-GA,Georgia,4
-HI,Hawaii,9
-ID,Idaho,10
-IL,Illinois,5
-IN,Indiana,5
-IA,Iowa,7
-KS,Kansas,7
-KY,Kentucky,4
-LA,Louisiana,6
-ME,Maine,1
-MD,Maryland,3
-MA,Massachusetts,1
-MI,Michigan,5
-MN,Minnesota,5
-MS,Mississippi,4
-MO,Missouri,7
-MT,Montana,8
-NE,Nebraska,7
-NV,Nevada,9
-NH,New Hampshire,1
-NJ,New Jersey,2
-NM,New Mexico,6
-NY,New York,2
-NC,North Carolina,4
-ND,North Dakota,8
-OH,Ohio,5
-OK,Oklahoma,6
-OR,Oregon,10
-PA,Pennsylvania,3
-RI,Rhode Island,1
-SC,South Carolina,4
-SD,South Dakota,8
-TN,Tennessee,4
-TX,Texas,6
-UT,Utah,8
-VT,Vermont,1
-VA,Virginia,3
-WA,Washington,10
-WV,West Virginia,3
-WI,Wisconsin,5
-WY,Wyoming,8
+Code,Name,Region,STT_CODE,Sample,SSP,SSN_Encrypted,filenames
+AL,Alabama,4,01,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS01', 'Closed Case Data': 'ADS.E2J.NDM2.TS01', 'Aggregate Data': 'ADS.E2J.NDM3.TS01'}"
+AK,Alaska,10,02,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS02', 'Closed Case Data': 'ADS.E2J.NDM2.TS02', 'Aggregate Data': 'ADS.E2J.NDM3.TS02'}"
+AZ,Arizona,9,04,0,0,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS04', 'Closed Case Data': 'ADS.E2J.FTP2.TS04', 'Aggregate Data': 'ADS.E2J.FTP3.TS04'}"
+AR,Arkansas,6,05,0,0,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS05', 'Closed Case Data': 'ADS.E2J.FTP2.TS05', 'Aggregate Data': 'ADS.E2J.FTP3.TS05'}"
+CA,California,9,06,1,1,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS06', 'Closed Case Data': 'ADS.E2J.FTP2.TS06', 'Aggregate Data': 'ADS.E2J.FTP3.TS06', 'Stratum Data': 'ADS.E2J.FTP4.TS06', 'SSP Active Case Data': 'ADS.E2J.FTP1.MS06', 'SSP Closed Case Data': 'ADS.E2J.FTP2.MS06', 'SSP Aggregate Data': 'ADS.E2J.FTP3.MS06', 'SSP Stratum Data': 'ADS.E2J.FTP4.MS06'}"
+CO,Colorado,8,08,1,0,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS08', 'Closed Case Data': 'ADS.E2J.FTP2.TS08', 'Aggregate Data': 'ADS.E2J.FTP3.TS08', 'Stratum Data': 'ADS.E2J.FTP4.TS08'}"
+CT,Connecticut,1,09,1,0,1,"{'Active Case Data': 'ADS.E2J.NDM1.TS09', 'Closed Case Data': 'ADS.E2J.NDM2.TS09', 'Aggregate Data': 'ADS.E2J.NDM3.TS09', 'Stratum Data': 'ADS.E2J.NDM4.TS09'}"
+DE,Delaware,3,10,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS10', 'Closed Case Data': 'ADS.E2J.NDM2.TS10', 'Aggregate Data': 'ADS.E2J.NDM3.TS10'}"
+DC,District of Columbia,3,11,0,0,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS11', 'Closed Case Data': 'ADS.E2J.FTP2.TS11', 'Aggregate Data': 'ADS.E2J.FTP3.TS11'}"
+FL,Florida,4,12,1,0,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS12', 'Closed Case Data': 'ADS.E2J.FTP2.TS12', 'Aggregate Data': 'ADS.E2J.FTP3.TS12', 'Stratum Data': 'ADS.E2J.FTP4.TS12'}"
+GA,Georgia,4,13,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS13', 'Closed Case Data': 'ADS.E2J.NDM2.TS13', 'Aggregate Data': 'ADS.E2J.NDM3.TS13'}"
+HI,Hawaii,9,15,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS15', 'Closed Case Data': 'ADS.E2J.NDM2.TS15', 'Aggregate Data': 'ADS.E2J.NDM3.TS15'}"
+ID,Idaho,10,16,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS16', 'Closed Case Data': 'ADS.E2J.NDM2.TS16', 'Aggregate Data': 'ADS.E2J.NDM3.TS16'}"
+IL,Illinois,5,17,1,0,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS17', 'Closed Case Data': 'ADS.E2J.FTP2.TS17', 'Aggregate Data': 'ADS.E2J.FTP3.TS17', 'Stratum Data': 'ADS.E2J.FTP4.TS17'}"
+IN,Indiana,5,18,0,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS18', 'Closed Case Data': 'ADS.E2J.NDM2.TS18', 'Aggregate Data': 'ADS.E2J.NDM3.TS18', 'SSP Active Case Data': 'ADS.E2J.NDM1.MS18', 'SSP Closed Case Data': 'ADS.E2J.NDM2.MS18', 'SSP Aggregate Data': 'ADS.E2J.NDM3.MS18'}"
+IA,Iowa,7,19,0,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS19', 'Closed Case Data': 'ADS.E2J.NDM2.TS19', 'Aggregate Data': 'ADS.E2J.NDM3.TS19', 'SSP Active Case Data': 'ADS.E2J.NDM1.MS19', 'SSP Closed Case Data': 'ADS.E2J.NDM2.MS19', 'SSP Aggregate Data': 'ADS.E2J.NDM3.MS19'}"
+KS,Kansas,7,20,1,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS20', 'Closed Case Data': 'ADS.E2J.NDM2.TS20', 'Aggregate Data': 'ADS.E2J.NDM3.TS20', 'Stratum Data': 'ADS.E2J.NDM4.TS20'}"
+KY,Kentucky,4,21,0,0,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS21', 'Closed Case Data': 'ADS.E2J.FTP2.TS21', 'Aggregate Data': 'ADS.E2J.FTP3.TS21'}"
+LA,Louisiana,6,22,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS22', 'Closed Case Data': 'ADS.E2J.NDM2.TS22', 'Aggregate Data': 'ADS.E2J.NDM3.TS22'}"
+ME,Maine,1,23,0,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS23', 'Closed Case Data': 'ADS.E2J.NDM2.TS23', 'Aggregate Data': 'ADS.E2J.NDM3.TS23'}"
+MD,Maryland,3,24,1,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS24', 'Closed Case Data': 'ADS.E2J.NDM2.TS24', 'Aggregate Data': 'ADS.E2J.NDM3.TS24', 'Stratum Data': 'ADS.E2J.NDM4.TS24', 'SSP Active Case Data': 'ADS.E2J.NDM1.MS24', 'SSP Closed Case Data': 'ADS.E2J.NDM2.MS24', 'SSP Aggregate Data': 'ADS.E2J.NDM3.MS24', 'SSP Stratum Data': 'ADS.E2J.NDM4.MS24'}"
+MA,Massachusetts,1,25,1,1,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS25', 'Closed Case Data': 'ADS.E2J.FTP2.TS25', 'Aggregate Data': 'ADS.E2J.FTP3.TS25', 'Stratum Data': 'ADS.E2J.FTP4.TS25', 'SSP Active Case Data': 'ADS.E2J.FTP1.MS25', 'SSP Closed Case Data': 'ADS.E2J.FTP2.MS25', 'SSP Aggregate Data': 'ADS.E2J.FTP3.MS25', 'SSP Stratum Data': 'ADS.E2J.FTP4.MS25'}"
+MI,Michigan,5,26,1,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS26', 'Closed Case Data': 'ADS.E2J.NDM2.TS26', 'Aggregate Data': 'ADS.E2J.NDM3.TS26', 'Stratum Data': 'ADS.E2J.NDM4.TS26'}"
+MN,Minnesota,5,27,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS27', 'Closed Case Data': 'ADS.E2J.NDM2.TS27', 'Aggregate Data': 'ADS.E2J.NDM3.TS27'}"
+MS,Mississippi,4,28,1,0,1,"{'Active Case Data': 'ADS.E2J.NDM1.TS28', 'Closed Case Data': 'ADS.E2J.NDM2.TS28', 'Aggregate Data': 'ADS.E2J.NDM3.TS28', 'Stratum Data': 'ADS.E2J.NDM4.TS28'}"
+MO,Missouri,7,29,0,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS29', 'Closed Case Data': 'ADS.E2J.NDM2.TS29', 'Aggregate Data': 'ADS.E2J.NDM3.TS29', 'SSP Active Case Data': 'ADS.E2J.NDM1.MS29', 'SSP Closed Case Data': 'ADS.E2J.NDM2.MS29', 'SSP Aggregate Data': 'ADS.E2J.NDM3.MS29'}"
+MT,Montana,8,30,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS30', 'Closed Case Data': 'ADS.E2J.NDM2.TS30', 'Aggregate Data': 'ADS.E2J.NDM3.TS30'}"
+NE,Nebraska,7,31,0,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS31', 'Closed Case Data': 'ADS.E2J.NDM2.TS31', 'Aggregate Data': 'ADS.E2J.NDM3.TS31', 'SSP Active Case Data': 'ADS.E2J.NDM1.MS31', 'SSP Closed Case Data': 'ADS.E2J.NDM2.MS31', 'SSP Aggregate Data': 'ADS.E2J.NDM3.MS31'}"
+NV,Nevada,9,32,1,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS32', 'Closed Case Data': 'ADS.E2J.NDM2.TS32', 'Aggregate Data': 'ADS.E2J.NDM3.TS32', 'Stratum Data': 'ADS.E2J.NDM4.TS32'}"
+NH,New Hampshire,1,33,0,1,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS33', 'Closed Case Data': 'ADS.E2J.FTP2.TS33', 'Aggregate Data': 'ADS.E2J.FTP3.TS33', 'SSP Active Case Data': 'ADS.E2J.FTP1.MS33', 'SSP Closed Case Data': 'ADS.E2J.FTP2.MS33', 'SSP Aggregate Data': 'ADS.E2J.FTP3.MS33'}"
+NJ,New Jersey,2,34,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS34', 'Closed Case Data': 'ADS.E2J.NDM2.TS34', 'Aggregate Data': 'ADS.E2J.NDM3.TS34'}"
+NM,New Mexico,6,35,1,0,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS35', 'Closed Case Data': 'ADS.E2J.FTP2.TS35', 'Aggregate Data': 'ADS.E2J.FTP3.TS35', 'Stratum Data': 'ADS.E2J.FTP4.TS35'}"
+NY,New York,2,36,1,1,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS36', 'Closed Case Data': 'ADS.E2J.FTP2.TS36', 'Aggregate Data': 'ADS.E2J.FTP3.TS36', 'Stratum Data': 'ADS.E2J.FTP4.TS36', 'SSP Active Case Data': 'ADS.E2J.FTP1.MS36', 'SSP Closed Case Data': 'ADS.E2J.FTP2.MS36', 'SSP Aggregate Data': 'ADS.E2J.FTP3.MS36', 'SSP Stratum Data': 'ADS.E2J.FTP4.MS36'}"
+NC,North Carolina,4,37,1,0,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS37', 'Closed Case Data': 'ADS.E2J.FTP2.TS37', 'Aggregate Data': 'ADS.E2J.FTP3.TS37', 'Stratum Data': 'ADS.E2J.FTP4.TS37'}"
+ND,North Dakota,8,38,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS38', 'Closed Case Data': 'ADS.E2J.NDM2.TS38', 'Aggregate Data': 'ADS.E2J.NDM3.TS38'}"
+OH,Ohio,5,39,1,0,1,"{'Active Case Data': 'ADS.E2J.NDM1.TS39', 'Closed Case Data': 'ADS.E2J.NDM2.TS39', 'Aggregate Data': 'ADS.E2J.NDM3.TS39', 'Stratum Data': 'ADS.E2J.NDM4.TS39'}"
+OK,Oklahoma,6,40,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS40', 'Closed Case Data': 'ADS.E2J.NDM2.TS40', 'Aggregate Data': 'ADS.E2J.NDM3.TS40'}"
+OR,Oregon,10,41,0,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS41', 'Closed Case Data': 'ADS.E2J.NDM2.TS41', 'Aggregate Data': 'ADS.E2J.NDM3.TS41', 'SSP Active Case Data': 'ADS.E2J.NDM1.MS41', 'SSP Closed Case Data': 'ADS.E2J.NDM2.MS41', 'SSP Aggregate Data': 'ADS.E2J.NDM3.MS41'}"
+PA,Pennsylvania,3,42,1,0,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS42', 'Closed Case Data': 'ADS.E2J.FTP2.TS42', 'Aggregate Data': 'ADS.E2J.FTP3.TS42', 'Stratum Data': 'ADS.E2J.FTP4.TS42'}"
+RI,Rhode Island,1,44,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS44', 'Closed Case Data': 'ADS.E2J.NDM2.TS44', 'Aggregate Data': 'ADS.E2J.NDM3.TS44'}"
+SC,South Carolina,4,45,1,0,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS45', 'Closed Case Data': 'ADS.E2J.FTP2.TS45', 'Aggregate Data': 'ADS.E2J.FTP3.TS45', 'Stratum Data': 'ADS.E2J.FTP4.TS45'}"
+SD,South Dakota,8,46,1,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS46', 'Closed Case Data': 'ADS.E2J.NDM2.TS46', 'Aggregate Data': 'ADS.E2J.NDM3.TS46', 'Stratum Data': 'ADS.E2J.NDM4.TS46'}"
+TN,Tennessee,4,47,1,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS47', 'Closed Case Data': 'ADS.E2J.NDM2.TS47', 'Aggregate Data': 'ADS.E2J.NDM3.TS47', 'Stratum Data': 'ADS.E2J.NDM4.TS47'}"
+TX,Texas,6,48,1,0,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS48', 'Closed Case Data': 'ADS.E2J.FTP2.TS48', 'Aggregate Data': 'ADS.E2J.FTP3.TS48', 'Stratum Data': 'ADS.E2J.FTP4.TS48'}"
+UT,Utah,8,49,0,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS49', 'Closed Case Data': 'ADS.E2J.NDM2.TS49', 'Aggregate Data': 'ADS.E2J.NDM3.TS49'}"
+VT,Vermont,1,50,0,1,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS50', 'Closed Case Data': 'ADS.E2J.FTP2.TS50', 'Aggregate Data': 'ADS.E2J.FTP3.TS50', 'SSP Active Case Data': 'ADS.E2J.FTP1.MS50', 'SSP Closed Case Data': 'ADS.E2J.FTP2.MS50', 'SSP Aggregate Data': 'ADS.E2J.FTP3.MS50'}"
+VA,Virginia,3,51,0,1,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS51', 'Closed Case Data': 'ADS.E2J.FTP2.TS51', 'Aggregate Data': 'ADS.E2J.FTP3.TS51', 'SSP Active Case Data': 'ADS.E2J.FTP1.MS51', 'SSP Closed Case Data': 'ADS.E2J.FTP2.MS51', 'SSP Aggregate Data': 'ADS.E2J.FTP3.MS51'}"
+WA,Washington,10,53,0,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS53', 'Closed Case Data': 'ADS.E2J.NDM2.TS53', 'Aggregate Data': 'ADS.E2J.NDM3.TS53', 'SSP Active Case Data': 'ADS.E2J.NDM1.MS53', 'SSP Closed Case Data': 'ADS.E2J.NDM2.MS53', 'SSP Aggregate Data': 'ADS.E2J.NDM3.MS53'}"
+WV,West Virginia,3,54,1,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS54', 'Closed Case Data': 'ADS.E2J.NDM2.TS54', 'Aggregate Data': 'ADS.E2J.NDM3.TS54', 'Stratum Data': 'ADS.E2J.NDM4.TS54'}"
+WI,Wisconsin,5,55,0,1,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS55', 'Closed Case Data': 'ADS.E2J.NDM2.TS55', 'Aggregate Data': 'ADS.E2J.NDM3.TS55', 'SSP Active Case Data': 'ADS.E2J.NDM1.MS55', 'SSP Closed Case Data': 'ADS.E2J.NDM2.MS55', 'SSP Aggregate Data': 'ADS.E2J.NDM3.MS55'}"
+WY,Wyoming,8,56,0,0,1,"{'Active Case Data': 'ADS.E2J.NDM1.TS56', 'Closed Case Data': 'ADS.E2J.NDM2.TS56', 'Aggregate Data': 'ADS.E2J.NDM3.TS56'}"
