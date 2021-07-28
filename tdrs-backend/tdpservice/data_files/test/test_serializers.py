@@ -1,40 +1,40 @@
-"""Test report serializers."""
+"""Test data file serializers."""
 from django.core.exceptions import ValidationError
 import pytest
 
-from tdpservice.reports.errors import ImmutabilityError
-from tdpservice.reports.serializers import ReportFileSerializer
-from tdpservice.reports.validators import validate_file_extension
+from tdpservice.data_files.errors import ImmutabilityError
+from tdpservice.data_files.serializers import DataFileSerializer
+from tdpservice.data_files.validators import validate_file_extension
 
 
 @pytest.mark.django_db
-def test_serializer_with_valid_data(report_data):
+def test_serializer_with_valid_data(data_file_data):
     """If a serializer has valid data it will return a valid object."""
-    create_serializer = ReportFileSerializer(data=report_data)
+    create_serializer = DataFileSerializer(data=data_file_data)
     create_serializer.is_valid(raise_exception=True)
     assert create_serializer.is_valid() is True
 
 
 @pytest.mark.django_db
-def test_serializer_increment_create(report_data, other_report_data):
-    """Test serializer produces reports with correct version."""
-    serializer_1 = ReportFileSerializer(data=report_data)
+def test_serializer_increment_create(data_file_data, other_data_file_data):
+    """Test serializer produces data_files with correct version."""
+    serializer_1 = DataFileSerializer(data=data_file_data)
     assert serializer_1.is_valid() is True
-    report_1 = serializer_1.save()
+    data_file_1 = serializer_1.save()
 
-    serializer_2 = ReportFileSerializer(data=other_report_data)
+    serializer_2 = DataFileSerializer(data=other_data_file_data)
     assert serializer_2.is_valid() is True
-    report_2 = serializer_2.save()
+    data_file_2 = serializer_2.save()
 
-    assert report_2.version == report_1.version + 1
+    assert data_file_2.version == data_file_1.version + 1
 
 
 @pytest.mark.django_db
-def test_immutability_of_report(report):
-    """Test that report can only be created."""
+def test_immutability_of_data_file(data_file):
+    """Test that data file can only be created."""
     with pytest.raises(ImmutabilityError):
-        serializer = ReportFileSerializer(
-            report, data={
+        serializer = DataFileSerializer(
+            data_file, data={
                 "original_filename": "BadGuy.js"
             },
             partial=True
@@ -45,13 +45,13 @@ def test_immutability_of_report(report):
 
 
 @pytest.mark.django_db
-def test_created_at(report_data):
+def test_created_at(data_file_data):
     """If a serializer has valid data it will return a valid object."""
-    create_serializer = ReportFileSerializer(data=report_data)
+    create_serializer = DataFileSerializer(data=data_file_data)
     assert create_serializer.is_valid() is True
-    report = create_serializer.save()
+    data_file = create_serializer.save()
 
-    assert report.created_at
+    assert data_file.created_at
 
 
 @pytest.mark.parametrize("file_name", [
