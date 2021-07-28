@@ -60,9 +60,13 @@ describe('reducers/reports', () => {
         payload: {
           data: [
             {
-              fileName: 'test.txt',
+              id: 1,
+              extension: 'txt',
+              original_filename: 'test.txt',
               section: 'Active Case Data',
-              uuid,
+              quarter: 'Q1',
+              slug: uuid,
+              year: 2021,
             },
           ],
         },
@@ -71,7 +75,11 @@ describe('reducers/reports', () => {
       files: [
         {
           fileName: 'test.txt',
+          fileType: 'txt',
+          id: 1,
           section: 'Active Case Data',
+          quarter: 'Q1',
+          year: 2021,
           uuid,
         },
         {
@@ -108,6 +116,7 @@ describe('reducers/reports', () => {
       reducer(undefined, {
         type: SET_FILE,
         payload: {
+          file: {},
           fileName: 'Test.txt',
           fileType: 'text/plain',
           section: 'Stratum Data',
@@ -138,10 +147,11 @@ describe('reducers/reports', () => {
           uuid: null,
         },
         {
-          data: '',
           section: 'Stratum Data',
+          file: {},
           fileName: 'Test.txt',
           fileType: 'text/plain',
+          id: null,
           error: null,
           uuid,
         },
@@ -184,10 +194,11 @@ describe('reducers/reports', () => {
           uuid: null,
         },
         {
-          data: '',
           section: 'Stratum Data',
-          fileName: null,
+          file: null,
+          fileName: undefined,
           fileType: null,
+          id: null,
           error: null,
           uuid: null,
         },
@@ -232,10 +243,11 @@ describe('reducers/reports', () => {
           uuid: null,
         },
         {
-          data: '',
           section: 'Stratum Data',
-          fileName: null,
+          file: null,
+          fileName: undefined,
           fileType: null,
+          id: null,
           error: fakeError,
           uuid: null,
         },
@@ -316,10 +328,11 @@ describe('reducers/reports', () => {
           uuid: null,
         },
         {
-          data: '',
           section: 'Stratum Data',
+          file: null,
           fileName: null,
           fileType: null,
+          id: null,
           error: null,
           uuid: null,
         },
@@ -420,63 +433,26 @@ describe('reducers/reports', () => {
   })
 
   it('should be able to update files with a new value and return those files', () => {
-    const updatedFiles = getUpdatedFiles(
-      initialState,
-      'Test.txt',
-      'Active Case Data'
-    )
-
-    expect(updatedFiles).toStrictEqual([
-      {
-        data: '',
-        section: 'Active Case Data',
-        fileName: 'Test.txt',
-        fileType: null,
-        error: null,
-        uuid: null,
-      },
-      {
-        section: 'Closed Case Data',
-        fileName: null,
-        fileType: null,
-        error: null,
-        uuid: null,
-      },
-      {
-        section: 'Aggregate Data',
-        fileName: null,
-        fileType: null,
-        error: null,
-        uuid: null,
-      },
-      {
-        section: 'Stratum Data',
-        fileName: null,
-        fileType: null,
-        error: null,
-        uuid: null,
-      },
-    ])
-  })
-
-  it('should be able to update files with a new value and return those files', () => {
     const uuid = uuidv4()
 
-    const updatedFiles = getUpdatedFiles(
-      initialState,
-      'Test.txt',
-      'Active Case Data',
+    const updatedFiles = getUpdatedFiles({
+      state: initialState,
+      id: 10,
+      file: {},
+      fileName: 'Test.txt',
+      section: 'Active Case Data',
+      fileType: 'text/plain',
       uuid,
-      'text/plain'
-    )
+    })
 
     expect(updatedFiles).toStrictEqual([
       {
-        data: '',
+        file: {},
         section: 'Active Case Data',
         fileName: 'Test.txt',
         fileType: 'text/plain',
         error: null,
+        id: 10,
         uuid,
       },
       {
