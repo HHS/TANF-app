@@ -8,17 +8,48 @@ TARGET_DIR="$(pwd)/tdrs-$TARGET"
 REPORT_NAME=owasp_report.html
 REPORTS_DIR="$TARGET_DIR/reports"
 
-
-
 if [ "$ENVIRONMENT" = "nightly" ]; then
     APP_URL="https://tdp-$TARGET-staging.app.cloud.gov/"
     CONFIG_FILE="zap.conf"
 elif [ "$ENVIRONMENT" = "circle" ]; then
-    APP_URL="http://tdp-$TARGET/"
     CONFIG_FILE="zap.conf"
+    if [ "$TARGET" = "frontend" ]; then
+        APP_URL="http://tdp-frontend/"
+    elif [ "$TARGET" = "backend"]; then
+        APP_URL="http://web:8080/"
+    else
+        echo "Invalid target $TARGET"
+        exit 1
+    fi
+elif [ "$ENVIRONMENT" = "local" ]; then
+
+    # docker-compose down
+    # docker-compose up -d --build
+
+    if [ "$TARGET" = "frontend" ]; then
+        APP_URL="http://tdp-frontend/"
+    elif [ "$TARGET" = "backend" ]; then
+         APP_URL="http://web/"
+    else
+        echo "Invalid target $TARGET"
+        exit 1
+    fi
 else
-    APP_URL="http://tdp-$TARGET/"
+    echo "Invalid environment $ENVIRONMENT"
+    exit 1
+
 fi
+
+
+echo $TARGET
+echo $ENVIRONMENT
+
+echo $TARGET_DIR
+echo $REPORT_NAME
+echo $REPORTS_DIR
+
+echo $APP_URL
+echo $CONFIG_FILE
 
 if command -v sha256sum >/dev/null ; then
 	SHASUM=sha256sum
@@ -37,8 +68,8 @@ export ZAP_CONFIG=" \
 echo "================== OWASP ZAP tests =================="
 cd $TARGET_DIR
 
-docker-compose down
-docker-compose up -d --build
+# docker-compose down
+# docker-compose up -d --build
 
 # Ensure the reports directory can be written to
 chmod 777 $(pwd)/reports
@@ -66,7 +97,9 @@ fi
 # 0 exit code if the term is found and 1 otherwise.
 ZAPEXIT=$?
 
-docker-compose down --remove-orphan
+# if [ "$ENVIRONMENT" = "local" ]; then
+#     docker-compose down --remove-orphan
+# fi
 
 EXIT=0
 
@@ -76,3 +109,4 @@ if [ "$ZAPEXIT" = 1 ] ; then
 fi
 
 exit $EXIT
+cd ..
