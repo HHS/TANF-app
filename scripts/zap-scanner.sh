@@ -15,7 +15,7 @@ elif [ "$ENVIRONMENT" = "circle" ]; then
     CONFIG_FILE="zap.conf"
     if [ "$TARGET" = "frontend" ]; then
         APP_URL="http://tdp-frontend/"
-    elif [ "$TARGET" = "backend"]; then
+    elif [ "$TARGET" = "backend" ]; then
         APP_URL="http://web:8080/"
     else
         echo "Invalid target $TARGET"
