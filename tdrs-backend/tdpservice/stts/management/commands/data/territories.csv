@@ -1,7 +1,5 @@
-Code,Name,Region
-AS,American Samoa,9
-GU,Guam,9
-MP,Northern Mariana Islands,9
-PR,Puerto Rico,2
-VI,Virgin Islands,2
-US,Federal Government,
+Code,Name,Region,STT_CODE,Sample,SSP,SSN_Encrypted,filenames
+GU,Guam,9,66,0,0,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS66', 'Closed Case Data': 'ADS.E2J.FTP2.TS66', 'Aggregate Data': 'ADS.E2J.FTP3.TS66'}"
+PR,Puerto Rico,2,72,1,0,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS72', 'Closed Case Data': 'ADS.E2J.FTP2.TS72', 'Aggregate Data': 'ADS.E2J.FTP3.TS72', 'Stratum Data': 'ADS.E2J.FTP4.TS72'}"
+VI,Virgin Islands,2,78,0,0,2,"{'Active Case Data': 'ADS.E2J.NDM1.TS78', 'Closed Case Data': 'ADS.E2J.NDM2.TS78', 'Aggregate Data': 'ADS.E2J.NDM3.TS78'}"
+US,Federal Government,,,,,,
