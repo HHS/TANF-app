@@ -7,7 +7,7 @@ import tdpservice.data_files.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reports', '0005_update_section_enum'),
+        ('data_files', '0005_update_section_enum'),
     ]
 
     operations = [
