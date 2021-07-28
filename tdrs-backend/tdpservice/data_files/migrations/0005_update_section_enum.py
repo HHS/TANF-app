@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='reportfile',
+            model_name='datafile',
             name='section',
             field=models.CharField(choices=[('Active Case Data', 'Active Case Data'), ('Closed Case Data', 'Closed Case Data'), ('Aggregate Data', 'Aggregate Data'), ('Stratum Data', 'Stratum Data')], max_length=32),
         ),

@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.AddConstraint(
-            model_name="reportfile",
+            model_name="datafile",
             constraint=models.UniqueConstraint(
                 fields=("section", "version", "quarter", "year", "stt"),
                 name="constraint_name",

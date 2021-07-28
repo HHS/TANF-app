@@ -6,12 +6,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reports', '0003_reportfile_created_at'),
+        ('reports', '0003_datafile_created_at'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='reportfile',
+            model_name='datafile',
             name='year',
             field=models.IntegerField(),
         ),
