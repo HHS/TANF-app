@@ -29,7 +29,7 @@ elif [ "$ENVIRONMENT" = "local" ]; then
     if [ "$TARGET" = "frontend" ]; then
         APP_URL="http://tdp-frontend/"
     elif [ "$TARGET" = "backend" ]; then
-         APP_URL="http://web/"
+        APP_URL="http://web/"
     else
         echo "Invalid target $TARGET"
         exit 1
@@ -39,7 +39,6 @@ else
     exit 1
 
 fi
-
 
 echo $TARGET
 echo $ENVIRONMENT
@@ -68,28 +67,29 @@ export ZAP_CONFIG=" \
 echo "================== OWASP ZAP tests =================="
 cd $TARGET_DIR
 
-# docker-compose down
-# docker-compose up -d --build
+if [ "$TARGET" = "frontend" ]; then
+    docker-compose down
+    docker-compose up -d --build
+fi
 
 # Ensure the reports directory can be written to
 chmod 777 $(pwd)/reports
 
 if [ -z ${CONFIG_FILE+x} ]; then
-    echo "Config file $ENVIRONMENT"
-    docker-compose run zaproxy zap-full-scan.py \
-                   -t $APP_URL \
-                   -m 5 \
-                   -z "${ZAP_CONFIG}" \
-                   -c "$CONFIG_FILE" \
-                   -r  "$REPORT_NAME"  | tee /dev/tty | grep -q "FAIL-NEW: 0"
-else
-
     echo "No config file"
     docker-compose run zaproxy zap-full-scan.py \
                    -t $APP_URL \
                    -m 5 \
                    -z "${ZAP_CONFIG}" \
                    -r "$REPORT_NAME" | tee /dev/tty | grep -q "FAIL-NEW: 0"
+else
+    echo "Config file $ENVIRONMENT"
+    docker-compose run zaproxy zap-full-scan.py \
+                   -t $APP_URL \
+                   -m 5 \
+                   -z "${ZAP_CONFIG}" \
+                   -c "$CONFIG_FILE" \
+                   -r "$REPORT_NAME"  | tee /dev/tty | grep -q "FAIL-NEW: 0"
 fi
 
 
@@ -97,9 +97,9 @@ fi
 # 0 exit code if the term is found and 1 otherwise.
 ZAPEXIT=$?
 
-# if [ "$ENVIRONMENT" = "local" ]; then
-#     docker-compose down --remove-orphan
-# fi
+if [ "$TARGET" = "frontend" ]; then
+    docker-compose down --remove-orphan
+fi
 
 EXIT=0
 
