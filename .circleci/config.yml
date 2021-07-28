@@ -83,10 +83,7 @@ commands:
             echo "export CURRENT_FLAG=$CURRENT_FLAG" >> $BASH_ENV
       - run:
           name: Upload code coverage report if target branch
-          command: |
-            if [ -n "$CURRENT_FLAG" ]; then
-              codecov -t "$CODECOV_TOKEN" -f <<parameters.coverage-report>> -F "$CURRENT_FLAG"
-            fi
+          command: codecov -t "$CODECOV_TOKEN" -f <<parameters.coverage-report>> -F "$CURRENT_FLAG"
 
   ###
   # Deployment commands
