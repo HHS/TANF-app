@@ -15,7 +15,7 @@ def test_populating_regions_stts():
         name="Puerto Rico", type=STT.EntityType.TERRITORY
     ).exists()
     assert STT.objects.filter(
-        name="Chickasaw Nation", type=STT.EntityType.TRIBE
+        name="Santo Domingo Pueblo", type=STT.EntityType.TRIBE
     ).exists()
 
 
