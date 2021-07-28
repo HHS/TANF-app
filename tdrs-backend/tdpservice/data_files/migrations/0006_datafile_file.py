@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='reportfile',
+            model_name='datafile',
             name='file',
             field=models.FileField(blank=True, null=True, storage=tdpservice.data_files.models.DataFilesS3Storage, upload_to=tdpservice.data_files.models.get_s3_upload_path),
         ),

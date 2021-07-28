@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="reportfile",
+            model_name="datafile",
             name="slug",
             field=models.CharField(max_length=256),
         ),
