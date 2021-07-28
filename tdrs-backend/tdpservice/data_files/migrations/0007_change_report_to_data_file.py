@@ -6,6 +6,9 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
+    dependencies = [
+        ('data_files', '0006_datafile_file'),
+    ]
     operations = [
         migrations.RenameModel(
             "Report", "DataFile"
