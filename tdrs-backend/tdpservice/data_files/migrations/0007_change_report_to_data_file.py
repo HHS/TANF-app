@@ -11,6 +11,6 @@ class Migration(migrations.Migration):
     ]
     operations = [
         migrations.RenameModel(
-            "Report", "DataFile"
+            "reportfile", "datafile"
         ),
     ]
