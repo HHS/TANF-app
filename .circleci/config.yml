@@ -58,6 +58,33 @@ commands:
           name: Ensure sudo is installed, otherwise install it.
           command: ./scripts/sudo-check.sh
 
+  upload-codecov:
+    description: Uploads testing code coverage results to Codecov
+    parameters:
+      component:
+        description: The component of the application being tested, either backend or frontend.
+        type: enum
+        enum: ["backend", "frontend"]
+      coverage-report:
+        description: The path to the coverage report being uploaded.
+        type: string
+    steps:
+      - run:
+          name: Ensure Codecov uploader is installed, otherwise install it.
+          command: ./scripts/codecov-check.sh
+      - run:
+          name: Determine Codecov metric flag
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              CURRENT_FLAG=main-<<parameters.component>>
+            else
+              CURRENT_FLAG=dev-<<parameters.component>>
+            fi
+            echo "export CURRENT_FLAG=$CURRENT_FLAG" >> $BASH_ENV
+      - run:
+          name: Upload code coverage report if target branch
+          command: codecov -t "$CODECOV_TOKEN" -f <<parameters.coverage-report>> -F "$CURRENT_FLAG"
+
   ###
   # Deployment commands
   #
@@ -287,14 +314,9 @@ jobs:
           command: |
             cd tdrs-backend;
             docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
-      - run:
-          name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
-          command: |
-            if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main-backend
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
-            fi
+      - upload-codecov:
+          component: backend
+          coverage-report: ./tdrs-backend/coverage.xml
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: "cd tdrs-backend; ./zap-scanner.sh circle"
@@ -323,14 +345,9 @@ jobs:
       - run:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
-      - run:
-          name: "Upload Frontend Coverage Report to CodeCov If Target Branch"
-          command: |
-            if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main-frontend
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
-            fi
+      - upload-codecov:
+          component: frontend
+          coverage-report: ./tdrs-frontend/coverage/lcof.info
       - run:
           name: "Install lib bindings for Cypress"
           command: |
