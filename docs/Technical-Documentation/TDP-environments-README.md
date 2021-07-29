@@ -56,11 +56,11 @@ Like Staging, there is only one Production deployment. Note that developers do *
 - `clamav-rest` - Virus scanner REST service used to scan file uploads. 
 
 **Cloud.gov AWS RDS `(tanf-prod)`**
-- `tdp-db-production` - Stores application-level models (e.g. Users, Reports).
+- `tdp-db-prod` - Stores application-level models (e.g. Users, Reports).
   
 **Cloud.gov AWS S3 `(tanf-prod)`**
-- `tdp-staticfiles-production` - Stores static HTML/CSS for Django Admin.
-- `tdp-datafiles-production` - Stores the files uploaded by STTs.
+- `tdp-staticfiles-prod` - Stores static HTML/CSS for Django Admin.
+- `tdp-datafiles-prod` - Stores the files uploaded by STTs.
 - `tdp-tf-states` - Stores the Terraform state files used to create and re-recreate services infrastructure.
 
 ## External Dependencies
