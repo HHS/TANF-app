@@ -30,8 +30,8 @@ services:
     environment:
       - SERVICES=s3
       - DATA_DIR=/tmp/localstack/data
-      - AWS_BUCKET
-      - AWS_REGION_NAME
+      - AWS_BUCKET=tdp-datafiles-localstack
+      - AWS_REGION_NAME=us-gov-west-1
     ports:
       - "4566:4566"
     volumes:
@@ -49,14 +49,12 @@ services:
       - DB_HOST=postgres
       - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
       - DJANGO_CONFIGURATION=Local
-      - USE_LOCALSTACK=1
       - AV_SCAN_URL=http://clamav-rest:9000/scan
       - LOCALSTACK_HOST=localstack
+      - USE_LOCALSTACK
       - JWT_KEY
       - JWT_CERT_TEST
       - DJANGO_SU_NAME
-      - AWS_BUCKET
-      - AWS_REGION_NAME
     volumes:
       - .:/tdpapp
     image: tdp
