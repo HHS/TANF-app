@@ -1,5 +1,6 @@
 """Define configuration settings for local environment."""
 import os
+from distutils.util import strtobool
 
 from .common import Common
 
@@ -10,18 +11,32 @@ class Local(Common):
     """Define class for local configuration settings."""
 
     DEBUG = True
-    # Testing
-    INSTALLED_APPS = Common.INSTALLED_APPS
 
     # Mail
     EMAIL_HOST = "localhost"
     EMAIL_PORT = 1025
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-    if Common.USE_LOCALSTACK:
-        AWS_S3_ACCESS_KEY_ID = "test"
-        AWS_S3_SECRET_ACCESS_KEY = "test"
-        AWS_S3_ENDPOINT_URL = "http://localstack:4566"
+    # Whether to use localstack in place of a live AWS S3 environment
+    # NOTE: Defaults to True when this settings module is in use
+    USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "yes")))
+
+    if USE_LOCALSTACK:
+        # To get s3 signed URLs to work with localstack we must pass in
+        # dummy credentials of `test` per the docs
+        # https://github.com/localstack/localstack#setting-up-local-region-and-credentials-to-run-localstack  # noqa
+        localstack_dummy_key = "test"
+        AWS_S3_DATAFILES_ACCESS_KEY = localstack_dummy_key
+        AWS_S3_DATAFILES_SECRET_KEY = localstack_dummy_key
+
+        # These are hard-coded to match the environment variables passed to the
+        # localstack container in the base docker-compose
+        AWS_S3_DATAFILES_BUCKET_NAME = 'tdp-datafiles-localstack'
+        AWS_S3_DATAFILES_REGION_NAME = 'us-gov-west-1'
+
+        # If localstack is in use then we must supply the endpoint URL
+        # explicitly to prevent boto3 from auto-generating a live S3 URL
+        AWS_S3_DATAFILES_ENDPOINT = 'http://localstack:4566'
 
     Common.LOGGING['loggers']['root'] = {
         'level': 'DEBUG',

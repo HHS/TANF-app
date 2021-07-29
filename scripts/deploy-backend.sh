@@ -61,7 +61,7 @@ bind_backend_to_services() {
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}"
 
-    bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND"
+    bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
 
     cf restage "$CGHOSTNAME_BACKEND"
 }
