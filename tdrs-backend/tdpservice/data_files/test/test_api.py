@@ -102,6 +102,7 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
     def test_get_data_file_file_meta_data(self, api_client, data_file_data, user):
         """Assert the meta data the api provides is as expected."""
+        print(data_file_data)
         response = self.post_data_file_file(api_client, data_file_data)
         print(response.data)
         data_file_id = response.data['id']

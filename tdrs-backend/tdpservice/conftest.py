@@ -199,7 +199,7 @@ def infected_data_file_data(base_data_file_data, infected_data_file):
 
 
 @pytest.fixture
-def data_file():
+def data_file_instance():
     """Return a data file."""
     return DataFileFactory.create()
 

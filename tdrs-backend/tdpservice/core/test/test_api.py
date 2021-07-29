@@ -55,26 +55,26 @@ def test_log_output(api_client, ofa_admin, caplog):
 
 
 @pytest.mark.django_db
-def test_log_entry_creation(api_client, data_file):
+def test_log_entry_creation(api_client, data_file_instance):
     """Test endpoint's creation of LogEntry objects."""
-    api_client.login(username=data_file.user.username, password="test_password")
+    api_client.login(username=data_file_instance.user.username, password="test_password")
     data = {
-        "original_filename": data_file.original_filename,
-        "quarter": data_file.quarter,
-        "slug": data_file.slug,
-        "user": data_file.user.username,
-        "stt": data_file.stt.id,
-        "year": data_file.year,
-        "section": data_file.section,
+        "original_filename": data_file_instance.original_filename,
+        "quarter": data_file_instance.quarter,
+        "slug": data_file_instance.slug,
+        "user": data_file_instance.user.username,
+        "stt": data_file_instance.stt.id,
+        "year": data_file_instance.year,
+        "section": data_file_instance.section,
         "timestamp": "2021-04-26T18:32:43.330Z",
         "type": "alert",
         "message": "User submitted file(s)",
-        "files": [data_file.pk]
+        "files": [data_file_instance.pk]
     }
 
     api_client.post("/v1/logs/", data)
 
     assert LogEntry.objects.filter(
         content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-        object_id=data_file.pk
+        object_id=data_file_instance.pk
     ).exists()

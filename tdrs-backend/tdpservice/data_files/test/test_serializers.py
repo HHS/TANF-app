@@ -30,11 +30,11 @@ def test_serializer_increment_create(data_file_data, other_data_file_data):
 
 
 @pytest.mark.django_db
-def test_immutability_of_data_file(data_file):
+def test_immutability_of_data_file(data_file_instance):
     """Test that data file can only be created."""
     with pytest.raises(ImmutabilityError):
         serializer = DataFileSerializer(
-            data_file, data={
+            data_file_instance, data={
                 "original_filename": "BadGuy.js"
             },
             partial=True
