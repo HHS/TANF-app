@@ -74,6 +74,7 @@ class DataFile(File):
     class Meta:
         """Metadata."""
 
+        db_table = "data_files_datafile"
         constraints = [
             models.UniqueConstraint(
                 fields=("section", "version", "quarter", "year", "stt"),

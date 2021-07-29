@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
+    replaces = [('reports','0002_auto_20201215_1932')]
     dependencies = [
         ("data_files", "0001_initial"),
     ]

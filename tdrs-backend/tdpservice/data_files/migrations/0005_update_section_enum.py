@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
+    replaces = [('reports','0005_update_section_enum')]
     dependencies = [
         ('data_files', '0004_auto_20210305_2040'),
     ]

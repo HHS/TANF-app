@@ -6,6 +6,7 @@ import django.utils.timezone
 
 class Migration(migrations.Migration):
 
+    replaces = [('reports','0003_reportfile_created_at')]
     dependencies = [
         ('data_files', '0002_auto_20201215_1932'),
     ]
