@@ -58,6 +58,12 @@ commands:
           name: Ensure sudo is installed, otherwise install it.
           command: ./scripts/sudo-check.sh
 
+  git-secrets-check:
+    steps:
+      - run:
+          name: Scan repository for committed secrets.
+          command: ./scripts/git-secrets-check.sh
+
   ###
   # Deployment commands
   #
@@ -275,6 +281,7 @@ jobs:
     branches:
     steps:
       - checkout
+      - git-secrets-check
       - docker-compose-check
       - run:
           name: "Test: Build and Spin-up Django API Service"
