@@ -457,7 +457,7 @@ workflows:
       - prod-owasp-scan
     triggers:
       - schedule:
-          cron: "47 18 * * *"
+          cron: "0 0 * * *"
           filters:
             branches:
               only:
