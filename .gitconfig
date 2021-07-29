@@ -7,5 +7,6 @@
 	allowed = [A-Z]+_KEY=..echo \".{S3_CREDENTIALS}\" [|] jq -r .+
 	allowed = ./tdrs-backend/.env.example:.*
 	allowed = .git/config:.*
+	allowed = .gitconfig:.*
 	allowed = .*DJANGO_SECRET_KEY=local
 
