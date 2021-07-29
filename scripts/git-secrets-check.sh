@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if command -v git secrets /dev/null 2>&1; then
+if command -v git-secrets /dev/null 2>&1; then
     echo The command git secrets is available
 else
     echo The command git secrets is not available, installing...
@@ -28,5 +28,4 @@ fi
 # ensure we have correct configs in place
 [ -f ../.gitconfig ]
 cat ../.gitconfig >> .git/config 
-
 git-secrets --scan -r ../
