@@ -11,4 +11,9 @@ fi
 # ensure we have correct configs in place
 [ -f ../.gitconfig ]
 cat ../.gitconfig >> .git/config 
+echo "git-secrets-check.sh: Scanning repo ..."
 /tmp/git-secrets/git-secrets --scan -r ../
+
+# if there are issues, they will be listed then script will abort here
+# else
+echo "git-secrets-check.sh: No issues found"
