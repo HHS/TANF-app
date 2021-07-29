@@ -29,4 +29,4 @@ fi
 [ -f ../.gitconfig ]
 cat ../.gitconfig >> .git/config 
 
-git secrets --scan -r ../
+git-secrets --scan -r ../
