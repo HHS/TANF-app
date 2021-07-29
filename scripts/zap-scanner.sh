@@ -40,22 +40,6 @@ else
 
 fi
 
-echo $TARGET
-echo $ENVIRONMENT
-
-echo $TARGET_DIR
-echo $REPORT_NAME
-echo $REPORTS_DIR
-
-echo $APP_URL
-echo $CONFIG_FILE
-
-if command -v sha256sum >/dev/null ; then
-	SHASUM=sha256sum
-elif command -v shasum >/dev/null ; then
-	SHASUM=shasum
-fi
-
 
 # do an OWASP ZAP scan
 export ZAP_CONFIG=" \
