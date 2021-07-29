@@ -57,7 +57,10 @@ def test_log_output(api_client, ofa_admin, caplog):
 @pytest.mark.django_db
 def test_log_entry_creation(api_client, data_file_instance):
     """Test endpoint's creation of LogEntry objects."""
-    api_client.login(username=data_file_instance.user.username, password="test_password")
+    api_client.login(
+        username=data_file_instance.user.username,
+        password="test_password"
+    )
     data = {
         "original_filename": data_file_instance.original_filename,
         "quarter": data_file_instance.quarter,

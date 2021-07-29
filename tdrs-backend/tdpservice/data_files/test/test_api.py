@@ -164,14 +164,18 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
 
-    def test_data_files_data_analyst_not_allowed(self, api_client, data_file_data, user):
+    def test_data_files_data_analyst_not_allowed(
+        self, api_client, data_file_data, user
+    ):
         """Test that Data Analysts can't add data_files to STTs other than their own."""
         data_file_data['stt'] = data_file_data['stt'] + 1
 
         response = self.post_data_file_file(api_client, data_file_data)
         self.assert_data_file_rejected(response)
 
-    def test_download_data_file_file_for_own_stt(self, api_client, data_file_data, user):
+    def test_download_data_file_file_for_own_stt(
+        self, api_client, data_file_data, user
+    ):
         """Test that the file is downloaded as expected for a Data Analyst's set STT."""
         response = self.post_data_file_file(api_client, data_file_data)
         data_file_id = response.data['id']
@@ -307,7 +311,9 @@ def test_list_ofa_admin_data_file_years_positional_stt(api_client, ofa_admin, st
 
 
 @pytest.mark.django_db
-def test_list_ofa_admin_data_file_years_no_self_stt(api_client, ofa_admin_stt_user, stt):
+def test_list_ofa_admin_data_file_years_no_self_stt(
+    api_client, ofa_admin_stt_user, stt
+):
     """Test OFA Admin with no stt assigned can view list of years."""
     user = ofa_admin_stt_user
 

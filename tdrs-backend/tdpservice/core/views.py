@@ -36,7 +36,9 @@ def write_logs(request):
             # Remove the list of other files that were uploaded.
             single_data_file_log.pop('files', None)
             # Transform into newline-delimited string for the LogEntryDetails view.
-            formatted = [f'{key}: {value}' for key, value in single_data_file_log.items()]
+            formatted = [
+                f'{key}: {value}' for key, value in single_data_file_log.items()
+            ]
             object_repr = '\n'.join(formatted)
 
             # @TODO: Fine tune the action flag to support CHANGE actions,
