@@ -37,7 +37,7 @@ To maintain our gitflow:
 ## Development Dependencies
 This project defines a number of "Development Dependencies" which are not installed in production-esque environments (ie. deployed in Cloud.gov) but are instead only used for supporting operations during local development and automated unit testing in CI/CD.
 
-This dependencies will still be kept up to date by Dependabot but needn't follow the same review flow as updates to packages we actively use within the codebase outside of development/testing. In those cases, as long as the tests all pass on the branch opened to update the dev dependency it may be merged directly into `raft-tdp-main`.
+These dependencies will still be kept up to date by Dependabot but needn't follow the same review flow as updates to packages we actively use within the codebase outside of development/testing. In those cases, as long as the tests all pass on the branch opened to update the dev dependency it may be merged directly into `raft-tdp-main`.
 
 Dev dependencies are listed in two locations in this project:
 * [package.json](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/tdrs-frontend/package.json#L66) as `devDependencies` for the React UI
