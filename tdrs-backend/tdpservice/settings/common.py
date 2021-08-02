@@ -14,52 +14,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #       settings declarations in the class below. This will allow us to safely
 #       reference environment variables across the app as we will no longer
 #       need to rely on calling os.environ directly.
-os.environ.setdefault(
-    "ACR_VALUES",
-    "http://idmanagement.gov/ns/assurance/ial/1"
-)
 os.environ.setdefault("BASE_URL", "http://localhost:8080/v1")
-os.environ.setdefault(
-    "CLIENT_ASSERTION_TYPE",
-    "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-)
-os.environ.setdefault(
-    "CLIENT_ID",
-    "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev"
-)
 os.environ.setdefault("FRONTEND_BASE_URL", "http://localhost:3000")
-os.environ.setdefault(
-    "MOCK_TOKEN",
-    "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1Nzkt"
-    "YjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ292IiwiY"
-    "WNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xIiwibm9uY2"
-    "UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InVybjpnb3Y6Z3N"
-    "hOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4ZE5OVjVsaXNRQm0x"
-    "anRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJjX2hhc2giOiJoWGpxN"
-    "2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpYXQiOjE0ODk2OTQxOTgsIm"
-    "5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNdlc3mEm7fFxb8ZADdRvYmDMnD"
-    "PuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn00Cuq_Bpbn7NRdf3ktxkBrpqyzIA"
-    "rLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caRYePBLbZJFl0Ri25bqXugguAYTyX9HA"
-    "CaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYdhzwj777rkgSg555GoBDZy3MetapbT0csS"
-    "WqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg"
-)
-os.environ.setdefault(
-    "OIDC_OP_AUTHORIZATION_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/openid_connect/authorize"
-)
-os.environ.setdefault("OIDC_OP_ISSUER", "https://idp.int.identitysandbox.gov/")
-os.environ.setdefault(
-    "OIDC_OP_JWKS_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/api/openid_connect/certs"
-)
-os.environ.setdefault(
-    "OIDC_OP_LOGOUT_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/openid_connect/logout"
-)
-os.environ.setdefault(
-    "OIDC_OP_TOKEN_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/api/openid_connect/token"
-)
 
 
 class Common(Configuration):
@@ -328,3 +284,59 @@ class Common(Configuration):
 
     # The number of seconds to wait for socket response from clamav-rest
     AV_SCAN_TIMEOUT = os.getenv('AV_SCAN_TIMEOUT', 30)
+
+    ###
+    # Authentication Provider Settings
+    #
+    LOGIN_GOV_ACR_VALUES = os.getenv(
+        'ACR_VALUES',
+        'http://idmanagement.gov/ns/assurance/ial/1'
+    )
+    LOGIN_GOV_AUTHORIZATION_ENDPOINT = None
+    LOGIN_GOV_CLIENT_ASSERTION_TYPE = os.getenv(
+        'CLIENT_ASSERTION_TYPE',
+        'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+    )
+    LOGIN_GOV_CLIENT_ID = os.getenv(
+        'CLIENT_ID',
+        'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev'
+    )
+    LOGIN_GOV_ISSUER = None
+    LOGIN_GOV_JWKS_ENDPOINT = None
+    LOGIN_GOV_LOGOUT_ENDPOINT = None
+    LOGIN_GOV_MOCK_TOKEN = os.getenv(
+        'MOCK_TOKEN',
+        'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1'
+        'NzktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ2'
+        '92IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8x'
+        'Iiwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6In'
+        'Vybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4'
+        'ZE5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLC'
+        'JjX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJp'
+        'YXQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF2LJSG1fE9thn27PwmDlNd'
+        'lc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn0'
+        '0Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caR'
+        'YePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYd'
+        'hzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4'
+        'kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg'
+    )
+    LOGIN_GOV_TOKEN_ENDPOINT = None
+
+
+os.environ.setdefault(
+    "OIDC_OP_AUTHORIZATION_ENDPOINT",
+    "https://idp.int.identitysandbox.gov/openid_connect/authorize"
+)
+os.environ.setdefault("OIDC_OP_ISSUER", "https://idp.int.identitysandbox.gov/")
+os.environ.setdefault(
+    "OIDC_OP_JWKS_ENDPOINT",
+    "https://idp.int.identitysandbox.gov/api/openid_connect/certs"
+)
+os.environ.setdefault(
+    "OIDC_OP_LOGOUT_ENDPOINT",
+    "https://idp.int.identitysandbox.gov/openid_connect/logout"
+)
+os.environ.setdefault(
+    "OIDC_OP_TOKEN_ENDPOINT",
+    "https://idp.int.identitysandbox.gov/api/openid_connect/token"
+)

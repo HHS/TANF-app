@@ -2,6 +2,7 @@
 import logging
 import os
 
+from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect
@@ -50,7 +51,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 id_token,
                 key=cert_str,
                 issuer=os.environ["OIDC_OP_ISSUER"],
-                audience=os.environ["CLIENT_ID"],
+                audience=settings.LOGIN_GOV_CLIENT_ID,
                 algorithms=["RS256"],
                 subject=None,
                 access_token=None,

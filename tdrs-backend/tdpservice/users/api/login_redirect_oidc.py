@@ -5,6 +5,7 @@ import secrets
 import time
 from urllib.parse import quote_plus, urlencode
 
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
@@ -32,8 +33,8 @@ class LoginRedirectOIDC(RedirectView):
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
         auth_params = {
-            "acr_values": os.environ["ACR_VALUES"],
-            "client_id": os.environ["CLIENT_ID"],
+            "acr_values": settings.LOGIN_GOV_ACR_VALUES,
+            "client_id": settings.LOGIN_GOV_CLIENT_ID,
             "nonce": nonce,
             "prompt": "select_account",
             "redirect_uri": os.environ["BASE_URL"] + "/login",

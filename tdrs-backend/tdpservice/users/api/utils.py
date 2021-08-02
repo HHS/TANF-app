@@ -70,9 +70,9 @@ def generate_client_assertion():
         pass
 
     payload = {
-        "iss": os.environ["CLIENT_ID"],
+        "iss": settings.LOGIN_GOV_CLIENT_ID,
         "aud": os.environ["OIDC_OP_TOKEN_ENDPOINT"],
-        "sub": os.environ["CLIENT_ID"],
+        "sub": settings.LOGIN_GOV_CLIENT_ID,
         "jti": secrets.token_urlsafe(32)[:32],
         # set token expiration to be 1 minute from current time
         "exp": int(round(time.time() * 1000)) + 60000,
@@ -94,7 +94,7 @@ def generate_token_endpoint_parameters(code):
     client_assertion = generate_client_assertion()
     params = {
         "client_assertion": client_assertion,
-        "client_assertion_type": os.environ["CLIENT_ASSERTION_TYPE"],
+        "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE,
         "code": code,
         "grant_type": "authorization_code",
     }

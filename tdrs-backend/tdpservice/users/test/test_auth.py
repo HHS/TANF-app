@@ -7,6 +7,7 @@ import pytest
 import jwt
 import datetime
 from rest_framework import status
+from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from rest_framework.test import APIRequestFactory
 from ..api.login import TokenAuthorizationOIDC
@@ -136,7 +137,7 @@ def test_login_with_valid_state_and_code(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -174,7 +175,7 @@ def test_login_with_existing_token(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -213,7 +214,7 @@ def test_login_with_general_exception(mocker):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -264,7 +265,7 @@ def test_login_with_inactive_user(mocker, api_client, inactive_user):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -307,7 +308,7 @@ def test_login_with_existing_user(mocker, api_client, user):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -347,7 +348,7 @@ def test_login_with_old_email(mocker, api_client, user):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -392,7 +393,7 @@ def test_login_with_initial_superuser(mocker, api_client, user):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -433,7 +434,7 @@ def test_login_with_expired_token(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     mock_decode.side_effect = jwt.ExpiredSignatureError()
@@ -491,7 +492,7 @@ def test_login_with_bad_nonce_and_state(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -529,7 +530,7 @@ def test_login_with_email_unverified(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": settings.LOGIN_GOV_MOCK_TOKEN,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
