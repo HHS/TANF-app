@@ -11,8 +11,8 @@ SOURCE_APP_GUID=$(cf app "$SOURCE_APP" --guid)
 SOURCE_APP_ENV=$(cf curl "/v2/apps/$SOURCE_APP_GUID/env")
 ENVIRONMENT_JSON=$(printf '%s\n' "$SOURCE_APP_ENV" | jq -r '.environment_json')
 
-JWT_KEY=$(echo "$ENVIRONMENT_JSON" | jq -r '.JWT_KEY')
-JWT_CERT=$(echo "$ENVIRONMENT_JSON" | jq -r '.JWT_CERT')
+JWT_KEY=$(printf '%s\n' "$ENVIRONMENT_JSON" | jq -r '.JWT_KEY')
+JWT_CERT=$(printf '%s\n' "$ENVIRONMENT_JSON" | jq -r '.JWT_CERT')
 
 echo "JWT_KEY: $JWT_KEY"
 echo "JWT_CERT: $JWT_CERT"
