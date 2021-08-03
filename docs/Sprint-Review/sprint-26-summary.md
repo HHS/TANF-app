@@ -68,7 +68,7 @@
 - As a TDP user, I want to see a picture that better represents the program [#640](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/640)
 
 
-## Agenda for Sprint 25 Demo 
+## Agenda for Sprint 26 Demo 
 - As a dev, I want an automated tool to prevent me from committing secret keys to the repo [#965](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/965) Andrew
 - [DevOps] Generate a new, random DJANGO_SECRET_KEY on initial Cloud.gov deployments or rebuilds [#967](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/967) - Andrew/John
 - (From Last Sprint) Perform scheduled OWASP scans against deployed site(s)[#1032](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1032)- Aaron
