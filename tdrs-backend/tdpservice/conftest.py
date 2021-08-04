@@ -45,7 +45,7 @@ def stt_user():
 
 @pytest.fixture
 def ofa_admin_stt_user():
-    """Return an admin user without an STT for Data DataFile tests."""
+    """Return an admin user without an STT for Data File tests."""
     return AdminSTTUserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
 
 
