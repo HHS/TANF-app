@@ -691,11 +691,11 @@
         },
         "awscli": {
             "hashes": [
-                "sha256:34cf8504f251c7ae9a2a4f8b374703480a6b735c73ecb29b6ff44c217831d4aa",
-                "sha256:5786c8ea93a20cdff012a50e6cdb4275b7c363fea4c1ee985c9f45a878f5af96"
+                "sha256:004e60fe009544a022ef0bfa51d6ae2d9eed11a9ae562e388eb05ef9216602d0",
+                "sha256:b3e38404d340fb355ef4025f5bc4ff28772c11be716d6b71b69eebb9488d44b3"
             ],
             "index": "pypi",
-            "version": "==1.20.3"
+            "version": "==1.20.9"
         },
         "awscli-local": {
             "hashes": [
@@ -800,7 +800,7 @@
                 "sha256:f0b278ce10936db1a37e6954e15a3730bea96a0997c26d7fee88e6c396c2086d",
                 "sha256:f11642dddbb0253cc8853254301b51390ba0081750a8ac03f20ea8103f0c56b6"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
             "version": "==5.5"
         },
         "docutils": {
@@ -822,11 +822,11 @@
         },
         "faker": {
             "hashes": [
-                "sha256:9ac6b39b9618f55be6b8b45089e624564469a035cc845c69ce990332ce3663f4",
-                "sha256:a665e6e2e9087ec9ad4ebcd2f09acd031b44193ee93401817001b6557c6502b4"
+                "sha256:771b21ab55924867ac865f4b0c2f547c200172293b1056be16289584ef1215cb",
+                "sha256:f27a2a5c34042752f9d5fea2a9667aed5265d7d7bdd5ce83bc03b2f8a540d148"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==8.10.1"
+            "version": "==8.10.3"
         },
         "flake8": {
             "hashes": [
@@ -891,9 +891,9 @@
         },
         "localstack-client": {
             "hashes": [
-                "sha256:78d0544cc9496dd29dffe7f42092b157b2b72eea194a74f99ac2d050ab8c6b95"
+                "sha256:1517964f5d3746220abf2292b186050bdf28e1643072776a1810fb836033b3d9"
             ],
-            "version": "==1.21"
+            "version": "==1.22"
         },
         "markdown": {
             "hashes": [
@@ -1151,7 +1151,7 @@
                 "sha256:78f9a9bf4e7be0c5ded4583326e7461e3a3c5aae24073648b4bdfa797d78c9d2",
                 "sha256:9d689e6ca1b3038bc82bf8d23e944b6b6037bc02301a574935b2dd946e0353b9"
             ],
-            "markers": "python_version >= '3.5' and python_version < '4'",
+            "markers": "python_version >= '3.5' and python_version < '4.0'",
             "version": "==4.7.2"
         },
         "s3transfer": {

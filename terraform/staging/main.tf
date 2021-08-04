@@ -65,13 +65,13 @@ data "cloudfoundry_service" "s3" {
 resource "cloudfoundry_service_instance" "staticfiles" {
   name             = "tdp-staticfiles-staging"
   space            = data.cloudfoundry_space.space.id
-  service_plan     = data.cloudfoundry_service.s3.service_plans["basic"]
+  service_plan     = data.cloudfoundry_service.s3.service_plans["basic-public-sandbox"]
   recursive_delete = true
 }
 
 resource "cloudfoundry_service_instance" "datafiles" {
   name             = "tdp-datafiles-staging"
   space            = data.cloudfoundry_space.space.id
-  service_plan     = data.cloudfoundry_service.s3.service_plans["basic"]
+  service_plan     = data.cloudfoundry_service.s3.service_plans["basic-sandbox"]
   recursive_delete = true
 }
