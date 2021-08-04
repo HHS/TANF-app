@@ -37,7 +37,7 @@
   "scripts": {
     "start": "react-scripts start",
     "start:ci": "CI=true HOST=localhost BROWSER=none yarn react-scripts start",
-    "build": "SASS_PATH=node_modules:src react-scripts build",
+    "build": "SASS_PATH=node_modules:src INLINE_RUNTIME_CHUNK=false react-scripts build",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:run:ci": "concurrently -k -s first 'yarn start:ci' 'wait-on http://localhost:3000/ && yarn cy:run'",
