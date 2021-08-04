@@ -1,11 +1,10 @@
 """Define data file models."""
 import os
 
-from django.conf import settings
 from django.db import models
 from django.db.models import Max
-from storages.backends.s3boto3 import S3Boto3Storage
 
+from tdpservice.backends import DataFilesS3Storage
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
@@ -16,16 +15,6 @@ def get_s3_upload_path(instance, filename):
         f'data_files/{instance.stt.id}/{instance.quarter}',
         filename
     )
-
-
-class DataFilesS3Storage(S3Boto3Storage):
-    """An S3 backed storage provider for user uploaded Data Files.
-
-    This class is used instead of the built-in to allow specifying a distinct
-    bucket from the one used to store Django Admin static files.
-    """
-
-    bucket_name = settings.DATA_FILES_AWS_STORAGE_BUCKET_NAME
 
 
 # The Data File model was starting to explode, and I think that keeping this logic
@@ -74,7 +63,6 @@ class DataFile(File):
     class Meta:
         """Metadata."""
 
-        db_table = "data_files_datafile"
         constraints = [
             models.UniqueConstraint(
                 fields=("section", "version", "quarter", "year", "stt"),
@@ -138,7 +126,7 @@ class DataFile(File):
 
     @classmethod
     def find_latest_version(self, year, quarter, section, stt):
-        """Locate the latest version of a data_file."""
+        """Locate the latest version of a data file."""
         version = self.find_latest_version_number(year, quarter, section, stt)
 
         return self.objects.filter(
