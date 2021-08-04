@@ -1,117 +1,76 @@
-Name,Region,Code,State
-Penobscot Nation,1,ME,Maine
-Seneca Nation of New York,2,NY,New York
-Mississippi Band of Choctaw Indians,4,MS,Mississippi
-Eastern Band of Cherokee Indians,4,NC,North Carolina
-Sault Ste. Marie Tribe of Chippewa Indians,5,MI,Michigan
-Leech Lake Band of Ojibwe,5,MN,Minnesota
-Mille Lacs Band of Ojibwe,5,MN,Minnesota
-Minnesota Chippewa Tribe,5,MN,Minnesota
-Red Lake Band of Chippewa Indians,5,MN,Minnesota
-White Earth Band of Chippewa Indians,5,MN,Minnesota
-Bad River Band of Lake Superior Tribe of Chippewa,5,WI,Wisconsin
-Forest County Potawatomi Community,5,WI,Wisconsin
-Ho-Chunk Nation,5,WI,Wisconsin
-Lac Courte Oreilles Band of Lake Superior Ojibwe,5,WI,Wisconsin
-Lac du Flambeau Band of Lake Superior Chippewa Indians,5,WI,Wisconsin
-Menominee Indian Tribe,5,WI,Wisconsin
-Oneida Tribe,5,WI,Wisconsin
-Red Cliff Band of Lake Superior Chippewa Indians,5,WI,Wisconsin
-Sokaogon Chippewa Community,5,WI,Wisconsin
-Stockbridge-Munsee Community,5,WI,Wisconsin
-Pueblo of Zuni,6,NM,New Mexico
-Mescalero Apache,6,NM,New Mexico
-Santo Domingo Tribe,6,NM,New Mexico
-Cheyenne and Arapaho Tribes of Oklahoma,6,OK,Oklahoma
-Chickasaw Nation,6,OK,Oklahoma
-Comanche Nation,6,OK,Oklahoma
-"Inter-Tribal Council, Inc.",6,OK,Oklahoma
-Muscogee Creek Nation,6,OK,Oklahoma
-"Osage Nation of Oklahoma",6,OK,Oklahoma
-Sac and Fox Nation,6,OK,Oklahoma
-Kickapoo Tribe in Kansas,7,KS,Kansas
-Prairie Band Potawatomi Nation,7,KS,Kansas
-Omaha Tribe of Nebraska,7,NE,Nebraska
-Santee Sioux Nation,7,NE,Nebraska
-Winnebago Tribe,7,NE,Nebraska
-Assiniboine and Sioux Tribes of the Fort Peck Reservation,8,MT,Montana
-Blackfeet Tribe,8,MT,Montana
-Chippewa-Cree Indians of the Rocky Boy's Reservation,8,MT,Montana
-Confederated Salish & Kootenai Tribes of the Flathead Reservation,8,MT,Montana
-Fort Belknap Indian Community Council,8,MT,Montana
-Northern Cheyenne Tribe,8,MT,Montana
-Crow Tribe of Montana,8,MT,Montana
-Spirit Lake Sioux Tribe,8,ND,North Dakota
-Standing Rock Sioux Tribe,8,ND,North Dakota
-Three Affiliated Tribes,8,ND,North Dakota
-Turtle Mountain Band of Chippewa Indians,8,ND,North Dakota
-Cheyenne River Sioux Tribe,8,SD,South Dakota
-Lower Brule Sioux Tribe,8,SD,South Dakota
-Oglala Sioux Tribe,8,SD,South Dakota
-Rosebud Sioux Tribe,8,SD,South Dakota
-Sisseton - Wahpeton Oyate,8,SD,South Dakota
-Eastern Shoshone Tribe of the Wind River Reservation,8,WY,Wyoming
-Northern Arapaho Tribe of the Wind River Indian Reservation,8,WY,Wyoming
-Cocopah Indian Tribe,9,AZ,Arizona
-Gila River Indian Community,9,AZ,Arizona
-Hopi Tribe,9,AZ,Arizona
-Hualapai Indian Tribe,9,AZ,Arizona
-Navajo Nation,9,AZ,Arizona
-Pascua Yaqui,9,AZ,Arizona
-Salt River - Pima Maricopa Indian Community,9,AZ,Arizona
-San Carlos Apache Tribe,9,AZ,Arizona
-Tohono O'odham Nation,9,AZ,Arizona
-White Mountain Apache Tribe,9,AZ,Arizona
-California Indian Manpower Consortium,9,CA,California
-Graton Rancheria,9,CA,California
-Hoopa Valley,9,CA,California
-Karuk Tribe,9,CA,California
-Morongo Band,9,CA,California
-North Fork Rancheria,9,CA,California
-Owens Valley Career Development Center,9,CA,California
-Pechanga,9,CA,California
-Robinson Rancheria/CTTP,9,CA,California
-Round Valley Indian Tribes,9,CA,California
-Scotts Valley,9,CA,California
-Shingle Springs Band of Miwok Indians Shingle Springs Rancheria,9,CA,California
-Soboba Band of Luiseno Indians,9,CA,California
-Southern California Tribal Chairmen's Association,9,CA,California
-Torres Martinez,9,CA,California
-Yurok Tribe,9,CA,California
-Tuolumne Band of Me-Wuk Indians,9,CA,California
-Shoshone- Paiute Tribes of the Duck Valley Reservation,9,NV,Nevada
-Washoe Tribe,9,NV,Nevada
-"Aleutian/Pribilof Islands Association, Inc.",10,AK,Alaska
-Association of Village Council Presidents,10,AK,Alaska
-Bristol Bay Native Association,10,AK,Alaska
-Central Council of the Tlingit and Haida Indian Tribes,10,AK,Alaska
-Chugachmiut,10,AK,Alaska
-"Cook Inlet Tribal Council, Inc.",10,AK,Alaska
-"Kawerak, Inc.",10,AK,Alaska
-Maniilaq Association,10,AK,Alaska
-Metlakatla Indian Community,10,AK,Alaska
-Tanana Chiefs Conference,10,AK,Alaska
-Kodiak Area Native Assoc.,10,AK,Alaska
-Coeur d'Alene,10,ID,Idaho
-Nez Perce,10,ID,Idaho
-Shoshone - Bannock,10,ID,Idaho
-Confederated Tribes of the Grand Ronde Community,10,OR,Oregon
-Confederated Tribes of the Siletz Reservation,10,OR,Oregon
-Klamath Tribes,10,OR,Oregon
-Confederated Tribes and Bands of the Yakama Nation,10,WA,Washington
-Confederated Tribes of the Colville Reservation,10,WA,Washington
-Lower Elwha Tribe,10,WA,Washington
-Lummi Nation,10,WA,Washington
-Makah Indian Tribe,10,WA,Washington
-Nooksack Indian Tribe,10,WA,Washington
-Port Gamble S'Klallam,10,WA,Washington
-Puyallup Tribe,10,WA,Washington
-Quileute Indian Tribe,10,WA,Washington
-Quinault Indian Nation,10,WA,Washington
-Sauk-Suiattle Indian Tribe,10,WA,Washington
-South Puget Inter-Tribal Planning Agency,10,WA,Washington
-Spokane,10,WA,Washington
-Stillaguamish Tribe,10,WA,Washington
-Swinomish Indian Tribal Community ,10,WA,Washington
-Tulalip Tribes,10,WA,Washington
-Upper Skagit Tribe,10,WA,Washington
+Code,Name,Region,STT_CODE,Sample,SSP,SSN_Encrypted,filenames
+AK,Association of Village Council Presidents,10,805,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS805', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS805', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS805'}"
+WI,Bad River Band of Lake Superior Tribe of Chippewa Indians  ,5,012,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS012', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS012', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS012'}"
+MT,Blackfeet Nation ,8,020,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS020', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS020', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS020'}"
+AK,Bristol Bay Native Association,10,808,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS808', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS808', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS808'}"
+AK,Central Council of Tlingit and Haida Indian Tribes of Alaska  ,10,811,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS811', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS811', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS811'}"
+MT,Chippewa-Cree Indians of the Rocky Boy's Reservation,8,043,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS043', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS043', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS043'}"
+ID,Coeur d'Alene Tribe ,10,050,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS050', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS050', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS050'}"
+MT,Confederated Salish & Kootenai Tribes of the Flathead Reservation,8,054,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS054', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS054', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS054'}"
+WA,Confederated Tribes of the Colville Reservation,10,056,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS056', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS056', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS056'}"
+OR,Confederated Tribes of Siletz Indians ,10,060,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS060', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS060', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS060'}"
+AK,"Cook Inlet Tribal Council, Inc.",10,807,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS807', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS807', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS807'}"
+NC,Eastern Band of Cherokee Indians,4,078,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.NDM1.TS078', 'Tribal Closed Case Data': 'ADS.E2J.NDM2.TS078', 'Tribal Aggregate Data': 'ADS.E2J.NDM3.TS078'}"
+WY,Eastern Shoshone Tribe of the Wind River Reservation,8,272,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS272', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS272', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS272'}"
+WI,Forest County Potawatomi Community,5,085,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS085', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS085', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS085'}"
+MT,Fort Belknap Indian Community Council,8,086,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS086', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS086', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS086'}"
+CA,Federated Indians of Graton Rancheria ,9,517,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS517', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS517', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS517'}"
+CA,Hoopa Valley Tribe ,9,102,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS102', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS102', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS102'}"
+AZ,Hopi Tribe,9,103,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS103', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS103', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS103'}"
+CA,Karuk Tribe,9,120,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS120', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS120', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS120'}"
+OR,Klamath Tribes,10,129,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS129', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS129', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS129'}"
+AK,Kodiak Area Native Assoc.,10,812,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS812', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS812', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS812'}"
+WI,Lac Courte Oreilles Band of Lake Superior Chippewa Indians,5,133,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS133', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS133', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS133'}"
+WI,Lac du Flambeau Band of Lake Superior Chippewa Indians,5,134,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS134', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS134', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS134'}"
+WA,Lower Elwha Klallam Tribe,10,142,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS142', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS142', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS142'}"
+WA,Lummi Nation,10,144,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS144', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS144', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS144'}"
+AK,Maniilaq Association,10,804,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS804', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS804', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS804'}"
+WI,Menominee Indian Tribe of Wisconsin,5,151,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS151', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS151', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS151'}"
+MN,Mille Lacs Band of Ojibwe,5,405,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS405', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS405', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS405'}"
+CA,Morongo Band of Mission Indians,9,163,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS163', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS163', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS163'}"
+OK,Muscogee Creek Nation,6,165,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS165', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS165', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS165'}"
+AZ,Navajo Nation,9,167,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS167', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS167', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS167'}"
+ID,Nez Perce Tribe,10,168,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS168', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS168', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS168'}"
+WA,Nooksack Indian Tribe,10,170,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS170', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS170', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS170'}"
+CA,Northfork Rancheria of Mono Indians of California,9,172,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS172', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS172', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS172'}"
+WY,Northern Arapaho Tribe of the Wind River Indian Reservation,8,008,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS008', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS008', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS008'}"
+NE,Omaha Tribe of Nebraska,7,175,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS175', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS175', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS175'}"
+WI,Oneida Nation of Wisconsin,5,177,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS177', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS177', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS177'}"
+OK,Osage Nation of Oklahoma,6,179,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS179', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS179', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS179'}"
+CA,Owens Valley Career Development Center,9,514,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS514', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS514', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS514'}"
+AZ,Pascua Yaqui Tribe of Arizona,9,188,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS188', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS188', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS188'}"
+CA,Pechanga Band of Luiseno Mission Indians,9,193,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS193', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS193', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS193'}"
+WA,Port Gamble S'Klallam Tribe,10,203,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS203', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS203', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS203'}"
+KS,Prairie Band Potawatomi Nation,7,205,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS205', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS205', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS205'}"
+NM,Pueblo of Zuni,6,334,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS334', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS334', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS334'}"
+WA,Quileute Tribe,10,230,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS230', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS230', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS230'}"
+WA,Quinault Indian Nation,10,231,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS231', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS231', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS231'}"
+WI,Red Cliff Band of Lake Superior Chippewa Indians,5,233,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS233', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS233', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS233'}"
+MN,Red Lake Band of Chippewa Indians,5,234,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS234', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS234', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS234'}"
+CA,Robinson Rancheria,9,520,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS520', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS520', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS520'}"
+CA,Round Valley Indian Tribes,9,241,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS241', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS241', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS241'}"
+AZ,Salt River - Pima Maricopa Indian Community,9,248,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS248', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS248', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS248'}"
+AZ,San Carlos Apache Tribe,9,250,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS250', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS250', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS250'}"
+NM,Santo Domingo Pueblo,6,221,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS221', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS221', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS221'}"
+CA,Scotts Valley Band of Pomo Indians,9,262,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS262', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS262', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS262'}"
+CA,Shingle Springs Band of Miwok Indians,9,270,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS270', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS270', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS270'}"
+ID,Shoshone-Bannock Tribes,10,273,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS273', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS273', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS273'}"
+SD,Sisseton-Wahpeton Oyate of the Lake Traverse Reservation,8,275,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS275', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS275', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS275'}"
+CA,Soboba Band of Luiseno Indians,9,279,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS279', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS279', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS279'}"
+WI,Sokaogon Chippewa Community,5,280,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS280', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS280', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS280'}"
+WA,South Puget Inter-Tribal Planning Agency,10,504,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS504', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS504', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS504'}"
+CA,"Southern California Tribal Chairmen's Association, Inc.",9,501,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS501', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS501', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS501'}"
+WA,Spokane Tribe of Indians,10,282,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS282', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS282', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS282'}"
+WI,Stockbridge-Munsee Community Band of Mohican Indians,5,287,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS287', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS287', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS287'}"
+AK,Tanana Chiefs Conference,10,806,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS806', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS806', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS806'}"
+CA,Torres Martinez Desert Cahuilla Indians,9,513,0,0,0,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS513', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS513', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS513'}"
+WA,Tulalip Tribes,10,305,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS305', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS305', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS305'}"
+CA,Tuolumne Band of Me-Wuk Indians,9,307,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS307', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS307', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS307'}"
+WA,Upper Skagit Indian Tribe,10,315,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS315', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS315', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS315'}"
+NV,Washoe Tribe of Nevada and California,9,321,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS321', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS321', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS321'}"
+AZ,White Mountain Apache Tribe,9,322,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS322', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS322', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS322'}"
+NE,Winnebago Tribe of Nebraska,7,324,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS324', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS324', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS324'}"
+CA,Yurok Tribe,9,333,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS333', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS333', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS333'}"
+OK,Cherokee Nation,6,038,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS038', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS038', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS038'}"
+NE,Santee Sioux Nation,7,259,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS259', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS259', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS259'}"
+CA,Tolowa Dee-ni' Nation,9,278,0,0,1,"{'Tribal Active Case Data': 'ADS.E2J.FTP1.TS278', 'Tribal Closed Case Data': 'ADS.E2J.FTP2.TS278', 'Tribal Aggregate Data': 'ADS.E2J.FTP3.TS278'}"

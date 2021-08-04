@@ -1,16 +1,25 @@
 """Set permissions for users."""
+from collections import ChainMap
 
 from rest_framework import permissions
 
 
 def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
-    is_data_prepper = is_in_group(request.user, 'Data Prepper')
-    requested_stt = view.kwargs.get('stt', request.data.get('stt'))
+    is_data_analyst = is_in_group(request.user, 'Data Analyst')
+
+    # Depending on the request, the STT could be found in three different places
+    # so we will merge all together and just do one check
+    request_parameters = ChainMap(
+        view.kwargs,
+        request.query_params,
+        request.data
+    )
+    requested_stt = request_parameters.get('stt')
     user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
 
     return bool(
-        is_data_prepper and
+        is_data_analyst and
         user_stt is not None and
         (requested_stt in [None, str(user_stt)])
     )
@@ -49,21 +58,21 @@ class IsOFAAdmin(permissions.BasePermission):
         return is_in_group(request.user, "OFA Admin")
 
 
-class IsDataPrepper(permissions.BasePermission):
-    """Permission for Data Prepper only views."""
+class IsDataAnalyst(permissions.BasePermission):
+    """Permission for Data Analyst only views."""
 
     def has_permission(self, request, view):
-        """Check if a user is a data prepper."""
-        return is_in_group(request.user, "Data Prepper")
+        """Check if a user is a data analyst."""
+        return is_in_group(request.user, "Data Analyst")
 
 
 class ReportFilePermissions(permissions.BasePermission):
     """Permission for report downloads & uploads."""
 
     def has_permission(self, request, view):
-        """Check if a user is a data prepper or an admin.
+        """Check if a user is a data analyst or an admin.
 
-        If they are a data prepper, ensures the STT is their own.
+        If they are a data analyst, ensures the STT is their own.
         """
         return (
             is_in_group(request.user, "OFA Admin") or
@@ -76,10 +85,10 @@ class ReportFilePermissions(permissions.BasePermission):
         This is used in cases where we call .get_object() to retrieve a report
         and do not have the STT available in the request, ie. report was
         requested for download via the ID of the report. This is not called
-        on POST requests (creating new reports).
+        on POST requests (creating new reports) or for a list of reports.
         """
         is_ofa_admin = is_in_group(request.user, "OFA Admin")
-        is_data_prepper = is_in_group(request.user, 'Data Prepper')
+        is_data_analyst = is_in_group(request.user, 'Data Analyst')
         user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
 
-        return is_ofa_admin or (is_data_prepper and user_stt == obj.stt_id)
+        return is_ofa_admin or (is_data_analyst and user_stt == obj.stt_id)

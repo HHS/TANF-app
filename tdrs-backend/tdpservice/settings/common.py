@@ -1,6 +1,5 @@
 """Define settings for all environments."""
 
-import json
 import logging
 import os
 from distutils.util import strtobool
@@ -114,47 +113,24 @@ class Common(Configuration):
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
     # Whether to use localstack in place of a live AWS S3 environment
-    USE_LOCALSTACK = bool(os.getenv("USE_LOCALSTACK", 0))
-
-    # AWS Access Keys
-    AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY")
-    AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_BUCKET")
-    AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
+    USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "no")))
 
     # Those who will receive error notifications from django via email
     ADMINS = (("Admin1", "ADMIN_EMAIL_FIRST"), ("Admin2", "ADMIN_EMAIL_SECOND"))
-    if "VCAP_SERVICES" in os.environ:  # pragma: nocover
-        servicejson = os.environ["VCAP_SERVICES"]
-        services = json.loads(servicejson)
-        AWS_STORAGE_BUCKET_NAME = services["s3"][0]["credentials"]["bucket"]
-        AWS_S3_REGION_NAME = services["s3"][0]["credentials"]["region"]
-        AWS_ACCESS_KEY_ID = services["s3"][0]["credentials"]["access_key_id"]
-        AWS_SECRET_ACCESS_KEY = services["s3"][0]["credentials"]["secret_access_key"]
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": services["aws-rds"][0]["credentials"]["db_name"],
-                "USER": services["aws-rds"][0]["credentials"]["username"],
-                "PASSWORD": services["aws-rds"][0]["credentials"]["password"],
-                "HOST": services["aws-rds"][0]["credentials"]["host"],
-                "PORT": services["aws-rds"][0]["credentials"]["port"],
-            }
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT"),
         }
-    else:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": os.getenv("DB_NAME"),
-                "USER": os.getenv("DB_USER"),
-                "PASSWORD": os.getenv("DB_PASSWORD"),
-                "HOST": os.getenv("DB_HOST"),
-                "PORT": os.getenv("DB_PORT"),
-            }
-        }
+    }
 
     # General
-    APPEND_SLASH = False
+    APPEND_SLASH = True
     TIME_ZONE = "UTC"
     LANGUAGE_CODE = "en-us"
     # If you set this to False, Django will make some optimizations so as not
@@ -175,12 +151,23 @@ class Common(Configuration):
         "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     )
 
+    # By default collectstatic will store files locally so these settings are
+    # not used but they must be defined, lest the server will fail to startup.
+    AWS_S3_STATICFILES_ACCESS_KEY = None
+    AWS_S3_STATICFILES_SECRET_KEY = None
+    AWS_S3_STATICFILES_BUCKET_NAME = None
+    AWS_S3_STATICFILES_ENDPOINT = None
+    AWS_S3_STATICFILES_REGION_NAME = None
+
     # Store uploaded files in S3
     # http://django-storages.readthedocs.org/en/latest/index.html
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
-    # Store uploaded Data Files in a separate AWS Bucket
-    DATA_FILES_AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_BUCKET')
+    DEFAULT_FILE_STORAGE = 'tdpservice.backends.DataFilesS3Storage'
+    AWS_S3_DATAFILES_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY')
+    AWS_S3_DATAFILES_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_S3_DATAFILES_BUCKET_NAME = os.getenv('AWS_BUCKET')
+    AWS_S3_DATAFILES_REGION_NAME = os.getenv('AWS_REGION_NAME', 'us-gov-west-1')
+    AWS_S3_DATAFILES_ENDPOINT = \
+        f'https://s3-{AWS_S3_DATAFILES_REGION_NAME}.amazonaws.com'
 
     # Media files
     MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")
@@ -302,6 +289,9 @@ class Common(Configuration):
             "rest_framework.authentication.SessionAuthentication",
             "rest_framework.authentication.TokenAuthentication",
         ),
+        "DEFAULT_FILTER_BACKENDS": [
+            "django_filters.rest_framework.DjangoFilterBackend",
+        ],
         "TEST_REQUEST_DEFAULT_FORMAT": "json",
         "TEST_REQUEST_RENDERER_CLASSES": [
             "rest_framework.renderers.MultiPartRenderer",
@@ -313,13 +303,6 @@ class Common(Configuration):
         "tdpservice.users.authentication.CustomAuthentication",
         "django.contrib.auth.backends.ModelBackend",
     )
-
-    # conditionally set which URI to go to
-    if "VCAP_APPLICATION" in os.environ:  # pragma: nocover
-        appjson = os.environ["VCAP_APPLICATION"]
-        appinfo = json.loads(appjson)
-        if len(appinfo["application_uris"]) > 0:
-            os.environ["BASE_URL"] = "https://" + appinfo["application_uris"][0] + "/v1"
 
     # CORS
     CORS_ALLOW_CREDENTIALS = True

@@ -58,6 +58,33 @@ commands:
           name: Ensure sudo is installed, otherwise install it.
           command: ./scripts/sudo-check.sh
 
+  upload-codecov:
+    description: Uploads testing code coverage results to Codecov
+    parameters:
+      component:
+        description: The component of the application being tested, either backend or frontend.
+        type: enum
+        enum: ["backend", "frontend"]
+      coverage-report:
+        description: The path to the coverage report being uploaded.
+        type: string
+    steps:
+      - run:
+          name: Ensure Codecov uploader is installed, otherwise install it.
+          command: ./scripts/codecov-check.sh
+      - run:
+          name: Determine Codecov metric flag
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              CURRENT_FLAG=main-<<parameters.component>>
+            else
+              CURRENT_FLAG=dev-<<parameters.component>>
+            fi
+            echo "export CURRENT_FLAG=$CURRENT_FLAG" >> $BASH_ENV
+      - run:
+          name: Upload code coverage report if target branch
+          command: codecov -t "$CODECOV_TOKEN" -f <<parameters.coverage-report>> -F "$CURRENT_FLAG"
+
   ###
   # Deployment commands
   #
@@ -287,20 +314,32 @@ jobs:
           command: |
             cd tdrs-backend;
             docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
-      - run:
-          name: "Upload Backend Coverage Report to CodeCov If On Target Branch"
-          command: |
-            if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F main-backend
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-backend; bash <(curl -s https://codecov.io/bash)  -f ./coverage.xml -F dev-backend
-            fi
+      - upload-codecov:
+          component: backend
+          coverage-report: ./tdrs-backend/coverage.xml
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-backend; ./zap-scanner.sh circle"
+          command: "./scripts/zap-scanner.sh backend circle"
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
 
+  prod-owasp-scan:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - docker-compose-check
+      - run:
+          name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
+          command: "./scripts/zap-scanner.sh frontend nightly"
+      - store_artifacts:
+          path: tdrs-frontend/reports/owasp_report.html
+
+      - run:
+          name:  "Test: Execute Backend  OWASP ZAP Vulnerability Scan"
+          command: "./scripts/zap-scanner.sh backend nightly"
+      - store_artifacts:
+          path: tdrs-backend/reports/owasp_report.html
   test-frontend:
     executor: machine-executor
     working_directory: ~/tdp-apps
@@ -323,20 +362,20 @@ jobs:
       - run:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
+      - upload-codecov:
+          component: frontend
+          coverage-report: ./tdrs-frontend/coverage/lcof.info
       - run:
-          name: "Upload Frontend Coverage Report to CodeCov If Target Branch"
+          name: "Install lib bindings for Cypress"
           command: |
-            if [ "$CIRCLE_BRANCH" == "main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F main-frontend
-            elif [ "$CIRCLE_BRANCH" == "raft-tdp-main" ] ; then
-              cd tdrs-frontend; bash <(curl -s https://codecov.io/bash)  -f ./coverage/lcov.info -F dev-frontend
-            fi
+            sudo apt-get update
+            sudo apt-get install -y libgbm-dev
       - run:
           name: "Run Cypress Integration Tests"
           command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-          command: "cd tdrs-frontend; ./zap-scanner.sh circle"
+          command: "./scripts/zap-scanner.sh frontend circle"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
       - store_artifacts:
@@ -430,6 +469,16 @@ jobs:
           backend-appname: tdp-backend-sandbox
           frontend-appname: tdp-frontend-sandbox
 workflows:
+  nightly:
+    jobs:
+      - prod-owasp-scan
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
   build-and-test:
     jobs:
       - test-backend

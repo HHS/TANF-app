@@ -7,6 +7,7 @@ import {
   SET_SELECTED_STT,
   SET_SELECTED_QUARTER,
   SET_FILE_LIST,
+  CLEAR_FILE_LIST,
 } from '../actions/reports'
 
 const getFileIndex = (files, section) =>
@@ -21,21 +22,23 @@ export const fileUploadSections = [
   'Stratum Data',
 ]
 
-export const getUpdatedFiles = (
+export const getUpdatedFiles = ({
   state,
   fileName,
   section,
+  id = null,
   uuid = null,
   fileType = null,
   error = null,
-  data = ''
-) => {
-  const oldFileIndex = getFileIndex(state.files, section)
+  file = null,
+}) => {
+  const oldFileIndex = getFileIndex(state?.files, section)
   const updatedFiles = [...state.files]
   updatedFiles[oldFileIndex] = {
+    id,
+    file,
     section,
     fileName,
-    data,
     error,
     uuid,
     fileType,
@@ -61,14 +64,15 @@ const reports = (state = initialState, action) => {
   const { type, payload = {} } = action
   switch (type) {
     case SET_FILE: {
-      const { fileName, section, uuid, fileType } = payload
-      const updatedFiles = getUpdatedFiles(
+      const { file, fileName, section, uuid, fileType } = payload
+      const updatedFiles = getUpdatedFiles({
         state,
         fileName,
         section,
         uuid,
-        fileType
-      )
+        fileType,
+        file,
+      })
       return { ...state, files: updatedFiles }
     }
     case SET_FILE_LIST: {
@@ -77,39 +81,43 @@ const reports = (state = initialState, action) => {
         ...state,
         files: state.files.map((file) => {
           const dataFile = getFile(data, file.section)
-          if (dataFile) {
-            return dataFile
-          } else return file
+          return dataFile
+            ? {
+                id: dataFile.id,
+                fileName: dataFile.original_filename,
+                fileType: dataFile.extension,
+                quarter: dataFile.quarter,
+                section: dataFile.section,
+                uuid: dataFile.slug,
+                year: dataFile.year,
+              }
+            : file
         }),
       }
     }
     case CLEAR_FILE: {
       const { section } = payload
-      const updatedFiles = getUpdatedFiles(state, null, section, null)
+      const updatedFiles = getUpdatedFiles({ state, section })
       return { ...state, files: updatedFiles }
+    }
+    case CLEAR_FILE_LIST: {
+      return { ...state, files: initialState.files }
     }
     case SET_FILE_ERROR: {
       const { error, section } = payload
-      const updatedFiles = getUpdatedFiles(
-        state,
-        null,
-        section,
-        null,
-        null,
-        error
-      )
+      const updatedFiles = getUpdatedFiles({ state, section, error })
       return { ...state, files: updatedFiles }
     }
     case CLEAR_ERROR: {
       const { section } = payload
       const file = getFile(state.files, section)
-      const updatedFiles = getUpdatedFiles(
+      const updatedFiles = getUpdatedFiles({
         state,
-        file.fileName,
+        fileName: file.fileName,
         section,
-        file.uuid,
-        file.fileType
-      )
+        uuid: file.uuid,
+        fileType: file.fileType,
+      })
       return { ...state, files: updatedFiles }
     }
     case SET_SELECTED_YEAR: {
