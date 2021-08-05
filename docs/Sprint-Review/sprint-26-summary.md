@@ -15,7 +15,7 @@
 - Focus on Secret Key Leakage Mitigation Epic
 - UX Ideation for Parsing Blocker Communications
 
-**Next Sprint (27) Goals:** 
+[**Next Sprint (27) Goals:**](https://github.com/raft-tech/TANF-app/milestone/30) 
 - TDP Permissions Epics (TDP Permissions Matrix, OFA Admins, PIV/CAC)
 - Continue work on Production readiness
 - UX:
