@@ -70,7 +70,6 @@
 
 ## Agenda for Sprint 26 Demo 
 - As a dev, I want an automated tool to prevent me from committing secret keys to the repo [#965](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/965) Andrew
-- [DevOps] Generate a new, random DJANGO_SECRET_KEY on initial Cloud.gov deployments or rebuilds [#967](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/967) - Andrew/John
 - (From Last Sprint) Perform scheduled OWASP scans against deployed site(s)[#1032](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1032)- Aaron
 - (UX Sprint 26) Test Error Communication for Parsing Blockers [#1020](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1020) - Miles/Dmitri
 - Round 7 (Sprint 24-26) UX Research and Design [#1017](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1017)
