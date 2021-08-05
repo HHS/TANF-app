@@ -20,6 +20,9 @@ else
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
 fi
 
+# Dynamically generate a new DJANGO_SECRET_KEY
+DJANGO_SECRET_KEY=$(python -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
+
 # Dynamically set DJANGO_CONFIGURATION based on Cloud.gov Space
 DJANGO_SETTINGS_MODULE="tdpservice.settings.cloudgov"
 if [ "$CG_SPACE" = "tanf-prod" ]; then
