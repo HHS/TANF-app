@@ -113,10 +113,13 @@ function HeaderComp() {
                     /https:\/\/.*\.app\.cloud\.gov/
                   ) && process.env.REACT_APP_USE_MIRAGE ? (
                     <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        dispatch(setMockLoginState())
-                      }}
+                      onClick={
+                        /* istanbul ignore next */
+                        (e) => {
+                          e.preventDefault()
+                          dispatch(setMockLoginState())
+                        }
+                      }
                     >
                       <LoginLogoutLink user={user} />
                     </button>
