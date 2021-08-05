@@ -7,16 +7,9 @@ from os.path import join
 from secrets import token_urlsafe
 
 from configurations import Configuration
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# NOTE: These may be overridden by system or env_file variables
-#       Eventually we may want to consider moving these defaults into
-#       settings declarations in the class below. This will allow us to safely
-#       reference environment variables across the app as we will no longer
-#       need to rely on calling os.environ directly.
-os.environ.setdefault("BASE_URL", "http://localhost:8080/v1")
-os.environ.setdefault("FRONTEND_BASE_URL", "http://localhost:3000")
 
 
 class Common(Configuration):
@@ -65,6 +58,10 @@ class Common(Configuration):
     SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", token_urlsafe(50))
     WSGI_APPLICATION = "tdpservice.wsgi.application"
     CORS_ORIGIN_ALLOW_ALL = True
+
+    # Application URLs
+    BASE_URL = os.getenv('BASE_URL', 'http://localhost:8080/v1')
+    FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL', 'http://localhost:3000')
 
     # Email Server
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -217,6 +214,9 @@ class Common(Configuration):
     # Custom user app
     AUTH_USER_MODEL = "users.User"
 
+    # Username or email for initial Django Super User
+    DJANGO_SUPERUSER_NAME = os.getenv('DJANGO_SU_NAME')
+
     # Sessions
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
@@ -293,51 +293,39 @@ class Common(Configuration):
         'ACR_VALUES',
         'http://idmanagement.gov/ns/assurance/ial/1'
     )
-    LOGIN_GOV_AUTHORIZATION_ENDPOINT = None
+    LOGIN_GOV_AUTHORIZATION_ENDPOINT = os.getenv(
+        'OIDC_OP_AUTHORIZATION_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/openid_connect/authorize'
+    )
     LOGIN_GOV_CLIENT_ASSERTION_TYPE = os.getenv(
         'CLIENT_ASSERTION_TYPE',
         'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
     )
     LOGIN_GOV_CLIENT_ID = os.getenv(
-        'CLIENT_ID',
+        'OIDC_RP_CLIENT_ID',
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev'
     )
-    LOGIN_GOV_ISSUER = None
-    LOGIN_GOV_JWKS_ENDPOINT = None
-    LOGIN_GOV_LOGOUT_ENDPOINT = None
-    LOGIN_GOV_MOCK_TOKEN = os.getenv(
-        'MOCK_TOKEN',
-        'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1'
-        'NzktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ2'
-        '92IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8x'
-        'Iiwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6In'
-        'Vybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4'
-        'ZE5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLC'
-        'JjX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJp'
-        'YXQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF2LJSG1fE9thn27PwmDlNd'
-        'lc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn0'
-        '0Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caR'
-        'YePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYd'
-        'hzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4'
-        'kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg'
+    LOGIN_GOV_ISSUER = os.getenv(
+        'OIDC_OP_ISSUER',
+        'https://idp.int.identitysandbox.gov/'
     )
-    LOGIN_GOV_TOKEN_ENDPOINT = None
+    LOGIN_GOV_JWKS_ENDPOINT = os.getenv(
+        'OIDC_OP_JWKS_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/api/openid_connect/certs'
+    )
+    LOGIN_GOV_LOGOUT_ENDPOINT = os.getenv(
+        'OIDC_OP_LOGOUT_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/openid_connect/logout'
+    )
+    LOGIN_GOV_TOKEN_ENDPOINT = os.getenv(
+        'OIDC_OP_TOKEN_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/api/openid_connect/token'
+    )
 
-
-os.environ.setdefault(
-    "OIDC_OP_AUTHORIZATION_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/openid_connect/authorize"
-)
-os.environ.setdefault("OIDC_OP_ISSUER", "https://idp.int.identitysandbox.gov/")
-os.environ.setdefault(
-    "OIDC_OP_JWKS_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/api/openid_connect/certs"
-)
-os.environ.setdefault(
-    "OIDC_OP_LOGOUT_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/openid_connect/logout"
-)
-os.environ.setdefault(
-    "OIDC_OP_TOKEN_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/api/openid_connect/token"
-)
+    # The JWT_KEY must be set, there is no default that can be used here.
+    LOGIN_GOV_JWT_KEY = os.getenv('JWT_KEY')
+    if LOGIN_GOV_JWT_KEY is None:
+        raise ImproperlyConfigured(
+            'Missing required setting: LOGIN_GOV_JWT_KEY - must set JWT_KEY '
+            'environment variable'
+        )

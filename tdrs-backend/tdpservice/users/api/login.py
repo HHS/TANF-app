@@ -50,7 +50,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             decoded_payload = jwt.decode(
                 id_token,
                 key=cert_str,
-                issuer=os.environ["OIDC_OP_ISSUER"],
+                issuer=settings.LOGIN_GOV_ISSUER,
                 audience=settings.LOGIN_GOV_CLIENT_ID,
                 algorithms=["RS256"],
                 subject=None,
@@ -72,7 +72,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         email = decoded_payload["email"]
 
         # First account for the initial superuser
-        if (su_username := os.environ.get('DJANGO_SU_NAME')) and su_username == email:
+        if email == settings.DJANGO_SUPERUSER_NAME:
             # If this is the initial login for the initial superuser,
             # we must authenticate with their username since we have yet to save the
             # user's `sub` UUID from the decoded payload, with which we will
@@ -137,11 +137,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
-            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
+            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
 
         if state is None:
             logger.info("Redirecting call to main page. No state provided.")
-            return HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"])
+            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
 
         # get the validation keys to confirm generated nonce and state
         nonce_and_state = get_nonce_and_state(request.session)
@@ -151,7 +151,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # build out the query string parameters
         # and full URL path for OIDC token endpoint
         token_params = generate_token_endpoint_parameters(code)
-        token_endpoint = os.environ["OIDC_OP_TOKEN_ENDPOINT"] + "?" + token_params
+        token_endpoint = settings.LOGIN_GOV_TOKEN_ENDPOINT + "?" + token_params
         token_response = requests.post(token_endpoint)
 
         if token_response.status_code != 200:

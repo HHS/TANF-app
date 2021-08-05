@@ -1,6 +1,5 @@
 """Handle login requests."""
 
-import os
 import secrets
 import time
 from urllib.parse import quote_plus, urlencode
@@ -37,7 +36,7 @@ class LoginRedirectOIDC(RedirectView):
             "client_id": settings.LOGIN_GOV_CLIENT_ID,
             "nonce": nonce,
             "prompt": "select_account",
-            "redirect_uri": os.environ["BASE_URL"] + "/login",
+            "redirect_uri": settings.BASE_URL + "/login",
             "response_type": "code",
             "state": state,
         }
@@ -49,7 +48,7 @@ class LoginRedirectOIDC(RedirectView):
 
         # build out full API GET call to authorize endpoint
         auth_endpoint = (
-            os.environ["OIDC_OP_AUTHORIZATION_ENDPOINT"] + "?" + encoded_params
+            settings.LOGIN_GOV_AUTHORIZATION_ENDPOINT + "?" + encoded_params
         )
         auth_endpoint_scope = auth_endpoint + "&" + auth_scope
 
