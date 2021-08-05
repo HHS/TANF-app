@@ -4,6 +4,7 @@ import logging
 import os
 from distutils.util import strtobool
 from os.path import join
+from secrets import token_urlsafe
 
 from configurations import Configuration
 
@@ -105,7 +106,7 @@ class Common(Configuration):
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = "tdpservice.urls"
-    SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", token_urlsafe(50))
     WSGI_APPLICATION = "tdpservice.wsgi.application"
     CORS_ORIGIN_ALLOW_ALL = True
 
