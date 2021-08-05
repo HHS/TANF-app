@@ -12,7 +12,7 @@ _This is just a quick summary of each day's meetings and focus. See [Team Meetin
 ### Biweekly on Tuesdays - Sprint End and Start: Planning Day!
 - 11:00am-12:00pm EST: Backlog Refinement 
 - 12:00pm-12:15pm EST: Standup
-- 12:15-12:3pm ET: Raft Demo Prep
+- 12:15-12:30pm ET: Raft Demo Prep
 - 2:00pm-2:30pm ET: Sprint Demo
 - 2:30pm-3:00pm ET: Sprint Retrospective
 - Sprint goals and priorities are discussed in refinement and reviewed during sprint planning. The team uses these goals to prioritize work for the sprint.
