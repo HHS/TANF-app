@@ -7,7 +7,6 @@ set to false, while the admin_user has both set to true.
 
 import pytest
 import re
-import os
 from django.contrib import admin
 from django.urls import reverse
 from rest_framework import status

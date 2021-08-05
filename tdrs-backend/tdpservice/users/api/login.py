@@ -1,6 +1,5 @@
 """Login.gov/authorize is redirected to this endpoint to start a django user session."""
 import logging
-import os
 
 from django.conf import settings
 from django.contrib.auth import get_user_model, login

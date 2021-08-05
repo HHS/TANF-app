@@ -46,7 +46,7 @@ def patch_login_gov_jwt_key(settings):
 
 @pytest.fixture
 def mock_token():
-    """Retrieve the mock token to be used for tests"""
+    """Retrieve the mock token to be used for tests."""
     return os.getenv(
         'MOCK_TOKEN',
         'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1N'
