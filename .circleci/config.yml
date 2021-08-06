@@ -493,9 +493,11 @@ workflows:
     jobs:
       - secrets-check
       - test-backend:
-          requires: secrets-check
+          requires: 
+            - secrets-check
       - test-frontend:
-          requires: secrets-check
+          requires: 
+            - secrets-check
       - deploy-dev:
           requires:
             - test-backend
