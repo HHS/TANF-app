@@ -59,12 +59,6 @@ commands:
           command: ./scripts/sudo-check.sh
 
 
-  git-secrets-check:
-    steps:
-      - run:
-          name: Scan repository for committed secrets.
-          command: ./scripts/git-secrets-check.sh
-
   upload-codecov:
     description: Uploads testing code coverage results to Codecov
     parameters:
@@ -304,12 +298,20 @@ commands:
           var_file: ./variables.tfvars
 
 jobs:
+  secrets-check:
+    executor: machine-executor
+    branches:
+    steps:
+      - checkout
+      - docker-compose-check
+      - run:
+          name: Scan repository for committed secrets.
+          command: ./scripts/git-secrets-check.sh
   test-backend:
     executor: machine-executor
     branches:
     steps:
       - checkout
-      - git-secrets-check
       - docker-compose-check
       - run:
           name: "Test: Build and Spin-up Django API Service"
@@ -489,8 +491,11 @@ workflows:
                 - raft-tdp-main
   build-and-test:
     jobs:
-      - test-backend
-      - test-frontend
+      - secrets-check
+      - test-backend:
+          requires: secrets-check
+      - test-frontend:
+          requires: secrets-check
       - deploy-dev:
           requires:
             - test-backend
