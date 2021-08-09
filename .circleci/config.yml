@@ -58,7 +58,6 @@ commands:
           name: Ensure sudo is installed, otherwise install it.
           command: ./scripts/sudo-check.sh
 
-
   upload-codecov:
     description: Uploads testing code coverage results to Codecov
     parameters:
@@ -303,7 +302,6 @@ jobs:
     branches:
     steps:
       - checkout
-      - docker-compose-check
       - run:
           name: Scan repository for committed secrets.
           command: ./scripts/git-secrets-check.sh
