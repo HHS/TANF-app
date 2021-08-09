@@ -5,11 +5,27 @@ import os
 from distutils.util import strtobool
 from os.path import join
 from secrets import token_urlsafe
+from typing import Any, Optional
 
 from configurations import Configuration
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def get_required_env_var_setting(
+    env_var_name: str,
+    setting_name: Optional[str] = None
+) -> Any:
+    """Retrieve setting from environment variable, otherwise raise an error."""
+    env_var = os.getenv(env_var_name)
+    if not env_var:
+        raise ImproperlyConfigured(
+            f'Missing required setting: {setting_name or env_var_name} - must '
+            f'set {env_var_name} environment variable'
+        )
+
+    return env_var
 
 
 class Common(Configuration):
@@ -313,6 +329,11 @@ class Common(Configuration):
         'OIDC_OP_JWKS_ENDPOINT',
         'https://idp.int.identitysandbox.gov/api/openid_connect/certs'
     )
+    # JWT_KEY must be set, there is no functional default.
+    LOGIN_GOV_JWT_KEY = get_required_env_var_setting(
+        'JWT_KEY',
+        'LOGIN_GOV_JWT_KEY'
+    )
     LOGIN_GOV_LOGOUT_ENDPOINT = os.getenv(
         'OIDC_OP_LOGOUT_ENDPOINT',
         'https://idp.int.identitysandbox.gov/openid_connect/logout'
@@ -321,11 +342,3 @@ class Common(Configuration):
         'OIDC_OP_TOKEN_ENDPOINT',
         'https://idp.int.identitysandbox.gov/api/openid_connect/token'
     )
-
-    # The JWT_KEY must be set, there is no default that can be used here.
-    LOGIN_GOV_JWT_KEY = os.getenv('JWT_KEY')
-    if LOGIN_GOV_JWT_KEY is None:
-        raise ImproperlyConfigured(
-            'Missing required setting: LOGIN_GOV_JWT_KEY - must set JWT_KEY '
-            'environment variable'
-        )

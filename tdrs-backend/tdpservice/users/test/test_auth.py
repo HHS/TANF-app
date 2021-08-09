@@ -1,26 +1,28 @@
 """Test the custom authorization class."""
-import os
-import uuid
-import time
-import secrets
-import pytest
-import jwt
 import datetime
-from rest_framework import status
-from django.core.exceptions import SuspiciousOperation
-from rest_framework.test import APIRequestFactory
-from ..api.login import TokenAuthorizationOIDC
-from ..api.logout_redirect_oidc import LogoutRedirectOIDC
+import os
+import secrets
+import time
+import uuid
 
-from ..api.utils import (
+from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
+from rest_framework import status
+from rest_framework.test import APIRequestFactory
+import jwt
+import pytest
+
+from tdpservice.settings.common import get_required_env_var_setting
+from tdpservice.users.api.login import TokenAuthorizationOIDC
+from tdpservice.users.api.logout_redirect_oidc import LogoutRedirectOIDC
+from tdpservice.users.api.utils import (
     generate_client_assertion,
     generate_jwt_from_jwks,
     generate_token_endpoint_parameters,
     response_internal,
     validate_nonce_and_state,
 )
-from ..authentication import CustomAuthentication
-from ..models import User
+from tdpservice.users.authentication import CustomAuthentication
+from tdpservice.users.models import User
 
 test_private_key = os.getenv('JWT_CERT_TEST')
 
@@ -714,3 +716,10 @@ def test_token_auth_decode_payload(mock_token):
     assert 'nonce' in decoded_token
     assert 'sub' in decoded_token
     assert 'login.gov' in decoded_token.get('iss', '')
+
+
+def test_missing_jwt_key():
+    """Test that an error is raised when env var JWT_KEY is missing."""
+    os.environ['JWT_KEY'] = ''
+    with pytest.raises(ImproperlyConfigured):
+        get_required_env_var_setting('JWT_KEY')
