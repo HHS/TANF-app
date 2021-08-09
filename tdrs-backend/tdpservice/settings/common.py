@@ -231,7 +231,11 @@ class Common(Configuration):
     AUTH_USER_MODEL = "users.User"
 
     # Username or email for initial Django Super User
-    DJANGO_SUPERUSER_NAME = os.getenv('DJANGO_SU_NAME')
+    # NOTE: In a deployed context this will default to the Product Owner
+    DJANGO_SUPERUSER_NAME = get_required_env_var_setting(
+        'DJANGO_SU_NAME',
+        'DJANGO_SUPERUSER_NAME'
+    )
 
     # Sessions
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"

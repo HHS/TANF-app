@@ -718,6 +718,13 @@ def test_token_auth_decode_payload(mock_token):
     assert 'login.gov' in decoded_token.get('iss', '')
 
 
+def test_missing_django_superuser():
+    """Test that an error is raised when env var DJANGO_SU_NAME is missing."""
+    os.environ['DJANGO_SU_NAME'] = ''
+    with pytest.raises(ImproperlyConfigured):
+        get_required_env_var_setting('DJANGO_SU_NAME')
+
+
 def test_missing_jwt_key():
     """Test that an error is raised when env var JWT_KEY is missing."""
     os.environ['JWT_KEY'] = ''
