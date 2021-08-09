@@ -102,6 +102,7 @@ class Common(Configuration):
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "corsheaders.middleware.CorsMiddleware",
         "tdpservice.users.api.middleware.AuthUpdateMiddleware",
+        "csp.middleware.CSPMiddleware"
     )
 
     ALLOWED_HOSTS = ["*"]
@@ -329,3 +330,26 @@ class Common(Configuration):
 
     # The number of seconds to wait for socket response from clamav-rest
     AV_SCAN_TIMEOUT = os.getenv('AV_SCAN_TIMEOUT', 30)
+
+# add_header Content-Security-Policy
+# "default-src 'none';
+# script-src 'self';
+# style-src 'self' 'unsafe-inline';
+# img-src 'self' data:;
+# font-src 'self';
+# connect-src 'self' *.cloud.gov;
+# manifest-src 'self';
+# object-src 'none';
+# frame-ancestors 'none';
+# form-action 'none';";
+    CSP_DEFAULT_SRC = ("'none'")
+    CSP_SCRIPT_SRC = ("'self'")
+    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+    CSP_IMG_SRC = ("'self'", "data:")
+    CSP_FONT_SRC = ("'self'")
+    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
+    CSP_MANIFEST_SRC = ("'self'")
+    CSP_OBJECT_SRC = ("'none'")
+    CSP_OBJECT_SRC = ("'none'")
+    CSP_FRAME_ANCESTORS = ("'none'")
+    CSP_FORM_ACTION = ("'none'")

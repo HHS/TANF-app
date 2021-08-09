@@ -1,5 +1,7 @@
 """Define Django routing."""
 
+import os
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -38,10 +40,12 @@ urlpatterns = [
 ]
 
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 urlpatterns = [
     path("v1/", include(urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static("/", document_root=os.path.join(BASE_DIR, "csp"))
 
 # TODO: Supply `terms_of_service` argument in OpenAPI Info once implemented
 schema_view = get_schema_view(
