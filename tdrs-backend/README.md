@@ -70,6 +70,12 @@ $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
  $ docker-compose down --remove-orphans
 ```
 
+9.) To reset Postgres database and Localstack to initial state:
+
+```bash
+ $ docker-compose down -v
+```
+
 ----
 ### Environment Variable Inheritance
 #### Local
