@@ -17,7 +17,7 @@ from .users.api.login_redirect_oidc import LoginRedirectOIDC
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
 from django.contrib.auth.decorators import login_required
-from .core.views import write_logs
+from .core.views import write_logs, IndexView
 
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
@@ -44,8 +44,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 urlpatterns = [
     path("v1/", include(urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path("", IndexView.as_view(), name="index"),
+]
+
 urlpatterns += static("/", document_root=os.path.join(BASE_DIR, "csp"))
+
 
 # TODO: Supply `terms_of_service` argument in OpenAPI Info once implemented
 schema_view = get_schema_view(

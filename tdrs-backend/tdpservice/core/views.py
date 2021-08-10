@@ -3,6 +3,7 @@ import logging
 
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
+from django.views.generic.base import TemplateView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 
@@ -12,6 +13,8 @@ from ..reports.models import ReportFile
 
 logger = logging.getLogger()
 
+class IndexView(TemplateView):
+    template_name = 'index.html'
 
 @api_view(['POST'])
 @permission_classes([IsUser])
