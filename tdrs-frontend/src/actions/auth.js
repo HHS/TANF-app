@@ -6,6 +6,7 @@ export const SET_AUTH = 'SET_AUTH'
 export const SET_AUTH_ERROR = 'SET_AUTH_ERROR'
 export const CLEAR_AUTH = 'CLEAR_AUTH'
 export const SET_DEACTIVATED = 'SET_DEACTIVATED'
+export const SET_MOCK_LOGIN_STATE = 'SET_MOCK_LOGIN_STATE'
 
 /**
  * This action fires an HTTP GET request to the API
@@ -61,4 +62,13 @@ export const fetchAuth = () => async (dispatch) => {
     logErrorToServer(SET_AUTH_ERROR)
     dispatch({ type: SET_AUTH_ERROR, payload: { error } })
   }
+}
+export const setMockLoginState = () => async (dispatch) => {
+  const loginState = window.localStorage.getItem('loggedIn')
+
+  // localStorage converts all values to strings, so to get a falsy value
+  // we pass in a blank string
+  window.localStorage.setItem('loggedIn', loginState ? '' : true)
+  window.location.reload()
+  dispatch(SET_MOCK_LOGIN_STATE)
 }
