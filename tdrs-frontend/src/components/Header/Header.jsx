@@ -1,11 +1,26 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-
+import { useSelector, useDispatch } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+
 import NavItem from '../NavItem/NavItem'
 
+import { setMockLoginState } from '../../actions/auth'
+
+const LoginLogoutLink = ({ user }) => (
+  <a
+    className="sign-out-link"
+    href={
+      user && user.email
+        ? `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
+        : `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+    }
+  >
+    <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
+    {user && user.email ? 'Sign Out' : 'Sign In'}
+  </a>
+)
 /**
  * This component is rendered on every page and contains the navigation bar.
  * When a user is authenticated, it will also display their email and will
@@ -20,6 +35,8 @@ function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
+
+  const dispatch = useDispatch()
 
   const isSystemAdmin = () => {
     return user?.roles?.some((role) => role.name === 'System Admin')
@@ -92,20 +109,23 @@ function HeaderComp() {
                   )}
                 </li>
                 <li className="usa-nav__secondary-item">
-                  <a
-                    className="sign-out-link"
-                    href={
-                      user && user.email
-                        ? `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
-                        : `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
-                    }
-                  >
-                    <FontAwesomeIcon
-                      className="margin-right-1"
-                      icon={faSignOutAlt}
-                    />
-                    {user && user.email ? 'Sign Out' : 'Sign In'}
-                  </a>
+                  {!window.location.href.match(
+                    /https:\/\/.*\.app\.cloud\.gov/
+                  ) && process.env.REACT_APP_USE_MIRAGE ? (
+                    <button
+                      onClick={
+                        /* istanbul ignore next */
+                        (e) => {
+                          e.preventDefault()
+                          dispatch(setMockLoginState())
+                        }
+                      }
+                    >
+                      <LoginLogoutLink user={user} />
+                    </button>
+                  ) : (
+                    <LoginLogoutLink user={user} />
+                  )}
                 </li>
               </ul>
             </div>
