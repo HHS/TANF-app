@@ -70,7 +70,7 @@ $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
  $ docker-compose down --remove-orphans
 ```
 
-9.) To reset Postgres database and Localstack to initial state:
+9.) The `postgres` and `localstack` containers use [Docker Named Volumes](https://spin.atomicobject.com/2019/07/11/docker-volumes-explained/) to persist container data between tear down and restart of containers. To clear all stored data and reset to an initial state, pass the `-v` flag when tearing down the containers:
 
 ```bash
  $ docker-compose down -v
