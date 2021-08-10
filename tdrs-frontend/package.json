@@ -44,7 +44,7 @@
     "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
-    "test:accessibility": "concurrently -k -s first 'yarn start:ci' 'wait-on http://localhost:3000/ && yarn pa11y-ci --config .pa11yci.json'",
+    "test:accessibility": "concurrently -k -s first 'REACT_APP_PA11Y_TEST=true yarn start:ci' 'wait-on http://localhost:3000/ && yarn pa11y-ci --config .pa11yci.json'",
     "eject": "react-scripts eject",
     "lint": "eslint src/ && echo 'Lint complete.'"
   },
@@ -76,8 +76,9 @@
     "eslint-plugin-prettier": "^3.4.0",
     "jest-enzyme": "^7.1.2",
     "node-sass": "^5.0.0",
-    "pa11y-ci": "^2.4.2",
-    "prettier": "^2.3.2",
+    "pa11y-ci": "^2.4.1",
+    "prettier": "^2.0.5",
+    "faker": "^5.5.3",
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
     "wait-on": "^6.0.0"
