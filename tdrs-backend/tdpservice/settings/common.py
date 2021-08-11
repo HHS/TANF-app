@@ -344,7 +344,6 @@ class Common(Configuration):
 # form-action 'none';";
     CSP_DEFAULT_SRC = ("'none'")
     CSP_SCRIPT_SRC = ("'self'")
-    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
     CSP_IMG_SRC = ("'self'", "data:")
     CSP_FONT_SRC = ("'self'")
     CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
