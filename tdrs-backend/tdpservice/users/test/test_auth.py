@@ -154,7 +154,7 @@ def test_login_fails_without_state(api_client):
     assert response.status_code == status.HTTP_302_FOUND
 
 @pytest.fixture()
-def nsc():
+def nscx():
     datas = {
         'nonce':   "testnonce",
         'state':    "teststate",
@@ -164,17 +164,9 @@ def nsc():
     
 @pytest.mark.django_db
 class TestLogin:
-
-
-    def test_login_with_valid_state_and_code(
-        self,
-        mocker,
-        api_client,
-        patch_login_gov_jwt_key,
-        mock_token,
-        nsc
-    ):
-        """Test login with state and code."""
+    @pytest.fixture()
+    def mock(self, mocker, mock_token, nscx):
+        nsc = nscx
         mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
         token = {
             "access_token": "hhJES3wcgjI55jzjBvZpNQ",
@@ -182,6 +174,7 @@ class TestLogin:
             "expires_in": 3600,
             "id_token": mock_token,
         }
+        mock_post.return_value = MockRequest(data=token)
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
         decoded_token = {
             "email": "test@example.com",
@@ -191,12 +184,50 @@ class TestLogin:
             "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
             "verified_at": 1577854800,
         }
-        mock_post.return_value = MockRequest(data=token)
+
         mock_decode.return_value = decoded_token
+        yield mock_post, mock_decode
+
+    @pytest.fixture()
+    def factory(self, nscx, mock, api_client):
+        nsc = nscx
         factory = APIRequestFactory()
-        view = TokenAuthorizationOIDC.as_view()
         request = factory.get("/v1/login", {"state": nsc['state'], "code": nsc['code']})
         request.session = api_client.session
+        yield request
+
+    def test_login_with_valid_state_and_code(
+        self,
+        patch_login_gov_jwt_key,
+        nscx,
+        mock,
+        factory
+    ):
+        """Test login with state and code."""
+        nsc = nscx
+        request = factory
+        request.session["state_nonce_tracker"] = {
+            "nonce": nsc['nonce'],
+            "state": nsc['state'],
+            "added_on": time.time(),
+        }
+        view = TokenAuthorizationOIDC.as_view()
+        response = view(request)
+        assert response.status_code == status.HTTP_302_FOUND
+
+
+    def test_login_with_existing_token(
+        self,
+        factory,
+        patch_login_gov_jwt_key,
+        mock,
+        nscx
+    ):
+        """Login should proceed when token already exists."""
+        nsc = nscx
+        view = TokenAuthorizationOIDC.as_view()
+        request = factory
+        request.session["token"] = "testtoken"
         request.session["state_nonce_tracker"] = {
             "nonce": nsc['nonce'],
             "state": nsc['state'],
@@ -204,91 +235,6 @@ class TestLogin:
         }
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
-
-
-@pytest.mark.django_db
-def test_login_with_valid_state_and_code(
-    mocker,
-    api_client,
-    patch_login_gov_jwt_key,
-    mock_token
-):
-    """Test login with state and code."""
-    nonce = "testnonce"
-    state = "teststate"
-    code = secrets.token_hex(32)
-    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
-    token = {
-        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
-        "token_type": "Bearer",
-        "expires_in": 3600,
-        "id_token": mock_token,
-    }
-    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
-    decoded_token = {
-        "email": "test@example.com",
-        "email_verified": True,
-        "nonce": nonce,
-        "iss": "https://idp.int.identitysandbox.gov",
-        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
-        "verified_at": 1577854800,
-    }
-    mock_post.return_value = MockRequest(data=token)
-    mock_decode.return_value = decoded_token
-    factory = APIRequestFactory()
-    view = TokenAuthorizationOIDC.as_view()
-    request = factory.get("/v1/login", {"state": state, "code": code})
-    request.session = api_client.session
-    request.session["state_nonce_tracker"] = {
-        "nonce": nonce,
-        "state": state,
-        "added_on": time.time(),
-    }
-    response = view(request)
-    assert response.status_code == status.HTTP_302_FOUND
-
-
-@pytest.mark.django_db
-def test_login_with_existing_token(
-    mocker,
-    api_client,
-    patch_login_gov_jwt_key,
-    mock_token
-):
-    """Login should proceed when token already exists."""
-    nonce = "testnonce"
-    state = "teststate"
-    code = secrets.token_hex(32)
-    mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
-    token = {
-        "access_token": "hhJES3wcgjI55jzjBvZpNQ",
-        "token_type": "Bearer",
-        "expires_in": 3600,
-        "id_token": mock_token,
-    }
-    mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
-    decoded_token = {
-        "email": "test@example.com",
-        "email_verified": True,
-        "nonce": nonce,
-        "iss": "https://idp.int.identitysandbox.gov",
-        "sub": "b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
-        "verified_at": 1577854800,
-    }
-    mock_post.return_value = MockRequest(data=token)
-    mock_decode.return_value = decoded_token
-    factory = APIRequestFactory()
-    view = TokenAuthorizationOIDC.as_view()
-    request = factory.get("/v1/login", {"state": state, "code": code})
-    request.session = api_client.session
-    request.session["token"] = "testtoken"
-    request.session["state_nonce_tracker"] = {
-        "nonce": nonce,
-        "state": state,
-        "added_on": time.time(),
-    }
-    response = view(request)
-    assert response.status_code == status.HTTP_302_FOUND
 
 
 @pytest.mark.django_db
