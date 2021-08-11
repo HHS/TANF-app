@@ -297,6 +297,14 @@ commands:
           var_file: ./variables.tfvars
 
 jobs:
+  secrets-check:
+    executor: machine-executor
+    branches:
+    steps:
+      - checkout
+      - run:
+          name: Scan repository for committed secrets.
+          command: ./scripts/git-secrets-check.sh
   test-backend:
     executor: machine-executor
     branches:
@@ -481,8 +489,13 @@ workflows:
                 - raft-tdp-main
   build-and-test:
     jobs:
-      - test-backend
-      - test-frontend
+      - secrets-check
+      - test-backend:
+          requires: 
+            - secrets-check
+      - test-frontend:
+          requires: 
+            - secrets-check
       - deploy-dev:
           requires:
             - test-backend

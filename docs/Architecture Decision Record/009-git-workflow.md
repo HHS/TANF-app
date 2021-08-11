@@ -1,6 +1,6 @@
 # 9. Git Workflow
 
-Date: 2021-02-23 (_updated 2021-06-11_)
+Date: 2021-02-23 (_updated 2021-07-30_)
 
 ## Status
 
@@ -96,3 +96,6 @@ A contributor to the TDP project would always use the following steps to propose
 
 ## Notes
 - All Pull Requests with the `QASP Review` label will be approved against the QASP Checklist
+
+## Exceptions
+- PRs created by Dependabot for dev-only dependencies, which will not be installed on deployed environments, may be merged in to `raft-tdp-main` as they are created. Further reasoning on this decision can be found in [the Dependabot ADR](016-dependabot-dependency-management.md) under "Development Dependencies".
