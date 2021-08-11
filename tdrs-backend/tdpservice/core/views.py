@@ -15,6 +15,7 @@ logger = logging.getLogger()
 
 class IndexView(TemplateView):
     """An empty template for the app root."""
+
     template_name = 'index.html'
 
 @api_view(['POST'])
