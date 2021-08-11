@@ -20,8 +20,15 @@ axios.defaults.withCredentials = true
 const store = configureStore()
 store.dispatch(fetchAuth())
 
+// if (window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/)) {
+// }
 // Start the mirage server to stub some backend endpoints when running locally
-startMirage()
+if (
+  !window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/) &&
+  (process.env.REACT_APP_USE_MIRAGE || process.env.REACT_APP_PA11Y_TEST)
+) {
+  startMirage()
+}
 
 ReactDOM.render(
   <Provider store={store}>
