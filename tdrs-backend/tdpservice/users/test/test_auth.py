@@ -45,6 +45,9 @@ def patch_login_gov_jwt_key(settings):
     assert test_private_key is not None, 'Missing env var: JWT_CERT_TEST'
     settings.LOGIN_GOV_JWT_KEY = test_private_key
 
+def test_myjwttestfordebugging(generate_test_jwt):
+    print(key.export(private_key=False))
+    assert False
 
 @pytest.fixture
 def mock_token():

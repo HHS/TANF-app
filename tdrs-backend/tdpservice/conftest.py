@@ -10,6 +10,10 @@ from django.contrib.auth.models import Group
 from factory.faker import faker
 from rest_framework.test import APIClient
 
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import hashes
+
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from tdpservice.core.admin import LogEntryAdmin
 from tdpservice.reports.test.factories import ReportFileFactory
@@ -208,3 +212,73 @@ def report():
 def admin():
     """Return a custom LogEntryAdmin."""
     return LogEntryAdmin(LogEntry, AdminSite())
+
+
+
+@pytest.fixture
+def generate_test_jwt():
+    """Dynamically create randomized JWT keys for each run of tests"""
+    # deploy-backend.sh:
+    #   openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -sha256
+    # jwt-key-rotation.md:
+    #   openssl enc -base64 -w 0 -in jwtRS256prv.pem -out jwtRS256prv.pem.base64
+    #   update JWT_KEY with this value
+    
+
+    KEY_FILE = "key.pem"
+    CERT_FILE = "cert.pem"
+
+    #   openssl req -x509 -newkey rsa:4096
+    # Generate our key
+    key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=4096,
+    )
+
+    # -keyout key.pem
+    # Write our key to disk for safe keeping
+    with open(KEY_FILE, "wb") as f:
+        f.write(key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"), # -nodes 
+        ))
+    
+    # Various details about who we are. For a self-signed certificate the
+    # subject and issuer are always the same.
+    subject = issuer = x509.Name([
+        x509.NameAttribute(NameOID.COUNTRY_NAME, u"US"),
+        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"Distrint of Columbia"),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, u"Washington D.C."),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"OCIO OFA"),
+        x509.NameAttribute(NameOID.COMMON_NAME, u"tdp-frontend.app.cloud.gov"),
+    ])
+
+     
+    cert = x509.CertificateBuilder().subject_name(
+        subject
+    ).issuer_name(
+        issuer
+    ).public_key(
+        key.public_key()
+    ).serial_number(
+        x509.random_serial_number()
+    ).not_valid_before(
+        datetime.datetime.utcnow()
+    ).not_valid_after(
+        # Our certificate will be valid for 10 days
+        datetime.datetime.utcnow() + datetime.timedelta(days=365) # -days 365 
+    ).add_extension(
+        x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
+        critical=False,
+    # Sign our certificate with our private key
+    ).sign(key, hashes.SHA256()) # -sha256
+    # Write our certificate out to disk.
+    #-out cert.pem
+    with open(CERT_FILE, "wb") as f:
+        f.write(cert.public_bytes(serialization.Encoding.PEM))
+
+
+    #key = jwk.JWK.generate(kty="RSA", size=4096)
+    
+    yield key
