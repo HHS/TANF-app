@@ -45,7 +45,7 @@ urlpatterns = [
     path("v1/", include(urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
     path("", IndexView.as_view(), name="index"),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += static("/", document_root=os.path.join(BASE_DIR, "csp"))
 
