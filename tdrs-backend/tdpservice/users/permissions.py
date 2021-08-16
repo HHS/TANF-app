@@ -1,7 +1,26 @@
 """Set permissions for users."""
 from collections import ChainMap
+from typing import TYPE_CHECKING
 
+from django.apps import apps
+from django.db.models import QuerySet
 from rest_framework import permissions
+
+if TYPE_CHECKING:
+    from django.contrib.auth.models import Permission
+
+
+def get_permissions_for_model(
+    app_label: str,
+    model_name: str
+) -> QuerySet[Permission]:
+    """Retrieve the permissions associated with a given model."""
+    # NOTE: We must use the historical version of the model from `apps` to
+    #       assert deterministic behavior in both migrations and runtime code.
+    return apps.get_model('auth', 'Permission').objects.filter(
+        content_type__app_label=app_label,
+        content_type__model=model_name
+    )
 
 
 def is_own_stt(request, view):
