@@ -12,7 +12,7 @@ def update_log_entry_content_type(apps, schema_editor):
         LogEntry.objects\
             .filter(content_type_id=old_content_type)\
             .update(content_type_id=new_content_type)
-    except:
+    except ContentType.DoesNotExist:
         print("running in a test system")
 
 def revert_update_log_entry_content_type(apps, schema_editor):
