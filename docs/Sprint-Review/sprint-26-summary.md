@@ -73,7 +73,6 @@
 - (From Last Sprint) Perform scheduled OWASP scans against deployed site(s)[#1032](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1032)- Aaron
 - (UX Sprint 26) Test Error Communication for Parsing Blockers [#1020](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1020) - Miles/Dmitri
 - Round 7 (Sprint 24-26) UX Research and Design [#1017](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1017)
-- Django Admin a11y Fixes (Sprint 3) [#1054](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1054)
 - UX Roadmap prep [#1147](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1147)
 
 
