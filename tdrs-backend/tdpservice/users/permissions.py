@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 def get_permissions_for_model(
     app_label: str,
     model_name: str
-) -> QuerySet[Permission]:
+) -> QuerySet['Permission']:
     """Retrieve the permissions associated with a given model."""
     # NOTE: We must use the historical version of the model from `apps` to
     #       assert deterministic behavior in both migrations and runtime code.

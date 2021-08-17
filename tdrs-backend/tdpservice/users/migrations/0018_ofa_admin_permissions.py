@@ -7,8 +7,10 @@ from tdpservice.users.permissions import get_permissions_for_model
 
 
 def set_ofa_admin_permissions(apps, schema_editor):
+    """Set relevant Group Permissions for OFA Admin group."""
     ofa_admin = apps.get_model('auth', 'Group').objects.get(name='OFA Admin')
 
+    # Re-usable query operators
     view_perms_query = Q(name__contains='view')
     delete_perms_query = Q(name__contains='delete')
 
@@ -32,13 +34,14 @@ def set_ofa_admin_permissions(apps, schema_editor):
     ofa_admin.permissions.clear()
 
     # Assign correct permissions
-    ofa_admin.permissions.add(user_permissions)
-    ofa_admin.permissions.add(region_permissions)
-    ofa_admin.permissions.add(stt_permissions)
-    ofa_admin.permissions.add(datafile_permissions)
+    ofa_admin.permissions.add(*user_permissions)
+    ofa_admin.permissions.add(*region_permissions)
+    ofa_admin.permissions.add(*stt_permissions)
+    ofa_admin.permissions.add(*datafile_permissions)
 
 
 def unset_ofa_admin_permissions(apps, schema_editor):
+    """Remove all Group Permissions added to OFA Admin."""
     ofa_admin = apps.get_model('auth', 'Group').objects.get(name='OFA Admin')
     ofa_admin.permissions.clear()
 
