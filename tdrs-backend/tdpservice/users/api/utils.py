@@ -2,7 +2,6 @@
 
 import binascii
 import logging
-import os
 import secrets
 import time
 import datetime
@@ -56,7 +55,7 @@ def generate_client_assertion():
     :param JWT_KEY: private key expected by the login.gov application
     :param CLIENT_ID: Issuer as defined login.gov application
     """
-    private_key = os.environ["JWT_KEY"]
+    private_key = settings.LOGIN_GOV_JWT_KEY
 
     # We allow the JWT_KEY to be passed in as base64 encoded or as the
     # raw PEM format to support docker-compose env_file where there are
@@ -70,9 +69,9 @@ def generate_client_assertion():
         pass
 
     payload = {
-        "iss": os.environ["CLIENT_ID"],
-        "aud": os.environ["OIDC_OP_TOKEN_ENDPOINT"],
-        "sub": os.environ["CLIENT_ID"],
+        "iss": settings.LOGIN_GOV_CLIENT_ID,
+        "aud": settings.LOGIN_GOV_TOKEN_ENDPOINT,
+        "sub": settings.LOGIN_GOV_CLIENT_ID,
         "jti": secrets.token_urlsafe(32)[:32],
         # set token expiration to be 1 minute from current time
         "exp": int(round(time.time() * 1000)) + 60000,
@@ -94,7 +93,7 @@ def generate_token_endpoint_parameters(code):
     client_assertion = generate_client_assertion()
     params = {
         "client_assertion": client_assertion,
-        "client_assertion_type": os.environ["CLIENT_ASSERTION_TYPE"],
+        "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE,
         "code": code,
         "grant_type": "authorization_code",
     }
@@ -112,7 +111,7 @@ from the login.gov/certs endpoint
 
 def generate_jwt_from_jwks():
     """Generate JWT."""
-    certs_endpoint = os.environ["OIDC_OP_JWKS_ENDPOINT"]
+    certs_endpoint = settings.LOGIN_GOV_JWKS_ENDPOINT
     certs_response = requests.get(certs_endpoint)
     public_cert = jwk.JWK(**certs_response.json().get("keys")[0])
     public_pem = public_cert.export_to_pem()
@@ -187,7 +186,7 @@ def response_redirect(self, id_token):
     :param self: parameter to permit django python to call a method within its own class
     :param id_token: encoded token returned by login.gov/token
     """
-    response = HttpResponseRedirect(os.environ["FRONTEND_BASE_URL"] + "/login")
+    response = HttpResponseRedirect(settings.FRONTEND_BASE_URL + "/login")
     response.set_cookie(
         "id_token",
         value=id_token,
