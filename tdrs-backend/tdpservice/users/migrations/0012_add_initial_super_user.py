@@ -1,5 +1,6 @@
-import os
 import logging
+
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.db import migrations
 from django.utils import timezone
@@ -19,12 +20,12 @@ class Migration(migrations.Migration):
 
     def generate_superuser(apps, schema_editor):
         # raise an exception if the environment variable isn't set
-        if os.environ.get('DJANGO_SU_NAME') is None:
+        if settings.DJANGO_SUPERUSER_NAME is None:
             raise NoSuperUser("DJANGO_SU_NAME does not have a value set.")
 
         # set the environment variable to the username of the
         # initial superuser
-        su_username = os.environ.get('DJANGO_SU_NAME')
+        su_username = settings.DJANGO_SUPERUSER_NAME
 
         # Get current time for date_joined
         now = timezone.now()
