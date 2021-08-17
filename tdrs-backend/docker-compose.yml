@@ -47,19 +47,20 @@ services:
   web:
     restart: always
     environment:
-      - DB_USER=tdpuser
-      - DB_PASSWORD=something_secure
-      - DB_NAME=tdrs_test
-      - DB_PORT=5432
-      - DB_HOST=postgres
-      - DJANGO_SETTINGS_MODULE=tdpservice.settings.local
-      - DJANGO_CONFIGURATION=Local
       - AV_SCAN_URL=http://clamav-rest:9000/scan
+      - DB_HOST=postgres
+      - DB_NAME=tdrs_test
+      - DB_PASSWORD=something_secure
+      - DB_PORT=5432
+      - DB_USER=tdpuser
+      - DJANGO_CONFIGURATION=${DJANGO_CONFIGURATION:-Local}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-tdp-dev-insecure}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-tdpservice.settings.local}
       - LOCALSTACK_HOST=localstack
-      - USE_LOCALSTACK
-      - JWT_KEY
-      - JWT_CERT_TEST
       - DJANGO_SU_NAME
+      - JWT_CERT_TEST
+      - JWT_KEY
+      - USE_LOCALSTACK
     volumes:
       - .:/tdpapp
     image: tdp
