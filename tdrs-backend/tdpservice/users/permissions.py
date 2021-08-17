@@ -1,26 +1,68 @@
 """Set permissions for users."""
 from collections import ChainMap
-from typing import TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 from django.apps import apps
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from rest_framework import permissions
 
 if TYPE_CHECKING:
     from django.contrib.auth.models import Permission
 
 
-def get_permissions_for_model(
+# Q objects that can be used to query for default permissions
+# Ref: https://docs.djangoproject.com/en/3.2/topics/auth/default/#default-permissions noqa
+add_permissions_q = Q(codename__startswith='add_')
+change_permissions_q = Q(codename__startswith='change_')
+delete_permissions_q = Q(codename__startswith='delete_')
+view_permissions_q = Q(codename__startswith='view_')
+
+
+def get_permission_ids_for_model(
     app_label: str,
-    model_name: str
+    model_name: str,
+    filters: Optional[List[Q]] = None,
+    exclusions: Optional[List[Q]] = None
 ) -> QuerySet['Permission']:
-    """Retrieve the permissions associated with a given model."""
+    """Retrieve the permissions associated with a given model.
+
+    Optionally apply a list of Q objects as filters or exclusions that will be
+    chained together via an OR clause to the database.
+
+    For more information about using Q objects, refer to the documentation:
+    https://docs.djangoproject.com/en/3.2/ref/models/querysets/#django.db.models.Q
+
+    :param app_label: the lowercase string name of the Django app
+    :param model_name: the lowercase string name of the Model class
+    :param filters: a list of Q objects to be applied as a filter clause
+    :param exclusions: a list of Q objects to be applied as an exclude clause
+    """
     # NOTE: We must use the historical version of the model from `apps` to
     #       assert deterministic behavior in both migrations and runtime code.
-    return apps.get_model('auth', 'Permission').objects.filter(
+    queryset = apps.get_model('auth', 'Permission').objects.filter(
         content_type__app_label=app_label,
         content_type__model=model_name
     )
+
+    # If any filters were supplied then chain them together with OR clauses
+    # and apply the complete clause as a `filter` to the DB query.
+    if filters:
+        query_filters = Q()
+        for q_filter in filters:
+            query_filters |= q_filter
+
+        queryset = queryset.filter(query_filters)
+
+    # If any exclusions were supplied then chain them together with OR clauses
+    # and apply the complete clause as an `exclude` to the DB query.
+    if exclusions:
+        exclusion_filters = Q()
+        for exclusion in exclusions:
+            exclusion_filters |= exclusion
+
+        queryset = queryset.exclude(exclusion_filters)
+
+    return queryset.values_list('id', flat=True)
 
 
 def is_own_stt(request, view):
