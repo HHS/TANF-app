@@ -5,13 +5,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
+    replaces = [('reports','0004_auto_20210305_2040')]
     dependencies = [
-        ('reports', '0003_reportfile_created_at'),
+        ('data_files', '0003_datafile_created_at'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='reportfile',
+            model_name='datafile',
             name='year',
             field=models.IntegerField(),
         ),
