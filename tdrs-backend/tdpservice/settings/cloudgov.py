@@ -68,6 +68,12 @@ class CloudGov(Common):
         }
     }
 
+    # Username or email for initial Django Super User
+    DJANGO_SUPERUSER_NAME = os.getenv(
+        'DJANGO_SU_NAME',
+        'lauren.frohlich@acf.hhs.gov'
+    )
+
     # Localstack is always disabled in a cloud.gov environment
     USE_LOCALSTACK = False
 
@@ -115,9 +121,19 @@ class Staging(CloudGov):
 
     ALLOWED_HOSTS = ['tdp-backend-staging.app.cloud.gov']
 
+    LOGIN_GOV_CLIENT_ID = os.getenv(
+        'OIDC_RP_CLIENT_ID',
+        'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging'
+    )
+
 
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
 
     # TODO: Add production ACF domain when known
     ALLOWED_HOSTS = ['tdp-backend-production.app.cloud.gov']
+
+    LOGIN_GOV_CLIENT_ID = os.getenv(
+        'OIDC_RP_CLIENT_ID',
+        'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
+    )
