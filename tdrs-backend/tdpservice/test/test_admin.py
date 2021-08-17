@@ -7,7 +7,6 @@ set to false, while the admin_user has both set to true.
 
 import pytest
 import re
-import os
 from django.contrib import admin
 from django.urls import reverse
 from rest_framework import status
@@ -96,9 +95,9 @@ def test_admin_users_displays_keys(client, admin_user):
 
 
 @pytest.mark.django_db
-def test_superuser_env_var_is_set():
+def test_superuser_env_var_is_set(settings):
     """Test to make sure a valid superuser is in the env."""
-    superuser = os.environ.get('DJANGO_SU_NAME')
+    superuser = settings.DJANGO_SUPERUSER_NAME
     assert superuser is not None
     assert User.objects.filter(username=superuser).exists()
     # make sure the superuser username is a validly formed email
