@@ -2,10 +2,10 @@
 **08/03/2021 - 08/17/2021 **
 
 ### Summary Updates
-Finish work on Secret Key mitigation.
-Continue parsing errors UX/UI
-Start UX UI for Access REquest Process
-Start TDP Permissions.
+Continued work on Secret Key mitigation, all but 2 tasks completed, others in progress.
+Continued work on parsing errors UX/UI
+Started UX UI for Access Request Process
+Started TDP Permissions engineering work.
 
 
 ## Sprint 27 Goals
