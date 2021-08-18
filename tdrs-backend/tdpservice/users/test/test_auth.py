@@ -152,7 +152,7 @@ def test_login_fails_without_state(api_client):
 
 @pytest.fixture()
 def states_factory():
-    """ Provides nonce, state, and code."""
+    """Bundle together nonce, state, and code for tests."""
     yield {
         'nonce':   "testnonce",
         'state':    "teststate",
@@ -161,7 +161,7 @@ def states_factory():
 
 @pytest.fixture()
 def req_factory(states_factory, mock, api_client):
-    """ Generates client request for API usage, part of DRY."""
+    """Generate a client request for API usage, part of DRY."""
     states = states_factory
     factory = APIRequestFactory()
     request = factory.get(
@@ -180,7 +180,7 @@ def decoded_token(
     sub="b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
     email_verified=True
 ):
-    """ Method for generating token dictionary as part of DRY."""
+    """Generate a token dictionary as part of DRY."""
     decoded_token = {
         "email": email,
         "email_verified": email_verified,
@@ -192,7 +192,7 @@ def decoded_token(
     return decoded_token
 
 def create_session(request, states):
-    """ Method for generating client session as part of DRY."""
+    """Generate a client session as part of DRY."""
     request.session["state_nonce_tracker"] = {
             "nonce": states['nonce'],
             "state": states['state'],
@@ -202,9 +202,11 @@ def create_session(request, states):
 
 @pytest.mark.django_db
 class TestLogin:
+    """Associate a set of related tests into a class for shared mock fixtures."""
 
     @pytest.fixture()
     def mock(self, states_factory, mocker, mock_token):
+        """Generate all the mock-up data structs needed for API tests."""
         mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
         token = {
             "access_token": "hhJES3wcgjI55jzjBvZpNQ",
