@@ -1,4 +1,5 @@
 """Set permissions for users."""
+import copy
 from collections import ChainMap
 from typing import List, Optional, TYPE_CHECKING
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
 
 
 # Q objects that can be used to query for default permissions
-# Ref: https://docs.djangoproject.com/en/3.2/topics/auth/default/#default-permissions noqa
+# Ref: https://docs.djangoproject.com/en/3.2/topics/auth/default/#default-permissions # noqa
 add_permissions_q = Q(codename__startswith='add_')
 change_permissions_q = Q(codename__startswith='change_')
 delete_permissions_q = Q(codename__startswith='delete_')
@@ -30,7 +31,7 @@ def get_permission_ids_for_model(
     chained together via an OR clause to the database.
 
     For more information about using Q objects, refer to the documentation:
-    https://docs.djangoproject.com/en/3.2/ref/models/querysets/#django.db.models.Q
+    https://docs.djangoproject.com/en/3.2/ref/models/querysets/#django.db.models.Q # noqa
 
     :param app_label: the lowercase string name of the Django app
     :param model_name: the lowercase string name of the Model class
@@ -67,8 +68,6 @@ def get_permission_ids_for_model(
 
 def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
-    is_data_analyst = is_in_group(request.user, 'Data Analyst')
-
     # Depending on the request, the STT could be found in three different places
     # so we will merge all together and just do one check
     request_parameters = ChainMap(
@@ -80,7 +79,6 @@ def is_own_stt(request, view):
     user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
 
     return bool(
-        is_data_analyst and
         user_stt is not None and
         (requested_stt in [None, str(user_stt)])
     )
@@ -127,18 +125,27 @@ class IsDataAnalyst(permissions.BasePermission):
         return is_in_group(request.user, "Data Analyst")
 
 
-class DataFilePermissions(permissions.BasePermission):
+class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
+    """TODO."""
+
+    def __init__(self):
+        # Use deepcopy to prevent overwriting the parent class perms_map
+        self.perms_map = copy.deepcopy(self.perms_map)
+        self.perms_map['GET'] = ['%(app_label)s.view_%(model_name)s']
+
+
+class DataFilePermissions(DjangoModelCRUDPermissions):
     """Permission for data file downloads & uploads."""
 
     def has_permission(self, request, view):
-        """Check if a user is a data analyst or an admin.
+        """Check if a user has permission to view data files."""
+        has_permission = super().has_permission(request, view)
 
-        If they are a data analyst, ensures the STT is their own.
-        """
-        return (
-            is_in_group(request.user, "OFA Admin") or
-            is_own_stt(request, view)
-        )
+        # Data Analysts are limited to only data files for their designated STT
+        if has_permission and request.user.is_data_analyst:
+            has_permission = is_own_stt(request, view)
+
+        return has_permission
 
     def has_object_permission(self, request, view, obj):
         """Check if a user can interact with a specific file, based on STT.
@@ -148,8 +155,13 @@ class DataFilePermissions(permissions.BasePermission):
         requested for download via the ID of the data_file. This is not called
         on POST requests (creating new data_files) or for a list of data_files.
         """
-        is_ofa_admin = is_in_group(request.user, "OFA Admin")
-        is_data_analyst = is_in_group(request.user, 'Data Analyst')
-        user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
+        # Data Analysts can only see files uploaded for their designated STT
+        if request.user.is_data_analyst:
+            user_stt = (
+                request.user.stt_id
+                if hasattr(request.user, 'stt_id')
+                else None
+            )
+            return user_stt == obj.stt_id
 
-        return is_ofa_admin or (is_data_analyst and user_stt == obj.stt_id)
+        return super().has_object_permission(request, view, obj)
