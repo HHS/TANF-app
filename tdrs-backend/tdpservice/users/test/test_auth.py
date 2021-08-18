@@ -23,8 +23,13 @@ from tdpservice.users.api.utils import (
 )
 from tdpservice.users.authentication import CustomAuthentication
 from tdpservice.users.models import User
+from tdpservice.conftest import generate_test_jwt, get_private_key, get_public_key
 
-test_private_key = os.getenv('JWT_CERT_TEST')
+test_private_key_obj = generate_test_jwt()
+test_private_key = get_private_key(test_private_key_obj)
+os.environ["JWT_CERT_TEST"] = test_private_key.decode("utf-8")
+#test_private_key = os.getenv('JWT_CERT_TEST')
+
 
 
 class MockRequest:
@@ -43,11 +48,7 @@ class MockRequest:
 def patch_login_gov_jwt_key(settings):
     """Override JWT Key setting with the key needed for tests."""
     assert test_private_key is not None, 'Missing env var: JWT_CERT_TEST'
-    settings.LOGIN_GOV_JWT_KEY = test_private_key
-
-def test_myjwttestfordebugging(generate_test_jwt):
-    print(key.export(private_key=False))
-    assert False
+    settings.LOGIN_GOV_JWT_KEY = test_private_key.decode("utf-8")
 
 @pytest.fixture
 def mock_token():
@@ -499,16 +500,16 @@ def test_validate_nonce_and_state():
 
 
 @pytest.mark.django_db
-def test_generate_client_assertion_base64(patch_login_gov_jwt_key):
-    """Test client assertion generation with base64 encoded key."""
+def test_generate_client_assertion_pem(patch_login_gov_jwt_key):
+    """Test client assertion generation with PEM encoded key."""
     assert generate_client_assertion() is not None
 
 
 @pytest.mark.django_db
-def test_generate_client_assertion_pem(settings):
-    """Test client assertion generation with PEM key."""
-    from base64 import b64decode
-    settings.LOGIN_GOV_JWT_KEY = b64decode(test_private_key).decode("utf-8")
+def test_generate_client_assertion_base64(settings):
+    """Test client assertion generation with Base64 key."""
+    from base64 import b64encode
+    settings.LOGIN_GOV_JWT_KEY = b64encode(test_private_key)#.decode("utf-8")
     utf8_jwt_key = generate_client_assertion()
     assert utf8_jwt_key is not None
 

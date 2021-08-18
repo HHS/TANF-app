@@ -13,6 +13,9 @@ from rest_framework.test import APIClient
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+import datetime
 
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from tdpservice.core.admin import LogEntryAdmin
@@ -214,8 +217,6 @@ def admin():
     return LogEntryAdmin(LogEntry, AdminSite())
 
 
-
-@pytest.fixture
 def generate_test_jwt():
     """Dynamically create randomized JWT keys for each run of tests"""
     # deploy-backend.sh:
@@ -277,8 +278,34 @@ def generate_test_jwt():
     #-out cert.pem
     with open(CERT_FILE, "wb") as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
-
-
-    #key = jwk.JWK.generate(kty="RSA", size=4096)
     
-    yield key
+    return key
+
+def get_private_key(private_key):
+    #private_key = generate_test_jwt()
+
+    private_key_der = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()) #\
+        #.decode("utf-8")
+        
+    """
+    encoding=serialization.Encoding.DER,
+    format=serialization.PrivateFormat.PKCS8,
+    encryption_algorithm=serialization.NoEncryption())
+    """
+    # strip off header
+    #private_key_der_encoded = ''.join(private_key_der.split('\n')[1:-2])
+    return private_key_der
+
+def get_public_key(private_key):
+    #private_key = generate_test_jwt()
+    public_key_pem = private_key.public_key().public_bytes(
+        serialization.Encoding.PEM,
+        serialization.PublicFormat.SubjectPublicKeyInfo) \
+        .decode("utf-8")
+    # strip off header
+    #public_key_der_encoded = ''.join(public_key_pem.split('\n')[1:-2])
+
+    return public_key_der
