@@ -66,8 +66,8 @@ class IsDataAnalyst(permissions.BasePermission):
         return is_in_group(request.user, "Data Analyst")
 
 
-class ReportFilePermissions(permissions.BasePermission):
-    """Permission for report downloads & uploads."""
+class DataFilePermissions(permissions.BasePermission):
+    """Permission for data file downloads & uploads."""
 
     def has_permission(self, request, view):
         """Check if a user is a data analyst or an admin.
@@ -82,10 +82,10 @@ class ReportFilePermissions(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         """Check if a user can interact with a specific file, based on STT.
 
-        This is used in cases where we call .get_object() to retrieve a report
-        and do not have the STT available in the request, ie. report was
-        requested for download via the ID of the report. This is not called
-        on POST requests (creating new reports) or for a list of reports.
+        This is used in cases where we call .get_object() to retrieve a data_file
+        and do not have the STT available in the request, ie. data file was
+        requested for download via the ID of the data_file. This is not called
+        on POST requests (creating new data_files) or for a list of data_files.
         """
         is_ofa_admin = is_in_group(request.user, "OFA Admin")
         is_data_analyst = is_in_group(request.user, 'Data Analyst')
