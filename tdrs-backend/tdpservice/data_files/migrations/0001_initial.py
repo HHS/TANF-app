@@ -4,6 +4,9 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
+options={
+    "db_table": 'reports_reportfile'
+}
 
 class Migration(migrations.Migration):
 
@@ -13,10 +16,12 @@ class Migration(migrations.Migration):
         ("stts", "0002_auto_20200923_1809"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
+    replaces = [('reports','0001_initial')]
 
     operations = [
         migrations.CreateModel(
-            name="ReportFile",
+            name="DataFile",
+            options=options,
             fields=[
                 (
                     "id",
@@ -75,7 +80,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.AddConstraint(
-            model_name="reportfile",
+            model_name="datafile",
             constraint=models.UniqueConstraint(
                 fields=("section", "version", "quarter", "year", "stt"),
                 name="constraint_name",

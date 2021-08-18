@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { Redirect } from 'react-router-dom'
+
+import { setMockLoginState } from '../../actions/auth'
 
 import loginLogo from '../../assets/login-gov-logo.svg'
 import Button from '../Button'
@@ -15,10 +17,21 @@ function SplashPage() {
   const authLoading = useSelector((state) => state.auth.loading)
   const isInactive = useSelector((state) => state.auth.inactive)
   const alertRef = useRef(null)
+  const dispatch = useDispatch()
 
   const handleClick = (event) => {
-    event.preventDefault()
-    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+    /* istanbul ignore else */
+    if (
+      window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/) &&
+      process.env.REACT_APP_USE_MIRAGE
+    ) {
+      event.preventDefault()
+      window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+    } else {
+      // This doesn't need to be tested, it will never be reached by jest.
+      event.preventDefault()
+      dispatch(setMockLoginState())
+    }
   }
   useEffect(() => {
     if (isInactive) {
@@ -26,7 +39,10 @@ function SplashPage() {
     }
   }, [alertRef, isInactive])
 
-  if (authenticated) {
+  // Pa11y is not testing out authentication logic, by passing all auth checks
+  // during Pa11y tests allows us to just point to a page in the config like
+  // we have been doing.
+  if (authenticated && !process.env.REACT_APP_PA11Y_TEST) {
     return <Redirect to="/edit-profile" />
   }
 
