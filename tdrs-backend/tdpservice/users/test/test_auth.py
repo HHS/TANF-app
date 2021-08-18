@@ -23,13 +23,6 @@ from tdpservice.users.api.utils import (
 )
 from tdpservice.users.authentication import CustomAuthentication
 from tdpservice.users.models import User
-from tdpservice.conftest import generate_test_jwt, get_private_key, get_public_key
-
-test_private_key_obj = generate_test_jwt()
-test_private_key = get_private_key(test_private_key_obj)
-os.environ["JWT_CERT_TEST"] = test_private_key.decode("utf-8")
-#test_private_key = os.getenv('JWT_CERT_TEST')
-
 
 
 class MockRequest:
@@ -45,7 +38,7 @@ class MockRequest:
 
 
 @pytest.fixture
-def patch_login_gov_jwt_key(settings):
+def patch_login_gov_jwt_key(settings, test_private_key):
     """Override JWT Key setting with the key needed for tests."""
     assert test_private_key is not None, 'Missing env var: JWT_CERT_TEST'
     settings.LOGIN_GOV_JWT_KEY = test_private_key.decode("utf-8")
@@ -158,25 +151,38 @@ def test_login_fails_without_state(api_client):
     assert response.status_code == status.HTTP_302_FOUND
 
 @pytest.fixture()
-def nscx():
-    datas = {
+def states_factory():
+    """ Provides nonce, state, and code."""
+    yield {
         'nonce':   "testnonce",
         'state':    "teststate",
         'code':     secrets.token_hex(32)
     }
-    yield datas
 
 @pytest.fixture()
-def req_factory(nscx, mock, api_client):
-    nsc = nscx
+def req_factory(states_factory, mock, api_client):
+    """ Generates client request for API usage, part of DRY."""
+    states = states_factory
     factory = APIRequestFactory()
-    request = factory.get("/v1/login", {"state": nsc['state'], "code": nsc['code']})
+    request = factory.get(
+            "/v1/login",
+            {
+                "state": states['state'],
+                "code": states['code']
+            }
+            )
     request.session = api_client.session
     yield request
 
-def decoded_token(email, nonce, sub="b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca", email_verified=True):    
+def decoded_token(
+    email,
+    nonce,
+    sub="b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca",
+    email_verified=True
+):
+    """ Method for generating token dictionary as part of DRY."""
     decoded_token = {
-        "email": email, # "test@example.com"
+        "email": email,
         "email_verified": email_verified,
         "nonce": nonce,
         "iss": "https://idp.int.identitysandbox.gov",
@@ -185,10 +191,11 @@ def decoded_token(email, nonce, sub="b2d2d115-1d7e-4579-b9d6-f8e84f4f56ca", emai
     }
     return decoded_token
 
-def create_session(request, nsc):
+def create_session(request, states):
+    """ Method for generating client session as part of DRY."""
     request.session["state_nonce_tracker"] = {
-            "nonce": nsc['nonce'],
-            "state": nsc['state'],
+            "nonce": states['nonce'],
+            "state": states['state'],
             "added_on": time.time(),
         }
     return request
@@ -197,7 +204,7 @@ def create_session(request, nsc):
 class TestLogin:
 
     @pytest.fixture()
-    def mock(self, nscx, mocker, mock_token):
+    def mock(self, states_factory, mocker, mock_token):
         mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
         token = {
             "access_token": "hhJES3wcgjI55jzjBvZpNQ",
@@ -208,29 +215,31 @@ class TestLogin:
         mock_post.return_value = MockRequest(data=token)
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
 
-        mock_decode.return_value = decoded_token("test@example.com", nscx['nonce'])
+        mock_decode.return_value = decoded_token(
+                "test@example.com",
+                states_factory['nonce']
+            )
 
         yield mock_post, mock_decode
 
     def test_login_with_valid_state_and_code(
         self,
         patch_login_gov_jwt_key,
-        nscx,
+        states_factory,
         mock,
         req_factory
     ):
         """Test login with state and code."""
         request = req_factory
-        request = create_session(request, nscx)
+        request = create_session(request, states_factory)
         view = TokenAuthorizationOIDC.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
-
     def test_login_with_existing_token(
         self,
         patch_login_gov_jwt_key,
-        nscx,
+        states_factory,
         mock,
         req_factory
     ):
@@ -238,31 +247,31 @@ class TestLogin:
         view = TokenAuthorizationOIDC.as_view()
         request = req_factory
         request.session["token"] = "testtoken"
-        request = create_session(request, nscx)
+        request = create_session(request, states_factory)
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
-
 
     def test_login_with_general_exception(
         self,
         patch_login_gov_jwt_key,
-        nscx,
+        states_factory,
         mock,
         req_factory
     ):
         """Test login with state and code."""
-        nsc = nscx
+        states = states_factory
         request = req_factory
         view = TokenAuthorizationOIDC.as_view()
 
         # A custom session will throw a general exception
         request.session = {}
-        request =  create_session(request, nsc)
+        request = create_session(request, states)
         response = view(request)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data == {
             "error": (
-                "Email verified, but experienced internal issue " "with login/registration."
+                "Email verified, but experienced internal issue "
+                "with login/registration."
             )
         }
 
@@ -270,7 +279,7 @@ class TestLogin:
         self,
         inactive_user,
         patch_login_gov_jwt_key,
-        nscx,
+        states_factory,
         mock,
         req_factory
     ):
@@ -285,68 +294,76 @@ class TestLogin:
 
         inactive_user.username = "test_inactive@example.com"
         inactive_user.save()
-        
-        mock_decode.return_value = decoded_token("test_inactive@example.com", nscx['nonce'], sub = inactive_user.login_gov_uuid)
+
+        mock_decode.return_value = decoded_token(
+                        "test_inactive@example.com",
+                        states_factory['nonce'],
+                        sub=inactive_user.login_gov_uuid
+                    )
         view = TokenAuthorizationOIDC.as_view()
-        request = create_session(request, nscx)
+        request = create_session(request, states_factory)
         response = view(request)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.data == {
             "error": f'Login failed, user account is inactive: {inactive_user.username}'
         }
 
-
     def test_login_with_existing_user(
         self,
         user,
         patch_login_gov_jwt_key,
         mock,
-        nscx,
+        states_factory,
         req_factory
     ):
         """Login should work with existing user."""
-        nsc = nscx
+        states = states_factory
         request = req_factory
-        request = create_session(request, nscx)
-        
-        
+        request = create_session(request, states_factory)
+
         user.username = "test_existing@example.com"
         user.save()
         view = TokenAuthorizationOIDC.as_view()
         mock_post, mock_decode = mock
-        mock_decode.return_value = decoded_token("test_existing@example.com", nsc["nonce"], sub = user.login_gov_uuid)
-        
+        mock_decode.return_value = decoded_token(
+                    "test_existing@example.com",
+                    states["nonce"],
+                    sub=user.login_gov_uuid
+            )
+
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
-
-
 
     def test_login_with_old_email(
             self,
             mock,
-            nscx,
+            states_factory,
             req_factory,
             patch_login_gov_jwt_key,
             user
-        ):
-            """Login should work with existing user."""
-            user.username = "test_old_email@example.com"
-            user.save()
-            nsc = nscx
-            request = req_factory
-            request = create_session(request, nscx)
-            view = TokenAuthorizationOIDC.as_view()
-            mock_post, mock_decode = mock
-            mock_decode.return_value = decoded_token("test_new_email@example.com", nsc["nonce"], sub = user.login_gov_uuid)
-            response = view(request)
-            # Ensure the user's username was updated with new email.
-            assert User.objects.filter(username="test_new_email@example.com").exists()
-            assert response.status_code == status.HTTP_302_FOUND
+    ):
+        """Login should work with existing user."""
+        user.username = "test_old_email@example.com"
+        user.save()
+        states = states_factory
+        request = req_factory
+        request = create_session(request, states_factory)
+        view = TokenAuthorizationOIDC.as_view()
+        mock_post, mock_decode = mock
+        mock_decode.return_value = decoded_token(
+                    "test_new_email@example.com",
+                    states["nonce"],
+                    sub=user.login_gov_uuid
+            )
+        response = view(request)
+        # Ensure the user's username was updated with new email.
+        assert User.objects.filter(username="test_new_email@example.com").exists()
+        assert response.status_code == status.HTTP_302_FOUND
 
     def test_login_with_initial_superuser(
         self,
         mock,
-        nscx,
+        states_factory,
         req_factory,
         patch_login_gov_jwt_key,
         settings,
@@ -359,11 +376,11 @@ class TestLogin:
         user.username = test_username
         user.login_gov_uuid = None
         user.save()
-        nsc = nscx
+        states = states_factory
         request = req_factory
-        request = create_session(request, nscx)
+        request = create_session(request, states_factory)
         mock_post, mock_decode = mock
-        mock_decode.return_value = decoded_token(test_username, nsc["nonce"])
+        mock_decode.return_value = decoded_token(test_username, states["nonce"])
         view = TokenAuthorizationOIDC.as_view()
         response = view(request)
 
@@ -371,63 +388,55 @@ class TestLogin:
         assert str(user.login_gov_uuid) == mock_decode.return_value["sub"]
         assert response.status_code == status.HTTP_302_FOUND
 
-
-
     def test_login_with_expired_token(
         self,
         mock,
-        nscx,
+        states_factory,
         req_factory,
         patch_login_gov_jwt_key
     ):
         """Login should proceed when token already exists."""
-        nsc = nscx
         request = req_factory
-        request = create_session(request, nscx)
+        request = create_session(request, states_factory)
         mock_post, mock_decode = mock
         mock_decode.side_effect = jwt.ExpiredSignatureError()
-        
+
         view = TokenAuthorizationOIDC.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.data == {"error": "The token is expired."}
 
-
     def test_login_with_bad_validation_code(
         self,
         mock,
-        nscx,
+        states_factory,
         req_factory,
         patch_login_gov_jwt_key
     ):
         """Login should error with a bad validation code."""
-        nsc = nscx
         request = req_factory
-        request = create_session(request, nscx)
+        request = create_session(request, states_factory)
         mock_post, mock_decode = mock
         mock_post.return_value = MockRequest(
             data={}, status_code=status.HTTP_400_BAD_REQUEST
         )
         view = TokenAuthorizationOIDC.as_view()
-        
         response = view(request)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data == {
             "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
         }
 
-
     def test_login_with_bad_nonce_and_state(
         self,
         mock,
-        nscx,
+        states_factory,
         req_factory,
         patch_login_gov_jwt_key
     ):
         """Login should error with a bad nonce and state."""
-        nsc = nscx
         request = req_factory
-        request = create_session(request, nscx)
+        request = create_session(request, states_factory)
         mock_post, mock_decode = mock
         view = TokenAuthorizationOIDC.as_view()
         request.session["state_nonce_tracker"] = {
@@ -438,21 +447,23 @@ class TestLogin:
         with pytest.raises(SuspiciousOperation):
             view(request)
 
-
-
     def test_login_with_email_unverified(
         self,
         mock,
-        nscx,
+        states_factory,
         req_factory,
         patch_login_gov_jwt_key
     ):
-        """Login should faild with unverified email."""
-        nsc = nscx
+        """Login should fail with unverified email."""
+        states = states_factory
         request = req_factory
-        request = create_session(request, nscx)
+        request = create_session(request, states_factory)
         mock_post, mock_decode = mock
-        mock_decode.return_value = decoded_token("test@example.com", nsc['nonce'], email_verified=False)
+        mock_decode.return_value = decoded_token(
+                    "test@example.com",
+                    states['nonce'],
+                    email_verified=False
+                )
         view = TokenAuthorizationOIDC.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -506,10 +517,10 @@ def test_generate_client_assertion_pem(patch_login_gov_jwt_key):
 
 
 @pytest.mark.django_db
-def test_generate_client_assertion_base64(settings):
+def test_generate_client_assertion_base64(settings, test_private_key):
     """Test client assertion generation with Base64 key."""
     from base64 import b64encode
-    settings.LOGIN_GOV_JWT_KEY = b64encode(test_private_key)#.decode("utf-8")
+    settings.LOGIN_GOV_JWT_KEY = b64encode(test_private_key)
     utf8_jwt_key = generate_client_assertion()
     assert utf8_jwt_key is not None
 
