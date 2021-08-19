@@ -2,7 +2,7 @@
 
 import uuid
 
-from django.contrib.auth.models import AbstractUser, Group
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.functional import cached_property
 from tdpservice.stts.models import STT, Region
@@ -40,18 +40,13 @@ class User(AbstractUser):
         return self.username
 
     def is_in_group(self, group_name: str) -> bool:
-        """TODO."""
+        """Return whether or not the user is a member of the specified Group."""
         return self.groups.filter(name=group_name).exists()
 
-    @property
-    def is_admin(self):
-        """Check if the user is an admin."""
-        return (
-            self.is_superuser
-            or Group.objects.get(name="OFA Admin") in self.groups.all()
-        )
-
     @cached_property
-    def is_data_analyst(self):
-        """TODO."""
+    def is_data_analyst(self) -> bool:
+        """Return whether or not the user is in the Data Analyst Group.
+
+        Uses a cached_property to prevent repeated calls to the database.
+        """
         return self.is_in_group('Data Analyst')
