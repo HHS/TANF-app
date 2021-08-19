@@ -4,63 +4,27 @@ import logging
 import os
 from distutils.util import strtobool
 from os.path import join
-from secrets import token_urlsafe
+from typing import Any, Optional
 
 from configurations import Configuration
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# NOTE: These may be overridden by system or env_file variables
-#       Eventually we may want to consider moving these defaults into
-#       settings declarations in the class below. This will allow us to safely
-#       reference environment variables across the app as we will no longer
-#       need to rely on calling os.environ directly.
-os.environ.setdefault(
-    "ACR_VALUES",
-    "http://idmanagement.gov/ns/assurance/ial/1"
-)
-os.environ.setdefault("BASE_URL", "http://localhost:8080/v1")
-os.environ.setdefault(
-    "CLIENT_ASSERTION_TYPE",
-    "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-)
-os.environ.setdefault(
-    "CLIENT_ID",
-    "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev"
-)
-os.environ.setdefault("FRONTEND_BASE_URL", "http://localhost:3000")
-os.environ.setdefault(
-    "MOCK_TOKEN",
-    "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1Nzkt"
-    "YjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ292IiwiY"
-    "WNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xIiwibm9uY2"
-    "UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InVybjpnb3Y6Z3N"
-    "hOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4ZE5OVjVsaXNRQm0x"
-    "anRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJjX2hhc2giOiJoWGpxN"
-    "2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpYXQiOjE0ODk2OTQxOTgsIm"
-    "5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNdlc3mEm7fFxb8ZADdRvYmDMnD"
-    "PuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn00Cuq_Bpbn7NRdf3ktxkBrpqyzIA"
-    "rLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caRYePBLbZJFl0Ri25bqXugguAYTyX9HA"
-    "CaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYdhzwj777rkgSg555GoBDZy3MetapbT0csS"
-    "WqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg"
-)
-os.environ.setdefault(
-    "OIDC_OP_AUTHORIZATION_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/openid_connect/authorize"
-)
-os.environ.setdefault("OIDC_OP_ISSUER", "https://idp.int.identitysandbox.gov/")
-os.environ.setdefault(
-    "OIDC_OP_JWKS_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/api/openid_connect/certs"
-)
-os.environ.setdefault(
-    "OIDC_OP_LOGOUT_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/openid_connect/logout"
-)
-os.environ.setdefault(
-    "OIDC_OP_TOKEN_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/api/openid_connect/token"
-)
+
+def get_required_env_var_setting(
+    env_var_name: str,
+    setting_name: Optional[str] = None
+) -> Any:
+    """Retrieve setting from environment variable, otherwise raise an error."""
+    env_var = os.getenv(env_var_name)
+    if not env_var:
+        raise ImproperlyConfigured(
+            f'Missing required setting: {setting_name or env_var_name} - must '
+            f'set {env_var_name} environment variable'
+        )
+
+    return env_var
 
 
 class Common(Configuration):
@@ -88,7 +52,7 @@ class Common(Configuration):
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
         "tdpservice.stts",
-        "tdpservice.reports",
+        "tdpservice.data_files",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -107,9 +71,13 @@ class Common(Configuration):
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = "tdpservice.urls"
-    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", token_urlsafe(50))
+    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
     WSGI_APPLICATION = "tdpservice.wsgi.application"
     CORS_ORIGIN_ALLOW_ALL = True
+
+    # Application URLs
+    BASE_URL = os.getenv('BASE_URL', 'http://localhost:8080/v1')
+    FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL', 'http://localhost:3000')
 
     # Email Server
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -262,6 +230,13 @@ class Common(Configuration):
     # Custom user app
     AUTH_USER_MODEL = "users.User"
 
+    # Username or email for initial Django Super User
+    # NOTE: In a deployed context this will default to the Product Owner
+    DJANGO_SUPERUSER_NAME = get_required_env_var_setting(
+        'DJANGO_SU_NAME',
+        'DJANGO_SUPERUSER_NAME'
+    )
+
     # Sessions
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
@@ -341,3 +316,44 @@ class Common(Configuration):
     CSP_OBJECT_SRC = ("'none'")
     CSP_FRAME_ANCESTORS = ("'none'")
     CSP_FORM_ACTION = ("'none'")
+
+    ###
+    # Authentication Provider Settings
+    #
+    LOGIN_GOV_ACR_VALUES = os.getenv(
+        'ACR_VALUES',
+        'http://idmanagement.gov/ns/assurance/ial/1'
+    )
+    LOGIN_GOV_AUTHORIZATION_ENDPOINT = os.getenv(
+        'OIDC_OP_AUTHORIZATION_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/openid_connect/authorize'
+    )
+    LOGIN_GOV_CLIENT_ASSERTION_TYPE = os.getenv(
+        'CLIENT_ASSERTION_TYPE',
+        'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+    )
+    LOGIN_GOV_CLIENT_ID = os.getenv(
+        'OIDC_RP_CLIENT_ID',
+        'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev'
+    )
+    LOGIN_GOV_ISSUER = os.getenv(
+        'OIDC_OP_ISSUER',
+        'https://idp.int.identitysandbox.gov/'
+    )
+    LOGIN_GOV_JWKS_ENDPOINT = os.getenv(
+        'OIDC_OP_JWKS_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/api/openid_connect/certs'
+    )
+    # JWT_KEY must be set, there is no functional default.
+    LOGIN_GOV_JWT_KEY = get_required_env_var_setting(
+        'JWT_KEY',
+        'LOGIN_GOV_JWT_KEY'
+    )
+    LOGIN_GOV_LOGOUT_ENDPOINT = os.getenv(
+        'OIDC_OP_LOGOUT_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/openid_connect/logout'
+    )
+    LOGIN_GOV_TOKEN_ENDPOINT = os.getenv(
+        'OIDC_OP_TOKEN_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/api/openid_connect/token'
+    )

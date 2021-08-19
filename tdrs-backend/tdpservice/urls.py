@@ -31,7 +31,7 @@ urlpatterns = [
     path("auth_check", AuthorizationCheck.as_view(), name="authorization-check"),
     path("", include("tdpservice.users.urls")),
     path("stts/", include("tdpservice.stts.urls")),
-    path("reports/", include("tdpservice.reports.urls")),
+    path("data_files/", include("tdpservice.data_files.urls")),
     path("logs/", write_logs),
     # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
     re_path(
