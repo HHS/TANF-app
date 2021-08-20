@@ -14,16 +14,22 @@ def add_dev_group(apps, schema_editor):
                 .get_or_create(name='Developer')
         )
 
-    # Clear existing permissions that may be set so we can ensure pristine state
-    developer.permissions.clear()
-    developer.permissions.add(
-        apps.get_model('auth', 'Permission').objects.all()
-    )
+        # Clear existing permissions that may be set so we can ensure pristine state
+        developer.permissions.clear()
+        developer.permissions.add(
+            *apps.get_model('auth', 'Permission').objects.all()
+                .values_list('id', flat=True)
+        )
+
+
 
 class Migration(migrations.Migration):
     dependencies = [
+        ('users', '0020_ofa_system_admin_permissions'),
+        ('users', '0017_unset_superuser_flag')
 
     ]
     operations = [
-        migrations.RunPython(add_dev_group,remove_dev_group)
+        migrations.RunPython(add_dev_group,
+            reverse_code=migrations.RunPython.noop)
     ]
