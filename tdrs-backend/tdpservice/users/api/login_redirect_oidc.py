@@ -1,10 +1,10 @@
 """Handle login requests."""
 
-import os
 import secrets
 import time
 from urllib.parse import quote_plus, urlencode
 
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
@@ -32,11 +32,11 @@ class LoginRedirectOIDC(RedirectView):
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
         auth_params = {
-            "acr_values": os.environ["ACR_VALUES"],
-            "client_id": os.environ["CLIENT_ID"],
+            "acr_values": settings.LOGIN_GOV_ACR_VALUES,
+            "client_id": settings.LOGIN_GOV_CLIENT_ID,
             "nonce": nonce,
             "prompt": "select_account",
-            "redirect_uri": os.environ["BASE_URL"] + "/login",
+            "redirect_uri": settings.BASE_URL + "/login",
             "response_type": "code",
             "state": state,
         }
@@ -48,7 +48,7 @@ class LoginRedirectOIDC(RedirectView):
 
         # build out full API GET call to authorize endpoint
         auth_endpoint = (
-            os.environ["OIDC_OP_AUTHORIZATION_ENDPOINT"] + "?" + encoded_params
+            settings.LOGIN_GOV_AUTHORIZATION_ENDPOINT + "?" + encoded_params
         )
         auth_endpoint_scope = auth_endpoint + "&" + auth_scope
 
