@@ -313,9 +313,9 @@ class Common(Configuration):
     CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
     CSP_MANIFEST_SRC = ("'self'")
     CSP_OBJECT_SRC = ("'none'")
-    CSP_OBJECT_SRC = ("'none'")
     CSP_FRAME_ANCESTORS = ("'none'")
-    CSP_FORM_ACTION = ("'none'")
+    CSP_FORM_ACTION = ("'self'")
+    CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
 
     ###
     # Authentication Provider Settings
