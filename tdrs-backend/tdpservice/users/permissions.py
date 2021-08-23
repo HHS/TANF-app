@@ -153,24 +153,22 @@ class UserPermissions(DjangoModelCRUDPermissions):
     """Permission to allow modifying records related to the User's account."""
 
     def has_permission(self, request, view):
-        """Check if the user has the relevant Model Permission for User."""
-        # These actions refer to individual user accounts, which will be checked
-        # via has_object_permissions below.
-        obj_perms_actions = [
-            'retrieve',
-            'update',
-            'partial_update',
-            'set_profile'
-        ]
-        if view.action in obj_perms_actions:
-            # In this case this just pass-through to has_object_permissions
-            return True
-
-        # Otherwise, check that the user has the relevant Model Permissions
-        return super().has_permission(request, view)
+        """Check if user has permission to User related resources."""
+        # NOTE: There are currently no uses of this permission that don't deal
+        #       with object permissions on an individual instance.
+        #       If this is added to an additional viewset in the future that
+        #       implements the `list` view.action we will need to check model
+        #       permissions directly using super().has_permission for that
+        #       action only. In that case actions dealing with individual
+        #       object permissions will need to be passed through this function
+        #       by returning True.
+        return True
 
     def has_object_permission(self, request, view, obj):
-        """Check if the object being modified belongs to the user."""
+        """Check if the object being modified belongs to the user.
+
+        Alternatively, check if the user has been granted Model Permissions.
+        """
         # If the user has the relevant model permission that will also allow
         # access to individual objects
         has_model_permission = super().has_permission(request, view)
