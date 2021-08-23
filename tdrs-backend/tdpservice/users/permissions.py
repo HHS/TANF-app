@@ -7,8 +7,8 @@ from django.apps import apps
 from django.db.models import Q, QuerySet
 from rest_framework import permissions
 
-if TYPE_CHECKING:
-    from django.contrib.auth.models import Permission
+if TYPE_CHECKING:  # pragma: no cover
+    from django.contrib.auth.models import Permission  # pragma: no cover
 
 
 # Q objects that can be used to query for default permissions
