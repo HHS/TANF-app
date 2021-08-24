@@ -34,7 +34,11 @@ function Welcome() {
           </ul>
         </>
       )}
-      <Button type="button" className="width-tablet" onClick={logOut}>
+      <Button
+        type="button"
+        className="width-tablet margin-bottom-4"
+        onClick={logOut}
+      >
         <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
         Sign Out
       </Button>
