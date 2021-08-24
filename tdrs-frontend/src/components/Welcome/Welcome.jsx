@@ -22,7 +22,7 @@ function Welcome() {
       ) : (
         <>
           <p className="margin-top-1 margin-bottom-4">
-            You've been approved as a/an {role?.[0].name}. You'll be able to do
+            You've been approved as a(n) {role?.[0].name}. You'll be able to do
             the following in TDP:
           </p>
           <ul>

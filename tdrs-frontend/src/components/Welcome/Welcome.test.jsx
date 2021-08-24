@@ -50,7 +50,7 @@ describe('Welcome', () => {
     )
 
     const header = getByText(
-      `You've been approved as a/an OFA Admin. You'll be able to do the following in TDP:`
+      `You've been approved as a(n) OFA Admin. You'll be able to do the following in TDP:`
     )
     expect(header).toBeInTheDocument()
   })
@@ -61,7 +61,7 @@ describe('Welcome', () => {
         authenticated: true,
         user: {
           email: 'hi@bye.com',
-          roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
+          roles: [{ id: 2, name: 'Data Analyst', permission: [] }],
         },
       },
     })
@@ -73,7 +73,7 @@ describe('Welcome', () => {
     )
 
     const header = getByText(
-      `You've been approved as a/an OFA Admin. You'll be able to do the following in TDP:`
+      `You've been approved as a(n) Data Analyst. You'll be able to do the following in TDP:`
     )
     expect(header).toBeInTheDocument()
   })
@@ -87,7 +87,7 @@ describe('Welcome', () => {
           roles: [
             {
               id: 1,
-              name: 'OFA Admin',
+              name: 'Data Analyst',
               permissions: [
                 {
                   id: 8,
@@ -132,6 +132,7 @@ describe('Welcome', () => {
       </Provider>
     )
 
+    expect(getByText('Data Analyst')).toBeInTheDocument()
     expect(getByText('Can view log entry')).toBeInTheDocument()
     expect(getByText('Can change user')).toBeInTheDocument()
     expect(getByText('Can add user')).toBeInTheDocument()
