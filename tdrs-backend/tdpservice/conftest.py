@@ -56,6 +56,12 @@ def ofa_admin():
 
 
 @pytest.fixture
+def ofa_system_admin():
+    """Return on OFA System Admin user."""
+    return UserFactory.create(groups=(Group.objects.get(name='OFA System Admin'),))
+
+
+@pytest.fixture
 def data_analyst():
     """Return a data analyst user."""
     return UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),))
