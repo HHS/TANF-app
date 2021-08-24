@@ -11,38 +11,38 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from wsgiref.util import FileWrapper
 
-from tdpservice.reports.serializers import ReportFileSerializer
-from tdpservice.reports.models import ReportFile
-from tdpservice.users.permissions import ReportFilePermissions
+from tdpservice.data_files.serializers import DataFileSerializer
+from tdpservice.data_files.models import DataFile
+from tdpservice.users.permissions import DataFilePermissions
 
 logger = logging.getLogger()
 
 
-class ReportFileFilter(filters.FilterSet):
+class DataFileFilter(filters.FilterSet):
     """Filters that can be applied to GET requests as query parameters."""
 
     # Override the generated definition for the STT field so we can require it.
     stt = filters.NumberFilter(field_name='stt_id', required=True)
 
     class Meta:
-        """Class metadata linking to the ReportFile and fields accepted."""
+        """Class metadata linking to the DataFile and fields accepted."""
 
-        model = ReportFile
+        model = DataFile
         fields = ['stt', 'quarter', 'year']
 
 
-class ReportFileViewSet(ModelViewSet):
-    """Report file views."""
+class DataFileViewSet(ModelViewSet):
+    """Data file views."""
 
     http_method_names = ['get', 'post', 'head']
-    filterset_class = ReportFileFilter
+    filterset_class = DataFileFilter
     parser_classes = [MultiPartParser]
-    permission_classes = [ReportFilePermissions]
-    serializer_class = ReportFileSerializer
+    permission_classes = [DataFilePermissions]
+    serializer_class = DataFileSerializer
 
     # TODO: Handle versioning in queryset
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
-    queryset = ReportFile.objects.all()
+    queryset = DataFile.objects.all()
 
     # NOTE: This is a temporary hack to make sure the latest version of the file
     # is the one presented in the UI. Once we implement the above linked issue
@@ -70,14 +70,14 @@ class ReportFileViewSet(ModelViewSet):
 
 
 class GetYearList(APIView):
-    """Get list of years for which there are reports."""
+    """Get list of years for which there are data_files."""
 
     query_string = False
-    pattern_name = "report-list"
-    permission_classes = [ReportFilePermissions]
+    pattern_name = "data_file-list"
+    permission_classes = [DataFilePermissions]
 
     def get(self, request, **kwargs):
-        """Handle get action for get list of years there are reports."""
+        """Handle get action for get list of years there are data_files."""
         user = request.user
         is_ofa_admin = user.groups.filter(name="OFA Admin").exists()
 
@@ -88,7 +88,7 @@ class GetYearList(APIView):
                 status=HTTP_400_BAD_REQUEST
             )
 
-        available_years = ReportFile.objects.filter(
+        available_years = DataFile.objects.filter(
             stt=stt_id
         ).values_list('year', flat=True).distinct()
         return Response(list(available_years))
