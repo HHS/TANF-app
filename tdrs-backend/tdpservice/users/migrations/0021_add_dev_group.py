@@ -3,7 +3,6 @@ from django.db import migrations
 from django.contrib.auth.models import Group
 from django.conf import settings
 
-from tdpservice.users.permissions import delete_permissions_q
 
 def add_dev_group(apps, schema_editor):
     """Add super user group for devs that is only present in non production environments."""
