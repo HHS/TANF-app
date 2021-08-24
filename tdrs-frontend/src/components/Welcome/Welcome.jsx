@@ -3,11 +3,9 @@ import Button from '../Button'
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useSelector } from 'react-redux'
+import signOut from '../../utils/signOut'
 
 function Welcome() {
-  const logOut = () => {
-    window.location = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
-  }
   const user = useSelector((state) => state.auth.user)
   const role = user?.roles
   const hasRole = Boolean(role?.length > 0)
@@ -37,7 +35,7 @@ function Welcome() {
       <Button
         type="button"
         className="width-tablet margin-bottom-4"
-        onClick={logOut}
+        onClick={signOut}
       >
         <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
         Sign Out

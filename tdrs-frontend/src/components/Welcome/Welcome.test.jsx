@@ -132,7 +132,11 @@ describe('Welcome', () => {
       </Provider>
     )
 
-    expect(getByText('Data Analyst')).toBeInTheDocument()
+    expect(
+      getByText(
+        `You've been approved as a(n) Data Analyst. You'll be able to do the following in TDP:`
+      )
+    ).toBeInTheDocument()
     expect(getByText('Can view log entry')).toBeInTheDocument()
     expect(getByText('Can change user')).toBeInTheDocument()
     expect(getByText('Can add user')).toBeInTheDocument()
