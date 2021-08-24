@@ -1,6 +1,8 @@
 """Define Django routing."""
 
+import os
 from django.conf import settings
+
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path, reverse_lazy
@@ -15,7 +17,7 @@ from .users.api.login_redirect_oidc import LoginRedirectOIDC
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
 from django.contrib.auth.decorators import login_required
-from .core.views import write_logs
+from .core.views import write_logs, IndexView
 
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
@@ -29,7 +31,7 @@ urlpatterns = [
     path("auth_check", AuthorizationCheck.as_view(), name="authorization-check"),
     path("", include("tdpservice.users.urls")),
     path("stts/", include("tdpservice.stts.urls")),
-    path("reports/", include("tdpservice.reports.urls")),
+    path("data_files/", include("tdpservice.data_files.urls")),
     path("logs/", write_logs),
     # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
     re_path(
@@ -38,10 +40,26 @@ urlpatterns = [
 ]
 
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 urlpatterns = [
     path("v1/", include(urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
+    path("", IndexView.as_view(), name="index"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# We needed to serve something at / and /sitemap.xml in order to
+# Resolve owasp error Content Security Policy (CSP) Header Not Set [10038] x 2 .
+# We intend to change how we do this in future work.
+
+# The two files being served right now are located at `tdrs-backend/csp/sitemap.xml`
+# and `tdrs-backend/tdpservice/core/templates/index.html`
+
+# Two alternatives suggested:
+# 1. Attempt to scan the api starting at web:8080/v1/
+# 2. Serve a blank json instead of static files
+
+
+urlpatterns += static("/", document_root=os.path.join(BASE_DIR, "csp"))
 
 # TODO: Supply `terms_of_service` argument in OpenAPI Info once implemented
 schema_view = get_schema_view(

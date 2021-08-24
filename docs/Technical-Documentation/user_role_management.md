@@ -39,7 +39,7 @@ _Alternatively_
 ### Group List
 
 - Clicking on "Groups" from the Admin Home page gives you a list of all of the existing groups.
-- Current groups listed are "OFA Admin" and "Data Prepper".
+- Current groups listed are "System Admin", "OFA Admin" , and "Data Analyst".
 
 ![](images/group_list.png)
 
@@ -77,7 +77,7 @@ _Alternatively_
 
 - When you click on a user from the User List, you can edit that user's information, including
 first name, last name and username, as well as the user's Active Status, Superuser Status, Staff Status, assigned Groups, STT and Region. You can
-also view the date and time the user joined and when they last logged in.
+also view the user's login.gov UUID, as well as the date and time the user joined and when they last logged in. Note: now that TDP users are identified via their login.gov [UUID](https://github.com/raft-tech/TANF-app/pull/894), any backend changes to the user's first, last, and username will be overwritten by these fields from the user's login.gov account the next time the user logs into TDP. 
 
 ![](images/admin_users.png)
 
@@ -90,7 +90,7 @@ For the OFA MVP, we will need to assign the Django built-in roles of `superuser`
 This will be needed for users to have access to the Django Admin interface detailed above.
 
 This guide will provide instructions on how to define them in local and deployed environments. 
-Access to the CLI is strictly controlled by the Product Owner.
+Access to the CLI is strictly controlled by the Product Owner. 
 
 
 **Local Development**
@@ -147,11 +147,11 @@ data_prepper.user_set.add(user)
 
 3.) After moving into the `tdpapp` directory, the admin will then have to set the alias for the python executable if it has not been set and execute the shell script to promote the existing user.
 
-Commands to move to the correct directory and make python available 
-```bash
-cd ../tdpapp
-alias pytemp='/usr/local/bin/python3.7'
-pytemp manage.py shell
+Commands to move to the correct directory and make python available  
+```bash 
+cd ../tdpapp 
+alias pytemp='/usr/local/bin/python3.7' 
+pytemp manage.py shell 
 ```
 
 Python script to promote the targer user to `superuser`: 

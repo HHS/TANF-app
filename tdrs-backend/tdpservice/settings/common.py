@@ -1,66 +1,30 @@
 """Define settings for all environments."""
 
-import json
 import logging
 import os
 from distutils.util import strtobool
 from os.path import join
+from typing import Any, Optional
 
 from configurations import Configuration
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# NOTE: These may be overridden by system or env_file variables
-#       Eventually we may want to consider moving these defaults into
-#       settings declarations in the class below. This will allow us to safely
-#       reference environment variables across the app as we will no longer
-#       need to rely on calling os.environ directly.
-os.environ.setdefault(
-    "ACR_VALUES",
-    "http://idmanagement.gov/ns/assurance/ial/1"
-)
-os.environ.setdefault("BASE_URL", "http://localhost:8080/v1")
-os.environ.setdefault(
-    "CLIENT_ASSERTION_TYPE",
-    "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-)
-os.environ.setdefault(
-    "CLIENT_ID",
-    "urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev"
-)
-os.environ.setdefault("FRONTEND_BASE_URL", "http://localhost:3000")
-os.environ.setdefault(
-    "MOCK_TOKEN",
-    "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1Nzkt"
-    "YjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ292IiwiY"
-    "WNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xIiwibm9uY2"
-    "UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InVybjpnb3Y6Z3N"
-    "hOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4ZE5OVjVsaXNRQm0x"
-    "anRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJjX2hhc2giOiJoWGpxN"
-    "2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpYXQiOjE0ODk2OTQxOTgsIm"
-    "5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNdlc3mEm7fFxb8ZADdRvYmDMnD"
-    "PuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn00Cuq_Bpbn7NRdf3ktxkBrpqyzIA"
-    "rLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caRYePBLbZJFl0Ri25bqXugguAYTyX9HA"
-    "CaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYdhzwj777rkgSg555GoBDZy3MetapbT0csS"
-    "WqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg"
-)
-os.environ.setdefault(
-    "OIDC_OP_AUTHORIZATION_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/openid_connect/authorize"
-)
-os.environ.setdefault("OIDC_OP_ISSUER", "https://idp.int.identitysandbox.gov/")
-os.environ.setdefault(
-    "OIDC_OP_JWKS_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/api/openid_connect/certs"
-)
-os.environ.setdefault(
-    "OIDC_OP_LOGOUT_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/openid_connect/logout"
-)
-os.environ.setdefault(
-    "OIDC_OP_TOKEN_ENDPOINT",
-    "https://idp.int.identitysandbox.gov/api/openid_connect/token"
-)
+
+def get_required_env_var_setting(
+    env_var_name: str,
+    setting_name: Optional[str] = None
+) -> Any:
+    """Retrieve setting from environment variable, otherwise raise an error."""
+    env_var = os.getenv(env_var_name)
+    if not env_var:
+        raise ImproperlyConfigured(
+            f'Missing required setting: {setting_name or env_var_name} - must '
+            f'set {env_var_name} environment variable'
+        )
+
+    return env_var
 
 
 class Common(Configuration):
@@ -88,7 +52,7 @@ class Common(Configuration):
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
         "tdpservice.stts",
-        "tdpservice.reports",
+        "tdpservice.data_files",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -102,59 +66,41 @@ class Common(Configuration):
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "corsheaders.middleware.CorsMiddleware",
         "tdpservice.users.api.middleware.AuthUpdateMiddleware",
+        "csp.middleware.CSPMiddleware"
     )
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = "tdpservice.urls"
-    SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
     WSGI_APPLICATION = "tdpservice.wsgi.application"
     CORS_ORIGIN_ALLOW_ALL = True
+
+    # Application URLs
+    BASE_URL = os.getenv('BASE_URL', 'http://localhost:8080/v1')
+    FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL', 'http://localhost:3000')
 
     # Email Server
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
     # Whether to use localstack in place of a live AWS S3 environment
-    USE_LOCALSTACK = bool(os.getenv("USE_LOCALSTACK", 0))
-
-    # AWS Access Keys
-    AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY")
-    AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_BUCKET")
-    AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
+    USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "no")))
 
     # Those who will receive error notifications from django via email
     ADMINS = (("Admin1", "ADMIN_EMAIL_FIRST"), ("Admin2", "ADMIN_EMAIL_SECOND"))
-    if "VCAP_SERVICES" in os.environ:  # pragma: nocover
-        servicejson = os.environ["VCAP_SERVICES"]
-        services = json.loads(servicejson)
-        AWS_STORAGE_BUCKET_NAME = services["s3"][0]["credentials"]["bucket"]
-        AWS_S3_REGION_NAME = services["s3"][0]["credentials"]["region"]
-        AWS_ACCESS_KEY_ID = services["s3"][0]["credentials"]["access_key_id"]
-        AWS_SECRET_ACCESS_KEY = services["s3"][0]["credentials"]["secret_access_key"]
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": services["aws-rds"][0]["credentials"]["db_name"],
-                "USER": services["aws-rds"][0]["credentials"]["username"],
-                "PASSWORD": services["aws-rds"][0]["credentials"]["password"],
-                "HOST": services["aws-rds"][0]["credentials"]["host"],
-                "PORT": services["aws-rds"][0]["credentials"]["port"],
-            }
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT"),
         }
-    else:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": os.getenv("DB_NAME"),
-                "USER": os.getenv("DB_USER"),
-                "PASSWORD": os.getenv("DB_PASSWORD"),
-                "HOST": os.getenv("DB_HOST"),
-                "PORT": os.getenv("DB_PORT"),
-            }
-        }
+    }
 
     # General
-    APPEND_SLASH = False
+    APPEND_SLASH = True
     TIME_ZONE = "UTC"
     LANGUAGE_CODE = "en-us"
     # If you set this to False, Django will make some optimizations so as not
@@ -175,12 +121,23 @@ class Common(Configuration):
         "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     )
 
+    # By default collectstatic will store files locally so these settings are
+    # not used but they must be defined, lest the server will fail to startup.
+    AWS_S3_STATICFILES_ACCESS_KEY = None
+    AWS_S3_STATICFILES_SECRET_KEY = None
+    AWS_S3_STATICFILES_BUCKET_NAME = None
+    AWS_S3_STATICFILES_ENDPOINT = None
+    AWS_S3_STATICFILES_REGION_NAME = None
+
     # Store uploaded files in S3
     # http://django-storages.readthedocs.org/en/latest/index.html
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
-    # Store uploaded Data Files in a separate AWS Bucket
-    DATA_FILES_AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_BUCKET')
+    DEFAULT_FILE_STORAGE = 'tdpservice.backends.DataFilesS3Storage'
+    AWS_S3_DATAFILES_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY')
+    AWS_S3_DATAFILES_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_S3_DATAFILES_BUCKET_NAME = os.getenv('AWS_BUCKET')
+    AWS_S3_DATAFILES_REGION_NAME = os.getenv('AWS_REGION_NAME', 'us-gov-west-1')
+    AWS_S3_DATAFILES_ENDPOINT = \
+        f'https://s3-{AWS_S3_DATAFILES_REGION_NAME}.amazonaws.com'
 
     # Media files
     MEDIA_ROOT = join(os.path.dirname(BASE_DIR), "media")
@@ -273,6 +230,13 @@ class Common(Configuration):
     # Custom user app
     AUTH_USER_MODEL = "users.User"
 
+    # Username or email for initial Django Super User
+    # NOTE: In a deployed context this will default to the Product Owner
+    DJANGO_SUPERUSER_NAME = get_required_env_var_setting(
+        'DJANGO_SU_NAME',
+        'DJANGO_SUPERUSER_NAME'
+    )
+
     # Sessions
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
@@ -302,6 +266,9 @@ class Common(Configuration):
             "rest_framework.authentication.SessionAuthentication",
             "rest_framework.authentication.TokenAuthentication",
         ),
+        "DEFAULT_FILTER_BACKENDS": [
+            "django_filters.rest_framework.DjangoFilterBackend",
+        ],
         "TEST_REQUEST_DEFAULT_FORMAT": "json",
         "TEST_REQUEST_RENDERER_CLASSES": [
             "rest_framework.renderers.MultiPartRenderer",
@@ -313,13 +280,6 @@ class Common(Configuration):
         "tdpservice.users.authentication.CustomAuthentication",
         "django.contrib.auth.backends.ModelBackend",
     )
-
-    # conditionally set which URI to go to
-    if "VCAP_APPLICATION" in os.environ:  # pragma: nocover
-        appjson = os.environ["VCAP_APPLICATION"]
-        appinfo = json.loads(appjson)
-        if len(appinfo["application_uris"]) > 0:
-            os.environ["BASE_URL"] = "https://" + appinfo["application_uris"][0] + "/v1"
 
     # CORS
     CORS_ALLOW_CREDENTIALS = True
@@ -345,3 +305,55 @@ class Common(Configuration):
 
     # The number of seconds to wait for socket response from clamav-rest
     AV_SCAN_TIMEOUT = os.getenv('AV_SCAN_TIMEOUT', 30)
+
+    CSP_DEFAULT_SRC = ("'none'")
+    CSP_SCRIPT_SRC = ("'self'")
+    CSP_IMG_SRC = ("'self'", "data:")
+    CSP_FONT_SRC = ("'self'")
+    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
+    CSP_MANIFEST_SRC = ("'self'")
+    CSP_OBJECT_SRC = ("'none'")
+    CSP_OBJECT_SRC = ("'none'")
+    CSP_FRAME_ANCESTORS = ("'none'")
+    CSP_FORM_ACTION = ("'none'")
+
+    ###
+    # Authentication Provider Settings
+    #
+    LOGIN_GOV_ACR_VALUES = os.getenv(
+        'ACR_VALUES',
+        'http://idmanagement.gov/ns/assurance/ial/1'
+    )
+    LOGIN_GOV_AUTHORIZATION_ENDPOINT = os.getenv(
+        'OIDC_OP_AUTHORIZATION_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/openid_connect/authorize'
+    )
+    LOGIN_GOV_CLIENT_ASSERTION_TYPE = os.getenv(
+        'CLIENT_ASSERTION_TYPE',
+        'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
+    )
+    LOGIN_GOV_CLIENT_ID = os.getenv(
+        'OIDC_RP_CLIENT_ID',
+        'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-dev'
+    )
+    LOGIN_GOV_ISSUER = os.getenv(
+        'OIDC_OP_ISSUER',
+        'https://idp.int.identitysandbox.gov/'
+    )
+    LOGIN_GOV_JWKS_ENDPOINT = os.getenv(
+        'OIDC_OP_JWKS_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/api/openid_connect/certs'
+    )
+    # JWT_KEY must be set, there is no functional default.
+    LOGIN_GOV_JWT_KEY = get_required_env_var_setting(
+        'JWT_KEY',
+        'LOGIN_GOV_JWT_KEY'
+    )
+    LOGIN_GOV_LOGOUT_ENDPOINT = os.getenv(
+        'OIDC_OP_LOGOUT_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/openid_connect/logout'
+    )
+    LOGIN_GOV_TOKEN_ENDPOINT = os.getenv(
+        'OIDC_OP_TOKEN_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/api/openid_connect/token'
+    )

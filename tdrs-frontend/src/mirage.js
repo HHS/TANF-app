@@ -1,5 +1,11 @@
 import { createServer } from 'miragejs'
 import { v4 as uuidv4 } from 'uuid'
+import {
+  AUTH_CHECK_DATA,
+  FAILED_AUTH_CHECK_DATA,
+  STT_ALPHA_DATA,
+  REPORTS_DATA,
+} from './mirage.data.js'
 
 export default function startMirage(
   { environment } = { environment: 'development' }
@@ -8,11 +14,27 @@ export default function startMirage(
     environment,
 
     routes() {
-      this.namespace = 'mock_api'
-
-      this.post('/reports/', () => {
-        return 'Success'
+      this.urlPrefix = 'http://localhost:8080/v1'
+      this.post('/reports/', () => 'Success')
+      this.get('/auth_check/', () => {
+        if (
+          window.localStorage.getItem('loggedIn') ||
+          process.env.REACT_APP_PA11Y_TEST
+        ) {
+          return AUTH_CHECK_DATA
+        } else {
+          return FAILED_AUTH_CHECK_DATA
+        }
       })
+
+      // if/when we add cypress tests, the rest of these
+      // routes will need some work done on them
+
+      this.patch('/users/set_profile', () => {
+        return {}
+      })
+      this.get('/stts/alpha', () => STT_ALPHA_DATA)
+      this.get('/reports/', () => REPORTS_DATA)
       this.get('/reports/data-files/:year/:quarter/:section', () => {
         return 'some text'
       })
@@ -34,6 +56,8 @@ export default function startMirage(
       // Allow unhandled requests to pass through
       this.passthrough(`${process.env.REACT_APP_BACKEND_URL}/**`)
       this.passthrough(`${process.env.REACT_APP_BACKEND_HOST}/**`)
+
+      console.log('Done Building routes')
     },
   })
 }

@@ -6,13 +6,14 @@ import django.utils.timezone
 
 class Migration(migrations.Migration):
 
+    replaces = [('reports','0003_reportfile_created_at')]
     dependencies = [
-        ('reports', '0002_auto_20201215_1932'),
+        ('data_files', '0002_auto_20201215_1932'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='reportfile',
+            model_name='datafile',
             name='created_at',
             field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
             preserve_default=False,

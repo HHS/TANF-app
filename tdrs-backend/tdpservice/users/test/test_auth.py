@@ -1,28 +1,30 @@
 """Test the custom authorization class."""
-import os
-import uuid
-import time
-import secrets
-import pytest
-import jwt
 import datetime
-from rest_framework import status
-from django.core.exceptions import SuspiciousOperation
-from rest_framework.test import APIRequestFactory
-from ..api.login import TokenAuthorizationOIDC
-from ..api.logout_redirect_oidc import LogoutRedirectOIDC
+import os
+import secrets
+import time
+import uuid
 
-from ..api.utils import (
+from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
+from rest_framework import status
+from rest_framework.test import APIRequestFactory
+import jwt
+import pytest
+
+from tdpservice.settings.common import get_required_env_var_setting
+from tdpservice.users.api.login import TokenAuthorizationOIDC
+from tdpservice.users.api.logout_redirect_oidc import LogoutRedirectOIDC
+from tdpservice.users.api.utils import (
     generate_client_assertion,
     generate_jwt_from_jwks,
     generate_token_endpoint_parameters,
     response_internal,
     validate_nonce_and_state,
 )
-from ..authentication import CustomAuthentication
-from ..models import User
+from tdpservice.users.authentication import CustomAuthentication
+from tdpservice.users.models import User
 
-test_private_key = os.environ["JWT_CERT_TEST"]
+test_private_key = os.getenv('JWT_CERT_TEST')
 
 
 class MockRequest:
@@ -35,6 +37,34 @@ class MockRequest:
     def json(self):
         """Return data."""
         return self.data
+
+
+@pytest.fixture
+def patch_login_gov_jwt_key(settings):
+    """Override JWT Key setting with the key needed for tests."""
+    assert test_private_key is not None, 'Missing env var: JWT_CERT_TEST'
+    settings.LOGIN_GOV_JWT_KEY = test_private_key
+
+
+@pytest.fixture
+def mock_token():
+    """Retrieve the mock token to be used for tests."""
+    return os.getenv(
+        'MOCK_TOKEN',
+        'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJiMmQyZDExNS0xZDdlLTQ1N'
+        'zktYjlkNi1mOGU4NGY0ZjU2Y2EiLCJpc3MiOiJodHRwczovL2lkcC5pbnQubG9naW4uZ29'
+        '2IiwiYWNyIjoiaHR0cDovL2lkbWFuYWdlbWVudC5nb3YvbnMvYXNzdXJhbmNlL2xvYS8xI'
+        'iwibm9uY2UiOiJhYWQwYWE5NjljMTU2YjJkZmE2ODVmODg1ZmFjNzA4MyIsImF1ZCI6InV'
+        'ybjpnb3Y6Z3NhOm9wZW5pZGNvbm5lY3Q6ZGV2ZWxvcG1lbnQiLCJqdGkiOiJqQzdOblU4Z'
+        'E5OVjVsaXNRQm0xanRBIiwiYXRfaGFzaCI6InRsTmJpcXIxTHIyWWNOUkdqendsSWciLCJ'
+        'jX2hhc2giOiJoWGpxN2tPcnRRS196YV82dE9OeGN3IiwiZXhwIjoxNDg5Njk0MTk2LCJpY'
+        'XQiOjE0ODk2OTQxOTgsIm5iZiI6MTQ4OTY5NDE5OH0.pVbPF-2LJSG1fE9thn27PwmDlNd'
+        'lc3mEm7fFxb8ZADdRvYmDMnDPuZ3TGHl0ttK78H8NH7rBpH85LZzRNtCcWjS7QcycXHMn0'
+        '0Cuq_Bpbn7NRdf3ktxkBrpqyzIArLezVJJVXn2EeykXMvzlO-fJ7CaDUaJMqkDhKOK6caR'
+        'YePBLbZJFl0Ri25bqXugguAYTyX9HACaxMNFtQOwmUCVVr6WYL1AMV5WmaswZtdE8POxYd'
+        'hzwj777rkgSg555GoBDZy3MetapbT0csSWqVJ13skWTXBRrOiQQ70wzHAu_3ktBDXNoLx4'
+        'kG1fr1BiMEbHjKsHs14X8LCBcIMdt49hIZg'
+    )
 
 
 @pytest.mark.django_db
@@ -125,9 +155,13 @@ def test_login_fails_without_state(api_client):
 
 
 @pytest.mark.django_db
-def test_login_with_valid_state_and_code(mocker, api_client):
+def test_login_with_valid_state_and_code(
+    mocker,
+    api_client,
+    patch_login_gov_jwt_key,
+    mock_token
+):
     """Test login with state and code."""
-    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -136,7 +170,7 @@ def test_login_with_valid_state_and_code(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -163,9 +197,13 @@ def test_login_with_valid_state_and_code(mocker, api_client):
 
 
 @pytest.mark.django_db
-def test_login_with_existing_token(mocker, api_client):
+def test_login_with_existing_token(
+    mocker,
+    api_client,
+    patch_login_gov_jwt_key,
+    mock_token
+):
     """Login should proceed when token already exists."""
-    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -174,7 +212,7 @@ def test_login_with_existing_token(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -202,9 +240,12 @@ def test_login_with_existing_token(mocker, api_client):
 
 
 @pytest.mark.django_db
-def test_login_with_general_exception(mocker):
+def test_login_with_general_exception(
+    mock_token,
+    mocker,
+    patch_login_gov_jwt_key
+):
     """Test login with state and code."""
-    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -213,7 +254,7 @@ def test_login_with_general_exception(mocker):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -246,14 +287,19 @@ def test_login_with_general_exception(mocker):
 
 
 @pytest.mark.django_db
-def test_login_with_inactive_user(mocker, api_client, inactive_user):
+def test_login_with_inactive_user(
+    api_client,
+    inactive_user,
+    mock_token,
+    mocker,
+    patch_login_gov_jwt_key
+):
     """
     Login with inactive user should error and return message.
 
     Note this test considers the `is_active` field, and *not* `deactivated`,
     which are different.
     """
-    os.environ["JWT_KEY"] = test_private_key
     inactive_user.username = "test_inactive@example.com"
     inactive_user.save()
     nonce = "testnonce"
@@ -264,7 +310,7 @@ def test_login_with_inactive_user(mocker, api_client, inactive_user):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -294,9 +340,14 @@ def test_login_with_inactive_user(mocker, api_client, inactive_user):
 
 
 @pytest.mark.django_db
-def test_login_with_existing_user(mocker, api_client, user):
+def test_login_with_existing_user(
+    api_client,
+    mock_token,
+    mocker,
+    patch_login_gov_jwt_key,
+    user
+):
     """Login should work with existing user."""
-    os.environ["JWT_KEY"] = test_private_key
     user.username = "test_existing@example.com"
     user.save()
     nonce = "testnonce"
@@ -307,7 +358,7 @@ def test_login_with_existing_user(mocker, api_client, user):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -334,9 +385,14 @@ def test_login_with_existing_user(mocker, api_client, user):
 
 
 @pytest.mark.django_db
-def test_login_with_old_email(mocker, api_client, user):
+def test_login_with_old_email(
+    api_client,
+    mock_token,
+    mocker,
+    patch_login_gov_jwt_key,
+    user
+):
     """Login should work with existing user."""
-    os.environ["JWT_KEY"] = test_private_key
     user.username = "test_old_email@example.com"
     user.save()
     nonce = "testnonce"
@@ -347,7 +403,7 @@ def test_login_with_old_email(mocker, api_client, user):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -376,12 +432,19 @@ def test_login_with_old_email(mocker, api_client, user):
 
 
 @pytest.mark.django_db
-def test_login_with_initial_superuser(mocker, api_client, user):
+def test_login_with_initial_superuser(
+    api_client,
+    mock_token,
+    mocker,
+    patch_login_gov_jwt_key,
+    settings,
+    user
+):
     """Login should work with existing user."""
     # How to set os vars for sudo su??
-    os.environ["JWT_KEY"] = test_private_key
-    os.environ["DJANGO_SU_NAME"] = "test_superuser@example.com"
-    user.username = "test_superuser@example.com"
+    test_username = "test_superuser@example.com"
+    settings.DJANGO_SUPERUSER_NAME = test_username
+    user.username = test_username
     user.login_gov_uuid = None
     user.save()
     nonce = "testnonce"
@@ -392,11 +455,11 @@ def test_login_with_initial_superuser(mocker, api_client, user):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
-        "email": "test_superuser@example.com",
+        "email": test_username,
         "email_verified": True,
         "nonce": nonce,
         "iss": "https://idp.int.identitysandbox.gov",
@@ -416,15 +479,19 @@ def test_login_with_initial_superuser(mocker, api_client, user):
     }
     response = view(request)
 
-    user = User.objects.get(username="test_superuser@example.com")
+    user = User.objects.get(username=test_username)
     assert str(user.login_gov_uuid) == decoded_token["sub"]
     assert response.status_code == status.HTTP_302_FOUND
 
 
 @pytest.mark.django_db
-def test_login_with_expired_token(mocker, api_client):
+def test_login_with_expired_token(
+    api_client,
+    mock_token,
+    mocker,
+    patch_login_gov_jwt_key
+):
     """Login should proceed when token already exists."""
-    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -433,7 +500,7 @@ def test_login_with_expired_token(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     mock_decode.side_effect = jwt.ExpiredSignatureError()
@@ -453,9 +520,13 @@ def test_login_with_expired_token(mocker, api_client):
 
 
 @pytest.mark.django_db
-def test_login_with_bad_validation_code(mocker, api_client):
+def test_login_with_bad_validation_code(
+    api_client,
+    mock_token,
+    mocker,
+    patch_login_gov_jwt_key
+):
     """Login should error with a bad validatino code."""
-    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -480,9 +551,13 @@ def test_login_with_bad_validation_code(mocker, api_client):
 
 
 @pytest.mark.django_db
-def test_login_with_bad_nonce_and_state(mocker, api_client):
+def test_login_with_bad_nonce_and_state(
+    api_client,
+    mock_token,
+    mocker,
+    patch_login_gov_jwt_key
+):
     """Login should error with a bad nonce and state."""
-    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -491,7 +566,7 @@ def test_login_with_bad_nonce_and_state(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -518,9 +593,13 @@ def test_login_with_bad_nonce_and_state(mocker, api_client):
 
 
 @pytest.mark.django_db
-def test_login_with_email_unverified(mocker, api_client):
+def test_login_with_email_unverified(
+    api_client,
+    mock_token,
+    mocker,
+    patch_login_gov_jwt_key
+):
     """Login should faild with unverified email."""
-    os.environ["JWT_KEY"] = test_private_key
     nonce = "testnonce"
     state = "teststate"
     code = secrets.token_hex(32)
@@ -529,7 +608,7 @@ def test_login_with_email_unverified(mocker, api_client):
         "access_token": "hhJES3wcgjI55jzjBvZpNQ",
         "token_type": "Bearer",
         "expires_in": 3600,
-        "id_token": os.environ["MOCK_TOKEN"],
+        "id_token": mock_token,
     }
     mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
     decoded_token = {
@@ -589,7 +668,7 @@ def test_generate_jwt_from_jwks(mocker):
 
 @pytest.mark.django_db
 def test_validate_nonce_and_state():
-    """Test nonece and state validation."""
+    """Test nonce and state validation."""
     assert validate_nonce_and_state("x", "y", "x", "y") is True
     assert validate_nonce_and_state("x", "z", "x", "y") is False
     assert validate_nonce_and_state("x", "y", "y", "x") is False
@@ -597,25 +676,23 @@ def test_validate_nonce_and_state():
 
 
 @pytest.mark.django_db
-def test_generate_client_assertion_base64():
+def test_generate_client_assertion_base64(patch_login_gov_jwt_key):
     """Test client assertion generation with base64 encoded key."""
-    os.environ["JWT_KEY"] = test_private_key
     assert generate_client_assertion() is not None
 
 
 @pytest.mark.django_db
-def test_generate_client_assertion_pem():
+def test_generate_client_assertion_pem(settings):
     """Test client assertion generation with PEM key."""
     from base64 import b64decode
-    os.environ["JWT_KEY"] = b64decode(test_private_key).decode("utf-8")
+    settings.LOGIN_GOV_JWT_KEY = b64decode(test_private_key).decode("utf-8")
     utf8_jwt_key = generate_client_assertion()
     assert utf8_jwt_key is not None
 
 
 @pytest.mark.django_db
-def test_generate_token_endpoint_parameters():
+def test_generate_token_endpoint_parameters(patch_login_gov_jwt_key):
     """Test token endpoint parameter generation."""
-    os.environ["JWT_KEY"] = test_private_key
     params = generate_token_endpoint_parameters("test_code")
     assert "client_assertion" in params
     assert "client_assertion_type" in params
@@ -623,10 +700,10 @@ def test_generate_token_endpoint_parameters():
     assert "grant_type=authorization_code" in params
 
 
-def test_token_auth_decode_payload():
+def test_token_auth_decode_payload(mock_token):
     """Test ID token decoding functionality."""
     decoded_token = TokenAuthorizationOIDC.decode_payload(
-        os.environ['MOCK_TOKEN'],
+        mock_token,
         # Since these tokens are short lived our MOCK_TOKEN used for tests
         # is expired and would need to be refreshed on each test run, to work
         # around that we will disable signature verification for this test.
@@ -639,3 +716,17 @@ def test_token_auth_decode_payload():
     assert 'nonce' in decoded_token
     assert 'sub' in decoded_token
     assert 'login.gov' in decoded_token.get('iss', '')
+
+
+def test_missing_django_superuser():
+    """Test that an error is raised when env var DJANGO_SU_NAME is missing."""
+    os.environ['DJANGO_SU_NAME'] = ''
+    with pytest.raises(ImproperlyConfigured):
+        get_required_env_var_setting('DJANGO_SU_NAME')
+
+
+def test_missing_jwt_key():
+    """Test that an error is raised when env var JWT_KEY is missing."""
+    os.environ['JWT_KEY'] = ''
+    with pytest.raises(ImproperlyConfigured):
+        get_required_env_var_setting('JWT_KEY')
