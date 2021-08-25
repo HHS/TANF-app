@@ -307,15 +307,15 @@ class Common(Configuration):
     AV_SCAN_TIMEOUT = os.getenv('AV_SCAN_TIMEOUT', 30)
 
     CSP_DEFAULT_SRC = ("'none'")
-    CSP_SCRIPT_SRC = ("'self'")
+    CSP_SCRIPT_SRC = ("'self'", "s3-us-gov-west-1.amazonaws.com")
     CSP_IMG_SRC = ("'self'", "data:")
     CSP_FONT_SRC = ("'self'")
     CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
     CSP_MANIFEST_SRC = ("'self'")
     CSP_OBJECT_SRC = ("'none'")
-    CSP_OBJECT_SRC = ("'none'")
     CSP_FRAME_ANCESTORS = ("'none'")
-    CSP_FORM_ACTION = ("'none'")
+    CSP_FORM_ACTION = ("'self'")
+    CSP_STYLE_SRC = ("'self'", "s3-us-gov-west-1.amazonaws.com", "'unsafe-inline'")
 
     ###
     # Authentication Provider Settings
