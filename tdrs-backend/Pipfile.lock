@@ -721,11 +721,11 @@
         },
         "awscli": {
             "hashes": [
-                "sha256:53ae6c9fa92bf54100a0a37ab94532b78d5724a8d23ba5788acd9918b2123642",
-                "sha256:fbea1e935b70591ac35f3a307312096ff962589baf7b8fe94349dcf769e7c2bb"
+                "sha256:c1a7ad163b2db41a2833fdb1d2250486a11994dd46c68d461b99e01e8ca1b20d",
+                "sha256:fe008bb8c2fbb3c783f8d3557f4bc5f7d0b1fd032cb1fa9d9f1884c2eb881996"
             ],
             "index": "pypi",
-            "version": "==1.20.27"
+            "version": "==1.20.28"
         },
         "awscli-local": {
             "hashes": [
@@ -852,11 +852,11 @@
         },
         "faker": {
             "hashes": [
-                "sha256:1bf71bdb9de6c87b6c70cf54b1ba6c97d1b90a64769b46b40a91794c5d488f4d",
-                "sha256:542291d690b4cd53f72ee465117b824f114c7343369df35b043606923894e123"
+                "sha256:6714c153433086681b26e5c95ee314ee0fcd45ec05f2426097543dd4c70789a6",
+                "sha256:810859626d19e62a2a13aa4a08d59ada131f0522431eec163b09b6df147a25b9"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==8.12.0"
+            "version": "==8.12.1"
         },
         "flake8": {
             "hashes": [
