@@ -42,25 +42,25 @@ jobs:
         DEPLOY_ENV="${ADDR[1]}"
         echo "::set-output name=DEPLOY_ENV::$DEPLOY_ENV"
         IFS=' '
-    - name: Get PR Status Checks
-      id: get-pr-checks
-      uses: octokit/request-action@v2.x
-      with:
-        route: GET /repos/{owner}/{repo}/commits/{ref}/status
-        owner: ${{ github.repository_owner }}
-        repo: TANF-app
-        ref: ${{ github.event.pull_request.head.ref }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Extract current PR state
-      id: get-pr-state
-      run: |
-        STATE=${{ fromJson(steps.get-pr-checks.outputs.data).state }}
-        echo "::set-output name=STATE::$STATE"
-        echo "Current PR state: $STATE"
+#    - name: Get PR Status Checks
+#      id: get-pr-checks
+#      uses: octokit/request-action@v2.x
+#      with:
+#        route: GET /repos/{owner}/{repo}/commits/{ref}/status
+#        owner: ${{ github.repository_owner }}
+#        repo: TANF-app
+#        ref: ${{ github.event.pull_request.head.ref }}
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#    - name: Extract current PR state
+#      id: get-pr-state
+#      run: |
+#        STATE=${{ fromJson(steps.get-pr-checks.outputs.data).state }}
+#        echo "::set-output name=STATE::$STATE"
+#        echo "Current PR state: $STATE"
     - name: Circle CI Deployment Trigger
       id: curl-circle-ci
-      if: steps.get-pr-state.outputs.STATE == 'success'
+      #if: steps.get-pr-state.outputs.STATE == 'success'
       uses: promiseofcake/circleci-trigger-action@latest
       with:
         user-token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
