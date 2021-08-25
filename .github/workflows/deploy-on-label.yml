@@ -66,4 +66,4 @@ jobs:
         user-token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
         project-slug: raft-tech/TANF-app
         branch: ${{ github.head_ref }}
-        payload: '{"deploy-env": ${{ steps.extract-deploy-env.outputs.DEPLOY_ENV }}, "run_dev_deployment": true}'
+        payload: '{"run_dev_deployment": true}'
