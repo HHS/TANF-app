@@ -66,7 +66,7 @@ As Product Owner, @lfrohlich will decide if ACs are met.
 
 > *Performance Standard(s): Code must successfully build and deploy into the staging environment.*
 
-> *Acceptable Quality Level: Successful build with a single command*
+> *Acceptable Quality Level: Successful deployment by assigning a 'Deploy with CircleCI - {env}' label*
 
 + [ ] Was the code successfully deployed via automated CircleCI process to development on Cloud.gov?
 
