@@ -73,7 +73,7 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-cypress": "^2.11.3",
-    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-prettier": "^3.4.1",
     "jest-enzyme": "^7.1.2",
     "node-sass": "^5.0.0",
     "pa11y-ci": "^2.4.1",
