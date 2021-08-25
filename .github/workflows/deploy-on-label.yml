@@ -61,8 +61,9 @@ jobs:
     - name: Circle CI Deployment Trigger
       id: curl-circle-ci
       if: steps.get-pr-state.outputs.STATE == 'success'
-      uses: Open-Source-Contrib/circle-ci-trigger-action@latest
+      uses: promiseofcake/circleci-trigger-action@latest
       with:
-        circle_ci_token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
-        circle_ci_job: deploy-${{ steps.extract-deploy-env.outputs.DEPLOY_ENV }}
-        circle_ci_project_url: ${{ github.event.pull_request.head.ref }}
+        user-token: ${{ secrets.CIRCLE_CI_API_TOKEN }}
+        project-slug: raft-tech/TANF-app
+        branch: ${{ github.head_ref }}
+        payload: '{"deploy-env": ${{ steps.extract-deploy-env.outputs.DEPLOY_ENV }}, "run_dev_deployment": true}'

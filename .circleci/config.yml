@@ -476,6 +476,16 @@ jobs:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-sandbox
           frontend-appname: tdp-frontend-sandbox
+
+parameters:
+  run_dev_deployment:
+    type: boolean
+    default: false
+
+  deploy-env:
+    type: string
+    default: ''
+
 workflows:
   nightly:
     jobs:
@@ -487,7 +497,9 @@ workflows:
             branches:
               only:
                 - raft-tdp-main
+
   build-and-test:
+    unless: << pipeline.parameters.run_dev_deployment >>
     jobs:
       - secrets-check
       - test-backend:
@@ -496,14 +508,6 @@ workflows:
       - test-frontend:
           requires: 
             - secrets-check
-      - deploy-dev:
-          requires:
-            - test-backend
-            - test-frontend
-          filters:
-            branches:
-              only:
-                - raft-review
       - deploy-infrastructure-staging:
           filters:
             branches:
@@ -516,3 +520,11 @@ workflows:
             branches:
               only:
                 - raft-tdp-main
+
+  dev-deployment:
+    when: << pipeline.parameters.run_dev_deployment >>
+    jobs:
+      - deploy-infrastructure-dev
+      - deploy-raft:
+          requires:
+            - deploy-infrastructure-dev
