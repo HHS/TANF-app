@@ -91,4 +91,6 @@ class DataFilePermissions(permissions.BasePermission):
         is_data_analyst = is_in_group(request.user, 'Data Analyst')
         user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
 
-        return is_ofa_admin or (is_data_analyst and user_stt == obj.stt_id)
+        return is_ofa_admin or (
+            is_data_analyst and user_stt == obj.stt_id
+        )

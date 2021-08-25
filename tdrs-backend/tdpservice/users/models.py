@@ -43,5 +43,6 @@ class User(AbstractUser):
         """Check if the user is an admin."""
         return (
             self.is_superuser
+            or self.groups.filter(name="OFA System Admin").exists()
             or Group.objects.get(name="OFA Admin") in self.groups.all()
         )
