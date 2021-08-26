@@ -306,16 +306,18 @@ class Common(Configuration):
     # The number of seconds to wait for socket response from clamav-rest
     AV_SCAN_TIMEOUT = os.getenv('AV_SCAN_TIMEOUT', 30)
 
+    s3_src = "s3-us-gov-west-1.amazonaws.com"
+
     CSP_DEFAULT_SRC = ("'none'")
-    CSP_SCRIPT_SRC = ("'self'")
-    CSP_IMG_SRC = ("'self'", "data:")
-    CSP_FONT_SRC = ("'self'")
+    CSP_SCRIPT_SRC = ("'self'", s3_src)
+    CSP_IMG_SRC = ("'self'", "data:", s3_src)
+    CSP_FONT_SRC = ("'self'", s3_src)
     CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
     CSP_MANIFEST_SRC = ("'self'")
     CSP_OBJECT_SRC = ("'none'")
-    CSP_OBJECT_SRC = ("'none'")
     CSP_FRAME_ANCESTORS = ("'none'")
-    CSP_FORM_ACTION = ("'none'")
+    CSP_FORM_ACTION = ("'self'")
+    CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
 
     ###
     # Authentication Provider Settings
