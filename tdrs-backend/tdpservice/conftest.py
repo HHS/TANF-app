@@ -9,7 +9,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Group
 from factory.faker import faker
 from rest_framework.test import APIClient
-
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 

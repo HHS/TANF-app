@@ -40,7 +40,7 @@ class MockRequest:
 @pytest.fixture
 def patch_login_gov_jwt_key(settings, test_private_key):
     """Override JWT Key setting with the key needed for tests."""
-    assert test_private_key is not None, 'Missing env var: JWT_CERT_TEST'
+    assert test_private_key is not None, 'Unable to generate test_private_key'
     settings.LOGIN_GOV_JWT_KEY = test_private_key.decode("utf-8")
 
 @pytest.fixture
