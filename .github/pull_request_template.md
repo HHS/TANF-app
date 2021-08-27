@@ -1,6 +1,6 @@
 ### Summary of Changes
 _Provide a brief summary of changes_
-_Addresses issue #_
+Closes issue #_
 _Acceptance criteria as stated in the issue_
 
 ### How to Test
