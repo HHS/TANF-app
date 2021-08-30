@@ -59,6 +59,11 @@ def set_ofa_admin_permissions(apps, schema_editor):
         'logentry',
         filters=[view_permissions_q]
     )
+    group_permissions = get_permission_ids_for_model(
+        'auth',
+        'group',
+        filters=[view_permissions_q]
+    )
 
     # Clear existing permissions that may be set so we can ensure pristine state
     ofa_admin.permissions.clear()
@@ -69,6 +74,7 @@ def set_ofa_admin_permissions(apps, schema_editor):
     ofa_admin.permissions.add(*stt_permissions)
     ofa_admin.permissions.add(*datafile_permissions)
     ofa_admin.permissions.add(*logentry_permissions)
+    ofa_admin.permissions.add(*group_permissions)
 
 
 def unset_ofa_admin_permissions(apps, schema_editor):

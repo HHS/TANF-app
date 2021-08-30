@@ -3,18 +3,24 @@ import logging
 
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
-from rest_framework.response import Response
+from django.views.generic.base import TemplateView
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from ..users.permissions import IsUser
-from ..users.models import User
-from ..data_files.models import DataFile
+from tdpservice.data_files.models import DataFile
 
 logger = logging.getLogger()
 
 
+class IndexView(TemplateView):
+    """An empty template for the app root."""
+
+    template_name = 'index.html'
+
+
 @api_view(['POST'])
-@permission_classes([IsUser])
+@permission_classes([IsAuthenticated])
 def write_logs(request):
     """Pass request bodies to the system logger.
 
@@ -45,7 +51,7 @@ def write_logs(request):
             # i.e. for newly uploaded DataFiles.
 
             LogEntry.objects.log_action(
-                user_id=User.objects.get(username=data['user']).pk,
+                user_id=request.user.pk,
                 content_type_id=ContentType.objects.get_for_model(DataFile).pk,
                 object_id=file,
                 object_repr=object_repr,

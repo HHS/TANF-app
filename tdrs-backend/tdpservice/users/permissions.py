@@ -1,14 +1,14 @@
 """Set permissions for users."""
-import copy
 from collections import ChainMap
+from copy import deepcopy
 from typing import List, Optional, TYPE_CHECKING
 
 from django.apps import apps
 from django.db.models import Q, QuerySet
 from rest_framework import permissions
 
-if TYPE_CHECKING:
-    from django.contrib.auth.models import Permission
+if TYPE_CHECKING:  # pragma: no cover
+    from django.contrib.auth.models import Permission  # pragma: no cover
 
 
 # Q objects that can be used to query for default permissions
@@ -84,53 +84,22 @@ def is_own_stt(request, view):
     )
 
 
-def is_in_group(user, group_name):
-    """Take a user and a group name, and returns `True` if the user is in that group."""
-    return user.groups.filter(name=group_name).exists()
-
-
-class IsUser(permissions.BasePermission):
-    """Object-level permission to only allow owners of an object to edit it."""
-
-    def has_object_permission(self, request, view, obj):
-        """Check if user has required permissions."""
-        return obj == request.user
-
-
-class IsAdmin(permissions.BasePermission):
-    """Permission for admin-only views."""
-
-    def has_object_permission(self, request, view, obj):
-        """Check if a user is admin or superuser."""
-        return request.user.is_authenticated and request.user.is_admin
-
-    def has_permission(self, request, view):
-        """Check if a user is admin or superuser."""
-        return request.user.is_authenticated and request.user.is_admin
-
-
-class IsOFAAdmin(permissions.BasePermission):
-    """Permission for OFA Analyst only views."""
-
-    def has_permission(self, request, view):
-        """Check if a user is a OFA Admin."""
-        return is_in_group(request.user, "OFA Admin")
-
-
-class IsDataAnalyst(permissions.BasePermission):
-    """Permission for Data Analyst only views."""
-
-    def has_permission(self, request, view):
-        """Check if a user is a data analyst."""
-        return is_in_group(request.user, "Data Analyst")
-
-
 class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
-    """TODO."""
+    """The request is authorized using `django.contrib.auth` permissions.
+
+    See: https://docs.djangoproject.com/en/dev/topics/auth/#permissions
+
+    It ensures that the user is authenticated, and has the appropriate
+    `view`/`add`/`change`/`delete` permissions on the model.
+
+    This permission can only be applied against view classes that
+    provide a `.queryset` attribute.
+    """
 
     def __init__(self):
         # Use deepcopy to prevent overwriting the parent class perms_map
-        self.perms_map = copy.deepcopy(self.perms_map)
+        self.perms_map = deepcopy(self.perms_map)
+        # We also want to check for the `view` permission for GET requests.
         self.perms_map['GET'] = ['%(app_label)s.view_%(model_name)s']
 
 
@@ -138,12 +107,22 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
     """Permission for data file downloads & uploads."""
 
     def has_permission(self, request, view):
-        """Check if a user has permission to view data files."""
+        """Check if a user has the relevant Model Permissions for DataFile.
+
+        Certain groups may also have additional constraints applied here, that
+        cannot be determined by the base permissions alone. For example, a
+        Data Analyst will only have permission to files within their STT and a
+        Regional Manager will only have permission to files within their region.
+        """
+        # Checks for existence of `data_files.view_datafile` Permission
         has_permission = super().has_permission(request, view)
 
         # Data Analysts are limited to only data files for their designated STT
         if has_permission and request.user.is_data_analyst:
             has_permission = is_own_stt(request, view)
+
+        # TODO: Add a conditional for Regional manager
+        # https://github.com/raft-tech/TANF-app/issues/1052
 
         return has_permission
 
@@ -164,4 +143,37 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
             )
             return user_stt == obj.stt_id
 
+        # TODO: Add a conditional for Regional manager
+        # https://github.com/raft-tech/TANF-app/issues/1052
+
         return super().has_object_permission(request, view, obj)
+
+
+class UserPermissions(DjangoModelCRUDPermissions):
+    """Permission to allow modifying records related to the User's account."""
+
+    def has_permission(self, request, view):
+        """Check if user has permission to User related resources."""
+        # NOTE: There are currently no uses of this permission that don't deal
+        #       with object permissions on an individual instance.
+        #       If this is added to an additional viewset in the future that
+        #       implements the `list` view.action we will need to check model
+        #       permissions directly using super().has_permission for that
+        #       action only. In that case actions dealing with individual
+        #       object permissions will need to be passed through this function
+        #       by returning True.
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        """Check if the object being modified belongs to the user.
+
+        Alternatively, check if the user has been granted Model Permissions.
+        """
+        # If the user has the relevant model permission that will also allow
+        # access to individual objects
+        has_model_permission = super().has_permission(request, view)
+
+        # TODO: Add conditional to assert regional manager can only interact
+        #       with user records in their respective region.
+
+        return obj == request.user or has_model_permission

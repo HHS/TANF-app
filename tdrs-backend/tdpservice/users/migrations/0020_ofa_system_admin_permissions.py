@@ -7,7 +7,7 @@ from tdpservice.users.permissions import delete_permissions_q
 def set_ofa_system_admin_permissions(apps, schema_editor):
     """Set relevant Group Permissions for OFA System Admin group."""
     ofa_system_admin, _ = (
-        # TODO: Replace get_or_create with get when this PR merges:
+        # TODO: Merge this with the migration generated for:
         # https://github.com/raft-tech/TANF-app/pull/1228
         apps.get_model('auth', 'Group')
             .objects

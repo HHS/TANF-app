@@ -5,10 +5,20 @@ from rest_framework import status
 
 User = get_user_model()
 
+
 @pytest.mark.django_db
 def test_retrieve_user(api_client, user):
     """Test user retrieval."""
     api_client.login(username=user.username, password="test_password")
+    response = api_client.get(f"/v1/users/{user.pk}/")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["username"] == user.username
+
+
+@pytest.mark.django_db
+def test_retrieve_user_as_ofa_admin(api_client, ofa_admin, user):
+    """Test OFA Admin can retrieve a User."""
+    api_client.login(username=ofa_admin.username, password="test_password")
     response = api_client.get(f"/v1/users/{user.pk}/")
     assert response.status_code == status.HTTP_200_OK
     assert response.data["username"] == user.username
