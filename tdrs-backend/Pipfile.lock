@@ -600,11 +600,11 @@
         },
         "ruamel.yaml": {
             "hashes": [
-                "sha256:02f0ed93e98ea32498d25a2952635bbd9fabd553599b8ad67724b4ac88dd8f6c",
-                "sha256:aa1a5b8041bab0d0e8c514949fa8e11b02653061dcbc68365c820b263f8c6ec7"
+                "sha256:4185fcfa9e037fea9ffd0bb6172354a03ec98c21e462355d72e068c74e493512",
+                "sha256:b59c548ba6a2a99a97a842db2321c5adf28470d1decb04bdd82ce9535936a2fa"
             ],
             "markers": "python_version >= '3'",
-            "version": "==0.17.13"
+            "version": "==0.17.14"
         },
         "ruamel.yaml.clib": {
             "hashes": [
@@ -721,11 +721,11 @@
         },
         "awscli": {
             "hashes": [
-                "sha256:53ae6c9fa92bf54100a0a37ab94532b78d5724a8d23ba5788acd9918b2123642",
-                "sha256:fbea1e935b70591ac35f3a307312096ff962589baf7b8fe94349dcf769e7c2bb"
+                "sha256:446830a846eef678272229a29862ae577fd8ed54e001921be5543408e7932b8f",
+                "sha256:7190eb6de65b4a25c18cf25b06e9111ac408720090b2bdfe240f6866127d7b88"
             ],
             "index": "pypi",
-            "version": "==1.20.27"
+            "version": "==1.20.30"
         },
         "awscli-local": {
             "hashes": [
@@ -852,11 +852,11 @@
         },
         "faker": {
             "hashes": [
-                "sha256:1bf71bdb9de6c87b6c70cf54b1ba6c97d1b90a64769b46b40a91794c5d488f4d",
-                "sha256:542291d690b4cd53f72ee465117b824f114c7343369df35b043606923894e123"
+                "sha256:6714c153433086681b26e5c95ee314ee0fcd45ec05f2426097543dd4c70789a6",
+                "sha256:810859626d19e62a2a13aa4a08d59ada131f0522431eec163b09b6df147a25b9"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==8.12.0"
+            "version": "==8.12.1"
         },
         "flake8": {
             "hashes": [
@@ -882,11 +882,11 @@
         },
         "importlib-metadata": {
             "hashes": [
-                "sha256:7b30a78db2922d78a6f47fb30683156a14f3c6aa5cc23f77cc8967e9ab2d002f",
-                "sha256:ed5157fef23a4bc4594615a0dd8eba94b2bb36bf2a343fa3d8bb2fa0a62a99d5"
+                "sha256:9e04bf59076a15a9b6dd9c27806e8fcdf15280ba529c6a8cc3f4d5b4875bdd61",
+                "sha256:c4eb3dec5f697682e383a39701a7de11cd5c02daf8dd93534b69e3e6473f6b1b"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==4.6.4"
+            "version": "==4.7.1"
         },
         "iniconfig": {
             "hashes": [
