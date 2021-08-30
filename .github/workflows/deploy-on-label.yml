@@ -17,10 +17,10 @@
 # Step 2: Extract the combined state from the GitHub API response and store
 #         only the state value as an output for future steps
 #
-# Step 3: If the PR State is `success` make a cURL request to the CircleCI
-#         API to initiate a `deploy` job for the current branch.
+# Step 3: If the PR State is `success` make a request to the V2 CircleCI API
+#         to initiate the `dev-deployment` workflow for the current branch.
 #         Leverages the open source GitHub Action:
-#           https://github.com/Open-Source-Contrib/circle-ci-trigger-action
+#           https://github.com/promiseofcake/circleci-trigger-action
 ###########################################################################
 name: Deploy PR based on Label
 on:
@@ -42,25 +42,25 @@ jobs:
         DEPLOY_ENV="${ADDR[1]}"
         echo "::set-output name=DEPLOY_ENV::$DEPLOY_ENV"
         IFS=' '
-#    - name: Get PR Status Checks
-#      id: get-pr-checks
-#      uses: octokit/request-action@v2.x
-#      with:
-#        route: GET /repos/{owner}/{repo}/commits/{ref}/status
-#        owner: ${{ github.repository_owner }}
-#        repo: TANF-app
-#        ref: ${{ github.event.pull_request.head.ref }}
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#    - name: Extract current PR state
-#      id: get-pr-state
-#      run: |
-#        STATE=${{ fromJson(steps.get-pr-checks.outputs.data).state }}
-#        echo "::set-output name=STATE::$STATE"
-#        echo "Current PR state: $STATE"
+    - name: Get PR Status Checks
+      id: get-pr-checks
+      uses: octokit/request-action@v2.x
+      with:
+        route: GET /repos/{owner}/{repo}/commits/{ref}/status
+        owner: ${{ github.repository_owner }}
+        repo: TANF-app
+        ref: ${{ github.event.pull_request.head.ref }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Extract current PR state
+      id: get-pr-state
+      run: |
+        STATE=${{ fromJson(steps.get-pr-checks.outputs.data).state }}
+        echo "::set-output name=STATE::$STATE"
+        echo "Current PR state: $STATE"
     - name: Circle CI Deployment Trigger
       id: curl-circle-ci
-      #if: steps.get-pr-state.outputs.STATE == 'success'
+      if: steps.get-pr-state.outputs.STATE == 'success'
       uses: promiseofcake/circleci-trigger-action@v1
       with:
         user-token: ${{ secrets.CIRCLE_CI_V2_API_TOKEN }}
