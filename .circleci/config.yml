@@ -409,9 +409,15 @@ jobs:
 
   deploy-dev:
     executor: docker-executor
+    parameters:
+      target-env:
+        type: string
+        default: 'raft'
     working_directory: ~/tdp-deploy
     steps:
-      - deploy-cloud-dot-gov
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-<< parameters.target-env >>
+          frontend-appname: tdp-frontend-<< parameters.target-env >>
 
   deploy-infrastructure-staging:
     executor: terraform/default
@@ -482,7 +488,7 @@ parameters:
     type: boolean
     default: false
 
-  deploy-env:
+  target-env:
     type: string
     default: ''
 
@@ -525,7 +531,7 @@ workflows:
     when: << pipeline.parameters.run_dev_deployment >>
     jobs:
       - deploy-infrastructure-dev
-      - deploy-raft:
-          when: << pipeline.parameters.deploy-env >>  == 'raft'
+      - deploy-dev:
+          target-env: << pipeline.parameters.target-env >>
           requires:
             - deploy-infrastructure-dev
