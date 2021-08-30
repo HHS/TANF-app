@@ -32,7 +32,7 @@ The [Research Roadmap](https://app.mural.co/t/raft2792/m/raft2792/1627058877512/
 
 With a few exceptions, we've tended to publish markdown research syntheses to summarize larger, multi-sprint research activities and studies rather than publishing individual documents for each research session; these larger research efforts are what "Rounds" refer to. The below syntheses are organized reverse-chronologically from newest to oldest:
 
-### [2021, Summer - Communicating Errors in TDP & Validations With Regional Staff]()
+### [2021, Summer - Communicating Errors in TDP & Validations With Regional Staff](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2021%2C%20Summer%20-%20Communicating%20Errors%20in%20TDP%20%26%20Validations%20With%20Regional%20Staff.md)
 
 - Ran collaborative workshops with DIGIT to capture the full scope of pre-parsing errors that could prevent TDRS/TDP from being able to process grantee files.
   - Content tested three errors with grantees to identify do's and don'ts and generally investigate which factors determine whether an error is understandable and actionable for grantee data analysts who will receive them.
@@ -50,7 +50,7 @@ With a few exceptions, we've tended to publish markdown research syntheses to su
 
 
 
-### [2021, Spring - Tribal MVP (Release 2) Design Sprint](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/Winter%202021%2C%20Round%204%20Synthesis.md)
+### [2021, Spring - Tribal MVP (Release 2) Design Sprint](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2021%2C%20Spring%20-%20Tribal%20MVP%20(Release%202)%20Design%20Sprint.md)
 
 - Captured generative insights from Tribes that were underrepresented in past research. 
 - Concept tested TDP features that would be needed to support an MVP release specifically for Tribes (to facilitate their move away from email transmission).
@@ -70,7 +70,7 @@ With a few exceptions, we've tended to publish markdown research syntheses to su
 
 
 
-### [2020, Fall - Understanding STT Roles, Source of Truth, and Metadata](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2020%2C%20Spring%20-%20Understanding%20the%20local%20experience.md)
+### [2020, Fall - Understanding STT Roles, Source of Truth, and Metadata](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2020%2C%20Fall%20-%20Understanding%20STT%20Roles%2C%20Source%20of%20Truth%2C%20and%20Metadata.md)
 
 - Concept tested [early ideas](https://github.com/HHS/TANF-app/tree/main/docs/User-Research/2020%2C%20Fall%20-%20Concept%20Prototypes) about how TDP might capture report metadata (e.g. associated Quarter, Fiscal Year, etc...) and present errors to users. 
 - Further investigated of grantee processes, tools, needs, and pain points.
@@ -84,7 +84,7 @@ With a few exceptions, we've tended to publish markdown research syntheses to su
 
 
 
-### [2020, Summer - Understanding the OFA Experience]()
+### [2020, Summer - Understanding the OFA Experience](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2020%2C%20Summer%20-%20Understanding%20the%20OFA%20Experience.md)
 
 - Concept tested TDP user management interfaces with OFA Analysts.
 - Investigated how OFA Analysts think about best practices, manage processes around grantee submissions, and what their pain points are in identifying and overseeing the correction of errors.

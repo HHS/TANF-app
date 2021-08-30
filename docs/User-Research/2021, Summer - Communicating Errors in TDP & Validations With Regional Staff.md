@@ -169,8 +169,8 @@ We matched our errors were matched with grantee participants accordingly to whic
 
 ## What we learned
 
-- [Regional staff have the closest OFA-side view into the makeup of grantee teams, but that view is not always complete](#regional-staff-have-the-closest-ofaside-view-into-the-makeup-of-grantee-teams-but-that-view-is-not-always-complete)
-- [We documented "error patterns"  that may be utilized throughout error guidance in TDP](#we-documented-error-patterns-that-may-be-utilized-throughout-error-guidance-in-tdp)
+- [Regional staff have the closest OFA-side view into the makeup of grantee teams, but that view is not always complete](#regional-staff-have-the-closest-ofa-side-view-into-the-makeup-of-grantee-teams-but-that-view-is-not-always-complete)
+- [We documented "error patterns"  that may be utilized throughout error guidance in TDP](#we-documented-error-patterns--that-may-be-utilized-throughout-error-guidance-in-tdp)
 - [Error Content Testing Results](#error-content-testing-results)
 - [Grantees rely on a variety of data and techniques to look up specific cases or records within their case management software](#grantees-rely-on-a-variety-of-data-and-techniques-to-look-up-specific-cases-or-records-within-their-case-management-software)
 - [Specificity and putting the *right* data points in front of the right grantee is key to their ability to effectively act on an error](#specificity-and-putting-the-right-data-points-in-front-of-the-right-grantee-is-key-to-their-ability-to-effectively-act-on-an-error)
