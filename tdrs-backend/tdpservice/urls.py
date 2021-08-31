@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import login_required
 from .core.views import write_logs, IndexView
 
 admin.autodiscover()
+
 admin.site.login = login_required(admin.site.login)
 admin.site.site_header = "Django administration"
 
@@ -38,7 +39,6 @@ urlpatterns = [
         r"^$", RedirectView.as_view(url=reverse_lazy("test_api-root"), permanent=False)
     ),
 ]
-
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 urlpatterns = [

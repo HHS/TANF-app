@@ -65,6 +65,23 @@ def get_permission_ids_for_model(
 
     return queryset.values_list('id', flat=True)
 
+def is_own_region(request, view):
+    """Verify user belongs to the requested region based on the stt in the request."""
+    request_parameters = ChainMap(
+        view.kwargs,
+        request.query_params,
+        request.data
+    )
+    requested_stt = request_parameters.get('stt')
+    user_region = (
+        apps.get_model('stts', 'Region')
+        .objects.get(id=request.user.stt.region)
+    )
+    requested_region  = (
+        apps.get_model('stts', 'STT')
+        .objects.get(id=requested_stt).region
+    )
+    return user_region == requested_region
 
 def is_own_stt(request, view):
     """Verify user belongs to requested STT."""
@@ -121,8 +138,8 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         if has_permission and request.user.is_data_analyst:
             has_permission = is_own_stt(request, view)
 
-        # TODO: Add a conditional for Regional manager
-        # https://github.com/raft-tech/TANF-app/issues/1052
+        if request.user.groups.filter(name="OFA Regional Staff").exists():
+            has_permission = is_own_region(request, view)
 
         return has_permission
 
