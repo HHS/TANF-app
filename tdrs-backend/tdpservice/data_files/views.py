@@ -76,6 +76,11 @@ class GetYearList(APIView):
     pattern_name = "data_file-list"
     permission_classes = [DataFilePermissions]
 
+    # The DataFilePermissions subclasses DjangoModelPermissions which requires
+    # declaration of a queryset in order to perform introspection to determine
+    # Permissions needed. This is otherwise unused.
+    queryset = DataFile.objects.none()
+
     def get(self, request, **kwargs):
         """Handle get action for get list of years there are data_files."""
         user = request.user
