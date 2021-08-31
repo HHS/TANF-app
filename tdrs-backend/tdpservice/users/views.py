@@ -1,14 +1,18 @@
 """Define API views for user class."""
 import logging
+
 from django.contrib.auth.models import Group
+from django.utils import timezone
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import User
-from .permissions import IsAdmin, IsUser
-from django.utils import timezone
-from .serializers import (
+from tdpservice.users.models import User
+from tdpservice.users.permissions import (
+    DjangoModelCRUDPermissions,
+    UserPermissions
+)
+from tdpservice.users.serializers import (
     UserProfileSerializer,
     UserSerializer,
     GroupSerializer
@@ -24,20 +28,10 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
+    permission_classes = [UserPermissions]
     queryset = User.objects\
         .select_related("stt")\
         .prefetch_related("groups__permissions")
-
-    def get_permissions(self):
-        """Get permissions for the viewset."""
-        permission_classes = {
-            "retrieve": [IsUser | IsAdmin],
-            "set_profile": [IsUser | IsAdmin],
-            "partial_update": [IsUser | IsAdmin],
-            "update": [IsUser | IsAdmin],
-            "list": [IsAdmin]
-        }.get(self.action, [IsAdmin])
-        return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
         """Return the serializer class."""
@@ -62,5 +56,5 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     pagination_class = None
     queryset = Group.objects.all()
-    permission_classes = [IsAdmin]
+    permission_classes = [DjangoModelCRUDPermissions]
     serializer_class = GroupSerializer
