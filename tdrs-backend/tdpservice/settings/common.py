@@ -360,4 +360,4 @@ class Common(Configuration):
         'https://idp.int.identitysandbox.gov/api/openid_connect/token'
     )
 
-    ENABLE_DEVELOPER_GROUP = True
+    ENABLE_DEVELOPER_GROUP = False
