@@ -60,7 +60,7 @@ As Product Owner, @lfrohlich will decide if ACs are met.
 + [ ] Are links included to any other gov-approved PRs associated with epic?
 + [ ] Does PR include documentation for Raft's a11y review? 
 + [ ] Did automated and manual testing with @iamjolly and @ttran-hub using Accessibility Insights reveal any errors introduced in this PR?
-    + [See the full Accessibility Assessment plan here.](https://github.com/HHS/TANF-app/blob/main/docs/a11y/how-18f-will-test-a11y.md)
+    + [See the full Accessibility Assessment plan here.](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/how-government-will-test-a11y.md)
 
 ### Deliverable 5: Deployed
 
