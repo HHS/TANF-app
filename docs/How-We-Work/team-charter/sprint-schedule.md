@@ -2,61 +2,29 @@
 
 _This is just a quick summary of each day's meetings and focus. See [Team Meetings](../team-meetings.md) and [Our Workflow](../our-workflow.md) for more details._
  
-### Wednesday Sprint Day 1: Planning Day!
-- 10:30-11:30am EST: Backlog Refinement 
-- Async Standup
-- 2:00-2:30pm EST: Dev Sync
-- 3:30-4:30pm EST: Sprint Planning  
-- Sprint goals are discussed in refinement and reviewed during sprint planning. The team uses these goals to prioritize work for the sprint.
+### Every Day
+- 12:00pm-12:15pm ET: Daily Standup
+- If teammembers cannot make the team standup on zoom, an asynchronous standup update shall be given in the teams Microsoft Teams channel. On Thursdays, the team agrees to hold an asynchronous standup and forego the zoom call.
 
-### Thursday Sprint Day 2: Work Day!   
-- 10:00-11:30am EST: OFA + 18F Coordination
-- 12:00-12:15pm EST: Standup
-- Request feedback from teammates on rolling basis
+### Weekly Mondays
+- 11:00am-12:00pm ET: UX Sync - An as needed meeting between UX Design and Product for Design to discuss and demo research findings to Product and for Product to review/accept/reject new features and user stories into the Product Roadmap and version plan.
 
-### Friday Sprint Day 3: Work Day!   
-- 10:30-12:00pm EST: Optional Dev Drop-in Hours
-- 12:00-1:00pm EST: Integrated Project Team (IPT) with OCIO and other stakeholders
-- Async Standup
+### Biweekly on Tuesdays - Sprint End and Start: Planning Day!
+- 11:00am-12:00pm EST: Backlog Refinement 
+- 12:00pm-12:15pm EST: Standup
+- 12:15-12:30pm ET: Raft Demo Prep
+- 2:30pm-3:00pm ET: Sprint Demo
+- 3:00pm-3:30pm ET: Sprint Retrospective
+- 3:30pm-4:30pm ET: Sprint Planning
+- Sprint goals and priorities are discussed in refinement and reviewed during sprint planning. The team uses these goals to prioritize work for the sprint.
+
+### Biweekly on Wednesdays - mid-sprint
+- 12:30pm-1:00pm EST: Integrated Project Team (IPT) w/ OCIO
+
+### Weekly Wednesdays:
+- 12:00pm-12:15pm EST: Standup
+- 2:00pm-3:30pm ET: Dev Sync
+
+### Weekly Fridays Sprint Day 3: Work Day!   
+- 11:00am-12:00pm ET: Raft UX/Product Sync - A sync between UX Design and Product Management to discuss status and align on research roadmap and progress.
 - 2:00-2:30pm EST: Tech Lead Sync
-- Request feedback from teammates on rolling basis 
-
-### Monday Sprint Day 6: Work Day!  
-- 12:00-12:15pm EST: Standup
-- 12:15-12:45pm EST: UX Sync
-- Request feedback from teammates on rolling basis 
-
-### Tuesday Sprint Day 7: Work Day!  
-- 12:00-12:15pm EST: Standup
-- Request feedback from teammates on rolling basis 
-
-### Wednesday Sprint Day 8: Work Day!
-- 10:00-10:30am EST: Security Sync
-- 10:30-11:30am EST: Backlog Refinement
-- 12:00-12:15pm EST: Standup
-- 2:00-2:30pm EST: Dev Sync
-- Request feedback from teammates on rolling basis
-    
-### Thursday Sprint Day 9: Work Day!  
-- 10:00-11:30am EST: OFA + 18F Coordination
-- 12:00-12:15pm EST: Standup
-- Request feedback from teammates on rolling basis 
-
-### Friday Sprint Day 10: Work Day!
-- 10:30-12:00pm EST: Optional Dev Drop-in Hours
-- 12:00-1:00pm EST: IPT
-- Async Standup
-- 2:00-2:30pm EST: Tech Lead Sync
-- Request feedback from teammates on rolling basis
-
-### Monday Sprint Day 13: Work Day!
-- 12:00-12:15pm EST: Standup
-- Pairing meetings for dev and design/research reviews  
-- Request feedback from teammates on rolling basis
- 
-### Tuesday Sprint Day 14: Demo Day!
-- 10:00-10:30am EST: Sprint Demo Planning  
-- Async Standup
-- 2:00-2:30pm EST: Sprint Demo/Review 
-- 2:30-3:30pm EST: Sprint Retro  
-- Raft writes sprint report that is reviewed during demo planning and submits as documentation PR for the repository

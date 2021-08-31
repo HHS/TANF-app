@@ -4,7 +4,6 @@ import logging
 import os
 from distutils.util import strtobool
 from os.path import join
-from secrets import token_urlsafe
 from typing import Any, Optional
 
 from configurations import Configuration
@@ -53,7 +52,7 @@ class Common(Configuration):
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
         "tdpservice.stts",
-        "tdpservice.reports",
+        "tdpservice.data_files",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -67,11 +66,12 @@ class Common(Configuration):
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "corsheaders.middleware.CorsMiddleware",
         "tdpservice.users.api.middleware.AuthUpdateMiddleware",
+        "csp.middleware.CSPMiddleware"
     )
 
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = "tdpservice.urls"
-    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", token_urlsafe(50))
+    SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
     WSGI_APPLICATION = "tdpservice.wsgi.application"
     CORS_ORIGIN_ALLOW_ALL = True
 
@@ -305,6 +305,19 @@ class Common(Configuration):
 
     # The number of seconds to wait for socket response from clamav-rest
     AV_SCAN_TIMEOUT = os.getenv('AV_SCAN_TIMEOUT', 30)
+
+    s3_src = "s3-us-gov-west-1.amazonaws.com"
+
+    CSP_DEFAULT_SRC = ("'none'")
+    CSP_SCRIPT_SRC = ("'self'", s3_src)
+    CSP_IMG_SRC = ("'self'", "data:", s3_src)
+    CSP_FONT_SRC = ("'self'", s3_src)
+    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
+    CSP_MANIFEST_SRC = ("'self'")
+    CSP_OBJECT_SRC = ("'none'")
+    CSP_FRAME_ANCESTORS = ("'none'")
+    CSP_FORM_ACTION = ("'self'")
+    CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
 
     ###
     # Authentication Provider Settings

@@ -49,7 +49,7 @@ export const getAvailableFileList =
     })
     try {
       const response = await axios.get(
-        `${BACKEND_URL}/reports/?year=${year}&quarter=${quarter}&stt=${stt.id}`,
+        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${stt.id}`,
         {
           responseType: 'json',
         }
@@ -80,7 +80,7 @@ export const download =
       dispatch({ type: START_FILE_DOWNLOAD })
 
       const response = await axios.get(
-        `${BACKEND_URL}/reports/${id}/download/`,
+        `${BACKEND_URL}/data_files/${id}/download/`,
         {
           responseType: 'blob',
         }
@@ -165,7 +165,7 @@ export const submit =
         formData.append(key, value)
       }
       return axiosInstance.post(
-        `${process.env.REACT_APP_BACKEND_URL}/reports/`,
+        `${process.env.REACT_APP_BACKEND_URL}/data_files/`,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },

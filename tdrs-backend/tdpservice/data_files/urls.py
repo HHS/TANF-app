@@ -1,4 +1,4 @@
-"""Routing for Reports."""
+"""Routing for DataFiles."""
 
 from rest_framework.routers import DefaultRouter
 from . import views
@@ -6,7 +6,7 @@ from django.urls import path
 
 router = DefaultRouter()
 
-router.register("", views.ReportFileViewSet)
+router.register("", views.DataFileViewSet)
 
 urlpatterns = [
     path(

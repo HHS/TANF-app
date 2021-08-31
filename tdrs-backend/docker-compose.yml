@@ -13,10 +13,15 @@ services:
   postgres:
     image: postgres:11.6
     environment:
-      - POSTGRES_USER=tdpuser
-      - POSTGRES_PASSWORD=something_secure
+      - PGDATA=/var/lib/postgresql/data/
       - POSTGRES_DB=tdrs_test
+      - POSTGRES_PASSWORD=something_secure
       - POSTGRES_PORT=5432
+      - POSTGRES_USER=tdpuser
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/:rw
 
   clamav-rest:
     image: rafttech/clamav-rest:0.103.2
@@ -49,6 +54,7 @@ services:
       - DB_PORT=5432
       - DB_USER=tdpuser
       - DJANGO_CONFIGURATION=${DJANGO_CONFIGURATION:-Local}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-tdp-dev-insecure}
       - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-tdpservice.settings.local}
       - LOCALSTACK_HOST=localstack
       - DJANGO_SU_NAME
@@ -71,3 +77,4 @@ services:
 
 volumes:
   localstack_data:
+  postgres_data:

@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives import serialization
 
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from tdpservice.core.admin import LogEntryAdmin
-from tdpservice.reports.test.factories import ReportFileFactory
+from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.users.test.factories import (
     UserFactory,
     AdminUserFactory,
@@ -47,7 +47,7 @@ def stt_user():
 
 @pytest.fixture
 def ofa_admin_stt_user():
-    """Return an admin user without an STT for Data Report tests."""
+    """Return an admin user without an STT for Data File tests."""
     return AdminSTTUserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
 
 
@@ -55,6 +55,12 @@ def ofa_admin_stt_user():
 def ofa_admin():
     """Return an ofa admin user."""
     return UserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
+
+
+@pytest.fixture
+def ofa_system_admin():
+    """Return on OFA System Admin user."""
+    return UserFactory.create(groups=(Group.objects.get(name='OFA System Admin'),))
 
 
 @pytest.fixture
@@ -159,8 +165,8 @@ def infected_data_file(infected_file, fake_file_name):
 
 
 @pytest.fixture
-def base_report_data(fake_file_name, user):
-    """Return report creation data without a file."""
+def base_data_file_data(fake_file_name, user):
+    """Return data file creation data without a file."""
     return {
         "original_filename": fake_file_name,
         "slug": str(uuid.uuid4()),
@@ -174,36 +180,36 @@ def base_report_data(fake_file_name, user):
 
 
 @pytest.fixture
-def report_data(base_report_data, data_file):
-    """Return report creation data."""
+def data_file_data(base_data_file_data, data_file):
+    """Return data file creation data."""
     return {
         "file": data_file,
-        **base_report_data
+        **base_data_file_data
     }
 
 
 @pytest.fixture
-def other_report_data(base_report_data, other_data_file):
-    """Return report creation data."""
+def other_data_file_data(base_data_file_data, other_data_file):
+    """Return data file creation data."""
     return {
         "file": other_data_file,
-        **base_report_data
+        **base_data_file_data
     }
 
 
 @pytest.fixture
-def infected_report_data(base_report_data, infected_data_file):
-    """Return report creation data."""
+def infected_data_file_data(base_data_file_data, infected_data_file):
+    """Return data file creation data."""
     return {
         "file": infected_data_file,
-        **base_report_data
+        **base_data_file_data
     }
 
 
 @pytest.fixture
-def report():
-    """Return a report file."""
-    return ReportFileFactory.create()
+def data_file_instance():
+    """Return a data file."""
+    return DataFileFactory.create()
 
 
 @pytest.fixture
