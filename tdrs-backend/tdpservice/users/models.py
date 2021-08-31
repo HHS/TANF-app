@@ -2,8 +2,9 @@
 
 import uuid
 
-from django.contrib.auth.models import AbstractUser, Group
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.functional import cached_property
 from tdpservice.stts.models import STT, Region
 from django.utils.translation import gettext_lazy as _
 
@@ -38,11 +39,14 @@ class User(AbstractUser):
         """Return the username as the string representation of the object."""
         return self.username
 
-    @property
-    def is_admin(self):
-        """Check if the user is an admin."""
-        return (
-            self.is_superuser
-            or self.groups.filter(name="OFA System Admin").exists()
-            or Group.objects.get(name="OFA Admin") in self.groups.all()
-        )
+    def is_in_group(self, group_name: str) -> bool:
+        """Return whether or not the user is a member of the specified Group."""
+        return self.groups.filter(name=group_name).exists()
+
+    @cached_property
+    def is_data_analyst(self) -> bool:
+        """Return whether or not the user is in the Data Analyst Group.
+
+        Uses a cached_property to prevent repeated calls to the database.
+        """
+        return self.is_in_group('Data Analyst')
