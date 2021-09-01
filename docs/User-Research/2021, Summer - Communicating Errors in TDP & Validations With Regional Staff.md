@@ -207,7 +207,7 @@ Legacy Error Names
 
 Split Errors
 
-- There seems to be potential to make certain legacy TDRS errors more actionable by splitting them into several variations. One example being T1-515 (Update Indicator is not valid). In TDP we could provide several variations that better identify what's wrong with the update indicator and better contextualize what will happen to previously submitted data as a result of correcting it in different ways (e.g. D, U, N).
+- There seems to be potential to make certain legacy TDRS errors more actionable by splitting them into several variations. For instance, the "Other" error type could differentiate between a record being too short and too long as opposed to only communicating that a record is the wrong length. 
 
 **Guidance Patterns**
 
