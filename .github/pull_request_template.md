@@ -1,10 +1,21 @@
 ### Summary of Changes
 _Provide a brief summary of changes_
-_Addresses issue #_
+Closes issue #_
 _Acceptance criteria as stated in the issue_
 
 ### How to Test
 _List the steps to test the PR_
+These steps are generic, please adjust as necessary.
+```
+cd tdrs-frontend && docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d
+cd tdrs-backend && docker-compose -f docker-compose.yml -f docker-compose.local.yml up -d 
+```
+
+1. Open http://localhost:3000/ and sign in.
+1. Proceed with functional tests as described herein.
+1. Test steps should be captured in the demo GIF(s) and/or screenshots below.
+
+> *Demo GIF(s) and screenshots for testing procedure*
 
 ### Deliverable 1: Accepted Features
 
@@ -15,7 +26,7 @@ _List the steps to test the PR_
 + [ ] Look up the acceptance criteria in the related issue; paste ACs below in checklist format.
 + [ ] Check against the criteria:
 
-As facilitator/product manager, @kniz-raft will decide if ACs are met from Raft's perspective.
+As Product Owner, @lfrohlich will decide if ACs are met.
 
 ### Deliverable 2: Tested Code
 
@@ -45,17 +56,17 @@ As facilitator/product manager, @kniz-raft will decide if ACs are met from Raft'
 > *Performance Standard(s): Web Content Accessibility Guidelines 2.1 AA standards*
 
 > *Acceptable Quality Level: 0 errors reported using an automated scanner and 0 errors reported in manual testing*
-
++ [ ] Does this PR complete the epic? 
++ [ ] Are links included to any other gov-approved PRs associated with epic?
++ [ ] Does PR include documentation for Raft's a11y review? 
 + [ ] Did automated and manual testing with @iamjolly and @ttran-hub using Accessibility Insights reveal any errors introduced in this PR?
-    + [See the full Accessibility Assessment plan here.](https://github.com/HHS/TANF-app/blob/main/docs/a11y/how-18f-will-test-a11y.md)
+    + [See the full Accessibility Assessment plan here.](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/how-government-will-test-a11y.md)
 
 ### Deliverable 5: Deployed
 
 > *Performance Standard(s): Code must successfully build and deploy into the staging environment.*
 
-> *Acceptable Quality Level: Successful build with a single command*
-
-> NOTE: until we have a proper staging environment this may not be satisfiable prior to merging
+> *Acceptable Quality Level: Successful deployment by assigning a 'Deploy with CircleCI - {env}' label*
 
 + [ ] Was the code successfully deployed via automated CircleCI process to development on Cloud.gov?
 
@@ -77,3 +88,14 @@ As facilitator/product manager, @kniz-raft will decide if ACs are met from Raft'
 
 + [ ] Does the OWASP Scan pass on CircleCI?
 + [ ] Do manual code review and manual testing detect any security issues?
+
+### Deliverable 8: Context
+
+> * Performance Standard(s): Code must be understandable and contextualized for the reviewers possess the knowledge and background necessary for analysis and constructive criticism to take place.
+
+> * Acceptable Quality Level: Code submitted in the pull request has context.*
++ [ ] Does this pull request contain sufficient inline comments providing relevant context for code snippets?
++ [ ] Is the code understandable and lucid?
++ [ ] Does this pull request provide background for why coding decisions were made?
++ [ ] Can you as a reviewer explain and take ownership of these elements presented in this code review?
+

@@ -67,7 +67,7 @@ describe('SplashPage', () => {
     expect(window.location.href).toEqual(url)
   })
 
-  it('redirects to /edit-profile when user is already authenticated', () => {
+  it('redirects to /welcome when user is already authenticated', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -78,6 +78,6 @@ describe('SplashPage', () => {
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/edit-profile" />)
+    expect(wrapper).toContainReact(<Redirect to="/welcome" />)
   })
 })

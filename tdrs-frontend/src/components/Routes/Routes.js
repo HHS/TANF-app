@@ -7,6 +7,8 @@ import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 import Request from '../Request'
 import Reports from '../Reports'
+import Welcome from '../Welcome'
+import { useSelector } from 'react-redux'
 
 /**
  * This component renders the routes for the app.
@@ -22,14 +24,17 @@ const Routes = () => {
       <Route exact path="/login">
         <LoginCallback />
       </Route>
+      <PrivateRoute exact title="Welcome to TDP" path="/welcome">
+        <Welcome />
+      </PrivateRoute>
+      <PrivateRoute exact title="TANF Data Files" path="/data-files">
+        <Reports />
+      </PrivateRoute>
       <PrivateRoute exact title="Request Access" path="/edit-profile">
         <EditProfile />
       </PrivateRoute>
       <PrivateRoute exact title="Request Submitted" path="/request">
         <Request />
-      </PrivateRoute>
-      <PrivateRoute exact title="TANF Data Files" path="/data-files">
-        <Reports />
       </PrivateRoute>
       <Route path="*">
         <NoMatch />

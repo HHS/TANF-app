@@ -39,17 +39,21 @@ A contributor to the TDP project would always use the following steps to propose
     * If your PR is against a branch other than `raft-tdp-main` keep it as a draft PR and add the tag `blocked` until the other branch is merged. 
 13. Assign a reviewer: 
     * For development work, assign **at least two** Raft developers with one of them being `abottoms-coder` or `jtwillis92` (**but not both**).
-    * For research and design assign `shubhi-raft` and `dk-u`
+    * For research and design assign `reitermb`
     * For security controls assign `abottoms-coder`
     * For documentation submitted by the Government tag `lfrohlich` and `adpennington` and remove label `raft-review`
     * For documentation submissions and updates by raft assign `lfrohlich` and `adpennington` and add label `QASP review`
-14. For PRs with `raft-review` label, the appropriate reviewer performs the review and/or requests changes. **GOAL** 3 days: 2 days to perform the review and 1 day to implement the requested changes. 
+14. For PRs with `raft-review` label, the appropriate reviewer(s) perform the review and/or requests changes.
+    * For dev tickets, author is expected to schedule a tabletop meeting at a minimum 48 hours after the PR is published. 
+    **GOAL** 3 days: 2 days to perform the review and 1 day to implement the requested changes. 
     * When changes are asked for, the changes are made by the contributor
-15. When satisfied, the reviewer 
-    * `approves` the PR
-    * removes `raft-review` label
-    * adds `qasp-review` label
-    * assigns the Government as the reviewer:
+    * When satisfied, the reviewer(s) `approves` the PR
+
+15. For dev tickets, tabletop review meetings are covered in-depth in [this ADR](018-developer-tabletops.md). If the outcome of the tabletop requires no rework, Technical Lead will:
+    * `approve` the PR
+    * remove `raft-review` label
+    * add `qasp-review` label
+    * assign the Government as the reviewer:
         * For backend and frontend development work assign `adpennington`
         * For frontend work submitted for review but does not yet complete the epic, `adpennington` will sign off on Raft's a11y documentation (e.g. screen captures with VoiceOver utility, summary of review, etc.) and cc: `ttran-hub`
         * For frontend work submitted for review that completes the epic, `adpennington` will complete code review, tag `ttran-hub` + `iamjolly` via comment, and add `a11y` label to PR. Gov a11y review team will use accessibility insights for manual testing. More information about how and when this process will be carried out is described [here.](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/how-government-will-test-a11y.md) 
@@ -57,6 +61,7 @@ A contributor to the TDP project would always use the following steps to propose
      * posts that PR is ready for QASP review in GitNotify channel in Teams and tags appropriate government reviewer.
 18. For PRs with `qasp-review` label, the appropriate government reviewer performs the review and/or requests changes. **GOAL** 5 days: 3 days to perform the review and 2 days to implement the requested changes.
     * When changes are asked for, the changes are made by the contributor. Raft reviewers should internalize the changes asked by the Government such that the same feedback is already incorporated and/or caught in future (continuous improvement)
+    * Government reviewer is expected to check off boxes in the PR description relating to the deliverables described.
 19. When satisfied, the Government reviewer `approves` the PR and tags with the  `ready-to-merge` label. Government reviewer posts that PR is ready to merge in GitNotify channel on Teams.   
 20. `abottoms-coder` clicks Merge into `raft-tdp-main`
 21. `abottoms-coder` (or his back-up):
