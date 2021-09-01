@@ -401,6 +401,9 @@ jobs:
       - store_artifacts:
           path: tdrs-frontend/pa11y-screenshots/data-files.png
 
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/welcome.png
+
   deploy-infrastructure-dev:
     executor: terraform/default
     working_directory: ~/tdp-deploy
