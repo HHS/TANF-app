@@ -38,6 +38,11 @@
     {
       "url": "http://localhost:3000/data-files",
       "screenCapture": "pa11y-screenshots/data-files.png"
+    },
+
+    {
+      "url": "http://localhost:3000/welcome",
+      "screenCapture": "pa11y-screenshots/welcome.png"
     }
   ]
 }

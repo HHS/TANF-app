@@ -22,4 +22,5 @@ class DataFileAdmin(admin.ModelAdmin):
         'stt',
         'user',
         'year',
+        'version',
     ]

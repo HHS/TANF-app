@@ -40,7 +40,7 @@ function LoginCallback() {
     return <Redirect to="/" />
   }
 
-  return authenticated ? <Redirect to="/edit-profile" /> : null
+  return authenticated ? <Redirect to="/welcome" /> : null
 }
 
 export default LoginCallback

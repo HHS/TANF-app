@@ -23,7 +23,11 @@ def test_role_list(api_client, create_test_users):
     response = api_client.get("/v1/roles/")
     assert response.status_code == status.HTTP_200_OK
     role_names = {group["name"] for group in response.data}
+<<<<<<<
     assert role_names == {"OFA Regional Staff", "OFA Admin", "Data Analyst", "OFA System Admin"}
+=======
+    assert role_names == {"Developer", "OFA Admin", "Data Analyst", "OFA System Admin"}
+>>>>>>>
 
 
 @pytest.mark.django_db
