@@ -43,7 +43,7 @@ function SplashPage() {
   // during Pa11y tests allows us to just point to a page in the config like
   // we have been doing.
   if (authenticated && !process.env.REACT_APP_PA11Y_TEST) {
-    return <Redirect to="/edit-profile" />
+    return <Redirect to="/welcome" />
   }
 
   if (authLoading) {
