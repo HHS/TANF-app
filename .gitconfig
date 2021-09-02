@@ -6,7 +6,10 @@
 	patterns = .+_KEY=.+
 	allowed = [A-Z]+_KEY=..echo \".{S3_CREDENTIALS}\" [|] jq -r .+
 	allowed = ./tdrs-backend/.env.example:.*
+	allowed = ./tdrs-backend/docker-compose.yml:57:.*
+	allowed = regexes.json:.*
+	allowed = ./scripts/copy-login-gov-keypair.sh:14:JWT_KEY=.*
+	allowed = ./scripts/set-backend-env-vars.sh:24:DJANGO_SECRET_KEY=.*
 	allowed = .git/config:.*
 	allowed = .gitconfig:.*
 	allowed = .*DJANGO_SECRET_KEY=local
-
