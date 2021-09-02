@@ -10,7 +10,11 @@ fi
 
 # ensure we have correct configs in place
 [ -f ../.gitconfig ]
-cat ../.gitconfig >> .git/config 
+cat .gitconfig >> .git/config 
+echo "Git-Secrets Config loaded:"
+grep -A10 secrets .git/config
+# grep will return non-zero code if nothing found, failing the build
+
 echo "git-secrets-check.sh: Scanning repo ..."
 /tmp/git-secrets/git-secrets --scan -r ../
 

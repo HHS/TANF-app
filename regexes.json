@@ -1,0 +1,14 @@
+{
+    "RSA private key": "-----BEGIN RSA PRIVATE KEY-----",
+    "SSH (DSA) private key": "-----BEGIN DSA PRIVATE KEY-----",
+    "SSH (EC) private key": "-----BEGIN EC PRIVATE KEY-----",
+    "PGP private key block": "-----BEGIN PGP PRIVATE KEY BLOCK-----",
+    "AWS API Key": "((?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16})",
+    "GitHub": "[gG][iI][tT][hH][uU][bB].*['|\"][0-9a-zA-Z]{35,40}['|\"]",
+    "Generic API Key": "[aA][pP][iI]_?[kK][eE][yY].*['|\"][0-9a-zA-Z]{32,45}['|\"]",
+    "Generic Secret": "[sS][eE][cC][rR][eE][tT].*['|\"][0-9a-zA-Z]{32,45}['|\"]",
+    "Heroku API Key": "[hH][eE][rR][oO][kK][uU].*[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}",
+    "Password in URL": "[a-zA-Z]{3,10}://[^/\\s:@]{3,20}:[^/\\s:@]{3,20}@.{1,100}[\"'\\s]",
+    "DJANGO_SECRET_KEY": "DJANGO_SECRET_KEY=[A-Za-z0-9]{50}",
+    "JWT_KEY": "JWT_KEY=[A-Za-z0-9]+"
+}

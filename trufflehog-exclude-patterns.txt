@@ -1,0 +1,7 @@
+(.*/)?test/(.*/)?
+(.*/)?htmlcov/(.*/)?
+(.*/)?docs/(.*/)?
+(.*/)?static/index_files/analytics.js
+(.*/)?regexes.json
+(.*/)?yarn.lock
+(.*/)?Pipfile.lock
