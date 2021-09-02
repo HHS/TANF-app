@@ -359,3 +359,5 @@ class Common(Configuration):
         'OIDC_OP_TOKEN_ENDPOINT',
         'https://idp.int.identitysandbox.gov/api/openid_connect/token'
     )
+
+    ENABLE_DEVELOPER_GROUP = True
