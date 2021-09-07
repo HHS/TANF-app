@@ -74,8 +74,7 @@ def is_own_region(request, view):
     )
     requested_stt = request_parameters.get('stt')
     user_region = (
-        apps.get_model('stts', 'Region')
-        .objects.get(id=request.user.stt.region)
+        Region.objects.get(id=request.user.stt.region)
     )
     requested_region  = (
         apps.get_model('stts', 'STT')
