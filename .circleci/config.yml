@@ -298,13 +298,16 @@ commands:
 
 jobs:
   secrets-check:
-    executor: machine-executor
+    executor: docker-executor
     branches:
     steps:
       - checkout
       - run:
-          name: Scan repository for committed secrets.
+          name: "git-secrets: Scan repository for committed secrets"
           command: ./scripts/git-secrets-check.sh
+      - run:
+          name: "trufflehog: Scan repository for committed secrets"
+          command: ./scripts/trufflehog-check.sh $CIRCLE_BRANCH
   test-backend:
     executor: machine-executor
     branches:
@@ -400,6 +403,9 @@ jobs:
 
       - store_artifacts:
           path: tdrs-frontend/pa11y-screenshots/data-files.png
+
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/welcome.png
 
   deploy-infrastructure-dev:
     executor: terraform/default

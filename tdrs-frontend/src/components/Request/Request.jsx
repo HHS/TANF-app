@@ -2,13 +2,9 @@ import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import Button from '../Button'
+import signOut from '../../utils/signOut'
 
 function Request() {
-  const signOut = (e) => {
-    e.preventDefault()
-    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
-  }
-
   return (
     <>
       <div className="maxw-mobile-lg">

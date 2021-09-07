@@ -11,7 +11,7 @@ import LoginCallback from '.'
 describe('LoginCallback.js', () => {
   const mockStore = configureStore([thunk])
 
-  it('redirects to "/edit-profile" when user is already authenticated', () => {
+  it('redirects to "/welcome" when user is already authenticated', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -22,7 +22,7 @@ describe('LoginCallback.js', () => {
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/edit-profile" />)
+    expect(wrapper).toContainReact(<Redirect to="/welcome" />)
   })
 
   it('redirects to "/" when user not authenticated', () => {
