@@ -418,7 +418,6 @@ jobs:
     parameters:
       target-env:
         type: string
-        default: 'raft'
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
