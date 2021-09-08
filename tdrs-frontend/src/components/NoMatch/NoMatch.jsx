@@ -35,26 +35,15 @@ export default function NoMatch() {
                       </a>
                     </li>
                     <li className="usa-button-group__item">
-                      <button
+                      <a
                         className="usa-button usa-button--outline"
-                        type="button"
+                        href="mailto:tanfdata@acf.hhs.gov"
                       >
                         Contact Us
-                      </button>
+                      </a>
                     </li>
                   </ul>
                 </div>
-
-                <p>For immediate assistance:</p>
-                <ul>
-                  <li>
-                    Call{' '}
-                    <a href="/welcome" className="usa-link">
-                      (555) 555-GOVT
-                    </a>
-                  </li>
-                </ul>
-
                 <p className="text-base">
                   <strong>Error code:</strong> 404
                 </p>
