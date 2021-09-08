@@ -1,6 +1,13 @@
 from django.contrib.auth.models import Group
 from django.db import migrations
 
+from tdpservice.users.permissions import (
+    add_permissions_q,
+    delete_permissions_q,
+    get_permission_ids_for_model,
+    view_permissions_q
+)
+
 def create_perms(apps, schema_editor):
     """Creates permissions for all installed apps.
 
