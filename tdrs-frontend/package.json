@@ -93,7 +93,8 @@
       "!src/mirage.js",
       "!src/middleware/logger.js",
       "!src/utils/eventLogger.js",
-      "!src/utils/createFileInputErrorState.js"
+      "!src/utils/createFileInputErrorState.js",
+      "!src/utils/removeFileInputErrorState.js"
     ],
     "coverageThreshold": {
       "global": {
