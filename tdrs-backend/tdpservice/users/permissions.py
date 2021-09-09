@@ -128,11 +128,20 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
 
         # Data Analysts are limited to only data files for their designated STT
         if has_permission and request.user.is_data_analyst:
-            has_permission = is_own_stt(request, view)
+            has_permission = is_own_stt(
+                request.user,
+                get_requested_stt(request, view)
+            )
 
-        if request.user.groups.filter(name="OFA Regional Staff").exists():
-            has_permission = is_own_region(request, view)
-
+        if has_permission and (
+            request.user.is_data_analyst or
+            request.user.is_regional_staff
+        ):
+            requested_stt = get_requested_stt(request, view)
+            perms_function = (
+                is_own_region if request.user.is_regional_staff else is_own_stt
+            )
+            has_permission = perms_function(request.user, requested_stt)
         return has_permission
 
     def has_object_permission(self, request, view, obj):
