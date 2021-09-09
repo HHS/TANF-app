@@ -25,9 +25,18 @@ def create_perms(apps, schema_editor):
         app_config.models_module = None
 
 
-def set_regional_staff_permissions(apps, schema_editor):
-    """Set relevant Group Permissions for OFA Regional Staff group."""
-    regional_staff = apps.get_model('auth', 'Group').objects.get(name='OFA Regional Staff')
+
+# def unset_regional_staff_permissions(apps, schema_editor):
+#     """Remove all Group Permissions added to OFA Regional Staff."""
+#     regional_staff = apps.get_model('auth', 'Group').objects.get(name='OFA Regional Staff')
+#     regional_staff.permissions.clear()
+
+def add_regional_staff(apps, schema_editor):
+    regional_staff, _ = (
+        apps.get_model('auth', 'Group')
+            .objects
+            .get_or_create(name='OFA Regional Staff')
+    )
 
     # For the User model OFA Regional Staff will have all permissions *except* delete
     user_permissions = get_permission_ids_for_model(
@@ -43,8 +52,8 @@ def set_regional_staff_permissions(apps, schema_editor):
         filters=[view_permissions_q]
     )
     stt_permissions = get_permission_ids_for_model(
-        'stts',
-        'stt',
+       'stts',
+       'stt',
         filters=[view_permissions_q]
     )
     datafile_permissions = get_permission_ids_for_model(
@@ -73,25 +82,6 @@ def set_regional_staff_permissions(apps, schema_editor):
     regional_staff.permissions.add(*datafile_permissions)
     regional_staff.permissions.add(*logentry_permissions)
     regional_staff.permissions.add(*group_permissions)
-
-# def unset_regional_staff_permissions(apps, schema_editor):
-#     """Remove all Group Permissions added to OFA Regional Staff."""
-#     regional_staff = apps.get_model('auth', 'Group').objects.get(name='OFA Regional Staff')
-#     regional_staff.permissions.clear()
-
-def add_regional_staff(apps, schema_editor):
-    regional_staff, _ = (
-        apps.get_model('auth', 'Group')
-            .objects
-            .get_or_create(name='OFA Regional Staff')
-    )
-
-    # Clear existing permissions that may be set so we can ensure pristine state
-    regional_staff.permissions.clear()
-    regional_staff.permissions.add(
-        *apps.get_model('auth', 'Permission').objects.all()
-            .values_list('id', flat=True)
-    )
 
 def remove_regional_staff(apps, schema_editor):
     Group.objects.delete(name="OFA Regional Staff")
