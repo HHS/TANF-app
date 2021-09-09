@@ -152,6 +152,8 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         requested for download via the ID of the data_file. This is not called
         on POST requests (creating new data_files) or for a list of data_files.
         """
+
+        has_object_permission = super().has_object_permission(request, view, obj)
         # Data Analysts can only see files uploaded for their designated STT
         if request.user.is_data_analyst:
             user_stt = (
@@ -161,10 +163,13 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
             )
             return user_stt == obj.stt_id
 
-        # TODO: Add a conditional for Regional manager
-        # https://github.com/raft-tech/TANF-app/issues/1052
+        if request.user.is_regional_staff:
+            has_object_permission = is_own_region(
+                request.user,
+                get_requested_stt(request, view)
+            )
 
-        return super().has_object_permission(request, view, obj)
+        return has_object_permission
 
 
 class UserPermissions(DjangoModelCRUDPermissions):
@@ -183,15 +188,18 @@ class UserPermissions(DjangoModelCRUDPermissions):
         return True
 
     def has_object_permission(self, request, view, obj):
-        """Check if the object being modified belongs to the user.
-
+        """
+        Check if the object being modified belongs to the user.
         Alternatively, check if the user has been granted Model Permissions.
         """
         # If the user has the relevant model permission that will also allow
         # access to individual objects
         has_model_permission = super().has_permission(request, view)
 
-        # TODO: Add conditional to assert regional manager can only interact
-        #       with user records in their respective region.
+        if request.user.groups.filter(name="OFA Regional Staff").exists():
+            has_model_permission = is_own_region(
+                request.user,
+                get_requested_stt(request, view)
+            )
 
         return obj == request.user or has_model_permission
