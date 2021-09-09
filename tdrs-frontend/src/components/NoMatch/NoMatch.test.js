@@ -6,7 +6,7 @@ import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import NoMatch from './NoMatch'
 
-describe('Welcome', () => {
+describe('NoMatch', () => {
   const initialState = {
     auth: {
       authenticated: true,
