@@ -1,7 +1,15 @@
+import React, { useEffect, useRef } from 'react'
+
 /** This component renders a message signaling to the user that this
  * page does not exist.
  */
 export default function NoMatch() {
+  const headerRef = useRef()
+  useEffect(() => {
+    document.title = 'Page not found - TANF Data Portal'
+    if (headerRef.current) headerRef.current.focus()
+  }, [])
+
   return (
     <div>
       <div className="usa-section">
@@ -9,7 +17,9 @@ export default function NoMatch() {
           <div className="grid-row grid-gap">
             <main className="" id="main-content">
               <div className="usa-prose">
-                <h1>Page not found</h1>
+                <h1 tabIndex="-1" ref={headerRef}>
+                  Page not found
+                </h1>
 
                 <p className="usa-intro">
                   We’re sorry, we can’t find the page you&#39;re looking for. It
