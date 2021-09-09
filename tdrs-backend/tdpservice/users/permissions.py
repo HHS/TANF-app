@@ -65,16 +65,19 @@ def get_permission_ids_for_model(
 
     return queryset.values_list('id', flat=True)
 
-def is_own_region(request, view):
-    """Verify user belongs to the requested region based on the stt in the request."""
+def get_requested_stt(request, view):
     request_parameters = ChainMap(
         view.kwargs,
         request.query_params,
         request.data
     )
-    requested_stt = request_parameters.get('stt')
+    return request_parameters.get('stt')
+
+
+def is_own_region(user, requested_stt):
+    """Verify user belongs to the requested region based on the stt in the request."""
     user_region = (
-        Region.objects.get(id=request.user.stt.region)
+        Region.objects.get(id=user.region.id)
     )
     requested_region  = (
         apps.get_model('stts', 'STT')
@@ -82,23 +85,13 @@ def is_own_region(request, view):
     )
     return user_region == requested_region
 
-def is_own_stt(request, view):
+def is_own_stt(user, requested_stt):
     """Verify user belongs to requested STT."""
-    # Depending on the request, the STT could be found in three different places
-    # so we will merge all together and just do one check
-    request_parameters = ChainMap(
-        view.kwargs,
-        request.query_params,
-        request.data
-    )
-    requested_stt = request_parameters.get('stt')
-    user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
-
+    user_stt = user.stt_id if hasattr(user, 'stt_id') else None
     return bool(
         user_stt is not None and
         (requested_stt in [None, str(user_stt)])
     )
-
 
 class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
     """The request is authorized using `django.contrib.auth` permissions.
