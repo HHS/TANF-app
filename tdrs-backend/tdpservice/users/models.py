@@ -44,6 +44,14 @@ class User(AbstractUser):
         return self.groups.filter(name=group_name).exists()
 
     @cached_property
+    def is_regional_staff(self) -> bool:
+        """Return whether or not the user is in the OFA Regional Staff Group.
+
+        Uses a cached_property to prevent repeated calls to the database.
+        """
+        return self.is_in_group("OFA Regional Staff")
+
+    @cached_property
     def is_data_analyst(self) -> bool:
         """Return whether or not the user is in the Data Analyst Group.
 
