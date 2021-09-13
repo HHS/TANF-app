@@ -39,6 +39,7 @@ class ClamAVFileScan(models.Model):
         INFECTED = 'INFECTED'
         ERROR = 'ERROR'
 
+    scanned_at = models.DateTimeField(auto_now_add=True)
     file_name = models.TextField()
     file_shasum = models.TextField(
         help_text='The SHA256 checksum of the uploaded file'

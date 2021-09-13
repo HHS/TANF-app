@@ -6,8 +6,10 @@ from requests.sessions import Session
 import logging
 
 from django.conf import settings
+from django.core.files.base import File
 
 from tdpservice.security.models import ClamAVFileScan
+from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -46,7 +48,12 @@ class ClamAVClient:
         session.mount(self.endpoint_url, HTTPAdapter(max_retries=retries))
         return session
 
-    def scan_file(self, file, file_name, uploaded_by) -> bool:
+    def scan_file(
+        self,
+        file: File,
+        file_name: str,
+        uploaded_by: User
+    ) -> bool:
         """Scan a file for virus infections.
 
         :param file:
@@ -57,8 +64,7 @@ class ClamAVClient:
             The User that uploaded the given file.
         :returns is_file_clean:
             A boolean indicating whether or not the file passed the ClamAV scan
-        :returns msg:
-            A string containing details about the scan result.
+        :raises ClamAVClient.ServiceUnavailable:
         """
         logger.debug(f'Initiating virus scan for file: {file_name}')
         try:
@@ -74,21 +80,24 @@ class ClamAVClient:
 
         if scan_response.status_code in self.SCAN_CODES['CLEAN']:
             msg = f'File scan marked as CLEAN for file: {file_name}'
-            logger.debug(msg)
-            ClamAVFileScan.objects.log_result(
-                file,
-                file_name,
-                msg,
-                ClamAVFileScan.Result.CLEAN,
-                uploaded_by
-            )
-            return True
+            scan_result = ClamAVFileScan.Result.CLEAN
 
-        if scan_response.status_code in self.SCAN_CODES['INFECTED']:
+        elif scan_response.status_code in self.SCAN_CODES['INFECTED']:
             msg = f'File scan marked as INFECTED for file: {file_name}'
-            logger.debug(msg)
-            return False
+            scan_result = ClamAVFileScan.Result.INFECTED
 
-        msg = f'Unable to scan file with name: {file_name}'
+        else:
+            msg = f'Unable to scan file with name: {file_name}'
+            scan_result = ClamAVFileScan.Result.ERROR
+
+        # Log and create audit records with the results of this scan
         logger.debug(msg)
-        return False
+        ClamAVFileScan.objects.log_result(
+            file,
+            file_name,
+            msg,
+            scan_result,
+            uploaded_by
+        )
+
+        return True if scan_result == ClamAVFileScan.Result.CLEAN else False

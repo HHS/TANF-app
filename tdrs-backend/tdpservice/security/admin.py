@@ -7,6 +7,7 @@ from tdpservice.security.models import ClamAVFileScan
 class ClamAVFileScanAdmin(admin.ModelAdmin):
 
     list_display = [
+        'scanned_at',
         'file_name',
         'file_shasum',
         'result',
