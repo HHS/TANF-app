@@ -53,6 +53,7 @@ class Common(Configuration):
         "tdpservice.users",
         "tdpservice.stts",
         "tdpservice.data_files",
+        "tdpservice.security",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/

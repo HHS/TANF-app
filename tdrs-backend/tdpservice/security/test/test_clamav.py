@@ -2,7 +2,7 @@
 from django.conf import settings
 import pytest
 
-from tdpservice.clients import ClamAVClient
+from tdpservice.security.clients import ClamAVClient
 
 
 @pytest.fixture

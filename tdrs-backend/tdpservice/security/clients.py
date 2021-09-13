@@ -7,6 +7,8 @@ import logging
 
 from django.conf import settings
 
+from tdpservice.security.models import ClamAVFileScan
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -44,15 +46,19 @@ class ClamAVClient:
         session.mount(self.endpoint_url, HTTPAdapter(max_retries=retries))
         return session
 
-    def scan_file(self, file, file_name) -> bool:
+    def scan_file(self, file, file_name, uploaded_by) -> bool:
         """Scan a file for virus infections.
 
         :param file:
             The file or file-like object that should be scanned
         :param file_name:
             The name of the target file (str).
+        :param uploaded_by:
+            The User that uploaded the given file.
         :returns is_file_clean:
             A boolean indicating whether or not the file passed the ClamAV scan
+        :returns msg:
+            A string containing details about the scan result.
         """
         logger.debug(f'Initiating virus scan for file: {file_name}')
         try:
@@ -67,16 +73,22 @@ class ClamAVClient:
             raise self.ServiceUnavailable()
 
         if scan_response.status_code in self.SCAN_CODES['CLEAN']:
-            logger.debug(
-                f'File scan marked as CLEAN for file: {file_name}'
+            msg = f'File scan marked as CLEAN for file: {file_name}'
+            logger.debug(msg)
+            ClamAVFileScan.objects.log_result(
+                file,
+                file_name,
+                msg,
+                ClamAVFileScan.Result.CLEAN,
+                uploaded_by
             )
             return True
 
         if scan_response.status_code in self.SCAN_CODES['INFECTED']:
-            logger.debug(
-                f'File scan marked as INFECTED for file: {file_name}'
-            )
+            msg = f'File scan marked as INFECTED for file: {file_name}'
+            logger.debug(msg)
             return False
 
-        logger.debug(f'Unable to scan file with name: {file_name}')
+        msg = f'Unable to scan file with name: {file_name}'
+        logger.debug(msg)
         return False
