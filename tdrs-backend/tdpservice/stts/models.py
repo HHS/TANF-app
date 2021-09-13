@@ -15,6 +15,7 @@ class Region(models.Model):
 
     @cached_property
     def stts(self):
+        """Get all stts that belong to this region."""
         return STT.objects.filter(region=self)
 
 

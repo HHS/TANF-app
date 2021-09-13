@@ -5,7 +5,7 @@ from django.contrib.admin.sites import AdminSite
 from io import StringIO
 import uuid
 
-from django.core.management import call_command
+# from django.core.management import call_command
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Group
 from factory.faker import faker
@@ -39,8 +39,8 @@ def api_client():
 @pytest.fixture
 def regional_user(region):
     """Return a regional staff user."""
-    region,_ = Region.objects.get_or_create(id=1)
-    stt,_ = STT.objects.get_or_create(region=region)
+    region, _ = Region.objects.get_or_create(id=1)
+    stt, _ = STT.objects.get_or_create(region=region)
     return STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
         region=region,

@@ -67,6 +67,7 @@ def get_permission_ids_for_model(
     return queryset.values_list('id', flat=True)
 
 def get_requested_stt(request, view):
+    """Get stt from a valid request."""
     request_parameters = ChainMap(
         view.kwargs,
         request.query_params,
@@ -146,14 +147,14 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         return has_permission
 
     def has_object_permission(self, request, view, obj):
-        """Check if a user can interact with a specific file, based on STT.
+        """
+        Check if a user can interact with a specific file, based on STT.
 
         This is used in cases where we call .get_object() to retrieve a data_file
         and do not have the STT available in the request, ie. data file was
         requested for download via the ID of the data_file. This is not called
         on POST requests (creating new data_files) or for a list of data_files.
         """
-
         has_object_permission = super().has_object_permission(request, view, obj)
         # Data Analysts can only see files uploaded for their designated STT
         if request.user.is_data_analyst:
@@ -191,6 +192,7 @@ class UserPermissions(DjangoModelCRUDPermissions):
     def has_object_permission(self, request, view, obj):
         """
         Check if the object being modified belongs to the user.
+
         Alternatively, check if the user has been granted Model Permissions.
         """
         # If the user has the relevant model permission that will also allow
