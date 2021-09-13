@@ -6,6 +6,7 @@ from typing import List, Optional, TYPE_CHECKING
 from django.apps import apps
 from django.db.models import Q, QuerySet
 from rest_framework import permissions
+from tdpservice.stts.models import Region
 
 if TYPE_CHECKING:  # pragma: no cover
     from django.contrib.auth.models import Permission  # pragma: no cover
@@ -79,9 +80,9 @@ def is_own_region(user, requested_stt):
     user_region = (
         Region.objects.get(id=user.region.id)
     )
-    requested_region  = (
+    requested_region = (
         apps.get_model('stts', 'STT')
-        .objects.get(id=requested_stt).region
+        .objects.get(id=int(requested_stt)).region
     )
     return user_region == requested_region
 

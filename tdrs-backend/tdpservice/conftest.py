@@ -5,6 +5,7 @@ from django.contrib.admin.sites import AdminSite
 from io import StringIO
 import uuid
 
+from django.core.management import call_command
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Group
 from factory.faker import faker
@@ -12,7 +13,7 @@ from rest_framework.test import APIClient
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
-from tdpservice.stts.models import STT, Region
+from tdpservice.stts.models import Region, STT
 
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from tdpservice.core.admin import LogEntryAdmin
@@ -35,14 +36,15 @@ def api_client():
     """Return an API client for testing."""
     return APIClient()
 
-
 @pytest.fixture
 def regional_user(region):
     """Return a regional staff user."""
-    region = Region.objects.first()
-    return UserFactory.create(
+    region,_ = Region.objects.get_or_create(id=1)
+    stt,_ = STT.objects.get_or_create(region=region)
+    return STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
         region=region,
+        stt=stt
     )
 
 
@@ -114,6 +116,7 @@ def other_stt():
 @pytest.fixture
 def region():
     """Return a region."""
+    # call_command("populate_stts")
     return RegionFactory.create()
 
 
