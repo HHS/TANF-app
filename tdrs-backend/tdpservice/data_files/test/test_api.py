@@ -223,6 +223,24 @@ class TestDataFileAPIAsInactiveUser(DataFileAPITestBase):
         response = self.post_data_file_file(api_client, data_file_data)
         self.assert_data_file_rejected(response)
 
+class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
+    """Test DataFileViewSet as a Data Analyst user."""
+
+    @pytest.fixture
+    def user(self, regional_user):
+        """Override the default user with data_analyst for our tests."""
+        return regional_user
+
+    def test_download_data_file_file_for_own_region(
+        self, api_client, regional_data_file_data, user
+    ):
+        """Test that the file is downloaded as expected for a Data Analyst's set STT."""
+        response = self.post_data_file_file(api_client, regional_data_file_data)
+        data_file_id = response.data['id']
+        response = self.download_file(api_client, data_file_id)
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_data_file_content_matches(response, data_file_id)
 
 def multi_year_data_file_data(user, stt):
     """Return data file data that encompasses multiple years."""

@@ -12,13 +12,15 @@ from rest_framework.test import APIClient
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
+from tdpservice.stts.models import STT, Region
+
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from tdpservice.core.admin import LogEntryAdmin
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.users.test.factories import (
     UserFactory,
-    AdminUserFactory,
     StaffUserFactory,
+    AdminUserFactory,
     STTUserFactory,
     InactiveUserFactory,
     AdminSTTUserFactory,
@@ -35,9 +37,13 @@ def api_client():
 
 
 @pytest.fixture
-def user():
-    """Return a basic, non-admin user."""
-    return UserFactory.create()
+def regional_user(region):
+    """Return a regional staff user."""
+    region = Region.objects.first()
+    return UserFactory.create(
+        groups=(Group.objects.get(name="OFA Regional Staff"),),
+        region=region,
+    )
 
 
 @pytest.fixture
@@ -178,6 +184,20 @@ def base_data_file_data(fake_file_name, user):
         "stt": int(user.stt.id)
     }
 
+@pytest.fixture
+def base_regional_data_file_data(fake_file_name, regional_user):
+    """Return data file creation data without a file."""
+    return {
+        "original_filename": fake_file_name,
+        "slug": str(uuid.uuid4()),
+        "extension": "txt",
+        "section": "Active Case Data",
+        "user": str(regional_user.id),
+        "region": regional_user.region.id,
+        "quarter": "Q1",
+        "year": 2020,
+        "stt": int(regional_user.region.stts.first().id)
+    }
 
 @pytest.fixture
 def data_file_data(base_data_file_data, data_file):
@@ -185,6 +205,14 @@ def data_file_data(base_data_file_data, data_file):
     return {
         "file": data_file,
         **base_data_file_data
+    }
+
+@pytest.fixture
+def regional_data_file_data(base_regional_data_file_data, data_file):
+    """Return data file creation data for a reigon."""
+    return {
+        "file": data_file,
+        **base_regional_data_file_data
     }
 
 

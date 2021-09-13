@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.db.models import constraints
-
+from django.utils.functional import cached_property
 
 class Region(models.Model):
     """A model representing a US region."""
@@ -12,6 +12,10 @@ class Region(models.Model):
     def __str__(self):
         """Return the ID."""
         return f"Region {self.id}"
+
+    @cached_property
+    def stts(self):
+        return STT.objects.filter(region=self)
 
 
 class STT(models.Model):
