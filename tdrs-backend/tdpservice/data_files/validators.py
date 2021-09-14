@@ -46,11 +46,10 @@ def validate_file_extension(file_name: str):
         raise ValidationError(msg)
 
 
-def validate_file_infection(file, uploaded_by):
+def validate_file_infection(file, file_name, uploaded_by):
     """Validate file is not infected by scanning with ClamAV."""
-    av_client = ClamAVClient()
     try:
-        is_file_clean = av_client.scan_file(file, uploaded_by)
+        is_file_clean = ClamAVClient().scan_file(file, file_name, uploaded_by)
     except ClamAVClient.ServiceUnavailable:
         raise ValidationError(
             'Unable to complete security inspection, please try again or '

@@ -4,25 +4,41 @@ import pytest
 
 from tdpservice.data_files.errors import ImmutabilityError
 from tdpservice.data_files.serializers import DataFileSerializer
-from tdpservice.data_files.validators import validate_file_extension
+from tdpservice.data_files.validators import (
+    validate_file_extension,
+    validate_file_infection
+)
 
 
 @pytest.mark.django_db
-def test_serializer_with_valid_data(data_file_data):
+def test_serializer_with_valid_data(data_file_data, user):
     """If a serializer has valid data it will return a valid object."""
-    create_serializer = DataFileSerializer(data=data_file_data)
+    create_serializer = DataFileSerializer(
+        context={'user': user},
+        data=data_file_data
+    )
     create_serializer.is_valid(raise_exception=True)
     assert create_serializer.is_valid() is True
 
 
 @pytest.mark.django_db
-def test_serializer_increment_create(data_file_data, other_data_file_data):
+def test_serializer_increment_create(
+    data_file_data,
+    other_data_file_data,
+    user
+):
     """Test serializer produces data_files with correct version."""
-    serializer_1 = DataFileSerializer(data=data_file_data)
+    serializer_1 = DataFileSerializer(
+        context={'user': user},
+        data=data_file_data
+    )
     assert serializer_1.is_valid() is True
     data_file_1 = serializer_1.save()
 
-    serializer_2 = DataFileSerializer(data=other_data_file_data)
+    serializer_2 = DataFileSerializer(
+        context={'user': user},
+        data=other_data_file_data
+    )
     assert serializer_2.is_valid() is True
     data_file_2 = serializer_2.save()
 
@@ -45,9 +61,12 @@ def test_immutability_of_data_file(data_file_instance):
 
 
 @pytest.mark.django_db
-def test_created_at(data_file_data):
+def test_created_at(data_file_data, user):
     """If a serializer has valid data it will return a valid object."""
-    create_serializer = DataFileSerializer(data=data_file_data)
+    create_serializer = DataFileSerializer(
+        context={'user': user},
+        data=data_file_data
+    )
     assert create_serializer.is_valid() is True
     data_file = create_serializer.save()
 
@@ -87,3 +106,10 @@ def test_rejects_invalid_file_extensions(file_name):
     """Test invalid file names are rejected by serializer validation."""
     with pytest.raises(ValidationError):
         validate_file_extension(file_name)
+
+
+@pytest.mark.django_db
+def test_rejects_infected_file(infected_file, fake_file_name, user):
+    """Test infected files are rejected by serializer validation."""
+    with pytest.raises(ValidationError):
+        validate_file_infection(infected_file, fake_file_name, user)

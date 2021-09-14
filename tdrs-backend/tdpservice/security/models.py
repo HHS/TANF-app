@@ -1,5 +1,7 @@
 """Models for the tdpservice.security app."""
 from hashlib import sha256
+from io import StringIO
+from typing import Union
 import logging
 
 from django.contrib.admin.models import ContentType, LogEntry, ADDITION
@@ -12,26 +14,50 @@ from tdpservice.users.models import User
 logger = logging.getLogger(__name__)
 
 
+def get_file_shasum(file: File) -> str:
+    """Derive the SHA256 checksum of the file."""
+    f = file.open('rb')
+    _hash = sha256()
+
+    # For large files we need to read it in by chunks to prevent invalid hashes
+    if f.multiple_chunks():
+        for chunk in f.chunks():
+            _hash.update(chunk)
+    else:
+        _hash.update(f.read())
+
+    # Ensure to reset the file so it can be read in further operations.
+    f.seek(0)
+
+    return _hash.hexdigest()
+
+
 class ClamAVFileScanManager(models.Manager):
     """Extends object manager functionality with common operations."""
 
     def record_scan(
         self,
-        file: File,
+        file: Union[File, StringIO],
+        file_name: str,
         msg: str,
         result: 'ClamAVFileScan.Result',
         uploaded_by: User
     ) -> 'ClamAVFileScan':
         """Create a new ClamAVFileScan instance with associated LogEntry."""
         try:
-            file_shasum = sha256(file.read()).hexdigest()
-        except (TypeError, ValueError) as err:
+            file_shasum = get_file_shasum(file)
+        except (AttributeError, TypeError, ValueError) as err:
             logger.error(f'Encountered error deriving file hash: {err}')
             file_shasum = 'INVALID'
 
+        # Create the ClamAVFileScan instance.
         av_scan = self.model.objects.create(
-            file_name=file.name,
-            file_size=file.size,
+            file_name=file_name,
+            file_size=(
+                file.size
+                if isinstance(file, File)
+                else len(file.getvalue())
+            ),
             file_shasum=file_shasum,
             result=result,
             uploaded_by=uploaded_by

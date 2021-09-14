@@ -55,6 +55,12 @@ class DataFileViewSet(ModelViewSet):
             self.filterset_class = None
         return super().filter_queryset(queryset)
 
+    def get_serializer_context(self):
+        """Retrieve additional context required by serializer."""
+        context = super().get_serializer_context()
+        context['user'] = self.request.user
+        return context
+
     @action(methods=["get"], detail=True)
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""

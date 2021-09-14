@@ -28,6 +28,16 @@ def set_clamav_file_scan_permissions(apps, schema_editor):
     ofa_admin.permissions.add(*av_scan_permissions)
     ofa_system_admin.permissions.add(*av_scan_permissions)
 
+    # On new systems the previous migration for OFA System Admin will add extra
+    # permissions, remove these if so.
+    unwanted_permissions = get_permission_ids_for_model(
+        'security',
+        'clamavfilescan',
+        exclusions=[view_permissions_q]
+    )
+
+    ofa_system_admin.permissions.remove(*unwanted_permissions)
+
 
 class Migration(migrations.Migration):
 
