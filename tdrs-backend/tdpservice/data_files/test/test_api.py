@@ -234,13 +234,21 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
     def test_download_data_file_file_for_own_region(
         self, api_client, regional_data_file_data, user
     ):
-        """Test that the file is downloaded as expected for a Data Analyst's set STT."""
+        """Test that the file is downloaded as expected for Regional Staffs's """
         response = self.post_data_file_file(api_client, regional_data_file_data)
         data_file_id = response.data['id']
         response = self.download_file(api_client, data_file_id)
 
         assert response.status_code == status.HTTP_200_OK
         self.assert_data_file_content_matches(response, data_file_id)
+
+    def test_cannot_download_data_file_file_for_other_regions(
+        self, api_client, wrong_regional_data_file_data, user
+    ):
+        """Test that the file is not downloaded if the report is not in their region."""
+        response = self.post_data_file_file(api_client, wrong_regional_data_file_data)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
 def multi_year_data_file_data(user, stt):
     """Return data file data that encompasses multiple years."""

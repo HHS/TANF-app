@@ -37,6 +37,11 @@ def api_client():
     return APIClient()
 
 @pytest.fixture
+def user():
+    """Return a basic, non-admin user."""
+    return UserFactory.create()
+
+@pytest.fixture
 def regional_user(region):
     """Return a regional staff user."""
     region, _ = Region.objects.get_or_create(id=1)
@@ -203,6 +208,23 @@ def base_regional_data_file_data(fake_file_name, regional_user):
     }
 
 @pytest.fixture
+def wrong_base_regional_data_file_data(fake_file_name, regional_user):
+    """Return data file creation data without a file."""
+    region, _ = Region.objects.get_or_create(id=2)
+    stt, _ = STT.objects.get_or_create(name="second",region=region)
+    return {
+        "original_filename": fake_file_name,
+        "slug": str(uuid.uuid4()),
+        "extension": "txt",
+        "section": "Active Case Data",
+        "user": str(regional_user.id),
+        "region": region.id,
+        "quarter": "Q1",
+        "year": 2020,
+        "stt": int(stt.id)
+    }
+
+@pytest.fixture
 def data_file_data(base_data_file_data, data_file):
     """Return data file creation data."""
     return {
@@ -216,6 +238,14 @@ def regional_data_file_data(base_regional_data_file_data, data_file):
     return {
         "file": data_file,
         **base_regional_data_file_data
+    }
+
+@pytest.fixture
+def wrong_regional_data_file_data(wrong_base_regional_data_file_data, data_file):
+    """Return data file creation data for the wrong reigon."""
+    return {
+        "file": data_file,
+        **wrong_base_regional_data_file_data
     }
 
 
