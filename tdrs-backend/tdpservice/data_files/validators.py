@@ -50,7 +50,7 @@ def validate_file_infection(file, uploaded_by):
     """Validate file is not infected by scanning with ClamAV."""
     av_client = ClamAVClient()
     try:
-        is_file_clean = av_client.scan_file(file, file.name, uploaded_by)
+        is_file_clean = av_client.scan_file(file, uploaded_by)
     except ClamAVClient.ServiceUnavailable:
         raise ValidationError(
             'Unable to complete security inspection, please try again or '

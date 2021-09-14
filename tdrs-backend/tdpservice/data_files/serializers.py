@@ -41,10 +41,14 @@ class DataFileSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create a new entry with a new version number."""
         data_file = DataFile.create_new_version(validated_data)
+
+        # Determine the matching ClamAVFileScan for this DataFile.
         av_scan = ClamAVFileScan.objects.filter(
             file_name=data_file.original_filename,
             uploaded_by=data_file.user
         ).last()
+
+        # Link the newly created DataFile to the relevant ClamAVFileScan.
         if av_scan is not None:
             av_scan.data_file = data_file
             av_scan.save()

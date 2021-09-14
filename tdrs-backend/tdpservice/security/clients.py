@@ -48,53 +48,56 @@ class ClamAVClient:
         session.mount(self.endpoint_url, HTTPAdapter(max_retries=retries))
         return session
 
-    def scan_file(
-        self,
-        file: File,
-        file_name: str,
-        uploaded_by: User
-    ) -> bool:
+    def scan_file(self, file: File, uploaded_by: User) -> bool:
         """Scan a file for virus infections.
 
         :param file:
             The file or file-like object that should be scanned
-        :param file_name:
-            The name of the target file (str).
         :param uploaded_by:
             The User that uploaded the given file.
         :returns is_file_clean:
             A boolean indicating whether or not the file passed the ClamAV scan
         :raises ClamAVClient.ServiceUnavailable:
         """
-        logger.debug(f'Initiating virus scan for file: {file_name}')
+        logger.debug(f'Initiating virus scan for file: {file.name}')
         try:
             scan_response = self.session.post(
                 self.endpoint_url,
-                data={'name': file_name},
+                data={'name': file.name},
                 files={'file': file},
                 timeout=settings.AV_SCAN_TIMEOUT
             )
+
         except ConnectionError as err:
-            logger.debug(f'Encountered error scanning file: {err}')
+            logger.error(f'ClamAV connection failure: {err}')
             raise self.ServiceUnavailable()
 
-        if scan_response.status_code in self.SCAN_CODES['CLEAN']:
-            msg = f'File scan marked as CLEAN for file: {file_name}'
+        except UnicodeEncodeError as err:
+            logger.debug(f'Unable to decode file: {err}')
+            scan_response = None
+
+        if (
+            scan_response is not None and
+            scan_response.status_code in self.SCAN_CODES['CLEAN']
+        ):
+            msg = f'File scan marked as CLEAN for file: {file.name}'
             scan_result = ClamAVFileScan.Result.CLEAN
 
-        elif scan_response.status_code in self.SCAN_CODES['INFECTED']:
-            msg = f'File scan marked as INFECTED for file: {file_name}'
+        elif (
+            scan_response is not None and
+            scan_response.status_code in self.SCAN_CODES['INFECTED']
+        ):
+            msg = f'File scan marked as INFECTED for file: {file.name}'
             scan_result = ClamAVFileScan.Result.INFECTED
 
         else:
-            msg = f'Unable to scan file with name: {file_name}'
+            msg = f'Unable to scan file with name: {file.name}'
             scan_result = ClamAVFileScan.Result.ERROR
 
         # Log and create audit records with the results of this scan
         logger.debug(msg)
-        ClamAVFileScan.objects.log_result(
+        ClamAVFileScan.objects.record_scan(
             file,
-            file_name,
             msg,
             scan_result,
             uploaded_by
