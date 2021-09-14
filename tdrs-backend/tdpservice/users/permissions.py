@@ -21,7 +21,7 @@ view_permissions_q = Q(codename__startswith='view_')
 
 
 def create_perms(_apps, *_):
-    """Creates permissions for all installed apps.
+    """Create permissions for all installed apps.
 
     Intended for use in data migrations that add/edit/remove group permissions.
 

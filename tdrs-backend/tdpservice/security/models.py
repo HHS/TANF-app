@@ -1,3 +1,4 @@
+"""Models for the tdpservice.security app."""
 from hashlib import sha256
 import logging
 
@@ -54,10 +55,13 @@ class ClamAVFileScan(models.Model):
     """Represents a ClamAV virus scan performed for an uploaded file."""
 
     class Meta:
+        """Model Meta options."""
+
         verbose_name = 'Clam AV File Scan'
 
     class Result(models.TextChoices):
         """Represents the possible results from a completed ClamAV scan."""
+
         CLEAN = 'CLEAN'
         INFECTED = 'INFECTED'
         ERROR = 'ERROR'

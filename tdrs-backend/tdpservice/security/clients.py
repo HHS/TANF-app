@@ -1,4 +1,4 @@
-"""Globally available external client services."""
+"""External client services related to security auditing."""
 from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError
 from requests.packages.urllib3.util.retry import Retry
