@@ -38,8 +38,8 @@ function HeaderComp() {
 
   const dispatch = useDispatch()
 
-  const isSystemAdmin = () => {
-    return user?.roles?.some((role) => role.name === 'System Admin')
+  const isOFASystemAdmin = () => {
+    return user?.roles?.some((role) => role.name === 'OFA System Admin')
   }
 
   return (
@@ -81,7 +81,7 @@ function HeaderComp() {
                     tabTitle="Profile"
                     href="/edit-profile"
                   />
-                  {isSystemAdmin() && (
+                  {isOFASystemAdmin() && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Admin"
