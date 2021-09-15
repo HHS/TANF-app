@@ -2,8 +2,10 @@
 from requests.sessions import Session
 import pytest
 
+from django.contrib.admin import site as admin_site
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
+from tdpservice.security.admin import ClamAVFileScanAdmin
 from tdpservice.security.clients import ClamAVClient
 from tdpservice.security.models import ClamAVFileScan
 
@@ -106,3 +108,43 @@ def test_clamav_connection_error(
     """Test that the appropriate error is raised when ClamAV is inaccessible."""
     with pytest.raises(ClamAVClient.ServiceUnavailable):
         invalid_clamav_client.scan_file(fake_file, fake_file_name, user)
+
+
+@pytest.mark.django_db
+def test_clamav_hash_errors(fake_file, fake_file_name, mocker, user):
+    """Test that a failure to derive sha256 hash of file is handled."""
+    mocker.patch(
+        'tdpservice.security.models.get_file_shasum',
+        side_effect=AttributeError()
+    )
+
+    av_scan = ClamAVFileScan.objects.record_scan(
+        file=fake_file,
+        file_name=fake_file_name,
+        msg='CLEAN',
+        result=ClamAVFileScan.Result.CLEAN,
+        uploaded_by=user
+    )
+
+    assert av_scan.file_shasum == 'INVALID'
+
+
+@pytest.mark.django_db
+def test_clamav_file_scan_admin_file_size_display(
+    fake_file,
+    fake_file_name,
+    user
+):
+    """Test that the ClamAVFileScan Admin page displays formatted file size."""
+    av_scan = ClamAVFileScan.objects.record_scan(
+        file=fake_file,
+        file_name=fake_file_name,
+        msg='CLEAN',
+        result=ClamAVFileScan.Result.CLEAN,
+        uploaded_by=user
+    )
+
+    av_admin = ClamAVFileScanAdmin(ClamAVFileScan, admin_site)
+    admin_file_size = av_admin.file_size_human(av_scan)
+
+    assert admin_file_size == av_scan.file_size_humanized
