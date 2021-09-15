@@ -14,7 +14,7 @@ from tdpservice.users.models import User
 logger = logging.getLogger(__name__)
 
 
-def get_file_shasum(file: File) -> str:
+def get_file_shasum(file: Union[File, StringIO]) -> str:
     """Derive the SHA256 checksum of a file."""
     _hash = sha256()
 
