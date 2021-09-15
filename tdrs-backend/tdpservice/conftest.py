@@ -211,7 +211,7 @@ def base_regional_data_file_data(fake_file_name, regional_user):
 def wrong_base_regional_data_file_data(fake_file_name, regional_user):
     """Return data file creation data without a file."""
     region, _ = Region.objects.get_or_create(id=2)
-    stt, _ = STT.objects.get_or_create(name="second",region=region)
+    stt, _ = STT.objects.get_or_create(name="second", region=region)
     return {
         "original_filename": fake_file_name,
         "slug": str(uuid.uuid4()),
