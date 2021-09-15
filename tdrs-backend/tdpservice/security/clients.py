@@ -74,21 +74,11 @@ class ClamAVClient:
             logger.error(f'ClamAV connection failure: {err}')
             raise self.ServiceUnavailable()
 
-        except UnicodeEncodeError as err:
-            logger.debug(f'Unable to decode file: {err}')
-            scan_response = None
-
-        if (
-            scan_response is not None and
-            scan_response.status_code in self.SCAN_CODES['CLEAN']
-        ):
+        if scan_response.status_code in self.SCAN_CODES['CLEAN']:
             msg = f'File scan marked as CLEAN for file: {file_name}'
             scan_result = ClamAVFileScan.Result.CLEAN
 
-        elif (
-            scan_response is not None and
-            scan_response.status_code in self.SCAN_CODES['INFECTED']
-        ):
+        elif scan_response.status_code in self.SCAN_CODES['INFECTED']:
             msg = f'File scan marked as INFECTED for file: {file_name}'
             scan_result = ClamAVFileScan.Result.INFECTED
 

@@ -15,16 +15,29 @@ logger = logging.getLogger(__name__)
 
 
 def get_file_shasum(file: File) -> str:
-    """Derive the SHA256 checksum of the file."""
-    f = file.open('rb')
+    """Derive the SHA256 checksum of a file."""
     _hash = sha256()
 
+    # If the file has the `open` method it needs to be called, otherwise this
+    # input is a file-like object (ie. StringIO) and doesn't need to be opened.
+    if hasattr(file, 'open'):
+        f = file.open('rb')
+    else:
+        f = file
+
     # For large files we need to read it in by chunks to prevent invalid hashes
-    if f.multiple_chunks():
+    if hasattr(f, 'multiple_chunks') and f.multiple_chunks():
         for chunk in f.chunks():
             _hash.update(chunk)
     else:
-        _hash.update(f.read())
+        content = f.read()
+
+        # If the content is returned as a string we must encode it to bytes
+        # or an error will be raised.
+        if isinstance(content, str):
+            content = content.encode('utf-8')
+
+        _hash.update(content)
 
     # Ensure to reset the file so it can be read in further operations.
     f.seek(0)
