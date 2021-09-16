@@ -97,6 +97,7 @@ function SplashPage() {
             <Button
               className="width-full sign-in-button"
               type="button"
+              id="loginDotGovSignIn"
               onClick={signInWithLoginDotGov}
             >
               <div className="mobile:margin-x-auto mobile-lg:margin-0">
@@ -108,12 +109,12 @@ function SplashPage() {
                 />
                 for grantees
               </div>
-
               <span className="visually-hidden">Opens in a new website</span>
             </Button>
             <Button
               className="width-full sign-in-button margin-top-3"
               type="button"
+              id="acfAmsSignIn"
               onClick={signInWithAMS}
             >
               <div className="mobile:margin-x-auto mobile-lg:margin-0">
