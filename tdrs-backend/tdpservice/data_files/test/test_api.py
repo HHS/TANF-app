@@ -234,7 +234,7 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
     def test_download_data_file_file_for_own_region(
         self, api_client, regional_data_file_data, user
     ):
-        """Test that the file is downloaded as expected for Regional Staffs's """
+        """Test that the file is downloaded as expected for Regional Staffs's."""
         response = self.post_data_file_file(api_client, regional_data_file_data)
         data_file_id = response.data['id']
         response = self.download_file(api_client, data_file_id)
