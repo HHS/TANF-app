@@ -13,10 +13,6 @@ class Region(models.Model):
         """Return the ID."""
         return f"Region {self.id}"
 
-    @cached_property
-    def stts(self):
-        """Get all stts that belong to this region."""
-        return STT.objects.filter(region=self)
 
 
 class STT(models.Model):
