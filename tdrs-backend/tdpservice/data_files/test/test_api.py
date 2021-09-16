@@ -243,10 +243,10 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
         self.assert_data_file_content_matches(response, data_file_id)
 
     def test_cannot_download_data_file_file_for_other_regions(
-        self, api_client, wrong_regional_data_file_data, user
+        self, api_client, other_regional_data_file_data, user
     ):
         """Test that the file is not downloaded if the report is not in their region."""
-        response = self.post_data_file_file(api_client, wrong_regional_data_file_data)
+        response = self.post_data_file_file(api_client, other_regional_data_file_data)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 

@@ -204,10 +204,13 @@ class UserPermissions(DjangoModelCRUDPermissions):
         # access to individual objects
         has_model_permission = super().has_permission(request, view)
 
+        # Regional Staff can only see files uploaded for their designated Region
         if request.user.groups.filter(name="OFA Regional Staff").exists():
-            has_model_permission = is_own_region(
-                request.user,
-                get_requested_stt(request, view)
+            user_region = (
+                request.user.region_id
+                if hasattr(request.user, 'region_id')
+                else None
             )
+            return user_region == obj.stt.region_id
 
         return obj == request.user or has_model_permission
