@@ -8,7 +8,6 @@ import LoginCallback from '../LoginCallback'
 import Request from '../Request'
 import Reports from '../Reports'
 import Welcome from '../Welcome'
-import { useSelector } from 'react-redux'
 
 /**
  * This component renders the routes for the app.
