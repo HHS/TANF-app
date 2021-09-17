@@ -4,7 +4,7 @@ Date: 2021-09-09 (yyyy-mm-dd)
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -21,4 +21,4 @@ When investigating, we sought out information on what other agencies utilizing u
 While we also investigated and developed technical solutions utilizing either React-app-rewired or Next.js, we felt that the departure from our existing stack was not a worthwhile investment and could lead to other complications down the road.
 
 ## Consequences
-Unsafe-inline will continue to be used in our 'react-scripts' frontend framework but we will waive this ZAP alert as it is an already mitigated vulnerability within our current stack and the attack vector is small.
+Unsafe-inline will continue to be used in our 'react-scripts' frontend framework but we will waive this ZAP alert for both frontend and backend as it is an already mitigated vulnerability within our current stack and the attack vector is small. For verbosity, the attack vector is for vetted, approved users potentially targetting other system users for account credentials or privilege escalation using XSS against inline style sheets.
