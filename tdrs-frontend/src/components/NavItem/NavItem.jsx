@@ -17,9 +17,7 @@ function NavItem({ pathname, tabTitle, href }) {
         key={tabTitle}
         // dash-case the tabTitle string (e.g. Data Files => data-files)
         id={tabTitle.replace(/ /g, '-').toLowerCase()}
-        className={`usa-nav__link ${
-          pathname.includes(href) ? 'usa-current' : ''
-        }`}
+        className={`usa-nav__link ${pathname === href ? 'usa-current' : ''}`}
         aria-current={href === pathname ? 'page' : undefined}
       >
         <span>{tabTitle}</span>
