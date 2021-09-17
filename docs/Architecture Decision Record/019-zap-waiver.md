@@ -12,7 +12,7 @@ To satisfy ATO compliance we have sought to used OWASP's ZAP security scanner to
 
 ## Decision
 
-When investigating, we sought out information on what other agencies utilizing uswds had done in this situation. Another team had simply waived the requirement with the following justification: 
+When investigating, we sought out information on what other, modern ACF systems utilizing uswds had done in this situation. Another team had simply waived the requirement with the following justification: 
 
 > Weakness Description: Style-src unsafe-inline;: TTAHUB utilize javascript libraries to provide "typeahead search" functionality to filter select box options for end users. These libraries require setting the 'style' attribute on the HTML elements in a way that is incompatible with not including 'style-src: unsafe-inline' in our Content-Security-Policy (CSP) header.
 > Remediation Plan: This potential vulnerability is mitigated by utilizing React and JSX for generating HTML. JSX automatically escapes all user-supplied input)[sic] and thus is a compensating control for the CSP header.
