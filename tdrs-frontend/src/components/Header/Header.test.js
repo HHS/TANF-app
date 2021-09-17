@@ -146,22 +146,6 @@ describe('Header', () => {
     expect(dataFilesTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should add usa-current class to dataFiles tab when on '/data-files/*'", () => {
-    const store = mockStore({
-      ...initialState,
-      router: { location: { pathname: '/data-files/upload' } },
-    })
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-
-    const dataFilesTab = wrapper.find('#data-files')
-
-    expect(dataFilesTab.hasClass('usa-current')).toEqual(true)
-  })
-
   it("should add usa-current class to Profile tab when on '/edit-profile'", () => {
     const store = mockStore(initialState)
     const wrapper = mount(
