@@ -3,3 +3,15 @@
   font-size: 1rem;
   background-color: $primary-medium-blue;
 }
+
+.usa-button--outline {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 2px $primary-medium-blue;
+    color: $primary-medium-blue;
+}
+
+.usa-button--outline.usa-button--hover, .usa-button--outline:hover {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 2px #1a4480;
+    color: #1a4480;
+}
