@@ -91,8 +91,8 @@ function HeaderComp() {
                     </a>
                   )}
                 </li>
-                <li className="usa-nav__secondary-item">
-                  {authenticated && (
+                {authenticated && (
+                  <li className="usa-nav__secondary-item">
                     <a
                       className="sign-out-link"
                       href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
@@ -103,8 +103,8 @@ function HeaderComp() {
                       />
                       Sign Out
                     </a>
-                  )}
-                </li>
+                  </li>
+                )}
               </ul>
             </div>
           </div>
