@@ -345,12 +345,18 @@ jobs:
           command: "./scripts/zap-scanner.sh frontend nightly"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
-
       - run:
           name:  "Test: Execute Backend  OWASP ZAP Vulnerability Scan"
           command: "./scripts/zap-scanner.sh backend nightly"
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
+      - run:
+          name: "Run post-processing task to record OWASP ZAP results"
+          command: |
+            cf run-task tdp-backend-staging \
+              --command "python manage.py process_owasp_scan $CIRCLE_BUILD_NUM" \
+              --name "nightly-owasp-processing"
+
   test-frontend:
     executor: machine-executor
     working_directory: ~/tdp-apps
