@@ -173,28 +173,6 @@ describe('Header', () => {
     expect(welcomeTab.hasClass('usa-current')).toEqual(false)
   })
 
-  it('should log out user when sign out button is clicked', () => {
-    const store = mockStore(initialState)
-    const url = 'http://localhost:8080/v1/logout/oidc'
-    global.window = Object.create(window)
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-      },
-    })
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-
-    const signOutLink = wrapper.find('.sign-out-link').first()
-
-    signOutLink.simulate('click')
-
-    expect(window.location.href).toEqual(url)
-  })
-
   it('should have secondaryItems when user is logged in', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
@@ -207,25 +185,6 @@ describe('Header', () => {
 
     expect(secondaryLinks.length).toEqual(2)
     expect(secondaryLinks.first().text()).toEqual('test@test.com')
-    expect(secondaryLinks.last().text()).toEqual('Sign Out')
-  })
-
-  it('should have one visible secondaryItem when user is logged out', () => {
-    const state = {
-      ...initialState,
-      auth: { user: {}, authenticated: false },
-    }
-    const store = mockStore(state)
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-
-    const secondaryLinks = wrapper.find('.usa-nav__secondary-item')
-
-    expect(secondaryLinks.first().hasClass('display-none')).toBeTruthy()
-    expect(secondaryLinks.last().text()).toEqual('Sign In')
   })
 
   it('should NOT show any nav items when the user is NOT logged in', () => {
