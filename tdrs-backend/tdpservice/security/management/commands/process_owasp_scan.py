@@ -32,5 +32,6 @@ class Command(BaseCommand):
             f'{circle_build_num}/artifacts'
         )
         response = requests.get(circle_api_url)
-        results = [artifact['url'] for artifact in response.json()['items']]
-        print(results)
+        artifacts = response.json().get('items', [])
+        for artifact in artifacts:
+            print(artifact)

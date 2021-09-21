@@ -1,6 +1,7 @@
 """Models for the tdpservice.security app."""
 from hashlib import sha256
 from io import StringIO
+from os.path import join
 from typing import Union
 import logging
 
@@ -8,6 +9,7 @@ from django.contrib.admin.models import ContentType, LogEntry, ADDITION
 from django.core.files.base import File
 from django.db import models
 
+from tdpservice.backends import DataFilesS3Storage
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.models import User
 
@@ -43,6 +45,14 @@ def get_file_shasum(file: Union[File, StringIO]) -> str:
     f.seek(0)
 
     return _hash.hexdigest()
+
+
+def get_zap_s3_upload_path(instance, filename):
+    """Produce a unique upload path for ZAP reports stored in S3."""
+    return join(
+        f'owasp_reports/{instance.scanned_at.date()}/{instance.app_target}',
+        filename
+    )
 
 
 class ClamAVFileScanManager(models.Manager):
@@ -151,3 +161,44 @@ class ClamAVFileScan(models.Model):
             size /= 1024.0
 
         return f'{size:.{2}f}{unit}'
+
+
+class OwaspZapScan(models.Model):
+    """Tracks the results of a scheduled run of the OWASP ZAP scan.
+
+    OWASP ZAP scan is an automated penetration testing tool which provides us
+    a security analysis of our deployed applications. These scans are run
+    nightly by Circle CI which triggers a Cloud Foundry Task to download
+    and store the results in this model.
+
+    Reference: https://www.zaproxy.org/
+    """
+
+    class AppTarget(models.TextChoices):
+        BACKEND = 'tdrs-backend'
+        FRONTEND = 'tdrs-frontend'
+
+    class Meta:
+        """Model Meta options."""
+
+        verbose_name = 'OWASP ZAP Scan'
+
+    app_target = models.CharField(
+        choices=AppTarget.choices,
+        help_text='The target app for this scan, either frontend or backend',
+        max_length=32
+    )
+    html_report = models.FileField(
+        help_text='The generated HTML ZAP Scanning Report',
+        storage=DataFilesS3Storage,
+        upload_to=get_zap_s3_upload_path
+    )
+
+    scanned_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text='The date and time this scan was processed'
+    )
+    scanned_url = models.CharField(
+        help_text='The URL of the scanned application',
+        max_length=128
+    )

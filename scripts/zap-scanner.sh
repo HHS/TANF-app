@@ -1,5 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
+set -o pipefail
 
 TARGET=$1
 ENVIRONMENT=$2
@@ -22,10 +23,6 @@ elif [ "$ENVIRONMENT" = "circle" ]; then
         exit 1
     fi
 elif [ "$ENVIRONMENT" = "local" ]; then
-
-    # docker-compose down
-    # docker-compose up -d --build
-
     if [ "$TARGET" = "frontend" ]; then
         APP_URL="http://tdp-frontend/"
     elif [ "$TARGET" = "backend" ]; then
@@ -37,7 +34,6 @@ elif [ "$ENVIRONMENT" = "local" ]; then
 else
     echo "Invalid environment $ENVIRONMENT"
     exit 1
-
 fi
 
 
@@ -59,38 +55,19 @@ fi
 # Ensure the reports directory can be written to
 chmod 777 $(pwd)/reports
 
+ZAP_ARGS=(-t "$APP_URL" -m 5 -r "$REPORT_NAME" -z "$ZAP_CONFIG")
 if [ -z ${CONFIG_FILE+x} ]; then
-    echo "No config file"
-    docker-compose run zaproxy zap-full-scan.py \
-                   -t $APP_URL \
-                   -m 5 \
-                   -z "${ZAP_CONFIG}" \
-                   -r "$REPORT_NAME" | tee /dev/tty | grep -q "FAIL-NEW: 0"
+    echo "No config file, defaulting all alerts to WARN"
 else
-    echo "Config file $ENVIRONMENT"
-    docker-compose run zaproxy zap-full-scan.py \
-                   -t $APP_URL \
-                   -m 5 \
-                   -z "${ZAP_CONFIG}" \
-                   -c "$CONFIG_FILE" \
-                   -r "$REPORT_NAME"  | tee /dev/tty | grep -q "FAIL-NEW: 0"
+    echo "Config file found"
+    ZAP_ARGS+=(-c "$CONFIG_FILE")
 fi
 
+ZAP_OUTPUT=$(docker-compose run --rm zaproxy zap-full-scan.py "${ZAP_ARGS[@]}" | tee /dev/tty)
+ZAP_EXIT=$?
 
-# The `grep -q` piped to the end of the previous command will return a
-# 0 exit code if the term is found and 1 otherwise.
-ZAPEXIT=$?
-
-if [ "$TARGET" = "frontend" ]; then
-    docker-compose down --remove-orphan
-fi
-
-EXIT=0
-
-if [ "$ZAPEXIT" = 1 ] ; then
+if [ "$ZAP_EXIT" -ne 0 ] ; then
 	echo "OWASP ZAP scan failed"
-	EXIT=1
 fi
 
-exit $EXIT
-cd ..
+exit $ZAP_EXIT
