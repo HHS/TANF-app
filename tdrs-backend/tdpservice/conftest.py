@@ -5,7 +5,6 @@ from django.contrib.admin.sites import AdminSite
 from io import StringIO
 import uuid
 
-# from django.core.management import call_command
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Group
 from factory.faker import faker
