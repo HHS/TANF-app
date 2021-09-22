@@ -98,11 +98,11 @@ class Command(BaseCommand):
                     temp_file.write(chunk)
                 html_report = File(temp_file)
 
-            # Record the completed scan along with any associated logging
-            OwaspZapScan.objects.record_scan(
-                app_target,
-                html_report,
-                fail_count,
-                pass_count,
-                warn_count
-            )
+                # Record the completed scan along with any associated logging
+                OwaspZapScan.objects.record_scan(
+                    app_target,
+                    html_report,
+                    fail_count,
+                    pass_count,
+                    warn_count
+                )

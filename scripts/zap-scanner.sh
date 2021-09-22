@@ -81,7 +81,7 @@ ZAP_EXIT=$?
 if [ "$ZAP_EXIT" -eq 0 ]; then
   echo "OWASP ZAP scan successful"
 else
-	echo "OWASP ZAP scan failed"
+  echo "OWASP ZAP scan failed"
 fi
 
 # Nightly scans in Circle CI need to persist some values across multiple steps.
