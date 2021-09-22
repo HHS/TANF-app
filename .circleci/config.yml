@@ -308,6 +308,7 @@ jobs:
       - run:
           name: "trufflehog: Scan repository for committed secrets"
           command: ./scripts/trufflehog-check.sh $CIRCLE_BRANCH
+
   test-backend:
     executor: machine-executor
     branches:
@@ -334,27 +335,40 @@ jobs:
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
 
-  prod-owasp-scan:
+  nightly-owasp-scan:
     executor: machine-executor
     working_directory: ~/tdp-apps
     steps:
       - checkout
       - docker-compose-check
       - run:
-          name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
+          name:  "Test: Execute Frontend OWASP ZAP Vulnerability Scan"
           command: "./scripts/zap-scanner.sh frontend nightly"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
       - run:
-          name:  "Test: Execute Backend  OWASP ZAP Vulnerability Scan"
+          name:  "Test: Execute Backend OWASP ZAP Vulnerability Scan"
           command: "./scripts/zap-scanner.sh backend nightly"
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
+      - login-cloud-dot-gov:
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
       - run:
           name: "Run post-processing task to record OWASP ZAP results"
           command: |
+            CMD_ARGS=(
+              "$CIRCLE_BUILD_NUM"
+              --backend-pass-count ${ZAP_BACKEND_PASS_COUNT:-0}
+              --backend-warn-count ${ZAP_BACKEND_WARN_COUNT:-0}
+              --backend-fail-count ${ZAP_BACKEND_FAIL_COUNT:-0}
+              --frontend-pass-count ${ZAP_FRONTEND_PASS_COUNT:-0}
+              --frontend-warn-count ${ZAP_FRONTEND_WARN_COUNT:-0}
+              --frontend-fail-count ${ZAP_FRONTEND_FAIL_COUNT:-0}
+            )
             cf run-task tdp-backend-staging \
-              --command "python manage.py process_owasp_scan $CIRCLE_BUILD_NUM" \
+              --command "python manage.py process_owasp_scan ${CMD_ARGS[@]}" \
               --name "nightly-owasp-processing"
 
   test-frontend:
@@ -391,27 +405,15 @@ jobs:
           name: "Run Cypress Integration Tests"
           command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
-          name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
+          name: "Test: Build and Spin-up React app behind Nginx"
+          command: "cd tdrs-frontend; docker-compose up -d --build"
+      - run:
+          name:  "Test: Execute Frontend OWASP ZAP Vulnerability Scan"
           command: "./scripts/zap-scanner.sh frontend circle"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
       - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/homepage.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/edit-profile.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/request.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/login.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/data-files.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/welcome.png
+          path: tdrs-frontend/pa11y-screenshots/
 
   deploy-infrastructure-dev:
     executor: terraform/default
@@ -474,7 +476,7 @@ parameters:
 workflows:
   nightly:
     jobs:
-      - prod-owasp-scan
+      - nightly-owasp-scan
     triggers:
       - schedule:
           cron: "0 0 * * *"
