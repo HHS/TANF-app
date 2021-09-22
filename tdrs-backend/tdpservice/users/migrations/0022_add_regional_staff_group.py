@@ -26,10 +26,6 @@ def create_perms(apps, schema_editor):
 
 
 
-# def unset_regional_staff_permissions(apps, schema_editor):
-#     """Remove all Group Permissions added to OFA Regional Staff."""
-#     regional_staff = apps.get_model('auth', 'Group').objects.get(name='OFA Regional Staff')
-#     regional_staff.permissions.clear()
 
 def add_regional_staff(apps, schema_editor):
     regional_staff, _ = (
