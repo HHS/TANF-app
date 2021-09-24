@@ -336,7 +336,7 @@ jobs:
           path: tdrs-backend/reports/owasp_report.html
 
   nightly-owasp-scan:
-    executor: docker-executor
+    executor: machine-executor
     working_directory: ~/tdp-apps
     steps:
       - checkout
