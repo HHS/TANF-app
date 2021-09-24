@@ -369,10 +369,11 @@ jobs:
               --frontend-warn-count ${ZAP_FRONTEND_WARN_COUNT:-0}
               --frontend-fail-count ${ZAP_FRONTEND_FAIL_COUNT:-0}
             )
+            CMD="python manage.py process_owasp_scan ${CMD_ARGS[@]}"
             # TODO: Revert this back to tdp-backend-staging
             cf run-task tdp-backend-sandbox \
-              --command "python manage.py process_owasp_scan ${CMD_ARGS[@]}" \
-              --name "nightly-owasp-processing"
+              --command "$CMD" \
+              --name nightly-owasp-scan
 
   test-frontend:
     executor: machine-executor
