@@ -89,7 +89,7 @@ if [ "$ENVIRONMENT" = "nightly" ]; then
   ZAP_SUMMARY=$(echo "$ZAP_OUTPUT" | tail -1 | xargs)
 
   function get_summary_value () {
-    echo "$ZAP_SUMMARY" | grep -o "$1: [^ ]*" | cut -d':' -f2 | xargs
+    echo "$ZAP_SUMMARY" | grep -o "$1: [^ ]*" | cut -d':' -f2 | sed 's/[^0-9]*//g'
   }
 
   ZAP_PASS_COUNT=$(get_summary_value PASS)

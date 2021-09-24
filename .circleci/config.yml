@@ -354,12 +354,14 @@ jobs:
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
       - login-cloud-dot-gov:
-          cf-password: CF_PASSWORD_DEV  # CF_PASSWORD_STAGING
-          cf-space: tanf-dev  # tanf-staging
-          cf-username: CF_USERNAME_DEV  # CF_USERNAME_STAGING
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
       - run:
           name: "Run post-processing task to record OWASP ZAP results"
           command: |
+            # These environment variables are exported to Circle CI's BASH_ENV
+            # by the zap-scanner.sh script for each respective app target.
             CMD_ARGS=(
               "$CIRCLE_BUILD_NUM"
               --backend-pass-count ${ZAP_BACKEND_PASS_COUNT:-0}
@@ -369,9 +371,13 @@ jobs:
               --frontend-warn-count ${ZAP_FRONTEND_WARN_COUNT:-0}
               --frontend-fail-count ${ZAP_FRONTEND_FAIL_COUNT:-0}
             )
+
+            # Evaluate the full command before passing it in so it doesn't
+            # get improperly interpolated by Cloud.gov.
             CMD="python manage.py process_owasp_scan ${CMD_ARGS[@]}"
-            # TODO: Revert this back to tdp-backend-staging
-            cf run-task tdp-backend-sandbox \
+
+            # Submit a CF Task for execution that will run the necessary command
+            cf run-task tdp-backend-staging \
               --command "$CMD" \
               --name nightly-owasp-scan
 
@@ -480,19 +486,14 @@ parameters:
 workflows:
   nightly:
     jobs:
-      # TEMP: wait until approved so this can be manually executed
-      - hold:
-          type: approval
-      - nightly-owasp-scan:
-          requires:
-            - hold
-#    triggers:
-#      - schedule:
-#          cron: "0 0 * * *"
-#          filters:
-#            branches:
-#              only:
-#                - raft-tdp-main
+      - nightly-owasp-scan
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
 
   build-and-test:
     unless: << pipeline.parameters.run_dev_deployment >>
