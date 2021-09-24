@@ -225,14 +225,16 @@ class OwaspZapScan(models.Model):
     Reference: https://www.zaproxy.org/
     """
 
-    class AppTarget(models.TextChoices):
-        BACKEND = 'tdrs-backend'
-        FRONTEND = 'tdrs-frontend'
-
     class Meta:
         """Model Meta options."""
 
         verbose_name = 'OWASP ZAP Scan'
+
+    class AppTarget(models.TextChoices):
+        """The application that was scanned for this report."""
+
+        BACKEND = 'tdrs-backend'
+        FRONTEND = 'tdrs-frontend'
 
     app_target = models.CharField(
         choices=AppTarget.choices,
@@ -269,7 +271,7 @@ class OwaspZapScan(models.Model):
 
     @property
     def result(self) -> str:
-        """Returns a summarized result of the scan."""
+        """Return a summarized result of the scan."""
         if self.fail_count > 0:
             return 'Failed'
         elif self.warn_count > 0:

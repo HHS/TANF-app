@@ -1,7 +1,6 @@
 """Management command to process OWASP scan results from CircleCI."""
 
 from tempfile import TemporaryFile
-from urllib.parse import urlsplit
 import logging
 import requests
 
@@ -19,7 +18,7 @@ class Command(BaseCommand):
     help = 'Download, process and store OWASP ZAP scan results.'
 
     def add_arguments(self, parser):
-        """Accepted argument(s) for this command."""
+        """Specify accepted arguments for this command."""
         parser.add_argument('build_num', type=int)
         parser.add_argument(
             '--backend-pass-count',
