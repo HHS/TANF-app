@@ -140,7 +140,7 @@ class ClamAVFileScan(models.Model):
     data_file = models.ForeignKey(
         DataFile,
         blank=True,
-        help_text='The resulting DataFile object if this scan was clean',
+        help_text='The resulting DataFile object, if this scan was clean',
         null=True,
         on_delete=models.SET_NULL,
         related_name='av_scans'
