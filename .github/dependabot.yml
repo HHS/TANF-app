@@ -14,6 +14,9 @@ updates:
       - "raft review"
     reviewers:
       - "raft-tech/tdrs-developers"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
 
   - package-ecosystem: "pip"
     directory: "/tdrs-backend"
@@ -26,3 +29,7 @@ updates:
       - "raft review"
     reviewers:
       - "raft-tech/tdrs-developers"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+
