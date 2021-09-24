@@ -23,7 +23,7 @@ commands:
     steps:
       - run:
           name: Ensure cf cli is installed, otherwise install it.
-          command: ./scripts/cf-check.sh
+          command: sudo ./scripts/cf-check.sh
 
   docker-compose-check:
     steps:
