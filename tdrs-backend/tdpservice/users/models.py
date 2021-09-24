@@ -7,6 +7,7 @@ from django.db import models
 from django.utils.functional import cached_property
 from tdpservice.stts.models import STT, Region
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 
 
 class User(AbstractUser):
@@ -42,6 +43,17 @@ class User(AbstractUser):
     def is_in_group(self, group_name: str) -> bool:
         """Return whether or not the user is a member of the specified Group."""
         return self.groups.filter(name=group_name).exists()
+
+    def save(self, *args, **kwargs):
+        print("checking if")
+        if self.is_regional_staff and self.stt:
+            print("invalid regional staff stt")
+            raise ValidationError(
+                _("Regional staff cannot have an sst assigned to them"))
+        elif self.is_data_analyst and self.region:
+            raise ValidationError(
+                _("Data Analyst cannot have a region assigned to them"))
+        super().save(*args, **kwargs)
 
     @cached_property
     def is_regional_staff(self) -> bool:
