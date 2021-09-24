@@ -51,7 +51,6 @@ def test_create_user_endpoint_not_present(api_client, user_data):
 def test_regional_user_update_user_in_region(api_client, regional_user, user_in_region):
     """Test regional staff can update users in their region."""
     assert regional_user.region.id == user_in_region.region.id
-    assert regional_user.stt.region.id == user_in_region.stt.region.id
     api_client.login(username=regional_user.username, password="test_password")
     response = api_client.patch(f"/v1/users/{user_in_region.pk}/", {
         "first_name": "Jane"
@@ -66,7 +65,6 @@ def test_regional_user_cannot_update_user_not_in_region(
 ):
     """Test regional staff cannot update users not in their region."""
     assert regional_user.region.id != user_in_other_region.region.id
-    assert regional_user.stt.region.id != user_in_other_region.stt.region.id
     api_client.login(username=regional_user.username, password="test_password")
     response = api_client.patch(f"/v1/users/{user_in_other_region.pk}/", {
         "first_name": "Jane"
