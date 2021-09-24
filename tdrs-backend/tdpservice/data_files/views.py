@@ -55,6 +55,12 @@ class DataFileViewSet(ModelViewSet):
             self.filterset_class = None
         return super().filter_queryset(queryset)
 
+    def get_serializer_context(self):
+        """Retrieve additional context required by serializer."""
+        context = super().get_serializer_context()
+        context['user'] = self.request.user
+        return context
+
     @action(methods=["get"], detail=True)
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
@@ -75,6 +81,11 @@ class GetYearList(APIView):
     query_string = False
     pattern_name = "data_file-list"
     permission_classes = [DataFilePermissions]
+
+    # The DataFilePermissions subclasses DjangoModelPermissions which requires
+    # declaration of a queryset in order to perform introspection to determine
+    # Permissions needed. This is otherwise unused.
+    queryset = DataFile.objects.none()
 
     def get(self, request, **kwargs):
         """Handle get action for get list of years there are data_files."""

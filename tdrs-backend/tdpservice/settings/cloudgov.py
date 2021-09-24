@@ -137,3 +137,5 @@ class Production(CloudGov):
         'OIDC_RP_CLIENT_ID',
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
     )
+
+    ENABLE_DEVELOPER_GROUP = False

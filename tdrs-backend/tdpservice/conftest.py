@@ -9,6 +9,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import Group
 from factory.faker import faker
 from rest_framework.test import APIClient
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 
 from tdpservice.stts.test.factories import STTFactory, RegionFactory
 from tdpservice.core.admin import LogEntryAdmin
@@ -53,6 +55,12 @@ def ofa_admin_stt_user():
 def ofa_admin():
     """Return an ofa admin user."""
     return UserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
+
+
+@pytest.fixture
+def ofa_system_admin():
+    """Return on OFA System Admin user."""
+    return UserFactory.create(groups=(Group.objects.get(name='OFA System Admin'),))
 
 
 @pytest.fixture
@@ -208,3 +216,30 @@ def data_file_instance():
 def admin():
     """Return a custom LogEntryAdmin."""
     return LogEntryAdmin(LogEntry, AdminSite())
+
+def get_private_key(private_key):
+    """Getter function for transforming RSA key object to bytes for private key."""
+    private_key_der = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption())
+    return private_key_der
+
+def get_public_key(private_key):
+    """Getter function for transforming RSA key object to bytes for public key."""
+    public_key_pem = private_key.public_key().public_bytes(
+        serialization.Encoding.PEM,
+        serialization.PublicFormat.SubjectPublicKeyInfo)
+    return public_key_pem
+
+
+@pytest.fixture()
+def test_private_key():
+    """Dynamically create randomized JWT keys for each run of tests."""
+    # Generate our key
+    # Equivalent to ~ openssl req -x509 -newkey rsa:4096
+    key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=4096,
+    )
+    yield get_private_key(key)

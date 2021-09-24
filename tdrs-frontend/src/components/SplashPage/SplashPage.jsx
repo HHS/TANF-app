@@ -20,19 +20,20 @@ function SplashPage() {
   const dispatch = useDispatch()
 
   const handleClick = (event) => {
-    /* istanbul ignore else */
+    /* istanbul ignore if */
     if (
-      window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/) &&
+      !window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/) &&
       process.env.REACT_APP_USE_MIRAGE
     ) {
-      event.preventDefault()
-      window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
-    } else {
       // This doesn't need to be tested, it will never be reached by jest.
       event.preventDefault()
       dispatch(setMockLoginState())
+    } else {
+      event.preventDefault()
+      window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
     }
   }
+
   useEffect(() => {
     if (isInactive) {
       setTimeout(() => alertRef?.current?.focus(), 2)
@@ -43,7 +44,7 @@ function SplashPage() {
   // during Pa11y tests allows us to just point to a page in the config like
   // we have been doing.
   if (authenticated && !process.env.REACT_APP_PA11Y_TEST) {
-    return <Redirect to="/edit-profile" />
+    return <Redirect to="/welcome" />
   }
 
   if (authLoading) {

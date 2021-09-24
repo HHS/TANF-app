@@ -24,7 +24,8 @@ logger.addHandler(logging.StreamHandler())
 
 def pg_isready(host, user, password, dbname):
     """Check to see if Postgres is ready."""
-    while time() - start_time < check_timeout:
+    # The `check_timeout` env var must be converted from a string to a float.
+    while time() - start_time < float(check_timeout):
         try:
             conn = psycopg2.connect(**vars())
             logger.info("Postgres is ready!")

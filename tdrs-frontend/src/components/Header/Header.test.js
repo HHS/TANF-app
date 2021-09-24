@@ -13,7 +13,7 @@ describe('Header', () => {
     auth: {
       user: {
         email: 'test@test.com',
-        roles: [{ id: 1, name: 'System Admin', permissions: [] }],
+        roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
       },
       authenticated: true,
     },
@@ -69,7 +69,7 @@ describe('Header', () => {
     expect(profileLink).toIncludeText('Profile')
   })
 
-  it('should have a navigation link for Admin when user is a System Admin', () => {
+  it('should have a navigation link for Admin when user is a OFA System Admin', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
@@ -81,7 +81,7 @@ describe('Header', () => {
     expect(adminLink).toIncludeText('Admin')
   })
 
-  it('should NOT have a navigation link for Admin when user is NOT a System Admin', () => {
+  it('should NOT have a navigation link for Admin when user is NOT a OFA System Admin', () => {
     const store = mockStore({
       ...initialState,
       auth: {
@@ -146,22 +146,6 @@ describe('Header', () => {
     expect(dataFilesTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should add usa-current class to dataFiles tab when on '/data-files/*'", () => {
-    const store = mockStore({
-      ...initialState,
-      router: { location: { pathname: '/data-files/upload' } },
-    })
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-
-    const dataFilesTab = wrapper.find('#data-files')
-
-    expect(dataFilesTab.hasClass('usa-current')).toEqual(true)
-  })
-
   it("should add usa-current class to Profile tab when on '/edit-profile'", () => {
     const store = mockStore(initialState)
     const wrapper = mount(
@@ -189,28 +173,6 @@ describe('Header', () => {
     expect(welcomeTab.hasClass('usa-current')).toEqual(false)
   })
 
-  it('should log out user when sign out button is clicked', () => {
-    const store = mockStore(initialState)
-    const url = 'http://localhost:8080/v1/logout/oidc'
-    global.window = Object.create(window)
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-      },
-    })
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-
-    const signOutLink = wrapper.find('.sign-out-link').first()
-
-    signOutLink.simulate('click')
-
-    expect(window.location.href).toEqual(url)
-  })
-
   it('should have secondaryItems when user is logged in', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
@@ -223,25 +185,6 @@ describe('Header', () => {
 
     expect(secondaryLinks.length).toEqual(2)
     expect(secondaryLinks.first().text()).toEqual('test@test.com')
-    expect(secondaryLinks.last().text()).toEqual('Sign Out')
-  })
-
-  it('should have one visible secondaryItem when user is logged out', () => {
-    const state = {
-      ...initialState,
-      auth: { user: {}, authenticated: false },
-    }
-    const store = mockStore(state)
-    const wrapper = mount(
-      <Provider store={store}>
-        <Header />
-      </Provider>
-    )
-
-    const secondaryLinks = wrapper.find('.usa-nav__secondary-item')
-
-    expect(secondaryLinks.first().hasClass('display-none')).toBeTruthy()
-    expect(secondaryLinks.last().text()).toEqual('Sign In')
   })
 
   it('should NOT show any nav items when the user is NOT logged in', () => {

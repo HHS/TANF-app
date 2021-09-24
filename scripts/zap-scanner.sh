@@ -29,7 +29,7 @@ elif [ "$ENVIRONMENT" = "local" ]; then
     if [ "$TARGET" = "frontend" ]; then
         APP_URL="http://tdp-frontend/"
     elif [ "$TARGET" = "backend" ]; then
-        APP_URL="http://web/"
+        APP_URL="http://web:8080/"
     else
         echo "Invalid target $TARGET"
         exit 1
