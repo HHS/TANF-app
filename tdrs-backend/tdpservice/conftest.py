@@ -45,7 +45,6 @@ def regional_user(region, stt):
     return STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
         region=region,
-        stt=stt
     )
 
 @pytest.fixture
