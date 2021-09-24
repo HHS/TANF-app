@@ -15,7 +15,19 @@ updates:
     reviewers:
       - "raft-tech/tdrs-developers"
     ignore:
-      - dependency-name: "*"
+      - dependency-name: "redux*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "cypress*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "prettier*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "eslint*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "react-dom*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "react-redux*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "axios*"
         update-types: ["version-update:semver-patch"]
 
   - package-ecosystem: "pip"
@@ -30,6 +42,6 @@ updates:
     reviewers:
       - "raft-tech/tdrs-developers"
     ignore:
-      - dependency-name: "*"
+      - dependency-name: "awscli*"
         update-types: ["version-update:semver-patch"]
 
