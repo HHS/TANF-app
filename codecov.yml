@@ -13,7 +13,7 @@ coverage:
         flags:
           - frontend
       backend:
-        target: 95%
+        target: 90%
         flags:
           - backend
 
