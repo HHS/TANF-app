@@ -174,7 +174,7 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
                 if hasattr(request.user, 'region_id')
                 else None
             )
-            return user_region == obj.region_id
+            return user_region == obj.stt.region.id
 
         return has_object_permission
 
@@ -211,6 +211,6 @@ class UserPermissions(DjangoModelCRUDPermissions):
                 if hasattr(request.user, 'region_id')
                 else None
             )
-            return user_region == obj.region_id
+            return user_region == obj.stt.region_id
 
         return obj == request.user or has_model_permission

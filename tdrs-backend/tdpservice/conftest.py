@@ -53,7 +53,6 @@ def user_in_region(stt, region):
     return STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
         stt=stt,
-        region=region
     )
 
 @pytest.fixture
@@ -62,7 +61,6 @@ def user_in_other_region(other_stt, other_region):
     return STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
         stt=other_stt,
-        region=other_region
     )
 
 @pytest.fixture
