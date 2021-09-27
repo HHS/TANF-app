@@ -45,7 +45,7 @@ class User(AbstractUser):
         return self.groups.filter(name=group_name).exists()
 
     def save(self, *args, **kwargs):
-        print("checking if")
+        """Prevent save if a attributes not nessisary for a user given their role."""
         if self.is_regional_staff and self.stt:
             print("invalid regional staff stt")
             raise ValidationError(
