@@ -156,7 +156,6 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         requested for download via the ID of the data_file. This is not called
         on POST requests (creating new data_files) or for a list of data_files.
         """
-        has_object_permission = super().has_object_permission(request, view, obj)
 
         # Data Analysts can only see files uploaded for their designated STT
         if request.user.is_data_analyst:
@@ -176,7 +175,7 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
             )
             return user_region == obj.stt.region.id
 
-        return has_object_permission
+        return super().has_object_permission(request, view, obj)
 
 
 class UserPermissions(DjangoModelCRUDPermissions):
