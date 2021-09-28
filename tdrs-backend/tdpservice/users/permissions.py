@@ -178,7 +178,6 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         requested for download via the ID of the data_file. This is not called
         on POST requests (creating new data_files) or for a list of data_files.
         """
-
         # Data Analysts can only see files uploaded for their designated STT
         if request.user.is_data_analyst:
             user_stt = (
