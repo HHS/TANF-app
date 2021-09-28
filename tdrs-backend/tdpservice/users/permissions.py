@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import List, Optional, TYPE_CHECKING
 
 from django.apps import apps
+from django.contrib.auth.management import create_permissions
 from django.db.models import Q, QuerySet
 from rest_framework import permissions
 
@@ -19,6 +20,25 @@ delete_permissions_q = Q(codename__startswith='delete_')
 view_permissions_q = Q(codename__startswith='view_')
 
 
+def create_perms(_apps, *_):
+    """Create permissions for all installed apps.
+
+    Intended for use in data migrations that add/edit/remove group permissions.
+
+    This is needed because Django does not actually create any Content Types
+    or Permissions until a post_migrate signal is raised after the completion
+    of `manage.py migrate`. When a migration is run as part of a set for a
+    freshly created database, that signal will not run until all migrations are
+    complete - resulting in no permissions for any Group.
+
+    For more info: https://code.djangoproject.com/ticket/29843
+    """
+    for app_config in _apps.get_app_configs():
+        app_config.models_module = True
+        create_permissions(app_config, apps=_apps, verbosity=0)
+        app_config.models_module = None
+
+
 def get_permission_ids_for_model(
     app_label: str,
     model_name: str,
@@ -26,6 +46,8 @@ def get_permission_ids_for_model(
     exclusions: Optional[List[Q]] = None
 ) -> QuerySet['Permission']:
     """Retrieve the permissions associated with a given model.
+
+    Intended for use in data migrations that add/edit/remove group permissions.
 
     Optionally apply a list of Q objects as filters or exclusions that will be
     chained together via an OR clause to the database.
