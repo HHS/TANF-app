@@ -1,3 +1,4 @@
+"""Model instance factories related to Security models to be used in tests."""
 from faker import Factory as FakerFactory
 import factory
 
@@ -11,6 +12,7 @@ class OwaspZapScanFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         """Meta options tying the factory to the model."""
+
         model = OwaspZapScan
 
     app_target = factory.Iterator(OwaspZapScan.AppTarget.choices)
