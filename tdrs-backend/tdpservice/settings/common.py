@@ -53,6 +53,7 @@ class Common(Configuration):
         "tdpservice.users",
         "tdpservice.stts",
         "tdpservice.data_files",
+        "tdpservice.security",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -298,13 +299,13 @@ class Common(Configuration):
     # The factor used to determine how long to wait before retrying failed scans
     # NOTE: This value exponentially increases up to the maximum retries allowed
     # algo: {backoff factor} * (2 ** ({number of total retries} - 1))
-    AV_SCAN_BACKOFF_FACTOR = os.getenv('AV_SCAN_BACKOFF_FACTOR', 1)
+    AV_SCAN_BACKOFF_FACTOR = int(os.getenv('AV_SCAN_BACKOFF_FACTOR', 1))
 
     # The maximum number of times to retry failed virus scans
-    AV_SCAN_MAX_RETRIES = os.getenv('AV_SCAN_MAX_RETRIES', 5)
+    AV_SCAN_MAX_RETRIES = int(os.getenv('AV_SCAN_MAX_RETRIES', 5))
 
     # The number of seconds to wait for socket response from clamav-rest
-    AV_SCAN_TIMEOUT = os.getenv('AV_SCAN_TIMEOUT', 30)
+    AV_SCAN_TIMEOUT = int(os.getenv('AV_SCAN_TIMEOUT', 30))
 
     s3_src = "s3-us-gov-west-1.amazonaws.com"
 
