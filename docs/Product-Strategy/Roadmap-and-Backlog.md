@@ -42,7 +42,7 @@ _Risks:_ The users that would be on-boarded to this process, would potentially h
 | Files uploaded by STT user(s) are successfully entered into the existing TDRS system | Not Started
 
 ## Release 3: Parity, Data Parsing, Automated Status, Notifications
-Value Delivered: Create a software system with a relational database that will parse data, communicate error messages to the user that are easier to read and act upon. This release will allow us to onboard more users and eventually deprecate the TANF Data Reporting System.
+Value Delivered: Create a software system with a database that will parse data, communicate error messages to the user that are easier to read and act upon. This release will allow us to onboard more users and eventually deprecate the TANF Data Reporting System.
 
 ## Release 4 and beyond
 In addition to the work mentioned above, we are looking forward in our research plans to develop functionality that will serve the rest of our users that includes (but is not limited to) data cleansing and validation, additional user access management tools, user interface enhancements based on usability testing, and reports and analytics. 
