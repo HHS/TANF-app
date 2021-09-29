@@ -32,7 +32,7 @@ The team is also investigating options for optimizing permission management and 
 
 
 ## Release 2: Early Secure Release
-Value Delivered: Allow users to securely upload data into our system, replacing a less secure way of doing so while increasing communication with the users and not increasing burden for OFA Admin staff. This replease will include a workflow that 8 Tribes can pilot the use of login, upload and download of files. While this type of workflow isn't our long term workflow, including it at this point delivers value to the users quicker. 
+Value Delivered: Allow users to securely upload data into our system, replacing a less secure way of doing so while increasing communication with the users and not increasing burden for OFA Admin staff. This release will include a workflow for 8 Tribes to pilot the use of login, upload and download of files. While this type of workflow isn't our long term workflow, including it at this point delivers value to the users quicker. 
 
 _Risks:_ The users that would be on-boarded to this process, would potentially have to learn and adjust with future releases and changes in functionality and workflow. Increased communication with them should help here.
 | Outcome | Status | 
@@ -42,7 +42,7 @@ _Risks:_ The users that would be on-boarded to this process, would potentially h
 | Files uploaded by STT user(s) are successfully entered into the existing TDRS system | Not Started
 
 ## Release 3: Parity, Data Parsing, Automated Status, Notifications
-Value Delivered: Create a database that will parse data, communicate error messages to the user that are easier to read and act upon. This release will allow us to onboard users and eventually depreciate the TANF Data Reporting System.
+Value Delivered: Create a software system with a relational database that will parse data, communicate error messages to the user that are easier to read and act upon. This release will allow us to onboard more users and eventually deprecate the TANF Data Reporting System.
 
 ## Release 4 and beyond
 In addition to the work mentioned above, we are looking forward in our research plans to develop functionality that will serve the rest of our users that includes (but is not limited to) data cleansing and validation, additional user access management tools, user interface enhancements based on usability testing, and reports and analytics. 
