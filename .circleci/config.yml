@@ -375,7 +375,7 @@ jobs:
           command: "cd tdrs-frontend; yarn test:ci"
       - upload-codecov:
           component: frontend
-          coverage-report: ./tdrs-frontend/coverage/lcof.info
+          coverage-report: ./tdrs-frontend/coverage/lcov.info
       - run:
           name: "Install lib bindings for Cypress"
           command: |
