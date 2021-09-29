@@ -20,7 +20,7 @@ Value Delivered: Get approval for the authority to operate and create a producti
 ## Release 1: Secure access and upload to TDP
 Value Delivered: ACF employees can use a secure method to log into the system; this would require a PIV/CAC card.
 
-Our first release to production will include the functionality built for ATO (above) and also include secure ways for users to access the system via ACF AMS for ACF users and NextGen XMS/Login.gov for non-ACF users. It is important these measures are put into place before sensitive production data is uploaded to the system.
+Our first release to production will include the functionality built for ATO (above) and also include secure ways for users to access the system via ACF AMS for ACF users and NextGen XMS/Login.gov for non-ACF users. It is important that these measures are put into place before sensitive production data is uploaded to the system.
 
 The team is also investigating options for optimizing permission management and strategy as a part of this release. 
 | Outcome | Status | 
