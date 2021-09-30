@@ -60,7 +60,7 @@ jobs:
         echo "Current PR state: $STATE"
     - name: Circle CI Deployment Trigger
       id: curl-circle-ci
-      if: steps.get-pr-state.outputs.STATE == 'success'
+      # if: steps.get-pr-state.outputs.STATE == 'success'  TEMP
       uses: promiseofcake/circleci-trigger-action@v1
       with:
         user-token: ${{ secrets.CIRCLE_CI_V2_API_TOKEN }}
