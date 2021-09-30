@@ -47,7 +47,6 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         """Prevent save if a attributes not nessisary for a user given their role."""
         if self.is_regional_staff and self.stt:
-            print("invalid regional staff stt")
             raise ValidationError(
                 _("Regional staff cannot have an sst assigned to them"))
         elif self.is_data_analyst and self.region:
