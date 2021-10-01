@@ -51,4 +51,4 @@ Time estimate for development: n/a.
 
 ### Addendum
 
-We are seeing a plethora of recurring updates so to stem the tide here, we are going to decrease dependabot's sensitivity to patch-level updates and for the worst offenders we will only be updating on minor version updates. This is denoted in our [dependabot config](https://github.com/raft-tech/TANF-app/.github/dependabot.yml).
+We are seeing a plethora of recurring updates so to stem the tide here, we are going to decrease dependabot's sensitivity to patch-level updates and for the worst offenders we will only be updating on minor version updates. This is denoted in our [dependabot config](https://github.com/raft-tech/TANF-app/.github/dependabot.yml). Note that this change will not prevent security-related patch updates (to the extent that dependency managers identify these updates as such). 
