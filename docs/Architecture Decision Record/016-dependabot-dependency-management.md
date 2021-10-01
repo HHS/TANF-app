@@ -1,5 +1,5 @@
 # 16. Migrating to Github Native Dependabot for TDP Dependency Management
-Date: 2021-05-14 (_updated: 2021-07-30_)
+Date: 2021-05-14 (_updated: 2021-10-1_)
 
 ## Status
 
@@ -48,3 +48,7 @@ Dev dependencies are listed in two locations in this project:
 Time estimate for development: n/a.
 
 [#917](https://github.com/raft-tech/TANF-app/pull/917) and [#932](https://github.com/raft-tech/TANF-app/pull/932) were created to support this migration and PR [#944](https://github.com/raft-tech/TANF-app/pull/944) completes this migration.
+
+### Addendum
+
+We are seeing a plethora of recurring updates so to stem the tide here, we are going to decrease dependabot's sensitivity to patch-level updates and for the worst offenders we will only be updating on minor version updates. This is denoted in our [dependabot config](https://github.com/raft-tech/TANF-app/.github/dependabot.yml).
