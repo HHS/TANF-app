@@ -13,9 +13,11 @@ from rest_framework.permissions import AllowAny
 
 from .users.api.authorization_check import AuthorizationCheck
 from .users.api.login import TokenAuthorizationOIDC
+from .users.api.login_redirect_ams import LoginRedirectAMS
 from .users.api.login_redirect_oidc import LoginRedirectOIDC
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
+from .users.api.logout_redirect_ams import LogoutRedirectAMS
 from django.contrib.auth.decorators import login_required
 from .core.views import write_logs, IndexView
 
@@ -24,10 +26,12 @@ admin.site.login = login_required(admin.site.login)
 admin.site.site_header = "Django administration"
 
 urlpatterns = [
-    path("login", TokenAuthorizationOIDC.as_view(), name="login"),
     path("login/oidc", LoginRedirectOIDC.as_view(), name="oidc-auth"),
+    path("login/ams", LoginRedirectAMS.as_view(), name="ams-auth"),
+    path("login", TokenAuthorizationOIDC.as_view(), name="login"),
     path("logout", LogoutUser.as_view(), name="logout"),
     path("logout/oidc", LogoutRedirectOIDC.as_view(), name="oidc-logout"),
+    path("logout/ams", LogoutRedirectAMS.as_view(), name="ams-logout"),
     path("auth_check", AuthorizationCheck.as_view(), name="authorization-check"),
     path("", include("tdpservice.users.urls")),
     path("stts/", include("tdpservice.stts.urls")),

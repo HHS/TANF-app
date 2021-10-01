@@ -1,4 +1,4 @@
-"""Handle login requests for login.gov."""
+"""Handle login requests for AMS OpenID"""
 
 import secrets
 import time
@@ -9,12 +9,12 @@ from django.http import HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
 
-class LoginRedirectOIDC(RedirectView):
-    """Handle login workflow with login.gov."""
+class LoginRedirectAMS(RedirectView):
+    """Handle login workflow with AMS OpenID."""
 
     permanent = False
     query_string = True
-    pattern_name = "oidc-auth"
+    pattern_name = "ams-auth"
 
     """
     Redirects user to login.gov/authorize with the needed query parameter strings
@@ -48,7 +48,7 @@ class LoginRedirectOIDC(RedirectView):
 
         # build out full API GET call to authorize endpoint
         auth_endpoint = (
-            settings.LOGIN_GOV_AUTHORIZATION_ENDPOINT + "?" + encoded_params
+            settings.AMS_AUTHORIZATION_ENDPOINT + "?" + encoded_params
         )
         auth_endpoint_scope = auth_endpoint + "&" + auth_scope
 

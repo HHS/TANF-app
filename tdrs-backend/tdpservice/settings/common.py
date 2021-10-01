@@ -320,9 +320,11 @@ class Common(Configuration):
     CSP_FORM_ACTION = ("'self'")
     CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
 
-    ###
-    # Authentication Provider Settings
-    #
+    ####################################
+    # Authentication Provider Settings #
+    ####################################
+
+    # Login.gov #
     LOGIN_GOV_ACR_VALUES = os.getenv(
         'ACR_VALUES',
         'http://idmanagement.gov/ns/assurance/ial/1'
@@ -362,3 +364,6 @@ class Common(Configuration):
     )
 
     ENABLE_DEVELOPER_GROUP = True
+
+    # AMS OpenID #
+    AMS_AUTHORIZATION_ENDPOINT = 'https://shspfm-dev.gss.acf.hhs.gov/eaasidentityserver/.well-known/openid-configuration'
