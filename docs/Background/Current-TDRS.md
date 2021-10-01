@@ -43,55 +43,55 @@ The layouts between TANF and SSP-MOE are similar, but not identical.
 
 #### Section 1 active report
 Case-level records on who's getting benefits through TANF
-* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/ofa/tanf_data_report_section1_10_2008.pdf)
-* [Tribal TANF transmission file layout](https://www.acf.hhs.gov/sites/default/files/ofa/tribal_layout_for_section1.pdf)
-* [Instructions](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_instr_10_01_2008_tansec1.pdf)
-* [Form](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_form_reports_10_1_2008_tansec1.pdf)
+* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_report_section1_10_2008.pdf)
+* [Tribal TANF transmission file layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tribal_layout_for_section1.pdf)
+* [Instructions](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_instr_10_01_2008_tansec1.pdf)
+* [Form](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_form_reports_10_1_2008_tansec1.pdf)
 
 
 #### Section 2 negative report
 Case-level records on who stopped getting benefits through TANF
-* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/ofa/tanf_data_report_section2.pdf)
-* [Instructions](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_instr_10_02_2007_tansec2.pdf)
-* [Form](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_form_reports_10_1_2008_tansec2.pdf)
+* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_report_section2.pdf)
+* [Instructions](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_instr_10_02_2007_tansec2.pdf)
+* [Form](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_form_reports_10_1_2008_tansec2.pdf)
 
 #### Section 3 aggregate report
 In total how many people get and stopped getting benefits through TANF
-* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/ofa/tanf_data_report_section3.pdf)
-* [Instructions](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_instr_10_02_2007_tansec3.pdf)
-* [Form](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_form_reports_10_1_2008_tansec3.pdf)
+* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_report_section3.pdf)
+* [Instructions](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_instr_10_02_2007_tansec3.pdf)
+* [Form](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_form_reports_10_1_2008_tansec3.pdf)
 
 #### Section 4 stratum report
 If sending sample data, a report on the stratum totals for TANF reporting.
-* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/ofa/tanf_data_report_section4.pdf)
-* [Instructions](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_instr_10_02_2008_tansec4.pdf)
-* [Form](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_form_reports_10_1_2008_tansec4.pdf)
+* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_report_section4.pdf)
+* [Instructions](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_instr_10_02_2008_tansec4.pdf)
+* [Form](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_form_reports_10_1_2008_tansec4.pdf)
 
 ### SSP-MOE
 
 #### Section 1 active report
 Case-level records on who's getting benefits through SSP-MOE
-* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/ofa/ssp_moe_transmission_format_section_1.pdf)
-* [Instructions](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_instr_10_01_2008_sspsec1.pdf)
-* [Form](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_form_reports_10_1_2008_sspsec1.pdf)
+* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/ssp_moe_transmission_format_section_1.pdf)
+* [Instructions](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_instr_10_01_2008_sspsec1.pdf)
+* [Form](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_form_reports_10_1_2008_sspsec1.pdf)
 
 #### Section 2 negative report
 Case-level records on who stopped getting benefits through SSP-MOE
-* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/ofa/ssp_moe_transmission_format_section_2.pdf)
-* [Instructions](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_instr_10_02_2007_sspsec2.pdf)
-* [Form](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_form_reports_10_1_2008_sspsec2.pdf)
+* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/ssp_moe_transmission_format_section_2.pdf)
+* [Instructions](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_instr_10_02_2007_sspsec2.pdf)
+* [Form](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_form_reports_10_1_2008_sspsec2.pdf)
 
 #### Section 3 aggregate report
 In total how many people get and stopped getting benefits through SSP-MOE
-* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/ofa/ssp_moe_transmission_format_section_3.pdf)
-* [Instructions](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_instr_10_02_2007_sspsec3.pdf)
-* [Form](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_form_reports_10_1_2008_sspsec3.pdf)
+* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/ssp_moe_transmission_format_section_3.pdf)
+* [Instructions](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_instr_10_02_2007_sspsec3.pdf)
+* [Form](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_form_reports_10_1_2008_sspsec3.pdf)
 
 #### Section 4 stratum report
 If sending sample data, a report on the stratum totals for SSP-MOE reporting.
-* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/ofa/ssp_moe_transmission_format_section_4.pdf)
-* [Instructions](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_instr_10_01_2008_sspsec4.pdf)
-* [Form](https://www.acf.hhs.gov/sites/default/files/ofa/tdrs_form_reports_10_1_2008_sspsec4.pdf)
+* [Transmission file layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/ssp_moe_transmission_format_section_4.pdf)
+* [Instructions](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_instr_10_01_2008_sspsec4.pdf)
+* [Form](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tdrs_form_reports_10_1_2008_sspsec4.pdf)
 
 ## Additional resources:
 * [Instructions and form templates for all sections](https://www.acf.hhs.gov/ofa/resource/policy/pi-ofa/2008/200809/tanf-acf-pi-2008-07)
