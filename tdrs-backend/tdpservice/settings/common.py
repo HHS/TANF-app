@@ -366,4 +366,22 @@ class Common(Configuration):
     ENABLE_DEVELOPER_GROUP = True
 
     # AMS OpenID #
-    AMS_AUTHORIZATION_ENDPOINT = 'https://shspfm-dev.gss.acf.hhs.gov/eaasidentityserver/.well-known/openid-configuration'
+    AMS_CONFIGURATION_ENDPOINT = os.getenv(
+        'AMS_CONFIGURATION_ENDPOINT',
+        'https://shspfm-dev.gss.acf.hhs.gov/eaasidentityserver/.well-known/openid-configuration'
+    )
+
+    AMS_CLIENT_ID = os.getenv(
+        'AMS_CLIENT_ID',
+        ''
+    )
+
+    AMS_CLIENT_SECRET = os.getenv(
+        'AMS_CLIENT_SECRET',
+        ''
+    )
+
+    AMS_CLIENT_NAME = os.getenv(
+        'AMS_CLIENT_NAME',
+        ''
+    )
