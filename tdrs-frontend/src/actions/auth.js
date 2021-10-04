@@ -63,7 +63,10 @@ export const fetchAuth = () => async (dispatch) => {
     dispatch({ type: SET_AUTH_ERROR, payload: { error } })
   }
 }
+
+/* istanbul ignore next  */
 export const setMockLoginState = () => async (dispatch) => {
+  // This doesn't need to be tested as it will never be reached by jest.
   const loginState = window.localStorage.getItem('loggedIn')
 
   // localStorage converts all values to strings, so to get a falsy value
