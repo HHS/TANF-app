@@ -14,6 +14,19 @@ updates:
       - "raft review"
     reviewers:
       - "raft-tech/tdrs-developers"
+    ignore: # https://github.blog/changelog/2021-05-21-dependabot-version-updates-can-now-ignore-major-minor-patch-releases/
+      - dependency-name: "redux*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "cypress*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "prettier*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "eslint*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "react-redux*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "axios*"
+        update-types: ["version-update:semver-patch"]
 
   - package-ecosystem: "pip"
     directory: "/tdrs-backend"
@@ -26,3 +39,7 @@ updates:
       - "raft review"
     reviewers:
       - "raft-tech/tdrs-developers"
+    ignore:
+      - dependency-name: "awscli*"
+        update-types: ["version-update:semver-patch"]
+
