@@ -73,7 +73,7 @@ ZAP_ARGS+=(-I)
 
 # Use custom hook to disable passive scan rules - these don't get disabled by
 # setting them to IGNORE in the config file, unlike active rules.
-ZAP_ARGS+=(--hook=/zap/wrk/zap-hook.py)
+ZAP_ARGS+=(--hook=/zap/scripts/zap-hook.py)
 
 # Run the ZAP full scan and store output for further processing if needed.
 ZAP_OUTPUT=$(docker-compose run --rm zaproxy zap-full-scan.py "${ZAP_ARGS[@]}" | tee /dev/tty)
