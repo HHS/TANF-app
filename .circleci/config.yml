@@ -354,9 +354,9 @@ jobs:
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
       - login-cloud-dot-gov:
-          cf-password: CF_PASSWORD_DEV
-          cf-space: tanf-dev
-          cf-username: CF_USERNAME_DEV
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
       - run:
           name: "Run post-processing task to record OWASP ZAP results"
           command: |
@@ -377,7 +377,7 @@ jobs:
             CMD="python manage.py process_owasp_scan ${CMD_ARGS[@]}"
 
             # Submit a CF Task for execution that will run the necessary command
-            cf run-task tdp-backend-qasp \
+            cf run-task tdp-backend-staging \
               --command "$CMD" \
               --name nightly-owasp-scan
 
@@ -486,18 +486,13 @@ parameters:
 workflows:
   nightly:
     jobs:
-      - hold:
-          type: approval
-      - nightly-owasp-scan:
-          requires:
-            - hold
-    # triggers:
-    #   - schedule:
-    #       cron: "0 0 * * *"
-    #       filters:
-    #         branches:
-    #           only:
-    #             - raft-tdp-main
+     triggers:
+       - schedule:
+           cron: "0 0 * * *"
+           filters:
+             branches:
+               only:
+                 - raft-tdp-main
 
   build-and-test:
     unless: << pipeline.parameters.run_dev_deployment >>
