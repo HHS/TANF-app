@@ -493,7 +493,7 @@ workflows:
           filters:
             branches:
               only:
-                - raft-tdp-main
+               - raft-tdp-main
 
   build-and-test:
     unless: << pipeline.parameters.run_dev_deployment >>
