@@ -486,13 +486,14 @@ parameters:
 workflows:
   nightly:
     jobs:
-     triggers:
-       - schedule:
-           cron: "0 0 * * *"
-           filters:
-             branches:
-               only:
-                 - raft-tdp-main
+      - nightly-owasp-scan
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+               - raft-tdp-main
 
   build-and-test:
     unless: << pipeline.parameters.run_dev_deployment >>
