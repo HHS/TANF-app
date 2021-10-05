@@ -54,7 +54,7 @@ class User(AbstractUser):
                 _("Data Analyst cannot have a region assigned to them"))
         super().save(*args, **kwargs)
 
-    @cached_property
+    @property
     def is_regional_staff(self) -> bool:
         """Return whether or not the user is in the OFA Regional Staff Group.
 
@@ -62,7 +62,7 @@ class User(AbstractUser):
         """
         return self.is_in_group("OFA Regional Staff")
 
-    @cached_property
+    @property
     def is_data_analyst(self) -> bool:
         """Return whether or not the user is in the Data Analyst Group.
 
