@@ -310,6 +310,11 @@ jobs:
           command: ./scripts/trufflehog-check.sh $CIRCLE_BRANCH
   test-backend:
     executor: machine-executor
+    parameters:
+      owasp:
+        type: boolean
+        default: true
+
     branches:
     steps:
       - checkout
@@ -330,7 +335,10 @@ jobs:
           coverage-report: ./tdrs-backend/coverage.xml
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
-          command: "./scripts/zap-scanner.sh backend circle"
+          command: |
+            if  << parameters.owasp >> ; then
+              ./scripts/zap-scanner.sh backend circle
+            fi
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
 
@@ -482,6 +490,9 @@ workflows:
     jobs:
       - secrets-check
       - test-backend:
+          owasp:
+            type: boolean
+            default: false
           requires: 
             - secrets-check
       - test-frontend:
