@@ -9,6 +9,7 @@ services:
       - web
     volumes:
       - ./reports:/zap/wrk/:rw
+      - ../scripts/zap-hook.py:/zap/wrk/zap-hook.py:rw
 
   postgres:
     image: postgres:11.6
