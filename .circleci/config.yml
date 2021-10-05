@@ -490,9 +490,7 @@ workflows:
     jobs:
       - secrets-check
       - test-backend:
-          owasp:
-            type: boolean
-            default: false
+          owasp: false
           requires: 
             - secrets-check
       - test-frontend:
