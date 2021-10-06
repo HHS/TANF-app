@@ -314,6 +314,9 @@ jobs:
       owasp:
         type: boolean
         default: true
+      qasp:
+        type: boolean
+        default: true
 
     branches:
     steps:
