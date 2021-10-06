@@ -109,9 +109,8 @@ from the login.gov/certs endpoint
 """
 
 
-def generate_jwt_from_jwks():
+def generate_jwt_from_jwks(certs_endpoint):
     """Generate JWT."""
-    certs_endpoint = settings.LOGIN_GOV_JWKS_ENDPOINT
     certs_response = requests.get(certs_endpoint)
     public_cert = jwk.JWK(**certs_response.json().get("keys")[0])
     public_pem = public_cert.export_to_pem()
