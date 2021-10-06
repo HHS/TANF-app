@@ -12,39 +12,28 @@ jobs:
     name: Initiate checks in circleci
     steps:
     - uses: actions/checkout@v2
-    - name: Initialize Outputs
-      id: initialize-outputs
-      run: |
-        echo "::set-output name=OWASP::false"
-        echo "::set-output name=FRONTEND::false"
-        echo "::set-output name=BACKEND::false"
-        echo "::set-output name=PA11y::false"
-        echo "::set-output name=QASP::false"
     - name: Extract OWASP Label
       id: extract-owasp-label
-      if: contains( github.event.pull_request.labels.*.name, 'run-owasp')
       run: |
-        echo "::set-output name=OWASP::true"
+        echo "::set-output name=OWASP::${{ contains( github.event.pull_request.labels.*.name, 'run-owasp')}}"
+
     - name: Extract Frontend Label
       id: extract-frontend-label
-      if: contains( github.event.pull_request.labels.*.name, 'run-frontend')
+      
       run: |
-        echo "::set-output name=FRONTEND::true"
+        echo "::set-output name=FRONTEND::${{ contains( github.event.pull_request.labels.*.name, 'run-frontend') }}"
     - name: Extract Backend Label
       id: extract-backend-label
-      if: contains( github.event.pull_request.labels.*.name, 'run-backend')
       run: |
-        echo "::set-output name=BACKEND::true"
+        echo "::set-output name=BACKEND::${{ contains( github.event.pull_request.labels.*.name, 'run-backend) }}"
     - name: Extract Pa11y Label
       id: extract-pa11y-label
-      if: contains( github.event.pull_request.labels.*.name, 'run-pa11y')
       run: |
-        echo "::set-output name=PA11y::true"
+        echo "::set-output name=PA11y::${{contains( github.event.pull_request.labels.*.name, 'run-pa11y')}}"
     - name: Extract QASP Label
       id: extract-qasp-label
-      if: contains( github.event.pull_request.labels.*.name, 'run-qasp')
       run: |
-        echo "::set-output name=QASP::true"
+        echo "::set-output name=QASP::${{contains( github.event.pull_request.labels.*.name, 'run-qasp')}}"
     - name: Circle CI checks Trigger
       id: curl-circle-ci
       uses: promiseofcake/circleci-trigger-action@v1
