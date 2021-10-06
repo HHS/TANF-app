@@ -15,7 +15,7 @@ jobs:
     - name: Extract OWASP Label
       id: extract-owasp-label
       run: |
-        echo "::set-output name=OWASP::${{ contains( github.event.pull_request.labels.*.name, 'run-owasp')}}"
+        echo "::set-output name=OWASP::${{ contains( github.event.pull_request.labels.*.name, 'run-owasp') }}"
 
     - name: Extract Frontend Label
       id: extract-frontend-label
@@ -29,11 +29,11 @@ jobs:
     - name: Extract Pa11y Label
       id: extract-pa11y-label
       run: |
-        echo "::set-output name=PA11y::${{contains( github.event.pull_request.labels.*.name, 'run-pa11y')}}"
+        echo "::set-output name=PA11y::${{ contains( github.event.pull_request.labels.*.name, 'run-pa11y') }}"
     - name: Extract QASP Label
       id: extract-qasp-label
       run: |
-        echo "::set-output name=QASP::${{contains( github.event.pull_request.labels.*.name, 'run-qasp')}}"
+        echo "::set-output name=QASP::${{ contains( github.event.pull_request.labels.*.name, 'run-qasp') }}"
     - name: Circle CI checks Trigger
       id: curl-circle-ci
       uses: promiseofcake/circleci-trigger-action@v1
