@@ -2,11 +2,10 @@ name: Run Checks based on label
 on:
   pull_request:
     types:
-      - labeled
-      - opened
-      - synchronize
-      - reopened
-
+    - labeled
+    - opened
+    - synchronize
+    - reopened
 jobs:
   pr_labeled_checks:
     runs-on: ubuntu-latest
@@ -18,31 +17,26 @@ jobs:
       if: contains( github.event.pull_request.labels.*.name, 'run-owasp')
       run: |
         echo "::set-output name=OWASP::true"
-        
     - name: Extract Frontend Label
       id: extract-frontend-label
       if: contains( github.event.pull_request.labels.*.name, 'run-frontend')
       run: |
         echo "::set-output name=FRONTEND::true"
-
     - name: Extract Backend Label
       id: extract-backend-label
       if: contains( github.event.pull_request.labels.*.name, 'run-backend')
       run: |
         echo "::set-output name=BACKEND::true"
-
     - name: Extract Pa11y Label
       id: extract-pa11y-label
       if: contains( github.event.pull_request.labels.*.name, 'run-pa11y')
       run: |
         echo "::set-output name=PA11y::true"
-
     - name: Extract QASP Label
       id: extract-qasp-label
       if: contains( github.event.pull_request.labels.*.name, 'run-qasp')
       run: |
         echo "::set-output name=PA11Y::true"
-
     - name: Circle CI checks Trigger
       id: curl-circle-ci
       uses: promiseofcake/circleci-trigger-action@v1
