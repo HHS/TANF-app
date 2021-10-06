@@ -52,8 +52,8 @@ These all have defaults set in their respective settings modules, but may be ove
 
 ## Frontend CI build process
 
-### Test-frontend
-* Runs most steps directly on the executor, utilizing `yarn` commands defined in package.json
+### test-frontend
+* Runs most steps directly on the machine executor, utilizing `yarn` commands defined in package.json
 * The exception to the above is the zap scanner step - which runs the frontend via docker-compose, using the nginx target instead of the local dev target
 * Major steps:
     * Run ESLint - ensures styling standards are followed
@@ -64,7 +64,7 @@ These all have defaults set in their respective settings modules, but may be ove
     * Run OWASP ZAP scan - automated vulnerability testing
     * Store Artifacts - stores OWASP HTML report and Pa11y screenshots taken
 
-### Deploy-frontend
+### deploy-frontend
 * Called as a step in the `deploy-cloud-dot-gov` command
 * Runs directly on the machine executor
 * Installs Node.JS v12.18 and all project dependencies
@@ -77,3 +77,27 @@ These all have defaults set in their respective settings modules, but may be ove
     * Copies in the nginx configuration for build packs
     * Uploads the build output to Cloud.gov using `cf push`
     * Creates and maps the frontend route
+
+## Backend CI build process
+
+### test-backend
+* Runs on a machine executor and executes steps using Docker Compose.
+* Major steps:
+    * Build and Spin-up Django API Service (using docker-compose)
+    * Run Python Linting Test (flake8)
+    * Run Pytest Unit Tests
+    * Upload code coverage - uses Codecov
+    * Run OWASP ZAP scan - automated vulnerability testing
+    * Store Artifacts - stores OWASP HTML report
+
+### deploy-backend
+* Called as a step in the `deploy-cloud-dot-gov` command
+* Runs directly on the machine executor
+* Calls script `/scripts/deploy-backend.sh`, which does the following:
+    * Uploads the backend application to Cloud.gov using `cf push`
+    * Creates and maps the backend route
+    * Checks if the JWT_CERT has been generated and if not, creates a new one.
+    * If DEPLOY_STRATEGY passed is `initial` or `rebuild` it will do the following:
+        * Bind the backend application to the S3 and RDS services in Cloud.gov
+        * Run `/scripts/set-backend-env-vars.sh` (detailed above)
+        * Restage the application to make environment variable and bound services live.

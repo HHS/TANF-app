@@ -19,4 +19,10 @@
 * Two test modules under cypress/integration:
     * login.spec.js - Tests that the login page shows a Sign In button
     * welcome_page_greeting.spec.js - Tests that the correct elements are shown on the welcome page for unauthenticated users
-* Needs to either be replaced or updated to test much more of the site
+* Needs to either be replaced or updated to test much more of the site.
+* Some examples of UI functionality that needs to be tested:
+    * Profile page as an authenticated user - viewing and editing.
+    * Data Files page as Data Analyst - searching for files by year and quarter for current STT.
+    * Data Files page as OFA Admin - searching for files by STT, year and quarter
+    * Data Files upload as both user types
+    * Welcome page shows expected permissions.
