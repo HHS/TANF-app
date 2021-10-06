@@ -23,7 +23,7 @@ commands:
     steps:
       - run:
           name: Ensure cf cli is installed, otherwise install it.
-          command: ./scripts/cf-check.sh
+          command: sudo ./scripts/cf-check.sh
 
   docker-compose-check:
     steps:
@@ -308,6 +308,7 @@ jobs:
       - run:
           name: "trufflehog: Scan repository for committed secrets"
           command: ./scripts/trufflehog-check.sh $CIRCLE_BRANCH
+
   test-backend:
     executor: machine-executor
     parameters:
@@ -345,23 +346,52 @@ jobs:
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
 
-  prod-owasp-scan:
+  nightly-owasp-scan:
     executor: machine-executor
     working_directory: ~/tdp-apps
     steps:
       - checkout
+      - sudo-check
+      - cf-check
       - docker-compose-check
       - run:
-          name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
+          name:  "Test: Execute Frontend OWASP ZAP Vulnerability Scan"
           command: "./scripts/zap-scanner.sh frontend nightly"
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
-
       - run:
-          name:  "Test: Execute Backend  OWASP ZAP Vulnerability Scan"
+          name:  "Test: Execute Backend OWASP ZAP Vulnerability Scan"
           command: "./scripts/zap-scanner.sh backend nightly"
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
+      - login-cloud-dot-gov:
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+      - run:
+          name: "Run post-processing task to record OWASP ZAP results"
+          command: |
+            # These environment variables are exported to Circle CI's BASH_ENV
+            # by the zap-scanner.sh script for each respective app target.
+            CMD_ARGS=(
+              "$CIRCLE_BUILD_NUM"
+              --backend-pass-count ${ZAP_BACKEND_PASS_COUNT:-0}
+              --backend-warn-count ${ZAP_BACKEND_WARN_COUNT:-0}
+              --backend-fail-count ${ZAP_BACKEND_FAIL_COUNT:-0}
+              --frontend-pass-count ${ZAP_FRONTEND_PASS_COUNT:-0}
+              --frontend-warn-count ${ZAP_FRONTEND_WARN_COUNT:-0}
+              --frontend-fail-count ${ZAP_FRONTEND_FAIL_COUNT:-0}
+            )
+
+            # Evaluate the full command before passing it in so it doesn't
+            # get improperly interpolated by Cloud.gov.
+            CMD="python manage.py process_owasp_scan ${CMD_ARGS[@]}"
+
+            # Submit a CF Task for execution that will run the necessary command
+            cf run-task tdp-backend-staging \
+              --command "$CMD" \
+              --name nightly-owasp-scan
+
   test-frontend:
     parameters:
       owasp:
@@ -409,7 +439,10 @@ jobs:
           name: "Run Cypress Integration Tests"
           command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
-          name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
+          name: "Test: Build and Spin-up React app behind Nginx"
+          command: "cd tdrs-frontend; docker-compose up -d --build"
+      - run:
+          name:  "Test: Execute Frontend OWASP ZAP Vulnerability Scan"
           command: |
             if << parameters.owasp >> || << parameters.qasp >>; then
               ./scripts/zap-scanner.sh frontend circle
@@ -417,22 +450,7 @@ jobs:
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
       - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/homepage.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/edit-profile.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/request.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/login.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/data-files.png
-
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/welcome.png
+          path: tdrs-frontend/pa11y-screenshots/
 
   deploy-infrastructure-dev:
     executor: terraform/default
@@ -507,14 +525,14 @@ parameters:
 workflows:
   nightly:
     jobs:
-      - prod-owasp-scan
+      - nightly-owasp-scan
     triggers:
       - schedule:
           cron: "0 0 * * *"
           filters:
             branches:
               only:
-                - raft-tdp-main
+               - raft-tdp-main
 
   build-and-test:
     unless: << pipeline.parameters.run_dev_deployment >>
