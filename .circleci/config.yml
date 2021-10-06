@@ -336,7 +336,7 @@ jobs:
       - run:
           name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
           command: |
-            if  << parameters.owasp >> ; then
+            if  << parameters.owasp >> || << parameters.qasp >> ; then
               ./scripts/zap-scanner.sh backend circle
             fi
       - store_artifacts:
@@ -360,6 +360,16 @@ jobs:
       - store_artifacts:
           path: tdrs-backend/reports/owasp_report.html
   test-frontend:
+    parameters:
+      owasp:
+        type: boolean
+        default: false
+      qasp:
+        type: boolean
+        default: false
+      pa11y:
+        type: boolean
+        default: false
     executor: machine-executor
     working_directory: ~/tdp-apps
     steps:
@@ -377,7 +387,10 @@ jobs:
           command: "cd tdrs-frontend; yarn lint"
       - run:
           name: "Run Pa11y Accessibility Tests"
-          command: "cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility"
+          command: |
+            if << parameters.pa11y >> || << parameters.qasp >>; then
+              cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility
+            fi
       - run:
           name: "Run Jest Unit Tests"
           command: "cd tdrs-frontend; yarn test:ci"
@@ -394,7 +407,10 @@ jobs:
           command: "cd tdrs-frontend; yarn cy:run:ci"
       - run:
           name:  "Test: Execute Frontend  OWASP ZAP Vulnerability Scan"
-          command: "./scripts/zap-scanner.sh frontend circle"
+          command: |
+            if << parameters.owasp >> || << parameters.qasp >>; then
+              ./scripts/zap-scanner.sh frontend circle
+            fi
       - store_artifacts:
           path: tdrs-frontend/reports/owasp_report.html
       - store_artifacts:
@@ -474,7 +490,16 @@ parameters:
     default: ''
   owasp:
     type: boolean
-    default: true
+    default: false
+
+  qasp:
+    type: boolean
+    default: false
+
+  pa11y:
+    type: boolean
+    default: false
+
 
 workflows:
   nightly:
@@ -494,9 +519,13 @@ workflows:
       - secrets-check
       - test-backend:
           owasp: << pipeline.parameters.owasp >>
+          qasp: << pipeline.parameters.qasp >>
           requires: 
             - secrets-check
       - test-frontend:
+          owasp: << pipeline.parameters.owasp >>
+          qasp: << pipeline.parameters.qasp >>
+          pa11y: << pipeline.parameters.pa11y >>
           requires: 
             - secrets-check
       - deploy-infrastructure-staging:
