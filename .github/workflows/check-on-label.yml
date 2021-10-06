@@ -16,16 +16,14 @@ jobs:
       id: extract-owasp-label
       run: |
         echo "::set-output name=OWASP::${{ contains( github.event.pull_request.labels.*.name, 'run-owasp') }}"
-
     - name: Extract Frontend Label
       id: extract-frontend-label
-      
       run: |
         echo "::set-output name=FRONTEND::${{ contains( github.event.pull_request.labels.*.name, 'run-frontend') }}"
     - name: Extract Backend Label
       id: extract-backend-label
       run: |
-        echo "::set-output name=BACKEND::${{ contains( github.event.pull_request.labels.*.name, 'run-backend) }}"
+        echo "::set-output name=BACKEND::${{ contains( github.event.pull_request.labels.*.name, 'run-backend') }}"
     - name: Extract Pa11y Label
       id: extract-pa11y-label
       run: |
