@@ -55,7 +55,7 @@ jobs:
         echo "::set-output name=PA11y::true"
 
     - name: Extract QASP Label
-      id: extract-pa11y-label
+      id: extract-qasp-label
       if: contains( github.event.pull_request.labels.*.name, 'run-qasp')
       run: |
         echo "::set-output name=PA11Y::true"
