@@ -472,6 +472,9 @@ parameters:
   target-env:
     type: string
     default: ''
+  owasp:
+    type: boolean
+    default: true
 
 workflows:
   nightly:
@@ -490,7 +493,7 @@ workflows:
     jobs:
       - secrets-check
       - test-backend:
-          owasp: false
+          owasp: << pipeline.parameters.owasp >>
           requires: 
             - secrets-check
       - test-frontend:
