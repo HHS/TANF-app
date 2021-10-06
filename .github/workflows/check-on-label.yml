@@ -37,25 +37,25 @@ jobs:
         echo "::set-output name=OWASP::true"
         
     - name: Extract Frontend Label
-      id: extract-owasp-label
+      id: extract-frontend-label
       if: contains( github.event.pull_request.labels.*.name, 'run-frontend')
       run: |
         echo "::set-output name=FRONTEND::true"
 
     - name: Extract Backend Label
-      id: extract-owasp-label
+      id: extract-backend-label
       if: contains( github.event.pull_request.labels.*.name, 'run-backend')
       run: |
         echo "::set-output name=BACKEND::true"
 
     - name: Extract Pa11y Label
-      id: extract-owasp-label
+      id: extract-pa11y-label
       if: contains( github.event.pull_request.labels.*.name, 'run-pa11y')
       run: |
         echo "::set-output name=PA11y::true"
 
     - name: Extract QASP Label
-      id: extract-owasp-label
+      id: extract-pa11y-label
       if: contains( github.event.pull_request.labels.*.name, 'run-qasp')
       run: |
         echo "::set-output name=PA11Y::true"
