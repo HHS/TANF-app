@@ -16,7 +16,7 @@ on:
       - reopened
 
 jobs:
-  pr_labeled_deployment:
+  pr_labeled_checks:
     runs-on: ubuntu-latest
     name: Initiate checks in circleci
     steps:
