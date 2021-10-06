@@ -42,7 +42,7 @@ jobs:
         payload: |
           {
             "frontend": '${{steps.extract-frontend-label.outputs.FRONTEND}}',
-            "backend": '${{steps.extract-frontend-label.outputs.BACKEND}}',
+            "backend": '${{steps.extract-backend-label.outputs.BACKEND}}',
             "pa11y": '${{steps.extract-pa11y-label.outputs.PA11Y}}',
             "owasp": '${{steps.extract-owasp-label.outputs.OWASP}}',
             "qasp": '${{steps.extract-qasp-label.outputs.QASP}}'
