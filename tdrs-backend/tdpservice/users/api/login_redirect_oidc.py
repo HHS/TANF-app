@@ -1,4 +1,4 @@
-"""Handle login requests for login.gov."""
+"""Handle login requests."""
 
 import requests
 import secrets
@@ -15,7 +15,7 @@ class LoginRedirectOIDC(RedirectView):
 
     permanent = False
     query_string = True
-    pattern_name = "oidc"
+    pattern_name = "oidc-auth"
 
     """
     Redirects user to login.gov/authorize with the needed query parameter strings
