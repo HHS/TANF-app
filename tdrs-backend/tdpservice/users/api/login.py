@@ -20,7 +20,7 @@ from .utils import (
     generate_token_endpoint_parameters,
     generate_jwt_from_jwks,
     validate_nonce_and_state,
-    response_redirect,
+    response_redirect, generate_client_assertion,
 )
 
 logger = logging.getLogger()
@@ -103,13 +103,18 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def handle_login_gov_token(self, code):
         # build out the query string parameters
         # and full URL path for OIDC token endpoint
-        token_params = generate_token_endpoint_parameters(code)
+        options = {
+            "client_assertion": generate_client_assertion(),
+            "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE
+        }
+        token_params = generate_token_endpoint_parameters(code, options)
         token_endpoint = settings.LOGIN_GOV_TOKEN_ENDPOINT + "?" + token_params
         return requests.post(token_endpoint)
 
     def handle_ams_token(self, code):
         ams_configuration = LoginRedirectOIDC.get_ams_configuration()
-        token_endpoint = ams_configuration["token_endpoint"]
+        token_params = generate_token_endpoint_parameters(code)
+        token_endpoint = ams_configuration["token_endpoint"] + "?" + token_params
         # TODO Add params with code in utils?
         return requests.post(token_endpoint)
 

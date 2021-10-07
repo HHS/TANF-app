@@ -88,14 +88,12 @@ Generate a token to be passed to the login.gov/token endpoint
 """
 
 
-def generate_token_endpoint_parameters(code):
+def generate_token_endpoint_parameters(code, options=None):
     """Generate token parameters."""
-    client_assertion = generate_client_assertion()
     params = {
-        "client_assertion": client_assertion,
-        "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE,
         "code": code,
         "grant_type": "authorization_code",
+        **options
     }
     encoded_params = urlencode(params, quote_via=quote_plus)
     return encoded_params
