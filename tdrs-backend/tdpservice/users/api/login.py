@@ -35,62 +35,63 @@ class InactiveUser(Exception):
 
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define methods for handling login request from login.gov."""
+    def decode_payload(self, request, id_token, options=None):
+        """Decode the payload."""
+        origin = request.headers['Origin']
+        if 'login.gov' in origin:
+            return self.decode_payload_login_gov(id_token, options)
+        else:
+            return self.decode_payload_ams(id_token, options)
 
-    def get(self, request, *args, **kwargs):
-        """Handle decoding auth token and authenticate user."""
-        code = request.GET.get("code", None)
-        state = request.GET.get("state", None)
+    def decode_payload_login_gov(self, id_token, options=None):
+        """Decode the payload with keys for login.gov."""
+        if not options:
+            options = {'verify_nbf': False}
 
-        if code is None:
-            logger.info("Redirecting call to main page. No code provided.")
-            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
+        certs_endpoint = settings.LOGIN_GOV_JWKS_ENDPOINT
+        cert_str = generate_jwt_from_jwks(certs_endpoint)
 
-        if state is None:
-            logger.info("Redirecting call to main page. No state provided.")
-            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
-
-        token_response = self.get_token_response(request, code)
-
-        if token_response.status_code != 200:
-            return Response(
-                {
-                    "error": (
-                        "Invalid Validation Code Or OpenID Connect Authenticator "
-                        "Down!"
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        token_data = token_response.json()
-        id_token = token_data.get("id_token")
-
-        decoded_payload = self.validate_and_decode_payload(request, id_token, state)
-
+        # issuer: issuer of the response
+        # subject : UUID - not useful for login.gov set options to ignore this
         try:
-            user = self.handle_user(request, id_token, decoded_payload)
-            return response_redirect(user, id_token)
-
-        except InactiveUser as e:
-            logger.exception(e)
-            return Response(
-                {
-                    "error": str(e)
-                },
-                status=status.HTTP_401_UNAUTHORIZED
+            decoded_payload = jwt.decode(
+                id_token,
+                key=cert_str,
+                issuer=settings.LOGIN_GOV_ISSUER,
+                audience=settings.LOGIN_GOV_CLIENT_ID,
+                algorithms=["RS256"],
+                subject=None,
+                access_token=None,
+                options=options,
             )
+            return decoded_payload
+        except jwt.ExpiredSignatureError:
+            return {"error": "The token is expired."}
 
-        except Exception as e:
-            logger.exception(f"Error attempting to login/register user:  {e} at...")
-            return Response(
-                {
-                    "error": (
-                        "Email verified, but experienced internal issue "
-                        "with login/registration."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+    def decode_payload_ams(self, id_token, options=None):
+        """Decode the payload with keys for AMS."""
+        if not options:
+            options = {'verify_nbf': False}
+
+        ams_configuration = LoginRedirectOIDC.get_ams_configuration()
+        certs_endpoint = ams_configuration["jwks_uri"]
+        cert_str = generate_jwt_from_jwks(certs_endpoint)
+
+        # issuer: issuer of the response
+        try:
+            decoded_payload = jwt.decode(
+                id_token,
+                key=cert_str,
+                issuer=ams_configuration["issuer"],
+                audience=settings.AMS_CLIENT_ID,
+                algorithms=["RS256"],
+                subject=None,
+                access_token=None,
+                options=options,
             )
+            return decoded_payload
+        except jwt.ExpiredSignatureError:
+            return {"error": "The token is expired."}
 
     def get_token_response(self, request, code):
         # Get request origin to handle login appropriately
@@ -143,65 +144,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             )
 
         return decoded_payload
-
-    def decode_payload(self, request, id_token, options=None):
-        """Decode the payload."""
-        origin = request.headers['Origin']
-        if 'login.gov' in origin:
-            return self.decode_payload_login_gov(id_token, options)
-        else:
-            return self.decode_payload_ams(id_token, options)
-
-    @staticmethod
-    def decode_payload_login_gov(id_token, options=None):
-        """Decode the payload with keys for login.gov."""
-        if not options:
-            options = {'verify_nbf': False}
-
-        certs_endpoint = settings.LOGIN_GOV_JWKS_ENDPOINT
-        cert_str = generate_jwt_from_jwks(certs_endpoint)
-
-        # issuer: issuer of the response
-        # subject : UUID - not useful for login.gov set options to ignore this
-        try:
-            decoded_payload = jwt.decode(
-                id_token,
-                key=cert_str,
-                issuer=settings.LOGIN_GOV_ISSUER,
-                audience=settings.LOGIN_GOV_CLIENT_ID,
-                algorithms=["RS256"],
-                subject=None,
-                access_token=None,
-                options=options,
-            )
-            return decoded_payload
-        except jwt.ExpiredSignatureError:
-            return {"error": "The token is expired."}
-
-    def decode_payload_ams(self, id_token, options=None):
-        """Decode the payload with keys for AMS."""
-        if not options:
-            options = {'verify_nbf': False}
-
-        ams_configuration = LoginRedirectOIDC.get_ams_configuration()
-        certs_endpoint = ams_configuration["jwks_uri"]
-        cert_str = generate_jwt_from_jwks(certs_endpoint)
-
-        # issuer: issuer of the response
-        try:
-            decoded_payload = jwt.decode(
-                id_token,
-                key=cert_str,
-                issuer=ams_configuration["issuer"],
-                audience=settings.AMS_CLIENT_ID,
-                algorithms=["RS256"],
-                subject=None,
-                access_token=None,
-                options=options,
-            )
-            return decoded_payload
-        except jwt.ExpiredSignatureError:
-            return {"error": "The token is expired."}
 
     def handle_user(self, request, id_token, decoded_payload):
         """Handle the incoming user."""
@@ -271,3 +213,59 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             backend="tdpservice.users.authentication.CustomAuthentication",
         )
         logger.info("%s: %s on %s", user_status, user.username, timezone.now)
+
+    def get(self, request, *args, **kwargs):
+        """Handle decoding auth token and authenticate user."""
+        code = request.GET.get("code", None)
+        state = request.GET.get("state", None)
+
+        if code is None:
+            logger.info("Redirecting call to main page. No code provided.")
+            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
+
+        if state is None:
+            logger.info("Redirecting call to main page. No state provided.")
+            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
+
+        token_response = self.get_token_response(request, code)
+
+        if token_response.status_code != 200:
+            return Response(
+                {
+                    "error": (
+                        "Invalid Validation Code Or OpenID Connect Authenticator "
+                        "Down!"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        token_data = token_response.json()
+        id_token = token_data.get("id_token")
+
+        decoded_payload = self.validate_and_decode_payload(request, id_token, state)
+
+        try:
+            user = self.handle_user(request, id_token, decoded_payload)
+            return response_redirect(user, id_token)
+
+        except InactiveUser as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        except Exception as e:
+            logger.exception(f"Error attempting to login/register user:  {e} at...")
+            return Response(
+                {
+                    "error": (
+                        "Email verified, but experienced internal issue "
+                        "with login/registration."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )

@@ -24,10 +24,10 @@ admin.site.login = login_required(admin.site.login)
 admin.site.site_header = "Django administration"
 
 urlpatterns = [
-    path("login/oidc", LoginRedirectOIDC.as_view(), name="oidc"),
     path("login", TokenAuthorizationOIDC.as_view(), name="login"),
+    path("login/oidc", LoginRedirectOIDC.as_view(), name="oidc-auth"),
     path("logout", LogoutUser.as_view(), name="logout"),
-    path("logout/oidc", LogoutRedirectOIDC.as_view(), name="logout"),
+    path("logout/oidc", LogoutRedirectOIDC.as_view(), name="oidc-logout"),
     path("auth_check", AuthorizationCheck.as_view(), name="authorization-check"),
     path("", include("tdpservice.users.urls")),
     path("stts/", include("tdpservice.stts.urls")),
