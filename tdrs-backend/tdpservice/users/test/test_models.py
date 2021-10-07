@@ -24,10 +24,12 @@ def test_data_analyst_cannot_have_region(data_analyst, region):
 
 @pytest.mark.django_db
 def test_is_data_analyst_property(data_analyst, regional_user):
+    """Test that short hand property correctly indicates that user is a data analyst."""
     assert data_analyst.is_data_analyst is True
     assert regional_user.is_data_analyst is False
 
 @pytest.mark.django_db
 def test_is_regional_user_property(data_analyst, regional_user):
+    """Test that short hand property correctly indicates that user is regional staff."""
     assert data_analyst.is_regional_staff is False
     assert regional_user.is_regional_staff is True
