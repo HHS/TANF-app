@@ -19,7 +19,7 @@ function SplashPage() {
   const alertRef = useRef(null)
   const dispatch = useDispatch()
 
-  const handleClick = (event) => {
+  const signInWithLoginDotGov = (event) => {
     /* istanbul ignore if */
     if (
       !window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/) &&
@@ -32,6 +32,11 @@ function SplashPage() {
       event.preventDefault()
       window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
     }
+  }
+
+  const signInWithAMS = (event) => {
+    event.preventDefault()
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
   }
 
   useEffect(() => {
@@ -92,16 +97,29 @@ function SplashPage() {
             <Button
               className="width-full sign-in-button"
               type="button"
-              onClick={handleClick}
+              id="loginDotGovSignIn"
+              onClick={signInWithLoginDotGov}
             >
               <div className="mobile:margin-x-auto mobile-lg:margin-0">
-                Sign in with{' '}
+                Sign in with
+                <img
+                  className="mobile:margin-x-auto mobile:padding-top-1 mobile-lg:margin-0 mobile-lg:padding-top-0 width-15 padding-left-1"
+                  src={loginLogo}
+                  alt="Login.gov"
+                />
+                for grantees
               </div>
-              <img
-                className="mobile:margin-x-auto mobile:padding-top-1 mobile-lg:margin-0 mobile-lg:padding-top-0 width-15 padding-left-1"
-                src={loginLogo}
-                alt="Login.gov"
-              />
+              <span className="visually-hidden">Opens in a new website</span>
+            </Button>
+            <Button
+              className="width-full sign-in-button margin-top-3"
+              type="button"
+              id="acfAmsSignIn"
+              onClick={signInWithAMS}
+            >
+              <div className="mobile:margin-x-auto mobile-lg:margin-0">
+                Sign in with ACF AMS for ACF staff
+              </div>
               <span className="visually-hidden">Opens in a new website</span>
             </Button>
           </div>
