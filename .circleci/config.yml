@@ -312,9 +312,11 @@ jobs:
   test-backend:
     executor: machine-executor
     parameters:
+
       owasp:
         type: boolean
         default: true
+
       qasp:
         type: boolean
         default: true
@@ -521,6 +523,13 @@ parameters:
     type: boolean
     default: false
 
+  frontend:
+    type: boolean
+    default: false
+
+  backend:
+    type: boolean
+    default: false
 
 workflows:
   nightly:
@@ -534,8 +543,11 @@ workflows:
               only:
                - raft-tdp-main
 
-  build-and-test:
-    unless: << pipeline.parameters.run_dev_deployment >>
+  build-and-test-backend:
+    unless:
+      or:
+        - << pipeline.parameters.run_dev_deployment >> 
+        - not: << pipeline.parameters.backend >> 
     jobs:
       - secrets-check
       - test-backend:
@@ -543,12 +555,24 @@ workflows:
           qasp: << pipeline.parameters.qasp >>
           requires: 
             - secrets-check
+
+  build-and-test-frontend:
+    unless:
+      or:
+        - << pipeline.parameters.run_dev_deployment >> 
+        - not: << pipeline.parameters.frontend >> 
+    jobs:
+      - secrets-check
       - test-frontend:
           owasp: << pipeline.parameters.owasp >>
           qasp: << pipeline.parameters.qasp >>
           pa11y: << pipeline.parameters.pa11y >>
           requires: 
             - secrets-check
+
+  staging-deployment:
+    unless: << pipeline.parameters.run_dev_deployment >> 
+    jobs:
       - deploy-infrastructure-staging:
           filters:
             branches:

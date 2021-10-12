@@ -21,10 +21,22 @@ jobs:
       id: extract-pa11y-label
       run: |
         echo "::set-output name=PA11y::${{ contains( github.event.pull_request.labels.*.name, 'run-pa11y') }}"
+
     - name: Extract QASP Label
       id: extract-qasp-label
       run: |
-        echo "::set-output name=QASP::${{ contains( github.event.pull_request.labels.*.name, 'run-qasp') }}"
+        echo "::set-output name=QASP::${{ contains( github.event.pull_request.labels.*.name, 'QASP Review') }}"
+
+    - name: Extract frontend Label
+      id: extract-frontend-label
+      run: |
+        echo "::set-output name=FRONTEND::${{ contains( github.event.pull_request.labels.*.name, 'frontend') }}"
+
+    - name: Extract backend Label
+      id: extract-backend-label
+      run: |
+        echo "::set-output name=BACKEND::${{ contains( github.event.pull_request.labels.*.name, 'backend') }}"
+
     - name: Circle CI checks Trigger
       id: curl-circle-ci
       uses: promiseofcake/circleci-trigger-action@v1
@@ -36,6 +48,8 @@ jobs:
           {
             "pa11y": ${{steps.extract-pa11y-label.outputs.PA11Y}},
             "owasp": ${{steps.extract-owasp-label.outputs.OWASP}},
-            "qasp": ${{steps.extract-qasp-label.outputs.QASP}}
+            "qasp": ${{steps.extract-qasp-label.outputs.QASP}},
+            "frontend": ${{steps.extract-frontend-label.outputs.FRONTEND}},
+            "backend": ${{steps.extract-backend-label.outputs.BACKEND }}
           }
 
