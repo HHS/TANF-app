@@ -45,7 +45,7 @@ describe('SplashPage', () => {
     expect(alert.find('h3')).toIncludeText('Inactive Account')
   })
 
-  it('redirects to API login endpoint when sign-in button is clicked', () => {
+  it('redirects to API login endpoint when login.gov sign-in button is clicked', () => {
     const store = mockStore(initialState)
 
     const url = 'http://localhost:8080/v1/login/oidc'
@@ -61,7 +61,29 @@ describe('SplashPage', () => {
         <SplashPage />
       </Provider>
     )
-    wrapper.find('button').simulate('click', {
+    wrapper.find('#loginDotGovSignIn').simulate('click', {
+      preventDefault: () => {},
+    })
+    expect(window.location.href).toEqual(url)
+  })
+
+  it('redirects to API login endpoint when ACF AMS sign-in button is clicked', () => {
+    const store = mockStore(initialState)
+
+    const url = 'http://localhost:8080/v1/login/oidc'
+    global.window = Object.create(window)
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: url,
+      },
+    })
+
+    const wrapper = mount(
+      <Provider store={store}>
+        <SplashPage />
+      </Provider>
+    )
+    wrapper.find('#acfAmsSignIn').simulate('click', {
       preventDefault: () => {},
     })
     expect(window.location.href).toEqual(url)
