@@ -12,4 +12,4 @@
 	allowed = ./scripts/set-backend-env-vars.sh:24:DJANGO_SECRET_KEY=.*
 	allowed = .git/config:.*
 	allowed = .gitconfig:.*
-	allowed = .*DJANGO_SECRET_KEY=local
+	allowed = .*DJANGO_SECRET_KEY=.*tdp-dev-insecure
