@@ -7,13 +7,12 @@ TARGET=$1
 ENVIRONMENT=$2
 
 TARGET_DIR="$(pwd)/tdrs-$TARGET"
+CONFIG_FILE="zap.conf"
 REPORT_NAME=owasp_report.html
 
 if [ "$ENVIRONMENT" = "nightly" ]; then
     APP_URL="https://tdp-$TARGET-staging.app.cloud.gov/"
-    CONFIG_FILE="zap.conf"
 elif [ "$ENVIRONMENT" = "circle" ]; then
-    CONFIG_FILE="zap.conf"
     if [ "$TARGET" = "frontend" ]; then
         APP_URL="http://tdp-frontend/"
     elif [ "$TARGET" = "backend" ]; then
@@ -67,12 +66,14 @@ else
     ZAP_ARGS+=(-c "$CONFIG_FILE")
 fi
 
-# TODO: Remove this after all open alerts are categorized in the config files
-# Don't trigger a failure on WARNING level alerts, until we have a complete config file this will cause us to never
-# fail this step. However, if we do fail on warnings with the current configuration state every build will fail.
-# This is because ZAP defaults all alerts to WARN level, and any warnings found will trigger a failing exit code
-# from the zap-full-scan.py script.
+# Prevent failures for alerts triggered at WARN level.
+# At this time rules at this level are known issues to correct, but if ZAP
+# adds new rules we don't have categorized they will default to WARN.
 ZAP_ARGS+=(-I)
+
+# Use custom hook to disable passive scan rules - these don't get disabled by
+# setting them to IGNORE in the config file, unlike active rules.
+ZAP_ARGS+=(--hook=/zap/scripts/zap-hook.py)
 
 # Run the ZAP full scan and store output for further processing if needed.
 ZAP_OUTPUT=$(docker-compose run --rm zaproxy zap-full-scan.py "${ZAP_ARGS[@]}" | tee /dev/tty)
