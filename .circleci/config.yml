@@ -548,11 +548,11 @@ workflows:
       or:
         - << pipeline.parameters.run_dev_deployment >> 
         - not: << pipeline.parameters.backend >> 
+        - << pipeline.parameters.qasp >> 
     jobs:
       - secrets-check
       - test-backend:
           owasp: << pipeline.parameters.owasp >>
-          qasp: << pipeline.parameters.qasp >>
           requires: 
             - secrets-check
 
@@ -561,12 +561,29 @@ workflows:
       or:
         - << pipeline.parameters.run_dev_deployment >> 
         - not: << pipeline.parameters.frontend >> 
+        - << pipeline.parameters.qasp >> 
     jobs:
       - secrets-check
       - test-frontend:
           owasp: << pipeline.parameters.owasp >>
-          qasp: << pipeline.parameters.qasp >>
           pa11y: << pipeline.parameters.pa11y >>
+          requires: 
+            - secrets-check
+
+  build-and-test-qasp:
+    unless:
+      or:
+        - << pipeline.parameters.run_dev_deployment >> 
+        - not: << pipeline.parameters.qasp >> 
+    jobs:
+      - secrets-check
+      - test-frontend:
+          owasp: << pipeline.parameters.owasp >>
+          pa11y: << pipeline.parameters.pa11y >>
+          requires: 
+            - secrets-check
+      - test-backend:
+          owasp: << pipeline.parameters.owasp >>
           requires: 
             - secrets-check
 
