@@ -1,13 +1,16 @@
 """Models for the tdpservice.security app."""
 from hashlib import sha256
 from io import StringIO
+from os.path import join
 from typing import Union
 import logging
 
 from django.contrib.admin.models import ContentType, LogEntry, ADDITION
 from django.core.files.base import File
 from django.db import models
+from django.utils.timezone import now
 
+from tdpservice.backends import DataFilesS3Storage
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.models import User
 
@@ -45,8 +48,16 @@ def get_file_shasum(file: Union[File, StringIO]) -> str:
     return _hash.hexdigest()
 
 
+def get_zap_s3_upload_path(instance, _):
+    """Produce a unique upload path for ZAP reports stored in S3."""
+    return join(
+        f'owasp_reports/{instance.scanned_at.date()}/{instance.app_target}',
+        'owasp_report.html'
+    )
+
+
 class ClamAVFileScanManager(models.Manager):
-    """Extends object manager functionality with common operations."""
+    """Extends object manager functionality for ClamAVFileScan model."""
 
     def record_scan(
         self,
@@ -151,3 +162,121 @@ class ClamAVFileScan(models.Model):
             size /= 1024.0
 
         return f'{size:.{2}f}{unit}'
+
+
+class OwaspZapScanManager(models.Manager):
+    """Extends object manager functionality for OwaspZapScan model."""
+
+    def record_scan(
+        self,
+        app_target: str,
+        html_report: Union[File, StringIO],
+        fail_count: int,
+        pass_count: int,
+        warn_count: int,
+    ) -> 'ClamAVFileScan':
+        """Create a new OwaspZapScan instance with associated LogEntry."""
+        # A LogEntry must be tied to a user, but these records get created from
+        # nightly system level processes. To allow us to still capture these
+        # logs we will create a reserved system user that cannot log in and has
+        # no permissions or groups.
+        system_user, created = User.objects.get_or_create(username='system')
+        if created:
+            logger.debug('Created reserved system user')
+
+        # Create the OwaspZapScan instance.
+        zap_scan = self.model.objects.create(
+            app_target=app_target,
+            html_report=html_report,
+            scanned_at=now(),
+            fail_count=fail_count,
+            pass_count=pass_count,
+            warn_count=warn_count
+        )
+
+        # Format a message using the supplied metrics
+        msg = (
+            f'OWASP ZAP scan completed with result: {zap_scan.result}. '
+            f'FAIL: {fail_count}, WARN: {warn_count}, PASS: {pass_count}'
+        )
+
+        # Create a new LogEntry that is tied to this model instance.
+        content_type = ContentType.objects.get_for_model(OwaspZapScan)
+        LogEntry.objects.log_action(
+            user_id=system_user.pk,
+            content_type_id=content_type.pk,
+            object_id=zap_scan.pk,
+            object_repr=str(zap_scan),
+            action_flag=ADDITION,
+            change_message=msg
+        )
+
+        return zap_scan
+
+
+class OwaspZapScan(models.Model):
+    """Tracks the results of a scheduled run of the OWASP ZAP scan.
+
+    OWASP ZAP scan is an automated penetration testing tool which provides us
+    a security analysis of our deployed applications. These scans are run
+    nightly by Circle CI which triggers a Cloud Foundry Task to download
+    and store the results in this model.
+
+    Reference: https://www.zaproxy.org/
+    """
+
+    class Meta:
+        """Model Meta options."""
+
+        verbose_name = 'OWASP ZAP Scan'
+
+    class AppTarget(models.TextChoices):
+        """The application that was scanned for this report."""
+
+        BACKEND = 'tdrs-backend'
+        FRONTEND = 'tdrs-frontend'
+
+    app_target = models.CharField(
+        choices=AppTarget.choices,
+        help_text='The application that was scanned',
+        max_length=32
+    )
+    html_report = models.FileField(
+        help_text='The generated HTML ZAP Scanning Report',
+        storage=DataFilesS3Storage,
+        upload_to=get_zap_s3_upload_path
+    )
+    scanned_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text='The date and time this scan was processed'
+    )
+    fail_count = models.PositiveSmallIntegerField(
+        help_text='The number of alerts raised at FAIL level during the scan'
+    )
+    pass_count = models.PositiveIntegerField(
+        help_text='The number of passed rules during the scan'
+    )
+    warn_count = models.PositiveIntegerField(
+        help_text='The number of alerts raised at WARN level during the scan'
+    )
+
+    objects = OwaspZapScanManager()
+
+    def __str__(self):
+        """Return the string representation of a model instance."""
+        return (
+            f'{self.get_app_target_display()}: {self.scanned_at.date()} '
+            f'({self.result})'
+        )
+
+    @property
+    def result(self) -> str:
+        """Return a summarized result of the scan."""
+        if self.fail_count > 0:
+            return 'Failed'
+        elif self.warn_count > 0:
+            return 'Warning'
+        elif self.pass_count > 0:
+            return 'Passed'
+        else:
+            return 'Error'

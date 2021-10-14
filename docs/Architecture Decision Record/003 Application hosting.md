@@ -1,5 +1,5 @@
 # 3. Application Hosting
-Date: 2020-08-04
+Date: 2020-08-04 (Updated 2021-10-05)
 
 ## Status
 
@@ -15,3 +15,7 @@ We will use Cloud.gov to host the new TDRS app.
 ## Consequences
 
 Inheriting security controls from Cloud.gov will make the ATO process simpler. 
+
+## Addendum
+
+We will be using the tool [Terraform as outlined in ADR 17](./017-terraform-service-provisioning.md) to manage users and roles within Cloud.gov permission schema. This will centralize management and facilitate [rotating django secret key with user offboarding](https://www.github.com/raft-tech/TANF-app/issues/1362). Two consequences of managing users this way is that 1) the service account will be the primary vehicle for administration and 2) that control of cloud.gov will live in our repo and not in the administration pages of Cloud.gov itself.
