@@ -75,8 +75,18 @@ ZAP_ARGS+=(-I)
 # setting them to IGNORE in the config file, unlike active rules.
 ZAP_ARGS+=(--hook=/zap/scripts/zap-hook.py)
 
+# Alter the script and options passed to it
+if [ "$TARGET" = "backend" ]; then
+  ZAP_SCRIPT="zap-api-scan.py"
+  ZAP_ARGS+=(-f openapi)
+  APP_URL+="swagger.json"
+else
+  ZAP_SCRIPT="zap-full-scan.py"
+  ZAP_ARGS+=(-j)
+fi
+
 # Run the ZAP full scan and store output for further processing if needed.
-ZAP_OUTPUT=$(docker-compose run --rm zaproxy zap-full-scan.py "${ZAP_ARGS[@]}" | tee /dev/tty)
+ZAP_OUTPUT=$(docker-compose run --rm zaproxy "$ZAP_SCRIPT" "${ZAP_ARGS[@]}" | tee /dev/tty)
 ZAP_EXIT=$?
 
 if [ "$ZAP_EXIT" -eq 0 ]; then
