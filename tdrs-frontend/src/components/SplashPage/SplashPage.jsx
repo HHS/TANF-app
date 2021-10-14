@@ -50,7 +50,7 @@ function SplashPage() {
   useEffect(() => {
     setInterval(() => {
       setActiveIndex((currentIndex) => ((currentIndex + 1) % 3) + 1)
-    }, 1000)
+    }, 10000)
   }, [])
 
   // Pa11y is not testing out authentication logic, by passing all auth checks
