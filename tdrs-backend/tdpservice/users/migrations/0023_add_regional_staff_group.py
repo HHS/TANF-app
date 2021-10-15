@@ -8,21 +8,6 @@ from tdpservice.users.permissions import (
     view_permissions_q
 )
 
-def create_perms(apps, schema_editor):
-    """Creates permissions for all installed apps.
-
-    This is needed because Django does not actually create any Content Types
-    or Permissions until a post_migrate signal is raised after the completion
-    of `manage.py migrate`. When this migration is run as part of a set for a
-    freshly created database, that signal will not run until all migrations are
-    complete - resulting in no permissions for any Group.
-
-    For more info: https://code.djangoproject.com/ticket/29843
-    """
-    for app_config in apps.get_app_configs():
-        app_config.models_module = True
-        create_permissions(app_config, apps=apps, verbosity=0)
-        app_config.models_module = None
 
 
 
