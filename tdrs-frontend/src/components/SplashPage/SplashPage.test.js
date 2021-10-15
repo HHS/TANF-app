@@ -6,11 +6,12 @@ import configureStore from 'redux-mock-store'
 import { MemoryRouter, Redirect } from 'react-router-dom'
 
 import SplashPage from './SplashPage'
+import { act, render, waitFor } from '@testing-library/react'
+
+const initialState = { auth: { authenticated: false, inactive: false } }
+const mockStore = configureStore([thunk])
 
 describe('SplashPage', () => {
-  const initialState = { auth: { authenticated: false, inactive: false } }
-  const mockStore = configureStore([thunk])
-
   it('renders a sign in header', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
@@ -101,5 +102,36 @@ describe('SplashPage', () => {
       </Provider>
     )
     expect(wrapper).toContainReact(<Redirect to="/welcome" />)
+  })
+
+  it('changes the background image periodically', async () => {
+    // Fake timers using Jest to test `setInterval`
+    jest.useFakeTimers()
+
+    // Render the SplashPage
+    const store = mockStore(initialState)
+    const { container } = render(
+      <Provider store={store}>
+        <SplashPage />
+      </Provider>
+    )
+
+    const hero = container.getElementsByClassName('usa-hero')[0]
+    expect(hero).toHaveClass('usa-hero1')
+
+    // Update the timer to trigger the background change
+    await act(async () => {
+      jest.runTimersToTime(60000)
+    })
+
+    await waitFor(() => {
+      expect(hero).toHaveClass('usa-hero3')
+    })
+
+    // Run all pending timers and switch back real timers using Jest
+    await act(async () => {
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+    })
   })
 })

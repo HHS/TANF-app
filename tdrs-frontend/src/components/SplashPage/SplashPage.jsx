@@ -48,9 +48,11 @@ function SplashPage() {
 
   // Change the splash page background every minute
   useEffect(() => {
-    setInterval(() => {
+    const interval = setInterval(() => {
       setActiveIndex((currentIndex) => ((currentIndex + 1) % 3) + 1)
-    }, 10000)
+    }, 60000)
+
+    return () => clearInterval(interval)
   }, [])
 
   // Pa11y is not testing out authentication logic, by passing all auth checks
