@@ -543,6 +543,23 @@ workflows:
               only:
                - raft-tdp-main
 
+  build-and-test:
+
+    unless: << pipeline.parameters.run_dev_deployment >> 
+  # Remove this check in a follow up PR to the work for 1013
+    jobs:
+      - secrets-check
+      - test-frontend:
+          owasp: << pipeline.parameters.owasp >>
+          pa11y: << pipeline.parameters.pa11y >>
+          requires: 
+            - secrets-check
+
+      - test-backend:
+          owasp: << pipeline.parameters.owasp >>
+          requires: 
+            - secrets-check
+
   build-and-test-backend:
     unless:
       or:
