@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('users', '0022_add_clam_av_file_scan_perms'),
-        ('users', '0023_add_regional_staff_group'),
+        ('users', '0024_add_regional_staff_group'),
     ]
 
     operations = [
