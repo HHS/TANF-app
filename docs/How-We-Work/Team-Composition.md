@@ -7,11 +7,10 @@
 * Andrew Bottoms, Raft, tech lead
 * Jorge Gonzalez, Raft, frontend engineer
 * Aaron Beavers, Raft, backend engineer
-* Dmitri Knapp, Raft, visual designer
-* Shubhi Mishra, Raft, design lead
 * Miles Reiter, Raft, user researcher
-* Angela Milash, Raft, product manager
 * John Willis, Raft, technical oversight support
+* Valerie Collignon, Raft, facilitator/project manager
+* Sreedevi Purayannur, Raft, senior ux/ui research and designer
 
 ## Subject Matter Experts
 **OFA Data Team**
