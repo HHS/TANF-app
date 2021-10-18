@@ -1,21 +1,23 @@
 """Globally available pytest fixtures."""
-import pytest
-from django.contrib.admin.models import LogEntry
-from django.contrib.admin.sites import AdminSite
 from io import StringIO
 import uuid
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import Group
-from factory.faker import faker
-from rest_framework.test import APIClient
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.admin.models import LogEntry
+from django.contrib.admin.sites import AdminSite
+from django.contrib.auth.models import Group
+from factory.faker import faker
+from pytest_factoryboy import register
+from rest_framework.test import APIClient
+import pytest
 
 from tdpservice.stts.models import Region, STT
 
 from tdpservice.core.admin import LogEntryAdmin
 from tdpservice.data_files.test.factories import DataFileFactory
+from tdpservice.security.test.factories import OwaspZapScanFactory
 from tdpservice.users.test.factories import (
     UserFactory,
     StaffUserFactory,
@@ -319,3 +321,8 @@ def test_private_key():
         key_size=4096,
     )
     yield get_private_key(key)
+
+
+# Register factories with pytest-factoryboy for automatic dependency injection
+# of model-related fixtures into tests.
+register(OwaspZapScanFactory)
