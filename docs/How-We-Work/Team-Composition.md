@@ -7,11 +7,10 @@
 * Andrew Bottoms, Raft, tech lead
 * Jorge Gonzalez, Raft, frontend engineer
 * Aaron Beavers, Raft, backend engineer
-* Dmitri Knapp, Raft, visual designer
-* Shubhi Mishra, Raft, design lead
 * Miles Reiter, Raft, user researcher
-* Angela Milash, Raft, product manager
 * John Willis, Raft, technical oversight support
+* Valerie Collignon, Raft, facilitator/project manager
+* Sreedevi Purayannur, Raft, senior ux/ui research and designer
 
 ## Subject Matter Experts
 **OFA Data Team**
@@ -19,7 +18,7 @@
 * Thomas Tran, OFA, data analysis subject matter expert
 
 **Other Teams**
-* Denise Edwards, OFA, tribal TANF subject matter expert
+* Rebekah Horsechief, OFA, tribal TANF subject matter expert
 * Stan Koutstaal, OFA, regional offices and tribal TANF liaison
 * Kathleen Moore, OPRE, data analysis subject matter expert
 
@@ -35,13 +34,16 @@
 
 ## Contract Support
 * Brian Burns, GSA/18F, contracting officer
-* Miatta Myers, 18F, acquisition consultant
 * Robert Jolly, 18F, COR
 * Christine So, Raft, contract support
-* Dvora Wilensky, OFA, project COR
 
 ## Past Product Team Members
 (most recent first)
+* Dvora Wilensky, OFA, project COR
+* Dmitri Knapp, Raft, visual designer
+* Shubhi Mishra, Raft, design lead
+* Angela Milash, Raft, product manager
+* Miatta Myers, 18F, acquisition consultant
 * Kati Nizzi, Raft, product manager
 * Jennifer Pierce, Raft, senior user researcher
 * Alex Soble, 18F, consulting engineer

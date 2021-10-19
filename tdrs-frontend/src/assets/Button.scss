@@ -1,6 +1,13 @@
+.usa-button {
+  font-size: 1rem;
+}
+
+.usa-hero .usa-button {
+  line-height: 1.5;
+}
+
 .usa-button,
 .usa-button:hover {
-  font-size: 1rem;
   background-color: $primary-medium-blue;
 }
 
