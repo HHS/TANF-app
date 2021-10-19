@@ -3,7 +3,6 @@
 from django.db import models
 from django.db.models import constraints
 
-
 class Region(models.Model):
     """A model representing a US region."""
 
