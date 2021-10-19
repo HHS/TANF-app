@@ -38,7 +38,7 @@ Based on the September 2020 iron triangle conversations, the product team commit
 ## The issue is assigned points
 - We will follow a hybrid approach of tracking product delivery and utilization to point issues that are related to admin and tech debt. When assigning points to OCIO related issues, we are thinking of the Raft’s commitment.  
 - At the end of sprint planning, we will acknowledge how many points are for non-product issues (e.g., admin and tech debt) and use them to guide the team towards future planning. 
-- Issue points are based on complexity and do not directly correlate to hours/time spent on an issue. We use the fibonacci sequence to assign points as follows:  
+- Issue points are based on complexity and do not directly correlate to hours/time spent on an issue. We use the Fibonacci sequence to assign points as follows:  
 
 
 ## The issue is accepted into the sprint
