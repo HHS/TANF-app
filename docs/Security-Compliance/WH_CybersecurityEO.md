@@ -1,6 +1,6 @@
 # White House CyberSecurity Executive Order 14208
 
-The table includes information about the status of TANF Data Portal's compliance with [White House Cybersecurity Executive Order 14208]() issued on May 12, 2021. This information is current as of 10/19/2021. 
+The table includes information about the status of TANF Data Portal's compliance with [White House Cybersecurity Executive Order 14208](https://www.whitehouse.gov/briefing-room/presidential-actions/2021/05/12/executive-order-on-improving-the-nations-cybersecurity/) issued on May 12, 2021. This information is current as of 10/19/2021. 
 |Policy	|Financial Considerations to Planning	|TDP Notes
 |--	|--	|--
 |[Complete Transition to IPv6](https://www.hhs.gov/web/governance/digital-strategy/it-policy-archive/complete-transition-to-ipv6-memorandum.html)	|All new networked Federal information systems must be IPv6 enabled NLT FY2023|TDP is hosted in cloud.gov which supports [ipv6 for external access](https://cloud.gov/docs/compliance/domain-standards/) to the application. For internal access to apps (e.g. frontend/backend app communication), only ipv4 is currently supported. Cloud.gov support team indicated that this constraint is due to current offerings available to gov for cloud services (some of which do not yet support IPv6), but planning to comply with this policy area is in-progress. 
