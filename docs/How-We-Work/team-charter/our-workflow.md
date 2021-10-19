@@ -120,7 +120,7 @@ The following evaluate AC and DoD to close issues and/or PR:
 
 AC: Lauren or Alex P (ACF Tech lead)
 
-DoD: Alex S (18F Tech lead) or Alex P (ACF Tech Lead) for dev issues; Design and research - Lauren
+DoD: Alex P (ACF Tech Lead) for dev issues; Design and research - Lauren
 
 
 ## The issue is considered ‘sprint done’ when
