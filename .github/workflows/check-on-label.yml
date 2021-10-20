@@ -9,6 +9,7 @@ on:
     - reopened
 jobs:
   pr_labeled_checks:
+    if: github.repository == "raft-tech/TANF-app" || github.repository === "HHS/TANF-app"
     runs-on: ubuntu-latest
     name: Initiate checks in circleci
     steps:
