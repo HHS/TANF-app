@@ -7,6 +7,7 @@ from django.apps import apps
 from django.contrib.auth.management import create_permissions
 from django.db.models import Q, QuerySet
 from rest_framework import permissions
+from tdpservice.stts.models import STT
 
 if TYPE_CHECKING:  # pragma: no cover
     from django.contrib.auth.models import Permission  # pragma: no cover
@@ -88,18 +89,31 @@ def get_permission_ids_for_model(
     return queryset.values_list('id', flat=True)
 
 
-def is_own_stt(request, view):
-    """Verify user belongs to requested STT."""
-    # Depending on the request, the STT could be found in three different places
-    # so we will merge all together and just do one check
+def get_requested_stt(request, view):
+    """Get stt from a valid request."""
     request_parameters = ChainMap(
         view.kwargs,
         request.query_params,
         request.data
     )
-    requested_stt = request_parameters.get('stt')
-    user_stt = request.user.stt_id if hasattr(request.user, 'stt_id') else None
+    return request_parameters.get('stt')
 
+
+def is_own_region(user, requested_stt):
+    """Verify user belongs to the requested region based on the stt in the request."""
+    requested_region = (
+        STT.objects.get(id=requested_stt).region
+        if requested_stt else None
+    )
+    return bool(
+        user.region is not None and
+        (requested_region in [None, user.region])
+    )
+
+
+def is_own_stt(user, requested_stt):
+    """Verify user belongs to requested STT."""
+    user_stt = user.stt_id if hasattr(user, 'stt_id') else None
     return bool(
         user_stt is not None and
         (requested_stt in [None, str(user_stt)])
@@ -140,16 +154,24 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         has_permission = super().has_permission(request, view)
 
         # Data Analysts are limited to only data files for their designated STT
-        if has_permission and request.user.is_data_analyst:
-            has_permission = is_own_stt(request, view)
-
-        # TODO: Add a conditional for Regional manager
-        # https://github.com/raft-tech/TANF-app/issues/1052
+        # Regional Staff are limited to only files for their designated Region
+        if has_permission and (
+            request.user.is_data_analyst or
+            request.user.is_regional_staff
+        ):
+            perms_function = (
+                is_own_region if request.user.is_regional_staff else is_own_stt
+            )
+            has_permission = perms_function(
+                request.user,
+                get_requested_stt(request, view)
+            )
 
         return has_permission
 
     def has_object_permission(self, request, view, obj):
-        """Check if a user can interact with a specific file, based on STT.
+        """
+        Check if a user can interact with a specific file, based on STT.
 
         This is used in cases where we call .get_object() to retrieve a data_file
         and do not have the STT available in the request, ie. data file was
@@ -165,8 +187,14 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
             )
             return user_stt == obj.stt_id
 
-        # TODO: Add a conditional for Regional manager
-        # https://github.com/raft-tech/TANF-app/issues/1052
+        # Regional Staff can only see files uploaded for their designated Region
+        if request.user.is_regional_staff:
+            user_region = (
+                request.user.region_id
+                if hasattr(request.user, 'region_id')
+                else None
+            )
+            return user_region == obj.stt.region.id
 
         return super().has_object_permission(request, view, obj)
 
@@ -187,7 +215,8 @@ class UserPermissions(DjangoModelCRUDPermissions):
         return True
 
     def has_object_permission(self, request, view, obj):
-        """Check if the object being modified belongs to the user.
+        """
+        Check if the object being modified belongs to the user.
 
         Alternatively, check if the user has been granted Model Permissions.
         """
@@ -195,7 +224,13 @@ class UserPermissions(DjangoModelCRUDPermissions):
         # access to individual objects
         has_model_permission = super().has_permission(request, view)
 
-        # TODO: Add conditional to assert regional manager can only interact
-        #       with user records in their respective region.
+        # Regional Staff can only see files uploaded for their designated Region
+        if request.user.groups.filter(name="OFA Regional Staff").exists():
+            user_region = (
+                request.user.region_id
+                if hasattr(request.user, 'region_id')
+                else None
+            )
+            return user_region == obj.stt.region_id
 
         return obj == request.user or has_model_permission

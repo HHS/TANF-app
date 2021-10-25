@@ -101,3 +101,21 @@ These all have defaults set in their respective settings modules, but may be ove
         * Bind the backend application to the S3 and RDS services in Cloud.gov
         * Run `/scripts/set-backend-env-vars.sh` (detailed above)
         * Restage the application to make environment variable and bound services live.
+
+## Labels
+
+We have split the original workflow into 3 seperate workflows, each of which are triggered with a label, and are not expected to run at the same time
+
+### build-and-test-frontend
+
+triggers with the `frontend` label, will accept `run-pa11y`, and `run-owasp`.
+by default this will only run cypress, linting and jest
+
+### build-and-test-backend 
+
+triggers with the `backend` label, will accept `run-owasp`. 
+by default, this will run linting and pytest
+
+### build-and-test-qasp
+
+Triggers with the `QASP Review` label, will run all tests regardless of any other labels, and is the check that must pass in order to be accepted
