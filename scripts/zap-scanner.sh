@@ -35,6 +35,11 @@ else
     exit 1
 fi
 
+# The backend also needs to include the path of the OpenAPI specification
+if [ "$TARGET" = "backend" ]; then
+  APP_URL+="swagger.json"
+fi
+
 cd "$TARGET_DIR" || exit 2
 
 # Ensure the APP_URL is reachable from the zaproxy container
@@ -79,7 +84,8 @@ ZAP_ARGS+=(--hook=/zap/scripts/zap-hook.py)
 if [ "$TARGET" = "backend" ]; then
   ZAP_SCRIPT="zap-api-scan.py"
   ZAP_ARGS+=(-f openapi)
-  APP_URL+="swagger.json"
+  # TEMP
+  ZAP_ARGS+=(-S)
 else
   ZAP_SCRIPT="zap-full-scan.py"
   ZAP_ARGS+=(-j)

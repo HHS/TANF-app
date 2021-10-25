@@ -58,8 +58,8 @@ urlpatterns = [
 # 1. Attempt to scan the api starting at web:8080/v1/
 # 2. Serve a blank json instead of static files
 
-
-urlpatterns += static("/", document_root=os.path.join(BASE_DIR, "csp"))
+# TODO: Remove the files referred to above
+# urlpatterns += static("/", document_root=os.path.join(BASE_DIR, "csp"))
 
 # TODO: Supply `terms_of_service` argument in OpenAPI Info once implemented
 schema_view = get_schema_view(
