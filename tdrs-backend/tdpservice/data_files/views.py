@@ -3,7 +3,7 @@ import logging
 
 from django.http import StreamingHttpResponse
 from django_filters import rest_framework as filters
-from drf_yasg import openapi
+from drf_yasg.openapi import Parameter
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
@@ -89,18 +89,20 @@ class GetYearList(APIView):
     # Permissions needed. This is otherwise unused.
     queryset = DataFile.objects.none()
 
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter(
-            name='stt',
-            required=False,
-            type='integer',
-            in_='path',
-            description=(
-                'The unique identifier of the target STT, if not specified '
-                'will default to user STT'
-            ),
-        )
-    ])
+    @swagger_auto_schema(
+        manual_parameters=[
+            Parameter(
+                name='stt',
+                required=False,
+                type='integer',
+                in_='path',
+                description=(
+                    'The unique identifier of the target STT, if not specified '
+                    'will default to user STT'
+                ),
+            )
+        ]
+    )
     def get(self, request, **kwargs):
         """Handle get action for get list of years there are data_files."""
         user = request.user
