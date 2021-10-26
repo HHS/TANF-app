@@ -40,3 +40,5 @@
 *.jpg binary
 *.gif binary
 *.pdf binary
+
+**/users.tf filter=git-crypt diff=git-crypt
