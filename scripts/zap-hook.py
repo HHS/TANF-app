@@ -24,7 +24,6 @@ def zap_started(zap, target):
             10036,  # Server Leaks Version Information
             10055,  # CSP unsafe inline
             10096,  # Informational: Timestamp Disclosure - Unix,
-            100000,  # A Client Error response code was returned by the server
         ]
 
     if 'frontend' in target:

@@ -93,7 +93,7 @@ class GetYearList(APIView):
         manual_parameters=[
             Parameter(
                 name='stt',
-                required=False,
+                required=True,
                 type='integer',
                 in_='path',
                 description=(
