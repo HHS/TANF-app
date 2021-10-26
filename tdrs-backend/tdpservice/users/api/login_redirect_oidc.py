@@ -80,7 +80,7 @@ class LoginRedirectOIDC(RedirectView):
             "redirect_uri": settings.BASE_URL + "/login",
             "response_type": "code",
             "state ": state,
-            "scope": "openid"
+            "scope": "openid+email+profile"
         }
 
         # escape params dict into a url encoded query string

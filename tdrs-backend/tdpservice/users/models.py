@@ -16,11 +16,17 @@ class User(AbstractUser):
     stt = models.ForeignKey(STT, on_delete=models.CASCADE, blank=True, null=True)
     region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
 
-    # The unique `sub` UUID from decoded login.gov payloads.
+    # The unique `sub` UUID from decoded login.gov payloads for login.gov users.
     login_gov_uuid = models.UUIDField(editable=False,
                                       blank=True,
                                       null=True,
                                       unique=True)
+
+    # Unique `hhsid` user claim for AMS OpenID users.
+    hhs_id = models.UUIDField(editable=False,
+                              blank=True,
+                              null=True,
+                              unique=True)
 
     # Note this is handled differently than `is_active`, which comes from AbstractUser.
     # Django will totally prevent a user with is_active=True from authorizing.

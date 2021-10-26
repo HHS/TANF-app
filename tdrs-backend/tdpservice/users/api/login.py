@@ -93,7 +93,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         except jwt.ExpiredSignatureError:
             return {"error": "The token is expired."}
 
-    def get_token_response(self, request, code):
+    def get_token_endpoint_response(self, request, code):
         # Get request origin to handle login appropriately
         origin = request.headers['Origin']
         if 'login.gov' in origin:
@@ -174,6 +174,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 self.login_user(request, initial_user, "User Found")
                 return initial_user
 
+        # TODO
+        # Fetch userInfo endpoint for AMS
+        # authenticate against hhisID returned from userInfo
+
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
         user = CustomAuthentication.authenticate(
@@ -227,9 +231,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             logger.info("Redirecting call to main page. No state provided.")
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
 
-        token_response = self.get_token_response(request, code)
+        token_endpoint_response = self.get_token_endpoint_response(request, code)
 
-        if token_response.status_code != 200:
+        if token_endpoint_response.status_code != 200:
             return Response(
                 {
                     "error": (
@@ -240,9 +244,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        token_data = token_response.json()
+        token_data = token_endpoint_response.json()
         id_token = token_data.get("id_token")
-
+        # The id_token contains the following claims:
         decoded_payload = self.validate_and_decode_payload(request, id_token, state)
 
         try:
