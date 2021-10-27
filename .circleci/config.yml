@@ -543,22 +543,10 @@ workflows:
               only:
                - raft-tdp-main
 
-  build-and-test:
-
-    unless: << pipeline.parameters.run_dev_deployment >> 
-  # Remove this check in a follow up PR to the work for 1013
+  secrets-check:
+    unless: << pipeline.parameters.run_dev_deployment >>
     jobs:
       - secrets-check
-      - test-frontend:
-          owasp: << pipeline.parameters.owasp >>
-          pa11y: << pipeline.parameters.pa11y >>
-          requires: 
-            - secrets-check
-
-      - test-backend:
-          owasp: << pipeline.parameters.owasp >>
-          requires: 
-            - secrets-check
 
   build-and-test-backend:
     unless:
@@ -567,11 +555,8 @@ workflows:
         - not: << pipeline.parameters.backend >> 
         - << pipeline.parameters.qasp >> 
     jobs:
-      - secrets-check
       - test-backend:
           owasp: << pipeline.parameters.owasp >>
-          requires: 
-            - secrets-check
 
   build-and-test-frontend:
     unless:
@@ -580,12 +565,9 @@ workflows:
         - not: << pipeline.parameters.frontend >> 
         - << pipeline.parameters.qasp >> 
     jobs:
-      - secrets-check
       - test-frontend:
           owasp: << pipeline.parameters.owasp >>
           pa11y: << pipeline.parameters.pa11y >>
-          requires: 
-            - secrets-check
 
   build-and-test-qasp:
     unless:
@@ -593,16 +575,11 @@ workflows:
         - << pipeline.parameters.run_dev_deployment >> 
         - not: << pipeline.parameters.qasp >> 
     jobs:
-      - secrets-check
       - test-frontend:
           owasp: << pipeline.parameters.owasp >>
           pa11y: << pipeline.parameters.pa11y >>
-          requires: 
-            - secrets-check
       - test-backend:
           owasp: << pipeline.parameters.owasp >>
-          requires: 
-            - secrets-check
 
   staging-deployment:
     unless: << pipeline.parameters.run_dev_deployment >> 
