@@ -41,4 +41,4 @@
 - Django Admin a11y Fixes (Sprint 3) [#1054](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1054) - **Jorge**
 - Resubmission Notification Flow [#1271](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1271) - **Miles**
 - [Design] Access Request/New User Flow - All users [#652](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/652) **Miles**
-- Break up circle ci Jobs using labels [#1013](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1013) - **Aaron**
+- Regional Staff + Nested grouping attributes for Regions #1052  - **Aaron**
