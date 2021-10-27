@@ -7,17 +7,15 @@ on:
     - opened
     - synchronize
     - reopened
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
 jobs:
   pr_labeled_checks:
     if: github.repository == 'raft-tech/TANF-app' || github.repository == 'HHS/TANF-app'
     runs-on: ubuntu-latest
     name: Initiate checks in circleci
     steps:
-    - name: Cancel previous runs that are pending
-      uses: styfle/cancel-workflow-action@0.9.1
-      with:
-        access_token: ${{ github.token }}
-
     - name: Extract OWASP Label
       id: extract-owasp-label
       run: |
