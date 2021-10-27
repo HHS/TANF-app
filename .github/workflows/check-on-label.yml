@@ -13,7 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Initiate checks in circleci
     steps:
-    - uses: actions/checkout@v2
+    - name: Cancel previous runs that are pending
+      uses: styfle/cancel-workflow-action@0.9.1
+      with:
+        access_token: ${{ github.token }}
 
     - name: Extract OWASP Label
       id: extract-owasp-label
