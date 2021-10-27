@@ -544,7 +544,14 @@ workflows:
                - raft-tdp-main
 
   secrets-check:
-    unless: << pipeline.parameters.run_dev_deployment >>
+    unless:
+      or:
+        - << pipeline.parameters.run_dev_deployment >>
+        - << pipeline.parameters.backend >>
+        - << pipeline.parameters.frontend >>
+        - << pipeline.parameters.owasp >>
+        - << pipeline.parameters.pa11y >>
+        - << pipeline.parameters.qasp >>
     jobs:
       - secrets-check
 
