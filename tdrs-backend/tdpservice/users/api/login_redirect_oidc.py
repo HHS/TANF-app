@@ -11,7 +11,7 @@ from django.views.generic.base import RedirectView
 
 
 class LoginRedirectOIDC(RedirectView):
-    """Handle login workflow with login.gov."""
+    """Handle login workflow for oidc clients."""
 
     permanent = False
     query_string = True
@@ -30,9 +30,9 @@ class LoginRedirectOIDC(RedirectView):
 
     @staticmethod
     def get_ams_configuration():
-        """Get and pass on the AMS configuration
+        """Get and pass on the AMS configuration.
 
-        includes currently published URLs for authorization, token, etc..
+        Includes currently published URLs for authorization, token, etc.
         """
         r = requests.get(settings.AMS_CONFIGURATION_ENDPOINT)
         data = r.json()
@@ -72,7 +72,6 @@ class LoginRedirectOIDC(RedirectView):
 
     def handle_ams(self, request, state, nonce):
         """Get request and manage login information with AMS OpenID."""
-
         configuration = self.get_ams_configuration()
 
         auth_params = {
@@ -102,6 +101,7 @@ class LoginRedirectOIDC(RedirectView):
         return HttpResponseRedirect(auth_endpoint)
 
     def get(self, request, *args, **kwargs):
+        """Handle login workflow based on request origin."""
         # Create state and nonce to track requests
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)

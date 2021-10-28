@@ -95,7 +95,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return {"error": "The token is expired."}
 
     def get_token_endpoint_response(self, request, code):
-        # Get request origin to handle login appropriately
+        """Check the request origin to handle login appropriately."""
         origin = request.headers['Origin']
         if 'login.gov' in origin:
             return self.handle_login_gov_token(request, code)
