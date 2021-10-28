@@ -35,15 +35,16 @@ class InactiveUser(Exception):
 
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define methods for handling login request from login.gov."""
-    def decode_payload(self, request, id_token, options=None):
+
+    def decode_payload(self, request, payload, options=None):
         """Decode the payload."""
         origin = request.headers['Origin']
         if 'login.gov' in origin:
-            return self.decode_payload_login_gov(id_token, options)
+            return self.decode_payload_login_gov(payload, options)
         else:
-            return self.decode_payload_ams(id_token, options)
+            return self.decode_payload_ams(payload, options)
 
-    def decode_payload_login_gov(self, id_token, options=None):
+    def decode_payload_login_gov(self, payload, options=None):
         """Decode the payload with keys for login.gov."""
         if not options:
             options = {'verify_nbf': False}
@@ -55,7 +56,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # subject : UUID - not useful for login.gov set options to ignore this
         try:
             decoded_payload = jwt.decode(
-                id_token,
+                payload,
                 key=cert_str,
                 issuer=settings.LOGIN_GOV_ISSUER,
                 audience=settings.LOGIN_GOV_CLIENT_ID,
@@ -68,7 +69,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         except jwt.ExpiredSignatureError:
             return {"error": "The token is expired."}
 
-    def decode_payload_ams(self, id_token, options=None):
+    def decode_payload_ams(self, payload, options=None):
         """Decode the payload with keys for AMS."""
         if not options:
             options = {'verify_nbf': False}
@@ -80,7 +81,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # issuer: issuer of the response
         try:
             decoded_payload = jwt.decode(
-                id_token,
+                payload,
                 key=cert_str,
                 issuer=ams_configuration["issuer"],
                 audience=settings.AMS_CLIENT_ID,
@@ -102,8 +103,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return self.handle_ams_token(request, code)
 
     def handle_login_gov_token(self, code):
-        # build out the query string parameters
-        # and full URL path for OIDC token endpoint
+        """Build out the query string params and full URL path for token endpoint."""
         options = {
             "client_assertion": generate_client_assertion(),
             "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE
@@ -113,14 +113,17 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         return requests.post(token_endpoint)
 
     def handle_ams_token(self, code):
+        """Build out the query string params and full URL path for token endpoint."""
+        # First fetch the token endpoint from AMS.
         ams_configuration = LoginRedirectOIDC.get_ams_configuration()
         token_params = generate_token_endpoint_parameters(code)
         token_endpoint = ams_configuration["token_endpoint"] + "?" + token_params
         # TODO Add params with code in utils?
         return requests.post(token_endpoint)
 
-    def validate_and_decode_payload(self, request, id_token, state):
-        decoded_payload = self.decode_payload(request, id_token)
+    def validate_and_decode_payload(self, request, payload, state):
+        """Validate and decode a jwt payload based on its origin, nonce, and state."""
+        decoded_payload = self.decode_payload(request, payload)
 
         if decoded_payload == {"error": "The token is expired."}:
             return Response(decoded_payload, status=status.HTTP_401_UNAUTHORIZED)
@@ -145,15 +148,17 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         return decoded_payload
 
-    def handle_user(self, request, id_token, decoded_payload):
+    def handle_user(self, request, id_token, decoded_id_token, decoded_access_token):
         """Handle the incoming user."""
         # get user from database if they exist. if not, create a new one
         if "token" not in request.session:
             request.session["token"] = id_token
 
-        # Authenticate users with the unique "subject" `sub` UUID from the payload.
-        sub = decoded_payload["sub"]
-        email = decoded_payload["email"]
+        # Authenticate login.gov users with the unique "subject" `sub`
+        # UUID from the id_token payload.
+        sub = decoded_id_token["sub"]
+        # TODO Ensure this works with payload from AMS
+        email = decoded_id_token["email"]
 
         # First account for the initial superuser
         if email == settings.DJANGO_SUPERUSER_NAME:
@@ -174,14 +179,24 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 self.login_user(request, initial_user, "User Found")
                 return initial_user
 
-        # TODO
-        # Fetch userInfo endpoint for AMS
-        # authenticate against hhisID returned from userInfo
+        # Check request origin to handle response appropriately
+        origin = request.headers['Origin']
+        auth_options = {}
+        if 'login.gov' in origin:
+            auth_options["login_gov_uuid"] = sub
+        else:
+            # Fetch userinfo endpoint for AMS to authenticate against hhsid, or
+            # other user claims.
+            ams_configuration = LoginRedirectOIDC.get_ams_configuration()
+            userinfo_response = requests.post(ams_configuration["userinfo_endpoint"],
+                                              {"access_token": decoded_access_token})
+            user_info = userinfo_response.json()
+            auth_options["hhs_id"] = user_info["hhs_id"]
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
         user = CustomAuthentication.authenticate(
-            self, user_id=sub
+            self, **auth_options
         )
 
         if user and user.is_active:
@@ -246,11 +261,15 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         token_data = token_endpoint_response.json()
         id_token = token_data.get("id_token")
-        # The id_token contains the following claims:
-        decoded_payload = self.validate_and_decode_payload(request, id_token, state)
+        access_token = token_data.get("access_token")
+
+        decoded_id_token = self.validate_and_decode_payload(request, id_token, state)
+        decoded_access_token = self.validate_and_decode_payload(request, access_token,
+                                                                state)
 
         try:
-            user = self.handle_user(request, id_token, decoded_payload)
+            user = self.handle_user(request, id_token, decoded_id_token,
+                                    decoded_access_token)
             return response_redirect(user, id_token)
 
         except InactiveUser as e:

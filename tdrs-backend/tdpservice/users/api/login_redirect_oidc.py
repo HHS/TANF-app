@@ -30,8 +30,9 @@ class LoginRedirectOIDC(RedirectView):
 
     @staticmethod
     def get_ams_configuration():
-        """Get and pass on the AMS configuration, which includes currently published URLs
-        for authorization, token, etc..
+        """Get and pass on the AMS configuration
+
+        includes currently published URLs for authorization, token, etc..
         """
         r = requests.get(settings.AMS_CONFIGURATION_ENDPOINT)
         data = r.json()
