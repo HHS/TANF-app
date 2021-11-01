@@ -52,6 +52,24 @@ commands:
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
 
+  run-owasp-scan:
+    description: Runs OWASP ZAP scanner and stores resulting artifacts.
+    parameters:
+      environment:
+        description: The environment this script is being run for.
+        type: enum
+        enum: ["circle", "nightly"]
+      target:
+        description: The target application to be scanned.
+        type: enum
+        enum: ["backend", "frontend"]
+    steps:
+      - run:
+          name: Execute OWASP ZAP vulnerability scan
+          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>>
+      - store_artifacts:
+          path: tdrs-<<parameters.target>>/reports/owasp_report.html
+
   sudo-check:
     steps:
       - run:
@@ -311,42 +329,86 @@ jobs:
 
   test-backend:
     executor: machine-executor
-    parameters:
-
-      owasp:
-        type: boolean
-        default: true
-
-      qasp:
-        type: boolean
-        default: true
-
-    branches:
     steps:
       - checkout
       - docker-compose-check
       - run:
-          name: "Test: Build and Spin-up Django API Service"
-          command: "cd tdrs-backend; docker-compose up -d --build"
+          name: Build and Spin-up Django API Service
+          command: cd tdrs-backend; docker-compose up -d --build
       - run:
-          name:  "Test: Execute Python Linting Test"
-          command: "cd tdrs-backend; docker-compose run --rm web bash -c \"flake8 .\""
+          name: Execute Python Linting Test
+          command: cd tdrs-backend; docker-compose run --rm web bash -c "flake8 ."
       - run:
-          name: "Test: Run Unit Tests And Create Code Coverage Report"
+          name: Run Unit Tests And Create Code Coverage Report
           command: |
             cd tdrs-backend;
             docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
       - upload-codecov:
           component: backend
           coverage-report: ./tdrs-backend/coverage.xml
+
+  test-frontend:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - install-nodejs-machine
+      - node/install-yarn
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+          cache-path: ~/.cache
+          cache-version: v2
+          pkg-manager: yarn
       - run:
-          name:  "Test: Execute Python OWASP ZAP Vulnerability Scan"
+          name: Run ESLint
+          command: cd tdrs-frontend; yarn lint
+      - run:
+          name: Run Pa11y Accessibility Tests
+          command: cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility
+      - run:
+          name: Run Jest Unit Tests
+          command: cd tdrs-frontend; yarn test:ci
+      - upload-codecov:
+          component: frontend
+          coverage-report: ./tdrs-frontend/coverage/lcov.info
+      - run:
+          name: Install lib bindings for Cypress
           command: |
-            if  << parameters.owasp >> || << parameters.qasp >> ; then
-              ./scripts/zap-scanner.sh backend circle
-            fi
+            sudo apt-get update
+            sudo apt-get install -y libgbm-dev
+      - run:
+          name: Run Cypress Integration Tests
+          command: cd tdrs-frontend; yarn cy:run:ci
       - store_artifacts:
-          path: tdrs-backend/reports/owasp_report.html
+          path: tdrs-frontend/pa11y-screenshots/
+
+  backend-owasp-scan:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - sudo-check
+      - docker-compose-check
+      - run:
+          name: Build and Spin-up Django API Service
+          command: cd tdrs-backend; docker-compose up -d --build
+      - run-owasp-scan:
+          environment: circle
+          target: backend
+
+  frontend-owasp-scan:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - sudo-check
+      - docker-compose-check
+      - run:
+          name: Build and Spin-up React with Nginx target
+          command: cd tdrs-frontend; docker-compose up -d --build
+      - run-owasp-scan:
+          environment: circle
+          target: frontend
 
   nightly-owasp-scan:
     executor: machine-executor
@@ -356,22 +418,18 @@ jobs:
       - sudo-check
       - cf-check
       - docker-compose-check
-      - run:
-          name:  "Test: Execute Frontend OWASP ZAP Vulnerability Scan"
-          command: "./scripts/zap-scanner.sh frontend nightly"
-      - store_artifacts:
-          path: tdrs-frontend/reports/owasp_report.html
-      - run:
-          name:  "Test: Execute Backend OWASP ZAP Vulnerability Scan"
-          command: "./scripts/zap-scanner.sh backend nightly"
-      - store_artifacts:
-          path: tdrs-backend/reports/owasp_report.html
+      - run-owasp-scan:
+          environment: nightly
+          target: backend
+      - run-owasp-scan:
+          environment: nightly
+          target: frontend
       - login-cloud-dot-gov:
           cf-password: CF_PASSWORD_STAGING
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
       - run:
-          name: "Run post-processing task to record OWASP ZAP results"
+          name: Run post-processing task to record OWASP ZAP results
           command: |
             # These environment variables are exported to Circle CI's BASH_ENV
             # by the zap-scanner.sh script for each respective app target.
@@ -394,66 +452,6 @@ jobs:
               --command "$CMD" \
               --name nightly-owasp-scan
 
-  test-frontend:
-    parameters:
-      owasp:
-        type: boolean
-        default: false
-      qasp:
-        type: boolean
-        default: false
-      pa11y:
-        type: boolean
-        default: false
-    executor: machine-executor
-    working_directory: ~/tdp-apps
-    steps:
-      - checkout
-      - docker-compose-check
-      - install-nodejs-machine
-      - node/install-yarn
-      - install-nodejs-packages:
-          app-dir: tdrs-frontend
-          cache-path: ~/.cache
-          cache-version: v2
-          pkg-manager: yarn
-      - run:
-          name: "Run ESLint"
-          command: "cd tdrs-frontend; yarn lint"
-      - run:
-          name: "Run Pa11y Accessibility Tests"
-          command: |
-            if << parameters.pa11y >> || << parameters.qasp >>; then
-              cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility
-            fi
-      - run:
-          name: "Run Jest Unit Tests"
-          command: "cd tdrs-frontend; yarn test:ci"
-      - upload-codecov:
-          component: frontend
-          coverage-report: ./tdrs-frontend/coverage/lcov.info
-      - run:
-          name: "Install lib bindings for Cypress"
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y libgbm-dev
-      - run:
-          name: "Run Cypress Integration Tests"
-          command: "cd tdrs-frontend; yarn cy:run:ci"
-      - run:
-          name: "Test: Build and Spin-up React app behind Nginx"
-          command: "cd tdrs-frontend; docker-compose up -d --build"
-      - run:
-          name:  "Test: Execute Frontend OWASP ZAP Vulnerability Scan"
-          command: |
-            if << parameters.owasp >> || << parameters.qasp >>; then
-              ./scripts/zap-scanner.sh frontend circle
-            fi
-      - store_artifacts:
-          path: tdrs-frontend/reports/owasp_report.html
-      - store_artifacts:
-          path: tdrs-frontend/pa11y-screenshots/
-
   deploy-infrastructure-dev:
     executor: terraform/default
     working_directory: ~/tdp-deploy
@@ -463,13 +461,13 @@ jobs:
   deploy-dev:
     executor: docker-executor
     parameters:
-      target-env:
+      target_env:
         type: string
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
-          backend-appname: tdp-backend-<< parameters.target-env >>
-          frontend-appname: tdp-frontend-<< parameters.target-env >>
+          backend-appname: tdp-backend-<< parameters.target_env >>
+          frontend-appname: tdp-frontend-<< parameters.target_env >>
 
   deploy-infrastructure-staging:
     executor: terraform/default
@@ -508,31 +506,38 @@ parameters:
     type: boolean
     default: false
 
-  target-env:
+  run_owasp_scan:
+    type: boolean
+    default: false
+
+  target_env:
     type: string
     default: ''
 
-  owasp:
-    type: boolean
-    default: false
-
-  qasp:
-    type: boolean
-    default: false
-
-  pa11y:
-    type: boolean
-    default: false
-
-  frontend:
-    type: boolean
-    default: false
-
-  backend:
-    type: boolean
-    default: false
-
 workflows:
+  build-and-test:
+    unless:
+      or:
+        - << pipeline.parameters.run_dev_deployment >>
+        - << pipeline.parameters.run_owasp_scan >>
+    jobs:
+      - secrets-check
+      - test-frontend:
+          requires:
+            - secrets-check
+      - test-backend:
+          requires:
+            - secrets-check
+
+  dev-deployment:
+    when: << pipeline.parameters.run_dev_deployment >>
+    jobs:
+      - deploy-infrastructure-dev
+      - deploy-dev:
+          target_env: << pipeline.parameters.target_env >>
+          requires:
+            - deploy-infrastructure-dev
+
   nightly:
     jobs:
       - nightly-owasp-scan
@@ -544,50 +549,11 @@ workflows:
               only:
                - raft-tdp-main
 
-  secrets-check:
-    unless:
-      or:
-        - << pipeline.parameters.run_dev_deployment >>
-        - << pipeline.parameters.backend >>
-        - << pipeline.parameters.frontend >>
-        - << pipeline.parameters.owasp >>
-        - << pipeline.parameters.pa11y >>
-        - << pipeline.parameters.qasp >>
+  owasp-scan:
+    when: << pipeline.parameters.run_owasp_scan >>
     jobs:
-      - secrets-check
-
-  build-and-test-backend:
-    unless:
-      or:
-        - << pipeline.parameters.run_dev_deployment >> 
-        - not: << pipeline.parameters.backend >> 
-        - << pipeline.parameters.qasp >> 
-    jobs:
-      - test-backend:
-          owasp: << pipeline.parameters.owasp >>
-
-  build-and-test-frontend:
-    unless:
-      or:
-        - << pipeline.parameters.run_dev_deployment >> 
-        - not: << pipeline.parameters.frontend >> 
-        - << pipeline.parameters.qasp >> 
-    jobs:
-      - test-frontend:
-          owasp: << pipeline.parameters.owasp >>
-          pa11y: << pipeline.parameters.pa11y >>
-
-  build-and-test-qasp:
-    unless:
-      or:
-        - << pipeline.parameters.run_dev_deployment >> 
-        - not: << pipeline.parameters.qasp >> 
-    jobs:
-      - test-frontend:
-          owasp: << pipeline.parameters.owasp >>
-          pa11y: << pipeline.parameters.pa11y >>
-      - test-backend:
-          owasp: << pipeline.parameters.owasp >>
+      - backend-owasp-scan
+      - frontend-owasp-scan
 
   staging-deployment:
     unless: << pipeline.parameters.run_dev_deployment >> 
@@ -604,12 +570,3 @@ workflows:
             branches:
               only:
                 - raft-tdp-main
-
-  dev-deployment:
-    when: << pipeline.parameters.run_dev_deployment >>
-    jobs:
-      - deploy-infrastructure-dev
-      - deploy-dev:
-          target-env: << pipeline.parameters.target-env >>
-          requires:
-            - deploy-infrastructure-dev
