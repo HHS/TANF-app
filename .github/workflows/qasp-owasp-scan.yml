@@ -16,6 +16,8 @@ jobs:
     env:
       HAS_QASP_LABEL: contains(github.event.pull_request.labels.*.name, 'QASP Review')
     steps:
+    - name: DEBUG
+      run: echo "${{HAS_QASP_LABEL}}"
     - name: Circle CI checks Trigger
       id: curl-circle-ci
       uses: promiseofcake/circleci-trigger-action@v1
