@@ -387,11 +387,15 @@ jobs:
     working_directory: ~/tdp-apps
     steps:
       - checkout
-      - sudo-check
       - docker-compose-check
       - run:
           name: Build and Spin-up Django API Service
           command: cd tdrs-backend; docker-compose up -d --build
+      - run:
+          name: Wait for backend services to become available
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c "./wait_for_services.sh"
       - run-owasp-scan:
           environment: circle
           target: backend
@@ -401,7 +405,6 @@ jobs:
     working_directory: ~/tdp-apps
     steps:
       - checkout
-      - sudo-check
       - docker-compose-check
       - run:
           name: Build and Spin-up React with Nginx target
