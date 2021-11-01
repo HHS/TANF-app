@@ -25,5 +25,5 @@ jobs:
         branch: ${{ github.head_ref }}
         payload: |
           {
-            "run_owasp_scan": $HAS_QASP_LABEL
+            "run_owasp_scan": "${{HAS_QASP_LABEL}}"
           }
