@@ -392,10 +392,15 @@ jobs:
           name: Build and Spin-up Django API Service
           command: cd tdrs-backend; docker-compose up -d --build
       - run:
-          name: Wait for backend services to become available
+          name: Wait for Django to become available
           command: |
             cd tdrs-backend;
-            docker-compose run --rm web bash -c "./wait_for_services.sh"
+            docker-compose run --rm zaproxy bash -c \
+              "PATH=$PATH:/home/zap/.local/bin &&
+               pip install wait-for-it &&
+               wait-for-it --service http://web:8080 \
+                           --timeout 60 \
+                           -- echo \"Django is ready\""
       - run-owasp-scan:
           environment: circle
           target: backend
