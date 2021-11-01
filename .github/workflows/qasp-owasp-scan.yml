@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Initiate checks in circleci
     env:
-      HAS_QASP_LABEL: contains(github.event.pull_request.labels.*.name, 'QASP Review')
+      HAS_QASP_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'QASP Review') }}
     steps:
     - name: DEBUG
       run: echo "${{env.HAS_QASP_LABEL}}"
