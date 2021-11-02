@@ -5,6 +5,7 @@ on:
     - labeled
     - synchronize
     - reopened
+# Prevent running more than one job at a time per branch.
 concurrency:
   group: ${{ github.head_ref }}
   cancel-in-progress: true

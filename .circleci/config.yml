@@ -31,6 +31,18 @@ commands:
           name: Ensure docker-compose exists, otherwise install it.
           command: ./scripts/docker-compose-check.sh
 
+  docker-compose-up-backend:
+    steps:
+      - run:
+          name: Build and spin-up Django API service
+          command: cd tdrs-backend; docker-compose up -d --build
+
+  docker-compose-up-frontend:
+    steps:
+      - run:
+          name: Build and spin-up React application
+          command: cd tdrs-frontend; docker-compose up -d --build
+
   # This allows us to use the orb stanza for node/install within other commands
   # NOTE: This doesn't work correctly on machine executors
   install-nodejs: node/install
@@ -331,9 +343,7 @@ jobs:
     steps:
       - checkout
       - docker-compose-check
-      - run:
-          name: Build and spin-up Django API service
-          command: cd tdrs-backend; docker-compose up -d --build
+      - docker-compose-up-backend
       - run:
           name: Execute Python Linting Test
           command: cd tdrs-backend; docker-compose run --rm web bash -c "flake8 ."
@@ -387,9 +397,7 @@ jobs:
     steps:
       - checkout
       - docker-compose-check
-      - run:
-          name: Build and spin-up Django API service
-          command: cd tdrs-backend; docker-compose up -d --build
+      - docker-compose-up-backend
       - run:
           name: Wait for Django to become available
           command: |
@@ -410,9 +418,7 @@ jobs:
     steps:
       - checkout
       - docker-compose-check
-      - run:
-          name: Build and spin-up React with Nginx
-          command: cd tdrs-frontend; docker-compose up -d --build
+      - docker-compose-up-frontend
       - run-owasp-scan:
           environment: circle
           target: frontend
