@@ -20,7 +20,7 @@ jobs:
     if: |
       github.event.action == 'synchronize' ||
       github.event.action == 'reopened' ||
-      github.event.action == 'labeled' && github,event.label.name == 'QASP Review'
+      github.event.action == 'labeled' && github.event.label.name == 'QASP Review'
     runs-on: ubuntu-latest
     steps:
     - name: Trigger Circle CI OWASP scan if PR has QASP Review label
