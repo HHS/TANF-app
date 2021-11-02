@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 
@@ -18,7 +18,6 @@ function SplashPage() {
   const isInactive = useSelector((state) => state.auth.inactive)
   const alertRef = useRef(null)
   const dispatch = useDispatch()
-  const [activeIndex, setActiveIndex] = useState(1)
 
   const signInWithLoginDotGov = (event) => {
     /* istanbul ignore if */
@@ -46,14 +45,10 @@ function SplashPage() {
     }
   }, [alertRef, isInactive])
 
-  // Change the splash page background every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveIndex((currentIndex) => ((currentIndex + 1) % 3) + 1)
-    }, 60000)
-
-    return () => clearInterval(interval)
-  }, [])
+  // Generate a random index for the splash page on every refresh
+  const randomIndex = () => {
+    return Math.floor(Math.random() * 3 + 1)
+  }
 
   // Pa11y is not testing out authentication logic, by passing all auth checks
   // during Pa11y tests allows us to just point to a page in the config like
@@ -69,7 +64,7 @@ function SplashPage() {
   return (
     <>
       <section
-        className={`usa-hero usa-hero${activeIndex}`}
+        className={`usa-hero usa-hero${randomIndex()}`}
         aria-label="Introduction"
       >
         <div className="grid-container">
