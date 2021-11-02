@@ -10,12 +10,13 @@ concurrency:
   cancel-in-progress: true
 jobs:
   qasp_label_check:
-    if: github.repository == 'raft-tech/TANF-app' || github.repository == 'HHS/TANF-app'
     runs-on: ubuntu-latest
     name: Initiate OWASP scan in Circle CI
     env:
       HAS_QASP_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'QASP Review') }}
     steps:
+    - name: DEBUG
+      run: echo ${{ toJson(github) }}
     - name: Trigger Circle CI OWASP scan if PR has QASP Review label
       id: curl-circle-ci
       if: env.HAS_QASP_LABEL == 'true'
