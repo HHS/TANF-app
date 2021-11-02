@@ -328,7 +328,6 @@ commands:
 jobs:
   secrets-check:
     executor: docker-executor
-    branches:
     steps:
       - checkout
       - run:
