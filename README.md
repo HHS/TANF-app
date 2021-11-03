@@ -15,7 +15,7 @@ Welcome to the home of the TANF Data Portal (TDP), a new software development pr
 
 ## What We're Building and Why
 
-- [Product planning page]( https://github.com/HHS/TANF-app/blob/main/docs/README.md) includes latest information on our product mission, goals, roadmap, and backlog. 
+- [Product planning page](https://github.com/HHS/TANF-app/blob/main/docs/README.md) includes latest information on our product mission, goals, roadmap, and backlog. 
 
 ## Getting Started
 
