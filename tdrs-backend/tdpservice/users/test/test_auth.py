@@ -43,6 +43,7 @@ def patch_login_gov_jwt_key(settings, test_private_key):
     assert test_private_key is not None, 'Unable to generate test_private_key'
     settings.LOGIN_GOV_JWT_KEY = test_private_key.decode("utf-8")
 
+
 @pytest.fixture
 def mock_token():
     """Retrieve the mock token to be used for tests."""
@@ -150,14 +151,16 @@ def test_login_fails_without_state(api_client):
     response = api_client.get("/v1/login", {"code": "dummy"})
     assert response.status_code == status.HTTP_302_FOUND
 
+
 @pytest.fixture()
 def states_factory():
     """Bundle together nonce, state, and code for tests."""
     yield {
-        'nonce':   "testnonce",
-        'state':    "teststate",
-        'code':     secrets.token_hex(32)
+        'nonce': "testnonce",
+        'state': "teststate",
+        'code': secrets.token_hex(32)
     }
+
 
 @pytest.fixture()
 def req_factory(states_factory, mock, api_client):
@@ -165,14 +168,16 @@ def req_factory(states_factory, mock, api_client):
     states = states_factory
     factory = APIRequestFactory()
     request = factory.get(
-            "/v1/login",
-            {
-                "state": states['state'],
-                "code": states['code']
-            }
-            )
+        "/v1/login",
+        {
+            "state": states['state'],
+            "code": states['code']
+        }
+    )
     request.session = api_client.session
+    # Add an origin param to test multiple auth handlers.
     yield request
+
 
 def decoded_token(
     email,
@@ -191,14 +196,16 @@ def decoded_token(
     }
     return decoded_token
 
+
 def create_session(request, states):
     """Generate a client session as part of DRY."""
     request.session["state_nonce_tracker"] = {
-            "nonce": states['nonce'],
-            "state": states['state'],
-            "added_on": time.time(),
-        }
+        "nonce": states['nonce'],
+        "state": states['state'],
+        "added_on": time.time(),
+    }
     return request
+
 
 @pytest.mark.django_db
 class TestLogin:
@@ -218,9 +225,9 @@ class TestLogin:
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
 
         mock_decode.return_value = decoded_token(
-                "test@example.com",
-                states_factory['nonce']
-            )
+            "test@example.com",
+            states_factory['nonce']
+        )
 
         yield mock_post, mock_decode
 
@@ -298,10 +305,10 @@ class TestLogin:
         inactive_user.save()
 
         mock_decode.return_value = decoded_token(
-                        "test_inactive@example.com",
-                        states_factory['nonce'],
-                        sub=inactive_user.login_gov_uuid
-                    )
+            "test_inactive@example.com",
+            states_factory['nonce'],
+            sub=inactive_user.login_gov_uuid
+        )
         view = TokenAuthorizationOIDC.as_view()
         request = create_session(request, states_factory)
         response = view(request)
@@ -328,21 +335,21 @@ class TestLogin:
         view = TokenAuthorizationOIDC.as_view()
         mock_post, mock_decode = mock
         mock_decode.return_value = decoded_token(
-                    "test_existing@example.com",
-                    states["nonce"],
-                    sub=user.login_gov_uuid
-            )
+            "test_existing@example.com",
+            states["nonce"],
+            sub=user.login_gov_uuid
+        )
 
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
     def test_login_with_old_email(
-            self,
-            mock,
-            states_factory,
-            req_factory,
-            patch_login_gov_jwt_key,
-            user
+        self,
+        mock,
+        states_factory,
+        req_factory,
+        patch_login_gov_jwt_key,
+        user
     ):
         """Login should work with existing user."""
         user.username = "test_old_email@example.com"
@@ -353,10 +360,10 @@ class TestLogin:
         view = TokenAuthorizationOIDC.as_view()
         mock_post, mock_decode = mock
         mock_decode.return_value = decoded_token(
-                    "test_new_email@example.com",
-                    states["nonce"],
-                    sub=user.login_gov_uuid
-            )
+            "test_new_email@example.com",
+            states["nonce"],
+            sub=user.login_gov_uuid
+        )
         response = view(request)
         # Ensure the user's username was updated with new email.
         assert User.objects.filter(username="test_new_email@example.com").exists()
@@ -462,10 +469,10 @@ class TestLogin:
         request = create_session(request, states_factory)
         mock_post, mock_decode = mock
         mock_decode.return_value = decoded_token(
-                    "test@example.com",
-                    states['nonce'],
-                    email_verified=False
-                )
+            "test@example.com",
+            states['nonce'],
+            email_verified=False
+        )
         view = TokenAuthorizationOIDC.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -530,17 +537,27 @@ def test_generate_client_assertion_base64(settings, test_private_key):
 @pytest.mark.django_db
 def test_generate_token_endpoint_parameters(patch_login_gov_jwt_key):
     """Test token endpoint parameter generation."""
-    params = generate_token_endpoint_parameters("test_code")
-    assert "client_assertion" in params
-    assert "client_assertion_type" in params
-    assert "code=test_code" in params
-    assert "grant_type=authorization_code" in params
+    token_params = generate_token_endpoint_parameters("test_code")
+    assert "code=test_code" in token_params
+    assert "grant_type=authorization_code" in token_params
+
+    # Test specific login.gov options
+    options = {
+        "client_assertion": generate_client_assertion(),
+        "client_assertion_type": "sometype"
+    }
+    login_gov_token_params = generate_token_endpoint_parameters("test_code", **options)
+    assert "code=test_code" in login_gov_token_params
+    assert "client_assertion" in login_gov_token_params
+    assert "client_assertion_type" in login_gov_token_params
+    assert "grant_type=authorization_code" in login_gov_token_params
 
 
 def test_token_auth_decode_payload(mock_token):
     """Test ID token decoding functionality."""
     decoded_token = TokenAuthorizationOIDC.decode_payload(
         mock_token,
+        MockRequest(),
         # Since these tokens are short lived our MOCK_TOKEN used for tests
         # is expired and would need to be refreshed on each test run, to work
         # around that we will disable signature verification for this test.
