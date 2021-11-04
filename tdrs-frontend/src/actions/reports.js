@@ -11,6 +11,7 @@ export const SET_FILE = 'SET_FILE'
 export const CLEAR_FILE = 'CLEAR_FILE'
 export const CLEAR_FILE_LIST = 'CLEAR_FILE_LIST'
 export const SET_FILE_ERROR = 'SET_FILE_ERROR'
+export const SET_FILE_SUBMITTED = 'SET_FILE_SUBMITTED'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
 
 export const START_FILE_DOWNLOAD = 'START_FILE_DOWNLOAD'
@@ -183,10 +184,13 @@ export const submit =
         })
         removeFileInputErrorState()
 
-        const submittedFiles = responses.map(
-          (response) =>
-            `${response?.data?.original_filename} (${response?.data?.extension})`
-        )
+        const submittedFiles = responses.reduce((result, response) => {
+          dispatch({
+            type: SET_FILE_SUBMITTED,
+            payload: { data: response?.data },
+          })
+          return `${response?.data?.original_filename} (${response?.data?.extension})`
+        }, [])
 
         // Create LogEntries in Django for each created ReportFile
         logger.alert(
