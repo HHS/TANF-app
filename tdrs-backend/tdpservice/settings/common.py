@@ -179,6 +179,7 @@ class Common(Configuration):
     ]
 
     # Logging
+    LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')  # set level as 'INFO' if env var is not set
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -198,17 +199,17 @@ class Common(Configuration):
         "filters": {"require_debug_true": {"()": "django.utils.log.RequireDebugTrue"}},
         "handlers": {
             "django.server": {
-                "level": "INFO",
+                "level": LOGGING_LEVEL,
                 "class": "logging.StreamHandler",
                 "formatter": "django.server",
             },
             "console": {
-                "level": "DEBUG",
+                "level": LOGGING_LEVEL,
                 "class": "logging.StreamHandler",
                 "formatter": "simple",
             },
             "mail_admins": {
-                "level": "ERROR",
+                "level": LOGGING_LEVEL,
                 "class": "django.utils.log.AdminEmailHandler",
             },
         },
@@ -216,12 +217,12 @@ class Common(Configuration):
             "django": {"handlers": ["console"], "propagate": True},
             "django.server": {
                 "handlers": ["django.server"],
-                "level": "INFO",
+                "level": LOGGING_LEVEL,
                 "propagate": False,
             },
             "django.request": {
                 "handlers": ["mail_admins", "console"],
-                "level": "ERROR",
+                "level": LOGGING_LEVEL,
                 "propagate": False,
             },
             "django.db.backends": {"handlers": ["console"], "level": "INFO"},
