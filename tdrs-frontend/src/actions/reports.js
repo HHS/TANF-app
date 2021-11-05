@@ -185,11 +185,15 @@ export const submit =
         removeFileInputErrorState()
 
         const submittedFiles = responses.reduce((result, response) => {
+          const submittedFile = response?.data
           dispatch({
             type: SET_FILE_SUBMITTED,
-            payload: { data: response?.data },
+            payload: { submittedFile },
           })
-          return `${response?.data?.original_filename} (${response?.data?.extension})`
+          result.push(
+            `${submittedFile?.original_filename} (${submittedFile?.extension})`
+          )
+          return result
         }, [])
 
         // Create LogEntries in Django for each created ReportFile
@@ -203,7 +207,13 @@ export const submit =
           }
         )
       })
-      .catch((error) => console.error(error))
+      .catch((error) =>
+        setLocalAlertState({
+          active: true,
+          type: 'error',
+          message: error.message,
+        })
+      )
   }
 
 export const SET_SELECTED_STT = 'SET_SELECTED_STT'

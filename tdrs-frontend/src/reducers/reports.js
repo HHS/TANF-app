@@ -48,6 +48,16 @@ export const getUpdatedFiles = ({
   return updatedFiles
 }
 
+export const serializeApiDataFile = (dataFile) => ({
+  id: dataFile.id,
+  fileName: dataFile.original_filename,
+  fileType: dataFile.extension,
+  quarter: dataFile.quarter,
+  section: dataFile.section,
+  uuid: dataFile.slug,
+  year: dataFile.year,
+})
+
 const initialState = {
   files: fileUploadSections.map((section) => ({
     section,
@@ -82,38 +92,19 @@ const reports = (state = initialState, action) => {
         ...state,
         files: state.files.map((file) => {
           const dataFile = getFile(data, file.section)
-          return dataFile
-            ? {
-                id: dataFile.id,
-                fileName: dataFile.original_filename,
-                fileType: dataFile.extension,
-                quarter: dataFile.quarter,
-                section: dataFile.section,
-                uuid: dataFile.slug,
-                year: dataFile.year,
-              }
-            : file
+          return dataFile ? serializeApiDataFile(dataFile) : file
         }),
       }
     }
     case SET_FILE_SUBMITTED: {
-      const { data } = payload
+      const { submittedFile } = payload
       return {
         ...state,
-        files: state.files.map((file) => {
-          const dataFile = getFile(data, file.section)
-          return dataFile
-            ? {
-                id: dataFile.id,
-                fileName: dataFile.original_filename,
-                fileType: dataFile.extension,
-                quarter: dataFile.quarter,
-                section: dataFile.section,
-                uuid: dataFile.slug,
-                year: dataFile.year,
-              }
+        files: state.files.map((file) =>
+          file.section === submittedFile?.section
+            ? serializeApiDataFile(submittedFile)
             : file
-        }),
+        ),
       }
     }
     case CLEAR_FILE: {
