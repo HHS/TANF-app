@@ -23,6 +23,7 @@ def zap_started(zap, target):
         ignored_passive_scan_ids = [
             10036,  # Server Leaks Version Information
             10055,  # CSP unsafe inline
+            10096,  # Informational: Timestamp Disclosure - Unix,
         ]
 
     if 'frontend' in target:
