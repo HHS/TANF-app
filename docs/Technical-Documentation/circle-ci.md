@@ -3,7 +3,7 @@
 ## Circle CI Workflows
 * A set of rules for defining run order/conditions for a group of jobs
 * Without filters a workflow will run on every commit
-* We use filters within workflows to ensure certain jobs are only run on designated branches (this is a qasp testing step :))
+* We use filters within workflows to ensure certain jobs are only run on designated branches
 * Such as deploy-infrastructure-staging and deploy-staging - which only run when the branch being committed to is `raft-tdp-main`
 * The `requires` tag allows us to make sure a certain job has completed before moving to the next step in the workflow
 * Additional vocab:
