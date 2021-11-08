@@ -19,6 +19,8 @@ import {
   upload,
   download,
   getAvailableFileList,
+  submit,
+  SET_FILE_SUBMITTED,
 } from './reports'
 
 describe('actions/reports', () => {
@@ -119,6 +121,52 @@ describe('actions/reports', () => {
       expect(actions[1].type).toBe(SET_FILE_LIST)
     } catch (err) {
       throw actions[1].payload.error
+    }
+  })
+
+  it('should dispatch SET_FILE_SUBMITTED', async () => {
+    const uuid = uuidv4()
+    axios.post.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: {
+          extension: 'txt',
+          id: 1,
+          original_filename: 'Test.txt',
+          quarter: 'Q1',
+          section: 'Stratum Data',
+          slug: uuid,
+          year: 2021,
+        },
+      })
+    )
+    const store = mockStore()
+
+    await store.dispatch(
+      submit({
+        formattedSections: '4',
+        logger: { alert: jest.fn() },
+        quarter: 'Q1',
+        setLocalAlertState: jest.fn(),
+        stt: { id: 10 },
+        uploadedFiles: [
+          {
+            file: { name: 'Test.txt', type: 'text/plain' },
+            fileName: 'Test.txt',
+            section: 'Stratum Data',
+            uuid,
+          },
+        ],
+        user: { id: 1 },
+        year: 2021,
+      })
+    )
+    const actions = store.getActions()
+
+    try {
+      expect(axios.post).toHaveBeenCalledTimes(1)
+      expect(actions[0].type).toBe(SET_FILE_SUBMITTED)
+    } catch (err) {
+      throw actions[0].payload.error
     }
   })
 

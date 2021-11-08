@@ -175,7 +175,7 @@ export const submit =
       )
     })
 
-    Promise.all(submissionRequests)
+    return Promise.all(submissionRequests)
       .then((responses) => {
         setLocalAlertState({
           active: true,
