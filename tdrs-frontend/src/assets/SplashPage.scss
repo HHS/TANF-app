@@ -52,6 +52,11 @@
   width: 1px;
 }
 
+.usa-hero__callout {
+  box-shadow: 0 0 29px 0 rgb(0, 0, 0.5);
+  border-radius: 0.25rem;
+}
+
 @media screen and (max-width: 640px) {
   .resource-info__secondary {
     display: none;
