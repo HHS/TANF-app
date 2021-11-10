@@ -67,7 +67,8 @@ class Common(Configuration):
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "corsheaders.middleware.CorsMiddleware",
         "tdpservice.users.api.middleware.AuthUpdateMiddleware",
-        "csp.middleware.CSPMiddleware"
+        "csp.middleware.CSPMiddleware",
+        "tdpservice.middleware.NoCacheMiddleware",
     )
 
     ALLOWED_HOSTS = ["*"]
