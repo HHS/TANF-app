@@ -13,7 +13,7 @@ from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 
-from .login_redirect_oidc import LoginRedirectOIDC
+from .login_redirect_oidc import LoginRedirectAMS
 from ..authentication import CustomAuthentication
 from .utils import (
     get_nonce_and_state,
@@ -74,7 +74,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         if not options:
             options = {'verify_nbf': False}
 
-        ams_configuration = LoginRedirectOIDC.get_ams_configuration()
+        ams_configuration = LoginRedirectAMS.get_ams_configuration()
         certs_endpoint = ams_configuration["jwks_uri"]
         cert_str = generate_jwt_from_jwks(certs_endpoint)
 
@@ -115,7 +115,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def handle_ams_token(self, code):
         """Build out the query string params and full URL path for token endpoint."""
         # First fetch the token endpoint from AMS.
-        ams_configuration = LoginRedirectOIDC.get_ams_configuration()
+        ams_configuration = LoginRedirectAMS.get_ams_configuration()
         token_params = generate_token_endpoint_parameters(code)
         token_endpoint = ams_configuration["token_endpoint"] + "?" + token_params
         # TODO Add params with code in utils?
@@ -187,7 +187,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         else:
             # Fetch userinfo endpoint for AMS to authenticate against hhsid, or
             # other user claims.
-            ams_configuration = LoginRedirectOIDC.get_ams_configuration()
+            ams_configuration = LoginRedirectAMS.get_ams_configuration()
             userinfo_response = requests.post(ams_configuration["userinfo_endpoint"],
                                               {"access_token": decoded_access_token})
             user_info = userinfo_response.json()

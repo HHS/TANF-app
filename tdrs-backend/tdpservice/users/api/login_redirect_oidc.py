@@ -10,12 +10,12 @@ from django.http import HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
 
-class LoginRedirectOIDC(RedirectView):
-    """Handle login workflow for oidc clients."""
+class LoginRedirectLoginDotGov(RedirectView):
+    """Handle login workflow for login.gov clients."""
 
     permanent = False
     query_string = True
-    pattern_name = "oidc-auth"
+    pattern_name = "oidc-logindotgov"
 
     """
     Redirects user to login.gov/authorize with the needed query parameter strings
@@ -28,17 +28,12 @@ class LoginRedirectOIDC(RedirectView):
         key value pairs need to be passed in
     """
 
-    @staticmethod
-    def get_ams_configuration():
-        """Get and pass on the AMS configuration.
+    def get(self, request, *args, **kwargs):
+        """Handle login workflow based on request origin."""
+        # Create state and nonce to track requests
+        state = secrets.token_hex(32)
+        nonce = secrets.token_hex(32)
 
-        Includes currently published URLs for authorization, token, etc.
-        """
-        r = requests.get(settings.AMS_CONFIGURATION_ENDPOINT)
-        data = r.json()
-        return data
-
-    def handle_login_gov(self, request, state, nonce):
         """Get request and manage login information with login.gov."""
         auth_params = {
             "acr_values": settings.LOGIN_GOV_ACR_VALUES,
@@ -70,7 +65,41 @@ class LoginRedirectOIDC(RedirectView):
 
         return HttpResponseRedirect(auth_endpoint_scope)
 
-    def handle_ams(self, request, state, nonce):
+
+class LoginRedirectAMS(RedirectView):
+    """Handle login workflow for login.gov clients."""
+
+    permanent = False
+    query_string = True
+    pattern_name = "oidc-ams"
+
+    """
+    Redirects user to AMS openid with the needed query parameter strings
+
+    :param self: parameter to permit django python to call a method within its own class
+    :param request: current session between client and server
+    :param args: helper value in the event any additional unknown arguments
+        need to be passed in
+    :param kwargs: helper value in the event any additional unknown
+        key value pairs need to be passed in
+    """
+
+    @staticmethod
+    def get_ams_configuration():
+        """Get and pass on the AMS configuration.
+
+        Includes currently published URLs for authorization, token, etc.
+        """
+        r = requests.get(settings.AMS_CONFIGURATION_ENDPOINT)
+        data = r.json()
+        return data
+
+    def get(self, request, *args, **kwargs):
+        """Handle login workflow based on request origin."""
+        # Create state and nonce to track requests
+        state = secrets.token_hex(32)
+        nonce = secrets.token_hex(32)
+
         """Get request and manage login information with AMS OpenID."""
         configuration = self.get_ams_configuration()
 
@@ -99,16 +128,3 @@ class LoginRedirectOIDC(RedirectView):
         }
 
         return HttpResponseRedirect(auth_endpoint)
-
-    def get(self, request, *args, **kwargs):
-        """Handle login workflow based on request origin."""
-        # Create state and nonce to track requests
-        state = secrets.token_hex(32)
-        nonce = secrets.token_hex(32)
-
-        # Get request origin to handle login appropriately
-        origin = request.headers['Origin']
-        if 'login.gov' in origin:
-            return self.handle_login_gov(request, state, nonce)
-        else:
-            return self.handle_ams(request, state, nonce)
