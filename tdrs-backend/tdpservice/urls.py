@@ -47,20 +47,6 @@ urlpatterns = [
     path("", IndexView.as_view(), name="index"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-# We needed to serve something at / and /sitemap.xml in order to
-# Resolve owasp error Content Security Policy (CSP) Header Not Set [10038] x 2 .
-# We intend to change how we do this in future work.
-
-# The two files being served right now are located at `tdrs-backend/csp/sitemap.xml`
-# and `tdrs-backend/tdpservice/core/templates/index.html`
-
-# Two alternatives suggested:
-# 1. Attempt to scan the api starting at web:8080/v1/
-# 2. Serve a blank json instead of static files
-
-
-urlpatterns += static("/", document_root=os.path.join(BASE_DIR, "csp"))
-
 # TODO: Supply `terms_of_service` argument in OpenAPI Info once implemented
 schema_view = get_schema_view(
     openapi.Info(
