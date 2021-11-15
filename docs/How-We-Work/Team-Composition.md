@@ -7,7 +7,7 @@
 * Andrew Bottoms, Raft, tech lead
 * Jorge Gonzalez, Raft, frontend engineer
 * Aaron Beavers, Raft, backend engineer
-* Miles Reiter, Raft, design lead/senior user researcher
+* Miles Reiter, Raft, design lead + senior ux/ui researcher and designer
 * John Willis, Raft, technical oversight support
 * Valerie Collignon, Raft, facilitator/project manager
 * Sreedevi Purayannur, Raft, senior ux/ui research and designer
