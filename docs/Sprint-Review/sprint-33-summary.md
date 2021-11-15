@@ -28,7 +28,6 @@
 **Raft Review**
 - [#1108](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1108) - Fix state issues with Data Files Download button
 - [#1331](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1271) - Change splash page background image
-- [#888](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/888) - TDP Permissions Model
 
 **In Progress**
 - [#653](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/653)- [Design] As a new TDP user I want a well organized first experience of TDP and insight into the status of my access
