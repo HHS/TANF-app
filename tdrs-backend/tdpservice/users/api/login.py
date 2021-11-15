@@ -48,6 +48,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     @staticmethod
     def decode_jwt(payload, issuer, audience, cert_sr, options=None):
+        """Generic jwt decoder method."""
+        if not options:
+            options = {'verify_nbf': False}
+
         try:
             decoded_payload = jwt.decode(
                 payload,
@@ -232,9 +236,6 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         """Decode the payload with keys for login.gov."""
         id_token = token_data.get("id_token")
 
-        if not options:
-            options = {'verify_nbf': False}
-
         certs_endpoint = settings.LOGIN_GOV_JWKS_ENDPOINT
         cert_str = generate_jwt_from_jwks(certs_endpoint)
 
@@ -262,9 +263,6 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         """Decode the payload with keys for AMS."""
         id_token = token_data.get("id_token")
         access_token = token_data.get("access_token")
-
-        if not options:
-            options = {'verify_nbf': False}
 
         ams_configuration = LoginRedirectAMS.get_ams_configuration()
         certs_endpoint = ams_configuration["jwks_uri"]
