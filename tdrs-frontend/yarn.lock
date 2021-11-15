@@ -2972,10 +2972,10 @@ axios@^0.21.1:
   dependencies:
     follow-redirects "^1.14.0"
 
-axios@^0.23.0:
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-0.23.0.tgz#b0fa5d0948a8d1d75e3d5635238b6c4625b05149"
-  integrity sha512-NmvAE4i0YAv5cKq8zlDoPd1VLKAqX5oLuZKs8xkJa4qi6RGn0uhCYFjWtHHC9EM/MwOwYWOs53W+V0aqEXq1sg==
+axios@^0.24.0:
+  version "0.24.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.24.0.tgz#804e6fa1e4b9c5288501dd9dff56a7a0940d20d6"
+  integrity sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==
   dependencies:
     follow-redirects "^1.14.4"
 
@@ -4574,10 +4574,10 @@ cyclist@^1.0.1:
   resolved "https://registry.yarnpkg.com/cyclist/-/cyclist-1.0.1.tgz#596e9698fd0c80e12038c2b82d6eb1b35b6224d9"
   integrity sha1-WW6WmP0MgOEgOMK4LW6xs1tiJNk=
 
-cypress@^8.6.0:
-  version "8.6.0"
-  resolved "https://registry.yarnpkg.com/cypress/-/cypress-8.6.0.tgz#8d02fa58878b37cfc45bbfce393aa974fa8a8e22"
-  integrity sha512-F7qEK/6Go5FsqTueR+0wEw2vOVKNgk5847Mys8vsWkzPoEKdxs+7N9Y1dit+zhaZCLtMPyrMwjfA53ZFy+lSww==
+cypress@^8.7.0:
+  version "8.7.0"
+  resolved "https://registry.yarnpkg.com/cypress/-/cypress-8.7.0.tgz#2ee371f383d8f233d3425b6cc26ddeec2668b6da"
+  integrity sha512-b1bMC3VQydC6sXzBMFnSqcvwc9dTZMgcaOzT0vpSD+Gq1yFc+72JDWi55sfUK5eIeNLAtWOGy1NNb6UlhMvB+Q==
   dependencies:
     "@cypress/request" "^2.88.6"
     "@cypress/xvfb" "^1.2.4"
