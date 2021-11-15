@@ -12,7 +12,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
 
 from .users.api.authorization_check import AuthorizationCheck
-from .users.api.login import TokenAuthorizationOIDC
+from .users.api.login import TokenAuthorizationLoginDotGov, TokenAuthorizationAMS
 from .users.api.login_redirect_oidc import LoginRedirectAMS, LoginRedirectLoginDotGov
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
@@ -24,9 +24,10 @@ admin.site.login = login_required(admin.site.login)
 admin.site.site_header = "Django administration"
 
 urlpatterns = [
-    path("login", TokenAuthorizationOIDC.as_view(), name="login"),
-    path("login/dotgov", LoginRedirectLoginDotGov.as_view(), name="oidc-auth"),
-    path("login/ams", LoginRedirectAMS.as_view(), name="oidc-auth"),
+    path("login", TokenAuthorizationLoginDotGov.as_view(), name="oidc-dotgov"),
+    path("oidc/ams", TokenAuthorizationAMS.as_view(), name="oidc-ams"),
+    path("login/dotgov", LoginRedirectLoginDotGov.as_view(), name="login-dotgov"),
+    path("login/ams", LoginRedirectAMS.as_view(), name="login-ams"),
     path("logout", LogoutUser.as_view(), name="logout"),
     path("logout/oidc", LogoutRedirectOIDC.as_view(), name="oidc-logout"),
     path("auth_check", AuthorizationCheck.as_view(), name="authorization-check"),

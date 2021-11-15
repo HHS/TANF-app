@@ -106,7 +106,7 @@ class LoginRedirectAMS(RedirectView):
         auth_params = {
             "client_id": settings.AMS_CLIENT_ID,
             "nonce": nonce,
-            "redirect_uri": settings.BASE_URL + "/login",
+            "redirect_uri": settings.BASE_URL + "/oidc/ams",
             "response_type": "code",
             "state ": state,
             "scope": "openid+email+profile"
