@@ -10,7 +10,7 @@
 * Miles Reiter, Raft, design lead + senior ux/ui researcher and designer
 * John Willis, Raft, technical oversight support
 * Valerie Collignon, Raft, facilitator/project manager
-* Sreedevi Purayannur, Raft, senior ux/ui research and designer
+* Sreedevi Purayannur, Raft, senior ux/ui researcher and designer
 
 ## Subject Matter Experts
 **OFA Data Team**
