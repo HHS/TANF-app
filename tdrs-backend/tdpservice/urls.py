@@ -17,7 +17,7 @@ from .users.api.login_redirect_oidc import LoginRedirectOIDC
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
 from django.contrib.auth.decorators import login_required
-from .core.views import write_logs, IndexView
+from .core.views import write_logs
 
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
@@ -34,9 +34,6 @@ urlpatterns = [
     path("data_files/", include("tdpservice.data_files.urls")),
     path("logs/", write_logs),
     # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
-    re_path(
-        r"^$", RedirectView.as_view(url=reverse_lazy("test_api-root"), permanent=False)
-    ),
 ]
 
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
@@ -44,7 +41,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 urlpatterns = [
     path("v1/", include(urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
-    path("", IndexView.as_view(), name="index"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # TODO: Supply `terms_of_service` argument in OpenAPI Info once implemented

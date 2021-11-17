@@ -13,12 +13,6 @@ from tdpservice.data_files.models import DataFile
 logger = logging.getLogger()
 
 
-class IndexView(TemplateView):
-    """An empty template for the app root."""
-
-    template_name = 'index.html'
-
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def write_logs(request):
