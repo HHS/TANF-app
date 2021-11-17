@@ -22,6 +22,7 @@ admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
 admin.site.site_header = "Django administration"
 
+# http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
 urlpatterns = [
     path("login", TokenAuthorizationOIDC.as_view(), name="login"),
     path("login/oidc", LoginRedirectOIDC.as_view(), name="oidc-auth"),
@@ -32,7 +33,6 @@ urlpatterns = [
     path("stts/", include("tdpservice.stts.urls")),
     path("data_files/", include("tdpservice.data_files.urls")),
     path("logs/", write_logs),
-    # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter
 ]
 
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
@@ -56,7 +56,7 @@ schema_view = get_schema_view(
 
 doc_patterns = [
     re_path(
-        r'^swagger(?P<format>\.json|\.yaml)$',
+        r'^swagger(?P<format>\.json|\.yaml)/?$',
         schema_view.without_ui(cache_timeout=0),
         name='schema-json'
     ),
