@@ -43,17 +43,12 @@ def validate_nonce_and_state(decoded_nonce, state, nonce_validator, state_valida
 
 """
 Generate the client_assertion parameter needed by the login.gov/token endpoint
-
-:param self: parameter to permit django python to call a method within its own class
 """
 
 
-def generate_client_assertion():
+def generate_login_gov_client_assertion():
     """
-    Generate client assertion parameters.
-
-    :param JWT_KEY: private key expected by the login.gov application
-    :param CLIENT_ID: Issuer as defined login.gov application
+    Generate client assertion parameters for login.gov.
     """
     private_key = settings.LOGIN_GOV_JWT_KEY
 
@@ -72,6 +67,41 @@ def generate_client_assertion():
         "iss": settings.LOGIN_GOV_CLIENT_ID,
         "aud": settings.LOGIN_GOV_TOKEN_ENDPOINT,
         "sub": settings.LOGIN_GOV_CLIENT_ID,
+        "jti": secrets.token_urlsafe(32)[:32],
+        # set token expiration to be 1 minute from current time
+        "exp": int(round(time.time() * 1000)) + 60000,
+    }
+    return jwt.encode(payload, key=private_key, algorithm="RS256")
+
+
+"""
+Generate the client_assertion parameter needed by the login.gov/token endpoint
+
+"""
+
+
+def generate_ams_client_assertion(ams_token_endpoint: str):
+    """
+    Generate client assertion parameters for AMS.
+    :param ams_token_endpoint: The token auth endpoint returned in the ams configuration.
+    """
+    private_key = settings.AMS_CLIENT_SECRET
+
+    # We allow the JWT_KEY to be passed in as base64 encoded or as the
+    # raw PEM format to support docker-compose env_file where there are
+    # issues with newlines in env vars
+    # https://github.com/moby/moby/issues/12997
+    try:
+        private_key = b64decode(private_key).decode("utf-8")
+    except (UnicodeDecodeError, binascii.Error):
+        # If the private_key couldn't be Base64 decoded then just try it as
+        # configured, in order to handle PEM format keys.
+        pass
+
+    payload = {
+        "iss": settings.AMS_CLIENT_ID,
+        "aud": ams_token_endpoint,
+        "sub": settings.AMS_CLIENT_ID,
         "jti": secrets.token_urlsafe(32)[:32],
         # set token expiration to be 1 minute from current time
         "exp": int(round(time.time() * 1000)) + 60000,

@@ -22,7 +22,9 @@ from .utils import (
     generate_token_endpoint_parameters,
     generate_jwt_from_jwks,
     validate_nonce_and_state,
-    response_redirect, generate_client_assertion,
+    response_redirect,
+    generate_login_gov_client_assertion,
+    generate_ams_client_assertion,
 )
 
 logger = logging.getLogger()
@@ -246,7 +248,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
     def get_token_endpoint_response(self, code):
         """Build out the query string params and full URL path for token endpoint."""
         options = {
-            "client_assertion": generate_client_assertion(),
+            "client_assertion": generate_login_gov_client_assertion(),
             "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE
         }
         token_params = generate_token_endpoint_parameters(code, options)
@@ -283,9 +285,13 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         """Build out the query string params and full URL path for token endpoint."""
         # First fetch the token endpoint from AMS.
         ams_configuration = LoginRedirectAMS.get_ams_configuration()
-        token_params = generate_token_endpoint_parameters(code)
+        options = {
+            "client_assertion": generate_ams_client_assertion(ams_configuration["token_endpoint"]),
+            "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE
+        }
+
+        token_params = generate_token_endpoint_parameters(code, options)
         token_endpoint = ams_configuration["token_endpoint"] + "?" + token_params
-        # TODO Add params with code in utils?
         return requests.post(token_endpoint)
 
     def get_auth_options(self, access_token, sub):
