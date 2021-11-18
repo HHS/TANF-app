@@ -13,22 +13,24 @@ import App from './App'
 import 'uswds/dist/js/uswds'
 import './index.scss'
 
+if (
+  !window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/) &&
+  (process.env.REACT_APP_USE_MIRAGE || process.env.REACT_APP_PA11Y_TEST)
+) {
+  // needs to be called before auth_check
+  startMirage()
+}
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.withCredentials = true
 
+// call autch_check
 const store = configureStore()
 store.dispatch(fetchAuth())
 
 // if (window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/)) {
 // }
 // Start the mirage server to stub some backend endpoints when running locally
-if (
-  !window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/) &&
-  (process.env.REACT_APP_USE_MIRAGE || process.env.REACT_APP_PA11Y_TEST)
-) {
-  startMirage()
-}
 
 ReactDOM.render(
   <Provider store={store}>
