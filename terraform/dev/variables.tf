@@ -31,13 +31,3 @@ variable "cf_password" {
   type        = string
   description = "secret; cloud.gov deployer account password"
 }
-
-variable "cf_space_guid" {
-  type = string
-  description = "secret; optional"
-}
-
-variable "cf_org_guid" {
-  type = string
-  description = "secret; optional"
-}
