@@ -15,7 +15,7 @@ export default function startMirage(
 
     routes() {
       this.urlPrefix = 'http://localhost:8080/v1'
-      this.post('/reports/', () => 'Success')
+      this.get('/auth_check', () => {
       this.get('/auth_check/', () => {
         if (
           window.localStorage.getItem('loggedIn') ||
@@ -26,6 +26,8 @@ export default function startMirage(
           return FAILED_AUTH_CHECK_DATA
         }
       })
+      this.post('/logs/', () => {})
+      this.post('/reports/', () => 'Success')
 
       // if/when we add cypress tests, the rest of these
       // routes will need some work done on them
