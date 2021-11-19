@@ -15,7 +15,6 @@ export default function startMirage(
 
     routes() {
       this.urlPrefix = 'http://localhost:8080/v1'
-      this.get('/auth_check', () => {
       this.get('/auth_check/', () => {
         if (
           window.localStorage.getItem('loggedIn') ||
@@ -60,6 +59,6 @@ export default function startMirage(
       this.passthrough(`${process.env.REACT_APP_BACKEND_HOST}/**`)
 
       console.log('Done Building routes')
-    },
+    }
   })
 }
