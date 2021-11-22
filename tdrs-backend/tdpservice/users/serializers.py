@@ -3,12 +3,12 @@
 import logging
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
-
+from django.conf import settings
 from .models import User
 from tdpservice.stts.serializers import STTUpdateSerializer
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(settings.LOGGING_LEVEL)
 
 
 class PermissionSerializer(serializers.ModelSerializer):

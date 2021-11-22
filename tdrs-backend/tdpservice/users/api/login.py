@@ -23,7 +23,7 @@ from .utils import (
 )
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(settings.LOGGING_LEVEL)
 
 
 class InactiveUser(Exception):

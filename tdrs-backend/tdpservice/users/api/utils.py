@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from django.conf import settings
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(settings.LOGGING_LEVEL)
 now = datetime.datetime.now()
 timeout = now + datetime.timedelta(minutes=settings.SESSION_TIMEOUT)
 

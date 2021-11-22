@@ -12,7 +12,7 @@ from tdpservice.security.models import ClamAVFileScan
 from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(settings.LOGGING_LEVEL)
 
 
 class ClamAVClient:

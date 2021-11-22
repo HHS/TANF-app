@@ -4,13 +4,14 @@ import csv
 import logging
 from pathlib import Path
 from django.core.management import BaseCommand
+from django.conf import settings
 from ...models import Region, STT
 from django.utils import timezone
 
 
 DATA_DIR = BASE_DIR = Path(__file__).resolve().parent / "data"
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(settings.LOGGING_LEVEL)
 
 
 def _populate_regions():
