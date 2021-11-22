@@ -62,6 +62,9 @@ services:
       - JWT_CERT_TEST
       - JWT_KEY
       - USE_LOCALSTACK
+      - AMS_CLIENT_ID
+      - AMS_CLIENT_SECRET
+      - AMS_CONFIGURATION_ENDPOINT
     volumes:
       - .:/tdpapp
     image: tdp
