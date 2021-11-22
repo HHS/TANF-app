@@ -6,7 +6,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.1.16",
-    "axios": "^0.23.0",
+    "axios": "^0.24.0",
     "classnames": "^2.3.0",
     "connected-react-router": "^6.8.0",
     "file-type": "^16.5.3",
@@ -28,8 +28,9 @@
     "uuid": "^8.3.2"
   },
   "resolutions": {
-    "lodash": "^4.17.20",
     "bl": "^4.0.3",
+    "coa": "2.0.2",
+    "lodash": "^4.17.20",
     "node-forge": "0.10.0",
     "ssri": "8.0.1"
   },
@@ -63,10 +64,10 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/jest-dom": "^5.15.0",
     "@testing-library/react": "^12.1.2",
     "concurrently": "^6.3.0",
-    "cypress": "^8.6.0",
+    "cypress": "^8.7.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^7.32.0",
