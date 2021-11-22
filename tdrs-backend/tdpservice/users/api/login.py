@@ -22,8 +22,7 @@ from .utils import (
     response_redirect,
 )
 
-logger = logging.getLogger()
-logger.setLevel(settings.LOGGING_LEVEL)
+logger = logging.getLogger(__name__)
 
 
 class InactiveUser(Exception):

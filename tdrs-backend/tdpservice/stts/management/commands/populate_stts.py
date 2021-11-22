@@ -10,8 +10,7 @@ from django.utils import timezone
 
 
 DATA_DIR = BASE_DIR = Path(__file__).resolve().parent / "data"
-logger = logging.getLogger()
-logger.setLevel(settings.LOGGING_LEVEL)
+logger = logging.getLogger(__name__)
 
 
 def _populate_regions():

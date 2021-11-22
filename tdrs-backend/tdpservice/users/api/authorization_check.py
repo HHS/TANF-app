@@ -11,8 +11,7 @@ from django.utils import timezone
 from ..serializers import UserProfileSerializer
 
 
-logger = logging.getLogger()
-logger.setLevel(settings.LOGGING_LEVEL)
+logger = logging.getLogger(__name__)
 
 class AuthorizationCheck(APIView):
     """Check if user is authorized."""

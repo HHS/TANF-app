@@ -7,9 +7,7 @@ from django.conf import settings
 from .models import User
 from tdpservice.stts.serializers import STTUpdateSerializer
 
-logger = logging.getLogger()
-logger.setLevel(settings.LOGGING_LEVEL)
-
+logger = logging.getLogger(__name__)
 
 class PermissionSerializer(serializers.ModelSerializer):
     """Permission serializer."""
