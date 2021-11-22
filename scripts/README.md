@@ -4,8 +4,8 @@ The TANF app uses several scripts through its lifecycle.
 These don't all get used by or interacted with by us too often,
 but some are mission critical during deployment and review of 
 the application. When a developer is working on these scripts, 
-they should update this documentation so future developer's 
-understand the role of the scripts
+they should update this documentation so future developers 
+understand the role of the scripts.
 
 # set-backend-env-vars.sh 
 
@@ -147,7 +147,7 @@ no args
 
 # git-secrets-check.sh
 
-ensure we have correct configs in place
+ensure that no secrets have been committed to the repo
 grep will return non-zero code if nothing found, failing the build
 
 ## Args
@@ -173,7 +173,7 @@ no args
 
 ## Description
 
-Install truffleHog in a venv
+Install truffleHog in a python virtual environment
 Get the hash of the latest commit in the target branch.
 Look at all commits since the last merge into raft-tdp-main
 Entropy checks on large git diffs
@@ -207,7 +207,7 @@ no args
 
 ## Usage
 
-This script is used in an arguement passed inside of `zap-scanner.sh`. It is not used directly
+This script is used in an argument passed inside of `zap-scanner.sh`. It is not used directly
 
 ## Args
 
@@ -220,7 +220,7 @@ Python hook that can be used to disable ignored rules in ZAP scans.
 This hook runs after the ZAP API has been successfully started.
 
 This is needed to disable passive scanning rules which we have set to IGNORE
-in the ZAP configuration files. Due to an unresolved issue with the scripts
+in the [ZAP configuration file](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/tdrs-backend/reports/zap.conf). Due to an unresolved issue with the scripts
 the HTML report generated will still include ignored passive rules so this
 allows us to ensure they never run and won't be present in the HTML report.
 
