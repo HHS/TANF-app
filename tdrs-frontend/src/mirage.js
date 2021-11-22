@@ -59,6 +59,6 @@ export default function startMirage(
       this.passthrough(`${process.env.REACT_APP_BACKEND_HOST}/**`)
 
       console.log('Done Building routes')
-    }
+    },
   })
 }
