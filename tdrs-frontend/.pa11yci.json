@@ -18,22 +18,19 @@
     },
   "urls": [
     {
-      "actions":[
-        "wait for element #private-template-container"
-      ],
       "url": "http://localhost:3000",
       "screenCapture": "pa11y-screenshots/homepage.png"
     },
     {
       "actions":[
-        "wait for element #private-template-container"
+        "wait for element #private-template-container to be visible"
       ],
       "url": "http://localhost:3000/edit-profile",
       "screenCapture": "pa11y-screenshots/edit-profile.png"
     },
     {
       "actions":[
-        "wait for element #private-template-container"
+        "wait for element #private-template-container to be visible"
       ],
       "url": "http://localhost:3000/request",
       "screenCapture": "pa11y-screenshots/request.png"
@@ -41,7 +38,7 @@
 
     {
       "actions":[
-        "wait for element #private-template-container"
+        "wait for element #private-template-container to be visible"
       ],
       "url": "http://localhost:3000/login",
       "screenCapture": "pa11y-screenshots/login.png"
@@ -49,7 +46,7 @@
 
     {
       "actions":[
-        "wait for element #private-template-container"
+        "wait for element #private-template-container to be visible"
       ],
       "url": "http://localhost:3000/data-files",
       "screenCapture": "pa11y-screenshots/data-files.png"
@@ -57,7 +54,7 @@
 
     {
       "actions":[
-        "wait for element #private-template-container"
+        "wait for element #private-template-container to be visible"
       ],
       "url": "http://localhost:3000/welcome",
       "screenCapture": "pa11y-screenshots/welcome.png"
