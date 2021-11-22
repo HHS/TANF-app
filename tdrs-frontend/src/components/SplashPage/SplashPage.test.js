@@ -6,10 +6,19 @@ import configureStore from 'redux-mock-store'
 import { MemoryRouter, Redirect } from 'react-router-dom'
 
 import SplashPage from './SplashPage'
+import { render } from '@testing-library/react'
+
+const initialState = { auth: { authenticated: false, inactive: false } }
+const mockStore = configureStore([thunk])
 
 describe('SplashPage', () => {
-  const initialState = { auth: { authenticated: false, inactive: false } }
-  const mockStore = configureStore([thunk])
+  beforeEach(() => {
+    jest.spyOn(global.Math, 'random').mockReturnValue(0)
+  })
+
+  afterEach(() => {
+    jest.spyOn(global.Math, 'random').mockRestore()
+  })
 
   it('renders a sign in header', () => {
     const store = mockStore(initialState)
@@ -101,5 +110,18 @@ describe('SplashPage', () => {
       </Provider>
     )
     expect(wrapper).toContainReact(<Redirect to="/welcome" />)
+  })
+
+  it('changes the background image on every render', async () => {
+    // Render the SplashPage
+    const store = mockStore(initialState)
+    const { container } = render(
+      <Provider store={store}>
+        <SplashPage />
+      </Provider>
+    )
+
+    const hero = container.getElementsByClassName('usa-hero')[0]
+    expect(hero).toHaveClass('usa-hero1')
   })
 })
