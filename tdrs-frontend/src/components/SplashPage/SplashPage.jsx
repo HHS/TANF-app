@@ -45,6 +45,11 @@ function SplashPage() {
     }
   }, [alertRef, isInactive])
 
+  // Generate a random index for the splash page on every refresh
+  const randomIndex = () => {
+    return Math.floor(Math.random() * 3 + 1)
+  }
+
   // Pa11y is not testing out authentication logic, by passing all auth checks
   // during Pa11y tests allows us to just point to a page in the config like
   // we have been doing.
@@ -58,7 +63,10 @@ function SplashPage() {
 
   return (
     <>
-      <section className="usa-hero" aria-label="Introduction">
+      <section
+        className={`usa-hero usa-hero${randomIndex()}`}
+        aria-label="Introduction"
+      >
         <div className="grid-container">
           {isInactive && (
             <div className="usa-alert usa-alert--slim usa-alert--error margin-bottom-4">
