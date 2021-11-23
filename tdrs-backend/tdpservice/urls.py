@@ -24,8 +24,9 @@ admin.site.login = login_required(admin.site.login)
 admin.site.site_header = "Django administration"
 
 urlpatterns = [
-    path("login", TokenAuthorizationLoginDotGov.as_view(), name="oidc-dotgov"),
-    path("oidc/ams", TokenAuthorizationAMS.as_view(), name="oidc-ams"),
+    # TODO: Swap `/login` and `/oidc/ams`
+    path("oidc/ams", TokenAuthorizationLoginDotGov.as_view(), name="oidc-dotgov"),
+    path("login/", TokenAuthorizationAMS.as_view(), name="oidc-ams"),
     path("login/dotgov", LoginRedirectLoginDotGov.as_view(), name="login-dotgov"),
     path("login/ams", LoginRedirectAMS.as_view(), name="login-ams"),
     path("logout", LogoutUser.as_view(), name="logout"),

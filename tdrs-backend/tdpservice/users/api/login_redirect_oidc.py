@@ -9,6 +9,9 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
+# login.gov expects unescaped '+' value for scope parameter
+AUTH_SCOPE = "scope=openid+email"
+
 
 class LoginRedirectLoginDotGov(RedirectView):
     """Handle login workflow for login.gov clients."""
@@ -44,8 +47,6 @@ class LoginRedirectLoginDotGov(RedirectView):
             "response_type": "code",
             "state": state,
         }
-        # login.gov expects unescaped '+' value for scope parameter
-        auth_scope = "&scope=openid+email"
 
         # escape params dict into a url encoded query string
         encoded_params = urlencode(auth_params, quote_via=quote_plus)
@@ -54,7 +55,7 @@ class LoginRedirectLoginDotGov(RedirectView):
         auth_endpoint = (
             settings.LOGIN_GOV_AUTHORIZATION_ENDPOINT + "?" + encoded_params
         )
-        auth_endpoint_scope = auth_endpoint + "&" + auth_scope
+        auth_endpoint_with_scope = auth_endpoint + "&" + AUTH_SCOPE
 
         # update the user session so OIDC logout URL has token_hint
         request.session["state_nonce_tracker"] = {
@@ -63,7 +64,7 @@ class LoginRedirectLoginDotGov(RedirectView):
             "added_on": time.time(),
         }
 
-        return HttpResponseRedirect(auth_endpoint_scope)
+        return HttpResponseRedirect(auth_endpoint_with_scope)
 
 
 class LoginRedirectAMS(RedirectView):
@@ -106,10 +107,11 @@ class LoginRedirectAMS(RedirectView):
         auth_params = {
             "client_id": settings.AMS_CLIENT_ID,
             "nonce": nonce,
-            "redirect_uri": settings.BASE_URL + "/oidc/ams",
+            # TODO: Update to `/oidc/ams/`
+            # Don't forget to the trailing slash!!!
+            "redirect_uri": settings.BASE_URL + "/login/",
             "response_type": "code",
-            "state ": state,
-            "scope": "openid+email+profile"
+            "state": state,
         }
 
         # escape params dict into a url encoded query string
@@ -120,6 +122,8 @@ class LoginRedirectAMS(RedirectView):
             configuration["authorization_endpoint"] + "?" + encoded_params
         )
 
+        auth_endpoint_with_scope = auth_endpoint + "&" + AUTH_SCOPE
+
         # update the user session so OIDC logout URL has token_hint
         request.session["state_nonce_tracker"] = {
             "nonce": nonce,
@@ -127,4 +131,4 @@ class LoginRedirectAMS(RedirectView):
             "added_on": time.time(),
         }
 
-        return HttpResponseRedirect(auth_endpoint)
+        return HttpResponseRedirect(auth_endpoint_with_scope)
