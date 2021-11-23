@@ -3,7 +3,6 @@
 import logging
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
-from django.conf import settings
 from .models import User
 from tdpservice.stts.serializers import STTUpdateSerializer
 

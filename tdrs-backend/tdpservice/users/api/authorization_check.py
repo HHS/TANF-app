@@ -1,6 +1,5 @@
 """Check if user is authorized."""
 
-from django.conf import settings
 import logging
 from django.contrib.auth import logout
 from rest_framework.response import Response

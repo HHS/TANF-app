@@ -4,7 +4,6 @@ import csv
 import logging
 from pathlib import Path
 from django.core.management import BaseCommand
-from django.conf import settings
 from ...models import Region, STT
 from django.utils import timezone
 
