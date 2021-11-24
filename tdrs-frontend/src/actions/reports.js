@@ -11,6 +11,7 @@ export const SET_FILE = 'SET_FILE'
 export const CLEAR_FILE = 'CLEAR_FILE'
 export const CLEAR_FILE_LIST = 'CLEAR_FILE_LIST'
 export const SET_FILE_ERROR = 'SET_FILE_ERROR'
+export const SET_FILE_SUBMITTED = 'SET_FILE_SUBMITTED'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
 
 export const START_FILE_DOWNLOAD = 'START_FILE_DOWNLOAD'
@@ -174,7 +175,7 @@ export const submit =
       )
     })
 
-    Promise.all(submissionRequests)
+    return Promise.all(submissionRequests)
       .then((responses) => {
         setLocalAlertState({
           active: true,
@@ -183,10 +184,17 @@ export const submit =
         })
         removeFileInputErrorState()
 
-        const submittedFiles = responses.map(
-          (response) =>
-            `${response?.data?.original_filename} (${response?.data?.extension})`
-        )
+        const submittedFiles = responses.reduce((result, response) => {
+          const submittedFile = response?.data
+          dispatch({
+            type: SET_FILE_SUBMITTED,
+            payload: { submittedFile },
+          })
+          result.push(
+            `${submittedFile?.original_filename} (${submittedFile?.extension})`
+          )
+          return result
+        }, [])
 
         // Create LogEntries in Django for each created ReportFile
         logger.alert(
@@ -199,7 +207,13 @@ export const submit =
           }
         )
       })
-      .catch((error) => console.error(error))
+      .catch((error) =>
+        setLocalAlertState({
+          active: true,
+          type: 'error',
+          message: error.message,
+        })
+      )
   }
 
 export const SET_SELECTED_STT = 'SET_SELECTED_STT'
