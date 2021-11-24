@@ -5,6 +5,18 @@
   color: $primary-graphite;
 }
 
+.usa-hero1 {
+  background-image: url("./hero1.jpg");
+}
+
+.usa-hero2 {
+  background-image: url("./hero2.jpg");
+}
+
+.usa-hero3 {
+  background-image: url("./hero3.jpg");
+}
+
 .usa-hero__callout {
   background-color: $primary-light-pale-blue;
 }
@@ -38,6 +50,11 @@
   position: absolute;
   white-space: nowrap;
   width: 1px;
+}
+
+.usa-hero__callout {
+  box-shadow: 0 0 29px 0 rgb(0, 0, 0.5);
+  border-radius: 0.25rem;
 }
 
 @media screen and (max-width: 640px) {
