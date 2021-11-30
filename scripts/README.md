@@ -233,25 +233,6 @@ https://github.com/zaproxy/zaproxy/issues/5212
 
 # zap-scanner.sh
 
-pipefail is needed to correctly carry over the exit code from zap-full-scan.py
-The backend also needs to include the path of the OpenAPI specification
-Ensure the APP_URL is reachable from the zaproxy container
-Ensure the reports directory can be written to
-Command line options to the ZAP application
-How long ZAP will crawl the app with the spider process
-Prevent failures for alerts triggered at WARN level.
-At this time rules at this level are known issues to correct, but if ZAP
-adds new rules we don't have categorized they will default to WARN.
-Use custom hook to disable passive scan rules - these don't get disabled by
-setting them to IGNORE in the config file, unlike active rules.
-Alter the script used and options passed to it based on target
-Use the API scan for the backend, in order to allow crawling the API based
-on the Swagger/OpenAPI spec provided by drf-yasg2.
-The API scan needs to know the format of the API specification provided.
-Otherwise, use the full scan as we have been.
-Allow use of the optional AJAX spider to effectively crawl the React webapp.
-Run the ZAP full scan and store output for further processing if needed.
-Nightly scans in Circle CI need to persist some values across multiple steps.
 
 ## Args
 
