@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@4.2.1
+  node: circleci/node@4.7.0
   terraform: circleci/terraform@2.1.0
   jq: circleci/jq@2.2.0
 
@@ -59,8 +59,8 @@ commands:
           name: Install Node.JS
           command: |
             source /opt/circleci/.nvm/nvm.sh
-            nvm install v12.18
-            nvm alias default v12.18
+            nvm install v16.13
+            nvm alias default v16.13
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
 
@@ -215,7 +215,7 @@ commands:
     steps:
       - install-nodejs:
           install-yarn: true
-          node-version: "12.18"
+          node-version: "16.13"
       - install-nodejs-packages:
           app-dir: tdrs-frontend
           pkg-manager: yarn
