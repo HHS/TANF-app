@@ -5,7 +5,7 @@ if [ -d /tmp/git-secrets ]; then
     echo The command git-secrets is available
 else
     echo The command git-secrets is not available, cloning...
-    git clone git@github.com:awslabs/git-secrets.git /tmp/git-secrets/
+    git clone https://github.com/awslabs/git-secrets.git /tmp/git-secrets
 fi
 
 # ensure we have correct configs in place
@@ -22,7 +22,7 @@ bash /tmp/git-secrets/git-secrets --scan -r ../
 if [[ $? -eq 0 ]]; then
  echo "git-secrets-check.sh: No issues found"
 else
-  echo "git-secrets-check.sh: Issues found, please remediate."
+  echo "git-secrets-check.sh: Issues found with return code $?, please remediate."
   return -1
 fi
 
