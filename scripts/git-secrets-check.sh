@@ -15,6 +15,7 @@ echo "Git-Secrets Config loaded:"
 grep -A10 secrets .git/config
 # grep will return non-zero code if nothing found, failing the build
 
+PATH="$PATH:/tmp/git-secrets"
 echo "git-secrets-check.sh: Scanning repo ..."
 bash /tmp/git-secrets/git-secrets --scan -r ../
 
