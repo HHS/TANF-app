@@ -9,5 +9,10 @@ mockAxios.get = jest.fn(() =>
     data: {},
   })
 )
+mockAxios.post = jest.fn(() =>
+  Promise.resolve({
+    data: {},
+  })
+)
 
 export default mockAxios
