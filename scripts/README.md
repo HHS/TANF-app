@@ -14,12 +14,16 @@ understand the role of the scripts.
 ```bash
 
 ./scripts/set-backend-env-vars.sh CGAPPNAME_BACKEND CG_SPACE
+./scripts/set-backend-env-vars.sh tdp-backend-raft tanf-dev
 ```
 
 ## args
 
-`CGAPPNAME_BACKEND` the sub domain of the app you are trying to set up environment variables for.
-`CG_SPACE` the space the app you are trying to set up for exists in.
+`CGAPPNAME_BACKEND` the sub domain of the app you are trying to set up environment variables for, like
+`tdp-backend-raft`
+`CG_SPACE` the space the app you are trying to set up for exists in, like `tanf-dev`
+
+[A full list](https://github.com/raft-tech/TANF-app/blob/c0c9423dcd4d9b87930eb655a74dd8f2701e3dcf/docs/Technical-Documentation/TDP-environments-README.md) of spaces and backends can be found here
 
 ## description
 
