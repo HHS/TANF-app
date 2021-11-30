@@ -58,13 +58,93 @@ check if the `sudo` command is present, installs it if it isn't.
 ./scripts/cf-check.sh
 ```
 
+## Args
+
+no args
+
 ## description
 
 check if the cf command is present, if its not, install it and all of its dependencies.
 
+
+# docker-check.sh
+
+
+## Usage
+
+```bash
+./scripts/docker-check.sh
+```
 ## Args
 
 no args
+
+## Description
+
+Used during ci/cd to check if docker is installed in the environment. 
+It installs it if it is not.
+
+# docker-compose-check.sh
+
+Used during ci/cd to check if docker compose is installed in the environment. 
+It installs it if it is not.
+
+## Args
+
+no args
+
+# git-secrets-check.sh
+
+## Usage
+
+```
+./scripts/git-secrets-check.sh
+```
+
+## Args
+
+no args
+
+## description
+
+ensure that no secrets have been committed to the repo
+grep will return non-zero code if nothing found, failing the build
+
+
+# trufflehog-check.sh
+
+## Usage
+
+```bash
+./scripts/trufflehog-check.sh <branch-target>
+```
+
+## Args
+
+`branch-target` the branch name you want to check.
+
+## Description
+
+Installs truffleHog in a python virtual environment and gets the hash of the latest commit in the target branch.
+Looks at all commits since the last merge into raft-tdp-main, and entropy checks on large git diffs. 
+If there are issues, they will be listed then script will abort.
+
+
+# codecov-check.sh
+  
+## Usage
+
+```bash
+./scripts/codecov-check.sh
+```
+
+## Args
+
+no args
+
+## Description
+
+Check if code cov is installed, and if it isn't, the script installs it, and checks the integrity of the binary.
 
 # copy-login-gov-keypair.sh
 
@@ -96,6 +176,11 @@ CGHOSTNAME_BACKEND=${2}
 
 # deploy-frontend.sh
 
+## Usage
+
+```
+./scripts/deploy-frontend.sh rolling raft-review
+```
 ## Args
 
 ```bash
@@ -109,50 +194,25 @@ CGHOSTNAME_FRONTEND=${2}
 
 # deploy-infrastructure-dev.sh
 
-Requires installation of jq - https://stedolan.github.io/jq/download/
-
-## Args
-
-no args
-
-# deploy-infrastructure-staging.sh
-
-Requires installation of jq - https://stedolan.github.io/jq/download/
-
-## Args
-
-no args
-
-# docker-check.sh
-
-
 ## Usage
 
-```bash
-./scripts/docker-check.sh
 ```
+```
+
 ## Args
 
 no args
 
 ## Description
 
-Used during ci/cd to check if docker is installed in the environment. 
-It installs it if it is not.
+Requires installation of jq - https://stedolan.github.io/jq/download/
 
-# docker-compose-check.sh
 
-Used during ci/cd to check if docker compose is installed in the environment. 
-It installs it if it is not.
+# deploy-infrastructure-staging.sh
 
-## Args
+## Description
 
-no args
-
-# git-secrets-check.sh
-
-ensure that no secrets have been committed to the repo
-grep will return non-zero code if nothing found, failing the build
+Requires installation of jq - https://stedolan.github.io/jq/download/
 
 ## Args
 
@@ -160,51 +220,18 @@ no args
 
 # localstack-setup.sh
 
+
+## Usage
+
+```
+./scripts/localstack-setup.sh
+```
 Create the bucket used by the Django app
 Enable object versioning on the bucket
 
 ## Args
 
 no args
-
-# trufflehog-check.sh
-
-## Usage
-
-```bash
-./scripts/trufflehog-check.sh <branch-target>
-```
-
-## Description
-
-Install truffleHog in a python virtual environment
-Get the hash of the latest commit in the target branch.
-Look at all commits since the last merge into raft-tdp-main
-Entropy checks on large git diffs
-if there are issues, they will be listed then script will abort
-
-## Args
-
-`branch-target` the branch name you want to check.
-
-# codecov-check.sh
-  
-## Usage
-
-```bash
-./scripts/codecov-check.sh
-```
-
-## Args
-
-no args
-
-## Description
-
-  Import Codecov PGP public keys
-  Download codecov uploader
-  Download SHA signatures and validate installed codeov
-  Validate successful installation of codecov
 
 # zap-hook.py
 
