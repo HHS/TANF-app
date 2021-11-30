@@ -23,18 +23,14 @@ class STTSerializer(serializers.ModelSerializer):
         return obj.code
 
 
-class STTUpdateSerializer(serializers.ModelSerializer):
-    """STT serializer."""
+class STTPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    """Accept STT ID only for updates but return full STT in response."""
 
-    class Meta:
-        """Metadata."""
+    queryset = STT.objects.all()
 
-        model = STT
-        fields = ["id"]
-        extra_kwargs = {"id": {"read_only": False}}
-
-    def to_representation(self, instance):
-        """Allow update with only the ID field."""
+    def to_representation(self, value):
+        """Return full STT object on outgoing serialization."""
+        instance = self.queryset.get(pk=value.pk)
         return STTSerializer(instance).data
 
 
