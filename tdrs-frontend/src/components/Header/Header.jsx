@@ -41,7 +41,11 @@ function HeaderComp() {
             Menu
           </button>
         </div>
-        <nav aria-label="Primary navigation" className="usa-nav">
+        <nav
+          role="navigation"
+          aria-label="Primary navigation"
+          className="usa-nav"
+        >
           <div className="usa-nav__inner">
             <button type="button" className="usa-nav__close">
               <img src={closeIcon} alt="close" />
@@ -82,7 +86,7 @@ function HeaderComp() {
                   } usa-nav__secondary-item`}
                 >
                   {user && user.email && (
-                    <a href="/">
+                    <a href="/" tabIndex="0">
                       <FontAwesomeIcon
                         className="margin-right-1"
                         icon={faUserCircle}
@@ -91,20 +95,19 @@ function HeaderComp() {
                     </a>
                   )}
                 </li>
-                {authenticated && (
-                  <li className="usa-nav__secondary-item">
-                    <a
-                      className="sign-out-link"
-                      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
-                    >
-                      <FontAwesomeIcon
-                        className="margin-right-1"
-                        icon={faSignOutAlt}
-                      />
-                      Sign Out
-                    </a>
-                  </li>
-                )}
+                <li className="usa-nav__secondary-item">
+                  <a
+                    className="sign-out-link"
+                    href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
+                    tabIndex="0"
+                  >
+                    <FontAwesomeIcon
+                      className="margin-right-1"
+                      icon={faSignOutAlt}
+                    />
+                    Sign Out
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
