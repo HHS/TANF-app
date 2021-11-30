@@ -16,8 +16,13 @@ grep -A10 secrets .git/config
 # grep will return non-zero code if nothing found, failing the build
 
 echo "git-secrets-check.sh: Scanning repo ..."
-/tmp/git-secrets/git-secrets --scan -r ../
+bash /tmp/git-secrets/git-secrets --scan -r ../
 
 # if there are issues, they will be listed then script will abort here
-# else
-echo "git-secrets-check.sh: No issues found"
+if [[ $? -eq 0 ]]; then
+ echo "git-secrets-check.sh: No issues found"
+else
+  echo "git-secrets-check.sh: Issues found, please remediate."
+  return -1
+fi
+
