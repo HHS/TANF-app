@@ -107,9 +107,7 @@ class LoginRedirectAMS(RedirectView):
         auth_params = {
             "client_id": settings.AMS_CLIENT_ID,
             "nonce": nonce,
-            # TODO: Update to `/oidc/ams/`
-            # Don't forget to the trailing slash!!!
-            "redirect_uri": settings.BASE_URL + "/login/",
+            "redirect_uri": settings.BASE_URL + "/oidc/ams",
             "response_type": "code",
             "state": state,
         }
