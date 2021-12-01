@@ -74,11 +74,11 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-prettier": "^4.0.0",
+    "faker": "^5.5.3",
     "jest-enzyme": "^7.1.2",
-    "node-sass": "^5.0.0",
+    "node-sass": "^6.0.1",
     "pa11y-ci": "^2.4.1",
     "prettier": "^2.4.1",
-    "faker": "^5.5.3",
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
     "wait-on": "^6.0.0"
