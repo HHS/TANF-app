@@ -260,8 +260,16 @@ https://github.com/zaproxy/zaproxy/issues/5212
 
 # zap-scanner.sh
 
+## Usage 
+```bash
+./scripts/zap-scanner.py```
 
 ## Args
 
 TARGET=$1
 ENVIRONMENT=$2
+
+## Description
+
+Used to invoke zap during CI, sends path to zap-hook.py to zap command and executes scan
+on the target environment.
