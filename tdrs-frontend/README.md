@@ -95,7 +95,7 @@ If you use [VSCode](https://code.visualstudio.com/) as an [IDE](https://en.wikip
 
 ### Unit and Accessibility Testing
 
-This project uses [Jest](https://jestjs.io/) for unit tests and [pa11y]() for automated accessibility tests.
+This project uses [Jest](https://jestjs.io/) for unit tests and [pa11y](https://pa11y.org/) for automated accessibility tests.
 
 **Unit Tests with Jest**
 
