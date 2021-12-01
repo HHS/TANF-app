@@ -47,8 +47,8 @@ Dynamically set `DJANGO_CONFIGURATION` based on Cloud.gov Space
 no args
 
 ## description
-
-check if the `sudo` command is present, installs it if it isn't.
+Used during ci/cd to check if the `sudo` command is present.
+it installs it if it isn't.
 
 # cf-checks.sh
 
@@ -63,8 +63,8 @@ check if the `sudo` command is present, installs it if it isn't.
 no args
 
 ## description
-
-check if the cf command is present, if its not, install it and all of its dependencies.
+Used during ci/cd to check if the cf command is present, 
+if its not, install it and all of its dependencies.
 
 
 # docker-check.sh
@@ -107,7 +107,7 @@ no args
 
 ## description
 
-ensure that no secrets have been committed to the repo
+Used during CI/CD to ensure that no secrets have been committed to the repo
 grep will return non-zero code if nothing found, failing the build
 
 
