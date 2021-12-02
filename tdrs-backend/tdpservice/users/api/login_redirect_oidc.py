@@ -1,5 +1,6 @@
 """Handle login requests."""
 
+import logging
 import requests
 import secrets
 import time
@@ -11,6 +12,9 @@ from django.views.generic.base import RedirectView
 
 # login.gov expects unescaped '+' value for scope parameter
 AUTH_SCOPE = "scope=openid+email"
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class LoginRedirectLoginDotGov(RedirectView):
@@ -128,5 +132,7 @@ class LoginRedirectAMS(RedirectView):
             "state": state,
             "added_on": time.time(),
         }
+
+        logger.info(encoded_params)
 
         return HttpResponseRedirect(auth_endpoint_with_scope)

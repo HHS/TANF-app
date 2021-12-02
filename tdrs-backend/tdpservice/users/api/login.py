@@ -182,6 +182,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
 
+        logger.info(request)
+
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
@@ -204,9 +206,14 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             )
 
         token_data = token_endpoint_response.json()
+        logger.info(token_data)
+        logger.info("token_data")
         id_token = token_data.get("id_token")
+        logger.info(id_token)
+        logger.info("id_token")
         decoded_token_data = self.validate_and_decode_payload(request, token_data, state)
-
+        logger.info("decoded_token_data")
+        logger.info(decoded_token_data)
         try:
             user = self.handle_user(request, id_token, decoded_token_data)
             return response_redirect(user, id_token)
