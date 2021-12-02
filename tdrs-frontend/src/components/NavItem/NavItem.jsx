@@ -13,7 +13,6 @@ function NavItem({ pathname, tabTitle, href }) {
   return (
     <li className="usa-nav__primary-item">
       <a
-        tabIndex="0"
         href={href}
         key={tabTitle}
         // dash-case the tabTitle string (e.g. Data Files => data-files)

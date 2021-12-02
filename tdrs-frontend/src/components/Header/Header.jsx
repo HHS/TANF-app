@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -18,8 +18,70 @@ import NavItem from '../NavItem/NavItem'
  */
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
+  const [isMenuVisible, setIsMenuVisible] = useState(false)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
+
+  const menuRef = useRef()
+
+  const handleTabKey = (e) => {
+    if (menuRef.current.classList.contains('is-visible')) {
+      e.preventDefault()
+      const focusableMenuElements = [
+        ...menuRef.current.querySelectorAll('button'),
+        ...menuRef.current.querySelectorAll('a'),
+      ]
+
+      console.log(focusableMenuElements)
+
+      const firstElement = focusableMenuElements[0]
+      const lastIndex = focusableMenuElements.length - 1
+      const lastElement = focusableMenuElements[lastIndex]
+
+      let tabIndex
+      console.log(document.activeElement)
+
+      if (focusableMenuElements.includes(document.activeElement)) {
+        tabIndex =
+          focusableMenuElements.findIndex(
+            (e) => document.activeElement === e
+          ) || 0
+        console.log('starting with', tabIndex, focusableMenuElements[tabIndex])
+        if (!e.shiftKey && tabIndex >= lastIndex) {
+          console.log('return to first element')
+          tabIndex = 0
+        } else if (e.shiftKey && tabIndex === 0) {
+          console.log('return to last element')
+          tabIndex = lastIndex
+        } else if (e.shiftKey) {
+          console.log('move back one')
+          tabIndex -= 1
+        } else {
+          console.log('move forward one')
+          tabIndex += 1
+        }
+      } else {
+        console.log('refocus to close')
+        tabIndex = 0
+      }
+      console.log('ending on index', tabIndex, focusableMenuElements[tabIndex])
+      focusableMenuElements[tabIndex].focus()
+    }
+
+    return null
+  }
+
+  const keyListenersMap = new Map([[9, handleTabKey]])
+
+  useEffect(() => {
+    function keyListener(e) {
+      const listener = keyListenersMap.get(e.keyCode)
+      return listener && listener(e)
+    }
+    document.addEventListener('keydown', keyListener)
+
+    return () => document.removeEventListener('keydown', keyListener)
+  }, [])
 
   const isOFASystemAdmin = () => {
     return user?.roles?.some((role) => role.name === 'OFA System Admin')
@@ -42,6 +104,7 @@ function HeaderComp() {
           </button>
         </div>
         <nav
+          ref={menuRef}
           role="navigation"
           aria-label="Primary navigation"
           className="usa-nav"
@@ -86,7 +149,7 @@ function HeaderComp() {
                   } usa-nav__secondary-item`}
                 >
                   {user && user.email && (
-                    <a href="/" tabIndex="0">
+                    <a href="/">
                       <FontAwesomeIcon
                         className="margin-right-1"
                         icon={faUserCircle}
@@ -99,7 +162,6 @@ function HeaderComp() {
                   <a
                     className="sign-out-link"
                     href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
-                    tabIndex="0"
                   >
                     <FontAwesomeIcon
                       className="margin-right-1"
