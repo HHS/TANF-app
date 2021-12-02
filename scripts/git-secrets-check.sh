@@ -7,7 +7,7 @@ else
     echo The command git-secrets is not available, cloning...
     git clone git@github.com:awslabs/git-secrets.git /tmp/git-secrets/
     if [ -f /tmp/git-secrets/git-secrets ]; then
-        sudo cp ./tmp/git-secrets/git-secrets /usr/sbin/
+        sudo cp /tmp/git-secrets/git-secrets /usr/sbin/
     else
         git clone https://github.com/awslabs/git-secrets.git /tmp/git-secrets
     fi
@@ -21,11 +21,6 @@ grep -A10 secrets .git/config
 # grep will return non-zero code if nothing found, failing the build
 
 #PATH="$PATH:/tmp/git-secrets" What if we just copy into somewhere in the PATH?
-if [ -d /tmp/git-secrets ]; then
-	sudo cp ./tmp/git-secrets/git-secrets /usr/sbin 
-else
-	git clone https://github.com/awslabs/git-secrets.git /tmp/git-secrets
-fi
 
 echo "git-secrets-check.sh: Scanning repo ..."
 #/tmp/git-secrets/
