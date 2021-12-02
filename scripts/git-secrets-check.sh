@@ -7,9 +7,10 @@ else
     echo The command git-secrets is not available, cloning...
     git clone git@github.com:awslabs/git-secrets.git /tmp/git-secrets/
     if [ -f /tmp/git-secrets/git-secrets ]; then
+	echo "Moving git secrets into PATH"
         sudo cp /tmp/git-secrets/git-secrets /usr/sbin/
     else
-        git clone https://github.com/awslabs/git-secrets.git /tmp/git-secrets
+	echo "Git clone failed for git-secrets"
     fi
 fi
 
@@ -20,17 +21,15 @@ echo "Git-Secrets Config loaded:"
 grep -A10 secrets .git/config
 # grep will return non-zero code if nothing found, failing the build
 
-#PATH="$PATH:/tmp/git-secrets" What if we just copy into somewhere in the PATH?
-
 echo "git-secrets-check.sh: Scanning repo ..."
-#/tmp/git-secrets/
 git secrets --scan -r ../
+retVal=$?
 
 # if there are issues, they will be listed then script will abort here
-if [[ $? -eq 0 ]]; then
+if [[ $retVal -eq 0 ]]; then
  echo "git-secrets-check.sh: No issues found"
 else
-  echo "git-secrets-check.sh: Issues found with return code $?, please remediate."
-  return -1
+  echo "git-secrets-check.sh: Issues found with return code $retVal, please remediate."
+  return 1
 fi
 
