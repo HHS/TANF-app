@@ -24,7 +24,7 @@ axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.withCredentials = true
 
-// call autch_check
+// call auth_check
 const store = configureStore()
 store.dispatch(fetchAuth())
 
