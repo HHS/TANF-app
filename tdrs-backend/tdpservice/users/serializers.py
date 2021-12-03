@@ -3,8 +3,11 @@
 import logging
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
-from .models import User
+
 from tdpservice.stts.serializers import STTUpdateSerializer
+from tdpservice.stts.serializers import STTPrimaryKeyRelatedField
+from tdpservice.users.models import User
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,31 +57,24 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """Serializer used for setting a user's profile."""
+    """Serializer used for retrieving/updating a user's profile."""
 
-    stt = STTUpdateSerializer(required=True)
-    email = serializers.SerializerMethodField("get_email")
+    email = serializers.CharField(read_only=True, source='username')
     roles = GroupSerializer(
-        many=True, required=False, allow_empty=True, source="groups"
+        many=True,
+        read_only=True,
+        source='groups'
     )
+    stt = STTPrimaryKeyRelatedField()
 
     class Meta:
         """Metadata."""
 
         model = User
-        fields = ["id", "first_name", "last_name", "email", "stt", "roles"]
+        fields = ['id', 'first_name', 'last_name', 'email', 'stt', 'roles']
 
         """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {
-            "first_name": {"allow_blank": False, "required": True},
-            "last_name": {"allow_blank": False, "required": True},
+            'first_name': {'allow_blank': False, 'required': True},
+            'last_name': {'allow_blank': False, 'required': True},
         }
-
-    def update(self, instance, validated_data):
-        """Update the user with the STT."""
-        instance.stt_id = validated_data.pop("stt")["id"]
-        return super().update(instance, validated_data)
-
-    def get_email(self, obj):
-        """Return the user's email address."""
-        return obj.username
