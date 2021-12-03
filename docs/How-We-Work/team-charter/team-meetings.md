@@ -19,7 +19,8 @@
 - Facilitator: Valerie
 - When: Daily 12pm-12:15pm EST and asynchronously on Thursdays and every other Tuesday when the team has sprint ceremonies
 - Format: Each team member gives quick update to answer these questions 
-  - *What did you do yesterday that advances the sprint goal?* 
+  - Facilitator shares their screen and pulls up assigned tickets for each team member in the current sprint. 
+  - *What did you do since the last standup that advances the sprint goals?* 
   - *What are you doing today that advances the sprint goal?*
   - *Are you encountering any blockers?* 
   - If you can’t make Standup in real-time, please post a short async update to the [OFA TDP General Mattermost Channel](https://mattermost.goraft.tech/goraft/channels/guest-ofa-tdp-general)
