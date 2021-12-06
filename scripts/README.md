@@ -1,4 +1,4 @@
-# scripts
+# Scripts
 
 The TANF app uses several scripts through its lifecycle. 
 These don't all get used by or interacted with by us too often,
@@ -7,9 +7,11 @@ the application. When a developer is working on these scripts,
 they should update this documentation so future developers 
 understand the role of the scripts.
 
-# set-backend-env-vars.sh 
+# Interacting with Cloud.gov
 
-## usage 
+## [set-backend-env-vars.sh](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/scripts/set-backend-env-vars.sh) 
+
+### Usage 
 
 ```bash
 
@@ -17,155 +19,62 @@ understand the role of the scripts.
 ./scripts/set-backend-env-vars.sh tdp-backend-raft tanf-dev
 ```
 
-## args
+### Arguments
 
-`CGAPPNAME_BACKEND` the sub domain of the app you are trying to set up environment variables for, like
-`tdp-backend-raft`
-`CG_SPACE` the space the app you are trying to set up for exists in, like `tanf-dev`
+* `CGAPPNAME_BACKEND`: the sub domain of the app you are trying to set up environment variables for
+  * Example: `tdp-backend-raft`
+* `CG_SPACE`: the space the app you are trying to set up for is deployed in.
+  * Example: `tanf-dev`
 
 [A full list](https://github.com/raft-tech/TANF-app/blob/c0c9423dcd4d9b87930eb655a74dd8f2701e3dcf/docs/Technical-Documentation/TDP-environments-README.md) of spaces and backends can be found here
 
-## description
+### Description
 
-Determine the appropriate BASE_URL for the deployed instance based on the
-provided Cloud.gov App Name
-Use Shell Parameter Expansion to replace localhost in the URL
-Dynamically generate a new `DJANGO_SECRET_KEY`
-Dynamically set `DJANGO_CONFIGURATION` based on Cloud.gov Space
+Based on the provided arguments, set the appropriate environment variables on the app in Cloud.gov.
 
-# sudo-check.sh
+* Determines the appropriate BASE_URL for the deployed instance based on the
+provided Cloud.gov App Name.
+  * For example, if the app name is `tdp-backend-raft` the `BASE_URL` will get set to `https://tdp-backend-raft.app.cloud.gov/v1`.
+  * If there is already an existing `BASE_URL` environment variable set, the script will use Shell Parameter Expansion to replace localhost in the URL to prevent any issues.
+* Dynamically sets the `FRONTEND_BASE_URL` by replacing `backend` with `frontend` in the `BASE_URL` value.
+* Dynamically generates a new `DJANGO_SECRET_KEY` for each deployment. This value is generated with a python call to the `secrets` library. It is a randomly generated URL safe token that is 50 bytes in length.
+* Dynamically sets `DJANGO_CONFIGURATION` based on Cloud.gov Space.
+  * `tanf-prod` space results in a Django configuration of `Production`.
+  * `tanf-staging` uses the `Staging` configuration
+  * All other spaces use the `Development` configuration
+  * This refers to the Django settings class that will be used within the `tdpservice.settings.cloudgov` module. 
 
-## usage
-
-```
-./scripts/sudo-check.sh
-
-```
-
-## Args
-
-no args
-
-## description
-Used during ci/cd to check if the `sudo` command is present.
-it installs it if it isn't.
-
-# cf-checks.sh
-
-## usage
-
-```bash
-./scripts/cf-check.sh
-```
-
-## Args
-
-no args
-
-## description
-Used during ci/cd to check if the cf command is present, 
-if its not, install it and all of its dependencies.
+### Where it's used
+The script `deploy-backend` invokes this script if the `DEPLOY_STRATEGY` is `initial`, `bind` or `rebuild`. Can optionally be run locally on its own.
 
 
-# docker-check.sh
+## [copy-login-gov-keypair.sh](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/scripts/copy-login-gov-keypair.sh)
 
-
-## Usage
-
-```bash
-./scripts/docker-check.sh
-```
-## Args
-
-no args
-
-## Description
-
-Used during ci/cd to check if docker is installed in the environment. 
-It installs it if it is not.
-
-# docker-compose-check.sh
-
-Used during ci/cd to check if docker compose is installed in the environment. 
-It installs it if it is not.
-
-## Args
-
-no args
-
-# git-secrets-check.sh
-
-## Usage
-
-```
-./scripts/git-secrets-check.sh
-```
-
-## Args
-
-no args
-
-## description
-
-Used during CI/CD to ensure that no secrets have been committed to the repo
-grep will return non-zero code if nothing found, failing the build
-
-
-# trufflehog-check.sh
-
-## Usage
-
-```bash
-./scripts/trufflehog-check.sh <branch-target>
-```
-
-## Args
-
-`branch-target` the branch name you want to check.
-
-## Description
-
-Installs truffleHog in a python virtual environment and gets the hash of the latest commit in the target branch.
-Looks at all commits since the last merge into raft-tdp-main, and entropy checks on large git diffs. 
-If there are issues, they will be listed then script will abort.
-
-
-# codecov-check.sh
-  
-## Usage
-
-```bash
-./scripts/codecov-check.sh
-```
-
-## Args
-
-no args
-
-## Description
-
-Check if code cov is installed, and if it isn't, the script installs it, and checks the integrity of the binary.
-
-# copy-login-gov-keypair.sh
-
-## usage
+### Usage
 
 ```bash
 ./scripts/copy-login-gov-keypair.sh
 ```
 
-## Description
+### Arguments
 
-Copies Login.gov JWT_KEY + JWT_CERT from one Cloud.gov application to another.
+* `SOURCE_APP`: The app to copy keys from.
+  * Example: `tdp-backend-raft`
+* `DEST_APP`: The app to copy keys to.
+  * Example: `tdp-backend-qasp`
 
-## Args
+### Description
 
-`SOURCE_APP` The app to copy keys from.
-`DEST_APP` The app to copy keys to.
+Copies Login.gov JWT_KEY + JWT_CERT from one Cloud.gov application to another. This assumes that the user is already logged in to the Cloud Foundry CLI via the `cf login --sso` command. Both apps must exist within the same space.
 
-# deploy-backend.sh
+### Where it's used
 
-## description
+This script is only a convenience tool for developers, it has no direct usage in CI.
+
+
+## deploy-backend.sh
+
+### Description
 
 The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
@@ -174,17 +83,16 @@ The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_BACKEND=${2}
 
 
-# deploy-frontend.sh
+## deploy-frontend.sh
 
-## Usage
+### Usage
 
 ```
 ./scripts/deploy-frontend.sh rolling raft-review
 ```
-## Args
+### Arguments
 
 ```bash
-
 # The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
 
@@ -192,60 +100,163 @@ DEPLOY_STRATEGY=${1}
 CGHOSTNAME_FRONTEND=${2}
 ```
 
-# deploy-infrastructure-dev.sh
+## deploy-infrastructure-dev.sh
 
-## Usage
+### Usage
 
 ```
+scripts/deploy-infrastructure-dev.sh
 ```
 
-## Args
+### Arguments
 
 no args
 
-## Description
+### Description
 
 Requires installation of jq - https://stedolan.github.io/jq/download/
 
 
-# deploy-infrastructure-staging.sh
+## deploy-infrastructure-staging.sh
+### Usage
+```
+scripts/deploy-infrastructure-staging.sh
+```
 
-## Description
-
-Requires installation of jq - https://stedolan.github.io/jq/download/
-
-## Args
+### Arguments
 
 no args
 
-# localstack-setup.sh
+### Description
+Script runs our CircleCI job "deploy-infrastructure-staging" using your CloudFoundry login credentials; it expects that you had run `cf login --sso` prior. 
+Requires installation of jq - https://stedolan.github.io/jq/download/
 
 
-## Usage
 
+# "Check" scripts
+## sudo-check.sh
+### usage
 ```
-./scripts/localstack-setup.sh
+./scripts/sudo-check.sh
 ```
-Create the bucket used by the Django app
+### Arguments
+no args
+### Description
+This script installs the `sudo` command and all of its dependencies if it is not already present.
+
+## cf-checks.sh
+### usage
+```bash
+./scripts/cf-check.sh
+```
+
+### Arguments
+no args
+
+### Description
+This script installs the CloudFoundry `cf` command and all of its dependencies if it is not already present.
+
+
+## docker-check.sh
+### Usage
+```bash
+./scripts/docker-check.sh
+```
+
+### Arguments
+no args
+
+### Description
+This script installs the docker ecosytem and all of its dependencies if it is not already present. This is used by our CircleCI CI/CD pipelines.
+
+## docker-compose-check.sh
+### Usage
+```
+./scripts/docker-compose-check.sh
+```
+
+### Arguments
+no args
+
+### Description
+This script installs the `docker-compose` command and all of its dependencies if it is not already present. This is used by our CircleCI CI/CD pipelines.
+
+## git-secrets-check.sh
+### Usage
+```
+./scripts/git-secrets-check.sh
+```
+
+### Arguments
+
+no args
+
+### Description
+
+This script ensures that no secrets have been committed to the TANF repo. We leverage [Awslab's git-secrets tool](https://github.com/awslabs/git-secrets.git) to scan code to be uploaded. Developers can set up a pre-commit hook locally so this scan will run before committing/pushing by checking the README on their github repo linked earlier.
+
+
+## trufflehog-check.sh
+
+### Usage
+
+```bash
+./scripts/trufflehog-check.sh <branch-target>
+```
+
+### Arguments
+
+`branch-target` the branch name you want to check.
+
+### Description
+
+Installs truffleHog in a python virtual environment and gets the hash of the latest commit in the target branch.
+Looks at all commits since the last merge into raft-tdp-main, and entropy checks on large git diffs. 
+If there are issues, they will be listed then script will abort.
+
+
+## codecov-check.sh
+  
+### Usage
+```bash
+./scripts/codecov-check.sh
+```
+
+### Arguments
+no args
+
+### Description
+
+Check if code cov is installed, and if it isn't, the script installs it, and checks the integrity of the binary.
+
+
+
+## localstack-setup.sh
+### Usage
+```
+./scripts/localstack-setup.sh <bucket> <region>
+```
+
+### Arguments
+
+bucket : Name of the localstack bucket you want to create
+region : Name of the localstack region you want your new bucket to be placed in
+
+### Description
+Create the S3 bucket used by the Django app
 Enable object versioning on the bucket
 
-## Args
+## zap-hook.py
 
-no args
+### Usage
 
-# zap-hook.py
+This script is used in an argument passed inside of `zap-scanner.sh`. It is not used directly.
 
-
-## Usage
-
-This script is used in an argument passed inside of `zap-scanner.sh`. It is not used directly
-
-## Args
-
+### Arguments
 no args
 
 
-## description
+### Description
 
 Python hook that can be used to disable ignored rules in ZAP scans.
 This hook runs after the ZAP API has been successfully started.
@@ -258,18 +269,12 @@ allows us to ensure they never run and won't be present in the HTML report.
 https://github.com/zaproxy/zaproxy/issues/6291#issuecomment-725947370
 https://github.com/zaproxy/zaproxy/issues/5212
 
-# zap-scanner.sh
+## zap-scanner.sh
+### Usage
 
-## Usage 
-```bash
-./scripts/zap-scanner.py```
-
-## Args
+### Arguments
 
 TARGET=$1
 ENVIRONMENT=$2
 
-## Description
-
-Used to invoke zap during CI, sends path to zap-hook.py to zap command and executes scan
-on the target environment.
+### Description
