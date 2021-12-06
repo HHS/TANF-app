@@ -24,7 +24,6 @@ from .utils import (
     validate_nonce_and_state,
     response_redirect,
     generate_login_gov_client_assertion,
-    generate_ams_client_assertion,
 )
 
 logger = logging.getLogger()
@@ -293,8 +292,9 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         # First fetch the token endpoint from AMS.
         ams_configuration = LoginRedirectAMS.get_ams_configuration()
         options = {
-            "client_assertion": generate_ams_client_assertion(ams_configuration["token_endpoint"]),
-            "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE
+            "client_id": settings.AMS_CLIENT_ID,
+            "client_secret": settings.AMS_CLIENT_SECRET,
+            "scope": "openid+email",
         }
 
         token_params = generate_token_endpoint_parameters(code, options)

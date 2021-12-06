@@ -10,9 +10,6 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
-# login.gov expects unescaped '+' value for scope parameter
-AUTH_SCOPE = "scope=openid+email"
-
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -59,7 +56,9 @@ class LoginRedirectLoginDotGov(RedirectView):
         auth_endpoint = (
             settings.LOGIN_GOV_AUTHORIZATION_ENDPOINT + "?" + encoded_params
         )
-        auth_endpoint_with_scope = auth_endpoint + "&" + AUTH_SCOPE
+
+        # login.gov expects unescaped '+' value for scope parameter
+        auth_endpoint_with_scope = auth_endpoint + "&scope=openid+email"
 
         # update the user session so OIDC logout URL has token_hint
         request.session["state_nonce_tracker"] = {
@@ -124,7 +123,7 @@ class LoginRedirectAMS(RedirectView):
             configuration["authorization_endpoint"] + "?" + encoded_params
         )
 
-        auth_endpoint_with_scope = auth_endpoint + "&" + AUTH_SCOPE
+        auth_endpoint_with_scope = auth_endpoint + "&scope=openid+email"
 
         # update the user session so OIDC logout URL has token_hint
         request.session["state_nonce_tracker"] = {
