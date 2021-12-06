@@ -270,7 +270,14 @@ https://github.com/zaproxy/zaproxy/issues/6291#issuecomment-725947370
 https://github.com/zaproxy/zaproxy/issues/5212
 
 ## zap-scanner.sh
+
 ### Usage
+```bash
+./scripts/zap-scanner.py backend nightly
+./scripts/zap-scanner.py frontend nightly
+./scripts/zap-scanner.py backend circleci
+./scripts/zap-scanner.py frontend circleci
+```
 
 ### Arguments
 
@@ -278,3 +285,6 @@ TARGET=$1
 ENVIRONMENT=$2
 
 ### Description
+
+Used to invoke zap during CI, sends path to zap-hook.py to zap command and executes scan
+on the target environment.
