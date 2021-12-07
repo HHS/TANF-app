@@ -79,6 +79,24 @@ This script is only a convenience tool for developers, it has no direct usage in
 The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
 
+possible values:
++ rolling
+    deploy to a new server leaving the existing one up until the deployment has succeeded
+
++ bind
+    Bind the services the application depends on, update the environment
+    variables and restage the app.
+
++ initial
+    There is no app with this name, and the services need to be bound to it
+    for it to work. the app will fail to start once, have the services bind,
+    and then get restaged.
+
++ rebuild
+    You want to redeploy the instance under the same name
+    Delete the existing app (with out deleting the services)
+    and perform the initial deployment strategy.
+
 The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_BACKEND=${2}
 
@@ -92,13 +110,15 @@ CGHOSTNAME_BACKEND=${2}
 ```
 ### Arguments
 
-```bash
-# The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
 
-# The application name  defined via the manifest yml for the frontend
+The deployment strategy you wish to employ ( rolling update or setting up a new environment)
+
++ rolling
+    deploy to a new server leaving the existing one up until the deployment has succeeded
+
+The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_FRONTEND=${2}
-```
 
 ## deploy-infrastructure-dev.sh
 
