@@ -65,7 +65,7 @@ TDP Uses Infrastructure as Code (IaC) and DevSecOps automation
 
 ### Continuous Integration (CI)
 
-On each git push and merge, a comprehensive list of automated checks are run: Unit tests ([Jest](https://jestjs.io/), [Cypress](https://www.cypress.io/)), Integration tests (Cypress), Linting tests ([ESLint](https://eslint.org/) and [Black](https://black.readthedocs.io/en/stable/)), Accessibility tests ([Pa11y](https://pa11y.org/)), and Security Scanning ([OWASP ZAP](https://owasp.org/www-project-zap/)). The configurations for CI are kept in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml). 
+On each git push and merge, a comprehensive list of automated checks are run: Unit tests ([Jest](https://jestjs.io/)), Linting tests ([ESLint](https://eslint.org/) and [Pep8](https://pypi.org/project/pep8/)), Accessibility tests ([Pa11y](https://pa11y.org/)), and Security Scanning ([OWASP ZAP](https://owasp.org/www-project-zap/)). The configurations for CI are kept in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml). 
 
 ### Continuous Deployment
 

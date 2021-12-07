@@ -93,9 +93,9 @@ If you use [VSCode](https://code.visualstudio.com/) as an [IDE](https://en.wikip
 
 ----
 
-### Unit and Integration Testing
+### Unit and Accessibility Testing
 
-This project uses [Jest](https://jestjs.io/) for unit tests and [Cypress](https://www.cypress.io/) for end-to-end (e2e) tests.
+This project uses [Jest](https://jestjs.io/) for unit tests and [pa11y](https://pa11y.org/) for automated accessibility tests.
 
 **Unit Tests with Jest**
 
@@ -121,23 +121,6 @@ $ open coverage/lcov-report/index.html
 ```
 
 In addition to [Jest's matchers](https://jestjs.io/docs/en/expect), this project uses [enzyme-matchers](https://github.com/FormidableLabs/enzyme-matchers) to simplify tests and make them more readable. Enzyme matchers is integrated with Jest using the [`jest-enzyme` package](https://github.com/FormidableLabs/enzyme-matchers/blob/master/packages/jest-enzyme/README.md#assertions) which provides many useful assertions for testing React components.
-
-**End-to-End Tests with Cypress**
-
-It is required to run the application locally for Cypress to run, since it actually navigates to the URL and performs tests on the rendered UI.
-Cypress requires that the application is running locally in order to perform its tests, since it navigates to the URL and performs tests on the rendered UI.
-- Run the app (see docs [to run locally](#to-run-locally))
-- Open the Cypress app:
-  ```bash
-  $ yarn cy:open
-  ```
-- The Cypress Test Runner immediately displays a list of Integration Tests. Click on one to run it, or run all tests.
-- Alternatively the tests can all be run from the command line without the interactive browser window:
-  ```bash
-  $ yarn cy:run
-  ```
-
-The [Cypress guides](https://docs.cypress.io/guides/getting-started/writing-your-first-test.html#Add-a-test-file) are helpful.
 
 ----
 
