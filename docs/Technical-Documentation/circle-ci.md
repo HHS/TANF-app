@@ -64,7 +64,6 @@ These all have defaults set in their respective settings modules, but may be ove
     * Run Pa11y - automated accessibility testing
     * Run Jest - unit tests for the React frontend
     * Upload code coverage - uses Codecov
-    * Run Cypress - integration tests using Cypress to simulate the browser
     * Store Artifacts - stores Pa11y screenshots taken
 
 ### deploy-frontend
