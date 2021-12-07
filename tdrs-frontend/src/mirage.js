@@ -28,7 +28,7 @@ export default function startMirage(
       this.post('/logs/', () => {})
       this.post('/reports/', () => 'Success')
 
-      // if/when we add cypress tests, the rest of these
+      // if/when we add integration/e2e tests, the rest of these
       // routes will need some work done on them
 
       this.patch('/users/set_profile', () => {
