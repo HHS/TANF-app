@@ -104,14 +104,20 @@ possible values:
     and perform the initial deployment strategy.
 
 The application name  defined via the manifest yml for the frontend
-CGHOSTNAME_BACKEND=${2}
+APP_NAME=${2}
 
+### Description
+
+Deploy the backend to cloud.gov under the given app name, or 
+bind services and update environment variables in preperation of a new deployment.
 
 ## deploy-frontend.sh
+
 
 ### Usage
 
 ```
+./scripts/deploy-frontend.sh <strategy> <app-name>
 ./scripts/deploy-frontend.sh rolling raft-review
 ```
 ### Arguments
@@ -123,8 +129,13 @@ The deployment strategy you wish to employ ( rolling update or setting up a new 
 + rolling
     deploy to a new server leaving the existing one up until the deployment has succeeded
 
+APP_NAME=${2}
 The application name  defined via the manifest yml for the frontend
-CGHOSTNAME_FRONTEND=${2}
+
+### Description
+
+Deploy the frontend app to cloud.gov under the given app name, usually using the rolling update strategy
+
 
 ## deploy-infrastructure-dev.sh
 
