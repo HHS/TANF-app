@@ -32,7 +32,13 @@
     "coa": "2.0.2",
     "lodash": "^4.17.20",
     "node-forge": "0.10.0",
-    "ssri": "8.0.1"
+    "ssri": "8.0.1",
+    "glob-parent": "^5.1.2",
+    "ansi-regex": "^5.0.1",
+    "browserslist": "^4.16.5",
+    "immer": "^9.0.6",
+    "nth-check": "^2.0.1",
+    "json-schema": "^0.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
