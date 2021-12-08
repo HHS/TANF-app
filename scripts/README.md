@@ -147,11 +147,16 @@ scripts/deploy-infrastructure-dev.sh
 
 ### Arguments
 
-no args
+#### CF Service Keys
+
+ CF_USERNAME_DEV
+ CF_PASSWORD_DEV
 
 ### Description
 
 Requires installation of jq - https://stedolan.github.io/jq/download/
+executes circle ci job deploy-infrastructure-dev
+
 
 
 ## deploy-infrastructure-staging.sh
