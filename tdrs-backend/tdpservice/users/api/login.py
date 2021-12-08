@@ -281,12 +281,12 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         cert_str = generate_jwt_from_jwks(certs_endpoint)
         issuer = ams_configuration["issuer"]
         token_endpoint = ams_configuration["token_endpoint"]
-        audience = "ACF-SSO"
+        audience = settings.AMS_CLIENT_ID
 
         logger.info("IN decode_payload")
         # issuer: issuer of the response
-        decoded_id_token = self.decode_jwt(id_token, issuer, audience, cert_str, options)
-        decoded_access_token = self.decode_jwt(access_token, issuer, audience, cert_str, options)
+        decoded_id_token = self.decode_jwt(id_token, issuer, audience, cert_str, {"verify_aud": False})
+        decoded_access_token = self.decode_jwt(access_token, issuer, audience, cert_str, {"verify_aud": False})
         logger.info(decoded_id_token)
         logger.info(decoded_access_token)
 
