@@ -85,7 +85,7 @@ def generate_ams_client_assertion(ams_token_endpoint: str):
     Generate client assertion parameters for AMS.
     :param ams_token_endpoint: The token auth endpoint returned in the ams configuration.
     """
-    private_key = settings.AMS_CLIENT_SECRET
+    private_key = settings.JWT_KEY
 
     # We allow the JWT_KEY to be passed in as base64 encoded or as the
     # raw PEM format to support docker-compose env_file where there are

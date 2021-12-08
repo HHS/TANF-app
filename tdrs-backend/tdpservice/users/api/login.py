@@ -192,6 +192,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
 
         token_endpoint_response = self.get_token_endpoint_response(code)
+        logger.info(dir(token_endpoint_response))
+        logger.info(token_endpoint_response.text)
+        logger.info(token_endpoint_response.text)
+        logger.info(token_endpoint_response.url)
+        logger.info(token_endpoint_response.json())
 
         if token_endpoint_response.status_code != 200:
             return Response(
@@ -276,11 +281,15 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         certs_endpoint = ams_configuration["jwks_uri"]
         cert_str = generate_jwt_from_jwks(certs_endpoint)
         issuer = ams_configuration["issuer"]
-        audience = settings.AMS_CLIENT_ID
+        token_endpoint = ams_configuration["token_endpoint"]
+        audience = "ACF-SSO"
 
+        logger.info("IN decode_payload")
         # issuer: issuer of the response
         decoded_id_token = self.decode_jwt(id_token, issuer, audience, cert_str, options)
         decoded_access_token = self.decode_jwt(access_token, issuer, audience, cert_str, options)
+        logger.info(decoded_id_token)
+        logger.info(decoded_access_token)
 
         return {
             "id_token": decoded_id_token,
@@ -295,11 +304,16 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             "client_id": settings.AMS_CLIENT_ID,
             "client_secret": settings.AMS_CLIENT_SECRET,
             "scope": "openid+email",
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": settings.BASE_URL + "/oidc/ams",
         }
 
-        token_params = generate_token_endpoint_parameters(code, options)
-        token_endpoint = ams_configuration["token_endpoint"] + "?" + token_params
-        return requests.post(token_endpoint)
+        token_endpoint = ams_configuration["token_endpoint"]
+
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+        return requests.post(token_endpoint, headers=headers, data=options)
 
     def get_auth_options(self, access_token, sub):
         if access_token:
