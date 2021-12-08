@@ -53,7 +53,7 @@ The script `deploy-backend` invokes this script if the `DEPLOY_STRATEGY` is `ini
 ### Usage
 
 ```bash
-./scripts/copy-login-gov-keypair.sh
+./scripts/copy-login-gov-keypair.sh <source-app> <dest-app>
 ```
 
 ### Arguments
