@@ -7,9 +7,8 @@ from rest_framework import serializers
 from tdpservice.stts.serializers import STTPrimaryKeyRelatedField
 from tdpservice.users.models import User
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
+logger = logging.getLogger(__name__)
 
 class PermissionSerializer(serializers.ModelSerializer):
     """Permission serializer."""

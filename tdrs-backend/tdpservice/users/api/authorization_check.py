@@ -1,6 +1,6 @@
 """Check if user is authorized."""
-import logging
 
+import logging
 from django.contrib.auth import logout
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,9 +9,8 @@ from django.middleware import csrf
 from django.utils import timezone
 from ..serializers import UserProfileSerializer
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
+logger = logging.getLogger(__name__)
 
 class AuthorizationCheck(APIView):
     """Check if user is authorized."""
