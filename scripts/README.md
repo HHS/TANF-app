@@ -74,7 +74,13 @@ This script is only a convenience tool for developers, it has no direct usage in
 
 ## deploy-backend.sh
 
-### Description
+### Usage
+
+```
+./scripts/deploy-backend.sh <strategy> <app-name>
+./scripts/deploy-backend.sh rolling raft-review
+```
+### Arguments
 
 The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
