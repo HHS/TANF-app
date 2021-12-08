@@ -26,8 +26,7 @@ from .utils import (
     generate_login_gov_client_assertion,
 )
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class InactiveUser(Exception):
