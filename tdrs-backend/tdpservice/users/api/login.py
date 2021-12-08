@@ -105,7 +105,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         if "token" not in request.session:
             request.session["token"] = id_token
         decoded_id_token = decoded_token_data["id_token"]
-        decoded_access_token = decoded_token_data.get("access_token")
+        decoded_access_token = decoded_token_data.get("decoded_access_token")
+        access_token = decoded_token_data.get("access_token")
 
         # Authenticate login.gov users with the unique "subject" `sub`
         # UUID from the id_token payload.
@@ -132,7 +133,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 self.login_user(request, initial_user, "User Found")
                 return initial_user
 
-        auth_options = self.get_auth_options(access_token=decoded_access_token, sub=sub)
+        auth_options = self.get_auth_options(access_token=access_token, sub=sub)
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
@@ -292,7 +293,8 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
         return {
             "id_token": decoded_id_token,
-            "access_token": decoded_access_token
+            "access_token": access_token,
+            "decoded_access_token": decoded_access_token
         }
 
     def get_token_endpoint_response(self, code):
@@ -302,7 +304,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         options = {
             "client_id": settings.AMS_CLIENT_ID,
             "client_secret": settings.AMS_CLIENT_SECRET,
-            "scope": "openid+email",
+            "scope": "openid+email+profile",
             "code": code,
             "grant_type": "authorization_code",
             "redirect_uri": settings.BASE_URL + "/oidc/ams",
@@ -315,7 +317,11 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         return requests.post(token_endpoint, headers=headers, data=options)
 
     def get_auth_options(self, access_token, sub):
+        logger.info("get_auth_options")
+        logger.info(access_token)
         if access_token:
+            logger.info("IN USER INFO")
+            logger.info(access_token)
             auth_options = {}
             # Fetch userinfo endpoint for AMS to authenticate against hhsid, or
             # other user claims.
@@ -323,5 +329,8 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             userinfo_response = requests.post(ams_configuration["userinfo_endpoint"],
                                               {"access_token": access_token})
             user_info = userinfo_response.json()
-            auth_options["hhs_id"] = user_info["hhs_id"]
+            logger.info(user_info)
+            logger.info("user_info response ^")
+            # TODO hhs_id in User model??
+            auth_options["username"] = user_info["email"]
             return auth_options
