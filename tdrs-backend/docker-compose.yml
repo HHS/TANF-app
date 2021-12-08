@@ -62,6 +62,7 @@ services:
       - JWT_CERT_TEST
       - JWT_KEY
       - USE_LOCALSTACK
+      - LOGGING_LEVEL
     volumes:
       - .:/tdpapp
     image: tdp
