@@ -3,7 +3,6 @@ import logging
 
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
-from django.views.generic.base import TemplateView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,12 +10,6 @@ from rest_framework.response import Response
 from tdpservice.data_files.models import DataFile
 
 logger = logging.getLogger()
-
-
-class IndexView(TemplateView):
-    """An empty template for the app root."""
-
-    template_name = 'index.html'
 
 
 @api_view(['POST'])

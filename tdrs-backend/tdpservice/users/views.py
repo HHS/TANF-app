@@ -5,6 +5,7 @@ from django.contrib.auth.models import Group
 from django.utils import timezone
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from tdpservice.users.models import User
@@ -28,7 +29,7 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
-    permission_classes = [UserPermissions]
+    permission_classes = [IsAuthenticated, UserPermissions]
     queryset = User.objects\
         .select_related("stt")\
         .prefetch_related("groups__permissions")
