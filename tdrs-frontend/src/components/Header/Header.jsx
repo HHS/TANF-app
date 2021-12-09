@@ -99,9 +99,11 @@ function HeaderComp() {
               </a>
             </em>
           </div>
-          <button type="button" className="usa-menu-btn">
-            Menu
-          </button>
+          {authenticated && (
+            <button type="button" className="usa-menu-btn">
+              Menu
+            </button>
+          )}
         </div>
         <nav
           ref={menuRef}
