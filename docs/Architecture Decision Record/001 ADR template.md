@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-We need to record the architectural decisions made on this project.
+We need to record the architectural decisions made on this project. This context section should include the history and driving reason(s) on why a decision needed to be made.
 
 ## Decision
 
