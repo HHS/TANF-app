@@ -22,7 +22,7 @@ While this will require more scheduling and adds process, ultimately, we have se
 
 As the author of the pull request, schedule a 15-minute meeting and invite the full dev team, including Alex. If there is a specific stakeholder not typically included, bring them in as well. We want to keep these meetings, small, focused, and technical. If someone of the dev team has a conflict or would prefer to stay focused on their current tasking, their attendance can be optional.
 
-## When should I schedule them? 
+### When should I schedule them? 
 
 At a minimum, I'd prefer to wait 2 business days after the PR has been opened to give the reviewers adequate async time to "do their homework". If there is a lot of activity in the PR or changes are needed, it is advised to delay that time table. These "tabletop" reviews should be scheduled when you feel the pull request is ready for the transition to QASP review OR if async Raft review has brought up either an important issue or a multitude you'd like to address in real-time. These are one-off ad hoc meetings so they should be scheduled as is convenient and while the code is fresh in everyone's minds. 
 
