@@ -23,7 +23,7 @@ from .utils import (
     generate_jwt_from_jwks,
     validate_nonce_and_state,
     response_redirect,
-    generate_login_gov_client_assertion,
+    generate_client_assertion,
 )
 
 logger = logging.getLogger(__name__)

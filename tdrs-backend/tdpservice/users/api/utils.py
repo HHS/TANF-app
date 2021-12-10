@@ -46,7 +46,7 @@ Generate the client_assertion parameter needed by the login.gov/token endpoint
 """
 
 
-def generate_login_gov_client_assertion():
+def generate_client_assertion():
     """
     Generate client assertion parameters for login.gov.
     """

@@ -141,14 +141,14 @@ def test_logout(api_client, user):
 @pytest.mark.django_db
 def test_login_without_code(api_client):
     """Test login redirects without code."""
-    response = api_client.get("/v1/login", {"state": "dummy"})
+    response = api_client.get("/v1/login/", {"state": "dummy"})
     assert response.status_code == status.HTTP_302_FOUND
 
 
 @pytest.mark.django_db
 def test_login_fails_without_state(api_client):
     """Test login redirects without state."""
-    response = api_client.get("/v1/login", {"code": "dummy"})
+    response = api_client.get("/v1/login/", {"code": "dummy"})
     assert response.status_code == status.HTTP_302_FOUND
 
 
