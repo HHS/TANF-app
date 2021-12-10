@@ -76,8 +76,13 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         decoded_payload = self.decode_payload(token_data)
         decoded_id_token = decoded_payload['id_token']
 
+        logger.info("decoded_payload")
+        logger.info(decoded_payload)
+
         if decoded_id_token == {"error": "The token is expired."}:
-            return Response(decoded_id_token, status=status.HTTP_401_UNAUTHORIZED)
+            raise InactiveUser(
+                f'The token is expired.'
+            )
 
         # get the validation keys to confirm generated nonce and state
         nonce_and_state = get_nonce_and_state(request.session)
@@ -104,7 +109,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # get user from database if they exist. if not, create a new one
         if "token" not in request.session:
             request.session["token"] = id_token
-        decoded_id_token = decoded_token_data["id_token"]
+        decoded_id_token = decoded_token_data.get("id_token")
         decoded_access_token = decoded_token_data.get("decoded_access_token")
         access_token = decoded_token_data.get("access_token")
 
@@ -192,11 +197,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
 
         token_endpoint_response = self.get_token_endpoint_response(code)
-        logger.info(dir(token_endpoint_response))
-        logger.info(token_endpoint_response.text)
-        logger.info(token_endpoint_response.text)
-        logger.info(token_endpoint_response.url)
-        logger.info(token_endpoint_response.json())
+        # logger.info(dir(token_endpoint_response))
+        # logger.info(token_endpoint_response.text)
+        # logger.info(token_endpoint_response.text)
+        # logger.info(token_endpoint_response.url)
+        # logger.info(token_endpoint_response.json())
 
         if token_endpoint_response.status_code != 200:
             return Response(
@@ -213,12 +218,14 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         logger.info(token_data)
         logger.info("token_data")
         id_token = token_data.get("id_token")
-        logger.info(id_token)
-        logger.info("id_token")
-        decoded_token_data = self.validate_and_decode_payload(request, token_data, state)
-        logger.info("decoded_token_data")
-        logger.info(decoded_token_data)
+
         try:
+            decoded_token_data = self.validate_and_decode_payload(request, token_data, state)
+            logger.info("decoded_token_data")
+            logger.info(decoded_token_data)
+
+            logger.info(id_token)
+            logger.info("id_token")
             user = self.handle_user(request, id_token, decoded_token_data)
             return response_redirect(user, id_token)
 
@@ -259,7 +266,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
     def get_token_endpoint_response(self, code):
         """Build out the query string params and full URL path for token endpoint."""
         options = {
-            "client_assertion": generate_login_gov_client_assertion(),
+            "client_assertion": generate_client_assertion(),
             "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE
         }
         token_params = generate_token_endpoint_parameters(code, options)

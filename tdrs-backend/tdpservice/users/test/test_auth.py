@@ -12,7 +12,7 @@ import jwt
 import pytest
 
 from tdpservice.settings.common import get_required_env_var_setting
-from tdpservice.users.api.login import TokenAuthorizationOIDC
+from tdpservice.users.api.login import TokenAuthorizationLoginDotGov
 from tdpservice.users.api.logout_redirect_oidc import LogoutRedirectOIDC
 from tdpservice.users.api.utils import (
     generate_client_assertion,
@@ -241,7 +241,7 @@ class TestLogin:
         """Test login with state and code."""
         request = req_factory
         request = create_session(request, states_factory)
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
@@ -253,7 +253,7 @@ class TestLogin:
         req_factory
     ):
         """Login should proceed when token already exists."""
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         request = req_factory
         request.session["token"] = "testtoken"
         request = create_session(request, states_factory)
@@ -270,7 +270,7 @@ class TestLogin:
         """Test login with state and code."""
         states = states_factory
         request = req_factory
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
 
         # A custom session will throw a general exception
         request.session = {}
@@ -309,7 +309,7 @@ class TestLogin:
             states_factory['nonce'],
             sub=inactive_user.login_gov_uuid
         )
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         request = create_session(request, states_factory)
         response = view(request)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -332,7 +332,7 @@ class TestLogin:
 
         user.username = "test_existing@example.com"
         user.save()
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         mock_post, mock_decode = mock
         mock_decode.return_value = decoded_token(
             "test_existing@example.com",
@@ -357,7 +357,7 @@ class TestLogin:
         states = states_factory
         request = req_factory
         request = create_session(request, states_factory)
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         mock_post, mock_decode = mock
         mock_decode.return_value = decoded_token(
             "test_new_email@example.com",
@@ -390,7 +390,7 @@ class TestLogin:
         request = create_session(request, states_factory)
         mock_post, mock_decode = mock
         mock_decode.return_value = decoded_token(test_username, states["nonce"])
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         response = view(request)
 
         user = User.objects.get(username=test_username)
@@ -410,7 +410,7 @@ class TestLogin:
         mock_post, mock_decode = mock
         mock_decode.side_effect = jwt.ExpiredSignatureError()
 
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.data == {"error": "The token is expired."}
@@ -429,7 +429,7 @@ class TestLogin:
         mock_post.return_value = MockRequest(
             data={}, status_code=status.HTTP_400_BAD_REQUEST
         )
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data == {
@@ -447,7 +447,7 @@ class TestLogin:
         request = req_factory
         request = create_session(request, states_factory)
         mock_post, mock_decode = mock
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         request.session["state_nonce_tracker"] = {
             "nonce": "badnonce",
             "state": "badstate",
@@ -473,7 +473,7 @@ class TestLogin:
             states['nonce'],
             email_verified=False
         )
-        view = TokenAuthorizationOIDC.as_view()
+        view = TokenAuthorizationLoginDotGov.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data == {"error": "Unverified email!"}
@@ -555,7 +555,7 @@ def test_generate_token_endpoint_parameters(patch_login_gov_jwt_key):
 
 def test_token_auth_decode_payload(mock_token):
     """Test ID token decoding functionality."""
-    decoded_token = TokenAuthorizationOIDC.decode_payload(
+    decoded_token = TokenAuthorizationLoginDotGov.decode_payload(
         mock_token,
         MockRequest(),
         # Since these tokens are short lived our MOCK_TOKEN used for tests
