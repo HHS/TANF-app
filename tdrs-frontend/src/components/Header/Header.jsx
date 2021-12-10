@@ -24,51 +24,39 @@ function HeaderComp() {
 
   const menuRef = useRef()
 
+  let tabIndex = 0
   const handleTabKey = (e) => {
+    e.preventDefault()
+    console.log(document.activeElement)
     if (menuRef.current.classList.contains('is-visible')) {
-      e.preventDefault()
       const focusableMenuElements = [
         ...menuRef.current.querySelectorAll('button'),
         ...menuRef.current.querySelectorAll('a'),
       ]
 
-      console.log(focusableMenuElements)
-
       const firstElement = focusableMenuElements[0]
       const lastIndex = focusableMenuElements.length - 1
       const lastElement = focusableMenuElements[lastIndex]
 
-      let tabIndex
-      console.log(document.activeElement)
-
       if (focusableMenuElements.includes(document.activeElement)) {
-        tabIndex =
-          focusableMenuElements.findIndex(
-            (e) => document.activeElement === e
-          ) || 0
-        console.log('starting with', tabIndex, focusableMenuElements[tabIndex])
         if (!e.shiftKey && tabIndex >= lastIndex) {
-          console.log('return to first element')
           tabIndex = 0
         } else if (e.shiftKey && tabIndex === 0) {
-          console.log('return to last element')
           tabIndex = lastIndex
         } else if (e.shiftKey) {
-          console.log('move back one')
           tabIndex -= 1
         } else {
-          console.log('move forward one')
           tabIndex += 1
         }
       } else {
-        console.log('refocus to close')
         tabIndex = 0
       }
-      console.log('ending on index', tabIndex, focusableMenuElements[tabIndex])
+
       focusableMenuElements[tabIndex].focus()
+      console.log('ending on index', tabIndex, focusableMenuElements[tabIndex])
     }
 
-    return null
+    return false
   }
 
   const keyListenersMap = new Map([[9, handleTabKey]])
