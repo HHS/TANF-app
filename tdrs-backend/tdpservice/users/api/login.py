@@ -71,38 +71,16 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def get_auth_options(self, access_token: Optional[str], sub: Optional[str]) -> Dict[str, str]:
         """Set auth options to handle payloads appropriately."""
 
-    def validate_and_decode_payload(self, request, token_data, state):
-        """Validate and decode a jwt payload based on its origin, nonce, and state."""
-        decoded_payload = self.decode_payload(token_data)
-        decoded_id_token = decoded_payload['id_token']
+    # def validate_and_decode_payload(self, request, token_data, state):
+    #     """Validate and decode a jwt payload based on its origin, nonce, and state."""
+    #     decoded_payload = self.decode_payload(token_data)
+    #     decoded_id_token = decoded_payload['id_token']
 
-        logger.info("decoded_payload")
-        logger.info(decoded_payload)
+    #     logger.info("decoded_payload")
+    #     logger.info(decoded_payload)
 
-        if decoded_id_token == {"error": "The token is expired."}:
-            raise InactiveUser(
-                f'The token is expired.'
-            )
 
-        # get the validation keys to confirm generated nonce and state
-        nonce_and_state = get_nonce_and_state(request.session)
-        nonce_validator = nonce_and_state.get("nonce", "not_nonce")
-        state_validator = nonce_and_state.get("state", "not_state")
-
-        decoded_nonce = decoded_id_token["nonce"]
-
-        if not validate_nonce_and_state(
-            decoded_nonce, state, nonce_validator, state_validator
-        ):
-            msg = "Could not validate nonce and state"
-            raise SuspiciousOperation(msg)
-
-        if not decoded_id_token["email_verified"]:
-            return Response(
-                {"error": "Unverified email!"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        return decoded_payload
+    #     return decoded_payload
 
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
@@ -188,6 +166,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         logger.info(request)
 
+        logger.debug("code")
+        logger.debug("state")
+
+        logger.debug(code)
+        logger.debug(state)
+
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
@@ -203,6 +187,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # logger.info(token_endpoint_response.url)
         # logger.info(token_endpoint_response.json())
 
+        logger.info("token_endpoint_response.status_code")
+        logger.info(token_endpoint_response.status_code)
         if token_endpoint_response.status_code != 200:
             return Response(
                 {
@@ -219,14 +205,41 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         logger.info("token_data")
         id_token = token_data.get("id_token")
 
-        try:
-            decoded_token_data = self.validate_and_decode_payload(request, token_data, state)
-            logger.info("decoded_token_data")
-            logger.info(decoded_token_data)
+        decoded_payload = self.decode_payload(token_data)
+        decoded_id_token = decoded_payload['id_token']
 
-            logger.info(id_token)
-            logger.info("id_token")
-            user = self.handle_user(request, id_token, decoded_token_data)
+        if decoded_id_token == {"error": "The token is expired."}:
+            return Response(
+                {
+                    "error": "The token is expired."
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # get the validation keys to confirm generated nonce and state
+        nonce_and_state = get_nonce_and_state(request.session)
+        nonce_validator = nonce_and_state.get("nonce", "not_nonce")
+        state_validator = nonce_and_state.get("state", "not_state")
+
+        decoded_nonce = decoded_id_token["nonce"]
+
+        if not validate_nonce_and_state(
+            decoded_nonce, state, nonce_validator, state_validator
+        ):
+            msg = "Could not validate nonce and state"
+            raise SuspiciousOperation(msg)
+
+        if not decoded_id_token["email_verified"]:
+            return Response(
+                {"error": "Unverified email!"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        logger.info("decoded_token_data")
+        logger.info(decoded_payload)
+
+        logger.info(id_token)
+        logger.info("id_token")
+        try:
+            user = self.handle_user(request, id_token, decoded_payload)
             return response_redirect(user, id_token)
 
         except InactiveUser as e:

@@ -90,9 +90,9 @@ def test_get_non_user(user):
     assert nonuser is None
 
 
-def test_oidc_auth(api_client):
+def test_logindotgov_auth(api_client):
     """Test login url redirects."""
-    response = api_client.get("/v1/login/oidc")
+    response = api_client.get("/v1/login/dotgov")
     assert response.status_code == status.HTTP_302_FOUND
 
 
@@ -482,7 +482,7 @@ class TestLogin:
 @pytest.mark.django_db
 def test_login_fails_with_bad_data(api_client):
     """Test login fails with bad data."""
-    response = api_client.get("/v1/login", {"code": "dummy", "state": "dummy"})
+    response = api_client.get("/v1/login/", {"code": "dummy", "state": "dummy"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -507,7 +507,7 @@ def test_generate_jwt_from_jwks(mocker):
         "kid": "Public key used in JWS spec Appendix A.3 example",
     }
     mock_get.return_value = MockRequest(data={"keys": [jwk]})
-    assert generate_jwt_from_jwks() is not None
+    assert generate_jwt_from_jwks("/v1/login") is not None
 
 
 @pytest.mark.django_db
@@ -546,7 +546,7 @@ def test_generate_token_endpoint_parameters(patch_login_gov_jwt_key):
         "client_assertion": generate_client_assertion(),
         "client_assertion_type": "sometype"
     }
-    login_gov_token_params = generate_token_endpoint_parameters("test_code", **options)
+    login_gov_token_params = generate_token_endpoint_parameters("test_code", options)
     assert "code=test_code" in login_gov_token_params
     assert "client_assertion" in login_gov_token_params
     assert "client_assertion_type" in login_gov_token_params
@@ -555,9 +555,9 @@ def test_generate_token_endpoint_parameters(patch_login_gov_jwt_key):
 
 def test_token_auth_decode_payload(mock_token):
     """Test ID token decoding functionality."""
-    decoded_token = TokenAuthorizationLoginDotGov.decode_payload(
+    decoded_token = TokenAuthorizationLoginDotGov.decode_jwt(
         mock_token,
-        MockRequest(),
+        "","","",
         # Since these tokens are short lived our MOCK_TOKEN used for tests
         # is expired and would need to be refreshed on each test run, to work
         # around that we will disable signature verification for this test.

@@ -83,7 +83,7 @@ Generate a token to be passed to the login.gov/token endpoint
 """
 
 
-def generate_token_endpoint_parameters(code, options=None):
+def generate_token_endpoint_parameters(code, options={}):
     """Generate token parameters."""
     params = {
         "code": code,
