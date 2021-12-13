@@ -26,8 +26,9 @@ function HeaderComp() {
 
   let tabIndex = 0
   const handleTabKey = (e) => {
+
     e.preventDefault()
-    console.log(document.activeElement)
+    /* istanbul ignore if */
     if (menuRef.current.classList.contains('is-visible')) {
       const focusableMenuElements = [
         ...menuRef.current.querySelectorAll('button'),
@@ -53,7 +54,6 @@ function HeaderComp() {
       }
 
       focusableMenuElements[tabIndex].focus()
-      console.log('ending on index', tabIndex, focusableMenuElements[tabIndex])
     }
 
     return false
