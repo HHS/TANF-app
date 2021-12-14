@@ -261,13 +261,23 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
 
     def get_token_endpoint_response(self, code):
         """Build out the query string params and full URL path for token endpoint."""
-        options = {
-            "client_assertion": generate_client_assertion(),
-            "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE
-        }
-        token_params = generate_token_endpoint_parameters(code, options)
-        token_endpoint = settings.LOGIN_GOV_TOKEN_ENDPOINT + "?" + token_params
-        return requests.post(token_endpoint)
+        try:
+            options = {
+                "client_assertion": generate_client_assertion(),
+                "client_assertion_type": settings.LOGIN_GOV_CLIENT_ASSERTION_TYPE
+            }
+            token_params = generate_token_endpoint_parameters(code, options)
+            token_endpoint = settings.LOGIN_GOV_TOKEN_ENDPOINT + "?" + token_params
+            return requests.post(token_endpoint)
+
+        except ValueError as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def get_auth_options(self, access_token, sub):
         """Add specific auth properties for the CustomAuthentication handler."""
