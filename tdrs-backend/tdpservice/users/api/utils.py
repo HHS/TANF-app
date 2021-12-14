@@ -47,9 +47,7 @@ Generate the client_assertion parameter needed by the login.gov/token endpoint
 
 
 def generate_client_assertion():
-    """
-    Generate client assertion parameters for login.gov.
-    """
+    """Generate client assertion parameters for login.gov."""
     private_key = settings.LOGIN_GOV_JWT_KEY
 
     # We allow the JWT_KEY to be passed in as base64 encoded or as the

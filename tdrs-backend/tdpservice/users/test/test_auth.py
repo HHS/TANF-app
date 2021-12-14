@@ -557,7 +557,9 @@ def test_token_auth_decode_payload(mock_token):
     """Test ID token decoding functionality."""
     decoded_token = TokenAuthorizationLoginDotGov.decode_jwt(
         mock_token,
-        "","","",
+        "",
+        "",
+        "",
         # Since these tokens are short lived our MOCK_TOKEN used for tests
         # is expired and would need to be refreshed on each test run, to work
         # around that we will disable signature verification for this test.

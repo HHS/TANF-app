@@ -36,7 +36,7 @@ class InactiveUser(Exception):
 
 
 class TokenAuthorizationOIDC(ObtainAuthToken):
-    """Define methods for handling login request from login.gov."""
+    """Define abstract methods for handling OIDC login requests."""
 
     @abstractmethod
     def decode_payload(self, token_data, options=None):
@@ -48,7 +48,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     @staticmethod
     def decode_jwt(payload, issuer, audience, cert_sr, options=None):
-        """Generic jwt decoder method."""
+        """Decode jwt payloads."""
         if not options:
             options = {'verify_nbf': False}
 
@@ -79,16 +79,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     #     logger.info("decoded_payload")
     #     logger.info(decoded_payload)
 
-
-    #     return decoded_payload
-
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
         # get user from database if they exist. if not, create a new one
         if "token" not in request.session:
             request.session["token"] = id_token
         decoded_id_token = decoded_token_data.get("id_token")
-        decoded_access_token = decoded_token_data.get("decoded_access_token")
         access_token = decoded_token_data.get("access_token")
 
         # Authenticate login.gov users with the unique "subject" `sub`
@@ -165,12 +161,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         state = request.GET.get("state", None)
 
         logger.info(request)
-
-        logger.debug("code")
-        logger.debug("state")
-
-        logger.debug(code)
-        logger.debug(state)
+        logger.info(code)
+        logger.info(state)
 
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
@@ -181,11 +173,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
 
         token_endpoint_response = self.get_token_endpoint_response(code)
-        # logger.info(dir(token_endpoint_response))
-        # logger.info(token_endpoint_response.text)
-        # logger.info(token_endpoint_response.text)
-        # logger.info(token_endpoint_response.url)
-        # logger.info(token_endpoint_response.json())
 
         logger.info("token_endpoint_response.status_code")
         logger.info(token_endpoint_response.status_code)
@@ -201,8 +188,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             )
 
         token_data = token_endpoint_response.json()
-        logger.info(token_data)
-        logger.info("token_data")
         id_token = token_data.get("id_token")
 
         decoded_payload = self.decode_payload(token_data)
@@ -233,11 +218,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             return Response(
                 {"error": "Unverified email!"}, status=status.HTTP_400_BAD_REQUEST
             )
-        logger.info("decoded_token_data")
-        logger.info(decoded_payload)
 
-        logger.info(id_token)
-        logger.info("id_token")
         try:
             user = self.handle_user(request, id_token, decoded_payload)
             return response_redirect(user, id_token)
@@ -265,6 +246,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
 
 class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
+    """Define methods for handling login request from login.gov."""
+
     def decode_payload(self, token_data, options=None):
         """Decode the payload with keys for login.gov."""
         id_token = token_data.get("id_token")
@@ -287,11 +270,14 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         return requests.post(token_endpoint)
 
     def get_auth_options(self, access_token, sub):
+        """Add specific auth properties for the CustomAuthentication handler."""
         auth_options = {"login_gov_uuid": sub}
         return auth_options
 
 
 class TokenAuthorizationAMS(TokenAuthorizationOIDC):
+    """Define methods for handling login request from HHS AMS."""
+
     def decode_payload(self, token_data, options=None):
         """Decode the payload with keys for AMS."""
         id_token = token_data.get("id_token")
@@ -301,15 +287,10 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         certs_endpoint = ams_configuration["jwks_uri"]
         cert_str = generate_jwt_from_jwks(certs_endpoint)
         issuer = ams_configuration["issuer"]
-        token_endpoint = ams_configuration["token_endpoint"]
         audience = settings.AMS_CLIENT_ID
 
-        logger.info("IN decode_payload")
-        # issuer: issuer of the response
         decoded_id_token = self.decode_jwt(id_token, issuer, audience, cert_str, {"verify_aud": False})
         decoded_access_token = self.decode_jwt(access_token, issuer, audience, cert_str, {"verify_aud": False})
-        logger.info(decoded_id_token)
-        logger.info(decoded_access_token)
 
         return {
             "id_token": decoded_id_token,
@@ -337,11 +318,9 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         return requests.post(token_endpoint, headers=headers, data=options)
 
     def get_auth_options(self, access_token, sub):
-        logger.info("get_auth_options")
+        """Add specific auth properties for the CustomAuthentication handler."""
         logger.info(access_token)
         if access_token:
-            logger.info("IN USER INFO")
-            logger.info(access_token)
             auth_options = {}
             # Fetch userinfo endpoint for AMS to authenticate against hhsid, or
             # other user claims.
@@ -350,7 +329,6 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
                                               {"access_token": access_token})
             user_info = userinfo_response.json()
             logger.info(user_info)
-            logger.info("user_info response ^")
-            # TODO hhs_id in User model??
+            # TODO Use `hhs_id` as primary authentication key
             auth_options["username"] = user_info["email"]
             return auth_options
