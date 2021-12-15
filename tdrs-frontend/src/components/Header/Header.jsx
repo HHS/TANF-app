@@ -25,6 +25,7 @@ function HeaderComp() {
   const menuRef = useRef()
 
   let tabIndex = 0
+  /* istanbul ignore next  */
   const handleTabKey = (e) => {
 
     e.preventDefault()
@@ -61,6 +62,7 @@ function HeaderComp() {
 
   const keyListenersMap = new Map([[9, handleTabKey]])
 
+  /* istanbul ignore next  */
   useEffect(() => {
     function keyListener(e) {
       const listener = keyListenersMap.get(e.keyCode)
