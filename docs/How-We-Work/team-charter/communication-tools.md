@@ -31,3 +31,19 @@
       - Submitted (QASP Review or OCIO Review)
       - Moving to next sprint (Raft Review, In progress, Current Sprint Backlog)  
 
+## Using Github plugin for Mattermost
+
+- Assuming you are logged into Mattermost, run the following command in any channel or private message (it will only be visible to you):
+```
+/github connect
+```
+![](https://i.imgur.com/LDqXEWs.jpg)
+
+- This will prompt the Github bot to send you a link to click on to authorize Github.
+- ![](https://i.imgur.com/h8vMY1G.jpg)
+
+- After authorizing, you will have a private channel as well as this icon summary view like seen here:
+- ![](https://i.imgur.com/VV1cTzw.png)
+
+- You can expect a daily message at 9am (configurable) to detail your work:
+- ![](https://i.imgur.com/41LNFtU.png)
