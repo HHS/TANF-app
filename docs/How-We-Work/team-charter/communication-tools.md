@@ -37,13 +37,13 @@
 ```
 /github connect
 ```
-![](https://i.imgur.com/LDqXEWs.jpg)
+![GM1](https://user-images.githubusercontent.com/84722778/146232950-1a310996-5e64-482d-b09a-0103021afb8b.JPG)
 
 - This will prompt the Github bot to send you a link to click on to authorize Github.
-- ![](https://i.imgur.com/h8vMY1G.jpg)
+![GM2](https://user-images.githubusercontent.com/84722778/146232963-c1626705-95f9-4efd-ab65-de47aa4f5648.JPG)
 
 - After authorizing, you will have a private channel as well as this icon summary view like seen here:
-- ![](https://i.imgur.com/VV1cTzw.png)
+![GM3](https://user-images.githubusercontent.com/84722778/146232971-93110e31-8e76-4e7c-9c49-8c1b90c858b2.png)
 
 - You can expect a daily message at 9am (configurable) to detail your work:
-- ![](https://i.imgur.com/41LNFtU.png)
+![GM4](https://user-images.githubusercontent.com/84722778/146232982-41f2bfbb-bdaf-4ccf-8c74-254bcfab2927.png)
