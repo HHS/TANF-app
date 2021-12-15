@@ -1,6 +1,6 @@
 
 # Stage 0: Create the app directory, install dependencies, and copy in the source code
-FROM node:12.18-alpine3.12 AS localdev
+FROM node:16.13-alpine3.14 AS localdev
 
 USER node
 
