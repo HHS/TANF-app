@@ -202,6 +202,7 @@ no args
 This script installs the `sudo` command and all of its dependencies if it is not already present.
 
 ### Where it's used
+sudo-check.sh is used in the sudo-check [CircleCI command](../.circleci/config.yml#L85)
 ---
 </details>
 
@@ -222,7 +223,7 @@ no args
 This script installs the CloudFoundry `cf` command and all of its dependencies if it is not already present.
 
 ### Where it's used 
-    
+cf-check.sh is used in the [CircleCI command cf-check](../.circleci/config.yml#L22)
 </details>
 
 ## docker-check.sh
@@ -244,7 +245,7 @@ no args
 This script installs the docker ecosytem and all of its dependencies if it is not already present. This is used by our CircleCI CI/CD pipelines.
 
 ### Where it's used 
-    
+docker-check.sh does not appear to be used in automation.
 </details>
     
 ## docker-compose-check.sh
@@ -265,7 +266,7 @@ no args
 ### Description
 This script installs the `docker-compose` command and all of its dependencies if it is not already present. This is used by our CircleCI CI/CD pipelines.
 ### Where it's used 
-    
+docker-compose-check.sh is used in the [CircleCI config docker-compose-check command](../.circleci/config.yml#L28).
 </details>
 
 ## git-secrets-check.sh
@@ -287,7 +288,7 @@ no args
 This script ensures that no secrets have been committed to the TANF repo. We leverage [Awslab's git-secrets tool](https://github.com/awslabs/git-secrets.git) to scan code to be uploaded. Developers can set up a pre-commit hook locally so this scan will run before committing/pushing by checking the README on their github repo linked earlier.
 
 ### Where it's used 
-    
+git-secrets-check.sh is used in the [secrets-check command](../.circleci/config.yml#L329).
 </details>
 
 ## trufflehog-check.sh
@@ -312,7 +313,7 @@ Looks at all commits since the last merge into raft-tdp-main, and entropy checks
 If there are issues, they will be listed then script will abort.
 
 ### Where it's used 
-    
+trufflehog-check.sh is also used in the [secrets-check command](../.circleci/config.yml#L329).
 </details>
 
 ## codecov-check.sh
@@ -334,7 +335,7 @@ no args
 Check if code cov is installed, and if it isn't, the script installs it, and checks the integrity of the binary.
 
 ### Where it's used 
-    
+codecov-check.sh is used in CircleCI 'codecov-upload" [job](../.circleci/config.yml#L91).
 </details>
 
 ## localstack-setup.sh
