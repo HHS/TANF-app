@@ -90,8 +90,16 @@ def test_get_non_user(user):
     assert nonuser is None
 
 
-def test_logindotgov_auth(api_client):
-    """Test login url redirects."""
+def test_login_ams_auth(api_client, requests_mock, settings):
+    """Test HHS AMS login url redirects."""
+    requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json={"authorization_endpoint": "/openid-connect/auth"})
+    response = api_client.get("/v1/login/ams")
+    assert response.status_code == status.HTTP_302_FOUND
+
+
+# @pytest.mark.parametrize("login_path", ["/v1/login/dotgov", "/v1/login/ams"])
+def test_login_gov_redirect(api_client):
+    """Test login.gov login url redirects."""
     response = api_client.get("/v1/login/dotgov")
     assert response.status_code == status.HTTP_302_FOUND
 
