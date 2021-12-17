@@ -90,11 +90,28 @@ def test_get_non_user(user):
     assert nonuser is None
 
 
-def test_login_ams_auth(api_client, requests_mock, settings):
-    """Test HHS AMS login url redirects."""
-    requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json={"authorization_endpoint": "/openid-connect/auth"})
-    response = api_client.get("/v1/login/ams")
-    assert response.status_code == status.HTTP_302_FOUND
+class TestLoginAMS:
+
+    @pytest.fixture(autouse=True)
+    def mock_ams_configuration(self, requests_mock, settings):
+        requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json={"authorization_endpoint": "/openid-connect/auth",
+                                                                     "end_session_endpoint": "/openid-connect/logout"})
+
+    def test_login_ams_auth(self, settings, api_client):
+        """Test HHS AMS login url redirects."""
+        response = api_client.get("/v1/login/ams")
+        assert response.status_code == status.HTTP_302_FOUND
+
+    def test_oidc_logout_with_token_and_hhs_handler(self, api_client):
+        """Test logout redirect with token present."""
+        factory = APIRequestFactory()
+        view = LogoutRedirectOIDC.as_view()
+        request = factory.get("/v1/logout/oidc")
+        request.session = api_client.session
+        request.session["token"] = "testtoken"
+        request.session["ams"] = True
+        response = view(request)
+        assert response.status_code == status.HTTP_302_FOUND
 
 
 # @pytest.mark.parametrize("login_path", ["/v1/login/dotgov", "/v1/login/ams"])
