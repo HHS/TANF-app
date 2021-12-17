@@ -102,7 +102,8 @@ This script is only a convenience tool for developers, it has no direct usage in
 ```
 ### Arguments
 
-The deployment strategy you wish to employ ( rolling update or setting up a new environment)
+```bash
+# The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
 
 possible values:
@@ -127,9 +128,11 @@ The application name  defined via the manifest yml for the frontend
 APP_NAME=${2}
 
 ### Description
+Mostly for use in our CircleCI pipelines, this script ensures the desired codebase is deployed into a given Cloud.gov application space.
 
-Deploy the backend to cloud.gov under the given app name, or 
-bind services and update environment variables in preperation of a new deployment.
+### Where it's used
+
+`deploy-backend.sh` is used in [CircleCI config](../.circleci/config.yml)'s job `deploy-backend` which is used by `deploy-cloud-dot-gov` command. This script is primarily via in CircleCI but with CloudFoundry set up and logged in locally, this can also be used by a developer manually. Please also see our [CircleCI documentation](../docs/Technical-Documentation/circle-ci.md#deploy-backend).
 
 ## deploy-frontend.sh
 
@@ -142,20 +145,23 @@ bind services and update environment variables in preperation of a new deploymen
 ```
 ### Arguments
 
+```bash
 DEPLOY_STRATEGY=${1}
 
-The deployment strategy you wish to employ ( rolling update or setting up a new environment)
+# The application name  defined via the manifest yml for the frontend
+CGHOSTNAME_FRONTEND=${2}
+CGHOSTNAME_BACKEND=${3}
 
-+ rolling
-    deploy to a new server leaving the existing one up until the deployment has succeeded
-
-APP_NAME=${2}
-The application name  defined via the manifest yml for the frontend
+REACT_APP_BACKEND_HOST= #Environment Variable
+REACT_APP_BACKEND_URL= #Environment Variable
+```
 
 ### Description
+Mostly for use in our CircleCI pipelines, this script ensures the desired codebase is deployed into a given Cloud.gov application space.
 
-Deploy the frontend app to cloud.gov under the given app name, usually using the rolling update strategy
+### Where it's used
 
+`deploy-frontend.sh` is used in [CircleCI config](../.circleci/config.yml)'s job `deploy-frontend` which is used by `deploy-cloud-dot-gov` command. This script is primarily via in CircleCI but with CloudFoundry set up and logged in locally, this can also be used by a developer manually. Please also see our [CircleCI documentation](../docs/Technical-Documentation/circle-ci.md#deploy-frontend).
 
 ## deploy-infrastructure-dev.sh
 
@@ -173,11 +179,14 @@ scripts/deploy-infrastructure-dev.sh
  CF_PASSWORD_DEV
 
 ### Description
+This script will manually run CircleCI's job `deploy-infrastructure-dev` which deploys the default Terraform codebase to a desired Cloud.gov application name in the tanf-dev space. Please see [Terraform docs](../terraform/README.md) for more information.
+
+Requires local client to have CloudFoundry and CircleCI CLI tools to be configured and logged in.
 
 Requires installation of jq - https://stedolan.github.io/jq/download/
-executes circle ci job deploy-infrastructure-dev
 
-
+### Where it's used
+This script is no longer used by other automation as it has been obsolesced by our Terraform flows.
 
 ## deploy-infrastructure-staging.sh
 ### Usage
@@ -190,14 +199,20 @@ scripts/deploy-infrastructure-staging.sh
 no args
 
 ### Description
-Script runs our CircleCI job "deploy-infrastructure-staging" using your CloudFoundry login credentials; it expects that you had run `cf login --sso` prior. 
+Script runs our CircleCI job `deploy-infrastructure-staging` using your CloudFoundry login credentials; it expects that you had run `cf login --sso` prior. 
 Requires installation of jq - https://stedolan.github.io/jq/download/
 
-
+### Where it's used
+This script is no longer used by other automation as it has been obsolesced by our Terraform flows.
 
 # "Check" scripts
 ## sudo-check.sh
+
+<details>
+<summary>Details</summary>
+    
 ### usage
+---
 ```
 ./scripts/sudo-check.sh
 ```
@@ -206,49 +221,84 @@ no args
 ### Description
 This script installs the `sudo` command and all of its dependencies if it is not already present.
 
+### Where it's used
+sudo-check.sh is used in the sudo-check [CircleCI command](../.circleci/config.yml#L85)
+---
+</details>
+
 ## cf-checks.sh
+<details>
+<summary>Details</summary>
+    
 ### usage
+---
 ```bash
 ./scripts/cf-check.sh
 ```
-
+---
 ### Arguments
 no args
 
 ### Description
 This script installs the CloudFoundry `cf` command and all of its dependencies if it is not already present.
 
+### Where it's used 
+cf-check.sh is used in the [CircleCI command cf-check](../.circleci/config.yml#L22)
+</details>
 
 ## docker-check.sh
+
+<details>
+<summary>Details</summary>
+    
 ### Usage
+---
 ```bash
 ./scripts/docker-check.sh
 ```
-
+---
+    
 ### Arguments
 no args
 
 ### Description
 This script installs the docker ecosytem and all of its dependencies if it is not already present. This is used by our CircleCI CI/CD pipelines.
 
+### Where it's used 
+docker-check.sh does not appear to be used in automation.
+</details>
+    
 ## docker-compose-check.sh
+
+<details>
+<summary>Details</summary>
+    
 ### Usage
+---
 ```
 ./scripts/docker-compose-check.sh
 ```
-
+---
+    
 ### Arguments
 no args
 
 ### Description
 This script installs the `docker-compose` command and all of its dependencies if it is not already present. This is used by our CircleCI CI/CD pipelines.
+### Where it's used 
+docker-compose-check.sh is used in the [CircleCI config docker-compose-check command](../.circleci/config.yml#L28).
+</details>
 
 ## git-secrets-check.sh
+<details>
+<summary>Details</summary>
+    
 ### Usage
+---
 ```
 ./scripts/git-secrets-check.sh
 ```
-
+---
 ### Arguments
 
 no args
@@ -257,15 +307,21 @@ no args
 
 This script ensures that no secrets have been committed to the TANF repo. We leverage [Awslab's git-secrets tool](https://github.com/awslabs/git-secrets.git) to scan code to be uploaded. Developers can set up a pre-commit hook locally so this scan will run before committing/pushing by checking the README on their github repo linked earlier.
 
+### Where it's used 
+git-secrets-check.sh is used in the [secrets-check command](../.circleci/config.yml#L329).
+</details>
 
 ## trufflehog-check.sh
 
+<details>
+<summary>Details</summary>
+    
 ### Usage
-
+---
 ```bash
 ./scripts/trufflehog-check.sh <branch-target>
 ```
-
+---
 ### Arguments
 
 `branch-target` the branch name you want to check.
@@ -276,14 +332,21 @@ Installs truffleHog in a python virtual environment and gets the hash of the lat
 Looks at all commits since the last merge into raft-tdp-main, and entropy checks on large git diffs. 
 If there are issues, they will be listed then script will abort.
 
+### Where it's used 
+trufflehog-check.sh is also used in the [secrets-check command](../.circleci/config.yml#L329).
+</details>
 
 ## codecov-check.sh
   
+<details>
+<summary>Details</summary>
+    
 ### Usage
+---
 ```bash
 ./scripts/codecov-check.sh
 ```
-
+---
 ### Arguments
 no args
 
@@ -291,7 +354,9 @@ no args
 
 Check if code cov is installed, and if it isn't, the script installs it, and checks the integrity of the binary.
 
-
+### Where it's used 
+codecov-check.sh is used in CircleCI 'codecov-upload" [job](../.circleci/config.yml#L91).
+</details>
 
 ## localstack-setup.sh
 ### Usage
@@ -308,10 +373,12 @@ region : Name of the localstack region you want your new bucket to be placed in
 Create the S3 bucket used by the Django app
 Enable object versioning on the bucket
 
+### Where it's used
+This is used in `../tdrs-backend/docker-compose.yml` to setup your local docker connections to AWS.
+    
 ## zap-hook.py
 
 ### Usage
-
 This script is used in an argument passed inside of `zap-scanner.sh`. It is not used directly.
 
 ### Arguments
@@ -331,22 +398,29 @@ allows us to ensure they never run and won't be present in the HTML report.
 https://github.com/zaproxy/zaproxy/issues/6291#issuecomment-725947370
 https://github.com/zaproxy/zaproxy/issues/5212
 
+### Where it's used
+This script is used inside of `zap-scanner.sh`. It is not used directly.
+    
 ## zap-scanner.sh
-
 ### Usage
 ```bash
-./scripts/zap-scanner.py backend nightly
-./scripts/zap-scanner.py frontend nightly
-./scripts/zap-scanner.py backend circleci
-./scripts/zap-scanner.py frontend circleci
+./zap-scanner.sh frontend local
 ```
 
 ### Arguments
 
+```bash
 TARGET=$1
+```
+TARGET is either frontend or backend.
+    
+```bash
 ENVIRONMENT=$2
-
+```
+ENVIRONMENT is either local or nightly.
+    
 ### Description
-
-Used to invoke zap during CI, sends path to zap-hook.py to zap command and executes scan
-on the target environment.
+This script is an easy-to-use wrapper around the OWASP ZAP python script, detailed above, which runs security scans against the desired target.
+    
+### Where it's used
+Our CircleCI job `nightly-owasp-scan` utilizes this script to scan our stable deployment in Cloud.gov staging space.
