@@ -9,22 +9,22 @@ understand the role of the scripts.
 
 # Table of Contents
 
-+ [set-backend-env-vars.sh](./README.md#set-backend-env-varssh-1)
-+ [copy-login-gov-keypair.sh](./README.md#copy-login-gov-keypairsh-1)
-+ [deploy-backend.sh](./README.md#deploy-backendsh-1)
-+ [deploy-frontend.sh](./README.md#deploy-frontendsh-1)
-+ [deploy-infrastructure-dev.sh](./README.md#deploy-infrastructure-devsh-1)
-+ [deploy-infrastructure-staging.sh](./README.md#deploy-infrastructure-stagingsh-1)
-+ [sudo-check.sh](./README.md#sudo-checksh-1)
-+ [cf-checks.sh](./README.md#cf-checkssh-1)
-+ [docker-check.sh](./README.md#docker-checksh-1)
-+ [docker-compose-check.sh](./README.md#docker-compose-checksh-1)
-+ [git-secrets-check.sh](./README.md#git-secrets-checksh-1)
-+ [trufflehog-check.sh](./README.md#trufflehog-checksh-1)
-+ [codecov-check.sh](./README.md#codecov-checksh-1)
-+ [localstack-setup.sh](./README.md#localstack-setupsh-1)
-+ [zap-hook.py](./README.md#zap-hookpy-1)
-+ [zap-scanner.sh](./README.md#zap-scannersh-1)
++ [set-backend-env-vars.sh](./README.md#set-backend-env-varssh)
++ [copy-login-gov-keypair.sh](./README.md#copy-login-gov-keypairsh)
++ [deploy-backend.sh](./README.md#deploy-backendsh)
++ [deploy-frontend.sh](./README.md#deploy-frontendsh)
++ [deploy-infrastructure-dev.sh](./README.md#deploy-infrastructure-devsh)
++ [deploy-infrastructure-staging.sh](./README.md#deploy-infrastructure-stagingsh)
++ [sudo-check.sh](./README.md#sudo-checksh)
++ [cf-checks.sh](./README.md#cf-checkssh)
++ [docker-check.sh](./README.md#docker-checksh)
++ [docker-compose-check.sh](./README.md#docker-compose-checksh)
++ [git-secrets-check.sh](./README.md#git-secrets-checksh)
++ [trufflehog-check.sh](./README.md#trufflehog-checksh)
++ [codecov-check.sh](./README.md#codecov-checksh)
++ [localstack-setup.sh](./README.md#localstack-setupsh)
++ [zap-hook.py](./README.md#zap-hookpy)
++ [zap-scanner.sh](./README.md#zap-scannersh)
 
 
 # Interacting with Cloud.gov
