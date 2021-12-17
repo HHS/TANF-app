@@ -9,22 +9,22 @@ understand the role of the scripts.
 
 # Table of Contents
 
-+ ## [set-backend-env-vars.sh](./README.md#set-backend-env-vars.sh)
-+ ## [copy-login-gov-keypair.sh](./README.md#copy-login-gov-keypair.sh)
-+ ## [deploy-backend.sh](./README.md#deploy-backend.sh)
-+ ## [deploy-frontend.sh](./README.md#deploy-frontend.sh)
-+ ## [deploy-infrastructure-dev.sh](./README.md#deploy-infrastructure-dev.sh)
-+ ## [deploy-infrastructure-staging.sh](./README.md#deploy-infrastructure-staging.sh)
-+ ## [sudo-check.sh](./README.md#sudo-check.sh)
-+ ## [cf-checks.sh](./README.md#cf-checks.sh)
-+ ## [docker-check.sh](./README.md#docker-check.sh)
-+ ## [docker-compose-check.sh](./README.md#docker-compose-check.sh)
-+ ## [git-secrets-check.sh](./README.md#git-secrets-check.sh)
-+ ## [trufflehog-check.sh](./README.md#trufflehog-check.sh)
-+ ## [codecov-check.sh](./README.md#codecov-check.sh)
-+ ## [localstack-setup.sh](./README.md#localstack-setup.sh)
-+ ## [zap-hook.py](./README.md#zap-hook.py)
-+ ## [zap-scanner.sh](./README.md#zap-scanner.sh)
++ ## [set-backend-env-vars.sh](./README.md#set-backend-env-varssh-1)
++ ## [copy-login-gov-keypair.sh](./README.md#copy-login-gov-keypairsh-1)
++ ## [deploy-backend.sh](./README.md#deploy-backendsh-1)
++ ## [deploy-frontend.sh](./README.md#deploy-frontendsh-1)
++ ## [deploy-infrastructure-dev.sh](./README.md#deploy-infrastructure-devsh-1)
++ ## [deploy-infrastructure-staging.sh](./README.md#deploy-infrastructure-stagingsh-1)
++ ## [sudo-check.sh](./README.md#sudo-checksh-1)
++ ## [cf-checks.sh](./README.md#cf-checkssh-1)
++ ## [docker-check.sh](./README.md#docker-checksh-1)
++ ## [docker-compose-check.sh](./README.md#docker-compose-checksh-1)
++ ## [git-secrets-check.sh](./README.md#git-secrets-checksh-1)
++ ## [trufflehog-check.sh](./README.md#trufflehog-checksh-1)
++ ## [codecov-check.sh](./README.md#codecov-checksh-1)
++ ## [localstack-setup.sh](./README.md#localstack-setupsh-1)
++ ## [zap-hook.py](./README.md#zap-hookpy-1)
++ ## [zap-scanner.sh](./README.md#zap-scannersh-1)
 
 
 # Interacting with Cloud.gov
