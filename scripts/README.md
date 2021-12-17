@@ -7,6 +7,26 @@ the application. When a developer is working on these scripts,
 they should update this documentation so future developers 
 understand the role of the scripts.
 
+# Table of Contents
+
++ ## [set-backend-env-vars.sh](./#set-backend-env-vars.sh)
++ ## [copy-login-gov-keypair.sh](./#copy-login-gov-keypair.sh)
++ ## [deploy-backend.sh](./#deploy-backend.sh)
++ ## [deploy-frontend.sh](./#deploy-frontend.sh)
++ ## [deploy-infrastructure-dev.sh](./#deploy-infrastructure-dev.sh)
++ ## [deploy-infrastructure-staging.sh](./#deploy-infrastructure-staging.sh)
++ ## [sudo-check.sh](./#sudo-check.sh)
++ ## [cf-checks.sh](./#cf-checks.sh)
++ ## [docker-check.sh](./#docker-check.sh)
++ ## [docker-compose-check.sh](./#docker-compose-check.sh)
++ ## [git-secrets-check.sh](./#git-secrets-check.sh)
++ ## [trufflehog-check.sh](./#trufflehog-check.sh)
++ ## [codecov-check.sh](./#codecov-check.sh)
++ ## [localstack-setup.sh](./#localstack-setup.sh)
++ ## [zap-hook.py](./#zap-hook.py)
++ ## [zap-scanner.sh](./#zap-scanner.sh)
+
+
 # Interacting with Cloud.gov
 
 ## [set-backend-env-vars.sh](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/scripts/set-backend-env-vars.sh) 
