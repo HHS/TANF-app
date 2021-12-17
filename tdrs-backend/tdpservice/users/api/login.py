@@ -71,14 +71,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def get_auth_options(self, access_token: Optional[str], sub: Optional[str]) -> Dict[str, str]:
         """Set auth options to handle payloads appropriately."""
 
-    # def validate_and_decode_payload(self, request, token_data, state):
-    #     """Validate and decode a jwt payload based on its origin, nonce, and state."""
-    #     decoded_payload = self.decode_payload(token_data)
-    #     decoded_id_token = decoded_payload['id_token']
-
-    #     logger.info("decoded_payload")
-    #     logger.info(decoded_payload)
-
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
         # get user from database if they exist. if not, create a new one
