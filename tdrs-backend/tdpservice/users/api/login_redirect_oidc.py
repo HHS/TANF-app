@@ -130,6 +130,7 @@ class LoginRedirectAMS(RedirectView):
             "nonce": nonce,
             "state": state,
             "added_on": time.time(),
+            "ams": True
         }
 
         logger.info(encoded_params)

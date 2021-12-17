@@ -104,6 +104,7 @@ def test_login_gov_redirect(api_client):
     assert response.status_code == status.HTTP_302_FOUND
 
 
+# @pytest.mark.parametrize("logout_path", ["/v1/login/dotgov", "/v1/login/ams"])
 def test_oidc_logout_without_token(api_client):
     """Test logout redirect with token missing."""
     response = api_client.get("/v1/logout/oidc")

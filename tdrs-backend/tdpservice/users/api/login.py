@@ -206,6 +206,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         nonce_validator = nonce_and_state.get("nonce", "not_nonce")
         state_validator = nonce_and_state.get("state", "not_state")
 
+        if request.session["state_nonce_tracker"]:
+            request.session["token"] = id_token
+
         decoded_nonce = decoded_id_token["nonce"]
 
         if not validate_nonce_and_state(

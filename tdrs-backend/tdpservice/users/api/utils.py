@@ -109,7 +109,7 @@ def generate_jwt_from_jwks(certs_endpoint):
 
 
 """
-Get the original nonce and state from the user session
+Get the original nonce and state from the user session. 
 
 :param self: parameter to permit django python to call a method within its own class
 :param request: retains current user session keeping track original the state
@@ -124,6 +124,9 @@ def get_nonce_and_state(session):
         raise SuspiciousOperation(msg)
 
     openid_authenticity_tracker = session.get("state_nonce_tracker", None)
+
+    if "ams" in openid_authenticity_tracker:
+        session["ams"] = openid_authenticity_tracker["ams"]
 
     if "state" not in openid_authenticity_tracker:
         msg = "OIDC callback state was not found in session."
