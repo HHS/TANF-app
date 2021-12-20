@@ -16,7 +16,8 @@ We will use Architecture Decision Records, as described by Michael Nygard in thi
 
 ## Consequences
 
-See Michael Nygard's article, linked above.
+The benefits and any known/potential risks of the decision should be described herein. See Michael Nygard's article, linked above, for more details.
 
 ## Notes
 
+Briefly describe any additional information relevant to the decision here, such as issues created to track implementation. 
