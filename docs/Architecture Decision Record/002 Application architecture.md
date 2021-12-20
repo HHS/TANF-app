@@ -1,18 +1,19 @@
 # 1. Application Architecture
-Date: 2020-08-04
+Date: 2020-08-04 (Updated 2021-12-20)
 
 ## Status
 
 Accepted
 
 ## Context
-
-The backend and frontend are two separate apps, the backend is a Django Rest Framework (DRF) app and the frontend is ReactJS. Two apps allow for greater separation between the two components. 
+When designing the solution, we needed to establish our technology stack best suited for the solution.
 
 ## Decision
 
-The backend and frontend will be two separate apps, the backend a DRF app and the frontend ReactJS.
+For TANF Data Portal, the team decided that the backend shall be  Django Rest Framework (DRF) app and the frontend is ReactJS. 
 
 ## Consequences
 
 Two apps allow for greater separation between the two components. This will allow the backend endpoints to exist before the frontend starts work and won't slow the frontend. There will be a main README that will point to two separate backend and frontend READMEs.
+
+## Notes
