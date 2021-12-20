@@ -1,10 +1,10 @@
 # 14. Deployment Strategy Change
 
-Date: 2021-04-06 (yyyy-mm-dd)
+Date: 2021-04-06 (Updated 2021-12-20)
 
 ## Status
 
-Approved
+Accepted
 
 ## Context
 
@@ -32,11 +32,4 @@ Production         | Prod            | Gov                  | Deploy code tested
 ### Cons
 - None that we can see at this time
 
-## Impact
-_In order to get here, the following tasks will have to be completed_
-
-- Move vendor staging to new staging space/domain
-- Update documentation to reflect new strategy
-
-Time estimate for development: 2-4 hours
-Story points: 2
+## Notes

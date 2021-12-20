@@ -1,9 +1,9 @@
 # 16. Migrating to Github Native Dependabot for TDP Dependency Management
-Date: 2021-05-14 (_updated: 2021-10-1_)
+Date: 2021-05-14 (Updated: 2021-12-20)
 
 ## Status
 
-Approved
+Accepted
 
 ## Context
 
@@ -12,12 +12,10 @@ Additionally, these Snyk PRs require us to manage an unnecessary requirements.tx
 
 Furthermore, we currently use the Dependabot Preview app which is being deprecated in favor of a GitHub Native Dependabot which has more features and is configured via a YAML file committed to the repo.
 
-
-## Proposed Decision
-Rather than setting up Snyk on a new organization and in order to get ahead on the impending Dependabot migration, We propose an update which provides the necessary YAML config to enable the new GitHub Native version of Dependabot.
+## Decision
+Rather than setting up Snyk on a new organization and in order to get ahead on the impending Dependabot migration, we propose an update which provides the necessary YAML config to enable the new GitHub Native version of Dependabot.
 
 ## Consequences
-
 To maintain our gitflow:
 
 * We need to explicitly disable automated PR updates on the HHS repo if it is not already, otherwise once this file gets merged in we will get Dependabot security-related PRs to both repos. This can be disabled in the security analysis settings as shown below:
