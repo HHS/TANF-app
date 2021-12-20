@@ -17,7 +17,7 @@ The purpose of these meetings is to get real-time feedback on the issue in quest
 
 While this will require more scheduling and adds process, ultimately, we have seen greater knowledge transfer for each review and found issues that would have gone missed without this face-to-face feedback that discussions create.
 
-## Q&A
+## Notes
 ### Who do I invite? 
 
 As the author of the pull request, schedule a 15-minute meeting and invite the full dev team, including Alex. If there is a specific stakeholder not typically included, bring them in as well. We want to keep these meetings, small, focused, and technical. If someone of the dev team has a conflict or would prefer to stay focused on their current tasking, their attendance can be optional.

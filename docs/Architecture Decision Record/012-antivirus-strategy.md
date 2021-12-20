@@ -1,6 +1,6 @@
 # 12. Anti-virus Strategy Change
 
-Date: 2021-04-01 (yyyy-mm-dd)
+Date: 2021-04-01 (Updated 2021-12-20)
 
 ## Status
 
@@ -36,8 +36,6 @@ In addition to this, the frontend is able to reliably determine if a file is a b
 - Introduces slight risk of files not getting saved to S3 if an error occurs before our API sends it to S3
 - This approach will require a heavier lift to accomplish, but the benefits to the new approach make it worth the effort
 
-## What Needs To Be Done
+## Notes
 
-- Frontend: Adjust upload to send to backend and wait for response instead of S3
-- Backend: Endpoint to receive files and methods to handle scanning, update the database and send to S3
-- DevOps: Set up application to host Clam AV for virus scanning and configure to receive requests from the backend
+The previous "what needs to be done" section was completed.
