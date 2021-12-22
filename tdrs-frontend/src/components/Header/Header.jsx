@@ -27,7 +27,6 @@ function HeaderComp() {
   let tabIndex = 0
   /* istanbul ignore next  */
   const handleTabKey = (e) => {
-
     e.preventDefault()
     /* istanbul ignore if */
     if (menuRef.current.classList.contains('is-visible')) {
