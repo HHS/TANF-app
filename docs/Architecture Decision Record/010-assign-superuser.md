@@ -1,5 +1,5 @@
 # 10. Assigning the Superuser
-Date: 2021-02-15 (Updated 2021-012-20)
+Date: 2021-02-15 (_Updated 2021-12-28_)
 
 ## Status
 

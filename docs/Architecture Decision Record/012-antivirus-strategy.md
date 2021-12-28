@@ -1,6 +1,6 @@
 # 12. Anti-virus Strategy Change
 
-Date: 2021-04-01 (Updated 2021-12-20)
+Date: 2021-04-01 (_Updated 2021-12-28_)
 
 ## Status
 
@@ -20,22 +20,18 @@ In addition to this, the frontend is able to reliably determine if a file is a b
 
 ## Consequences
 
-**Pros**
-
-- Less Network Requests for User
-- More timely User feedback
+**Benefits**
+- Less network requests for user
+- More timely user feedback
   - We can now tell the user if the file is rejected before it even gets to S3
   - Also removes the need for async notifications like email
 - More assurance that the file is not malicious
-  - ClamAV is already used for this purpose in other government projects with ATO 
+  - ClamAV is already used for this purpose in other government projects with ATO (e.g. [Head Start TTADP](https://github.com/HHS/Head-Start-TTADP/wiki/TTAHUB-System-Operations))
 - Provides an easier foundation for future planned efforts (such as parsing file contents)
 - Compliance is more familiar with this approach
 
-**Cons**
-
+**Risks**
 - Introduces slight risk of files not getting saved to S3 if an error occurs before our API sends it to S3
-- This approach will require a heavier lift to accomplish, but the benefits to the new approach make it worth the effort
+- This approach will require a heavier lift to accomplish (vs the signed URL strategy), but the benefits to the new approach make it worth the effort
 
 ## Notes
-
-The previous "what needs to be done" section was completed.
