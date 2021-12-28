@@ -52,7 +52,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * For development work, author is expected to schedule a [tabletop meeting]() at least 48 hours after `raft review` label added. 
     * When changes are asked for, the changes are made by the author.
     * When satisfied, the reviewer(s) confirm that ACs are met,  `approve` the PR, remove `raft review` and add `QASP review` labels.
-        * See exceptions [below]()
+        * See exceptions in [Notes](https://github.com/raft-tech/TANF-app/blob/dffd79adf7a5ae87cf1a93c8adf655c76cf45089/docs/Architecture%20Decision%20Record/009-git-workflow.md#notes) section
     * For project management, research, and design work, tag `lfrohlich` for government review.
     * For development work, including security controls, tag `adpennington` for government review.
 
