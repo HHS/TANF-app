@@ -223,7 +223,6 @@ This script installs the `sudo` command and all of its dependencies if it is not
 
 ### Where it's used
 sudo-check.sh is used in the sudo-check [CircleCI command](../.circleci/config.yml#L85)
----
 </details>
 
 ## cf-checks.sh
