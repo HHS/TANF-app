@@ -2,7 +2,7 @@
 
 Included herein is a description of how TDP features are implemented---from the point of **issue creation** to explain the current conditions that justify an issue resolution, implementation considerations, and tasks---to the point of **issue closure**, which should reflect government acceptance of the research, design, and/or development work into the [HHS TDP repo](https://github.com/HHS/TANF-app). 
 
-Issues will be created in the [Raft TDP repo](https://github.com/raft-tech/TANF-app/issues/new/choose) and tracked in Zenhub. See [TDP Workflows in Zenhub]() for a visual representation of how issues move across the boards. The diagram below is an abbreviated version. 
+Issues will be created in the [Raft TDP repo](https://github.com/raft-tech/TANF-app/issues/new/choose) and tracked in Zenhub. See [TDP Workflows in Zenhub](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/workflows) for a visual representation of how issues move across the boards. The diagram below is an abbreviated version. 
 
 ![](https://i.imgur.com/UGlqsXv.jpg)
 
