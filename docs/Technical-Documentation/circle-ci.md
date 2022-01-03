@@ -2,9 +2,8 @@
 
 ## Circle CI Workflows
 * A set of rules for defining run order/conditions for a group of jobs
-* We currently have a single workflow - `build-and-test`
 * Without filters a workflow will run on every commit
-* We use filters to ensure certain jobs are only run on designated branches
+* We use filters within workflows to ensure certain jobs are only run on designated branches
 * Such as deploy-infrastructure-staging and deploy-staging - which only run when the branch being committed to is `raft-tdp-main`
 * The `requires` tag allows us to make sure a certain job has completed before moving to the next step in the workflow
 * Additional vocab:
@@ -12,6 +11,12 @@
     * Executors: build environments used for jobs
     * Jobs: a collection of steps run on an executor
     * Orbs: reusable code that can be imported in to circle config - similar to pip packages, etc
+* We currently have 5 workflows:
+    * `build-and-test`: Runs jobs `secrets-check`, `test-frontend` and `test-backend` on every commit
+    * `dev-deployment`: Deploys a PR to the dev space. Triggered by a GitHub action whenever one of the relevant deployment labels is assigned via an API call to Circle CI with the pipeline parameter `run_dev_deployment`.
+    * `nightly`: Runs every night at UTC midnight and performs an OWASP scan against the staging site for both backend and frontend then stores the results in Django using a Cloud Foundry task.
+    * `owasp-scan`: Runs an OWASP scan against the backend and frontend for a given PR. Triggered by a GitHub action whenever the `QASP Review` label is assigned via an API call to Circle CI with the pipeline parameter `run_owasp_scan`.
+    * `staging-deployment`: Deploys the main branch to the staging space in Cloud.gov. Triggered via merges to the branch `raft-tdp-main`.
 
 ## How are environment variables supplied in CI?
 We manually set some environment variables in the project settings for Circle CI. From there, they are used in several places:
@@ -49,7 +54,6 @@ These all have defaults set in their respective settings modules, but may be ove
 * `OIDC_OP_TOKEN_ENDPOINT`: endpoint to redirect to to login/retrieve token
 * `OIDC_RP_CLIENT_ID`: A duplicate of CLIENT_ID but also referred to in the code
 
-
 ## Frontend CI build process
 
 ### test-frontend
@@ -60,9 +64,7 @@ These all have defaults set in their respective settings modules, but may be ove
     * Run Pa11y - automated accessibility testing
     * Run Jest - unit tests for the React frontend
     * Upload code coverage - uses Codecov
-    * Run Cypress - integration tests using Cypress to simulate the browser
-    * Run OWASP ZAP scan - automated vulnerability testing
-    * Store Artifacts - stores OWASP HTML report and Pa11y screenshots taken
+    * Store Artifacts - stores Pa11y screenshots taken
 
 ### deploy-frontend
 * Called as a step in the `deploy-cloud-dot-gov` command
@@ -87,8 +89,6 @@ These all have defaults set in their respective settings modules, but may be ove
     * Run Python Linting Test (flake8)
     * Run Pytest Unit Tests
     * Upload code coverage - uses Codecov
-    * Run OWASP ZAP scan - automated vulnerability testing
-    * Store Artifacts - stores OWASP HTML report
 
 ### deploy-backend
 * Called as a step in the `deploy-cloud-dot-gov` command

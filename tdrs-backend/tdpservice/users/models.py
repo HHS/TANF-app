@@ -4,9 +4,9 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils.functional import cached_property
 from tdpservice.stts.models import STT, Region
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 
 
 class User(AbstractUser):
@@ -43,7 +43,25 @@ class User(AbstractUser):
         """Return whether or not the user is a member of the specified Group."""
         return self.groups.filter(name=group_name).exists()
 
-    @cached_property
+    def save(self, *args, **kwargs):
+        """Prevent save if attributes are not necessary for a user given their role."""
+        if self.is_regional_staff and self.stt:
+            raise ValidationError(
+                _("Regional staff cannot have an sst assigned to them"))
+        elif self.is_data_analyst and self.region:
+            raise ValidationError(
+                _("Data Analyst cannot have a region assigned to them"))
+        super().save(*args, **kwargs)
+
+    @property
+    def is_regional_staff(self) -> bool:
+        """Return whether or not the user is in the OFA Regional Staff Group.
+
+        Uses a cached_property to prevent repeated calls to the database.
+        """
+        return self.is_in_group("OFA Regional Staff")
+
+    @property
     def is_data_analyst(self) -> bool:
         """Return whether or not the user is in the Data Analyst Group.
 

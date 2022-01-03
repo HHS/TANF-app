@@ -1,6 +1,6 @@
 # 9. Git Workflow
 
-Date: 2021-02-23 (_updated 2021-07-30_)
+Date: 2021-02-23 (_updated 2021-11-01_)
 
 ## Status
 
@@ -29,6 +29,7 @@ A contributor to the TDP project would always use the following steps to propose
 5. If working locally, run `git push origin <BRANCH NAME>`
 6. Create [a draft pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests#draft-pull-requests) from new branch to `raft-tdp-main`. The PR title should include WIP e.g. `WIP: Adding a feature` (If your work is dependent on another branch that has yet to be merged, issue the pull request against that branch)
 8. Implement, Test, Review work independently
+    * If content is devops oriented, developer can freely merge to `HHS:hhs-dev-devops` to test their changes. No merges from `HHS:hhs-dev-devops` to `HHS:main` will be accepted.
 9. When finished: 
     * Update the Pull Request Template
     * Add in-line comment to the file changes to provide context for the proposed changes

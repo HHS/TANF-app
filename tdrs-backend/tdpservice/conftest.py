@@ -13,14 +13,15 @@ from pytest_factoryboy import register
 from rest_framework.test import APIClient
 import pytest
 
-from tdpservice.stts.test.factories import STTFactory, RegionFactory
+from tdpservice.stts.models import Region, STT
+
 from tdpservice.core.admin import LogEntryAdmin
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.security.test.factories import OwaspZapScanFactory
 from tdpservice.users.test.factories import (
     UserFactory,
-    AdminUserFactory,
     StaffUserFactory,
+    AdminUserFactory,
     STTUserFactory,
     InactiveUserFactory,
     AdminSTTUserFactory,
@@ -35,12 +36,34 @@ def api_client():
     """Return an API client for testing."""
     return APIClient()
 
-
 @pytest.fixture
 def user():
     """Return a basic, non-admin user."""
     return UserFactory.create()
 
+@pytest.fixture
+def regional_user(region, stt):
+    """Return a regional staff user."""
+    return STTUserFactory.create(
+        groups=(Group.objects.get(name="OFA Regional Staff"),),
+        region=region,
+    )
+
+@pytest.fixture
+def user_in_region(stt, region):
+    """Return a user in the same region as a regional staff user."""
+    return STTUserFactory.create(
+        groups=(Group.objects.get(name="Data Analyst"),),
+        stt=stt,
+    )
+
+@pytest.fixture
+def user_in_other_region(other_stt, other_region):
+    """Return a user that is not in the same region as the tested regional staff."""
+    return STTUserFactory.create(
+        groups=(Group.objects.get(name="Data Analyst"),),
+        stt=other_stt,
+    )
 
 @pytest.fixture
 def stt_user():
@@ -96,21 +119,16 @@ def deactivated_user():
 
 
 @pytest.fixture
-def stt():
+def stt(region):
     """Return an STT."""
-    return STTFactory.create()
-
-
-@pytest.fixture
-def other_stt():
-    """Return a secondary STT."""
-    return STTFactory.create()
-
+    stt, _ = STT.objects.get_or_create(name="first", region=region)
+    return stt
 
 @pytest.fixture
 def region():
     """Return a region."""
-    return RegionFactory.create()
+    region, _ = Region.objects.get_or_create(id=1)
+    return region
 
 
 @pytest.fixture
@@ -180,6 +198,48 @@ def base_data_file_data(fake_file_name, user):
         "stt": int(user.stt.id)
     }
 
+@pytest.fixture
+def base_regional_data_file_data(fake_file_name, regional_user):
+    """Return data file creation data without a file."""
+    return {
+        "original_filename": fake_file_name,
+        "slug": str(uuid.uuid4()),
+        "extension": "txt",
+        "section": "Active Case Data",
+        "user": str(regional_user.id),
+        "region": regional_user.region.id,
+        "quarter": "Q1",
+        "year": 2020,
+        "stt": int(regional_user.region.stts.first().id)
+    }
+
+@pytest.fixture
+def other_region():
+    """Return a region that is not associated with the tested regional staff user."""
+    region, _ = Region.objects.get_or_create(id=2)
+    return region
+
+@pytest.fixture
+def other_stt(other_region):
+    """Return an stt not in the region of a regional staff."""
+    stt, _ = STT.objects.get_or_create(name="second", region=other_region)
+    return stt
+
+
+@pytest.fixture
+def other_base_regional_data_file_data(fake_file_name, regional_user, other_stt):
+    """Return data file creation data without a file."""
+    return {
+        "original_filename": fake_file_name,
+        "slug": str(uuid.uuid4()),
+        "extension": "txt",
+        "section": "Active Case Data",
+        "user": str(regional_user.id),
+        "region": other_stt.region.id,
+        "quarter": "Q1",
+        "year": 2020,
+        "stt": int(other_stt.id)
+    }
 
 @pytest.fixture
 def data_file_data(base_data_file_data, data_file):
@@ -187,6 +247,22 @@ def data_file_data(base_data_file_data, data_file):
     return {
         "file": data_file,
         **base_data_file_data
+    }
+
+@pytest.fixture
+def regional_data_file_data(base_regional_data_file_data, data_file):
+    """Return data file creation data for a reigon."""
+    return {
+        "file": data_file,
+        **base_regional_data_file_data
+    }
+
+@pytest.fixture
+def other_regional_data_file_data(other_base_regional_data_file_data, data_file):
+    """Return data file creation data for the other reigon."""
+    return {
+        "file": data_file,
+        **other_base_regional_data_file_data
     }
 
 

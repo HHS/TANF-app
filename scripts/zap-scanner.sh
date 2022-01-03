@@ -35,6 +35,11 @@ else
     exit 1
 fi
 
+# The backend also needs to include the path of the OpenAPI specification
+if [ "$TARGET" = "backend" ]; then
+  APP_URL+="swagger.json"
+fi
+
 cd "$TARGET_DIR" || exit 2
 
 # Ensure the APP_URL is reachable from the zaproxy container
@@ -75,8 +80,22 @@ ZAP_ARGS+=(-I)
 # setting them to IGNORE in the config file, unlike active rules.
 ZAP_ARGS+=(--hook=/zap/scripts/zap-hook.py)
 
+# Alter the script used and options passed to it based on target
+if [ "$TARGET" = "backend" ]; then
+  # Use the API scan for the backend, in order to allow crawling the API based
+  # on the Swagger/OpenAPI spec provided by drf-yasg2.
+  ZAP_SCRIPT="zap-api-scan.py"
+  # The API scan needs to know the format of the API specification provided.
+  ZAP_ARGS+=(-f openapi)
+else
+  # Otherwise, use the full scan as we have been.
+  ZAP_SCRIPT="zap-full-scan.py"
+  # Allow use of the optional AJAX spider to effectively crawl the React webapp.
+  ZAP_ARGS+=(-j)
+fi
+
 # Run the ZAP full scan and store output for further processing if needed.
-ZAP_OUTPUT=$(docker-compose run --rm zaproxy zap-full-scan.py "${ZAP_ARGS[@]}" | tee /dev/tty)
+ZAP_OUTPUT=$(docker-compose run --rm zaproxy "$ZAP_SCRIPT" "${ZAP_ARGS[@]}" | tee /dev/tty)
 ZAP_EXIT=$?
 
 if [ "$ZAP_EXIT" -eq 0 ]; then

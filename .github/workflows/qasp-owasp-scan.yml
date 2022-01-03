@@ -1,0 +1,38 @@
+name: Run OWASP scan when a PR moves into QASP Review
+on:
+  pull_request:
+    types:
+    - labeled
+    - synchronize
+    - reopened
+# Prevent running more than one job at a time per branch.
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+jobs:
+  qasp_label_check:
+    name: Initiate OWASP scan in Circle CI
+    env:
+      # Check the label from the pull request itself, rather than the event -
+      # not all event types will contain the label name.
+      HAS_QASP_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'QASP Review') }}
+    # Prevent running the action for label events that aren't QASP Review, but
+    # we need to allow other accepted event types without checking the label.
+    if: |
+      github.event.action == 'synchronize' ||
+      github.event.action == 'reopened' ||
+      github.event.action == 'labeled' && github.event.label.name == 'QASP Review'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger Circle CI OWASP scan if PR has QASP Review label
+      id: curl-circle-ci
+      if: env.HAS_QASP_LABEL == 'true'
+      uses: promiseofcake/circleci-trigger-action@v1
+      with:
+        user-token: ${{ secrets.CIRCLE_CI_V2_API_TOKEN }}
+        project-slug: ${{ github.repository }}
+        branch: ${{ github.head_ref }}
+        payload: |
+          {
+            "run_owasp_scan": ${{ env.HAS_QASP_LABEL }}
+          }
