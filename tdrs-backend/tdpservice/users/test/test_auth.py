@@ -102,16 +102,14 @@ def req_factory(states_factory, mock, api_client):
 @pytest.mark.django_db
 def test_authentication(user):
     """Test authentication method."""
-    auth = CustomAuthentication()
-    authenticated_user = auth.authenticate(username=user.username)
+    authenticated_user = CustomAuthentication.authenticate(username=user.username)
     assert authenticated_user.username == user.username
 
 
 @pytest.mark.django_db
 def test_get_user(user):
     """Test get_user method."""
-    auth = CustomAuthentication()
-    found_user = auth.get_user(user.pk)
+    found_user = CustomAuthentication.get_user(user.pk)
     assert found_user.username == user.username
 
 
@@ -119,8 +117,7 @@ def test_get_user(user):
 def test_get_non_user(user):
     """Test that an invalid user does not return a user."""
     test_uuid = uuid.uuid1()
-    auth = CustomAuthentication()
-    nonuser = auth.get_user(test_uuid)
+    nonuser = CustomAuthentication.get_user(test_uuid)
     assert nonuser is None
 
 
@@ -128,40 +125,19 @@ def test_get_non_user(user):
 class TestLoginAMS:
     """Associate a set of related tests into a class for shared mock fixtures."""
 
+    mock_configuration = {
+        "authorization_endpoint": "http://openid-connect/auth",
+        "end_session_endpoint": "http://openid-connect/logout",
+        "token_endpoint": "http://openid-connect/token",
+        "jwks_uri": "http://openid-connect/certs",
+        "issuer": "http://realms/ams",
+        "userinfo_endpoint": "http://openid-connect/userinfo"
+    }
+
     @pytest.fixture(autouse=True)
-    def mock_ams_configuration(self, requests_mock, settings):
-        requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT,
-                          json={"authorization_endpoint": "http://openid-connect/auth",
-                                "end_session_endpoint": "http://openid-connect/logout",
-                                "token_endpoint": "http://openid-connect/token",
-                                "jwks_uri": "http://openid-connect/certs",
-                                "issuer": "http://realms/ams",
-                                "userinfo_endpoint": "http://openid-connect/userinfo"})
+    def mock_ams_configuration(self, requests_mock, settings, mock_token):
+        requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json=TestLoginAMS.mock_configuration)
 
-    @pytest.fixture()
-    def mock_ams(self, states_factory, mocker, mock_token):
-        """Generate all the mock-up data structs needed for API tests."""
-        mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
-        token = {
-            "access_token": "hhJES3wcgjI55jzjBvZpNQ",
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "id_token": mock_token,
-        }
-        mock_post.return_value = MockRequest(data=token)
-
-        mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
-
-        mock_decode.return_value = decoded_token(
-            "test@example.com",
-            states_factory['nonce']
-        )
-
-        yield mock_post, mock_decode
-
-    @pytest.fixture()
-    def mock_ams_jwk(self, mocker):
-        mock_get = mocker.patch("tdpservice.users.api.login.requests.get")
         jwk = {
             "kty": "EC",
             "crv": "P-256",
@@ -169,12 +145,31 @@ class TestLoginAMS:
             "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
             "kid": "Public key used in JWS spec Appendix A.3 example",
         }
-        mock_get.return_value = MockRequest(data={"keys": [jwk]})
+        requests_mock.get(TestLoginAMS.mock_configuration["jwks_uri"], json={"keys": [jwk]})
 
-        yield mock_get
+        requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
+                           json={"email": "test_existing@example.com"})
+        requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={
+            "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "id_token": mock_token,
+        })
+
+    @pytest.fixture(autouse=True)
+    def mock_decode(self, states_factory, mocker):
+        """Generate all the mock-up data structs needed for API tests."""
+        mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+
+        mock_decode.return_value = decoded_token(
+            "test@example.com",
+            states_factory['nonce']
+        )
+
+        yield mock_decode
 
     @pytest.fixture()
-    def req_factory(self, states_factory, mock_ams, api_client):
+    def req_factory(self, states_factory, api_client):
         """Generate a client request for API usage, part of DRY."""
         states = states_factory
         factory = APIRequestFactory()
@@ -208,88 +203,89 @@ class TestLoginAMS:
     def test_login_with_valid_state_and_code(
         self,
         states_factory,
-        mock_ams,
-        req_factory
+        req_factory,
+        user,
     ):
         """Test login with state and code."""
         request = req_factory
         request = create_session(request, states_factory)
+        user.username = "test_existing@example.com"
+        user.save()
+
         view = TokenAuthorizationAMS.as_view()
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
-    # def test_login_with_existing_token(
-    #     self,
-    #     patch_login_gov_jwt_key,
-    #     states_factory,
-    #     mock,
-    #     req_factory
-    # ):
-    #     """Login should proceed when token already exists."""
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #     request = req_factory
-    #     request.session["token"] = "testtoken"
-    #     request = create_session(request, states_factory)
-    #     response = view(request)
-    #     assert response.status_code == status.HTTP_302_FOUND
-    #
-    # def test_login_with_general_exception(
-    #     self,
-    #     patch_login_gov_jwt_key,
-    #     states_factory,
-    #     mock,
-    #     req_factory
-    # ):
-    #     """Test login with state and code."""
-    #     states = states_factory
-    #     request = req_factory
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #
-    #     # A custom session will throw a general exception
-    #     request.session = {}
-    #     request = create_session(request, states)
-    #     response = view(request)
-    #     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    #     assert response.data == {
-    #         "error": (
-    #             "Email verified, but experienced internal issue "
-    #             "with login/registration."
-    #         )
-    #     }
-    #
-    # def test_login_with_inactive_user(
-    #     self,
-    #     inactive_user,
-    #     patch_login_gov_jwt_key,
-    #     states_factory,
-    #     mock,
-    #     req_factory
-    # ):
-    #     """
-    #     Login with inactive user should error and return message.
-    #
-    #     Note this test considers the `is_active` field, and *not* `deactivated`,
-    #     which are different.
-    #     """
-    #     request = req_factory
-    #     mock_post, mock_decode = mock
-    #
-    #     inactive_user.username = "test_inactive@example.com"
-    #     inactive_user.save()
-    #
-    #     mock_decode.return_value = decoded_token(
-    #         "test_inactive@example.com",
-    #         states_factory['nonce'],
-    #         sub=inactive_user.login_gov_uuid
-    #     )
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #     request = create_session(request, states_factory)
-    #     response = view(request)
-    #     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    #     assert response.data == {
-    #         "error": f'Login failed, user account is inactive: {inactive_user.username}'
-    #     }
-    #
+    def test_login_with_existing_token(
+        self,
+        states_factory,
+        req_factory
+    ):
+        """Login should proceed when token already exists."""
+        view = TokenAuthorizationAMS.as_view()
+        request = req_factory
+        request.session["token"] = "testtoken"
+        request = create_session(request, states_factory)
+        response = view(request)
+        assert response.status_code == status.HTTP_302_FOUND
+
+    def test_login_with_general_exception(
+        self,
+        states_factory,
+        req_factory
+    ):
+        """Test login with state and code."""
+        states = states_factory
+        request = req_factory
+        view = TokenAuthorizationAMS.as_view()
+
+        # A custom session will throw a general exception
+        request.session = {}
+        request = create_session(request, states)
+        response = view(request)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {
+            "error": (
+                "Email verified, but experienced internal issue "
+                "with login/registration."
+            )
+        }
+
+    def test_login_with_inactive_user(
+        self,
+        inactive_user,
+        states_factory,
+        mock_decode,
+        requests_mock,
+        req_factory
+    ):
+        """
+        Login with inactive user should error and return message.
+
+        Note this test considers the `is_active` field, and *not* `deactivated`,
+        which are different.
+        """
+        request = req_factory
+
+        inactive_user.username = "test_inactive@example.com"
+        inactive_user.save()
+
+        requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
+                           json={"email": "test_inactive@example.com"})
+
+        mock_decode.return_value = decoded_token(
+            "test_inactive@example.com",
+            states_factory['nonce'],
+        )
+
+        view = TokenAuthorizationAMS.as_view()
+        request = create_session(request, states_factory)
+        response = view(request)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.data == {
+            "error": f'Login failed, user account is inactive: {inactive_user.username}'
+        }
+
     # def test_login_with_existing_user(
     #     self,
     #     user,

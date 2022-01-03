@@ -8,7 +8,8 @@ from rest_framework.authentication import BaseAuthentication
 class CustomAuthentication(BaseAuthentication):
     """Define authentication and get user functions for custom authentication."""
 
-    def authenticate(self, username=None, login_gov_uuid=None, hhs_id=None):
+    @staticmethod
+    def authenticate(username=None, login_gov_uuid=None, hhs_id=None):
         """Authenticate user with the request and username."""
         User = get_user_model()
 
@@ -22,7 +23,8 @@ class CustomAuthentication(BaseAuthentication):
         except User.DoesNotExist:
             return None
 
-    def get_user(self, user_id):
+    @staticmethod
+    def get_user(user_id):
         """Get user by the user id."""
         User = get_user_model()
         try:

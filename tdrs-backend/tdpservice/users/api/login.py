@@ -91,9 +91,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             # we must authenticate with their username since we have yet to save the
             # user's `sub` UUID from the decoded payload, with which we will
             # authenticate later.
-            initial_user = CustomAuthentication.authenticate(
-                self, username=email
-            )
+            initial_user = CustomAuthentication.authenticate(username=email)
 
             if initial_user.login_gov_uuid is None:
                 # Save the `sub` to the superuser.
@@ -108,12 +106,13 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
-        user = CustomAuthentication.authenticate(
-            self, **auth_options
-        )
+        logger.info("AUTH_OPTIONS")
+        logger.info(auth_options)
+        user = CustomAuthentication.authenticate(**auth_options)
+        logger.info(user)
 
         if user and user.is_active:
-            # User's are able to update their emails on login.gov
+            # Users are able to update their emails on login.gov
             # Update the User with the latest email from the decoded_payload.
             if user.username != email:
                 user.email = email
@@ -130,6 +129,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             )
         else:
             User = get_user_model()
+
+            if 'username' in auth_options:
+                # Delete the username key if it exists in auth_options, as it will conflict with the first argument
+                # of `create_user`.
+                del auth_options["username"]
+
             user = User.objects.create_user(email, email=email, **auth_options)
             user.set_unusable_password()
             user.save()
