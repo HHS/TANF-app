@@ -1,4 +1,4 @@
-# 1. Application Architecture
+# 2. Application Architecture
 Date: 2020-08-04 (Updated 2021-12-20)
 
 ## Status

@@ -1,4 +1,4 @@
-# 16. Migrating to Github Native Dependabot for TDP Dependency Management
+# 14. Migrating to Github Native Dependabot for TDP Dependency Management
 Date: 2021-05-14 (_Updated: 2021-12-28_)
 
 ## Status

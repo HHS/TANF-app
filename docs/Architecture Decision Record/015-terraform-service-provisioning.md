@@ -1,4 +1,4 @@
-# 17. Adding Terraform to CI Pipeline for Automated Service Provisioning
+# 15. Adding Terraform to CI Pipeline for Automated Service Provisioning
 
 Date: 2021-06-30 (_Updated 2021-12-29_)  
   
