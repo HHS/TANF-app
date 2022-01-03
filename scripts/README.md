@@ -96,7 +96,7 @@ This script is only a convenience tool for developers, it has no direct usage in
 
 ### Usage
 
-```
+```bash
 ./scripts/deploy-backend.sh <strategy> <app-name>
 ./scripts/deploy-backend.sh rolling raft-review
 ```
@@ -355,7 +355,7 @@ no args
 Check if code cov is installed, and if it isn't, the script installs it, and checks the integrity of the binary.
 
 ### Where it's used 
-codecov-check.sh is used in CircleCI 'codecov-upload" [job](../.circleci/config.yml#L91).
+codecov-check.sh is used in CircleCI `codecov-upload` [job](../.circleci/config.yml#L91).
 </details>
 
 ## localstack-setup.sh
