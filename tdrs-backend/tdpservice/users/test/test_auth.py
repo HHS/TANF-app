@@ -286,166 +286,150 @@ class TestLoginAMS:
             "error": f'Login failed, user account is inactive: {inactive_user.username}'
         }
 
-    # def test_login_with_existing_user(
-    #     self,
-    #     user,
-    #     patch_login_gov_jwt_key,
-    #     mock,
-    #     states_factory,
-    #     req_factory
-    # ):
-    #     """Login should work with existing user."""
-    #     states = states_factory
-    #     request = req_factory
-    #     request = create_session(request, states_factory)
-    #
-    #     user.username = "test_existing@example.com"
-    #     user.save()
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #     mock_post, mock_decode = mock
-    #     mock_decode.return_value = decoded_token(
-    #         "test_existing@example.com",
-    #         states["nonce"],
-    #         sub=user.login_gov_uuid
-    #     )
-    #
-    #     response = view(request)
-    #     assert response.status_code == status.HTTP_302_FOUND
-    #
-    # def test_login_with_old_email(
-    #     self,
-    #     mock,
-    #     states_factory,
-    #     req_factory,
-    #     patch_login_gov_jwt_key,
-    #     user
-    # ):
-    #     """Login should work with existing user."""
-    #     user.username = "test_old_email@example.com"
-    #     user.save()
-    #     states = states_factory
-    #     request = req_factory
-    #     request = create_session(request, states_factory)
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #     mock_post, mock_decode = mock
-    #     mock_decode.return_value = decoded_token(
-    #         "test_new_email@example.com",
-    #         states["nonce"],
-    #         sub=user.login_gov_uuid
-    #     )
-    #     response = view(request)
-    #     # Ensure the user's username was updated with new email.
-    #     assert User.objects.filter(username="test_new_email@example.com").exists()
-    #     assert response.status_code == status.HTTP_302_FOUND
-    #
-    # def test_login_with_initial_superuser(
-    #     self,
-    #     mock,
-    #     states_factory,
-    #     req_factory,
-    #     patch_login_gov_jwt_key,
-    #     settings,
-    #     user
-    # ):
-    #     """Login should work with existing user."""
-    #     # How to set os vars for sudo su??
-    #     test_username = "test_superuser@example.com"
-    #     settings.DJANGO_SUPERUSER_NAME = test_username
-    #     user.username = test_username
-    #     user.login_gov_uuid = None
-    #     user.save()
-    #     states = states_factory
-    #     request = req_factory
-    #     request = create_session(request, states_factory)
-    #     mock_post, mock_decode = mock
-    #     mock_decode.return_value = decoded_token(test_username, states["nonce"])
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #     response = view(request)
-    #
-    #     user = User.objects.get(username=test_username)
-    #     assert str(user.login_gov_uuid) == mock_decode.return_value["sub"]
-    #     assert response.status_code == status.HTTP_302_FOUND
-    #
-    # def test_login_with_expired_token(
-    #     self,
-    #     mock,
-    #     states_factory,
-    #     req_factory,
-    #     patch_login_gov_jwt_key
-    # ):
-    #     """Login should proceed when token already exists."""
-    #     request = req_factory
-    #     request = create_session(request, states_factory)
-    #     mock_post, mock_decode = mock
-    #     mock_decode.side_effect = jwt.ExpiredSignatureError()
-    #
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #     response = view(request)
-    #     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    #     assert response.data == {"error": "The token is expired."}
-    #
-    # def test_login_with_bad_validation_code(
-    #     self,
-    #     mock,
-    #     states_factory,
-    #     req_factory,
-    #     patch_login_gov_jwt_key
-    # ):
-    #     """Login should error with a bad validation code."""
-    #     request = req_factory
-    #     request = create_session(request, states_factory)
-    #     mock_post, mock_decode = mock
-    #     mock_post.return_value = MockRequest(
-    #         data={}, status_code=status.HTTP_400_BAD_REQUEST
-    #     )
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #     response = view(request)
-    #     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    #     assert response.data == {
-    #         "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
-    #     }
-    #
-    # def test_login_with_bad_nonce_and_state(
-    #     self,
-    #     mock,
-    #     states_factory,
-    #     req_factory,
-    #     patch_login_gov_jwt_key
-    # ):
-    #     """Login should error with a bad nonce and state."""
-    #     request = req_factory
-    #     request = create_session(request, states_factory)
-    #     mock_post, mock_decode = mock
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #     request.session["state_nonce_tracker"] = {
-    #         "nonce": "badnonce",
-    #         "state": "badstate",
-    #         "added_on": time.time(),
-    #     }
-    #     with pytest.raises(SuspiciousOperation):
-    #         view(request)
-    #
-    # def test_login_with_email_unverified(
-    #     self,
-    #     mock,
-    #     states_factory,
-    #     req_factory,
-    #     patch_login_gov_jwt_key
-    # ):
-    #     """Login should fail with unverified email."""
-    #     states = states_factory
-    #     request = req_factory
-    #     request = create_session(request, states_factory)
-    #     mock_post, mock_decode = mock
-    #     mock_decode.return_value = decoded_token(
-    #         "test@example.com",
-    #         states['nonce'],
-    #         email_verified=False
-    #     )
-    #     view = TokenAuthorizationLoginDotGov.as_view()
-    #     response = view(request)
-    #     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    #     assert response.data == {"error": "Unverified email!"}
+    def test_login_with_existing_user(
+        self,
+        user,
+        mock_decode,
+        states_factory,
+        req_factory
+    ):
+        """Login should work with existing user."""
+        states = states_factory
+        request = req_factory
+        request = create_session(request, states_factory)
+
+        user.username = "test_existing@example.com"
+        user.save()
+        view = TokenAuthorizationAMS.as_view()
+        mock_decode.return_value = decoded_token(
+            "test_existing@example.com",
+            states["nonce"],
+        )
+
+        response = view(request)
+        assert response.status_code == status.HTTP_302_FOUND
+
+    def test_login_with_old_email(
+        self,
+        mock_decode,
+        states_factory,
+        req_factory,
+        user
+    ):
+        """Login should work with existing user."""
+        user.username = "test_old_email@example.com"
+        user.save()
+        states = states_factory
+        request = req_factory
+        request = create_session(request, states_factory)
+        view = TokenAuthorizationAMS.as_view()
+        mock_decode.return_value = decoded_token(
+            "test_new_email@example.com",
+            states["nonce"],
+        )
+        response = view(request)
+        # Ensure the user's username was updated with new email.
+        assert User.objects.filter(username="test_new_email@example.com").exists()
+        assert response.status_code == status.HTTP_302_FOUND
+
+    def test_login_with_initial_superuser(
+        self,
+        mock_decode,
+        states_factory,
+        req_factory,
+        settings,
+        user
+    ):
+        """Login should work with existing user."""
+        # How to set os vars for sudo su??
+        test_username = "test_superuser@example.com"
+        settings.DJANGO_SUPERUSER_NAME = test_username
+        user.username = test_username
+        user.login_gov_uuid = None
+        user.save()
+        states = states_factory
+        request = req_factory
+        request = create_session(request, states_factory)
+        mock_decode.return_value = decoded_token(test_username, states["nonce"])
+        view = TokenAuthorizationAMS.as_view()
+        response = view(request)
+
+        user = User.objects.get(username=test_username)
+        assert str(user.login_gov_uuid) == mock_decode.return_value["sub"]
+        assert response.status_code == status.HTTP_302_FOUND
+
+    def test_login_with_expired_token(
+        self,
+        mock_decode,
+        states_factory,
+        req_factory,
+    ):
+        """Login should proceed when token already exists."""
+        request = req_factory
+        request = create_session(request, states_factory)
+        mock_decode.side_effect = jwt.ExpiredSignatureError()
+
+        view = TokenAuthorizationAMS.as_view()
+        response = view(request)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.data == {"error": "The token is expired."}
+
+    def test_login_with_bad_validation_code(
+        self,
+        states_factory,
+        req_factory,
+        requests_mock
+    ):
+        """Login should error with a bad validation code."""
+        request = req_factory
+        request = create_session(request, states_factory)
+
+        requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={}, status_code=400)
+
+        view = TokenAuthorizationAMS.as_view()
+        response = view(request)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {
+            "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
+        }
+
+    def test_login_with_bad_nonce_and_state(
+        self,
+        mock_decode,
+        states_factory,
+        req_factory,
+    ):
+        """Login should error with a bad nonce and state."""
+        request = req_factory
+        request = create_session(request, states_factory)
+        view = TokenAuthorizationAMS.as_view()
+        request.session["state_nonce_tracker"] = {
+            "nonce": "badnonce",
+            "state": "badstate",
+            "added_on": time.time(),
+        }
+        with pytest.raises(SuspiciousOperation):
+            view(request)
+
+    def test_login_with_email_unverified(
+        self,
+        mock_decode,
+        states_factory,
+        req_factory,
+    ):
+        """Login should fail with unverified email."""
+        states = states_factory
+        request = req_factory
+        request = create_session(request, states_factory)
+        mock_decode.return_value = decoded_token(
+            "test@example.com",
+            states['nonce'],
+            email_verified=False
+        )
+        view = TokenAuthorizationAMS.as_view()
+        response = view(request)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"error": "Unverified email!"}
 
 
 def test_login_gov_redirect(api_client):
