@@ -19,7 +19,6 @@ from tdpservice.users.api.utils import (
     generate_jwt_from_jwks,
     generate_token_endpoint_parameters,
     response_internal,
-    validate_nonce_and_state,
 )
 from tdpservice.users.authentication import CustomAuthentication
 from tdpservice.users.models import User
@@ -136,6 +135,7 @@ class TestLoginAMS:
 
     @pytest.fixture(autouse=True)
     def mock_ams_configuration(self, requests_mock, settings, mock_token):
+        """Mock outgoing requests in various parts of the AMS flow."""
         requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json=TestLoginAMS.mock_configuration)
 
         jwk = {
@@ -823,15 +823,6 @@ def test_generate_jwt_from_jwks(mocker):
     }
     mock_get.return_value = MockRequest(data={"keys": [jwk]})
     assert generate_jwt_from_jwks("/v1/login") is not None
-
-
-@pytest.mark.django_db
-def test_validate_nonce_and_state():
-    """Test nonce and state validation."""
-    assert validate_nonce_and_state("x", "y", "x", "y") is True
-    assert validate_nonce_and_state("x", "z", "x", "y") is False
-    assert validate_nonce_and_state("x", "y", "y", "x") is False
-    assert validate_nonce_and_state("x", "z", "y", "y") is False
 
 
 @pytest.mark.django_db

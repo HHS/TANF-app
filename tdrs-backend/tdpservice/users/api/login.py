@@ -18,7 +18,6 @@ from typing import Dict, Optional
 from .login_redirect_oidc import LoginRedirectAMS
 from ..authentication import CustomAuthentication
 from .utils import (
-    get_nonce_and_state,
     generate_token_endpoint_parameters,
     generate_jwt_from_jwks,
     validate_nonce_and_state,
@@ -35,12 +34,46 @@ class InactiveUser(Exception):
     pass
 
 
+class UnverifiedEmail(Exception):
+    """Unverified Email Error Handler."""
+
+    pass
+
+
+class ExpiredToken(Exception):
+    """Expired Token Error Handler."""
+
+    pass
+
+
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define abstract methods for handling OIDC login requests."""
 
     @abstractmethod
     def decode_payload(self, token_data, options=None):
         """Decode the payload."""
+
+    def validate_and_decode_payload(self, request, state, token_data):
+        """Perform validation and error handling on the payload once decoded with abstract method."""
+        id_token = token_data.get("id_token")
+
+        decoded_payload = self.decode_payload(token_data)
+        decoded_id_token = decoded_payload['id_token']
+
+        if decoded_id_token == {"error": "The token is expired."}:
+            raise ExpiredToken("The token is expired.")
+
+        if request.session["state_nonce_tracker"]:
+            request.session["token"] = id_token
+
+        if not validate_nonce_and_state(request, state, decoded_id_token):
+            msg = "Could not validate nonce and state"
+            raise SuspiciousOperation(msg)
+
+        if not decoded_id_token["email_verified"]:
+            raise UnverifiedEmail("Unverified email!")
+
+        return decoded_payload
 
     @abstractmethod
     def get_token_endpoint_response(self, code):
@@ -157,10 +190,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
 
-        logger.info(request)
-        logger.info(code)
-        logger.info(state)
-
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
@@ -171,8 +200,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         token_endpoint_response = self.get_token_endpoint_response(code)
 
-        logger.info("token_endpoint_response.status_code")
-        logger.info(token_endpoint_response.status_code)
         if token_endpoint_response.status_code != 200:
             return Response(
                 {
@@ -187,43 +214,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         token_data = token_endpoint_response.json()
         id_token = token_data.get("id_token")
 
-        decoded_payload = self.decode_payload(token_data)
-        decoded_id_token = decoded_payload['id_token']
-
-        if decoded_id_token == {"error": "The token is expired."}:
-            return Response(
-                {
-                    "error": "The token is expired."
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        # get the validation keys to confirm generated nonce and state
-        nonce_and_state = get_nonce_and_state(request.session)
-        nonce_validator = nonce_and_state.get("nonce", "not_nonce")
-        state_validator = nonce_and_state.get("state", "not_state")
-
-        if request.session["state_nonce_tracker"]:
-            request.session["token"] = id_token
-
-        decoded_nonce = decoded_id_token["nonce"]
-
-        if not validate_nonce_and_state(
-            decoded_nonce, state, nonce_validator, state_validator
-        ):
-            msg = "Could not validate nonce and state"
-            raise SuspiciousOperation(msg)
-
-        if not decoded_id_token["email_verified"]:
-            return Response(
-                {"error": "Unverified email!"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
         try:
+            decoded_payload = self.validate_and_decode_payload(request, state, token_data)
             user = self.handle_user(request, id_token, decoded_payload)
             return response_redirect(user, id_token)
 
-        except InactiveUser as e:
+        except (InactiveUser, ExpiredToken) as e:
             logger.exception(e)
             return Response(
                 {
@@ -231,6 +227,18 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 },
                 status=status.HTTP_401_UNAUTHORIZED
             )
+        except UnverifiedEmail as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except SuspiciousOperation as e:
+            logger.exception(e)
+            raise e
 
         except Exception as e:
             logger.exception(f"Error attempting to login/register user:  {e} at...")

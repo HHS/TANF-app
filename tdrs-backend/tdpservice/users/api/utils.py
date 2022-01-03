@@ -36,8 +36,15 @@ originated by the request
 """
 
 
-def validate_nonce_and_state(decoded_nonce, state, nonce_validator, state_validator):
+def validate_nonce_and_state(request, state, decoded_id_token):
     """Validate nonce and state are correct values."""
+    # get the validation keys to confirm generated nonce and state
+    nonce_and_state = get_nonce_and_state(request.session)
+    nonce_validator = nonce_and_state.get("nonce", "not_nonce")
+    state_validator = nonce_and_state.get("state", "not_state")
+
+    decoded_nonce = decoded_id_token["nonce"]
+
     return decoded_nonce == nonce_validator and state == state_validator
 
 
@@ -109,7 +116,7 @@ def generate_jwt_from_jwks(certs_endpoint):
 
 
 """
-Get the original nonce and state from the user session. 
+Get the original nonce and state from the user session.
 
 :param self: parameter to permit django python to call a method within its own class
 :param request: retains current user session keeping track original the state
