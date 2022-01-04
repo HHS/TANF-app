@@ -1,6 +1,6 @@
 # 11. Implement Cloud.gov Buildpacks
 
-Date: 2021-02-26 (_Updated 2021-12-28_)
+Date: 2021-02-26 (_updated 2022-01-03_)
 
 ## Status
 
@@ -32,12 +32,13 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
 ## Notes
 - Docker containers will still need to be maintained for local development and CI/CD
 - Docker containers will still need to be hardened for CI/CD
-- **<details><summary>Steps for restaging for updated buildpacks**
-    </summary>
+- **<details><summary>Steps for restaging for updated buildpacks**</summary> 
     As described in [#1045](https://github.com/raft-tech/TANF-app/issues/1045), cloud.gov will inform us that buildpack(s) we use have been updated to a newer version via e-mail to all users with 'developer' role. The e-mail provides specific CloudFoundry CLI steps needed but we have already captured our deployment strategy process/commands in scripts/deploy-backend.sh. Running that script is the preferred methodology. Presently, the e-mail does not provide any specifics about the update, just that there was an update.
 
     Below is the restaging process in full:
-        1. Upon receipt of email from cloud.gov, restage against dev:
+
+    1. Upon receipt of email from cloud.gov, restage against dev:
+        
     ```bash
     user@host$ cf login -a api.fr.cloud.gov --sso
     API endpoint: api.fr.cloud.gov
@@ -72,16 +73,22 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
     $ cf restage tdp-frontend-sandbox
 
     ```
-        1. Inspect dev environment in cloud.gov for new buildpack versions after restage
-        1. Inspect relevant official changelog(s):
-            * https://github.com/cloudfoundry/nginx-buildpack/blob/master/CHANGELOG
-            * https://github.com/cloudfoundry/python-buildpack/blob/master/CHANGELOG
-        1. On a new branch, update docs/Technical-Documentation/buildpack-changelog.md with information of the following format:
-    ```
-    ## Buildpacks Changelog
-    - MM/DD/YYYY [name v#.#.##](link)
-    - 07/13/2021 [python-buildpack v1.7.43](https://github.com/cloudfoundry/python-buildpack/releases/tag/v1.7.43)
-    ```
-        1. Open a pull request to 'raft-tdp-main' and assign to Technical Lead
-        1. Merging pull request shall trigger rolling deploy of the updated buildpack(s) to staging & (eventually) prod without downtime
-    </details>
+
+    ### Find version changes
+    2. Inspect dev environment in cloud.gov for new buildpack versions after restage
+    3. Inspect relevant official changelog(s):
+        * https://github.com/cloudfoundry/nginx-buildpack/blob/master/CHANGELOG
+        * https://github.com/cloudfoundry/python-buildpack/blob/master/CHANGELOG
+    4. On a new branch, update docs/Technical-Documentation/buildpack-changelog.md with information of the following format:
+
+        ```
+        ## Buildpacks Changelog
+        - MM/DD/YYYY [name v#.#.##](link)
+        - 07/13/2021 [python-buildpack v1.7.43](https://github.com/cloudfoundry/python-buildpack/releases/tag/v1.7.43)
+        ```
+
+    ### Open final PR for staging
+
+    5. Open a pull request to 'raft-tdp-main' and assign to Technical Lead
+    6. Merging pull request shall trigger rolling deploy of the updated buildpack(s) to staging & (eventually) prod without downtime
+</details>
