@@ -30,7 +30,7 @@
 
 - [#1136](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1136) - [Backend] Accept AMS OpenId
 - [#1418](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1418) - [Research] Code docs synthesis of Resubmission Research
-- [#1417](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1417) - As a TDP user, I want 
+- [#1417](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1417) - As a TDP user, I want to easily navigate to specific pages of the TDP website
 - [#1346](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1346) - [SPIKE] Test hero images in code & adjust spec accordingly
 - [#1419](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1419) - Sidenav traps focus on close button
 - [#1275](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1275) - Resubmission Research/Usability & Concept Testing
