@@ -8,7 +8,7 @@
 * Jorge Gonzalez, Raft, full stack engineer
 * Aaron Beavers, Raft, full stack engineer
 * Miles Reiter, Raft, design lead + senior ux/ui researcher and designer
-* John Willis, Raft, technical oversight support
+* Mo Sohani, Raft, full stack engineer
 * Valerie Collignon, Raft, facilitator/project manager
 * Sreedevi Purayannur, Raft, senior ux/ui researcher and designer
 
@@ -39,6 +39,7 @@
 
 ## Past Product Team Members
 (most recent first)
+* John Willis, Raft, technical oversight support
 * Dvora Wilensky, OFA, project COR
 * Dmitri Knapp, Raft, visual designer
 * Shubhi Mishra, Raft, design lead
