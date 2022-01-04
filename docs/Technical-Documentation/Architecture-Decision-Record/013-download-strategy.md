@@ -1,10 +1,10 @@
 # 13. Download Strategy
 
-Date: 2021-04-06 (yyyy-mm-dd)
+Date: 2021-04-06 (_Updated 2021-12-29_)
 
 ## Status
 
-Approved
+Accepted
 
 ## Context
 
@@ -20,21 +20,19 @@ In our investigation we discovered a way that we can [securely download the file
 
 In light of these facts we have decided to shift our efforts to download files from the backend.
 
-[Technical Documentation](../Technical-Documentation/data-file-downloads.md)
-
 ## Consequences
 
-**Pros**
+**Benefits**
 - Ensures access to S3 is completely hidden from the frontend.
 - Cuts down on latency in passing signed signatures back and forth.
 - Simplifies frontend logic
     - Fewer requests get made, reducing the complexity of redux actions.
     - it is more obvious to the user where the file is (it is no longer potentially uploaded, but unsubmitted)
 - Allows us to leverage django storage which makes it easier to reason about the files in our database.
-- reduces number of endpoints required on the backend.
+- Reduces number of endpoints required on the backend.
 - Eases path to ATO.
 
+**Risks**
 
-**Cons**
-- Additional effort on the frontend and backend will be required for this shift. However, it's a fairly small lift for both.
-- The original con of added resource expenditure on the backend is no longer an issue.
+## Notes
+- [Technical Documentation](../Technical-Documentation/data-file-downloads.md)
