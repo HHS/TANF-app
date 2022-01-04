@@ -39,7 +39,7 @@ TDP Uses Infrastructure as Code (IaC) and DevSecOps automation
 ### Authentication
 
 TDP application requires strong multi-factor authentication (MFA) for all users, and Personal Identity Verification (PIV) authentication must be used as the 2nd factor for all internal ACF staff. 
-[ACF AMS]() authentication service is being used for ACF users, and [NextGen XMS]()authentication service is being used for external users. 
+[ACF AMS]() authentication service is being used for ACF users, and [NextGen XMS]() authentication service is being used for external users. 
 
 See [Architecture Decision Record 005 - Application Authentication](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/Architecture-Decision-Record/005-application-authentication.md) - for more details.
 
