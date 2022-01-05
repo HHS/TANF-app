@@ -48,4 +48,4 @@ requests = "==2.26.0"
 wait-for-it = "==2.2.0"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
