@@ -37,9 +37,11 @@ function HeaderComp() {
               </a>
             </em>
           </div>
-          <button type="button" className="usa-menu-btn">
-            Menu
-          </button>
+          {authenticated && (
+            <button type="button" className="usa-menu-btn">
+              Menu
+            </button>
+          )}
         </div>
         <nav aria-label="Primary navigation" className="usa-nav">
           <div className="usa-nav__inner">
