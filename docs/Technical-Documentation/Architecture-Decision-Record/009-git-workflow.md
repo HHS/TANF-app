@@ -1,6 +1,6 @@
 # 9. Git Workflow
 
-Date: 2021-02-23 (_updated 2022-01-06_)
+Date: 2021-02-23 (_updated 2021-12-28_)
 
 ## Status
 
@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-In order to maintain the principle of Least Privilege, it was decided at the onset of this project that the vendor (Raft) would work from a fork of the government repo and issue pull requests to the government repo from the fork. The vendor would not have write access to the government repository or the government's CircleCI account.
+In order to maintain the principal of Least Privilege, it was decided at the onset of this project that the vendor (Raft) would work from a fork of the government repo and issue pull requests to the government repo from the fork. The vendor would not have write access to the government repository or the government's CircleCI account.
 
 Throughout the project all vendor development work has been done in the vendor's forked repository, while pull requests from the government and even some documentation pull requests from the vendor were made directly to the government repository.
 
@@ -49,9 +49,8 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * For project management work, assign `abottoms_coder` and `reitermb`.
 
 5. Assigned Raft reviewer(s) perform the review and/or requests changes.
-    * For project management, research, and design work, review is conducted async.
     * For development work, author is expected to schedule a [tabletop meeting]() at least 48 hours after `raft review` label added. 
-    * When changes are requested, the changes are made by the author.
+    * When changes are asked for, the changes are made by the author.
     * When satisfied, the reviewer(s) confirm that ACs are met,  `approve` the PR, remove `raft review` and add `QASP review` labels.
         * See exceptions in [Notes](https://github.com/raft-tech/TANF-app/blob/dffd79adf7a5ae87cf1a93c8adf655c76cf45089/docs/Architecture%20Decision%20Record/009-git-workflow.md#notes) section
     * For project management, research, and design work, tag `lfrohlich` for government review.
@@ -71,8 +70,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * assigning `lfrohlich` or `adpennington`as Government as reviewers. They will approve and  merge to `HHS:main` which will trigger the CI/CD process to deploy code to the prod environment. 
 </details>
 
-![](images/TANF-Git-Workflow.jpg)
-[Figma link to TDP git workflow diagram](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=6249%3A49390)
+![](images/TANF-Git-Workflow.png)
 
 ## Consequences
 
@@ -89,7 +87,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
 - Will allow us to keep the current CircleCi setup
   - Once staging is in place, we can deploy to the development server when code is merged in to `raft-tdp-main` and test deployment ahead of opening a PR to `HHS:main`
 - We can implement GitHub Hooks to automatically issue PRs to `HHS:main` when one is merged to `raft-tdp-main`
-- Maintain "Least Privilege" by restricting vendor from having write access to Gov repo and CircleCI
+- Maintain "Least Privelege" by restricting vendor from having write access to Gov repo and CircleCI
 - Tests automated deployment before merging to `HHS:main`
 
 **Risks**
@@ -99,7 +97,6 @@ The proposed workflow below provides a remedy to these issues, as well as many o
 ## Notes
 - Overarching TDP [workflow]() should be followed prior to and after opening PRs. 
 - All PRs into `HHS:main` should come from raft-tech/raft-tdp-main unless absolutely needed, in which case `lfrohlich` or `adpennington` must review and approve. 
-- See [Dependabot ADR]() for more detail on the `raft review` process for:
-  - PRs created by Dependabot for frontend dependencies, and 
-  - PRs created by Dependabot for [dev-only dependencies](), which will not be installed on deployed environments, and may be merged in to `raft-tdp-main` as they are created. 
+- PRs created by Dependabot for [dev-only dependencies](), which will not be installed on deployed environments, may be merged in to `raft-tdp-main` as they are created. 
+- See [Dependabot ADR]() for more detail on the `raft review` process for PRs created by Dependabot for frontend dependencies.
 
