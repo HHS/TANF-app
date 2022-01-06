@@ -19,9 +19,6 @@ alias tdrs-compose-local='docker-compose -f docker-compose.yml -f docker-compose
 # Stop tdrs backend entirely, then start it up again
 alias tdrs-backend-hard-restart='tdrs-backend-down && tdrs-backend-up'
 
-# rebuild backend docker containers
-alias tdrs-backend-rebuild='tdrs-backend-down && tdrs-backend-compose up --build -d web'
-
 # run flake8 in backend container
 alias tdrs-backend-lint='tdrs-backend-compose run --rm web bash -c "flake8 ."'
 
@@ -33,53 +30,61 @@ alias tdrs-shell='tdrs-backend-compose run --rm web bash -c "python manage.py sh
 
 # TDRS Frontend aliases
 
-alias tdrs-frontend-down='tdrs-frontend-compose down'
-alias tdrs-frontend-up='tdrs-frontend-compose up -d tdp-frontend'
-
-alias tdrs-frontend-restart='tdrs-frontend-compose restart tdp-frontend'
-alias tdrs-frontend-hard-restart='tdrs-frontend-down && tdrs-frontend-up'
-alias tdrs-frontend-rebuild='tdrs-frontend-compose down && tdrs-frontend-compose up --build -d tdp-frontend'
-
+# start both the frontend and backend
 alias start-tdrs='tdrs-start-frontend && tdrs-start-backend'
+
+# Stop both the frontend and the backend
 alias stop-tdrs='tdrs-stop-frontend && tdrs-stop-backend'
+
+# Restart frontend and backend
 alias restart-tdrs='tdrs-restart-frontend && tdrs-restart-backend'
 
+# start all backend containers
 tdrs-start-backend() {
     cd-tdrs
-    cd tdrs-backend && tdrs-compose-local up
+    cd tdrs-backend && tdrs-compose-local up -d
     cd ..
 }
 
+# run npm install updating all dependencies and start the dev server
 tdrs-start-frontend() {
     cd-tdrs
     cd tdrs-frontend && tdrs-compose-local up -d
     cd ..
 }
+
+# Stop all containers for the backend
 tdrs-stop-backend() {
     cd-tdrs
     cd tdrs-backend && tdrs-compose-local down
     cd ..
 }
+# stop the frontend development server
 tdrs-stop-frontend() {
     cd-tdrs
     cd tdrs-frontend && tdrs-compose-local down
     cd ..
 }
+
+# restart the frontends, mainly to rebuild dependencies
 tdrs-restart-frontend() {
     cd-tdrs
     cd tdrs-frontend && tdrs-compose-local restart
     cd ..
 }
 
+# restart all containers for the backend
 tdrs-restart-backend() {
     cd-tdrs
     cd tdrs-backend && tdrs-compose-local restart
     cd ..
 }
 
+# Stop the backend if its running and rebuild the docker container for django
 tdrs-rebuild-backend() {
     cd-tdrs
-    cd tdrs-backend && tdrs-backend-rebuild
+    tdrs-stop-backend
+    cd tdrs-backend && tdrs-compose-local up --build -d web
     cd ..
 }
 
@@ -88,4 +93,53 @@ restart-django() {
     cd-tdrs
     cd tdrs-backend && docker-compose restart web
     cd ..
+}
+
+# run flake8 against backend source from inside of web container
+tdrs-lint-backend() {
+    cd-tdrs
+    cd tdrs-backend/ && tdrs-compose-local run --rm web bash -c 'flake8 .'
+    cd ..
+}
+# Run eslint against frontend source from frontend container
+tdrs-lint-frontend() {
+    cd-tdrs
+    cd tdrs-frontend/ && tdrs-compose-local run --rm tdp-frontend bash -c 'yarn lint'
+    cd ..
+}
+
+# Fix all automaticly fixable linting errors for the frontend
+tdrs-fix-lint-frontend() {
+    cd-tdrs
+    cd tdrs-frontend/ && tdrs-compose-local run --rm tdp-frontend bash -c 'eslint --fix ./src'
+    cd ..
+}
+# tdrs-run-jest() {}
+# tdrs-run-pa11y() {}
+# tdrs-run-pytest() {}
+# tdrs-run-owasp() {}
+
+run-migrations() {
+    cd tdrs-backend/
+    docker-compose run web sh -c 'python manage.py migrate'
+    cd ..
+}
+
+merge-migrations() {
+    cd tdrs-backend/
+    docker-compose run web sh -c 'python manage.py makemigrations --merge'
+}
+
+prune-docker-data() {
+    docker system prune -a
+    docker system prune --volumes
+}
+
+function pytest-tdrs () {
+    if [ "$#" -lt 1 ]; then
+        quoted_args=""
+    else
+        quoted_args="$(printf " %q" "${@}")"
+    fi
+    tdrs-backend-compose run --rm web bash -c "./wait_for_services.sh && pytest ${quoted_args}"
 }
