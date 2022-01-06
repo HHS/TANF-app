@@ -29,7 +29,7 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
 - Environments shifting to buildpacks may be unstable during transition
 - If we shift away from Cloud.gov, we may need to explore using docker again as fedramped buildpacks may not be available
 
-**Notes**
+## Notes
 - Docker containers will still need to be maintained for local development and CI/CD
 - Docker containers will still need to be hardened for CI/CD
 - **<details><summary>Steps for restaging for updated buildpacks**</summary> 
@@ -38,7 +38,6 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
     Below is the restaging process in full:
 
     1. Upon receipt of email from cloud.gov, restage against dev:
-        
         
     ```bash
     user@host$ cf login -a api.fr.cloud.gov --sso
@@ -72,6 +71,7 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
     $ cf restage tdp-frontend-raft
     $ cf restage tdp-frontend-qasp
     $ cf restage tdp-frontend-sandbox
+
     ```
 
     ### Find version changes
