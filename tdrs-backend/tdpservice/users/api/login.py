@@ -115,7 +115,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         # Authenticate login.gov users with the unique "subject" `sub`
         # UUID from the id_token payload.
         sub = decoded_id_token["sub"]
-        # TODO Ensure this works with payload from AMS
         email = decoded_id_token["email"]
 
         # First account for the initial superuser
