@@ -10,8 +10,8 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 
 class LoginRedirectLoginDotGov(RedirectView):
