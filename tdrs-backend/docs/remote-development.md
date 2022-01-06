@@ -34,7 +34,7 @@ Create a file `~/username/.ssh/config` if one doesn't exist, and append the Host
 
 ```
 # Read more about SSH config files: https://linux.die.net/man/5/ssh_config
-Host tdp-backend-raft
+Host <app-name>
     HostName ssh.fr.cloud.gov
     User cf:<guid>/0
     Port 2222
