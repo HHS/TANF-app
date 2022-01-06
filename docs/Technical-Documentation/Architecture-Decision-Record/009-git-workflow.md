@@ -89,7 +89,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
 - Will allow us to keep the current CircleCi setup
   - Once staging is in place, we can deploy to the development server when code is merged in to `raft-tdp-main` and test deployment ahead of opening a PR to `HHS:main`
 - We can implement GitHub Hooks to automatically issue PRs to `HHS:main` when one is merged to `raft-tdp-main`
-- Maintain "Least Privelege" by restricting vendor from having write access to Gov repo and CircleCI
+- Maintain "Least Privilege" by restricting vendor from having write access to Gov repo and CircleCI
 - Tests automated deployment before merging to `HHS:main`
 
 **Risks**
