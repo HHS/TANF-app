@@ -1,12 +1,10 @@
 {
   "extends": [
     "react-app",
-    "plugin:cypress/recommended",
     "plugin:jsx-a11y/recommended",
     "plugin:prettier/recommended"
   ],
   "plugins": [
-    "cypress",
     "jsx-a11y"
   ],
   "env": {
@@ -14,8 +12,7 @@
     "commonjs": true,
     "es6": true,
     "jest": true,
-    "node": true,
-    "cypress/globals": true
+    "node": true
   },
   "rules": {
     "jsx-a11y/href-no-hash": ["off"],

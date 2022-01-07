@@ -1,16 +1,16 @@
 ## Primary Product Team
 **OFA**
-* Lauren Frohlich, OFA, product owner
+* Lauren Frohlich, OFA, product owner/project COR
 * Alexandra Pennington, OFA, tech lead
 
 **Raft**
 * Andrew Bottoms, Raft, tech lead
-* Jorge Gonzalez, Raft, frontend engineer
-* Aaron Beavers, Raft, backend engineer
-* Miles Reiter, Raft, user researcher
-* John Willis, Raft, technical oversight support
+* Jorge Gonzalez, Raft, full stack engineer
+* Aaron Beavers, Raft, full stack engineer
+* Miles Reiter, Raft, design lead + senior ux/ui researcher and designer
+* Mo Sohani, Raft, full stack engineer
 * Valerie Collignon, Raft, facilitator/project manager
-* Sreedevi Purayannur, Raft, senior ux/ui research and designer
+* Sreedevi Purayannur, Raft, senior ux/ui researcher and designer
 
 ## Subject Matter Experts
 **OFA Data Team**
@@ -39,6 +39,7 @@
 
 ## Past Product Team Members
 (most recent first)
+* John Willis, Raft, technical oversight support
 * Dvora Wilensky, OFA, project COR
 * Dmitri Knapp, Raft, visual designer
 * Shubhi Mishra, Raft, design lead

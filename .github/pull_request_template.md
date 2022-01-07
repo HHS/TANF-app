@@ -1,6 +1,6 @@
 ### Summary of Changes
 _Provide a brief summary of changes_
-Closes issue #_
+Pull request closes #_
 _Acceptance criteria as stated in the issue_
 
 ### How to Test
