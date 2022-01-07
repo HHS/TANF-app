@@ -133,6 +133,8 @@ class TestLoginAMS:
         "userinfo_endpoint": "http://openid-connect/userinfo"
     }
 
+    test_hhs_is = str(uuid.uuid4())
+
     @pytest.fixture(autouse=True)
     def mock_ams_configuration(self, requests_mock, settings, mock_token):
         """Mock outgoing requests in various parts of the AMS flow."""
@@ -148,7 +150,7 @@ class TestLoginAMS:
         requests_mock.get(TestLoginAMS.mock_configuration["jwks_uri"], json={"keys": [jwk]})
 
         requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
-                           json={"email": "test_existing@example.com"})
+                           json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_is})
         requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={
             "access_token": "hhJES3wcgjI55jzjBvZpNQ",
             "token_type": "Bearer",
@@ -210,6 +212,23 @@ class TestLoginAMS:
         request = req_factory
         request = create_session(request, states_factory)
         user.username = "test_existing@example.com"
+        user.save()
+
+        view = TokenAuthorizationAMS.as_view()
+        response = view(request)
+        assert response.status_code == status.HTTP_302_FOUND
+
+    def test_hhs_login_with_valid_state_and_code(
+        self,
+        states_factory,
+        req_factory,
+        user,
+    ):
+        """Test login with state and code."""
+        request = req_factory
+        request = create_session(request, states_factory)
+        user.hhs_id = self.test_hhs_is
+        user.login_gov_uuid = None
         user.save()
 
         view = TokenAuthorizationAMS.as_view()
