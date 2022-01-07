@@ -186,7 +186,8 @@ Requires local client to have CloudFoundry and CircleCI CLI tools to be configur
 Requires installation of jq - https://stedolan.github.io/jq/download/
 
 ### Where it's used
-This script is no longer used by other automation as it has been obsolesced by our Terraform flows.
+
+We don't use this in CI, it is for manually running the CI step with the same name. It is a developer tool.
 
 ## deploy-infrastructure-staging.sh
 ### Usage
@@ -203,7 +204,8 @@ Script runs our CircleCI job `deploy-infrastructure-staging` using your CloudFou
 Requires installation of jq - https://stedolan.github.io/jq/download/
 
 ### Where it's used
-This script is no longer used by other automation as it has been obsolesced by our Terraform flows.
+
+We don't use this in CI, it is for manually running the CI step with the same name. It is a developer tool.
 
 # "Check" scripts
 ## sudo-check.sh
