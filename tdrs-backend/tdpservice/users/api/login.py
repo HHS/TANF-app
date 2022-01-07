@@ -349,6 +349,6 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             # TODO Use `hhs_id` as primary authentication key
             auth_options["username"] = user_info["email"]
             if "hhs_id" in user_info:
-                auth_options["hhs_id"] = user_info["hss_id"]
+                auth_options["hhs_id"] = user_info.get("hss_id")
 
             return auth_options
