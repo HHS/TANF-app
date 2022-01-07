@@ -1,5 +1,5 @@
 # 4. Configuration by Environment Variable
-Date: 2020-08-04
+Date: 2020-08-04 (Updated 2021-12-20)
 
 ## Status
 
@@ -11,8 +11,10 @@ Applications need to be configured differently depending on where they are runni
 
 ## Decision
 
-We will use environment variables to configure applications
+We will use environment variables to configure applications.
 
 ## Consequences
 
 Using environment variables allows us to easily configure applications consistently. There is good support in cloud.gov for configuration via environment variables. Also the frontend will be easy to configure because there are frontend libraries that allow setting of environment variables with .env files.
+
+## Notes
