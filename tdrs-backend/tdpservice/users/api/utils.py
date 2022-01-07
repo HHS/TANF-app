@@ -37,7 +37,7 @@ originated by the request
 
 
 def validate_nonce_and_state(request, state, decoded_id_token):
-    """ Gets the validation keys to confirm generated nonce and state are correct values. """
+    """Get the validation keys to confirm generated nonce and state are correct values."""
     nonce_and_state = get_nonce_and_state(request.session)
     nonce_validator = nonce_and_state.get("nonce", "not_nonce")
     state_validator = nonce_and_state.get("state", "not_state")

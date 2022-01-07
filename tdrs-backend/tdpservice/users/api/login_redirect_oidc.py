@@ -13,7 +13,6 @@ from django.views.generic.base import RedirectView
 logger = logging.getLogger(__name__)
 
 
-
 class LoginRedirectLoginDotGov(RedirectView):
     """Handle login workflow for login.gov clients."""
 
