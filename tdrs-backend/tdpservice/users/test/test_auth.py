@@ -151,6 +151,7 @@ class TestLoginAMS:
 
         requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
                            json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_is})
+
         requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={
             "access_token": "hhJES3wcgjI55jzjBvZpNQ",
             "token_type": "Bearer",
@@ -228,6 +229,7 @@ class TestLoginAMS:
         request = req_factory
         request = create_session(request, states_factory)
         user.hhs_id = self.test_hhs_is
+        # test new hash
         user.login_gov_uuid = None
         user.save()
 
