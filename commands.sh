@@ -119,13 +119,15 @@ tdrs-fix-lint-frontend() {
 # tdrs-run-pytest() {}
 # tdrs-run-owasp() {}
 
-run-migrations() {
+tdrs-run-migrations() {
+    cd-tdrs
     cd tdrs-backend/
     docker-compose run web sh -c 'python manage.py migrate'
     cd ..
 }
 
-merge-migrations() {
+tdrs-merge-migrations() {
+    cd-tdrs
     cd tdrs-backend/
     docker-compose run web sh -c 'python manage.py makemigrations --merge'
 }
