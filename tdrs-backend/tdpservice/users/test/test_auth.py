@@ -136,6 +136,16 @@ class TestLoginAMS:
     test_hhs_is = str(uuid.uuid4())
 
     @pytest.fixture(autouse=True)
+    def ams_states_factory(self):
+        """Bundle together nonce, state, and code for tests."""
+        yield {
+            "nonce": "testnonce",
+            "state": "teststate",
+            "code": secrets.token_hex(32),
+            "ams": True
+        }
+
+    @pytest.fixture(autouse=True)
     def mock_ams_configuration(self, requests_mock, settings, mock_token):
         """Mock outgoing requests in various parts of the AMS flow."""
         requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json=TestLoginAMS.mock_configuration)
@@ -160,21 +170,21 @@ class TestLoginAMS:
         })
 
     @pytest.fixture(autouse=True)
-    def mock_decode(self, states_factory, mocker):
+    def mock_decode(self, ams_states_factory, mocker):
         """Generate all the mock-up data structs needed for API tests."""
         mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
 
         mock_decode.return_value = decoded_token(
             "test@example.com",
-            states_factory['nonce']
+            ams_states_factory['nonce']
         )
 
         yield mock_decode
 
     @pytest.fixture()
-    def req_factory(self, states_factory, api_client):
+    def req_factory(self, ams_states_factory, api_client):
         """Generate a client request for API usage, part of DRY."""
-        states = states_factory
+        states = ams_states_factory
         factory = APIRequestFactory()
         request = factory.get(
             "/v1/login",
@@ -205,13 +215,13 @@ class TestLoginAMS:
 
     def test_login_with_valid_state_and_code(
         self,
-        states_factory,
+        ams_states_factory,
         req_factory,
         user,
     ):
         """Test login with state and code."""
         request = req_factory
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
         user.username = "test_existing@example.com"
         user.save()
 
@@ -221,13 +231,13 @@ class TestLoginAMS:
 
     def test_hhs_login_with_valid_state_and_code(
         self,
-        states_factory,
+        ams_states_factory,
         req_factory,
         user,
     ):
         """Test login with state and code."""
         request = req_factory
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
         user.hhs_id = self.test_hhs_is
         # test new hash
         user.login_gov_uuid = None
@@ -239,24 +249,24 @@ class TestLoginAMS:
 
     def test_login_with_existing_token(
         self,
-        states_factory,
+        ams_states_factory,
         req_factory
     ):
         """Login should proceed when token already exists."""
         view = TokenAuthorizationAMS.as_view()
         request = req_factory
         request.session["token"] = "testtoken"
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
     def test_login_with_general_exception(
         self,
-        states_factory,
+        ams_states_factory,
         req_factory
     ):
         """Test login with state and code."""
-        states = states_factory
+        states = ams_states_factory
         request = req_factory
         view = TokenAuthorizationAMS.as_view()
 
@@ -275,7 +285,7 @@ class TestLoginAMS:
     def test_login_with_inactive_user(
         self,
         inactive_user,
-        states_factory,
+        ams_states_factory,
         mock_decode,
         requests_mock,
         req_factory
@@ -296,11 +306,11 @@ class TestLoginAMS:
 
         mock_decode.return_value = decoded_token(
             "test_inactive@example.com",
-            states_factory['nonce'],
+            ams_states_factory['nonce'],
         )
 
         view = TokenAuthorizationAMS.as_view()
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
         response = view(request)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.data == {
@@ -311,13 +321,13 @@ class TestLoginAMS:
         self,
         user,
         mock_decode,
-        states_factory,
+        ams_states_factory,
         req_factory
     ):
         """Login should work with existing user."""
-        states = states_factory
+        states = ams_states_factory
         request = req_factory
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
 
         user.username = "test_existing@example.com"
         user.save()
@@ -333,16 +343,16 @@ class TestLoginAMS:
     def test_login_with_old_email(
         self,
         mock_decode,
-        states_factory,
+        ams_states_factory,
         req_factory,
         user
     ):
         """Login should work with existing user."""
         user.username = "test_old_email@example.com"
         user.save()
-        states = states_factory
+        states = ams_states_factory
         request = req_factory
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
         view = TokenAuthorizationAMS.as_view()
         mock_decode.return_value = decoded_token(
             "test_new_email@example.com",
@@ -356,7 +366,7 @@ class TestLoginAMS:
     def test_login_with_initial_superuser(
         self,
         mock_decode,
-        states_factory,
+        ams_states_factory,
         req_factory,
         settings,
         user
@@ -368,9 +378,9 @@ class TestLoginAMS:
         user.username = test_username
         user.login_gov_uuid = None
         user.save()
-        states = states_factory
+        states = ams_states_factory
         request = req_factory
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
         mock_decode.return_value = decoded_token(test_username, states["nonce"])
         view = TokenAuthorizationAMS.as_view()
         response = view(request)
@@ -382,12 +392,12 @@ class TestLoginAMS:
     def test_login_with_expired_token(
         self,
         mock_decode,
-        states_factory,
+        ams_states_factory,
         req_factory,
     ):
         """Login should proceed when token already exists."""
         request = req_factory
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
         mock_decode.side_effect = jwt.ExpiredSignatureError()
 
         view = TokenAuthorizationAMS.as_view()
@@ -397,13 +407,13 @@ class TestLoginAMS:
 
     def test_login_with_bad_validation_code(
         self,
-        states_factory,
+        ams_states_factory,
         req_factory,
         requests_mock
     ):
         """Login should error with a bad validation code."""
         request = req_factory
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
 
         requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={}, status_code=400)
 
@@ -417,12 +427,12 @@ class TestLoginAMS:
     def test_login_with_bad_nonce_and_state(
         self,
         mock_decode,
-        states_factory,
+        ams_states_factory,
         req_factory,
     ):
         """Login should error with a bad nonce and state."""
         request = req_factory
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
         view = TokenAuthorizationAMS.as_view()
         request.session["state_nonce_tracker"] = {
             "nonce": "badnonce",
@@ -435,13 +445,13 @@ class TestLoginAMS:
     def test_login_with_email_unverified(
         self,
         mock_decode,
-        states_factory,
+        ams_states_factory,
         req_factory,
     ):
         """Login should fail with unverified email."""
-        states = states_factory
+        states = ams_states_factory
         request = req_factory
-        request = create_session(request, states_factory)
+        request = create_session(request, ams_states_factory)
         mock_decode.return_value = decoded_token(
             "test@example.com",
             states['nonce'],
