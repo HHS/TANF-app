@@ -7,7 +7,7 @@ The goal of these efforts is to help prevent unintended secret key leakage. Thou
 _See [secret key leakage post-mortem summary](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/_layouts/15/Doc.aspx?sourcedoc={cbce2e75-17b2-4e70-b422-60d034fcd4af}&action=edit&wd=target%28Dev%20Notes.one%7C3dbb7d3a-694d-4f1c-a656-f907991c1f7d%2FSecret%20Key%20Leakage%20Post-Mortem%20Synthesis%7C0496800f-8810-4159-95e4-9fc605dc86d4%2F%29) for more details on how this strategy was informed._  
 
 Herein the following is described:
-- [what secret keys are and how these can be leaked](##What-are-secret-keys,-and-how-can-these-be-leaked?)
+- [what secret keys are and how these can be leaked](## What-are-secret-keys,-and-how-can-these-be-leaked?)
 - [steps we are taking to minimize potential for secret key leakage]()
 - [incident response protocol if secret keys are leaked or at risk of exposure]()
 
