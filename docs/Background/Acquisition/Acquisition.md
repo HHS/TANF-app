@@ -11,7 +11,7 @@
 ## Contracting Officer's Representative (COR)
 
 ### OFA COR
-[OFA COR Delegation Letter](COR_Delegation_Dvora_Wilensky.pdf)
+[OFA COR Delegation Letter](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Acquisition/COR%20Designation%20Letter%20Lauren%20Frohlich%20-%20TANF.pdf)
 
 - Inspect deliverables against QASP (with the Product Owner and Tech Lead)
 - Monitor contractor performance (with the Product Owner and Tech Lead)
