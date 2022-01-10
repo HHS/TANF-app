@@ -11,7 +11,7 @@ Herein the following is described:
 - [steps we are taking to minimize potential for secret key leakage](#Mitigation-practices)
 - [incident response protocol if secret keys are leaked or at risk of exposure]()
 
-## What are secret keys, and how can these be leaked?
+## What are secret keys and how can these be leaked?
 
 As described [here](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/Architecture-Decision-Record/004-configuration-by-environment-variable.md), the TDP system is configured by environment variables. [Environment variables](https://medium.com/chingu/an-introduction-to-environment-variables-and-how-to-use-them-f602f66d15fa) help minimize the risk of running into unexpected issues when changes are made to the system. Some of these environment variables are senstive because these are used to authorize access to TDP. We refer to these as "Secret keys". 
 
