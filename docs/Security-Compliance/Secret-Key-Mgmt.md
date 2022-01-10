@@ -9,7 +9,7 @@ _See [secret key leakage post-mortem summary](https://hhsgov.sharepoint.com/site
 Herein the following is described:
 - [what secret keys are and how these can be leaked](#What-are-secret-keys-and-how-can-these-be-leaked?)
 - [steps we are taking to minimize potential for secret key leakage](#Mitigation-practices)
-- [incident response protocol if secret keys are leaked or at risk of exposure]()
+- [incident response protocol if secret keys are leaked or at risk of exposure](#Communication-protocol-if-secret-keys-are-leaked)
 
 ## What are secret keys and how can these be leaked?
 
