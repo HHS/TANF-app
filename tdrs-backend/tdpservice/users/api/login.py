@@ -45,6 +45,10 @@ class ExpiredToken(Exception):
 
     pass
 
+class UnauthorizedAuthenticationSourceForRole(Exception):
+    """Unauthorized Authentication Source for Role Error Handler."""
+
+    pass
 
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define abstract methods for handling OIDC login requests."""
@@ -143,6 +147,15 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = CustomAuthentication.authenticate(**auth_options)
         logger.info(user)
 
+        logger.debug("handling user...")
+        if user:
+            logger.debug("what are the following? \n"
+                     "uuid:%s\n"
+                     "email:%s\n"
+                     "is_Staff:%d", user.login_gov_uuid, user.email, user.is_staff)
+        else:
+            logger.debug("my debug thinks user is None")
+
         if user and user.is_active:
             # Users are able to update their emails on login.gov
             # Update the User with the latest email from the decoded_payload.
@@ -159,6 +172,15 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             raise InactiveUser(
                 f'Login failed, user account is inactive: {user.username}'
             )
+        elif user and user.login_gov_uuid is not None and \
+            ("@acf.hhs.gov" in user.email or \
+             user.is_staff ): # or user.groups in ([list of roles and such])):
+                # do we want to just limit it to is_staff or do we want to be explicit with checking for every group by
+                # id/string name? Need clarity on Regional Managers which are ACF staff but won't have "is_staff=True"
+                logging.debug("actually netered my if-block")
+                raise UnauthorizedAuthenticationSourceForRole(
+                    f'Login failed, {user.email} attempted Login.gov as {user.group}'
+                )
         else:
             User = get_user_model()
 
