@@ -340,6 +340,29 @@ class TestLoginAMS:
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
+    def test_login_with_admin_user_ams(
+        self,
+        ofa_system_admin,
+        mock_decode,
+        ams_states_factory,
+        req_factory
+    ):
+        """Login should work with admin user."""
+        states = ams_states_factory
+        request = req_factory
+        request = create_session(request, ams_states_factory)
+
+        ofa_system_admin.username = "test_admin@acf.hhs.gov"
+        ofa_system_admin.save()
+        view = TokenAuthorizationAMS.as_view()
+        mock_decode.return_value = decoded_token(
+            "test_admin@acf.hhs.gov",
+            states["nonce"],
+        )
+
+        response = view(request)
+        assert response.status_code == status.HTTP_302_FOUND
+
     def test_login_with_old_email(
         self,
         mock_decode,
@@ -689,6 +712,31 @@ class TestLogin:
 
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
+
+    def test_login_with_admin_user_logindotgov(
+        self,
+        ofa_system_admin,
+        patch_login_gov_jwt_key,
+        mock,
+        states_factory,
+        req_factory
+    ):
+        """Login.gov should *NOT* work with OFA Admin user."""
+        states = states_factory
+        request = req_factory
+        request = create_session(request, states_factory)
+
+        ofa_system_admin.username = "test_admin@acf.hhs.gov"
+        ofa_system_admin.save()
+        view = TokenAuthorizationLoginDotGov.as_view()
+        mock_post, mock_decode = mock
+        mock_decode.return_value = decoded_token(
+            "test_admin@acf.hhs.gov",
+            states["nonce"],
+        )
+
+        response = view(request)
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_login_with_old_email(
         self,
