@@ -370,17 +370,7 @@ class Common(Configuration):
         'https://shspfm-dev.gss.acf.hhs.gov/eaasidentityserver/.well-known/openid-configuration'
     )
 
-    AMS_CLIENT_ID = os.getenv(
-        'AMS_CLIENT_ID',
-        ''
-    )
-
-    AMS_CLIENT_SECRET = os.getenv(
-        'AMS_CLIENT_SECRET',
-        ''
-    )
-
-    AMS_CLIENT_NAME = os.getenv(
-        'AMS_CLIENT_NAME',
-        ''
-    )
+    # The CLIENT_ID and SECRET must be set for the AMS authentication flow to work.
+    # In dev and testing environments, these can be dummy values.
+    AMS_CLIENT_ID = get_required_env_var_setting('AMS_CLIENT_ID')
+    AMS_CLIENT_SECRET = get_required_env_var_setting('AMS_CLIENT_SECRET')

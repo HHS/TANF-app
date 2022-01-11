@@ -23,6 +23,9 @@ class User(AbstractUser):
                                       unique=True)
 
     # Unique `hhsid` user claim for AMS OpenID users.
+    # Note: This field, while currently implemented, is *not* one returned by AMS.
+    # In the future, `TokenAuthorizationAMS.get_auth_options` will use `hhs_id` as the primary auth field.
+    # See also: CustomAuthentication.py
     hhs_id = models.UUIDField(editable=False,
                               blank=True,
                               null=True,

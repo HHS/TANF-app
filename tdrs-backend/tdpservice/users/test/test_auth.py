@@ -438,6 +438,7 @@ class TestLoginAMS:
             "nonce": "badnonce",
             "state": "badstate",
             "added_on": time.time(),
+            "ams": True,
         }
         with pytest.raises(SuspiciousOperation):
             view(request)

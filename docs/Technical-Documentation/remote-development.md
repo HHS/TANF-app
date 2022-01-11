@@ -10,6 +10,14 @@ This guide presumes the use of [VS Code](https://code.visualstudio.com/) with th
 ### **`cf-cli`**
 Additionally, install the latest version of the  [Cloudfoundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html) if you haven't.
 
+- **Important**: There are issues with `cf-cli` versions below `7.0` so I suggest grabbing the latest version.
+
+To get the latest version as of this writing (on macOS):
+
+```shell
+brew install cloudfoundry/tap/cf-cli@7
+```
+
 ## Access Cloudfoundry
 
 Login to CloudFoundry with the CLI:
