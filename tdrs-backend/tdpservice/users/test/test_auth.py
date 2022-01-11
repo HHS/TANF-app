@@ -162,9 +162,6 @@ class TestLoginAMS:
         requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
                            json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_id})
 
-        requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
-                           json={"email": "test_admin@acf.hhs.gov", "hhs_id": self.test_hhs_id})
-
         requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={
             "access_token": "hhJES3wcgjI55jzjBvZpNQ",
             "token_type": "Bearer",
@@ -355,7 +352,7 @@ class TestLoginAMS:
         request = req_factory
         request = create_session(request, ams_states_factory)
 
-        user.username = "test_admin@acf.hhs.gov"
+        user.username = "test_admin@acf.hhs.gov",
         user.is_staff = True
         print("about to save my admin user")
         user.save()
