@@ -45,11 +45,6 @@ class ExpiredToken(Exception):
 
     pass
 
-class UnauthorizedAuthenticationSourceForRole(Exception):
-    """Unauthorized Authentication Source for Role Error Handler."""
-
-    pass
-
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define abstract methods for handling OIDC login requests."""
 
@@ -76,6 +71,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         if not decoded_id_token["email_verified"]:
             raise UnverifiedEmail("Unverified email!")
+
+
 
         return decoded_payload
 
@@ -147,15 +144,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = CustomAuthentication.authenticate(**auth_options)
         logger.info(user)
 
-        logger.debug("handling user...")
-        if user:
-            logger.debug("what are the following? \n"
-                     "uuid:%s\n"
-                     "email:%s\n"
-                     "is_Staff:%d", user.login_gov_uuid, user.email, user.is_staff)
-        else:
-            logger.debug("my debug thinks user is None")
-
         if user and user.is_active:
             # Users are able to update their emails on login.gov
             # Update the User with the latest email from the decoded_payload.
@@ -168,19 +156,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 self.login_user(request, user, "Inactive User Found")
             else:
                 self.login_user(request, user, "User Found")
+
         elif user and not user.is_active:
             raise InactiveUser(
                 f'Login failed, user account is inactive: {user.username}'
             )
-        elif user and user.login_gov_uuid is not None and \
-            ("@acf.hhs.gov" in user.email or \
-             user.is_staff ): # or user.groups in ([list of roles and such])):
-                # do we want to just limit it to is_staff or do we want to be explicit with checking for every group by
-                # id/string name? Need clarity on Regional Managers which are ACF staff but won't have "is_staff=True"
-                logging.debug("actually netered my if-block")
-                raise UnauthorizedAuthenticationSourceForRole(
-                    f'Login failed, {user.email} attempted Login.gov as {user.group}'
-                )
         else:
             User = get_user_model()
 
@@ -312,6 +292,85 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         """Add specific auth properties for the CustomAuthentication handler."""
         auth_options = {"login_gov_uuid": sub}
         return auth_options
+
+    def get(self, request, *args, **kwargs):
+        """Handle decoding auth token and authenticate user."""
+        code = request.GET.get("code", None)
+        state = request.GET.get("state", None)
+
+        if code is None:
+            logger.info("Redirecting call to main page. No code provided.")
+            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
+
+        if state is None:
+            logger.info("Redirecting call to main page. No state provided.")
+            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
+
+        token_endpoint_response = self.get_token_endpoint_response(code)
+
+        if token_endpoint_response.status_code != 200:
+            return Response(
+                {
+                    "error": (
+                        "Invalid Validation Code Or OpenID Connect Authenticator "
+                        "Down!"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        token_data = token_endpoint_response.json()
+        id_token = token_data.get("id_token")
+
+        try:
+            decoded_payload = self.validate_and_decode_payload(request, state, token_data)
+            user = self.handle_user(request, id_token, decoded_payload)
+            if "@acf.hhs.gov" in user.email:
+                user_groups = list(user.groups.values_list('name', flat=True))
+                return Response(
+                    {
+                        "error": (
+                            'Login failed, {} attempted Login.gov authentication with role(s): {}'
+                             .format(user.email, user_groups)
+                        )
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            return response_redirect(user, id_token)
+
+        except (InactiveUser, ExpiredToken) as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        except UnverifiedEmail as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except SuspiciousOperation as e:
+            logger.exception(e)
+            raise e
+
+        except Exception as e:
+            logger.exception(f"Error attempting to login/register user:  {e} at...")
+            return Response(
+                {
+                    "error": (
+                        "Email verified, but experienced internal issue "
+                        "with login/registration."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class TokenAuthorizationAMS(TokenAuthorizationOIDC):
