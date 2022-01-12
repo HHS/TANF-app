@@ -103,8 +103,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def get_auth_options(self, access_token: Optional[str], sub: Optional[str]) -> Dict[str, str]:
         """Set auth options to handle payloads appropriately."""
 
-    # def handle_email(self, email):
-    #    pass
+    def handle_email(self, email):
+        return None
 
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
@@ -134,16 +134,18 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
                 # Login with the new superuser.
                 self.login_user(request, initial_user, "User Found")
-                return initial_user
+                return initial_user, None
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
+
         logger.info("AUTH_OPTIONS")
         logger.info(auth_options)
         user = CustomAuthentication.authenticate(**auth_options)
         logger.info(user)
+
 
         if user and user.is_active:
             # Users are able to update their emails on login.gov
@@ -175,7 +177,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             user.save()
             self.login_user(request, user, "User Created")
 
-        return user
+        is_user_email_valid = self.handle_email(user)
+
+        return user, is_user_email_valid
 
     @staticmethod
     def login_user(request, user, user_status):
@@ -192,10 +196,12 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
         # TODO: dump request.META and look for a flag for login.gov
-        logging.info(dir(request.META))
-        logging.info("META obj:" + request.META)
-        logging.info("META Remote:" + request.META.REMOTE_HOST)
-        logging.info("META_SERVER_NAME:" + request.META.SERVER_NAME)
+
+        logger = logging.getLogger(__name__)
+        logger.info(dir(request.META))
+        logger.info("META obj:" + str(request.META))
+        # logging.info("META Remote:" + request.META.REMOTE_HOST)
+        # logging.info("META_SERVER_NAME:" + request.META.SERVER_NAME)
 
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
@@ -223,7 +229,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         try:
             decoded_payload = self.validate_and_decode_payload(request, state, token_data)
-            user = self.handle_user(request, id_token, decoded_payload)
+            user, resp = self.handle_user(request, id_token, decoded_payload)
+            if resp is not None:
+                return resp
             return response_redirect(user, id_token)
 
         except (InactiveUser, ExpiredToken) as e:
@@ -299,16 +307,29 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         auth_options = {"login_gov_uuid": sub}
         return auth_options
 
-    # def handle_email(self, email):
+    def handle_email(self, user):
+        if "@acf.hhs.gov" in user.email:
+            user_groups = list(user.groups.values_list('name', flat=True))
+            return Response(
+                {
+                    "error": (
+                        '{} attempted Login.gov authentication with role(s): {}'.format(user.email, user_groups)
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
 
+    '''
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
-        logging.info(dir(request.META))
-        logging.info("META obj:" + request.META)
-        logging.info("META Remote:" + request.META.REMOTE_HOST)
-        logging.info("META_SERVER_NAME:" + request.META.SERVER_NAME)
+
+        logger = logging.getLogger(__name__)
+        print(dir(request.META))
+        print("META obj:" + str(request.META))
+        print("META URI:" + request.META.PATH_INFO)
+        # logging.info("META_SERVER_NAME:" + request.META.SERVER_NAME)
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
@@ -336,16 +357,8 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         try:
             decoded_payload = self.validate_and_decode_payload(request, state, token_data)
             user = self.handle_user(request, id_token, decoded_payload)
-            if "@acf.hhs.gov" in user.email:
-                user_groups = list(user.groups.values_list('name', flat=True))
-                return Response(
-                    {
-                        "error": (
-                            '{} attempted Login.gov authentication with role(s): {}'.format(user.email, user_groups)
-                        )
-                    },
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            if user = flag: # some arbitrary flag I set from handle_email
+                return user.bad_email_response
             return response_redirect(user, id_token)
 
         except (InactiveUser, ExpiredToken) as e:
@@ -380,7 +393,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
+        '''
 
 class TokenAuthorizationAMS(TokenAuthorizationOIDC):
     """Define methods for handling login request from HHS AMS."""
