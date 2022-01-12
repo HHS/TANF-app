@@ -105,6 +105,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def get_auth_options(self, access_token: Optional[str], sub: Optional[str]) -> Dict[str, str]:
         """Set auth options to handle payloads appropriately."""
 
+    #def handle_email(self, email):
+    #    pass
+
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
         # get user from database if they exist. if not, create a new one
@@ -144,6 +147,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = CustomAuthentication.authenticate(**auth_options)
         logger.info(user)
 
+
         if user and user.is_active:
             # Users are able to update their emails on login.gov
             # Update the User with the latest email from the decoded_payload.
@@ -156,6 +160,8 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 self.login_user(request, user, "Inactive User Found")
             else:
                 self.login_user(request, user, "User Found")
+
+
 
         elif user and not user.is_active:
             raise InactiveUser(
@@ -190,6 +196,11 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Handle decoding auth token and authenticate user."""
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
+        #TODO: dump request.META and look for a flag for login.gov
+        logging.info(dir(request.META))
+        logging.info("META obj:" + request.META)
+        logging.info("META Remote:" + request.META.REMOTE_HOST)
+        logging.info("META_SERVER_NAME:" + request.META.SERVER_NAME)
 
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
@@ -293,11 +304,17 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         auth_options = {"login_gov_uuid": sub}
         return auth_options
 
+    #def handle_email(self, email):
+
+
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
-
+        logging.info(dir(request.META))
+        logging.info("META obj:" + request.META)
+        logging.info("META Remote:" + request.META.REMOTE_HOST)
+        logging.info("META_SERVER_NAME:" + request.META.SERVER_NAME)
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
