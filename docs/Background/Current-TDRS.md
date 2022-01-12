@@ -190,7 +190,7 @@ Current TDRS checks (which are being revised and expanded upon for TDP) are incl
 
 **<details><summary>What types of metadata does OFA collect about data transmissions?</summary>**
 
-TDRS tracks data transmissions from the point that data files are *successfully* picked up for processing (i.e. if files are not picked up, no metadata is tracked) to storage into the dB. Metadata collected include: when the data was processed, the reporting period, all information from the [header record](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research/2020,%20Fall%20-%20Flat%20File%20Metadata%20Guide.md#header-structure), which tells the system how to process and store the data, and a list of any errors detected by the system. 
+TDRS tracks data transmissions from the point that data files are *successfully* picked up for processing (i.e. if files are not picked up, no metadata is tracked) to storage into the dB. Metadata collected include: when the data was processed, the reporting period, all information from the [header record](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research/2020%2C%20Fall%20-%20Flat%20File%20Metadata%20Guide.md#header-structure), which tells the system how to process and store the data, and a list of any errors detected by the system. 
 
 See [Transmissions notebook](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FTANFDataPortalOFA%2FShared%20Documents%2FDesign%2FTransmissionsDemo%2Ehtml&parent=%2Fsites%2FTANFDataPortalOFA%2FShared%20Documents%2FDesign) for more details :lock:. 
 </details>
