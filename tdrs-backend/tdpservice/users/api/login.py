@@ -104,6 +104,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Set auth options to handle payloads appropriately."""
 
     def handle_email(self, email):
+        """Handles user email exceptions."""
         return None
 
     def handle_user(self, request, id_token, decoded_token_data):
@@ -307,6 +308,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         return auth_options
 
     def handle_email(self, user):
+        """Handles user email exception to disallow ACF staff to utilize non-AMS authentication."""
         if "@acf.hhs.gov" in user.email:
             user_groups = list(user.groups.values_list('name', flat=True))
             return Response(
