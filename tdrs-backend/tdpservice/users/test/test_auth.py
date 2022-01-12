@@ -113,6 +113,13 @@ def test_get_user(user):
 
 
 @pytest.mark.django_db
+def test_auth_user_by_hhs_id(user):
+    """Test get_user method."""
+    authenticated_user = CustomAuthentication.authenticate(hhs_id=user.hhs_id)
+    assert str(authenticated_user.hhs_id) == user.hhs_id
+
+
+@pytest.mark.django_db
 def test_get_non_user(user):
     """Test that an invalid user does not return a user."""
     test_uuid = uuid.uuid1()
