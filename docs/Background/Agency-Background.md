@@ -10,4 +10,5 @@ The Administration for Children and Families (ACF) is part of the human services
     * **OCIO = Office of the Chief Information Officer** = An office that oversees ACF information technology.
     * **OPRE = [Office of Planning, Research, and Evaluation](https://www.acf.hhs.gov/opre)** = An office that focuses on increasing the quality, usefulness, sharing, and analysis of data to improve ACF programs and program participants’ outcomes
 
-![ACF ORG CHART](https://github.com/HHS/TANF-app/blob/main/design-assets/research-artifacts/acf_org_chart.png)
+
+![ACF ORG CHART](https://i.imgur.com/xm5RdZP.png)
