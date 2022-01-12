@@ -4,7 +4,7 @@ OFA's TANF grantees in the states, territories, and tribes (STTs) are [legislati
 
 Included herein is an overview of:
 - **[the data](#about-the-data)**, 
-- **[the legacy TDRS](#About-the-TANF-Data-Reporting-Sysyem-(TDRS))**, and
+- **[the legacy TDRS](#about-the-tanf-data-reporting-system-tdrs)**, and
 - **[the process through which data flow through the system](#About-the-data-reporting-process)**.
 
 Additionally, **[FAQs](#FAQs)** related to the data and the system are included. 
