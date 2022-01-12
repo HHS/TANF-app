@@ -27,9 +27,10 @@ function HeaderComp() {
   let tabIndex = 0
   /* istanbul ignore next  */
   const handleTabKey = (e) => {
-    e.preventDefault()
     /* istanbul ignore if */
     if (menuRef.current.classList.contains('is-visible')) {
+      e.preventDefault()
+      console.log('is visible')
       const focusableMenuElements = [
         ...menuRef.current.querySelectorAll('button'),
         ...menuRef.current.querySelectorAll('a'),
