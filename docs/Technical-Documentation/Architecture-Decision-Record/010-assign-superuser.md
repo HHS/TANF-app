@@ -1,5 +1,5 @@
 # 10. Assigning the Superuser
-Date: 2021-02-15
+Date: 2021-02-15 (_Updated 2021-12-28_)
 
 ## Status
 
@@ -17,7 +17,8 @@ be the method employed. However, we still need a method for creating the first s
 user will be able to assign others as needed. We will assign this with a data migration using a 
 username defined in environment variables.
 
-
 ## Consequences
 Provides a simple way to create superusers, while maintaining proper security by hiding
 the username of the first superuser.
+
+## Notes
