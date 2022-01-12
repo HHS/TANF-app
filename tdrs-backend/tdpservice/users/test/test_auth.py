@@ -731,7 +731,7 @@ class TestLogin:
         req_factory
     ):
         """Login should *NOT* work with ACF user."""
-        #TODO: Should clarify scope on just e-mail and/or any users where is_staff=True
+        # TODO: Should clarify scope on just e-mail and/or any users where is_staff=True
         states = states_factory
         request = req_factory
         request = create_session(request, states_factory)

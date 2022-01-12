@@ -72,8 +72,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         if not decoded_id_token["email_verified"]:
             raise UnverifiedEmail("Unverified email!")
 
-
-
         return decoded_payload
 
     @abstractmethod
@@ -105,7 +103,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def get_auth_options(self, access_token: Optional[str], sub: Optional[str]) -> Dict[str, str]:
         """Set auth options to handle payloads appropriately."""
 
-    #def handle_email(self, email):
+    # def handle_email(self, email):
     #    pass
 
     def handle_user(self, request, id_token, decoded_token_data):
@@ -147,7 +145,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = CustomAuthentication.authenticate(**auth_options)
         logger.info(user)
 
-
         if user and user.is_active:
             # Users are able to update their emails on login.gov
             # Update the User with the latest email from the decoded_payload.
@@ -160,8 +157,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 self.login_user(request, user, "Inactive User Found")
             else:
                 self.login_user(request, user, "User Found")
-
-
 
         elif user and not user.is_active:
             raise InactiveUser(
@@ -196,7 +191,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Handle decoding auth token and authenticate user."""
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
-        #TODO: dump request.META and look for a flag for login.gov
+        # TODO: dump request.META and look for a flag for login.gov
         logging.info(dir(request.META))
         logging.info("META obj:" + request.META)
         logging.info("META Remote:" + request.META.REMOTE_HOST)
@@ -304,8 +299,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         auth_options = {"login_gov_uuid": sub}
         return auth_options
 
-    #def handle_email(self, email):
-
+    # def handle_email(self, email):
 
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""
@@ -347,13 +341,11 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
                 return Response(
                     {
                         "error": (
-                            'Login failed, {} attempted Login.gov authentication with role(s): {}'
-                             .format(user.email, user_groups)
+                            '{} attempted Login.gov authentication with role(s): {}'.format(user.email, user_groups)
                         )
                     },
-                    status=status.HTTP_403_FORBIDDEN,
+                    status=status.HTTP_403_FORBIDDEN
                 )
-
             return response_redirect(user, id_token)
 
         except (InactiveUser, ExpiredToken) as e:
