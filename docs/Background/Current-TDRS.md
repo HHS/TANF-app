@@ -60,7 +60,7 @@ Data reports are due within 45 days of the end of the fiscal quarter--
 | Fiscal Quarter | Calendar Period | Due Date    |
 | -------------- | --------------- | ----------- |
 | 1              | Oct 1 - Dec 31  | February 14 |
-| 2              | Jan 1 – Mar 3   | May 15      |
+| 2              | Jan 1 – Mar 31   | May 15      |
 | 3              | Apr 1 – Jun 30  | August 15   |
 | 4              | Jul 1 – Sep 30  | November 14 |
 
