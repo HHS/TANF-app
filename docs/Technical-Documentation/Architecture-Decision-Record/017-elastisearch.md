@@ -21,7 +21,7 @@ We will use an Elastisearch and Kibana stack for their modern feature set and sc
  - Kibana frontend will be very user friendly compared to home rolling our own reporting interface.
 
 
-##Cons
+### Cons
 By divorcing the database(s) of TANF data from our application's PostGre SQL database, we have introduced complexity in the architecture both for accessing this data in Kibana but also in the user hand-off from our frontend to the Kibana UI.
 
 ## Notes
