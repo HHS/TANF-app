@@ -146,7 +146,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         user = CustomAuthentication.authenticate(**auth_options)
         logger.info(user)
 
-
         if user and user.is_active:
             # Users are able to update their emails on login.gov
             # Update the User with the latest email from the decoded_payload.
