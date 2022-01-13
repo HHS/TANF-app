@@ -1,4 +1,4 @@
-# 17. Elastisearch Architecture
+# 17. Elasticsearch Architecture
 
 Date: 2021-01-12 (yyyy-mm-dd)
 
