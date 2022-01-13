@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-To modernize the eventual reporting stack for TDP, we have a need for a usable data backend.
+To modernize the eventual reporting stack for TDP, we have a need for a usable data backend. To establish parity with the legacy TDRS system, we originally planned to store parsed TANF and SSP data in our PostGreSQL database; however, the data required cleaning that is burdensome to perform prior to storage so a faster, scalable solution is desired. 
 
 ## Decision
 
