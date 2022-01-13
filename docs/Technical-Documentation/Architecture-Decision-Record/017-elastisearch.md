@@ -23,6 +23,7 @@ We will use an Elastisearch and Kibana stack for their modern feature set and sc
  * Built in Reporting and Analytics capabilities - with UI capabilities to create Saved Searches, Visualizations and Dashboards.
  * Built in CSV export of Visualization data.
  * Access over REST API or Kibana UI, no database client needed.
+   * This has the added security benefit of ensuring there is not direct database access and users must be passed through our standard authentication which for OFA users will include PIV/CAC card.
  * Auto-generated index mappings, which can be tweaked to gain further performance advantages. These are also much more flexible than traditional schemas used by relational databases.
  * Capabilities to perform ML and AI analytics on data sets.
  * Cloud.gov includes the ES service with FISMA moderate pricing.
