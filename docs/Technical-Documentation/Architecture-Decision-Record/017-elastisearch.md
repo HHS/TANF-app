@@ -17,13 +17,27 @@ We will use an Elastisearch and Kibana stack for their modern feature set and sc
 ## Consequences
 
 ### Benefits
- - Elastisearch is fast becoming the industry standard if not already the standard for large data sets and getting their feature sets for customizable queries, scalability, and advanced storage methods.
- - Kibana frontend will be very user friendly compared to home rolling our own reporting interface.
-
+ * Great performance boost, specifically at large scale.
+   * Elasticsearch retains near real-time search capabilities even with datasets measured in hundreds of Terabytes.
+   * PostgreSQL encounters table/index bloatings with very large data sets (>=1 MM rows) which negatively affect performance without advanced DBA operations.
+ * Built in Reporting and Analytics capabilities - with UI capabilities to create Saved Searches, Visualizations and Dashboards.
+ * Built in CSV export of Visualization data.
+ * Access over REST API or Kibana UI, no database client needed.
+ * Auto-generated index mappings, which can be tweaked to gain further performance advantages. These are also much more flexible than traditional schemas used by relational databases.
+ * Capabilities to perform ML and AI analytics on data sets.
+ * Cloud.gov includes the ES service with FISMA moderate pricing.
+ * Automated Index Lifecycle Management policies can be configured to move data into cold storage, etc to satisfy retention requirements.
 
 ### Risks
-By divorcing the database(s) of TANF data from our application's PostGre SQL database, we have introduced complexity in the architecture both for accessing this data in Kibana but also in the user hand-off from our frontend to the Kibana UI.
+ * New query language and interface to learn for OFA staff members who will have access
+   - This is mostly mitigated through a SQL Workbench provided in Kibana where you can use regular SQL syntax to query records.
+ * More infrastructure to manage.
+   * This is mostly mitigated due to using a Cloud.gov managed service for ES and Terraform, this greatly simplifies scaling the cluster and abstracts away a lot of the difficult cluster management tasks we would have to do if we didn't use a managed service.
+   * Additional overhead to run a proxy application to control access to ES + Kibana
 
 ## Notes
 
 These changes are slated for later in our releases: currently release 3 but might not be fully implemented until v4.
+
+Please also see these notes: https://gist.github.com/jtwillis92/a6840a412676fc2d3f58c0dccbf10da1
+
