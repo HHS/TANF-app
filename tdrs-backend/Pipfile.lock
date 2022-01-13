@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2bf4c0788fc30f7f60a1564f94e9622d201bc77f49e23fa5ef6741466f2edb77"
+            "sha256": "4aa3cfa4ba46e3a4d353887c9a57145bd697146fd23a102581778e0cc6fe10b0"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.10"
+            "python_version": "3.10.1"
         },
         "sources": [
             {
@@ -841,18 +841,18 @@
         },
         "awscli": {
             "hashes": [
-                "sha256:95abae054a6c63d36a248e42208b9d9f2ba6e9f06c4f6be4e430ffdebffe025f",
-                "sha256:b84d53ba28029def3e32e700822ae18133605059956cbc9bdcd490484432dc96"
+                "sha256:86e11b7f70a05c554662fdd5f1e70acc5fbae8bd09c2bde4ff354b69d71364db",
+                "sha256:d295d6dcd86c32b9a91e41397239ad178ada5be207d43e6adcfe70d119760f83"
             ],
             "index": "pypi",
-            "version": "==1.22.32"
+            "version": "==1.22.34"
         },
         "awscli-local": {
             "hashes": [
-                "sha256:54de3e5df36017a8043c1fac8241767fb8504bcacf0a55bb41ac15af9e547a5c"
+                "sha256:861d0b7d09c7210052a19393f1877115ec6e5e08430ab48f12be8414bd90bda5"
             ],
             "index": "pypi",
-            "version": "==0.17"
+            "version": "==0.18"
         },
         "blessings": {
             "hashes": [
@@ -1048,9 +1048,9 @@
         },
         "localstack-client": {
             "hashes": [
-                "sha256:c270f7ec67fbdf092fa4af9e0036582733ccbfd82efd5ffd0b1a241c6b86d1ac"
+                "sha256:7030dae0d778feef0a790800ba3d50af81d49e410e97df7ddd6ff442e05825a7"
             ],
-            "version": "==1.29"
+            "version": "==1.31"
         },
         "markdown": {
             "hashes": [
