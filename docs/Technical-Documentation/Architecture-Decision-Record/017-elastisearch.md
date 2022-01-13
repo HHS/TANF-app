@@ -16,7 +16,7 @@ We will use an Elastisearch and Kibana stack for their modern feature set and sc
 
 ## Consequences
 
-### Pros
+### Benefits
  - Elastisearch is fast becoming the industry standard if not already the standard for large data sets and getting their feature sets for customizable queries, scalability, and advanced storage methods.
  - Kibana frontend will be very user friendly compared to home rolling our own reporting interface.
 
