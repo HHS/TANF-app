@@ -163,3 +163,12 @@ tdrs-run-pytest () {
     tdrs-compose-local run --rm web bash -c "./wait_for_services.sh && pytest ${quoted_args}"
     cd ..
 }
+tdrs-run-backend-owasp() {
+    cd-tdrs
+    ./scripts/zap-scanner.sh backend circle
+}
+
+tdrs-run-frontend-owasp() {
+    cd-tdrs
+    ./scripts/zap-scanner.sh frontend circle
+}
