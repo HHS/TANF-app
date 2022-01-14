@@ -139,7 +139,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
                 # Login with the new superuser.
                 self.login_user(request, initial_user, "User Found")
-                return initial_user, None
+                return initial_user
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
 
@@ -199,13 +199,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         """Handle decoding auth token and authenticate user."""
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
-        # TODO: dump request.META and look for a flag for login.gov
-
-        logger = logging.getLogger(__name__)
-        logger.info(dir(request.META))
-        logger.info("META obj:" + str(request.META))
-        # logging.info("META Remote:" + request.META.REMOTE_HOST)
-        # logging.info("META_SERVER_NAME:" + request.META.SERVER_NAME)
 
         if code is None:
             logger.info("Redirecting call to main page. No code provided.")
