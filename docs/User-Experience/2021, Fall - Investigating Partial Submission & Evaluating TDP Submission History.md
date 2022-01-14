@@ -57,8 +57,8 @@ Round 8 research included participants representing:
 **Supporting Documentation:**
 
 - [Research Plan](https://jstrieb.github.io/link-lock/#eyJ2IjoiMC4wLjEiLCJlIjoiUTVwckZFNHljNWc4Mkh2VzJCZDVNalpOamRQQzlYQ016NG1vUTdFSWZqY0pmRTdWcDFRZU10MTVFUXVjSGMvSEM5QXpDU3l0R0RzPSIsImkiOiJJMmY0WVpsYjJrRFNRL0VTIn0=) :lock:
-- [Project Impact Workshop Board](OFA room mural link) :lock:
-- [Topline Research Synthesis Mural](Generate OFA Room Link to replace https://app.mural.co/t/raft2792/m/raft2792/1636553956757/e7b2034bdb71ccf45f3adffe53d2f82e638a4b14?sender=mreiter1745) :lock:
+- [Project Impact Workshop Board](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1642104988898/fa7e873790876ee1ac96977fe1e51acc2b7e35b9?sender=laurenfrohlich3146) :lock:
+- [Topline Research Synthesis Mural](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1642104940177/3c4ec6a79bda5b6045f43ff4093e78eb5135f332?sender=laurenfrohlich3146) :lock:
 
 
 ---
@@ -121,7 +121,7 @@ Each file that a grantee transmits to the OFA also will be attached to an 'accep
 
   
 
-### All participants had a good idea of what to expect from the error reports referenced in Version A & B. 
+### All participants had a good idea of what to expect from the error reports referenced in Versions A & B
 
 Despite terminology differences from the current state TDRS system, all our participants had accurate ideas of what to expect out of the "Error Report" links surfaced next to each submitted file. Some said they would expect to see the Transmission Report if they clicked one of those links, others predicted something more in the vein of the Questionable Cases report, or similar reports they produce themselves to screen for errors before transmission. Multiple participants also expressed a preference for an Error Report that provided an experience closer to that of Questionable Cases than of Transmission Reports; citing increased detail that requires less effort to act upon. 
 
