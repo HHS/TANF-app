@@ -2,8 +2,6 @@
 # You will need to set this variable to match your local directory structure
 # TDRS_HOME="$HOME/Where/Ever/You/Want/TANF-app"
 
-TDRS_HOME="$HOME/devel/goraft.tech/tdrs/instances/TANF-app"
-
 # navigate terminal to tdrs home if $TDRS_HOME is set
 alias cd-tdrs='cd "$TDRS_HOME"'
 
@@ -17,16 +15,13 @@ alias cd-tdrs-backend='cd "$TDRS_HOME/tdrs-backend"'
 alias tdrs-compose-local='docker-compose -f docker-compose.yml -f docker-compose.local.yml'
 
 # Stop tdrs backend entirely, then start it up again
-alias tdrs-backend-hard-restart='tdrs-backend-down && tdrs-backend-up'
-
-# run flake8 in backend container
-alias tdrs-backend-lint='tdrs-backend-compose run --rm web bash -c "flake8 ."'
+alias tdrs-backend-hard-restart='tdrs-start-backend && tdrs-start-backend'
 
 # shortcut for running bash commands in backend container
 alias tdrs-backend-exec='tdrs-backend-compose exec web /bin/bash'
 
 # Open shell_plus for django backend inside of container
-alias tdrs-shell='tdrs-backend-compose run --rm web bash -c "python manage.py shell_plus"'
+alias tdrs-django-shell='tdrs-backend-compose run --rm web bash -c "python manage.py shell_plus"'
 
 # TDRS Frontend aliases
 
@@ -37,7 +32,7 @@ alias start-tdrs='tdrs-start-frontend && tdrs-start-backend'
 alias stop-tdrs='tdrs-stop-frontend && tdrs-stop-backend'
 
 # Restart frontend and backend
-alias restart-tdrs='tdrs-restart-frontend && tdrs-restart-backend'
+alias tdrs-restart='tdrs-restart-frontend && tdrs-restart-backend'
 
 # start all backend containers
 tdrs-start-backend() {
@@ -114,9 +109,26 @@ tdrs-fix-lint-frontend() {
     cd tdrs-frontend/ && tdrs-compose-local run --rm tdp-frontend bash -c 'eslint --fix ./src'
     cd ..
 }
-# tdrs-run-jest() {}
-# tdrs-run-pa11y() {}
-# tdrs-run-pytest() {}
+
+tdrs-yarn() {
+    cd-tdrs
+    cd tdrs-frontend/ && yarn $1
+    cd ..
+}
+
+tdrs-run-jest() {
+    tdrs-yarn test
+}
+
+
+tdrs-run-jest-cov() {
+    tdrs-yarn test:cov
+}
+
+tdrs-run-pa11y() {
+    cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility
+}
+
 # tdrs-run-owasp() {}
 
 tdrs-run-migrations() {
@@ -130,18 +142,24 @@ tdrs-merge-migrations() {
     cd-tdrs
     cd tdrs-backend/
     docker-compose run web sh -c 'python manage.py makemigrations --merge'
+    cd ..
 }
 
-prune-docker-data() {
+tdrs-prune-all-docker-data() {
     docker system prune -a
     docker system prune --volumes
 }
 
-function pytest-tdrs () {
+tdrs-run-pytest () {
+
+    cd-tdrs
+    cd tdrs-backend/
+
     if [ "$#" -lt 1 ]; then
         quoted_args=""
     else
         quoted_args="$(printf " %q" "${@}")"
     fi
-    tdrs-backend-compose run --rm web bash -c "./wait_for_services.sh && pytest ${quoted_args}"
+    tdrs-compose-local run --rm web bash -c "./wait_for_services.sh && pytest ${quoted_args}"
+    cd ..
 }
