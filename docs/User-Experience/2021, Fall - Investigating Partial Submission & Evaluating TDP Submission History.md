@@ -112,7 +112,7 @@ Each file that a grantee transmits to the OFA also will be attached to an 'accep
 
 **Jump to:**
 
-- [All participants had a good idea of what to expect from the error reports referenced in Version A & B](#all-participants-had-a-good-idea-of-what-to-expect-from-the-error-reports-referenced-in-version-a-b)
+- [All participants had a good idea of what to expect from the error reports referenced in Version A & B](#all-participants-had-a-good-idea-of-what-to-expect-from-the-error-reports-referenced-in-versions-a--b)
 - [Seeing who submitted a given file could be an important data point for grantees with multiple data analysts](#seeing-who-submitted-a-given-file-could-be-an-important-data-point-for-grantees-with-multiple-data-analysts)
 - [Making minor changes to practical guidance for errors occurring due to external constraints would be helpful in reducing resubmissions](#making-minor-changes-to-practical-guidance-for-errors-occurring-due-to-external-constraints-would-be-helpful-in-reducing-resubmissions)
 - [Having access to historical error patterns may help grantees make adjustments to their process that prevent future errors](#having-access-to-historical-error-patterns-may-help-grantees-make-adjustments-to-their-process-that-prevent-future-errors)
