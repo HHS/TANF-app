@@ -32,6 +32,13 @@ The [Research Roadmap](https://app.mural.co/t/raft2792/m/raft2792/1627058877512/
 
 With a few exceptions, we've tended to publish markdown research syntheses to summarize larger, multi-sprint research activities and studies rather than publishing individual documents for each research session; these larger research efforts are what "Rounds" refer to. The below syntheses are organized reverse-chronologically from newest to oldest:
 
+### [2021, Fall - Investigating Partial Submission & Evaluating TDP Submission History](https://github.com/HHS/TANF-app/blob/main/docs/User-Experience/Research-Syntheses/2021%2C%20Fall%20-%20Investigating%20Partial%20Submission%20%26%20Evaluating%20TDP%20Submission%20History.md)
+
+- Ran a series of collaborative workshops with DIGIT and OFA regional staff to prioritize and sort which attributes should be displayed at the top level of submission history pages in TDP and capture preferences around the minimum viable attributes to be displayed.
+- Ran a series of research sessions with grantees to investigate the impact of partial resubmission no longer being accepted in TDP and capture grantee preferences around minimum viable attributes on the Submission History page. 
+- Evaluated whether grantees understood new submission status states (Accepted, Accepted with errors, and Rejected) and correctly predict what their next steps would be to act on those statuses.
+ 
+
 ### [2021, Summer - Communicating Errors in TDP & Validations With Regional Staff](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2021%2C%20Summer%20-%20Communicating%20Errors%20in%20TDP%20%26%20Validations%20With%20Regional%20Staff.md)
 
 - Ran collaborative workshops with DIGIT to capture the full scope of pre-parsing errors that could prevent TDRS/TDP from being able to process grantee files.
