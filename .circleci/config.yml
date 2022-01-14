@@ -267,6 +267,9 @@ commands:
       - deploy-frontend:
           backend-appname: <<parameters.backend-appname>>
           frontend-appname: <<parameters.frontend-appname>>
+      - run:
+          name: Deploy Live Comms Site
+          command: ./scripts/deploy-live-comms.sh rolling tdp-live-comms
 
   deploy-infrastructure:
     parameters:
