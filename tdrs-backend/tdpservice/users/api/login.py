@@ -39,6 +39,10 @@ class UnverifiedEmail(Exception):
 
     pass
 
+class ACFUserLoginDotGov(Exception):
+    """Exception for catching ACF Users using Login.gov."""
+
+    pass
 
 class ExpiredToken(Exception):
     """Expired Token Error Handler."""
@@ -177,9 +181,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             user.save()
             self.login_user(request, user, "User Created")
 
-        is_user_email_valid = self.handle_email(user)
+        self.handle_email(user)
 
-        return user, is_user_email_valid
+        return user
 
     @staticmethod
     def login_user(request, user, user_status):
@@ -229,9 +233,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         try:
             decoded_payload = self.validate_and_decode_payload(request, state, token_data)
-            user, resp = self.handle_user(request, id_token, decoded_payload)
-            if resp is not None:
-                return resp
+            user = self.handle_user(request, id_token, decoded_payload)
             return response_redirect(user, id_token)
 
         except (InactiveUser, ExpiredToken) as e:
@@ -242,6 +244,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 },
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
         except UnverifiedEmail as e:
             logger.exception(e)
             return Response(
@@ -249,6 +252,15 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                     "error": str(e)
                 },
                 status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except ACFUserLoginDotGov as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_403_FORBIDDEN
             )
 
         except SuspiciousOperation as e:
@@ -311,13 +323,8 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         """Handle user email exception to disallow ACF staff to utilize non-AMS authentication."""
         if "@acf.hhs.gov" in user.email:
             user_groups = list(user.groups.values_list('name', flat=True))
-            return Response(
-                {
-                    "error": (
-                        '{} attempted Login.gov authentication with role(s): {}'.format(user.email, user_groups)
-                    )
-                },
-                status=status.HTTP_403_FORBIDDEN
+            raise ACFUserLoginDotGov(
+                '{} attempted Login.gov authentication with role(s): {}'.format(user.email, user_groups)
             )
 
     '''
