@@ -10,7 +10,7 @@ Research Round 8 - [Issue #1269](https://github.com/raft-tech/TANF-app/issues/12
 - [What we did](#what-we-did)
 - [What we tested](#what-we-tested)
 - [What we learned](#what-we-learned)
-- [What's next](#whats-next)
+
 
 ---
 
