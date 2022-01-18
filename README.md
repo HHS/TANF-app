@@ -28,7 +28,7 @@ Our vision is to build a new, secure, web-based data reporting system to improve
 + **[Backend](./tdrs-backend)**: Django codebase for backend
 + Web-based tools
     + **[Figma]():** Design
-    + **[MURAL](https://app.mural.co/t/raft2792):** User research and product planning collabortation
+    + **[MURAL](https://app.mural.co/t/raft2792):** User research and product planning collaboration
     + **[HHS Teams]()**: File storage, historic chats
     + **[Zenhub]()**: Tracking issues
 
