@@ -30,13 +30,13 @@ function SplashPage() {
       dispatch(setMockLoginState())
     } else {
       event.preventDefault()
-      window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+      window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/dotgov`
     }
   }
 
   const signInWithAMS = (event) => {
     event.preventDefault()
-    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/oidc`
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/ams`
   }
 
   useEffect(() => {
