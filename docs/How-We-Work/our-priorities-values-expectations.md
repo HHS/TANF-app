@@ -64,7 +64,7 @@ Review to ensure code coverage isn’t manually skipped (using “pragma: no cov
 
 Review Circle CI to ensure: [flake8](https://pypi.org/project/flake8/) and [AirBnb’s react style guides](https://github.com/airbnb/javascript/tree/master/react) are being used. 
 
-Also, review to ensure methods, variables, etc. are appropriately named. For methods that are more than 75 lines, consider refactoring into multiple shorter methods or by extracting functionality by following Don’t Repeat Yourself (DRY) principles. See [guidelines government uses to assess code maintainability](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs//How-We-Work/Heuristics.md#code-maintainability).
+Also, review to ensure methods, variables, etc. are appropriately named. For methods that are more than 75 lines, consider refactoring into multiple shorter methods or by extracting functionality by following Don’t Repeat Yourself (DRY) principles. See [guidelines government uses to assess code maintainability](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/Heuristics.md#code-maintainability).
 </details>
 
 #### Deliverable 4: Accessibility
