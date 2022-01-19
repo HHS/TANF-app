@@ -26,6 +26,8 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     stt = factory.SubFactory(STTFactory)
     login_gov_uuid = factory.Faker("uuid4")
     deactivated = False
+    # For testing convenience, though most users won't have both a login_gov_uuid and hhs_id
+    hhs_id = factory.Faker("uuid4")
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
