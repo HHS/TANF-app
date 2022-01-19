@@ -36,10 +36,12 @@ def api_client():
     """Return an API client for testing."""
     return APIClient()
 
+
 @pytest.fixture
 def user():
     """Return a basic, non-admin user."""
     return UserFactory.create()
+
 
 @pytest.fixture
 def regional_user(region, stt):
@@ -49,6 +51,7 @@ def regional_user(region, stt):
         region=region,
     )
 
+
 @pytest.fixture
 def user_in_region(stt, region):
     """Return a user in the same region as a regional staff user."""
@@ -56,6 +59,7 @@ def user_in_region(stt, region):
         groups=(Group.objects.get(name="Data Analyst"),),
         stt=stt,
     )
+
 
 @pytest.fixture
 def user_in_other_region(other_stt, other_region):
@@ -65,10 +69,12 @@ def user_in_other_region(other_stt, other_region):
         stt=other_stt,
     )
 
+
 @pytest.fixture
 def stt_user():
     """Return a user without an STT for STT tests."""
     return STTUserFactory.create()
+
 
 @pytest.fixture
 def ofa_admin_stt_user():
@@ -123,6 +129,7 @@ def stt(region):
     """Return an STT."""
     stt, _ = STT.objects.get_or_create(name="first", region=region)
     return stt
+
 
 @pytest.fixture
 def region():
@@ -198,6 +205,7 @@ def base_data_file_data(fake_file_name, user):
         "stt": int(user.stt.id)
     }
 
+
 @pytest.fixture
 def base_regional_data_file_data(fake_file_name, regional_user):
     """Return data file creation data without a file."""
@@ -213,11 +221,13 @@ def base_regional_data_file_data(fake_file_name, regional_user):
         "stt": int(regional_user.region.stts.first().id)
     }
 
+
 @pytest.fixture
 def other_region():
     """Return a region that is not associated with the tested regional staff user."""
     region, _ = Region.objects.get_or_create(id=2)
     return region
+
 
 @pytest.fixture
 def other_stt(other_region):
@@ -241,6 +251,7 @@ def other_base_regional_data_file_data(fake_file_name, regional_user, other_stt)
         "stt": int(other_stt.id)
     }
 
+
 @pytest.fixture
 def data_file_data(base_data_file_data, data_file):
     """Return data file creation data."""
@@ -249,6 +260,7 @@ def data_file_data(base_data_file_data, data_file):
         **base_data_file_data
     }
 
+
 @pytest.fixture
 def regional_data_file_data(base_regional_data_file_data, data_file):
     """Return data file creation data for a reigon."""
@@ -256,6 +268,7 @@ def regional_data_file_data(base_regional_data_file_data, data_file):
         "file": data_file,
         **base_regional_data_file_data
     }
+
 
 @pytest.fixture
 def other_regional_data_file_data(other_base_regional_data_file_data, data_file):
@@ -295,6 +308,7 @@ def admin():
     """Return a custom LogEntryAdmin."""
     return LogEntryAdmin(LogEntry, AdminSite())
 
+
 def get_private_key(private_key):
     """Getter function for transforming RSA key object to bytes for private key."""
     private_key_der = private_key.private_bytes(
@@ -302,6 +316,7 @@ def get_private_key(private_key):
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption())
     return private_key_der
+
 
 def get_public_key(private_key):
     """Getter function for transforming RSA key object to bytes for public key."""

@@ -16,6 +16,7 @@ coverage:
         target: 90%
         flags:
           - backend
+    patch: off
 
 parsers:
   gcov:
