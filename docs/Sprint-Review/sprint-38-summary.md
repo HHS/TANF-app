@@ -16,15 +16,17 @@
 - [#1082](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1082) - Update ADRs
 - [#1483](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1483) - Update Current TDRS documentation
 - [#1482](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1482) - Update workflow.md
-
-## Submitted (QASP Review, OCIO Review)
 - [#1346](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1346) - [SPIKE] Test hero images in code & adjust spec accordingly
 - [#1418](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1418) - [Research] Code docs synthesis of Resubmission Research
 - [#1522](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1522) - Update TANF-app/doc/Product-Strategy/
 - [#1521](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1521) - Update TANF-app/doc/Background/
 - [#1523](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1523) - Update TANF-app/doc/How-We-Work/
 
+## Submitted (QASP Review, OCIO Review)
+- n/a
+
 ## Moving to Next Sprint (Raft Review, In Progress, Current Sprint Backlog)
+- n/a
 
 **Blocked**
 - n/a
@@ -40,8 +42,6 @@
 
 **In Progress**
 
-
-
 - [#1417](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1417) - As a TDP user, I want to easily navigate to specific pages of the TDP website
 - [#1477](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1477) - Update readmes - **EPIC**
     - [1527](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/issues/raft-tech/tanf-app/1527) - Update TANF-app/doc/User-Experience/
@@ -51,7 +51,7 @@
 
 
 **Current Sprint Backlog**
-n/a
+- n/a
 
 
 
