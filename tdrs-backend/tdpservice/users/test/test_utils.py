@@ -51,6 +51,15 @@ class TestUtilities(TestCase):
         }
         session.save()
         with pytest.raises(SuspiciousOperation):
+            assert utils.get_nonce_and_state(session)\
+
+
+    @pytest.mark.django_db
+    def test_error_raised_when_tracker_not_in_session(self):
+        """When state_nonce_tracker is not in session an exception should be raised."""
+        session = self.client.session
+        session.save()
+        with pytest.raises(SuspiciousOperation):
             assert utils.get_nonce_and_state(session)
 
     @pytest.mark.django_db
