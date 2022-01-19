@@ -3,6 +3,5 @@
 (.*/)?docs/(.*/)?
 (.*/)?static/index_files/analytics.js
 (.*/)?regexes.json
-(.*/)?yarn.lock
 (.*/)?package-lock.json
 (.*/)?Pipfile.lock
