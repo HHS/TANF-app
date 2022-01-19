@@ -26,10 +26,10 @@ alias tdrs-django-shell='tdrs-backend-compose run --rm web bash -c "python manag
 # TDRS Frontend aliases
 
 # start both the frontend and backend
-alias start-tdrs='tdrs-start-frontend && tdrs-start-backend'
+alias tdrs-start='tdrs-start-frontend && tdrs-start-backend'
 
 # Stop both the frontend and the backend
-alias stop-tdrs='tdrs-stop-frontend && tdrs-stop-backend'
+alias tdrs-stop='tdrs-stop-frontend && tdrs-stop-backend'
 
 # Restart frontend and backend
 alias tdrs-restart='tdrs-restart-frontend && tdrs-restart-backend'
