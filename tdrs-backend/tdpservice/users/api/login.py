@@ -109,7 +109,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     def verify_email(self, email):
         """Handle user email exceptions."""
-        return None
+        pass
 
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
