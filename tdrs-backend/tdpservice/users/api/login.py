@@ -107,7 +107,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def get_auth_options(self, access_token: Optional[str], sub: Optional[str]) -> Dict[str, str]:
         """Set auth options to handle payloads appropriately."""
 
-    def handle_email(self, email):
+    def verify_email(self, email):
         """Handle user email exceptions."""
         return None
 
