@@ -63,6 +63,9 @@ services:
       - JWT_KEY
       - USE_LOCALSTACK
       - LOGGING_LEVEL
+      - AMS_CLIENT_ID
+      - AMS_CLIENT_SECRET
+      - AMS_CONFIGURATION_ENDPOINT
     volumes:
       - .:/tdpapp
     image: tdp
