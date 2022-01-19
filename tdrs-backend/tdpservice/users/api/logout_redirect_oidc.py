@@ -7,6 +7,8 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
+from tdpservice.users.api.login_redirect_oidc import LoginRedirectAMS
+
 
 class LogoutRedirectOIDC(RedirectView):
     """Handle logout requests."""
@@ -42,16 +44,24 @@ class LogoutRedirectOIDC(RedirectView):
         # remove the token from the session store as it is no longer needed
         del request.session["token"]
 
-        # params needed by the login.gov/logout endpoint
+        # Check for the ams handler key in the state to handle the logout redirect appropriately
+        use_ams_handler = request.session.get("ams", None)
+
+        # params needed by the logout endpoint
         logout_params = {
             "id_token_hint": token_hint,
-            "post_logout_redirect_uri": settings.BASE_URL + "/logout",
+            "redirect_uri": settings.BASE_URL + "/logout",
             "state": state,
         }
 
         # escape params dict into a url encoded query string
-        encoded_params = urlencode(logout_params, quote_via=quote_plus)
 
         # build out full API GET call to authorize endpoint
-        logout_endpoint = settings.LOGIN_GOV_LOGOUT_ENDPOINT + "?" + encoded_params
-        return HttpResponseRedirect(logout_endpoint)
+        if use_ams_handler:
+            ams_configuration = LoginRedirectAMS.get_ams_configuration()
+            encoded_params = urlencode(logout_params, quote_via=quote_plus)
+            return HttpResponseRedirect(ams_configuration["end_session_endpoint"] + "?" + encoded_params)
+        else:
+            logout_params["post_logout_redirect_uri"] = logout_params.pop("redirect_uri")
+            encoded_params = urlencode(logout_params, quote_via=quote_plus)
+            return HttpResponseRedirect(settings.LOGIN_GOV_LOGOUT_ENDPOINT + "?" + encoded_params)
