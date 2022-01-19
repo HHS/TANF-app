@@ -181,7 +181,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             user.save()
             self.login_user(request, user, "User Created")
 
-        self.handle_email(user)
+        self.verify_email(user)
 
         return user
 
