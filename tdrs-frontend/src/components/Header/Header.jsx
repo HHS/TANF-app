@@ -150,18 +150,20 @@ function HeaderComp() {
                     </a>
                   )}
                 </li>
-                <li className="usa-nav__secondary-item">
-                  <a
-                    className="sign-out-link"
-                    href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
-                  >
-                    <FontAwesomeIcon
-                      className="margin-right-1"
-                      icon={faSignOutAlt}
-                    />
-                    Sign Out
-                  </a>
-                </li>
+                {authenticated && (
+                  <li className="usa-nav__secondary-item">
+                    <a
+                      className="sign-out-link"
+                      href={`${process.env.REACT_APP_BACKEND_URL}/logout/oidc`}
+                    >
+                      <FontAwesomeIcon
+                        className="margin-right-1"
+                        icon={faSignOutAlt}
+                      />
+                      Sign Out
+                    </a>
+                  </li>
+                )}
               </ul>
             </div>
           </div>
