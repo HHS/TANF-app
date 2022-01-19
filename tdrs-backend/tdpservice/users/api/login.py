@@ -312,7 +312,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
         auth_options = {"login_gov_uuid": sub}
         return auth_options
 
-    def handle_email(self, user):
+    def verify_email(self, user):
         """Handle user email exception to disallow ACF staff to utilize non-AMS authentication."""
         if "@acf.hhs.gov" in user.email:
             user_groups = list(user.groups.values_list('name', flat=True))
