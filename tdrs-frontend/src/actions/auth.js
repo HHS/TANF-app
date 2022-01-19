@@ -72,6 +72,6 @@ export const setMockLoginState = () => async (dispatch) => {
   // localStorage converts all values to strings, so to get a falsy value
   // we pass in a blank string
   window.localStorage.setItem('loggedIn', loginState ? '' : true)
+  dispatch({ type: SET_MOCK_LOGIN_STATE })
   window.location.reload()
-  dispatch(SET_MOCK_LOGIN_STATE)
 }
