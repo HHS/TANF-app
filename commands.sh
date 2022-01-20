@@ -36,45 +36,42 @@ alias tdrs-stop='tdrs-stop-frontend && tdrs-stop-backend'
 alias tdrs-restart='tdrs-restart-frontend && tdrs-restart-backend'
 
 # start all backend containers
-tdrs-start-backend() {
-    cd-tdrs
-    cd tdrs-backend && tdrs-compose-local up -d
-    cd ..
-}
+alias tdrs-start-backend='tdrs-compose-backend up -d'
 
 # run npm install updating all dependencies and start the dev server
-tdrs-start-frontend() {
-    cd-tdrs
-    cd tdrs-frontend && tdrs-compose-local up -d
-    cd ..
-}
+alias tdrs-start-frontend='tdrs-compose-frontend up -d'
 
 # Stop all containers for the backend
-tdrs-stop-backend() {
-    cd-tdrs
-    cd tdrs-backend && tdrs-compose-local down
-    cd ..
-}
+alias tdrs-stop-backend='tdrs-compose-backend down'
 # stop the frontend development server
-tdrs-stop-frontend() {
-    cd-tdrs
-    cd tdrs-frontend && tdrs-compose-local down
-    cd ..
-}
+alias tdrs-stop-frontend='tdrs-compose-frontend down'
 
 # restart the frontends, mainly to rebuild dependencies
-tdrs-restart-frontend() {
+alias tdrs-restart-frontend='tdrs-compose-frontend restart'
+
+# restart all containers for the backend
+alias tdrs-restart-backend='tdrs-compose-backend restart'
+
+# to restart just django, keeping the other containers intact.
+alias restart-django='tdrs-compose-django restart web'
+
+# run flake8 against backend source from inside of web container
+alias tdrs-lint-backend='tdrs-compose-backend run --rm web bash -c "flake8 ."'
+
+# short cut for running compose sub commands on backend
+tdrs-compose-backend() {
     cd-tdrs
-    cd tdrs-frontend && tdrs-compose-local restart
+    cd tdrs-backend && tdrs-compose-local $@
     cd ..
 }
 
-# restart all containers for the backend
-tdrs-restart-backend() {
+# short cut for running compose sub commands on backend
+tdrs-compose-frontend() {
     cd-tdrs
-    cd tdrs-backend && tdrs-compose-local restart
+    cd tdrs-frontend && tdrs-compose-local $@
     cd ..
 }
+
 
 # Stop the backend if its running and rebuild the docker container for django
 tdrs-rebuild-backend() {
@@ -84,36 +81,23 @@ tdrs-rebuild-backend() {
     cd ..
 }
 
-# to restart just django, keeping the other containers intact.
-restart-django() {
-    cd-tdrs
-    cd tdrs-backend && docker-compose restart web
-    cd ..
-}
-
-# run flake8 against backend source from inside of web container
-tdrs-lint-backend() {
-    cd-tdrs
-    cd tdrs-backend/ && tdrs-compose-local run --rm web bash -c 'flake8 .'
-    cd ..
-}
 # Run eslint against frontend source from frontend container
 tdrs-lint-frontend() {
     cd-tdrs
-    cd tdrs-frontend/ && tdrs-compose-local run --rm tdp-frontend bash -c 'yarn lint'
+    yarn lint
     cd ..
 }
 
 # Fix all automaticly fixable linting errors for the frontend
 tdrs-fix-lint-frontend() {
     cd-tdrs
-    cd tdrs-frontend/ && tdrs-compose-local run --rm tdp-frontend bash -c 'eslint --fix ./src'
+    eslint --fix ./src
     cd ..
 }
 
-tdrs-yarn() {
+tdrs-npm-run() {
     cd-tdrs
-    cd tdrs-frontend/ && yarn $1
+    cd tdrs-frontend/ && npm run $1
     cd ..
 }
 
