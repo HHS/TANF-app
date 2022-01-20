@@ -1,4 +1,4 @@
-_updated June 2021_
+_updated January 2022_
 # Product Roadmap
 Our [roadmap](https://app.mural.co/invitation/mural/raft2792/1629476801275?sender=laurenfrohlich3146&key=5328c2c6-a097-4b3d-bcf7-f2e551a01a72) :lock: represents our latest thinking about the order in which we’ll tackle the various pieces of the overarching problem.
 
@@ -18,34 +18,33 @@ Value Delivered: Get approval for the authority to operate and create a producti
 |Create production environment | In Progress
 
 ## Release 1: Secure access and upload to TDP
-Value Delivered: ACF employees can use a secure method to log into the system; this would require a PIV/CAC card.
-
 Our first release to production will include the functionality built for ATO (above) and also include secure ways for users to access the system via ACF AMS for ACF users and NextGen XMS/Login.gov for non-ACF users. It is important that these measures are put into place before sensitive production data is uploaded to the system.
-
-The team is also investigating options for optimizing permission management and strategy as a part of this release. 
+ 
 | Outcome | Status | 
 | -------- | ------- | 
-| Privileged ACF users are required to login with PIV/CAC credentials | In Progress
-| Permissions Configuration | Complete
-| Secret key leakage prevention | Nearly Complete
-| Production Deployment | In Progress
+| TDP is secure and compliant as a system and for all users. | Nearly Complete
+| TDP Users have a smooth onboarding and login experience that is secure. | Nearly Complete
+| TDP platform is hardened and stable and robust for deployment and live in a production environment. | In Progress
 
 
 ## Release 2: Early Secure Release
-Value Delivered: Allow users to securely upload data into our system, replacing a less secure way of doing so while increasing communication with the users and not increasing burden for OFA Admin staff. This release will include a workflow for 8 Tribes to pilot the use of login, upload and download of files. While this type of workflow isn't our long term workflow, including it at this point delivers value to the users quicker. 
+This release will allow users to securely upload data into our system in production, replacing a less secure way of doing so, while increasing communication with the users and not increasing burden for OFA Admin staff. This release will allow approximately 8 tribes to pilot the use of login, upload, and download of files, while maintaining TDRS on the backend. While this type of workflow isn't our long term workflow, including it at this point delivers value to the users more quickly. 
 
-_Risks:_ The users that would be on-boarded to this process, would potentially have to learn and adjust with future releases and changes in functionality and workflow. Increased communication with them should help here.
+_Risks:_ The users who would be onboarded to this process would potentially have to learn and adjust with future releases and changes in functionality and workflow. Increased communication with them should help here.
 | Outcome | Status | 
 | -------- | ------- | 
-| STT user of the system knows their file(s) were successfully uploaded | In progress
-| Files successfully transferred to ACF server | Not Started
-| Files uploaded by STT user(s) are successfully entered into the existing TDRS system | Not Started
+| Tribal users are engaged with OFA and communication channels are clear. | In Progress| 
+| Users know how to access and onboard TDP easily. | In Progress| 
+| Users can upload and transmit files securely to TDRS database. |Not Started|
+| Early Tribe and State users can securely upload reports with TDP instead of using unsecured email. |Not Started|
+| Users can resubmit files with error fixes |Not Started|
+
 
 ## Release 3: Parity, Data Parsing, Automated Status, Notifications
-Value Delivered: Create a software system with a database that will parse data, communicate error messages to the user that are easier to read and act upon. This release will allow us to onboard more users and eventually deprecate the TANF Data Reporting System.
+This release will parse and validate submitted data and store accepted data in a database. This workflow will include automated email notifications and user-friendly in-app error messages to help users better understand their data errors and submission history. This release will also include onboarding more users and will eventually deprecate the legacy TANF Data Reporting System.
 
-## Release 4 and beyond
-In addition to the work mentioned above, we are looking forward in our research plans to develop functionality that will serve the rest of our users that includes (but is not limited to) data cleansing and validation, additional user access management tools, user interface enhancements based on usability testing, and reports and analytics. 
+## Release 4 and Beyond
+In Release 4, we will begin to deliver features beyond parity with TDRS to address user needs, including (but not limited to) pre-submission data cleansing and validation, additional user access management tools, user interface enhancements based on usability testing, and reports and analytics. 
 
 ## Backlog
 The backlog can be found in the [raft-tech fork of the TANF-app GitHub public repository](https://github.com/raft-tech/TANF-app/issues).
