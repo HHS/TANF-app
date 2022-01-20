@@ -22,7 +22,7 @@
 .usa-prose > ul li,
 .usa-prose > ol li, .usa-list li{
   margin-bottom:0.25em;
-  max-width:68ex;
+
 }
 .usa-prose > ul li:last-child,
 .usa-prose > ol li:last-child, .usa-list li:last-child{
@@ -3354,7 +3354,7 @@ button.usa-combo-box__clear-input:focus{
   line-height:1.5;
   margin-bottom:0;
   margin-top:0;
-  max-width:68ex;
+  
 }
 * + .usa-paragraph{
   margin-top:1em;
@@ -3448,7 +3448,7 @@ button.usa-combo-box__clear-input:focus{
   line-height:1.5;
   margin-bottom:0;
   margin-top:0;
-  max-width:68ex;
+  
 }
 .usa-prose > * + p{
   margin-top:1em;
