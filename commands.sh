@@ -16,7 +16,7 @@ alias cd-tdrs-backend='cd "$TDRS_HOME/tdrs-backend"'
 alias tdrs-compose-local='docker-compose -f docker-compose.yml -f docker-compose.local.yml'
 
 # Stop tdrs backend entirely, then start it up again
-alias tdrs-backend-hard-restart='tdrs-start-backend && tdrs-start-backend'
+alias tdrs-backend-hard-restart='tdrs-stop-backend && tdrs-start-backend'
 
 # shortcut for running bash commands in backend container
 alias tdrs-backend-exec='tdrs-backend-compose exec web /bin/bash'
