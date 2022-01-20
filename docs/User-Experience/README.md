@@ -14,13 +14,13 @@ This directory includes the following research- and design-related docs and reso
   - Support the overall team's alignment on *what* needs to be researched and delivered to support functionality in the product roadmap
   - Support the design team in determining research strategy.
   - Support the design team in pre-planning research to reduce the planning lift of prioritizing any given research topic.
-- **[User Research guide]()** - covers practices and considerations for ensuring participant privacy and safety (including psychological safety).
-- **[Research Syntheses]()** - Folder for storing findings from user research sessions
+- **[User Research guide](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/User-Research-Guide.md)** - covers practices and considerations for ensuring participant privacy and safety (including psychological safety).
+- **[Research Syntheses](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research-Syntheses)** - Folder for storing findings from user research sessions
 
 ### Design 
-- **[Design principles]()** - is an overview of the guidelines we're using to design TDP 
-- **[Style guide]()** - is an overview of the design tools and styling parameters for TDP 
-- **[Dev-ready designs]()** - Folder for storing high fidelity final design mockups that will serve as the basis for feature development
+- **[Design principles](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Design-Principles.md)** - is an overview of the guidelines we're using to design TDP 
+- **[Style guide](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Style-Guide.md)** - is an overview of the design tools and styling parameters for TDP 
+- **[Dev-ready designs](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Dev-Ready-Designs)** - Folder for storing high fidelity final design mockups that will serve as the basis for feature development
 
 ### Additional resources
-- **[UX markdown practices]()** - Includes guidance for structuring UX-related documents stored herein this directory
+- **[UX markdown practices](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/UX-markdown-practices.md)** - Includes guidance for structuring UX-related documents stored herein this directory
