@@ -17,7 +17,8 @@ We will use an Elastisearch and Kibana stack for their modern feature set and sc
 ## Consequences
 
 ### Benefits
- * Great performance boost, specifically at large scale.
+
+ * Significant performance increase at large scales.
    * Elasticsearch retains near real-time search capabilities even with datasets measured in hundreds of Terabytes.
    * PostgreSQL encounters table/index bloatings with very large data sets (>=1 MM rows) which negatively affect performance without advanced DBA operations.
  * Built in Reporting and Analytics capabilities - with UI capabilities to create Saved Searches, Visualizations and Dashboards.
