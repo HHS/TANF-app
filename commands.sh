@@ -12,6 +12,7 @@ alias cd-tdrs-frontend='cd "$TDRS_HOME/tdrs-frontend"'
 alias cd-tdrs-backend='cd "$TDRS_HOME/tdrs-backend"'
 
 # shortcut for applying all relavent compose files for local development
+# I.E. `cd-tdrs-frontend && tdrs-compose-local up`
 alias tdrs-compose-local='docker-compose -f docker-compose.yml -f docker-compose.local.yml'
 
 # Stop tdrs backend entirely, then start it up again
