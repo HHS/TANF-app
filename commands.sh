@@ -52,7 +52,22 @@ alias tdrs-restart-frontend='tdrs-compose-frontend restart'
 alias tdrs-restart-backend='tdrs-compose-backend restart'
 
 # to restart just django, keeping the other containers intact.
-alias restart-django='tdrs-compose-django restart web'
+alias tdrs-restart-django='tdrs-compose-backend restart web'
+
+# Run frontend unit tests through jest
+alias tdrs-run-jest='tdrs-npm-run test'
+
+# Run frontend unit tests through jest with coverage report
+alias tdrs-run-jest-cov='tdrs-npm-run test:cov'
+
+# run any new migrations for django backend
+alias tdrs-run-migrations='tdrs-compose-backend run web sh -c "python manage.py migrate"'
+
+# Generate new migrations from changes to models for django backend
+alias tdrs-run-migrations='tdrs-compose-backend run web sh -c "python manage.py makemigrations"'
+
+# Nuke all non running docker data
+alias tdrs-prune-all-docker-data='docker system prune -a && docker system prune --volumes'
 
 # run flake8 against backend source from inside of web container
 tdrs-lint-backend() {
@@ -61,7 +76,6 @@ tdrs-lint-backend() {
         echo "Flake8 linter found no issues"
     fi
 }
-
 
 # short cut for running compose sub commands on backend
 tdrs-compose-backend() {
@@ -76,7 +90,6 @@ tdrs-compose-frontend() {
     cd tdrs-frontend && tdrs-compose-local $@
     cd ..
 }
-
 
 # Stop the backend if its running and rebuild the docker container for django
 tdrs-rebuild-backend() {
@@ -100,49 +113,27 @@ tdrs-fix-lint-frontend() {
     cd ..
 }
 
+# Shortcut for running npm scripts for the frontend
 tdrs-npm-run() {
     cd-tdrs
-    cd tdrs-frontend/ && npm run $1
+    cd tdrs-frontend/ && npm run $@
     cd ..
 }
 
-tdrs-run-jest() {
-    npm run test
-}
-
-
-tdrs-run-jest-cov() {
-    npm run test:cov
-}
-
+# Run pa11y tests on frontend
 tdrs-run-pa11y() {
     cd tdrs-frontend; mkdir pa11y-screenshots/; npm run test:accessibility
-}
-
-tdrs-run-migrations() {
-    cd-tdrs
-    cd tdrs-backend/
-    docker-compose run web sh -c 'python manage.py migrate'
     cd ..
 }
 
-tdrs-merge-migrations() {
-    cd-tdrs
-    cd tdrs-backend/
-    docker-compose run web sh -c 'python manage.py makemigrations --merge'
-    cd ..
-}
 
-tdrs-prune-all-docker-data() {
-    docker system prune -a
-    docker system prune --volumes
-}
-
+# Spin up backend services and run pytest in docker
 tdrs-run-pytest () {
 
     cd-tdrs
     cd tdrs-backend/
 
+    # to escape quoted arguements that would be passed to docker inside of a quote
     if [ "$#" -lt 1 ]; then
         quoted_args=""
     else
@@ -151,12 +142,17 @@ tdrs-run-pytest () {
     tdrs-compose-local run --rm web bash -c "./wait_for_services.sh && pytest ${quoted_args}"
     cd ..
 }
+
+
+# Run owasp scan for backend assuming circle ci environment
 tdrs-run-backend-owasp() {
-    cd-tdrs
+    tdrs-start-backend
     ./scripts/zap-scanner.sh backend circle
 }
 
+# Run owasp scan for frontend assuming circle ci environment
 tdrs-run-frontend-owasp() {
-    cd-tdrs
+    tdrs-start-frontend
     ./scripts/zap-scanner.sh frontend circle
 }
+alias tdrs-functions='declare -F|grep tdrs && alias|grep tdrs|cut -d" " -f1 --complement'
