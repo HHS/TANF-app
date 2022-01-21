@@ -146,13 +146,29 @@ tdrs-run-pytest () {
 
 # Run owasp scan for backend assuming circle ci environment
 tdrs-run-backend-owasp() {
-    tdrs-start-backend
+    cd-tdrs-backend
+
+    # We don't need to use the local compose file
+    # because we are trying to simulate a production environment
+
+    docker-compose up -d --build
+    docker-compose run --rm zaproxy bash -c \
+                   "PATH=$PATH:/home/zap/.local/bin &&
+               pip install wait-for-it &&
+               wait-for-it --service http://web:8080 \
+                           --timeout 60 \
+                           -- echo \"Django is ready\""
+    cd ..
     ./scripts/zap-scanner.sh backend circle
 }
 
 # Run owasp scan for frontend assuming circle ci environment
 tdrs-run-frontend-owasp() {
-    tdrs-start-frontend
+    cd-tdrs-frontend
+    # We don't need to use the local compose file
+    # because we are trying to simulate a production environment
+    docker-compose up -d --build
+    cd ..
     ./scripts/zap-scanner.sh frontend circle
 }
 
