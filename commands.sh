@@ -90,7 +90,7 @@ tdrs-rebuild-backend() {
 # Run eslint against frontend source from frontend container
 tdrs-lint-frontend() {
     cd-tdrs
-    yarn lint
+    npm run lint
     cd ..
 }
 
@@ -108,19 +108,17 @@ tdrs-npm-run() {
 }
 
 tdrs-run-jest() {
-    tdrs-yarn test
+    npm run test
 }
 
 
 tdrs-run-jest-cov() {
-    tdrs-yarn test:cov
+    npm run test:cov
 }
 
 tdrs-run-pa11y() {
-    cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility
+    cd tdrs-frontend; mkdir pa11y-screenshots/; npm run test:accessibility
 }
-
-# tdrs-run-owasp() {}
 
 tdrs-run-migrations() {
     cd-tdrs
