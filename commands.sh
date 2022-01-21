@@ -24,8 +24,6 @@ alias tdrs-backend-exec='tdrs-compose-backend exec web /bin/bash'
 # Open shell_plus for django backend inside of container
 alias tdrs-django-shell='tdrs-compose-backend run --rm web bash -c "python manage.py shell_plus"'
 
-# TDRS Frontend aliases
-
 # start both the frontend and backend
 alias tdrs-start='tdrs-start-frontend && tdrs-start-backend'
 
