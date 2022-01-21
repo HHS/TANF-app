@@ -56,7 +56,13 @@ alias tdrs-restart-backend='tdrs-compose-backend restart'
 alias restart-django='tdrs-compose-django restart web'
 
 # run flake8 against backend source from inside of web container
-alias tdrs-lint-backend='tdrs-compose-backend run --rm web bash -c "flake8 ."'
+tdrs-lint-backend() {
+    tdrs-compose-backend run --rm web bash -c "flake8 ."
+    if [ $? -eq 0 ]; then
+        echo "Flake8 linter found no issues"
+    fi
+}
+
 
 # short cut for running compose sub commands on backend
 tdrs-compose-backend() {
