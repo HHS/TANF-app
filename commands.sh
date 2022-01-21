@@ -155,4 +155,6 @@ tdrs-run-frontend-owasp() {
     tdrs-start-frontend
     ./scripts/zap-scanner.sh frontend circle
 }
+
+# List all aliases and functions associated with tdrs
 alias tdrs-functions='declare -F|grep tdrs && alias|grep tdrs|cut -d" " -f1 --complement'
