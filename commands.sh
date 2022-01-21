@@ -19,10 +19,10 @@ alias tdrs-compose-local='docker-compose -f docker-compose.yml -f docker-compose
 alias tdrs-backend-hard-restart='tdrs-stop-backend && tdrs-start-backend'
 
 # shortcut for running bash commands in backend container
-alias tdrs-backend-exec='tdrs-backend-compose exec web /bin/bash'
+alias tdrs-backend-exec='tdrs-compose-backend exec web /bin/bash'
 
 # Open shell_plus for django backend inside of container
-alias tdrs-django-shell='tdrs-backend-compose run --rm web bash -c "python manage.py shell_plus"'
+alias tdrs-django-shell='tdrs-compose-backend run --rm web bash -c "python manage.py shell_plus"'
 
 # TDRS Frontend aliases
 
