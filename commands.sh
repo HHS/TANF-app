@@ -69,6 +69,9 @@ alias tdrs-run-migrations='tdrs-compose-backend run web sh -c "python manage.py 
 # Nuke all non running docker data
 alias tdrs-prune-all-docker-data='docker system prune -a && docker system prune --volumes'
 
+# Run eslint against frontend source from frontend container
+alias tdrs-lint-frontend='tdrs-npm-run lint'
+
 # run flake8 against backend source from inside of web container
 tdrs-lint-backend() {
     tdrs-compose-backend run --rm web bash -c "flake8 ."
@@ -99,16 +102,9 @@ tdrs-rebuild-backend() {
     cd ..
 }
 
-# Run eslint against frontend source from frontend container
-tdrs-lint-frontend() {
-    cd-tdrs
-    npm run lint
-    cd ..
-}
-
 # Fix all automaticly fixable linting errors for the frontend
 tdrs-fix-lint-frontend() {
-    cd-tdrs
+    cd-tdrs-frontend
     eslint --fix ./src
     cd ..
 }
