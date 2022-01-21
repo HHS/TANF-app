@@ -41,6 +41,7 @@ alias tdrs-start-frontend='tdrs-compose-frontend up -d'
 
 # Stop all containers for the backend
 alias tdrs-stop-backend='tdrs-compose-backend down'
+
 # stop the frontend development server
 alias tdrs-stop-frontend='tdrs-compose-frontend down'
 
