@@ -26,7 +26,7 @@ class UserViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
-):
+    ):
     """User accounts viewset."""
 
     permission_classes = [IsAuthenticated, UserPermissions]
@@ -48,6 +48,18 @@ class UserViewSet(
         serializer.save()
         logger.info(
             "Profile update for user: %s on %s", self.request.user, timezone.now()
+        )
+        return Response(serializer.data)
+
+    @action(methods=["PATCH"], detail=False)
+    def request_access(self, request, pk=None):
+        """Request access for user with pk"""
+        request.data['access_request'] = True
+        serializer = self.get_serializer(self.request.user, request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        logger.info(
+            "Access request for user: %s on %s", self.request.user, timezone.now()
         )
         return Response(serializer.data)
 
