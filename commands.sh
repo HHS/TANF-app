@@ -31,7 +31,7 @@ alias tdrs-start='tdrs-start-backend && tdrs-start-frontend'
 alias tdrs-stop='tdrs-stop-frontend && tdrs-stop-backend'
 
 # Restart frontend and backend
-alias tdrs-restart='tdrs-restart-frontend && tdrs-restart-backend'
+alias tdrs-restart='tdrs-restart-backend && tdrs-restart-frontend' 
 
 # start all backend containers
 alias tdrs-start-backend='tdrs-compose-backend up -d'
