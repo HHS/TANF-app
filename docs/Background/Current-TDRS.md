@@ -33,7 +33,7 @@ See below for a visual of this data flow.
 ![dataflow_tdrs](https://i.imgur.com/1bK7HMJ.jpg)
 [Figma link to data flow](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=5617%3A47733)
 
-We've also outlined what we've observed from [user research](https://github.com/HHS/TANF-app/blob/main/docs/User-Experience/Research/2020%2C%20Fall%20-%20Understanding%20STT%20Roles%2C%20Source%20of%20Truth%2C%20and%20Metadata.md) about how data is prepared, transmitted, and used. This includes details about: 
+We've also outlined what we've observed from [user research](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research-Syntheses/2020%2C%20Fall%20-%20Understanding%20STT%20Roles%2C%20Source%20of%20Truth%2C%20and%20Metadata.md) about how data is prepared, transmitted, and used. This includes details about: 
  * the kinds of data STTs can submit
  * tools STTs use to prepare data files (fTANF, etc.)
  * resources OFA provides to STTs on how to prepare and validate their files
@@ -164,7 +164,7 @@ Data file sizes vary by section of the TANF/SSP-MOE reports and are as follows:
 
 "Encryption" is an artifact of STTs using executables like FTANF.exe and SSPMOE.exe to prepare their data transmissions files. Encryption in this context means that the values in the SSN position of Section 1 and Section 2 data files are replaced with other alphanumeric characters. 
     
-TDRS has a decryption script that runs on transmitted files if (and only if) the files have an "E" as the [encryption indicator in the header record](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research/2020%2C%20Fall%20-%20Flat%20File%20Metadata%20Guide.md#header-structure). For future reference: in the absence of checking the header record, if the SSN includes special characters, this is also evidence of encryption.
+TDRS has a decryption script that runs on transmitted files if (and only if) the files have an "E" as the [encryption indicator in the header record](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research-Syntheses/2020,%20Fall%20-%20Flatfile%20Metadata%20Guide.md#header-structure). For future reference: in the absence of checking the header record, if the SSN includes special characters, this is also evidence of encryption.
     
 This decryption ensures that SSNs stored in the database can be used to match to other administrative data sources (e.g. matching to wage records to track employment outcomes for individuals receiving TANF). 
 
