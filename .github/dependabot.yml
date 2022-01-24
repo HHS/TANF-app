@@ -11,6 +11,8 @@ updates:
     labels:
       - "dependencies"
       - "frontend"
+      - "a11y-review"
+      - "dev"
       - "raft review"
     reviewers:
       - "raft-tech/tdrs-developers"
@@ -34,6 +36,7 @@ updates:
     labels:
       - "dependencies"
       - "backend"
+      - "dev"
       - "raft review"
     reviewers:
       - "raft-tech/tdrs-developers"
