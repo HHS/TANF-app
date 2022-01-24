@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -18,8 +18,60 @@ import NavItem from '../NavItem/NavItem'
  */
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
+  const [isMenuVisible, setIsMenuVisible] = useState(false)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
+
+  const menuRef = useRef()
+
+  let tabIndex = 0
+  /* istanbul ignore next  */
+  const handleTabKey = (e) => {
+    /* istanbul ignore if */
+    if (menuRef.current.classList.contains('is-visible')) {
+      e.preventDefault()
+      console.log('is visible')
+      const focusableMenuElements = [
+        ...menuRef.current.querySelectorAll('button'),
+        ...menuRef.current.querySelectorAll('a'),
+      ]
+
+      const firstElement = focusableMenuElements[0]
+      const lastIndex = focusableMenuElements.length - 1
+      const lastElement = focusableMenuElements[lastIndex]
+
+      if (focusableMenuElements.includes(document.activeElement)) {
+        if (!e.shiftKey && tabIndex >= lastIndex) {
+          tabIndex = 0
+        } else if (e.shiftKey && tabIndex === 0) {
+          tabIndex = lastIndex
+        } else if (e.shiftKey) {
+          tabIndex -= 1
+        } else {
+          tabIndex += 1
+        }
+      } else {
+        tabIndex = 0
+      }
+
+      focusableMenuElements[tabIndex].focus()
+    }
+
+    return false
+  }
+
+  const keyListenersMap = new Map([[9, handleTabKey]])
+
+  /* istanbul ignore next  */
+  useEffect(() => {
+    function keyListener(e) {
+      const listener = keyListenersMap.get(e.keyCode)
+      return listener && listener(e)
+    }
+    document.addEventListener('keydown', keyListener)
+
+    return () => document.removeEventListener('keydown', keyListener)
+  }, [])
 
   const isOFASystemAdmin = () => {
     return user?.roles?.some((role) => role.name === 'OFA System Admin')
@@ -43,7 +95,12 @@ function HeaderComp() {
             </button>
           )}
         </div>
-        <nav aria-label="Primary navigation" className="usa-nav">
+        <nav
+          ref={menuRef}
+          role="navigation"
+          aria-label="Primary navigation"
+          className="usa-nav"
+        >
           <div className="usa-nav__inner">
             <button type="button" className="usa-nav__close">
               <img src={closeIcon} alt="close" />
