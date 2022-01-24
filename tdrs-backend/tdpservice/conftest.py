@@ -48,7 +48,7 @@ def regional_user(region, stt):
     """Return a regional staff user."""
     return STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
-        region=region,
+        location=region,
     )
 
 
@@ -57,7 +57,7 @@ def user_in_region(stt, region):
     """Return a user in the same region as a regional staff user."""
     return STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
-        stt=stt,
+        location=stt,
     )
 
 
@@ -66,7 +66,7 @@ def user_in_other_region(other_stt, other_region):
     """Return a user that is not in the same region as the tested regional staff."""
     return STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
-        stt=other_stt,
+        location=other_stt,
     )
 
 
