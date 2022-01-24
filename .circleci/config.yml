@@ -43,6 +43,12 @@ commands:
           name: Build and spin-up React application
           command: cd tdrs-frontend; docker-compose up -d --build
 
+  disable-npm-audit:
+    steps:
+      - run:
+          name: Disable npm audit warnings in CI
+          command: npm set audit false
+
   # This allows us to use the orb stanza for node/install within other commands
   # NOTE: This doesn't work correctly on machine executors
   install-nodejs: node/install
@@ -215,6 +221,7 @@ commands:
     steps:
       - install-nodejs:
           node-version: "16.13"
+      - disable-npm-audit
       - install-nodejs-packages:
           app-dir: tdrs-frontend
       - get-app-deploy-strategy:
@@ -359,6 +366,7 @@ jobs:
     steps:
       - checkout
       - install-nodejs-machine
+      - disable-npm-audit
       - install-nodejs-packages:
           app-dir: tdrs-frontend
       - run:

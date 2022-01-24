@@ -12,6 +12,8 @@ WORKDIR /home/node/app
 # when code changes occur
 COPY --chown=node:node package.json package-lock.json ./
 
+# Disable npm audit
+RUN npm set audit false
 # Install npm packages directly from package-lock.json <https://docs.npmjs.com/cli/v8/commands/npm-ci>
 RUN npm ci
 
