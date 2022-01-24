@@ -113,11 +113,16 @@ def test_get_user(user):
 
 
 @pytest.mark.django_db
+def test_get_admin_user(ofa_system_admin):
+    """Test get_user method."""
+    found_user = CustomAuthentication.get_user(ofa_system_admin.pk)
+    assert found_user.username == ofa_system_admin.username
+
+@pytest.mark.django_db
 def test_auth_user_by_hhs_id(user):
     """Test get_user method."""
     authenticated_user = CustomAuthentication.authenticate(hhs_id=user.hhs_id)
     assert str(authenticated_user.hhs_id) == user.hhs_id
-
 
 @pytest.mark.django_db
 def test_get_non_user(user):
@@ -140,7 +145,7 @@ class TestLoginAMS:
         "userinfo_endpoint": "http://openid-connect/userinfo"
     }
 
-    test_hhs_is = str(uuid.uuid4())
+    test_hhs_id = str(uuid.uuid4())
 
     @pytest.fixture(autouse=True)
     def ams_states_factory(self):
@@ -167,7 +172,7 @@ class TestLoginAMS:
         requests_mock.get(TestLoginAMS.mock_configuration["jwks_uri"], json={"keys": [jwk]})
 
         requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
-                           json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_is})
+                           json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_id})
 
         requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={
             "access_token": "hhJES3wcgjI55jzjBvZpNQ",
@@ -245,7 +250,7 @@ class TestLoginAMS:
         """Test login with state and code."""
         request = req_factory
         request = create_session(request, ams_states_factory)
-        user.hhs_id = self.test_hhs_is
+        user.hhs_id = self.test_hhs_id
         # test new hash
         user.login_gov_uuid = None
         user.save()
@@ -341,6 +346,31 @@ class TestLoginAMS:
         view = TokenAuthorizationAMS.as_view()
         mock_decode.return_value = decoded_token(
             "test_existing@example.com",
+            states["nonce"],
+        )
+
+        response = view(request)
+        assert response.status_code == status.HTTP_302_FOUND
+
+    def test_login_with_admin_user(
+        self,
+        ofa_system_admin,
+        mock_decode,
+        ams_states_factory,
+        req_factory
+    ):
+        """Login should work with admin ACF user."""
+        states = ams_states_factory
+        request = req_factory
+        request = create_session(request, ams_states_factory)
+
+        ofa_system_admin.username = "tadmin"
+        ofa_system_admin.email = "test_admin@acf.hhs.gov"
+        ofa_system_admin.is_staff = True
+        ofa_system_admin.save()
+        view = TokenAuthorizationAMS.as_view()
+        mock_decode.return_value = decoded_token(
+            "test_admin@acf.hhs.gov",
             states["nonce"],
         )
 
@@ -696,6 +726,34 @@ class TestLogin:
 
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
+
+    def test_logindotgov_with_acf_user(
+        self,
+        ofa_system_admin,
+        patch_login_gov_jwt_key,
+        mock,
+        states_factory,
+        req_factory
+    ):
+        """Login should *NOT* work with ACF user."""
+        states = states_factory
+        request = req_factory
+        request = create_session(request, states_factory)
+
+        ofa_system_admin.username = "tadmin"
+        ofa_system_admin.email = "test_admin@acf.hhs.gov"
+        ofa_system_admin.is_staff = True
+        ofa_system_admin.save()
+        view = TokenAuthorizationLoginDotGov.as_view()
+        mock_post, mock_decode = mock
+        mock_decode.return_value = decoded_token(
+            "test_admin@acf.hhs.gov",
+            states["nonce"],
+            sub=ofa_system_admin.login_gov_uuid
+        )
+
+        response = view(request)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_login_with_old_email(
         self,
