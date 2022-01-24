@@ -110,7 +110,7 @@ class Common(Configuration):
     USE_I18N = False
     USE_L10N = True
     USE_TZ = True
-    LOGIN_URL = "/v1/login/oidc"
+    LOGIN_URL = FRONTEND_BASE_URL
     LOGIN_REDIRECT_URL = "/"
 
     # Static files (CSS, JavaScript, Images)
@@ -319,9 +319,11 @@ class Common(Configuration):
     CSP_FORM_ACTION = ("'self'")
     CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
 
-    ###
-    # Authentication Provider Settings
-    #
+    ####################################
+    # Authentication Provider Settings #
+    ####################################
+
+    # Login.gov #
     LOGIN_GOV_ACR_VALUES = os.getenv(
         'ACR_VALUES',
         'http://idmanagement.gov/ns/assurance/ial/1'
@@ -361,3 +363,21 @@ class Common(Configuration):
     )
 
     ENABLE_DEVELOPER_GROUP = True
+
+    # AMS OpenID #
+    AMS_CONFIGURATION_ENDPOINT = os.getenv(
+        'AMS_CONFIGURATION_ENDPOINT',
+        'https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/.well-known/openid-configuration'
+    )
+
+    # The CLIENT_ID and SECRET must be set for the AMS authentication flow to work.
+    # In dev and testing environments, these can be dummy values.
+    AMS_CLIENT_ID = os.getenv(
+        'AMS_CLIENT_ID',
+        ''
+    )
+
+    AMS_CLIENT_SECRET = os.getenv(
+        'AMS_CLIENT_SECRET',
+        ''
+    )
