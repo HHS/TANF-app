@@ -85,7 +85,6 @@
     "prettier": "^2.4.1",
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
-    "run-parallel": "^1.2.0",
     "wait-on": "^6.0.0"
   },
   "jest": {
