@@ -3,7 +3,7 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { MemoryRouter, Redirect, Route } from 'react-router-dom'
+import { MemoryRouter, Navigate, Route } from 'react-router-dom'
 import * as Alert from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
 import LoginCallback from '.'
@@ -22,7 +22,7 @@ describe('LoginCallback.js', () => {
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/welcome" />)
+    expect(wrapper).toContainReact(<Navigate to="/welcome" />)
   })
 
   it('redirects to "/" when user not authenticated', () => {
@@ -34,7 +34,7 @@ describe('LoginCallback.js', () => {
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/" />)
+    expect(wrapper).toContainReact(<Navigate to="/" />)
   })
 
   it('alerts a loading message when log-in is in process, does not render child content', () => {

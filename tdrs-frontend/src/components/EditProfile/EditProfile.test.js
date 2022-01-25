@@ -5,7 +5,7 @@ import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
 import { fireEvent, render } from '@testing-library/react'
 
-import { MemoryRouter, Redirect } from 'react-router-dom'
+import { MemoryRouter, Navigate } from 'react-router-dom'
 import EditProfile, { validation } from './EditProfile'
 
 describe('EditProfile', () => {
@@ -458,7 +458,7 @@ describe('EditProfile', () => {
       </Provider>
     )
 
-    expect(wrapper).toContainReact(<Redirect to="/request" />)
+    expect(wrapper).toContainReact(<Navigate to="/request" />)
   })
 
   it('should dispatch "requestAccess" when form is submitted', () => {

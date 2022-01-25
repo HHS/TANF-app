@@ -3,7 +3,7 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { MemoryRouter, Redirect } from 'react-router-dom'
+import { MemoryRouter, Navigate } from 'react-router-dom'
 
 import SplashPage from './SplashPage'
 import { render } from '@testing-library/react'
@@ -109,7 +109,7 @@ describe('SplashPage', () => {
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/welcome" />)
+    expect(wrapper).toContainReact(<Navigate to="/welcome" />)
   })
 
   it('changes the background image on every render', async () => {
