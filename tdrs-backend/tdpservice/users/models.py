@@ -93,7 +93,7 @@ class User(AbstractUser):
 
     @property
     def region(self):
-        """Return the location if the location is a Region"""
+        """Return the location if the location is a Region."""
         if self.location and self.location_type.model == 'region':
             return self.location
         else:
