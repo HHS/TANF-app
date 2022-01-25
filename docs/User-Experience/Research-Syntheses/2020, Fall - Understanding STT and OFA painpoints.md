@@ -34,6 +34,8 @@
 6. What, if any, loose ends exist for OFA MVP which might be revealed by usability testing and design auditing?
 7. What insight might regional managers and OFA staff provide to engaging STT Users in on-going user research? 
 
+**[Workshop Facilitation Guide for Round 4 Research](https://hackmd.io/0zVjk29lSMyngnzdgpZgqg)**
+
 ---
 
 ## Whom We Talked To
