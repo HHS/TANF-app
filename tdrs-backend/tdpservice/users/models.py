@@ -4,7 +4,6 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from tdpservice.stts.models import STT, Region
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
@@ -82,6 +81,7 @@ class User(AbstractUser):
 
     @property
     def stt(self):
+        """Return the location if the location is an STT"""
         if self.location and self.location_type.model == 'stt':
             return self.location
         else:
@@ -93,6 +93,7 @@ class User(AbstractUser):
 
     @property
     def region(self):
+        """Return the location if the location is a Region"""
         if self.location and self.location_type.model == 'region':
             return self.location
         else:

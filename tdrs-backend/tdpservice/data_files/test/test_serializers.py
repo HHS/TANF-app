@@ -89,7 +89,6 @@ def test_data_file_still_created_if_av_scan_fails_to_create(
     the ClamAVFileScan isn't found in the database due to an error or race
     condition we should still store the DataFile.
     """
-
     user = data_analyst
     mocker.patch(
         'tdpservice.security.models.ClamAVFileScanManager.record_scan',
