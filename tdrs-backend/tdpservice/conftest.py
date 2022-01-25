@@ -197,7 +197,7 @@ def infected_data_file(infected_file, fake_file_name):
 @pytest.fixture
 def base_data_file_data(fake_file_name, data_analyst):
     """Return data file creation data without a file."""
-    user=data_analyst
+    user = data_analyst
     return {
         "original_filename": fake_file_name,
         "slug": str(uuid.uuid4()),

@@ -14,7 +14,7 @@ from tdpservice.security.clients import ClamAVClient
 @pytest.mark.django_db
 def test_serializer_with_valid_data(data_file_data, data_analyst):
     """If a serializer has valid data it will return a valid object."""
-    user=data_analyst
+    user = data_analyst
     create_serializer = DataFileSerializer(
         context={'user': user},
         data=data_file_data
@@ -65,7 +65,7 @@ def test_immutability_of_data_file(data_file_instance):
 @pytest.mark.django_db
 def test_created_at(data_file_data, data_analyst):
     """If a serializer has valid data it will return a valid object."""
-    user=data_analyst
+    user = data_analyst
     create_serializer = DataFileSerializer(
         context={'user': user},
         data=data_file_data
@@ -90,7 +90,7 @@ def test_data_file_still_created_if_av_scan_fails_to_create(
     condition we should still store the DataFile.
     """
 
-    user=data_analyst
+    user = data_analyst
     mocker.patch(
         'tdpservice.security.models.ClamAVFileScanManager.record_scan',
         return_value=None

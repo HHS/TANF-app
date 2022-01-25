@@ -10,6 +10,7 @@ from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
 
+
 class PermissionSerializer(serializers.ModelSerializer):
     """Permission serializer."""
 

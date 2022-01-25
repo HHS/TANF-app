@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
+
 class User(AbstractUser):
     """Define user fields and methods."""
 
@@ -19,9 +20,9 @@ class User(AbstractUser):
     # region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
 
     location_id = models.PositiveIntegerField(null=True)
-    location_type = models.ForeignKey(ContentType, on_delete=models.CASCADE,null=True)
+    location_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
 
-    location = GenericForeignKey('location_type','location_id')
+    location = GenericForeignKey('location_type', 'location_id')
 
     # The unique `sub` UUID from decoded login.gov payloads for login.gov users.
     login_gov_uuid = models.UUIDField(editable=False,
@@ -85,7 +86,6 @@ class User(AbstractUser):
             return self.location
         else:
             return None
-
 
     @stt.setter
     def stt(self, value):

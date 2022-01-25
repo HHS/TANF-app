@@ -83,6 +83,7 @@ class STTUserFactory(BaseUserFactory):
     # were calling the `populate_stt` command.
     location = None
 
+
 class AdminSTTUserFactory(STTUserFactory):
     """Generate an admin user who has no stt assigned."""
 

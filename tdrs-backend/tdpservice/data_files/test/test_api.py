@@ -225,6 +225,7 @@ class TestDataFileAPIAsInactiveUser(DataFileAPITestBase):
         response = self.post_data_file_file(api_client, data_file_data)
         self.assert_data_file_rejected(response)
 
+
 class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
     """Test DataFileViewSet as a Data Analyst user."""
 
@@ -251,6 +252,7 @@ class TestDataFileAsOFARegionalStaff(DataFileAPITestBase):
         response = self.post_data_file_file(api_client, other_regional_data_file_data)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
 
 def multi_year_data_file_data(user, stt):
     """Return data file data that encompasses multiple years."""

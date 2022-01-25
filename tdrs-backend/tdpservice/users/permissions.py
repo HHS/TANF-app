@@ -1,4 +1,9 @@
 """Set permissions for users."""
+from tdpservice.stts.models import STT
+from rest_framework import permissions
+from django.db.models import Q, QuerySet
+from django.contrib.auth.management import create_permissions
+from django.apps import apps
 from collections import ChainMap
 from copy import deepcopy
 from typing import List, Optional, TYPE_CHECKING
@@ -6,11 +11,6 @@ from typing import List, Optional, TYPE_CHECKING
 import logging
 logger = logging.getLogger(__name__)
 
-from django.apps import apps
-from django.contrib.auth.management import create_permissions
-from django.db.models import Q, QuerySet
-from rest_framework import permissions
-from tdpservice.stts.models import STT
 
 if TYPE_CHECKING:  # pragma: no cover
     from django.contrib.auth.models import Permission  # pragma: no cover
