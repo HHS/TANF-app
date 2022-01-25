@@ -3354,7 +3354,7 @@ button.usa-combo-box__clear-input:focus{
   line-height:1.5;
   margin-bottom:0;
   margin-top:0;
-  max-width:68ex;
+  max-width:100%;
 }
 * + .usa-paragraph{
   margin-top:1em;
@@ -3366,7 +3366,7 @@ button.usa-combo-box__clear-input:focus{
 .usa-content p,
 .usa-content ul:not(.usa-accordion):not(.usa-accordion--bordered),
 .usa-content ol:not(.usa-accordion):not(.usa-accordion--bordered){
-  max-width:68ex;
+  max-width:100%;
 }
 
 .usa-display{
@@ -3448,7 +3448,7 @@ button.usa-combo-box__clear-input:focus{
   line-height:1.5;
   margin-bottom:0;
   margin-top:0;
-  max-width:68ex;
+  max-width:100%;
 }
 .usa-prose > * + p{
   margin-top:1em;
