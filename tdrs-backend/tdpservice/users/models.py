@@ -81,7 +81,7 @@ class User(AbstractUser):
 
     @property
     def stt(self):
-        """Return the location if the location is an STT"""
+        """Return the location if the location is an STT."""
         if self.location and self.location_type.model == 'stt':
             return self.location
         else:
