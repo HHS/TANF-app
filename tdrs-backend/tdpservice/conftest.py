@@ -46,28 +46,35 @@ def user():
 @pytest.fixture
 def regional_user(region, stt):
     """Return a regional staff user."""
-    return STTUserFactory.create(
+    user= STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
-        location=region,
     )
+    user.location = region
+    user.save()
+    return user
 
 
+# Might be made redundent by changes in 1587
 @pytest.fixture
 def user_in_region(stt, region):
     """Return a user in the same region as a regional staff user."""
-    return STTUserFactory.create(
+    user = STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
-        location=stt,
     )
+    user.location = stt
+    user.save()
+    return user
 
 
 @pytest.fixture
 def user_in_other_region(other_stt, other_region):
     """Return a user that is not in the same region as the tested regional staff."""
-    return STTUserFactory.create(
+    user= STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
-        location=other_stt,
     )
+    user.location = other_stt
+    user.save()
+    return user
 
 
 @pytest.fixture
@@ -97,10 +104,12 @@ def ofa_system_admin():
 @pytest.fixture
 def data_analyst(stt):
     """Return a data analyst user."""
-    return UserFactory.create(
+    user=UserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
-        location=stt
     )
+    user.location = stt
+    user.save()
+    return user
 
 
 @pytest.fixture

@@ -43,14 +43,18 @@ class UserViewSet(
     @action(methods=["PATCH"], detail=False)
     def set_profile(self, request, pk=None):
         """Set a user's profile data."""
-        serializer = self.get_serializer(self.request.user, request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        logger.info(
-            "Profile update for user: %s on %s", self.request.user, timezone.now()
-        )
-        return Response(serializer.data)
 
+        try:
+            serializer = self.get_serializer(self.request.user, request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            logger.info(
+                "Profile update for user: %s on %s", self.request.user, timezone.now()
+            )
+            return Response(serializer.data)
+        except Exception as e:
+            logger.info(e)
+            raise e
 
 class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """GET for groups (roles)."""

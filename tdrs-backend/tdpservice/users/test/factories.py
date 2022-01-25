@@ -24,7 +24,6 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     is_staff = False
     is_superuser = False
 
-    location = factory.SubFactory(STTFactory)
     login_gov_uuid = factory.Faker("uuid4")
     deactivated = False
     # For testing convenience, though most users won't have both a login_gov_uuid and hhs_id
@@ -71,7 +70,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
 class UserFactory(BaseUserFactory):
     """General purpose user factory used through out most tests."""
 
-    location = factory.SubFactory(STTFactory)
+    location = None
 
 
 class STTUserFactory(BaseUserFactory):
@@ -94,6 +93,7 @@ class AdminSTTUserFactory(STTUserFactory):
 class AdminUserFactory(UserFactory):
     """Generate Admin User."""
 
+    location = None
     is_staff = True
     is_superuser = True
 

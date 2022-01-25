@@ -64,7 +64,6 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'stts.change_stt',
         'stts.view_region',
         'stts.view_stt',
-        'users.add_user',
         'users.change_user',
         'users.view_user',
     }

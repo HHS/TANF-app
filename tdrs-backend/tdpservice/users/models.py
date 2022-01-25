@@ -10,6 +10,11 @@ from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
+from tdpservice.stts.models import Region, STT
+
+import logging
+logger = logging.getLogger()
+
 
 class User(AbstractUser):
     """Define user fields and methods."""
@@ -18,9 +23,10 @@ class User(AbstractUser):
     # stt = models.ForeignKey(STT, on_delete=models.CASCADE, blank=True, null=True)
     # region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
 
-    location_id = models.PositiveIntegerField(null=True)
-    location_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+    limit = models.Q(app_label = 'stts', model = 'stt') | models.Q(app_label = 'stt', model = 'region')
 
+    location_id = models.PositiveIntegerField(null=True)
+    location_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, limit_choices_to=limit)
     location = GenericForeignKey('location_type', 'location_id')
 
     # The unique `sub` UUID from decoded login.gov payloads for login.gov users.
@@ -61,12 +67,20 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         """Prevent save if attributes are not necessary for a user given their role."""
-        if self.is_regional_staff and self.stt:
+
+        if not (self.is_regional_staff or self.is_data_analyst) and self.location:
+            logger.info(self.groups)
+            logger.info("location")
+            logger.info(self.location)
             raise ValidationError(
-                _("Regional staff cannot have an sst assigned to them"))
-        elif self.is_data_analyst and self.region:
+                _("Users other than Regional Staff and data analysts do not get assigned a location"))
+        elif self.is_regional_staff and self.location and self.location_type.model != 'region':
             raise ValidationError(
-                _("Data Analyst cannot have a region assigned to them"))
+                _("Regional staff cannot have a location type other than region"))
+        elif self.is_data_analyst and self.location and self.location_type.model != 'stt':
+            raise ValidationError(
+                _("Data Analyst cannot have a location type other than stt"))
+
         super().save(*args, **kwargs)
 
     @property
@@ -89,7 +103,11 @@ class User(AbstractUser):
 
     @stt.setter
     def stt(self, value):
+        if self.is_regional_staff:
+            raise ValidationError(
+                _("Regional staff cannot have an sst assigned to them"))
         self.location = value
+
 
     @property
     def region(self):
@@ -101,4 +119,7 @@ class User(AbstractUser):
 
     @region.setter
     def region(self, value):
+        if self.is_data_analyst:
+            raise ValidationError(
+                _("Data Analyst cannot have a region assigned to them"))
         self.location = value
