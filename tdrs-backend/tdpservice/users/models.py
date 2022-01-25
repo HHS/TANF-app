@@ -78,3 +78,26 @@ class User(AbstractUser):
     def is_data_analyst(self) -> bool:
         """Return whether or not the user is in the Data Analyst Group."""
         return self.is_in_group('Data Analyst')
+
+    @property
+    def stt(self):
+        if self.location and self.location_type.model == 'stt':
+            return self.location
+        else:
+            return None
+
+
+    @stt.setter
+    def stt(self, value):
+        self.location = value
+
+    @property
+    def region(self):
+        if self.location and self.location_type.model == 'region':
+            return self.location
+        else:
+            return None
+
+    @region.setter
+    def region(self, value):
+        self.location = value

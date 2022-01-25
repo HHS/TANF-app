@@ -95,9 +95,12 @@ def ofa_system_admin():
 
 
 @pytest.fixture
-def data_analyst():
+def data_analyst(stt):
     """Return a data analyst user."""
-    return UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),))
+    return UserFactory.create(
+        groups=(Group.objects.get(name="Data Analyst"),),
+        location=stt
+    )
 
 
 @pytest.fixture
@@ -192,8 +195,9 @@ def infected_data_file(infected_file, fake_file_name):
 
 
 @pytest.fixture
-def base_data_file_data(fake_file_name, user):
+def base_data_file_data(fake_file_name, data_analyst):
     """Return data file creation data without a file."""
+    user=data_analyst
     return {
         "original_filename": fake_file_name,
         "slug": str(uuid.uuid4()),

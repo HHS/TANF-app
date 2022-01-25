@@ -7,8 +7,9 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_retrieve_user(api_client, user):
+def test_retrieve_user(api_client, data_analyst):
     """Test user retrieval."""
+    user=data_analyst
     api_client.login(username=user.username, password="test_password")
     response = api_client.get(f"/v1/users/{user.pk}/")
     assert response.status_code == status.HTTP_200_OK

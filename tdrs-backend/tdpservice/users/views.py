@@ -31,7 +31,7 @@ class UserViewSet(
 
     permission_classes = [IsAuthenticated, UserPermissions]
     queryset = User.objects\
-        .select_related("stt")\
+        .select_related("location_type")\
         .prefetch_related("groups__permissions")
 
     def get_serializer_class(self):

@@ -35,9 +35,9 @@ def test_is_regional_user_property(data_analyst, regional_user):
     assert regional_user.is_regional_staff is True
 
 
-@pytest.mark.django_db
-def test_regional_staff_location_is_region():
+# @pytest.mark.django_db
+# def test_regional_staff_location_is_region():
 
 
-@pytest.mark.django_db
-def test_analyst_location_is_stt():
+# @pytest.mark.django_db
+# def test_analyst_location_is_stt():

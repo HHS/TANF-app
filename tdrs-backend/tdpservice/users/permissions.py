@@ -3,6 +3,9 @@ from collections import ChainMap
 from copy import deepcopy
 from typing import List, Optional, TYPE_CHECKING
 
+import logging
+logger = logging.getLogger(__name__)
+
 from django.apps import apps
 from django.contrib.auth.management import create_permissions
 from django.db.models import Q, QuerySet
@@ -101,6 +104,9 @@ def get_requested_stt(request, view):
 
 def is_own_region(user, requested_stt):
     """Verify user belongs to the requested region based on the stt in the request."""
+    logger.info("is own region?")
+    logger.info(requested_stt)
+    logger.info(user.stt)
     requested_region = (
         STT.objects.get(id=requested_stt).region
         if requested_stt else None
@@ -113,7 +119,10 @@ def is_own_region(user, requested_stt):
 
 def is_own_stt(user, requested_stt):
     """Verify user belongs to requested STT."""
-    user_stt = user.stt_id if hasattr(user, 'stt_id') else None
+    logger.info("is own stt?")
+    logger.info(requested_stt)
+    logger.info(user.stt.id)
+    user_stt = user.stt.id if hasattr(user, 'stt') else None
     return bool(
         user_stt is not None and
         (requested_stt in [None, str(user_stt)])
@@ -181,8 +190,8 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         # Data Analysts can only see files uploaded for their designated STT
         if request.user.is_data_analyst:
             user_stt = (
-                request.user.stt_id
-                if hasattr(request.user, 'stt_id')
+                request.user.stt.id
+                if hasattr(request.user, 'stt')
                 else None
             )
             return user_stt == obj.stt_id
@@ -190,8 +199,8 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         # Regional Staff can only see files uploaded for their designated Region
         if request.user.is_regional_staff:
             user_region = (
-                request.user.region_id
-                if hasattr(request.user, 'region_id')
+                request.user.region.id
+                if hasattr(request.user, 'region')
                 else None
             )
             return user_region == obj.stt.region.id
@@ -227,8 +236,8 @@ class UserPermissions(DjangoModelCRUDPermissions):
         # Regional Staff can only see files uploaded for their designated Region
         if request.user.groups.filter(name="OFA Regional Staff").exists():
             user_region = (
-                request.user.region_id
-                if hasattr(request.user, 'region_id')
+                request.user.region.id
+                if hasattr(request.user, 'region')
                 else None
             )
             return user_region == obj.stt.region_id
