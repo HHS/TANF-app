@@ -8,7 +8,7 @@ import NoMatch from '../NoMatch'
 
 import Routes from './Routes'
 import SplashPage from '../SplashPage'
-import Welcome from '../Welcome'
+import Home from '../Home'
 
 describe('Routes.js', () => {
   const mockStore = configureStore([thunk])
@@ -81,6 +81,6 @@ describe('Routes.js', () => {
       </Provider>
     )
 
-    expect(wrapper.find(Welcome)).toExist()
+    expect(wrapper.find(Home)).toExist()
   })
 })

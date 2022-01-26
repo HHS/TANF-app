@@ -108,11 +108,7 @@ function HeaderComp() {
             <ul className="usa-nav__primary usa-accordion">
               {authenticated && (
                 <>
-                  <NavItem
-                    pathname={pathname}
-                    tabTitle="Welcome"
-                    href="/welcome"
-                  />
+                  <NavItem pathname={pathname} tabTitle="Home" href="/home" />
                   <NavItem
                     pathname={pathname}
                     tabTitle="Data Files"
@@ -121,7 +117,7 @@ function HeaderComp() {
                   <NavItem
                     pathname={pathname}
                     tabTitle="Profile"
-                    href="/edit-profile"
+                    href="/profile"
                   />
                   {isOFASystemAdmin() && (
                     <NavItem

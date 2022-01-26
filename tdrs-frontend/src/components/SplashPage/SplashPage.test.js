@@ -98,7 +98,7 @@ describe('SplashPage', () => {
     expect(window.location.href).toEqual(url)
   })
 
-  it('redirects to /welcome when user is already authenticated', () => {
+  it('redirects to /home when user is already authenticated', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
@@ -109,7 +109,7 @@ describe('SplashPage', () => {
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/welcome" />)
+    expect(wrapper).toContainReact(<Redirect to="/home" />)
   })
 
   it('changes the background image on every render', async () => {

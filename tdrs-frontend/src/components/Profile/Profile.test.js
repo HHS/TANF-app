@@ -6,9 +6,9 @@ import configureStore from 'redux-mock-store'
 import { fireEvent, render } from '@testing-library/react'
 
 import { MemoryRouter, Redirect } from 'react-router-dom'
-import EditProfile, { validation } from './EditProfile'
+import Profile, { validation } from './Profile'
 
-describe('EditProfile', () => {
+describe('Profile', () => {
   const initialState = {
     auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     stts: { sttList: [], loading: false },
@@ -23,7 +23,7 @@ describe('EditProfile', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -36,7 +36,7 @@ describe('EditProfile', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -49,7 +49,7 @@ describe('EditProfile', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -66,7 +66,7 @@ describe('EditProfile', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -83,7 +83,7 @@ describe('EditProfile', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -120,7 +120,7 @@ describe('EditProfile', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -157,7 +157,7 @@ describe('EditProfile', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -205,7 +205,7 @@ describe('EditProfile', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -323,7 +323,7 @@ describe('EditProfile', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -394,7 +394,7 @@ describe('EditProfile', () => {
     })
     const { getByLabelText } = render(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -409,7 +409,7 @@ describe('EditProfile', () => {
     expect(select.value).toEqual('alaska')
   })
 
-  it('routes "/edit-profile" to the Request page when user has requested access', () => {
+  it('routes "/profile" to the Request page when user has requested access', () => {
     const store = mockStore({
       ...initialState,
       auth: {
@@ -453,7 +453,7 @@ describe('EditProfile', () => {
     const wrapper = mount(
       <Provider store={store}>
         <MemoryRouter>
-          <EditProfile />
+          <Profile />
         </MemoryRouter>
       </Provider>
     )
@@ -491,7 +491,7 @@ describe('EditProfile', () => {
     store.dispatch = jest.fn(origDispatch)
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
 
@@ -553,7 +553,7 @@ describe('EditProfile', () => {
 
     mount(
       <Provider store={store}>
-        <EditProfile />
+        <Profile />
       </Provider>
     )
     expect(store.dispatch).toHaveBeenCalled()

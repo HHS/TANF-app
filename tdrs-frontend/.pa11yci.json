@@ -25,8 +25,8 @@
       "actions":[
         "wait for element #private-template-container to be visible"
       ],
-      "url": "http://localhost:3000/edit-profile",
-      "screenCapture": "pa11y-screenshots/edit-profile.png"
+      "url": "http://localhost:3000/profile",
+      "screenCapture": "pa11y-screenshots/profile.png"
     },
     {
       "actions":[
@@ -48,8 +48,8 @@
       "actions":[
         "wait for element #private-template-container to be visible"
       ],
-      "url": "http://localhost:3000/welcome",
-      "screenCapture": "pa11y-screenshots/welcome.png"
+      "url": "http://localhost:3000/home",
+      "screenCapture": "pa11y-screenshots/home.png"
     }
   ]
 }

@@ -41,16 +41,16 @@ export const validation = (fieldName, fieldValue) => {
 }
 
 /**
- * EditProfile renders the Request Access form for creating a profile.
- * EditProfile dispatches event fetchStts to get a list of STTs to render
+ * Profile renders the Request Access form for creating a profile.
+ * Profile dispatches event fetchStts to get a list of STTs to render
  * inside of the combo box.
  *
- * EditProfile renders a form for a user to request access to the application.
+ * Profile renders a form for a user to request access to the application.
  * There is an input for first and last name and a combo box to select
  *  an associated STT.
  */
 
-function EditProfile() {
+function Profile() {
   const errorRef = useRef(null)
   const requestedAccess = useSelector(
     (state) => state.requestAccess.requestAccess
@@ -202,4 +202,4 @@ function EditProfile() {
   )
 }
 
-export default EditProfile
+export default Profile

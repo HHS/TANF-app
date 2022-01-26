@@ -4,9 +4,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
-import Welcome from './Welcome'
+import Home from './Home'
 
-describe('Welcome', () => {
+describe('Home', () => {
   const initialState = {
     auth: {
       authenticated: true,

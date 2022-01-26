@@ -9,7 +9,7 @@ import Header from './Header'
 
 describe('Header', () => {
   const initialState = {
-    router: { location: { pathname: '/edit-profile' } },
+    router: { location: { pathname: '/profile' } },
     auth: {
       user: {
         email: 'test@test.com',
@@ -114,10 +114,10 @@ describe('Header', () => {
     expect(menuBtn).toExist()
   })
 
-  it("should add usa-current class to Welcome tab when on '/welcome'", () => {
+  it("should add usa-current class to Welcome tab when on '/home'", () => {
     const store = mockStore({
       ...initialState,
-      router: { location: { pathname: '/welcome' } },
+      router: { location: { pathname: '/home' } },
     })
     const wrapper = mount(
       <Provider store={store}>
@@ -146,7 +146,7 @@ describe('Header', () => {
     expect(dataFilesTab.hasClass('usa-current')).toEqual(true)
   })
 
-  it("should add usa-current class to Profile tab when on '/edit-profile'", () => {
+  it("should add usa-current class to Profile tab when on '/profile'", () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
