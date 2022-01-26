@@ -46,7 +46,7 @@ def user():
 @pytest.fixture
 def regional_user(region, stt):
     """Return a regional staff user."""
-    user= STTUserFactory.create(
+    user = STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
     )
     user.location = region
@@ -69,7 +69,7 @@ def user_in_region(stt, region):
 @pytest.fixture
 def user_in_other_region(other_stt, other_region):
     """Return a user that is not in the same region as the tested regional staff."""
-    user= STTUserFactory.create(
+    user = STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
     )
     user.location = other_stt
@@ -86,7 +86,8 @@ def stt_user():
 @pytest.fixture
 def ofa_admin_stt_user():
     """Return an admin user without an STT for Data File tests."""
-    return AdminSTTUserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
+    return AdminSTTUserFactory.create(
+        groups=(Group.objects.get(name="OFA Admin"),))
 
 
 @pytest.fixture
@@ -98,13 +99,16 @@ def ofa_admin():
 @pytest.fixture
 def ofa_system_admin():
     """Return on OFA System Admin user."""
-    return UserFactory.create(groups=(Group.objects.get(name='OFA System Admin'),))
+    return UserFactory.create(
+        groups=(
+            Group.objects.get(
+                name='OFA System Admin'),))
 
 
 @pytest.fixture
 def data_analyst(stt):
     """Return a data analyst user."""
-    user=UserFactory.create(
+    user = UserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
     )
     user.location = stt
@@ -250,7 +254,8 @@ def other_stt(other_region):
 
 
 @pytest.fixture
-def other_base_regional_data_file_data(fake_file_name, regional_user, other_stt):
+def other_base_regional_data_file_data(
+        fake_file_name, regional_user, other_stt):
     """Return data file creation data without a file."""
     return {
         "original_filename": fake_file_name,
@@ -284,7 +289,9 @@ def regional_data_file_data(base_regional_data_file_data, data_file):
 
 
 @pytest.fixture
-def other_regional_data_file_data(other_base_regional_data_file_data, data_file):
+def other_regional_data_file_data(
+        other_base_regional_data_file_data,
+        data_file):
     """Return data file creation data for the other reigon."""
     return {
         "file": data_file,

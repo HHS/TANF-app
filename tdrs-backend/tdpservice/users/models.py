@@ -23,7 +23,7 @@ class User(AbstractUser):
     # stt = models.ForeignKey(STT, on_delete=models.CASCADE, blank=True, null=True)
     # region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
 
-    limit = models.Q(app_label = 'stts', model = 'stt') | models.Q(app_label = 'stt', model = 'region')
+    limit = models.Q(app_label='stts', model='stt') | models.Q(app_label='stt', model='region')
 
     location_id = models.PositiveIntegerField(null=True)
     location_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, limit_choices_to=limit)
@@ -107,7 +107,6 @@ class User(AbstractUser):
             raise ValidationError(
                 _("Regional staff cannot have an sst assigned to them"))
         self.location = value
-
 
     @property
     def region(self):

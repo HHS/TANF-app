@@ -56,6 +56,7 @@ class UserViewSet(
             logger.info(e)
             raise e
 
+
 class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """GET for groups (roles)."""
 
