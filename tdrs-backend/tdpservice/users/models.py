@@ -17,13 +17,11 @@ class User(AbstractUser):
     """Define user fields and methods."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    # stt = models.ForeignKey(STT, on_delete=models.CASCADE, blank=True, null=True)
-    # region = models.ForeignKey(Region, on_delete=models.CASCADE, blank=True, null=True)
 
-    limit = models.Q(app_label='stts', model='stt') | models.Q(app_label='stt', model='region')
+    limit = models.Q(app_label='stts', model='stt') | models.Q(app_label='stts', model='region')
 
-    location_id = models.PositiveIntegerField(null=True)
-    location_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, limit_choices_to=limit)
+    location_id = models.PositiveIntegerField(null=True, blank=True)
+    location_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True,blank=True,limit_choices_to=limit)
     location = GenericForeignKey('location_type', 'location_id')
 
     # The unique `sub` UUID from decoded login.gov payloads for login.gov users.
@@ -62,19 +60,18 @@ class User(AbstractUser):
         """Return whether or not the user is a member of the specified Group."""
         return self.groups.filter(name=group_name).exists()
 
-    def save(self, *args, **kwargs):
+    def clean(self, *args, **kwargs):
         """Prevent save if attributes are not necessary for a user given their role."""
-
         if not (self.is_regional_staff or self.is_data_analyst) and self.location:
             logger.info(self.groups)
             logger.info("location")
             logger.info(self.location)
             raise ValidationError(
                 _("Users other than Regional Staff and data analysts do not get assigned a location"))
-        elif self.is_regional_staff and self.location and self.location_type.model != 'region':
+        elif self.is_regional_staff and self.location_type and self.location_type.model != 'region':
             raise ValidationError(
                 _("Regional staff cannot have a location type other than region"))
-        elif self.is_data_analyst and self.location and self.location_type.model != 'stt':
+        elif self.is_data_analyst and self.location_type and self.location_type.model != 'stt':
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt"))
 
