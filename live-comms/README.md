@@ -1,6 +1,6 @@
-# Design Environment for web hosted live comms
+# Design environment for web hosted live comms
 
-The live comms website is for communicating
+The live comms website was created for use as a tool to communicate project updates and research findings to the broader OFA team and to grantees. It is also aimed at improving the accessibility of these updates from that of the prior PDF format. The structure of the live comms site is aimed at being simple to extend and maintain via simple HTML/CSS skills so as to allow the current design team or other non-developer team members to easily update it without requiring additional development time to be spent on non-feature work. 
 
 ## How is this hosted?
 
@@ -15,9 +15,8 @@ to https://tdp-live-comms.app.cloud.gov/
 
 ## Review process
 
-Government tech lead and product owner do content review
-Government A11y review, currently done by Thomas Tran
-Design review as per [Our workflow](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/our-workflow.md)
+While the live comms site is stored in the TANF-app repo, it is not a part of the TDP application. Given that and the nature of updates involving simple HTML modifications/additions, the review process for updates to live comms should be made via the [review process](https://github.com/HHS/TANF-app/blob/main/docs/How-We-Work/our-workflow.md) for design tickets rather than dev tickets involving:
 
-
+- Content review by the government product owner and tech lead
+- Accessibility review by the government accessibility reviewer
 
