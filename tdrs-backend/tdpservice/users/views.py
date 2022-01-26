@@ -43,7 +43,6 @@ class UserViewSet(
     @action(methods=["PATCH"], detail=False)
     def set_profile(self, request, pk=None):
         """Set a user's profile data."""
-
         try:
             serializer = self.get_serializer(self.request.user, request.data)
             serializer.is_valid(raise_exception=True)

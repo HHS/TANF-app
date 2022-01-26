@@ -67,7 +67,6 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
 def test_set_profile_data_first_name_apostrophe(api_client, user):
     """Test profile data first name can be set with an apostrophe."""
     api_client.login(username=user.username, password="test_password")
-    stt = STT.objects.first()
     response = api_client.patch(
         "/v1/users/set_profile/",
         {"first_name": "Pat'Jack", "last_name": "Smith"},
@@ -291,7 +290,6 @@ def test_set_profile_data_extra_field_include_required(api_client, user):
         user.refresh_from_db()
         assert user.first_name == "Heather"
         assert user.last_name == "Class"
-        assert user.stt.name == stt.name
         """Test fails if AttributeError exception isn't thrown"""
         assert user.middle_name == "Unknown"
 

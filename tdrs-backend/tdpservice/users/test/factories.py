@@ -2,9 +2,6 @@
 
 import factory
 
-from tdpservice.stts.test.factories import STTFactory
-
-
 class BaseUserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
 
@@ -43,29 +40,6 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
         if extracted:
             for group in extracted:
                 self.groups.add(group)
-
-    # @property
-    # def stt(self):
-    #     if self.location and self.location_type.model == 'stt':
-    #         return self.location
-    #     else:
-    #         return None
-
-    # @stt.setter
-    # def stt(self, value):
-    #     self.location = value
-
-    # @property
-    # def region(self):
-    #     if self.location and self.location_type.model == 'region':
-    #         return self.location
-    #     else:
-    #         return None
-
-    # @region.setter
-    # def region(self, value):
-    #     self.location = value
-
 
 class UserFactory(BaseUserFactory):
     """General purpose user factory used through out most tests."""

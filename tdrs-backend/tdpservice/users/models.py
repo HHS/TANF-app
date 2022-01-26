@@ -10,11 +10,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
-from tdpservice.stts.models import Region, STT
-
 import logging
 logger = logging.getLogger()
-
 
 class User(AbstractUser):
     """Define user fields and methods."""
