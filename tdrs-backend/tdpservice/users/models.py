@@ -63,9 +63,6 @@ class User(AbstractUser):
     def clean(self, *args, **kwargs):
         """Prevent save if attributes are not necessary for a user given their role."""
         if not (self.is_regional_staff or self.is_data_analyst) and self.location:
-            logger.info(self.groups)
-            logger.info("location")
-            logger.info(self.location)
             raise ValidationError(
                 _("Users other than Regional Staff and data analysts do not get assigned a location"))
         elif self.is_regional_staff and self.location_type and self.location_type.model != 'region':
