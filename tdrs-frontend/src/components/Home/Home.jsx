@@ -113,7 +113,7 @@ function Home() {
 
   return (
     <div className="margin-top-5">
-      {!hasRole ? (
+      {!userAccessRequestApproved || !hasRole ? (
         <>
           <div className="margin-top-5">
             <p className="margin-top-1 margin-bottom-4">
@@ -121,6 +121,14 @@ function Home() {
               Admin. We'll send you an email when it's been approved.
             </p>
           </div>
+          <Button
+            type="button"
+            className="width-tablet margin-bottom-4"
+            onClick={signOut}
+          >
+            <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
+            Sign Out
+          </Button>
         </>
       ) : (
         <>
@@ -175,14 +183,6 @@ function Home() {
           </form>
         </>
       )}
-      <Button
-        type="button"
-        className="width-tablet margin-bottom-4"
-        onClick={signOut}
-      >
-        <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
-        Sign Out
-      </Button>
     </div>
   )
 }

@@ -21,6 +21,7 @@ function HeaderComp() {
   const [isMenuVisible, setIsMenuVisible] = useState(false)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
+  const userAccessRequestApproved = Boolean(user?.['access_request'])
 
   const menuRef = useRef()
 
@@ -68,6 +69,7 @@ function HeaderComp() {
       const listener = keyListenersMap.get(e.keyCode)
       return listener && listener(e)
     }
+
     document.addEventListener('keydown', keyListener)
 
     return () => document.removeEventListener('keydown', keyListener)
@@ -109,17 +111,19 @@ function HeaderComp() {
               {authenticated && (
                 <>
                   <NavItem pathname={pathname} tabTitle="Home" href="/home" />
-                  <NavItem
-                    pathname={pathname}
-                    tabTitle="Data Files"
-                    href="/data-files"
-                  />
+                  {userAccessRequestApproved && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Data Files"
+                      href="/data-files"
+                    />
+                  )}
                   <NavItem
                     pathname={pathname}
                     tabTitle="Profile"
                     href="/profile"
                   />
-                  {isOFASystemAdmin() && (
+                  {userAccessRequestApproved && isOFASystemAdmin() && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Admin"
