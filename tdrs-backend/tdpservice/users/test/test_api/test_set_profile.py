@@ -3,10 +3,6 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 import pytest
 from rest_framework import status
-from tdpservice.stts.models import STT
-
-User = get_user_model()
-
 
 @pytest.mark.django_db
 @pytest.fixture(scope="function")

@@ -21,7 +21,10 @@ class User(AbstractUser):
     limit = models.Q(app_label='stts', model='stt') | models.Q(app_label='stts', model='region')
 
     location_id = models.PositiveIntegerField(null=True, blank=True)
-    location_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True,blank=True,limit_choices_to=limit)
+    location_type = models.ForeignKey(ContentType,
+                                      on_delete=models.CASCADE,
+                                      null=True, blank=True,
+                                      limit_choices_to=limit)
     location = GenericForeignKey('location_type', 'location_id')
 
     # The unique `sub` UUID from decoded login.gov payloads for login.gov users.
