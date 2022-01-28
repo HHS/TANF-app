@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5.0.0
+  node: circleci/node@4.7.0
   terraform: circleci/terraform@2.1.0
   jq: circleci/jq@2.2.0
 
@@ -64,6 +64,8 @@ commands:
       - run:
           name: Install Node.JS
           command: |
+            sudo apt-get update
+            sudo apt-get install -y libgbm-dev
             source /opt/circleci/.nvm/nvm.sh
             nvm install v16.13
             nvm alias default v16.13
