@@ -2,6 +2,8 @@
 # Stage 0: Create the app directory, install dependencies, and copy in the source code
 FROM node:16.13-alpine3.14 AS localdev
 
+RUN apt-get update
+RUN apt-get install -y libgbm-dev
 USER node
 
 RUN mkdir /home/node/app/ && chown -R node:node /home/node/app
