@@ -43,6 +43,12 @@ commands:
           name: Build and spin-up React application
           command: cd tdrs-frontend; docker-compose up -d --build
 
+  disable-npm-audit:
+    steps:
+      - run:
+          name: Disable npm audit warnings in CI
+          command: npm set audit false
+
   # This allows us to use the orb stanza for node/install within other commands
   # NOTE: This doesn't work correctly on machine executors
   install-nodejs: node/install
@@ -58,6 +64,8 @@ commands:
       - run:
           name: Install Node.JS
           command: |
+            sudo apt-get update
+            sudo apt-get install -y libgbm-dev
             source /opt/circleci/.nvm/nvm.sh
             nvm install v16.13
             nvm alias default v16.13
@@ -214,11 +222,10 @@ commands:
         type: string
     steps:
       - install-nodejs:
-          install-yarn: true
           node-version: "16.13"
+      - disable-npm-audit
       - install-nodejs-packages:
           app-dir: tdrs-frontend
-          pkg-manager: yarn
       - get-app-deploy-strategy:
           appname: <<parameters.frontend-appname>>
       - run:
@@ -361,21 +368,18 @@ jobs:
     steps:
       - checkout
       - install-nodejs-machine
-      - node/install-yarn
+      - disable-npm-audit
       - install-nodejs-packages:
           app-dir: tdrs-frontend
-          cache-path: ~/.cache
-          cache-version: v2
-          pkg-manager: yarn
       - run:
           name: Run ESLint
-          command: cd tdrs-frontend; yarn lint
+          command: cd tdrs-frontend; npm run lint
       - run:
           name: Run Pa11y Accessibility Tests
-          command: cd tdrs-frontend; mkdir pa11y-screenshots/; yarn test:accessibility
+          command: cd tdrs-frontend; mkdir pa11y-screenshots/; npm run test:accessibility
       - run:
           name: Run Jest Unit Tests
-          command: cd tdrs-frontend; yarn test:ci
+          command: cd tdrs-frontend; npm run test:ci
       - upload-codecov:
           component: frontend
           coverage-report: ./tdrs-frontend/coverage/lcov.info
@@ -493,6 +497,9 @@ jobs:
           cf-password: CF_PASSWORD_STAGING
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
+      - run:
+          name: Deploy Live Comms Site
+          command: ./scripts/deploy-live-comms.sh rolling tdp-live-comms
 
   deploy-prod:
     executor: docker-executor
