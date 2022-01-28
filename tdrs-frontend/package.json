@@ -80,11 +80,11 @@
     "eslint-plugin-prettier": "^4.0.0",
     "faker": "^5.5.3",
     "jest-enzyme": "^7.1.2",
-    "node-sass": "^7.0.1",
     "pa11y-ci": "^2.4.1",
     "prettier": "^2.4.1",
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
+    "sass": "^1.49.0",
     "wait-on": "^6.0.0"
   },
   "jest": {
