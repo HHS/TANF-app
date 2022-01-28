@@ -42,14 +42,15 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start:ci": "CI=true HOST=localhost BROWSER=none yarn react-scripts start",
+    "start:ci": "CI=true HOST=localhost BROWSER=none npm run start",
     "build": "SASS_PATH=node_modules:src react-scripts build",
     "test": "react-scripts test",
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
-    "test:accessibility": "concurrently -k -s first 'REACT_APP_PA11Y_TEST=true yarn start:ci' 'wait-on http://localhost:3000/ && yarn pa11y-ci --config .pa11yci.json'",
+    "test:accessibility": "concurrently -k -s first 'REACT_APP_PA11Y_TEST=true npm run start:ci' 'wait-on http://localhost:3000/ && npm run pa11y-ci'",
     "eject": "react-scripts eject",
-    "lint": "eslint src/ && echo 'Lint complete.'"
+    "lint": "eslint src/ && echo 'Lint complete.'",
+    "pa11y-ci": "pa11y-ci --config .pa11yci.json"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -72,8 +73,10 @@
     "concurrently": "^6.3.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
-    "eslint": "^7.32.0",
+    "eslint": "^8.7.0",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-config-react-app": "^7.0.0",
+    "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-prettier": "^4.0.0",
     "faker": "^5.5.3",
     "jest-enzyme": "^7.1.2",

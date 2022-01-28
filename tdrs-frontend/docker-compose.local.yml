@@ -7,6 +7,6 @@ services:
     build:
       context: .
       target: localdev
-    command: yarn start
+    command: npm run start
     volumes:
       - /home/node/app/node_modules
