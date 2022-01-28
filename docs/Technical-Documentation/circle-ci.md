@@ -57,7 +57,7 @@ These all have defaults set in their respective settings modules, but may be ove
 ## Frontend CI build process
 
 ### test-frontend
-* Runs most steps directly on the machine executor, utilizing `yarn` commands defined in package.json
+* Runs most steps directly on the machine executor, utilizing `npm` commands defined in package.json
 * The exception to the above is the zap scanner step - which runs the frontend via docker-compose, using the nginx target instead of the local dev target
 * Major steps:
     * Run ESLint - ensures styling standards are followed
@@ -75,7 +75,7 @@ These all have defaults set in their respective settings modules, but may be ove
         * `REACT_APP_BACKEND_HOST`
         * `REACT_APP_BACKEND_URL`
         * Only difference in values is whether `/v1` is at the end
-    * Runs `yarn build` which generates the HTML needed to serve to end users
+    * Runs `npm run build` which generates the HTML needed to serve to end users
     * Copies in the nginx configuration for build packs
     * Uploads the build output to Cloud.gov using `cf push`
     * Creates and maps the frontend route
