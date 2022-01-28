@@ -63,6 +63,7 @@ class User(AbstractUser):
         return self.groups.filter(name=group_name).exists()
 
     def validate_location(self):
+        """Throw a validation error if a user has a location type incompatable with their role."""
         if (not (self.is_regional_staff or self.is_data_analyst)) and self.location:
             raise ValidationError(
                 _("Users other than Regional Staff and data analysts do not get assigned a location"))
@@ -75,20 +76,8 @@ class User(AbstractUser):
 
     def clean(self, *args, **kwargs):
         """Prevent save if attributes are not necessary for a user given their role."""
-        logger.info('args')
-        logger.info(args)
-        logger.info('kwargs')
-        logger.info(kwargs)
         super().clean(*args, **kwargs)
         self.validate_location()
-
-    def save(self, *args, **kwargs):
-        logger.info('args')
-        logger.info(args)
-        logger.info('kwargs')
-        logger.info(kwargs)
-        self.validate_location()
-        super().save(*args, **kwargs)
 
     @property
     def is_regional_staff(self) -> bool:
