@@ -97,10 +97,10 @@ function Profile() {
       </div>
       <div>
         <p className="text-bold">
-          {user.first_name} {user.last_name}
+          {user?.first_name} {user?.last_name}
         </p>
-        <p>{user.stt.name}</p>
-        <p>{user.email}</p>
+        <p>{user?.stt?.name}</p>
+        <p>{user?.email}</p>
       </div>
       <div className="margin-top-5">
         <p className="text-bold">Email and Password</p>

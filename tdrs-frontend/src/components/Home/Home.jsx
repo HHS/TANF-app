@@ -107,82 +107,100 @@ function Home() {
     return setTimeout(() => errorRef.current.focus(), 0)
   }
 
-  if (userAccessRequestApproved && sttAssigned) {
-    return <Redirect to="/home" />
+  // if (userAccessRequestApproved && sttAssigned) {
+  //   return <Redirect to="/home" />
+  // }
+
+  if (!userAccessRequestApproved) {
+    return (
+      <div className="margin-top-5">
+        <p className="margin-top-1 margin-bottom-4">
+          Please enter your information to request access from an OFA
+          administrator
+        </p>
+        <form className="usa-form" onSubmit={handleSubmit}>
+          <div
+            className={`usa-error-message ${
+              !!Object.keys(errors).length && !!Object.keys(touched).length
+                ? 'display-block'
+                : 'display-none'
+            }`}
+            ref={errorRef}
+            tabIndex="-1"
+            role="alert"
+          >
+            There are {Object.keys(errors).length} errors in this form
+          </div>
+          <FormGroup
+            error={errors.firstName}
+            name="firstName"
+            label="First Name"
+            inputValue={profileInfo.firstName}
+            handleChange={handleChange}
+            handleBlur={handleBlur}
+          />
+          <FormGroup
+            error={errors.lastName}
+            name="lastName"
+            label="Last Name"
+            inputValue={profileInfo.lastName}
+            handleChange={handleChange}
+            handleBlur={handleBlur}
+          />
+          <div
+            className={`usa-form-group ${
+              errors.stt ? 'usa-form-group--error' : ''
+            }`}
+          >
+            <STTComboBox
+              selectStt={setStt}
+              error={Boolean(errors.stt)}
+              selectedStt={profileInfo?.stt}
+              handleBlur={handleBlur}
+            />
+          </div>
+          <Button type="submit" className="width-full request-access-button">
+            Request Access
+          </Button>
+        </form>
+      </div>
+    )
+  }
+
+  if (userAccessRequestApproved && !hasRole) {
+    return (
+      <div className="margin-top-5">
+        <div className="margin-top-5">
+          <p className="margin-top-1 margin-bottom-4">
+            Your request for access is currently being reviewed by an OFA Admin.
+            We'll send you an email when it's been approved.
+          </p>
+        </div>
+        <Button
+          type="button"
+          className="width-tablet margin-bottom-4"
+          onClick={signOut}
+        >
+          <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
+          Sign Out
+        </Button>
+      </div>
+    )
   }
 
   return (
     <div className="margin-top-5">
-      {!userAccessRequestApproved || !hasRole ? (
-        <>
-          <div className="margin-top-5">
-            <p className="margin-top-1 margin-bottom-4">
-              Your request for access is currently being reviewed by an OFA
-              Admin. We'll send you an email when it's been approved.
-            </p>
-          </div>
-          <Button
-            type="button"
-            className="width-tablet margin-bottom-4"
-            onClick={signOut}
-          >
-            <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
-            Sign Out
-          </Button>
-        </>
-      ) : (
-        <>
-          <p className="margin-top-1 margin-bottom-4">
-            Please enter your information to request access from an OFA
-            administrator
-          </p>
-          <form className="usa-form" onSubmit={handleSubmit}>
-            <div
-              className={`usa-error-message ${
-                !!Object.keys(errors).length && !!Object.keys(touched).length
-                  ? 'display-block'
-                  : 'display-none'
-              }`}
-              ref={errorRef}
-              tabIndex="-1"
-              role="alert"
-            >
-              There are {Object.keys(errors).length} errors in this form
-            </div>
-            <FormGroup
-              error={errors.firstName}
-              name="firstName"
-              label="First Name"
-              inputValue={profileInfo.firstName}
-              handleChange={handleChange}
-              handleBlur={handleBlur}
-            />
-            <FormGroup
-              error={errors.lastName}
-              name="lastName"
-              label="Last Name"
-              inputValue={profileInfo.lastName}
-              handleChange={handleChange}
-              handleBlur={handleBlur}
-            />
-            <div
-              className={`usa-form-group ${
-                errors.stt ? 'usa-form-group--error' : ''
-              }`}
-            >
-              <STTComboBox
-                selectStt={setStt}
-                error={Boolean(errors.stt)}
-                selectedStt={profileInfo?.stt}
-                handleBlur={handleBlur}
-              />
-            </div>
-            <Button type="submit" className="width-full request-access-button">
-              Request Access
-            </Button>
-          </form>
-        </>
-      )}
+      <p className="margin-top-1 margin-bottom-4">
+        You've been approved as a(n) {role?.[0].name}. You'll be able to do the
+        following in TDP:
+      </p>
+      <ul>
+        {role?.[0]?.permissions?.map((permission) => (
+          <li key={permission.id} id={permission.id}>
+            {permission.name}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

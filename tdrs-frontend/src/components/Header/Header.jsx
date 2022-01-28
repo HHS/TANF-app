@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -18,10 +18,10 @@ import NavItem from '../NavItem/NavItem'
  */
 function HeaderComp() {
   const pathname = useSelector((state) => state.router.location.pathname)
-  const [isMenuVisible, setIsMenuVisible] = useState(false)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
-  const userAccessRequestApproved = Boolean(user?.['access_request'])
+  const userAccessRequestApproved =
+    Boolean(user?.['access_request']) && user.roles.length > 0
 
   const menuRef = useRef()
 
@@ -37,9 +37,7 @@ function HeaderComp() {
         ...menuRef.current.querySelectorAll('a'),
       ]
 
-      const firstElement = focusableMenuElements[0]
       const lastIndex = focusableMenuElements.length - 1
-      const lastElement = focusableMenuElements[lastIndex]
 
       if (focusableMenuElements.includes(document.activeElement)) {
         if (!e.shiftKey && tabIndex >= lastIndex) {
