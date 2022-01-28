@@ -23,6 +23,7 @@ class UserAdmin(admin.ModelAdmin):
     exclude = ['password', 'user_permissions', 'is_active']
     readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id']
     form = UserForm
+    list_filter = ('access_request',)
 
 
 admin.site.register(User, UserAdmin)
