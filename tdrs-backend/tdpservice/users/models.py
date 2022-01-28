@@ -1,16 +1,15 @@
 """Define user model."""
 
+import logging
 import uuid
 
 from django.contrib.auth.models import AbstractUser
-from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError
-
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
-import logging
 logger = logging.getLogger()
 
 class User(AbstractUser):
@@ -63,9 +62,8 @@ class User(AbstractUser):
         """Return whether or not the user is a member of the specified Group."""
         return self.groups.filter(name=group_name).exists()
 
-    def clean(self, *args, **kwargs):
-        """Prevent save if attributes are not necessary for a user given their role."""
-        if not (self.is_regional_staff or self.is_data_analyst) and self.location:
+    def validate_location(self):
+        if (not (self.is_regional_staff or self.is_data_analyst)) and self.location:
             raise ValidationError(
                 _("Users other than Regional Staff and data analysts do not get assigned a location"))
         elif self.is_regional_staff and self.location_type and self.location_type.model != 'region':
@@ -75,6 +73,21 @@ class User(AbstractUser):
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt"))
 
+    def clean(self, *args, **kwargs):
+        """Prevent save if attributes are not necessary for a user given their role."""
+        logger.info('args')
+        logger.info(args)
+        logger.info('kwargs')
+        logger.info(kwargs)
+        super().clean(*args, **kwargs)
+        self.validate_location()
+
+    def save(self, *args, **kwargs):
+        logger.info('args')
+        logger.info(args)
+        logger.info('kwargs')
+        logger.info(kwargs)
+        self.validate_location()
         super().save(*args, **kwargs)
 
     @property
