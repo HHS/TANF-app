@@ -499,9 +499,27 @@ jobs:
           cf-username: CF_USERNAME_STAGING
 
   deploy-live-comms:
+    parameters:
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
       - run:
           name: Deploy Live Comms Site
           command: ./scripts/deploy-live-comms.sh rolling tdp-live-comms
