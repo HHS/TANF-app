@@ -497,6 +497,11 @@ jobs:
           cf-password: CF_PASSWORD_STAGING
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
+
+  deploy-live-comms:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
       - run:
           name: Deploy Live Comms Site
           command: ./scripts/deploy-live-comms.sh rolling tdp-live-comms
@@ -569,6 +574,11 @@ workflows:
   staging-deployment:
     unless: << pipeline.parameters.run_dev_deployment >>
     jobs:
+      - deploy-live-comms:
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
       - deploy-infrastructure-staging:
           filters:
             branches:
