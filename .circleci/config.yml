@@ -497,6 +497,9 @@ jobs:
           cf-password: CF_PASSWORD_STAGING
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
+      - run:
+          name: Deploy Live Comms Site
+          command: ./scripts/deploy-live-comms.sh rolling tdp-live-comms
 
   deploy-prod:
     executor: docker-executor

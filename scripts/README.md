@@ -425,3 +425,29 @@ This script is an easy-to-use wrapper around the OWASP ZAP python script, detail
     
 ### Where it's used
 Our CircleCI job `nightly-owasp-scan` utilizes this script to scan our stable deployment in Cloud.gov staging space.
+
+## deploy-live-comms.sh
+
+### Usage
+
+```bash
+./deploy-live-comms.sh rolling tdp-live-comms
+```
+
+### Arguments
+
+```bash
+# The deployment strategy you wish to employ ( rolling update or setting up a new environment)
+DEPLOY_STRATEGY=${1}
+
+#The application name  defined via the manifest yml for the frontend
+CGHOSTNAME_LIVE_COMMS=${2}
+```
+
+### Description
+
+Used to deploy the live-comms static file app
+
+### Where it's used
+
+Our CircleCI job `deploy-staging` uses this to deploy any changes made to the `live-comms` app
