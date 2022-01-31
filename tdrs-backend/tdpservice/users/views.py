@@ -26,12 +26,11 @@ class UserViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
-    ):
+):
     """User accounts viewset."""
-
     permission_classes = [IsAuthenticated, UserPermissions]
-    queryset = User.objects\
-        .select_related("stt")\
+    queryset = User.objects \
+        .select_related("stt") \
         .prefetch_related("groups__permissions")
 
     def get_serializer_class(self):
@@ -53,7 +52,7 @@ class UserViewSet(
 
     @action(methods=["PATCH"], detail=False)
     def request_access(self, request, pk=None):
-        """Request access for user with pk"""
+        """Request access for user with pk."""
         request.data['access_request'] = True
         serializer = self.get_serializer(self.request.user, request.data)
         serializer.is_valid(raise_exception=True)
