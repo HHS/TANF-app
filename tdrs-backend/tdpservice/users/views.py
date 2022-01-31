@@ -28,6 +28,7 @@ class UserViewSet(
     viewsets.GenericViewSet,
 ):
     """User accounts viewset."""
+
     permission_classes = [IsAuthenticated, UserPermissions]
     queryset = User.objects \
         .select_related("stt") \
