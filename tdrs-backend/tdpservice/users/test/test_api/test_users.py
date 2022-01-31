@@ -1,5 +1,6 @@
 """Basic API User Tests."""
 from django.contrib.auth import get_user_model
+
 import pytest
 from rest_framework import status
 
@@ -9,11 +10,10 @@ User = get_user_model()
 @pytest.mark.django_db
 def test_retrieve_user(api_client, data_analyst):
     """Test user retrieval."""
-    user = data_analyst
-    api_client.login(username=user.username, password="test_password")
-    response = api_client.get(f"/v1/users/{user.pk}/")
+    api_client.login(username=data_analyst.username, password="test_password")
+    response = api_client.get(f"/v1/users/{data_analyst.pk}/")
     assert response.status_code == status.HTTP_200_OK
-    assert response.data["username"] == user.username
+    assert response.data["username"] == data_analyst.username
 
 
 @pytest.mark.django_db

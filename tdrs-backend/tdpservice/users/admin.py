@@ -1,7 +1,5 @@
 """Add users to Django Admin."""
 
-import logging
-
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import ValidationError
@@ -10,7 +8,6 @@ from rest_framework.authtoken.models import TokenProxy
 
 from .models import User
 
-logger = logging.getLogger()
 
 class UserForm(forms.ModelForm):
     """Customize the user admin form."""
@@ -26,8 +23,6 @@ class UserForm(forms.ModelForm):
         """Add extra validation for locations based on roles."""
         cleaned_data = super().clean()
         groups = cleaned_data['groups']
-        logger.info(cleaned_data)
-        logger.info(self.instance.groups)
         if len(groups) > 1:
             raise ValidationError("User should not have multiple groups")
         group = groups.first()
@@ -38,7 +33,7 @@ class UserForm(forms.ModelForm):
         }
 
         correct_location_type = role_location_type_map.get(group.name)
-        location_based_role = (group.name == 'OFA Regional Staff' or group.name == 'Data Analyst')
+        location_based_role = group.name in ('OFA Regional Staff', 'Data Analyst')
 
         if (location_based_role and (location_type and location_type.name != correct_location_type)):
 
