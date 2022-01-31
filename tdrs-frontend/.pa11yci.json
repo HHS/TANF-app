@@ -32,14 +32,6 @@
       "actions":[
         "wait for element #private-template-container to be visible"
       ],
-      "url": "http://localhost:3000/request",
-      "screenCapture": "pa11y-screenshots/request.png"
-    },
-
-    {
-      "actions":[
-        "wait for element #private-template-container to be visible"
-      ],
       "url": "http://localhost:3000/data-files",
       "screenCapture": "pa11y-screenshots/data-files.png"
     },
