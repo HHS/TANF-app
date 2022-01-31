@@ -11,11 +11,9 @@ import { validation } from '../Profile/Profile'
 import { useEventLogger } from '../../utils/eventLogger'
 import { setAlert } from '../../actions/alert'
 import { ALERT_ERROR } from '../Alert'
-import { Redirect } from 'react-router-dom'
 
 function Home() {
   const errorRef = useRef(null)
-  const sttAssigned = useSelector((state) => state.auth.user.stt)
 
   const user = useSelector((state) => state.auth.user)
   const role = user?.roles

@@ -16,7 +16,7 @@ import NavItem from '../NavItem/NavItem'
  * @param {object} authenticated - whether the user is authenticated or not
  * @param {object} user - the current user's information
  */
-function HeaderComp() {
+function Header() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
@@ -171,4 +171,4 @@ function HeaderComp() {
   )
 }
 
-export default HeaderComp
+export default Header
