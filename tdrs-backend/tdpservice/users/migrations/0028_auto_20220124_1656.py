@@ -47,7 +47,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='location_type',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype'),
+            field=models.ForeignKey(
+                blank=True,
+                limit_choices_to=models.Q(
+                    models.Q(('app_label', 'stts'), ('model', 'stt')),
+                    models.Q(('app_label', 'stts'), ('model', 'region')),
+                    _connector='OR'
+                ),
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype'
+            ),
         ),
         migrations.RunPython(add_location),
         migrations.RemoveField(
