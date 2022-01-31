@@ -33,12 +33,53 @@ def test_set_profile_data(api_client, user):
         "last_name": "Bloggs",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
         "roles": [],
+        "access_request": False
     }
     user.refresh_from_db()
     assert user.first_name == "Joe"
     assert user.last_name == "Bloggs"
     assert user.stt.name == stt.name
 
+
+@pytest.mark.django_db
+def test_set_profile_data_access_request(api_client, user):
+    """Test access_request field can be toggled."""
+    api_client.login(username=user.username, password="test_password")
+    stt = STT.objects.first()
+    response = api_client.patch(
+        "/v1/users/set_profile/",
+        {"first_name": "Joe", "last_name": "Bloggs", "stt": stt.id, },
+        format="json",
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {
+        "id": user.id,
+        "email": user.username,
+        "first_name": "Joe",
+        "last_name": "Bloggs",
+        "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
+        "roles": [],
+        "access_request": False
+    }
+    user.refresh_from_db()
+    assert user.first_name == "Joe"
+    assert user.last_name == "Bloggs"
+    assert user.stt.name == stt.name
+
+    response = api_client.patch(
+            "/v1/users/request_access/",
+            {"first_name": "Joe", "last_name": "Bloggs", "stt": stt.id, "email": user.username},
+            format="json",
+        )
+    assert response.data == {
+            "id": str(user.id),
+            "username": user.username,
+            "first_name": "Joe",
+            "last_name": "Bloggs",
+            "access_request": True
+        }
+
+    # TODO: In the future, we would like to test that users can be activated and their roles are correctly assigned.
 
 @pytest.mark.django_db
 def test_set_profile_data_last_name_apostrophe(api_client, user):
@@ -58,6 +99,7 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
         "last_name": "O'Hare",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
         "roles": [],
+        "access_request": False
     }
     user.refresh_from_db()
     assert user.first_name == "Mike"
@@ -83,6 +125,7 @@ def test_set_profile_data_first_name_apostrophe(api_client, user):
         "last_name": "Smith",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
         "roles": [],
+        "access_request": False
     }
     user.refresh_from_db()
     assert user.first_name == "Pat'Jack"
@@ -137,7 +180,8 @@ def test_set_profile_data_special_last_name(api_client, user):
         "first_name": "John",
         "last_name": "Smith-O'Hare",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
-        "roles": []
+        "roles": [],
+        "access_request": False
     }
     user.refresh_from_db()
     assert user.first_name == "John"
@@ -162,7 +206,8 @@ def test_set_profile_data_special_first_name(api_client, user):
         "first_name": "John-Tom'",
         "last_name": "Jacobs",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
-        "roles": []
+        "roles": [],
+        "access_request": False
     }
     user.refresh_from_db()
     assert user.first_name == "John-Tom'"
@@ -187,7 +232,8 @@ def test_set_profile_data_spaced_last_name(api_client, user):
         "first_name": "Joan",
         "last_name": "Mary Ann",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
-        "roles": []
+        "roles": [],
+        "access_request": False
     }
     user.refresh_from_db()
     assert user.first_name == "Joan"
@@ -212,7 +258,8 @@ def test_set_profile_data_spaced_first_name(api_client, user):
         "first_name": "John Jim",
         "last_name": "Smith",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name},
-        "roles": []
+        "roles": [],
+        "access_request": False
     }
     user.refresh_from_db()
     assert user.first_name == "John Jim"
@@ -237,7 +284,8 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
         "first_name": "Max",
         "last_name": "Grecheñ",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
-        "roles": []
+        "roles": [],
+        "access_request": False
     }
     user.refresh_from_db()
     assert user.first_name == "Max"
@@ -262,7 +310,8 @@ def test_set_profile_data_last_name_with_tilde(api_client, user):
         "first_name": "Max",
         "last_name": "Glen~",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
-        "roles": []
+        "roles": [],
+        "access_request": False
     }
     user.refresh_from_db()
     assert user.first_name == "Max"
@@ -300,7 +349,8 @@ def test_set_profile_data_extra_field_include_required(api_client, user):
                 "code": stt.code,
                 "name": stt.name,
             },
-            "roles": []
+            "roles": [],
+            "access_request": False
         }
         user.refresh_from_db()
         assert user.first_name == "Heather"
