@@ -13,16 +13,17 @@ describe('Home', () => {
       user: {
         email: 'hi@bye.com',
         roles: [],
+        access_request: false,
       },
     },
   }
   const mockStore = configureStore([thunk])
 
-  it('should render the welcome page with the request access subheader', () => {
+  it('should render the Home page with the request access subheader', () => {
     const store = mockStore(initialState)
     const { getByText } = render(
       <Provider store={store}>
-        <Welcome />
+        <Home />
       </Provider>
     )
 
@@ -32,7 +33,7 @@ describe('Home', () => {
     expect(header).toBeInTheDocument()
   })
 
-  it("should render the welcome page with the user's current role", () => {
+  it("should render the Home page with the user's current role", () => {
     const store = mockStore({
       auth: {
         authenticated: true,
@@ -45,17 +46,17 @@ describe('Home', () => {
 
     const { getByText } = render(
       <Provider store={store}>
-        <Welcome />
+        <Home />
       </Provider>
     )
 
     const header = getByText(
-      `You've been approved as a(n) OFA Admin. You'll be able to do the following in TDP:`
+      "You've been approved as a(n) OFA Admin. You'll be able to do the following in TDP:"
     )
     expect(header).toBeInTheDocument()
   })
 
-  it("should render the welcome page with the user's OFA admin role", () => {
+  it("should render the Home page with the user's OFA admin role", () => {
     const store = mockStore({
       auth: {
         authenticated: true,
@@ -68,7 +69,7 @@ describe('Home', () => {
 
     const { getByText } = render(
       <Provider store={store}>
-        <Welcome />
+        <Home />
       </Provider>
     )
 
@@ -78,7 +79,7 @@ describe('Home', () => {
     expect(header).toBeInTheDocument()
   })
 
-  it("should render the welcome page with the user's Data Analyst role and permissions", () => {
+  it("should render the Home page with the user's Data Analyst role and permissions", () => {
     const store = mockStore({
       auth: {
         authenticated: true,
@@ -128,7 +129,7 @@ describe('Home', () => {
 
     const { getByText } = render(
       <Provider store={store}>
-        <Welcome />
+        <Home />
       </Provider>
     )
 
@@ -148,7 +149,7 @@ describe('Home', () => {
     const store = mockStore(initialState)
     render(
       <Provider store={store}>
-        <Welcome />
+        <Home />
       </Provider>
     )
 
