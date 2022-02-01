@@ -20,6 +20,7 @@ function Header() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
+  const userAccessRequestPending = Boolean(user?.['access_request'])
   const userAccessRequestApproved =
     Boolean(user?.['access_request']) && user.roles.length > 0
 
@@ -116,11 +117,13 @@ function Header() {
                       href="/data-files"
                     />
                   )}
-                  <NavItem
-                    pathname={pathname}
-                    tabTitle="Profile"
-                    href="/profile"
-                  />
+                  {userAccessRequestPending && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Profile"
+                      href="/profile"
+                    />
+                  )}
                   {userAccessRequestApproved && isOFASystemAdmin() && (
                     <NavItem
                       pathname={pathname}

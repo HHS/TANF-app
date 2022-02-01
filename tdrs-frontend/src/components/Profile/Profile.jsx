@@ -49,52 +49,29 @@ export const validation = (fieldName, fieldValue) => {
  */
 
 function Profile() {
-  const errorRef = useRef(null)
-  const requestedAccess = useSelector(
-    (state) => state.requestAccess.requestAccess
-  )
-  const requestAccessError = useSelector((state) => state.requestAccess.error)
-  const sttAssigned = useSelector((state) => state.auth.user.stt)
-  const sttList = useSelector((state) => state.stts.sttList)
   const user = useSelector((state) => state.auth.user)
-
-  const dispatch = useDispatch()
-
-  const [errors, setErrors] = useState({})
-
-  const [touched, setTouched] = useState({})
-
-  const logger = useEventLogger()
+  const hasRoles = user.roles.length > 0
+  const missingAccessRequest = !Boolean(user?.access_request)
+  const isAccessRequestPending = Boolean(user?.access_request) && !hasRoles
 
   const isAMSUser = false
 
-  useEffect(() => {
-    if (requestAccessError) {
-      dispatch(
-        setAlert({ heading: requestAccessError.message, type: ALERT_ERROR })
-      )
-      logger.error(requestAccessError.message)
-    }
-  }, [dispatch, requestAccessError, logger])
-
-  if (requestedAccess && sttAssigned) {
+  if (missingAccessRequest) {
     return <Redirect to="/home" />
   }
 
   return (
     <div className="usa-prose">
-      <div
-        className={`usa-error-message ${
-          !!Object.keys(errors).length && !!Object.keys(touched).length
-            ? 'display-block'
-            : 'display-none'
-        }`}
-        ref={errorRef}
-        tabIndex="-1"
-        role="alert"
-      >
-        There are {Object.keys(errors).length} errors in this form
-      </div>
+      {isAccessRequestPending && (
+        <div className="usa-alert usa-alert--info">
+          <div className="usa-alert__body">
+            <p className="usa-alert__text">
+              Your request for access is currently being reviewed by an OFA
+              Admin. We’ll send you an email when it’s been approved.
+            </p>
+          </div>
+        </div>
+      )}
       <div>
         <p className="text-bold">
           {user?.first_name} {user?.last_name}
