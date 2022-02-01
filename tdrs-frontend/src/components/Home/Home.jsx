@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import Button from '../Button'
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -9,8 +9,6 @@ import STTComboBox from '../STTComboBox'
 import { requestAccess } from '../../actions/requestAccess'
 import { validation } from '../Profile/Profile'
 import { useEventLogger } from '../../utils/eventLogger'
-import { setAlert } from '../../actions/alert'
-import { ALERT_ERROR } from '../Alert'
 
 function Home() {
   const errorRef = useRef(null)
@@ -31,17 +29,6 @@ function Home() {
   const sttList = useSelector((state) => state.stts.sttList)
 
   const userAccessRequestApproved = Boolean(user?.['access_request'])
-
-  const requestAccessError = useSelector((state) => state.requestAccess.error)
-
-  useEffect(() => {
-    if (requestAccessError) {
-      dispatch(
-        setAlert({ heading: requestAccessError.message, type: ALERT_ERROR })
-      )
-      logger.error(requestAccessError.message)
-    }
-  }, [dispatch, requestAccessError, logger])
 
   const setStt = (sttName) => {
     setProfileInfo((currentState) => ({
