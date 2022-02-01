@@ -160,9 +160,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 user.save()
 
             if user.deactivated:
-                self.login_user(request, user, "Inactive User Found")
+                login_msg = "Inactive User Found"
             else:
-                self.login_user(request, user, "User Found")
+                login_msg = "User Found"
 
         elif user and not user.is_active:
             raise InactiveUser(
@@ -179,10 +179,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             user = User.objects.create_user(email, email=email, **auth_options)
             user.set_unusable_password()
             user.save()
-            self.login_user(request, user, "User Created")
+            login_msg = "User Created"
 
         self.verify_email(user)
-
+        self.login_user(request, user, login_msg)
         return user
 
     @staticmethod
