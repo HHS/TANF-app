@@ -5,7 +5,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
-    "@fortawesome/react-fontawesome": "^0.1.16",
+    "@fortawesome/react-fontawesome": "^0.1.17",
     "axios": "^0.24.0",
     "classnames": "^2.3.0",
     "connected-react-router": "^6.8.0",
@@ -84,7 +84,7 @@
     "prettier": "^2.4.1",
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
-    "sass": "^1.49.0",
+    "sass": "^1.49.4",
     "wait-on": "^6.0.0"
   },
   "jest": {
