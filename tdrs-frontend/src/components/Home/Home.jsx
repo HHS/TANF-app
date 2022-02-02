@@ -7,9 +7,41 @@ import signOut from '../../utils/signOut'
 import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
 import { requestAccess } from '../../actions/requestAccess'
-import { validation } from '../Profile/Profile'
-import { useEventLogger } from '../../utils/eventLogger'
 
+/**
+ *
+ * @param {string} fieldName - The name of the element that is being validated
+ * @param {string || object} fieldValue - The value of the field. A string from
+ * First Name and Last Name.
+ * The STT fieldValue is either a string or an object if there is a selected
+ * STT.
+ */
+export const validation = (fieldName, fieldValue) => {
+  let field
+  switch (fieldName) {
+    case 'firstName':
+      field = 'First Name'
+      break
+    case 'lastName':
+      field = 'Last Name'
+      break
+    case 'stt':
+      field = 'A state, tribe, or territory'
+      break
+    default:
+      field = ''
+  }
+  if (typeof fieldValue === 'string' && fieldValue.trim() === '') {
+    return `${field} is required`
+  }
+  return null
+}
+
+/**
+ * Home renders the Request Access form for creating a profile, and displays
+ * a pending-approval state, before showing the user their active roles and
+ * permissions once they are approved by an Admin in the backend.
+ */
 function Home() {
   const errorRef = useRef(null)
 
@@ -25,7 +57,6 @@ function Home() {
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
 
-  const logger = useEventLogger()
   const sttList = useSelector((state) => state.stts.sttList)
 
   const userAccessRequestApproved = Boolean(user?.['access_request'])

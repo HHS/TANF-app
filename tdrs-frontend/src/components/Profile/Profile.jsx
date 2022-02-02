@@ -1,52 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import { Redirect } from 'react-router-dom'
 
-import { setAlert } from '../../actions/alert'
-import { ALERT_ERROR } from '../Alert'
-
-import { useEventLogger } from '../../utils/eventLogger'
 import loginLogo from '../../assets/login-gov-logo.svg'
 import Button from '../Button'
-
-/**
- *
- * @param {string} fieldName - The name of the element that is being validated
- * @param {string || object} fieldValue - The value of the field. A string from
- * First Name and Last Name.
- * The STT fieldValue is either a string or an object if there is a selected
- * STT.
- */
-export const validation = (fieldName, fieldValue) => {
-  let field
-  switch (fieldName) {
-    case 'firstName':
-      field = 'First Name'
-      break
-    case 'lastName':
-      field = 'Last Name'
-      break
-    case 'stt':
-      field = 'A state, tribe, or territory'
-      break
-    default:
-      field = ''
-  }
-  if (typeof fieldValue === 'string' && fieldValue.trim() === '') {
-    return `${field} is required`
-  }
-  return null
-}
-
-/**
- * Profile renders the Request Access form for creating a profile.
- * Profile dispatches event fetchStts to get a list of STTs to render
- * inside of the combo box.
- *
- * Profile renders a form for a user to request access to the application.
- * There is an input for first and last name and a combo box to select
- *  an associated STT.
- */
 
 function Profile() {
   const user = useSelector((state) => state.auth.user)

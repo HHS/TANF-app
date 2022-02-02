@@ -1,10 +1,9 @@
 import React from 'react'
 import thunk from 'redux-thunk'
-import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
-import { fireEvent, render } from '@testing-library/react'
+import { render } from '@testing-library/react'
 
-import Profile, { validation } from './Profile'
+import Profile from './Profile'
 import configureStore from 'redux-mock-store'
 
 const initialState = {
