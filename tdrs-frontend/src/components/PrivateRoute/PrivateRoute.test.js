@@ -1,10 +1,11 @@
 /* eslint-disable no-param-reassign */
 import React from 'react'
 import thunk from 'redux-thunk'
-import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { MemoryRouter, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { render, screen } from '@testing-library/react'
+
 import * as Alert from '../../actions/alert'
 
 import PrivateRoute from '.'
@@ -13,37 +14,38 @@ describe('PrivateRoute.js', () => {
   const mockStore = configureStore([thunk])
 
   const createWrapper = (storeOptions) =>
-    mount(
+    render(
       <Provider store={mockStore(storeOptions)}>
         <MemoryRouter initialEntries={['/very-secret-route']}>
-          <PrivateRoute title="Test" path="/very-secret-route">
-            <Route>Hello Private Content</Route>
-          </PrivateRoute>
+          <Routes>
+            <Route
+              exact
+              path="/very-secret-route"
+              element={
+                <PrivateRoute title="Test">
+                  <p>Hello Private Content</p>
+                </PrivateRoute>
+              }
+            />
+          </Routes>
         </MemoryRouter>
       </Provider>
     )
 
   it('does not return children when user is not authenticated', () => {
-    const wrapper = createWrapper({ auth: { authenticated: false } })
-    expect(wrapper.find(Route).exists()).toBeFalsy()
+    createWrapper({ auth: { authenticated: false } })
+    expect(screen.queryByText('Hello Private Content')).not.toBeInTheDocument()
   })
 
   it('returns children when user is authenticated', () => {
-    const wrapper = createWrapper({ auth: { authenticated: true } })
-    expect(wrapper.find(Route)).toExist()
-  })
-
-  it('should should not render h1 if not authenticated', () => {
-    const wrapper = createWrapper({ auth: { authenticated: false } })
-
-    const h1 = wrapper.find('h1')
-    expect(h1.exists()).toBeFalsy()
+    createWrapper({ auth: { authenticated: true } })
+    expect(screen.queryByText('Hello Private Content')).toBeInTheDocument()
   })
 
   it('alerts a loading message when log-in is in process, does not render child content', () => {
     const spy = jest.spyOn(Alert, 'setAlert')
-    const wrapper = createWrapper({ auth: { loading: true } })
-    expect(wrapper.find(Route).exists()).toBeFalsy()
+    createWrapper({ auth: { loading: true } })
+    expect(screen.queryByText('Hello Private Content')).not.toBeInTheDocument()
     expect(spy).toHaveBeenCalledWith({
       heading: 'Please wait...',
       type: 'info',
