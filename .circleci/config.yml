@@ -595,7 +595,7 @@ workflows:
   staging-deployment:
     unless: << pipeline.parameters.run_dev_deployment >>
     jobs:
-      - deploy-live-comms:
+      - deploy-project-updates-site:
           filters:
             branches:
               only:
