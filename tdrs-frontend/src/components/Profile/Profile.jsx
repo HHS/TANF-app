@@ -54,7 +54,7 @@ function Profile() {
   const missingAccessRequest = !Boolean(user?.access_request)
   const isAccessRequestPending = Boolean(user?.access_request) && !hasRoles
 
-  const isAMSUser = false
+  const isAMSUser = user.email.includes('@acf.hhs.gov')
 
   if (missingAccessRequest) {
     return <Redirect to="/home" />
@@ -63,7 +63,7 @@ function Profile() {
   return (
     <div className="usa-prose">
       {isAccessRequestPending && (
-        <div className="usa-alert usa-alert--info">
+        <div className="usa-alert usa-alert--info margin-top-3">
           <div className="usa-alert__body">
             <p className="usa-alert__text">
               Your request for access is currently being reviewed by an OFA
