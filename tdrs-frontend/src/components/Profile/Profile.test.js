@@ -1,7 +1,7 @@
 import React from 'react'
 import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 
 import Profile from './Profile'
 import configureStore from 'redux-mock-store'
@@ -11,76 +11,64 @@ const initialState = {
     authenticated: true,
     user: {
       email: 'hi@bye.com',
+      first_name: 'john',
+      last_name: 'willis',
       roles: [],
-      access_request: false,
+      access_request: true,
     },
-  },
-  stts: {
-    loading: false,
-    sttList: [
-      {
-        id: 1,
-        type: 'state',
-        code: 'AL',
-        name: 'Alabama',
-      },
-      {
-        id: 2,
-        type: 'state',
-        code: 'AK',
-        name: 'Alaska',
-      },
-      {
-        id: 140,
-        type: 'tribe',
-        code: 'AK',
-        name: 'Aleutian/Pribilof Islands Association, Inc.',
-      },
-    ],
   },
 }
 
 describe('Profile', () => {
   const mockStore = configureStore([thunk])
 
-  it('should dispatch "setAlert" when form is submitted and there is an error', () => {
-    const store = mockStore({
-      ...initialState,
-      requestAccess: {
-        ...initialState.requestAccess,
-        error: { message: 'This request failed' },
-      },
-      stts: {
-        sttList: [
-          {
-            id: 1,
-            type: 'state',
-            code: 'AL',
-            name: 'Alabama',
-          },
-          {
-            id: 2,
-            type: 'state',
-            code: 'AK',
-            name: 'Alaska',
-          },
-          {
-            id: 140,
-            type: 'tribe',
-            code: 'AK',
-            name: 'Aleutian/Pribilof Islands Association, Inc.',
-          },
-        ],
-      },
-    })
-    const origDispatch = store.dispatch
-    store.dispatch = jest.fn(origDispatch)
+  it('should display a pending approval message after user access request is made', () => {
+    const store = mockStore(initialState)
 
     render(
       <Provider store={store}>
         <Profile />
       </Provider>
     )
-    expect(store.dispatch).toHaveBeenCalled()
+    expect(
+      screen.getByText(
+        `Your request for access is currently being reviewed by an OFA Admin. We’ll send you an email when it’s been approved.`
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('should not display a pending approval message after user access is approved', () => {
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: {
+          roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+          access_request: true,
+        },
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <Profile />
+      </Provider>
+    )
+    expect(
+      screen.queryByText(
+        `Your request for access is currently being reviewed by an OFA Admin. We’ll send you an email when it’s been approved.`
+      )
+    ).not.toBeInTheDocument()
+  })
+
+  it("should display user's info during the pending approbal state", () => {
+    const store = mockStore(initialState)
+
+    render(
+      <Provider store={store}>
+        <Profile />
+      </Provider>
+    )
+    expect(screen.getByText('john willis')).toBeInTheDocument()
+    expect(screen.getByText('hi@bye.com')).toBeInTheDocument()
   })
 })

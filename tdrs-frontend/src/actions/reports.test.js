@@ -62,7 +62,7 @@ describe('actions/reports', () => {
     expect(actions[0].type).toBe(SET_FILE_ERROR)
     expect(actions[0].payload).toHaveProperty(
       'error',
-      TypeError("Cannot read property 'name' of undefined")
+      TypeError("Cannot read properties of undefined (reading 'name')")
     )
   })
 

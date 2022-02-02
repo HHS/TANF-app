@@ -7,11 +7,11 @@ import Button from '../Button'
 
 function Profile() {
   const user = useSelector((state) => state.auth.user)
-  const hasRoles = user.roles.length > 0
+  const hasRoles = user?.roles.length > 0
   const missingAccessRequest = !Boolean(user?.access_request)
   const isAccessRequestPending = Boolean(user?.access_request) && !hasRoles
 
-  const isAMSUser = user.email.includes('@acf.hhs.gov')
+  const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
   if (missingAccessRequest) {
     return <Redirect to="/home" />
