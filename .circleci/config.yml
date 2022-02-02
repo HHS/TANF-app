@@ -498,7 +498,7 @@ jobs:
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
 
-  deploy-live-comms:
+  deploy-project-updates-site:
     parameters:
       cf-org:
         default: CF_ORG
@@ -524,8 +524,8 @@ jobs:
           cf-space: <<parameters.cf-space>>
           cf-username: <<parameters.cf-username>>
       - run:
-          name: Deploy Live Comms Site
-          command: ./scripts/deploy-live-comms.sh rolling tdp-live-comms
+          name: Deploy TDP Product Updates Site
+          command: ./scripts/deploy-product-update-site.sh rolling tdp-product-updates
 
   deploy-prod:
     executor: docker-executor
