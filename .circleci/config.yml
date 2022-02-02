@@ -64,6 +64,8 @@ commands:
       - run:
           name: Install Node.JS
           command: |
+            sudo apt-get update
+            sudo apt-get install -y libgbm-dev
             source /opt/circleci/.nvm/nvm.sh
             nvm install v16.13
             nvm alias default v16.13
@@ -496,6 +498,35 @@ jobs:
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
 
+  deploy-live-comms:
+    parameters:
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - run:
+          name: Deploy Live Comms Site
+          command: ./scripts/deploy-live-comms.sh rolling tdp-live-comms
+
   deploy-prod:
     executor: docker-executor
     working_directory: ~/tdp-deploy
@@ -564,6 +595,11 @@ workflows:
   staging-deployment:
     unless: << pipeline.parameters.run_dev_deployment >>
     jobs:
+      - deploy-live-comms:
+          filters:
+            branches:
+              only:
+                - raft-tdp-main
       - deploy-infrastructure-staging:
           filters:
             branches:

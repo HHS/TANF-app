@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>TANF Data Portal Project Updates - January 2022</title>
+    <link rel="stylesheet" href="css/uswds.css" />
+    <link rel="icon" type="image/x-icon" href="img/favicons/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="js/uswds.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.src.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        const chart = Highcharts.chart('container', {
+
+        accessibility: {
+        description: 'Participant votes by preference for Version A, Version B, or each having merit. The votes totals were 2 for Version A, 8 for Version B, and 3 for each having merits'
+                       },
+            chart: {
+                type: 'bar'
+            },
+            legend:{ enabled:false },
+            credits: {
+  enabled: false
+},
+
+            title: {
+                text: 'Participant votes'
+            },
+            xAxis: {
+                categories: ['Version A', 'Version B', 'Each have merits']
+
+            },
+            yAxis: {
+                title: {
+                    text: 'Participant votes'
+                }
+            },
+            series: [{
+                name: 'Votes',
+                data: [2, 8, 3]
+            }]
+        });
+    });
+  </script>
+  </head>
+  <body>
+
+    <a class="usa-skipnav" href="#main-content">Skip to main content</a>
+
+
+
+
+  <section class="usa-banner" aria-label="This page is maintained by the Design team at Raft LLC for the purposes of the TANF Data Portal project.">
+    <div class="usa-accordion">
+      <header class="usa-banner__header">
+        <div class="usa-banner__inner">
+          <div class="grid-col-auto">
+          </div>
+          <div class="grid-col-fill tablet:grid-col-auto">
+            <p class="usa-banner__header-text">This page is maintained by the Design team at Raft LLC for the purposes of the TANF Data Portal project.</p>
+          </div>
+
+        </div>
+      </header>
+  </section>
+
+
+
+
+
+
+
+  </div>
+  </div>
+    </nav>
+  </header>
+
+
+
+
+  <main id="main-top">
+
+
+  <div class="usa-overlay"></div>
+<header class="usa-header usa-header--basic">
+  <div class="usa-nav-container">
+    <div class="usa-navbar">
+      <div class="usa-logo" id="basic-logo">
+        <em class="usa-logo__text">
+          <a href="./index.html" title="TDP Project Updates">
+            TANF Data Portal Project Updates
+          </a>
+        </em>
+      </div>
+      <button class="usa-menu-btn">Menu</button>
+    </div>
+    <nav aria-label="Primary navigation" class="usa-nav">
+      <button class="usa-nav__close">
+        <img src="./img/close.svg" role="img" alt="Close" />
+      </button>
+      <ul class="usa-nav__primary usa-accordion">
+        <li class="usa-nav__primary-item">
+          <a href="./index.html" class="usa-current" aria-current="page">
+            <span>January 2022</span>
+          </a>
+        </li>
+           <li class="usa-nav__primary-item">
+          <a href="August-2021-Update.html" class="usa-nav__link">
+            <span>August 2021</span>
+          </a>
+        </li>
+             <li class="usa-nav__primary-item">
+          <a href="June-2021-Update.html" class="usa-nav__link">
+            <span>June 2021</span>
+          </a>
+        </li>
+      </ul>
+
+
+    </nav>
+  </div>
+</header>
+
+  <div class="usa-section">
+  <div class="grid-container">
+    <div class="grid-row grid-gap">
+      <div class="usa-layout-docs__sidenav desktop:grid-col-3">
+        <nav aria-label="Secondary navigation">
+          <ul class="usa-sidenav">
+            <li class="usa-sidenav__item">
+              <a href="./index.html" class="usa-current" aria-current="page">January 2022</a>
+            </li>
+            <li class="usa-sidenav__item">
+              <a href="August-2021-Update.html">August 2021</a>
+            </li>
+             <li class="usa-sidenav__item">
+              <a href="June-2021-Update.html">June 2021</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <main
+        class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
+        id="main-content"
+      >
+        <h1>TDP Project Update - January 2022</h1>
+
+        <p class="usa-intro">
+          While past updates have been shared in PDF format, this update and those going forward will be shared on this website. We've made this change so as to centralize our project update materials and simplify the process of making each update fully accessible.
+        </p>
+
+        <h2 id="team-updates">Team Updates</h2>
+
+        <img src="https://github.com/reitermb/TANF-Data-Portal-Updates/blob/main/Slide%2016_9%20-%201.png?raw=true" alt="Profile images of Miles Reiter and Sreedevi Purayannur">
+
+        <p>
+          Since our last update in August Sreedevi has come onboard the project team as another Sr. Researcher & Designer.
+        </p>
+
+
+        <hr style="border: 2px solid #0050d8; margin-top: 40px;">
+
+        <h2 id="where-weve-been">Where we've been</h2>
+
+          <p>
+            This round of research was focused around two main areas: Partial submissions and evaluating design concepts for TDP’s Submission History page. We aimed to:
+    </p>
+<ul>
+  <li>Understand the impact of not accepting partial data submission on grantees who currently rely on it</li>
+  <li>Identify opportunities to mitigate any negative effects or challenges of this change</li>
+  <li>Capture preferences between design variations for TDP’s Submission History page and concerning “Minimum Viable Attributes”</li>
+</ul>
+
+    <p>
+
+    Ultimately investigating these points allowed us to arrive upon a validated design for Submission History, intuitive language to use in and around that page, and identified opportunities to improve other upcoming focuses of design and research including Onboarding, Reporting, and Error Guidance.
+        </p>
+
+
+
+
+        <h3 id="we-wanted-to-understand-user-preferences" style="margin-top: 100px;">We wanted to understand user preferences on two variations of TDP's Submission History page</h3>
+
+        <p>
+          We tested two versions of TDP’s Submission History page mockups to understand OFA regional staff’s and grantees’ minimum
+          requirements for file information that they need to see from resubmitted files.
+        </p>
+
+            <table class="usa-table usa-table--borderless">
+  <caption>
+Tested versions
+              </caption>
+  <thead>
+    <tr>
+      <th scope="col">Version</th>
+      <th scope="col">Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row"> <a href="https://github.com/raft-tech/TANF-app/files/7859592/Submission.History.STT.View.Variation.1.pdf" >Version A</a></th>
+
+      <td>
+          Cases (Accepted, Rejected, Total) + Rejected Records by type
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row"> <a href="https://github.com/raft-tech/TANF-app/files/7859591/Submision.History.STT.View.Variation.2.pdf" >Version B</a></th>
+
+      <td>
+                           Cases (Accepted, Rejected, Total)
+
+      </td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+
+
+
+        <div id="container" style="background: #fff; height: 400px;"></div>
+
+                <h3 id="error-history" style="margin-top: 100px;">Grantee participants expressed a desire to see historic error patterns in their files</h3>
+
+                <img src="https://user-images.githubusercontent.com/28515874/151024448-6317c78d-1123-4df8-a5ee-7c9f26d1d2cd.png" alt="Flowchart showing a looping process. Access to historic error records leads to identifying trends and patterns leads to avoiding commonly repeated errors leads to improving data quality.">
+
+                <p>For many participants, insight into error patterns would help them can identify and avoid mistakes that recur over a period of time. For many errors this could help grantees implement measures to prevent those in future submissions.
+                </p>
+
+        <h3 id="content-testing" style="margin-top: 100px;">We tested the language and meaning conveyed for acceptance status messages</h3>
+<p>
+        Each file that a grantee transmits to the OFA also will be attached to an 'acceptance status' - conveying whether data in a file passed the necessary quality checks and is ready to be accepted.
+</p>
+
+
+<table class="usa-table usa-table--borderless">
+<thead>
+    <tr>
+        <th scope="col">Status Message</th>
+        <th scope="col">What it should convey to grantees</th>
+    </tr>
+  </thead>
+    <tr>
+        <td>Accepted</td>
+        <td>a file has no errors, meets reporting requirements and is accepted into the database</td>
+    </tr>
+    <tr>
+        <td>Accepted with Errors</td>
+        <td>a file meets reporting requirements, but has errors that need to be addressed</td>
+    </tr>
+    <tr>
+        <td>Rejected</td>
+        <td>a file did not pass data quality checks and is rejected</td>
+    </tr>
+</table>
+
+        <h3 id="error-report-discoverability" style="margin-top: 100px;">All our participants successfully interpreted what an "Error Report" in TDP is and how it relates to a particular file in Submission History</h3>
+
+
+
+<img src="https://user-images.githubusercontent.com/28515874/151024188-49c8d73d-4d9b-4ed3-b158-f1b25f2a24c3.png" alt="Screenshot with the Error reports column on a TDP submission history table circled for emphasis">
+
+<p> Just like TDP's new submission status messages (Accepted, Accepted with Errors, Rejected), the term "Error Report" represents a change form the current state of submission involving Transmission Reports or Questionable Case reports. Despite the change, our participants were all able to identify that an Error Report in TDP will fill the same role those existing reports do.
+</p>
+
+<h3 id="ftanf" style="margin-top: 100px;">We found that grantees who currently submit partial data coded by fTANF may benefit from material detailing how to move to submitting complete data</h3>
+<img src="https://user-images.githubusercontent.com/28515874/151024149-1ef5652e-f8eb-4509-a210-f3dc299b68f4.png" alt="Screenshot of fTANF tool showing the Case Management screen where transmission flags on records can be reset">
+
+      <p>
+      To help these grantees navigate TDP not accepting partial data we’ve worked with DIGIT to identify an fTANF process and we plan to create a dedicated guide detailing how to submit complete data via fTANF as part of our upcoming work on Onboarding.
+
+        <hr style="border: 2px solid #0050d8; margin-top: 40px;">
+
+
+        <h2 id="where-were-going" >Where we're going</h2>
+
+
+        <h3 id="submission-history-release-approach" style="margin-top: 100px;">How we'll release Submission History in TDP</h3>
+
+        <p>
+          We plan to take a phased approach to introduce different attributes of the Submission History page.
+          The pilot program will include only file names and date of submission. Future releases will introduce more
+          functionality to this page.
+        </p>
+
+          <p>
+          Vote totals and a number of other insights from this round have led us to prioritizing Version B as the best baseline experience of Submission History.
+          However, as we move into onboarding and other upcoming areas of research we'll examine the best ways to also include the records-level data a number of
+          participants appreciated in TDP. Either as a future enhancement to the Submission History page, or as a part of other functionality such as Reporting.
+        </p>
+
+        <table class="usa-table usa-table--borderless">
+  <caption>
+    Submission History Page Rollout Plan
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Attributes</th>
+      <th scope="col">Release 1 (Past)</th>
+      <th scope="col">Release 2 (Pilot)</th>
+      <th scope="col">Release 3 (Future)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">File Name</th>
+      <td>
+        <img src="https://user-images.githubusercontent.com/28515874/148619289-908ca940-1f05-4aef-8ada-69aebb7925f3.png" width="24px" alt="Wasn't Included">
+      </td>
+      <td>
+             <img src="https://user-images.githubusercontent.com/28515874/148619288-139aa00c-b85b-48a9-9e06-98cbbad37d0d.png" width="24px" alt="Is Included">
+
+      </td>
+      <td>
+                   <img src="https://user-images.githubusercontent.com/28515874/148619288-139aa00c-b85b-48a9-9e06-98cbbad37d0d.png" width="24px" alt="Is Included">
+
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Date & Time Stamp</th>
+      <td>
+                <img src="https://user-images.githubusercontent.com/28515874/148619289-908ca940-1f05-4aef-8ada-69aebb7925f3.png" width="24px" alt="Wasn't Included">
+
+      </td>
+      <td>
+                   <img src="https://user-images.githubusercontent.com/28515874/148619288-139aa00c-b85b-48a9-9e06-98cbbad37d0d.png" width="24px" alt="Is Included">
+
+      </td>
+      <td>
+                   <img src="https://user-images.githubusercontent.com/28515874/148619288-139aa00c-b85b-48a9-9e06-98cbbad37d0d.png" width="24px" alt="Is Included">
+
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Acceptance Status</th>
+      <td>
+                <img src="https://user-images.githubusercontent.com/28515874/148619289-908ca940-1f05-4aef-8ada-69aebb7925f3.png" width="24px" alt="Wasn't Included">
+
+      </td>
+      <td>
+             <img src="https://user-images.githubusercontent.com/28515874/148619290-3cfad45a-de3b-4b20-a875-3944254c6c38.png" width="24px" alt="Not included">
+
+      </td>
+      <td>
+                   <img src="https://user-images.githubusercontent.com/28515874/148619288-139aa00c-b85b-48a9-9e06-98cbbad37d0d.png" width="24px" alt="Is Included">
+
+      </td>
+    </tr>
+     <tr>
+      <th scope="row">Accepted / Rejected Case Totals</th>
+      <td>
+                <img src="https://user-images.githubusercontent.com/28515874/148619289-908ca940-1f05-4aef-8ada-69aebb7925f3.png" width="24px" alt="Wasn't Included">
+
+      </td>
+      <td>
+       <img src="https://user-images.githubusercontent.com/28515874/148619290-3cfad45a-de3b-4b20-a875-3944254c6c38.png" width="24px" alt="Not included">
+       </td>
+      <td>
+                    <img src="https://user-images.githubusercontent.com/28515874/148619288-139aa00c-b85b-48a9-9e06-98cbbad37d0d.png" width="24px" alt="Is Included">
+
+       </td>
+    </tr>
+        <tr>
+      <th scope="row">Error Reports</th>
+      <td>
+                <img src="https://user-images.githubusercontent.com/28515874/148619289-908ca940-1f05-4aef-8ada-69aebb7925f3.png" width="24px" alt="Wasn't Included">
+
+      </td>
+      <td>
+                 <img src="https://user-images.githubusercontent.com/28515874/148619290-3cfad45a-de3b-4b20-a875-3944254c6c38.png" width="24px" alt="Not included">
+
+          </td>
+      <td><img src="https://user-images.githubusercontent.com/28515874/148619288-139aa00c-b85b-48a9-9e06-98cbbad37d0d.png" width="24px" alt="Will be included"</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h3 id="onboarding-research" style="margin-top: 100px;">Onboarding Research</h3>
+
+
+        <p>
+            One of the next phases of research will involve us researching optimal ways to introduce users to the new TDP platform and familiarize them with its new features.
+        </p>
+
+        <img src="https://user-images.githubusercontent.com/28515874/151025025-be1ab16c-0cb1-4ad2-a5ae-5d0dfacc25aa.png" alt="Onboarding resources meant to introduce, train, and offer help & support. Respectively, introducing the benefits of the new TANF Data Portal and explain how it can ease the data transmission process, train our users to easily and effectively use its features, and provide tutorials and FAQs to continuously help users improve their knowledge of TDP.">
+
+        <p>
+          The onboarding experience may ultimately include:
+        </p>
+ <ul>
+   <li>Downloadable instructions</li>
+   <li>In-app walkthroughs</li>
+   <li>FAQs</li>
+   <li>Video tutorials</li>
+   <li>Other resources/methods that we find to be useful</li>
+ </ul>
+
+        <hr style="border: 2px solid #0050d8; margin-top: 40px;">
+
+        <h2 id="office-hours">We now have office hours!</h2>
+
+        <p>
+          In addition to many upcoming structured and planned rounds of research we'd love to offer up some unstructured time to hear from you.
+          If you have questions about the project, feedback about elements of the current system you'd like to see TDP address, or have
+          anything else in mind, we'll be offering a number of time slots to hear it each month. If the available times don't work with your
+          schedule or you'd simply like to get it touch via email, please feel free to continue reaching out via <a href = "mailto: mreiter@goraft.tech">mreiter@goraft.tech</a>.
+        </p>
+
+                <a href="https://doodle.com/bp/milesreiter/tanf-data-portal-tdp-research-office-hours" class="usa-button"><span style="color: white;">Book Office Hours</span></a>
+
+
+        <hr style="border: 2px solid #0050d8; margin-top: 40px;">
+
+        <h2 id="full-synthesis">Full Research Synthesis</h2>
+
+        <p>As always, our complete research synthesis has been published in the project GitHub repo and can be found below if you’d like to read more about our process and findings.</p>
+
+  <a href="https://github.com/HHS/TANF-app/blob/main/docs/User-Experience/Research-Syntheses/2021%2C%20Fall%20-%20Investigating%20Partial%20Submission%20%26%20Evaluating%20TDP%20Submission%20History.md" class="usa-button"><span style="color: white;">View Full Synthesis</span></a>
+
+
+      </main>
+    </div>
+  </div>
+</div>
