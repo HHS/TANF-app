@@ -3,10 +3,12 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 
-import { MemoryRouter, Navigate } from 'react-router-dom'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import EditProfile, { validation } from './EditProfile'
+import PrivateRoute from '../PrivateRoute'
+import Request from '../Request'
 
 describe('EditProfile', () => {
   const initialState = {
@@ -450,15 +452,39 @@ describe('EditProfile', () => {
         ],
       },
     })
-    const wrapper = mount(
+
+    render(
       <Provider store={store}>
-        <MemoryRouter>
-          <EditProfile />
+        <MemoryRouter initialEntries={['/edit-profile']}>
+          <Routes>
+            <Route
+              exact
+              path="/request"
+              element={
+                <PrivateRoute title="Request Submitted">
+                  <Request />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              exact
+              path="/edit-profile"
+              element={
+                <PrivateRoute title="Request Access">
+                  <EditProfile />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
         </MemoryRouter>
       </Provider>
     )
 
-    expect(wrapper).toContainReact(<Navigate to="/request" />)
+    expect(
+      screen.getByText(
+        'An administrator will be in touch soon to confirm your access!'
+      )
+    ).toBeInTheDocument()
   })
 
   it('should dispatch "requestAccess" when form is submitted', () => {
