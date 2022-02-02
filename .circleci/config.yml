@@ -525,7 +525,7 @@ jobs:
           cf-username: <<parameters.cf-username>>
       - run:
           name: Deploy TDP Product Updates Site
-          command: ./scripts/deploy-product-update-site.sh rolling tdp-product-updates
+          command: ./scripts/deploy-tdp-product-update-site.sh rolling tdp-product-updates
 
   deploy-prod:
     executor: docker-executor
