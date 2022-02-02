@@ -104,7 +104,7 @@ A typical sprint schedule is described in the table below.
 * **Goal:** A weekly discussion between the Dev Team and the OFA Tech Lead to discuss issues, ask questions of each other, and collaborate.
 * **Attendees:** Raft Dev Team, OFA Tech Lead, Raft PM/Scrum Master
 * **Facilitator(s):** OFA Tech Lead and Raft Tech Lead
-* **When:** Every Wednesday 2:30pm-3:30pm ET
+* **When:** Every Wednesday 11:00am-11:45am ET
 * **Format:** OFA and/or Raft Tech Lead will prepare an agenda and team will discuss issues. Notes kept [here](https://teams.microsoft.com/l/entity/0d820ecd-def2-4297-adad-78056cde7c78/_djb2_msteams_prefix_386608167?context=%7B%22subEntityId%22%3Anull%2C%22channelId%22%3A%2219%3A96fae73b37194050a5fb671ddf2380e3%40thread.skype%22%7D&groupId=41f194a6-c1d3-4680-933e-c8ee7d17e287&tenantId=d58addea-5053-4a80-8499-ba4d944910df).
 
 ### Product Sync
