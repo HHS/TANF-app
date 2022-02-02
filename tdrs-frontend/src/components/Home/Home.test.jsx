@@ -6,8 +6,7 @@ import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
 import { mount } from 'enzyme'
 import Home from '../Home'
-import { validation } from '../Home/Home'
-import { MemoryRouter, Redirect } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 
 const initialState = {
   auth: {
@@ -437,36 +436,6 @@ describe('Pre-approval Home page', () => {
     expect(errorMessages.length).toEqual(1)
     expect(errorMessages.first().hasClass('display-none')).toEqual(true)
   })
-
-  // it("should return 'First Name is required' if fieldName is firstName and fieldValue is empty", () => {
-  //   const error = validation('firstName', '')
-  //
-  //   expect(error).toEqual('First Name is required')
-  // })
-  //
-  // it("should return 'Last Name is required' if fieldName is lastName and fieldValue is empty", () => {
-  //   const error = validation('lastName', '')
-  //
-  //   expect(error).toEqual('Last Name is required')
-  // })
-  //
-  // it("should return 'A state, tribe, or territory is required' if fieldName is firstName and fieldValue is empty", () => {
-  //   const error = validation('stt', '')
-  //
-  //   expect(error).toEqual('A state, tribe, or territory is required')
-  // })
-  //
-  // it("should return ' is required' if fieldName is not passed in and fieldValue is empty", () => {
-  //   const error = validation('', '')
-  //
-  //   expect(error).toEqual(' is required')
-  // })
-  //
-  // it('should return null if fieldValue is not empty', () => {
-  //   const error = validation('firstName', 'peter')
-  //
-  //   expect(error).toEqual(null)
-  // })
 
   it('should display an error message when the input has been touched', () => {
     const store = mockStore({
