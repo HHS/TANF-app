@@ -524,8 +524,8 @@ jobs:
           cf-space: <<parameters.cf-space>>
           cf-username: <<parameters.cf-username>>
       - run:
-          name: Deploy TDP Product Updates Site
-          command: ./scripts/deploy-product-update-site.sh rolling tdp-product-updates
+          name: Deploy TDP Project Updates Site
+          command: ./scripts/deploy-tdp-product-update-site.sh rolling tdp-project-updates
 
   deploy-prod:
     executor: docker-executor
