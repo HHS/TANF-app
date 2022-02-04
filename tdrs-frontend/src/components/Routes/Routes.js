@@ -1,45 +1,63 @@
 import React from 'react'
-import { Switch, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import NoMatch from '../NoMatch'
 import SplashPage from '../SplashPage'
 import EditProfile from '../EditProfile'
-import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 import Request from '../Request'
 import Reports from '../Reports'
 import Welcome from '../Welcome'
+import PrivateRoute from '../PrivateRoute'
 
 /**
  * This component renders the routes for the app.
  * Routes have the 'exact' prop, so the order of routes
  * does not matter.
  */
-const Routes = () => {
+const AppRoutes = () => {
   return (
-    <Switch>
-      <Route exact path="/">
-        <SplashPage />
-      </Route>
-      <Route exact path="/login">
-        <LoginCallback />
-      </Route>
-      <PrivateRoute exact title="Welcome to TDP" path="/welcome">
-        <Welcome />
-      </PrivateRoute>
-      <PrivateRoute exact title="TANF Data Files" path="/data-files">
-        <Reports />
-      </PrivateRoute>
-      <PrivateRoute exact title="Request Access" path="/edit-profile">
-        <EditProfile />
-      </PrivateRoute>
-      <PrivateRoute exact title="Request Submitted" path="/request">
-        <Request />
-      </PrivateRoute>
-      <Route path="*">
-        <NoMatch />
-      </Route>
-    </Switch>
+    <Routes>
+      <Route exact path="/" element={<SplashPage />} />
+      <Route exact path="/login" element={<LoginCallback />} />
+      <Route
+        exact
+        path="/welcome"
+        element={
+          <PrivateRoute title="Welcome to TDP">
+            <Welcome />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        exact
+        path="/data-files"
+        element={
+          <PrivateRoute title="TANF Data Files">
+            <Reports />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        exact
+        path="/edit-profile"
+        element={
+          <PrivateRoute title="Request Access">
+            <EditProfile />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        exact
+        path="/request"
+        element={
+          <PrivateRoute title="Request Submitted">
+            <Request />
+          </PrivateRoute>
+        }
+      />
+      <Route path="*" element={<NoMatch />} />
+    </Routes>
   )
 }
 
-export default Routes
+export default AppRoutes
