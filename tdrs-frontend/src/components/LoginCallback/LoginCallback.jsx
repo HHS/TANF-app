@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
@@ -37,10 +37,10 @@ function LoginCallback() {
   }, [authenticated, authLoading, dispatch])
 
   if (!authenticated && !authLoading) {
-    return <Redirect to="/" />
+    return <Navigate to="/" />
   }
 
-  return authenticated ? <Redirect to="/home" /> : null
+  return authenticated ? <Navigate to="/home" /> : null
 }
 
 export default LoginCallback

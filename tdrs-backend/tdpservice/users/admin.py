@@ -14,14 +14,14 @@ class UserForm(forms.ModelForm):
 
         model = User
         exclude = ['password', 'user_permissions']
-        readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id']
+        readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request']
 
 
 class UserAdmin(admin.ModelAdmin):
     """Customize the user admin functions."""
 
     exclude = ['password', 'user_permissions', 'is_active']
-    readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id']
+    readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request']
     form = UserForm
     list_filter = ('access_request',)
 

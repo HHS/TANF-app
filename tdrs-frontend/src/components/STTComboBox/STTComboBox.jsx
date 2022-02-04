@@ -13,7 +13,7 @@ import ComboBox from '../ComboBox'
  * @param {function} error - Reference to stt errors object.
  */
 function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
-  const sttList = useSelector((state) => state.stts.sttList)
+  const sttList = useSelector((state) => state?.stts?.sttList)
   const dispatch = useDispatch()
 
   useEffect(() => {

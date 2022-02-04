@@ -57,7 +57,7 @@ function Home() {
   const dispatch = useDispatch()
   const [touched, setTouched] = useState({})
 
-  const sttList = useSelector((state) => state.stts.sttList)
+  const sttList = useSelector((state) => state?.stts?.sttList)
 
   const userAccessRequestApproved = Boolean(user?.['access_request'])
 
@@ -122,10 +122,6 @@ function Home() {
     }
     return setTimeout(() => errorRef.current.focus(), 0)
   }
-
-  // if (userAccessRequestApproved && sttAssigned) {
-  //   return <Redirect to="/home" />
-  // }
 
   if (!userAccessRequestApproved) {
     return (

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 
 import loginLogo from '../../assets/login-gov-logo.svg'
 import Button from '../Button'
@@ -8,13 +8,15 @@ import Button from '../Button'
 function Profile() {
   const user = useSelector((state) => state.auth.user)
   const hasRoles = user?.roles.length > 0
+  // Most higher-env users will only have a single role, so just grab the first one.
+  const primaryRole = user?.roles[0]
   const missingAccessRequest = !Boolean(user?.access_request)
   const isAccessRequestPending = Boolean(user?.access_request) && !hasRoles
 
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 
   if (missingAccessRequest) {
-    return <Redirect to="/home" />
+    return <Navigate to="/home" />
   }
 
   return (
@@ -33,8 +35,9 @@ function Profile() {
         <p className="text-bold">
           {user?.first_name} {user?.last_name}
         </p>
-        <p>{user?.stt?.name}</p>
         <p>{user?.email}</p>
+        <p>{primaryRole?.name}</p>
+        <p>{user?.stt?.name}</p>
       </div>
       <div className="margin-top-5">
         <p className="text-bold">Email and Password</p>

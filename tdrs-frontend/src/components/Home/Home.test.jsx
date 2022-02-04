@@ -3,10 +3,11 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
-import configureStore from 'redux-mock-store'
 import { mount } from 'enzyme'
 import Home from '../Home'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import configureStore from 'redux-mock-store'
+import PrivateRoute from '../PrivateRoute'
 
 const initialState = {
   auth: {
@@ -566,10 +567,6 @@ describe('Pre-approval Home page', () => {
           },
         },
       },
-      requestAccess: {
-        ...initialState.requestAccess,
-        requestAccess: true,
-      },
       stts: {
         sttList: [
           {
@@ -596,8 +593,18 @@ describe('Pre-approval Home page', () => {
 
     render(
       <Provider store={store}>
-        <MemoryRouter>
-          <Home />
+        <MemoryRouter initialEntries={['/home']}>
+          <Routes>
+            <Route
+              exact
+              path="/home"
+              element={
+                <PrivateRoute title="Home">
+                  <Home />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
         </MemoryRouter>
       </Provider>
     )
