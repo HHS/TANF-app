@@ -38,6 +38,7 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "set_profile": UserProfileSerializer,
+            "request_access": UserProfileSerializer,
         }.get(self.action, UserSerializer)
 
     @action(methods=["PATCH"], detail=False)

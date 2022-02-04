@@ -73,10 +73,12 @@ def test_set_profile_data_access_request(api_client, user):
         )
     assert response.data == {
             "id": str(user.id),
-            "username": user.username,
+            "email": user.username,
             "first_name": "Joe",
             "last_name": "Bloggs",
-            "access_request": True
+            "access_request": True,
+            "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
+            "roles": [],
         }
 
     # TODO: In the future, we would like to test that users can be activated and their roles are correctly assigned.
