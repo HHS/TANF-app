@@ -1,7 +1,7 @@
 import React from 'react'
 import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 
 import Profile from './Profile'
 import configureStore from 'redux-mock-store'
@@ -21,6 +21,23 @@ const initialState = {
 
 describe('Profile', () => {
   const mockStore = configureStore([thunk])
+
+  let location
+  const mockLocation = new URL('https://example.com')
+
+  beforeEach(() => {
+    location = window.location
+    mockLocation.replace = jest.fn()
+    // You might need to mock other functions as well
+    // location.assign = jest.fn();
+    // location.reload = jest.fn();
+    delete window.location
+    window.location = mockLocation
+  })
+
+  afterEach(() => {
+    window.location = location
+  })
 
   it('should display a pending approval message after user access request is made', () => {
     const store = mockStore(initialState)
@@ -60,7 +77,30 @@ describe('Profile', () => {
     ).not.toBeInTheDocument()
   })
 
-  it("should display user's info during the pending approbal state", () => {
+  it('should navigate to external login client settings', () => {
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: {
+          roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+          access_request: true,
+        },
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <Profile />
+      </Provider>
+    )
+
+    fireEvent.click(screen.getByText('Manage Your Account at'))
+    expect(window.location.href).toBe(
+      'https://idp.int.identitysandbox.gov/account'
+    )
+  })
+
+  it("should display user's info during the pending approval state", () => {
     const store = mockStore(initialState)
 
     render(

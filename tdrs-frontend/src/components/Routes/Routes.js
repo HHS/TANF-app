@@ -7,6 +7,7 @@ import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 import Reports from '../Reports'
 import Home from '../Home'
+import { useSelector } from 'react-redux'
 
 /**
  * This component renders the routes for the app.
@@ -14,6 +15,16 @@ import Home from '../Home'
  * does not matter.
  */
 const AppRoutes = () => {
+  const user = useSelector((state) => state.auth.user)
+  const role = user?.roles
+  const hasRole = Boolean(role?.length > 0)
+  const userAccessRequestApproved = Boolean(user?.['access_request'])
+
+  const homeTitle =
+    userAccessRequestApproved && !hasRole
+      ? 'Request Submitted'
+      : 'Welcome to TDP'
+
   return (
     <Routes>
       <Route exact path="/" element={<SplashPage />} />
@@ -22,7 +33,7 @@ const AppRoutes = () => {
         exact
         path="/home"
         element={
-          <PrivateRoute title="Welcome to TDP">
+          <PrivateRoute title={homeTitle}>
             <Home />
           </PrivateRoute>
         }

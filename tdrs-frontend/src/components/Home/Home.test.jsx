@@ -552,7 +552,7 @@ describe('Pre-approval Home page', () => {
     expect(select.value).toEqual('alaska')
   })
 
-  it('routes "/Home" to the Request page when user has requested access', () => {
+  it('routes displays the pending approval message when a user has requested access', () => {
     const store = mockStore({
       ...initialState,
       auth: {

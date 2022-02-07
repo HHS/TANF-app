@@ -75,7 +75,7 @@ describe('LoginCallback.js', () => {
 
   it('redirects to "/" when user not authenticated', () => {
     const store = mockStore({
-      auth: { authenticated: false },
+      auth: { authenticated: false, loading: false },
       stts: initialState.stts,
     })
 
