@@ -28,7 +28,7 @@ def add_location(apps, schema_editor):
             user.location_type = region_content_type
 
     for user in analyst_users:
-        if user.stt
+        if user.stt:
             user.location_id = user.stt.id
             user.location_type = stt_content_type
 
