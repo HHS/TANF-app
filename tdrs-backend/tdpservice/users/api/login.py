@@ -127,6 +127,9 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         sub = decoded_id_token["sub"]
         email = decoded_id_token["email"]
 
+        # Setting this message as default for all below branches
+        login_msg = "User Found"
+
         # First account for the initial superuser
         if email == settings.DJANGO_SUPERUSER_NAME:
             # If this is the initial login for the initial superuser,
@@ -141,7 +144,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 initial_user.save()
 
                 # Login with the new superuser.
-                self.login_user(request, initial_user, "User Found")
+                self.login_user(request, initial_user, login_msg)
                 return initial_user
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
@@ -163,9 +166,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 user.save()
 
             if user.deactivated:
-                self.login_user(request, user, "Inactive User Found")
-            else:
-                self.login_user(request, user, "User Found")
+                login_msg = "Inactive User Found"
 
         elif user and not user.is_active:
             raise InactiveUser(
@@ -182,10 +183,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             user = User.objects.create_user(email, email=email, **auth_options)
             user.set_unusable_password()
             user.save()
-            self.login_user(request, user, "User Created")
+            login_msg = "User Created"
 
         self.verify_email(user)
-
+        self.login_user(request, user, login_msg)
         return user
 
     @staticmethod

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 
 import { requestAccess } from '../../actions/requestAccess'
 import { setAlert } from '../../actions/alert'
@@ -144,7 +144,7 @@ function EditProfile() {
   }
 
   if (requestedAccess && sttAssigned) {
-    return <Redirect to="/request" />
+    return <Navigate to="/request" />
   }
 
   return (

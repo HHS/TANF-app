@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import axios from 'axios'
 
-import { ConnectedRouter as Router } from 'connected-react-router'
+import { ReduxRouter as Router } from '@lagunovsky/redux-react-router'
 import { Provider } from 'react-redux'
 
 import configureStore, { history } from './configureStore'
@@ -34,7 +34,7 @@ store.dispatch(fetchAuth())
 
 ReactDOM.render(
   <Provider store={store}>
-    <Router history={history}>
+    <Router store={store} history={history}>
       <App />
     </Router>
   </Provider>,

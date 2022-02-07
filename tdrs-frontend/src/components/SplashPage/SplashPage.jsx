@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Redirect } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 
 import { setMockLoginState } from '../../actions/auth'
 
@@ -54,7 +54,7 @@ function SplashPage() {
   // during Pa11y tests allows us to just point to a page in the config like
   // we have been doing.
   if (authenticated && !process.env.REACT_APP_PA11Y_TEST) {
-    return <Redirect to="/welcome" />
+    return <Navigate to="/welcome" />
   }
 
   if (authLoading) {

@@ -1,12 +1,15 @@
 import React from 'react'
 import thunk from 'redux-thunk'
-import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { MemoryRouter, Redirect, Route } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import * as Alert from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
 import LoginCallback from '.'
+import PrivateRoute from '../PrivateRoute'
+import Welcome from '../Welcome'
+import SplashPage from '../SplashPage'
+import { render, screen } from '@testing-library/react'
 
 describe('LoginCallback.js', () => {
   const mockStore = configureStore([thunk])
@@ -15,39 +18,62 @@ describe('LoginCallback.js', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
-    const wrapper = mount(
+
+    render(
       <Provider store={store}>
-        <MemoryRouter>
-          <LoginCallback />
+        <MemoryRouter initialEntries={['/login', '/']}>
+          <Routes>
+            <Route exact path="/" element={<SplashPage />} />
+            <Route exact path="/login" element={<LoginCallback />} />
+            <Route
+              exact
+              path="/welcome"
+              element={
+                <PrivateRoute title="Welcome to TDP">
+                  <Welcome />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/welcome" />)
+    expect(screen.getByText('Welcome to TDP')).toBeInTheDocument()
   })
 
   it('redirects to "/" when user not authenticated', () => {
     const store = mockStore({ auth: { authenticated: false } })
-    const wrapper = mount(
+
+    render(
       <Provider store={store}>
-        <MemoryRouter>
-          <LoginCallback />
+        <MemoryRouter initialEntries={['/login', '/']}>
+          <Routes>
+            <Route exact path="/" element={<SplashPage />} />
+            <Route exact path="/login" element={<LoginCallback />} />
+          </Routes>
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/" />)
+    expect(screen.getByText('Sign into TANF Data Portal')).toBeInTheDocument()
   })
 
   it('alerts a loading message when log-in is in process, does not render child content', () => {
     const store = mockStore({ auth: { loading: true } })
     const spy = jest.spyOn(Alert, 'setAlert')
-    const wrapper = mount(
+
+    render(
       <Provider store={store}>
-        <MemoryRouter>
-          <LoginCallback />
+        <MemoryRouter initialEntries={['/login']}>
+          <Routes>
+            <Route exact path="/login" element={<LoginCallback />} />
+          </Routes>
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper.find(Route).exists()).toBeFalsy()
+    expect(
+      screen.queryByText('Sign into TANF Data Portal')
+    ).not.toBeInTheDocument()
+
     expect(spy).toHaveBeenCalledWith({
       heading: 'Please wait...',
       type: ALERT_INFO,
