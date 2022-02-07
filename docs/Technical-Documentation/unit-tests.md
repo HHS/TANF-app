@@ -28,3 +28,7 @@
     * Data Files page as OFA Admin - searching for files by STT, year and quarter
     * Data Files upload as both user types
     * Welcome page shows expected permissions.
+
+## Notes
+
+See **[Commands.sh](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/commands.sh)** for a list and description of standardized commands for running these tests as part of local development. 
