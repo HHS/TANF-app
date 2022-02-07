@@ -23,12 +23,14 @@ def add_location(apps, schema_editor):
     analyst_users=User.objects.filter(groups=analyst_role)
 
     for user in regional_users:
-        user.location_id = user.region.id
-        user.location_type = region_content_type
+        if user.region:
+            user.location_id = user.region.id
+            user.location_type = region_content_type
 
     for user in analyst_users:
-        user.location_id = user.stt.id
-        user.location_type = stt_content_type
+        if user.stt
+            user.location_id = user.stt.id
+            user.location_type = stt_content_type
 
 class Migration(migrations.Migration):
 
