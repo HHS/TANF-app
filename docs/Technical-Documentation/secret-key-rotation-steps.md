@@ -1,11 +1,18 @@
-# Rotating JWT Keys
+# Rotating Secret Keys
 
 ## Context
 
-To maintain good security, we will periodically rotate the JWT keys used to control authentication and authorization to our application. This document outlines the process of how to do this.
+To maintain good security, we will periodically rotate the following secret keys, which are used to control authentication and authorization to our application:
+- JWT keys 
+- Django secret key
+
+This document outlines the process of how to do this.
 
 **Warning** Production sites will need to be taken down for maintenance when rotating keys, as the rotation will automatically invalidate all current sessions.
 
+## Rotation procedure
+**<details><summary>JWT Keys</summary>**
+_to be updated after #1153 completed_
 ### 1. Generate New Keys
 
 In your Mac terminal (or bash terminal in Windows), enter the following command:
@@ -83,3 +90,10 @@ Production environment key distribution will be handled by Government authorized
 **Note** 
 - We will need to update this document with the link to login to the login.gov production environment setup when we have access to it.
 - More information on `openssl` can be found at [openssl.org](https://www.openssl.org/docs/manmaster/man1/openssl.html)
+</details>
+
+**<details><summary>Django Secret Key</summary>**
+
+_forthcoming after #1153 completed_
+
+</details>
