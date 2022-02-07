@@ -18,19 +18,21 @@ Our vision is to build a new, secure, web-based data reporting system to improve
 # Table of Contents
 
 + **[Background](./docs/Background)**: Project, agency, legacy system, TDP prototype, acquisition, and program background
-+ **[Product-Strategy](./Product-Strategy)**: Product Vision, roadmap, and planning
++ **[Product-Strategy](./docs/Product-Strategy)**: Product Vision, roadmap, and planning
 + **[How-We-Work](./docs/How-We-Work)**: Team composition, sprint schedule, regular meetings, and workflows
-+ **[Security-Compliance](./Security-Compliance)**: Supplementary information in support of the ATO process
++ **[Security-Compliance](./docs/Security-Compliance)**: Supplementary information in support of the ATO process
 + **[Sprint-Review](./docs/Sprint-Review)**: Summaries of delivered stories per sprint
 + **[Technical-Documentation](./docs/Technical-Documentation)**: Architectural Decision Records, System documentation; technical workflows
 + **[User-Experience](./docs/User-Experience)**: Research-related project background, strategy and planning documents, and research syntheses
-+ **[Frontend](./tdrs-frontend)**: Frontend ReactJS codebase
-+ **[Backend](./tdrs-backend)**: Django codebase for backend
++ Codebase
+  + **[Frontend](./tdrs-frontend)**: Frontend ReactJS codebase
+  + **[Backend](./tdrs-backend)**: Backend Django codebase
 + Web-based tools
-    + **[Figma]():** Design
+    + **[Figma](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback):** Design
     + **[MURAL](https://app.mural.co/t/raft2792):** User research and product planning collaboration
-    + **[HHS Teams]()**: File storage, historic chats
-    + **[Zenhub]()**: Tracking issues
+    + **[ACF's TDP Sharepoint Site](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/Shared%20Documents/Forms/AllItems.aspx)**: File storage, historic chats
+    + **[Zenhub](https://app.zenhub.com/workspaces/tdrs-sprint-board-5f18ab06dfd91c000f7e682e/board?repos=281707402)**: Tracking issues
+    + **[Product Updates](./product-updates)**: communication on project updates and research findings to the broader TDP stakeholders and target users
 
 ## Infrastructure
 
@@ -47,7 +49,7 @@ See [Architecture Decision Record 005 - Application Authentication](https://gith
 
 [Cloud.gov](https://cloud.gov/) is being used as the cloud environment. This platform-as-a-service (PaaS) removes almost all of the infrastructure monitoring and maintenance from the system, is already procured for OFA, and has a FedRAMP Joint Authorization Board Provisional Authority to Operate (JAB P-ATO) on file. 
 
-See [Architecture Decision Record 003 - Application Hosting](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/Architecture-Decision-Record/003-Application-hosting) - for more details.
+See [Architecture Decision Record 003 - Application Hosting](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/Architecture-Decision-Record/003-Application-hosting.md) - for more details.
 ### CI/CD Pipelines with CircleCI
 
 #### Continuous Integration (CI)
