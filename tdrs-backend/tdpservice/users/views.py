@@ -36,6 +36,7 @@ class UserViewSet(
         """Return the serializer class."""
         return {
             "set_profile": UserProfileSerializer,
+            "request_access": UserProfileSerializer,
         }.get(self.action, UserSerializer)
 
     @action(methods=["PATCH"], detail=False)
@@ -48,6 +49,19 @@ class UserViewSet(
             "Profile update for user: %s on %s", self.request.user, timezone.now()
         )
         return Response(serializer.data)
+
+    @action(methods=["PATCH"], detail=False)
+    def request_access(self, request, pk=None):
+        """Request access for user with pk."""
+        request.data['access_request'] = True
+        serializer = self.get_serializer(self.request.user, request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        logger.info(
+            "Access request for user: %s on %s", self.request.user, timezone.now()
+        )
+        return Response(serializer.data)
+
 
 class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """GET for groups (roles)."""

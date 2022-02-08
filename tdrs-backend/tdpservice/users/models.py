@@ -54,6 +54,16 @@ class User(AbstractUser):
         ),
     )
 
+    # This shows access request has been submitted and needs approval. When flag is True, Admin
+    # sees the request and has to assign user to group
+    access_request = models.BooleanField(
+        default=False,
+        help_text=_(
+            'Designates whether this user account has requested access to TDP. '
+            'Users with this checked must have groups assigned for the application to work correctly.'
+        ),
+    )
+
     def __str__(self):
         """Return the username as the string representation of the object."""
         return self.username
