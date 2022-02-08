@@ -1,7 +1,7 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
-def remove_federal_stt():
+def remove_federal_stt(apps, schema_editor):
     STT=apps.get_model('stts','STT')
     User=apps.get_model('users','User')
     federal_stt=STT.objects.get(name='Federal Government')
@@ -15,6 +15,8 @@ def remove_federal_stt():
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('users', '0029_use_location'),
+        ('users', '0030_remove_add_user_permission_admin'),
         ('stts', '0002_auto_20200923_1809'),
     ]
     operations = [

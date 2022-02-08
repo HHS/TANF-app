@@ -42,7 +42,7 @@ def unset_system_admin_permissions(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0028_auto_20220124_1656'),
+        ('users', '0029_use_location'),
     ]
 
     operations = [
