@@ -24,7 +24,7 @@ function Profile() {
       {isAccessRequestPending && (
         <div className="usa-alert usa-alert--info margin-top-3">
           <div className="usa-alert__body">
-            <p className="usa-alert__text">
+            <p className="usa-alert__text" id="page-alert">
               Your request for access is currently being reviewed by an OFA
               Admin. We’ll send you an email when it’s been approved.
             </p>
