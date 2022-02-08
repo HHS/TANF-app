@@ -73,11 +73,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = User
-<<<<<<<
-        fields = ['id', 'first_name', 'last_name', 'email', 'stt', 'region', 'roles']
-=======
-        fields = ['id', 'first_name', 'last_name', 'email', 'stt', 'roles', 'access_request']
->>>>>>>
+        fields = ['id', 'first_name', 'last_name', 'email', 'stt', 'region', 'roles', 'access_request']
 
         """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {
