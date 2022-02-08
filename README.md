@@ -27,6 +27,7 @@ Our vision is to build a new, secure, web-based data reporting system to improve
 + Codebase
   + **[Frontend](./tdrs-frontend)**: Frontend ReactJS codebase
   + **[Backend](./tdrs-backend)**: Backend Django codebase
+  + **[Terraform](./terraform)**: Documentation and syntax on CI process for automated provisioning of Cloud.gov brokered services
 + Web-based tools
     + **[Figma](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback):** Design
     + **[MURAL](https://app.mural.co/t/raft2792):** User research and product planning collaboration
