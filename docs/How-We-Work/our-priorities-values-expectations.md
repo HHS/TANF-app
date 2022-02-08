@@ -76,6 +76,7 @@ Also, review to ensure methods, variables, etc. are appropriately named. For met
 
 Review to ensure each screen follows the guidelines below to meet the accessibility WCAG2.1 AA performance standard (**_see dropdown below for more details on how gov will test a11y_**). Aditionally, `raft review` should include documenting evidence that the guidelines below were followed. 
 
+- Follow [Raft’s Accessibility Do’s and Don’ts](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/rafts-accessibility-dos-and-donts.md#raftsaccessibility-dos-and-donts) guidelines
 - Use [DHS Trusted Tester v5 Conformance Test](https://section508coordinators.github.io/TrustedTester/), [Tota11y](https://github.com/Khan/tota11y), and [WAVE](https://wave.webaim.org/)
 - Run the Accessibility Insight for [Web “Fast Pass” tool](https://accessibilityinsights.io/docs/en/web/getstarted/fastpass)
 - Run the Accessibility Insight for Web "Manual test for tab stops"
