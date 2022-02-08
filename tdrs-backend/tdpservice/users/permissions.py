@@ -8,9 +8,6 @@ from collections import ChainMap
 from copy import deepcopy
 from typing import List, Optional, TYPE_CHECKING
 
-import logging
-logger = logging.getLogger(__name__)
-
 
 if TYPE_CHECKING:  # pragma: no cover
     from django.contrib.auth.models import Permission  # pragma: no cover
@@ -104,9 +101,6 @@ def get_requested_stt(request, view):
 
 def is_own_region(user, requested_stt):
     """Verify user belongs to the requested region based on the stt in the request."""
-    logger.info("is own region?")
-    logger.info(requested_stt)
-    logger.info(user.stt)
     requested_region = (
         STT.objects.get(id=requested_stt).region
         if requested_stt else None
@@ -119,9 +113,6 @@ def is_own_region(user, requested_stt):
 
 def is_own_stt(user, requested_stt):
     """Verify user belongs to requested STT."""
-    logger.info("is own stt?")
-    logger.info(requested_stt)
-    logger.info(user.stt.id)
     user_stt = user.stt.id if hasattr(user, 'stt') else None
     return bool(
         user_stt is not None and
