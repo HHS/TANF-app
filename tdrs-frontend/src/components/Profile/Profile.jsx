@@ -37,7 +37,18 @@ function Profile() {
         </p>
         <p>{user?.email}</p>
         <p>{primaryRole?.name}</p>
-        <p>{user?.stt?.name}</p>
+
+        <p>
+          {(() => {
+            if (primaryRole.name === 'Data Analyst') {
+              return user?.stt?.name
+            } else if (primaryRole.name === 'OFA Regional Staff') {
+              return user?.region?.name
+            } else {
+              return 'Federal Government'
+            }
+          })()}
+        </p>
       </div>
       <div className="margin-top-5">
         <p className="text-bold">Email and Password</p>
