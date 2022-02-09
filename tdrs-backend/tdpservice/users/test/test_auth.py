@@ -989,3 +989,67 @@ def test_missing_jwt_key():
     os.environ['JWT_KEY'] = ''
     with pytest.raises(ImproperlyConfigured):
         get_required_env_var_setting('JWT_KEY')
+
+
+@pytest.mark.django_db
+class TestLoginParam:
+    @pytest.fixture()
+    def states_factory(self, request):
+        """Bundle together nonce, state, and code for tests."""
+        yield {
+            "nonce": "testnonce",
+            "state": "teststate",
+            "code": secrets.token_hex(32),
+        }
+
+    @pytest.fixture()
+    def states_fac(self, request):
+        """Bundle together nonce, state, and code for tests."""
+        print("::::::::", request.param)
+        yield {
+            "nonce": "testnonce",
+            "state": "teststate",
+            "code": secrets.token_hex(32),
+        }
+
+    @pytest.fixture()
+    def mock(self, states_factory, mocker, mock_token):
+        """Generate all the mock-up data structs needed for API tests."""
+        mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
+        token = {
+            "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "id_token": mock_token,
+        }
+        mock_post.return_value = MockRequest(data=token)
+        mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+
+        mock_decode.return_value = decoded_token(
+            "test@example.com",
+            states_factory['nonce']
+        )
+        yield mock_post, mock_decode
+
+    @pytest.mark.parametrize("states_fac,req_factory",
+                             [("state_param", req_factory),  # Test Login.Gov
+                                 # (TokenAuthorizationAMS, ams_states_factory, req_factory, {}),       # Test Login AMS
+                              ], indirect=True)
+    def test_login_with_bad_nonce_and_state(
+        self,
+        states_fac,
+        req_factory,
+    ):
+        """Login should error with a bad nonce and state."""
+        request = req_factory
+        request = create_session(request, states_fac)
+        view = TokenAuthorizationLoginDotGov.as_view()
+        request.session["state_nonce_tracker"] = {
+            "nonce": "badnonce",
+            "state": "badstate",
+            "added_on": time.time(),
+        }
+        with pytest.raises(SuspiciousOperation):
+            view(request)
+
+
