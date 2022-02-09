@@ -36,10 +36,9 @@ def test_set_profile_data(api_client, user):
 
 
 @pytest.mark.django_db
-def test_set_profile_data_access_request(api_client, user):
+def test_set_profile_data_access_request(api_client, user, stt):
     """Test access_request field can be toggled."""
     api_client.login(username=user.username, password="test_password")
-    stt = STT.objects.first()
     response = api_client.patch(
         "/v1/users/set_profile/",
         {"first_name": "Joe", "last_name": "Bloggs", "stt": stt.id, },
@@ -52,6 +51,7 @@ def test_set_profile_data_access_request(api_client, user):
         "first_name": "Joe",
         "last_name": "Bloggs",
         "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
+        "region": None,
         "roles": [],
         "access_request": False
     }
@@ -72,6 +72,7 @@ def test_set_profile_data_access_request(api_client, user):
             "last_name": "Bloggs",
             "access_request": True,
             "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
+            "region": None,
             "roles": [],
         }
 

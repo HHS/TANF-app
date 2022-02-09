@@ -2,14 +2,17 @@ import django.db.models.deletion
 from django.db import migrations, models
 
 def remove_federal_stt(apps, schema_editor):
-    STT=apps.get_model('stts','STT')
-    User=apps.get_model('users','User')
-    federal_stt=STT.objects.get(name='Federal Government')
-    federal_stt_users=User.objects.filter(stt=federal_stt.id)
+    try:
+        STT=apps.get_model('stts','STT')
+        User=apps.get_model('users','User')
+        federal_stt=STT.objects.get(name='Federal Government')
+        federal_stt_users=User.objects.filter(stt=federal_stt.id)
 
-    for user in federal_stt_users:
-        user.location_type = None
-        user.location_id = None
+        for user in federal_stt_users:
+            user.location_type = None
+            user.location_id = None
+    except:
+        pass
 
 
 class Migration(migrations.Migration):
