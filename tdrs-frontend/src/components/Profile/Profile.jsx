@@ -40,9 +40,9 @@ function Profile() {
 
         <p>
           {(() => {
-            if (primaryRole.name === 'Data Analyst') {
+            if (primaryRole?.name === 'Data Analyst') {
               return user?.stt?.name
-            } else if (primaryRole.name === 'OFA Regional Staff') {
+            } else if (primaryRole?.name === 'OFA Regional Staff') {
               return user?.region?.name
             } else {
               return 'Federal Government'
