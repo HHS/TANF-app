@@ -1,7 +1,6 @@
 """Tests for DataFiles Application."""
 from rest_framework import status
 import pytest
-import logging
 
 from tdpservice.data_files.models import DataFile
 
@@ -160,8 +159,6 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
     def test_data_files_data_analyst_permission(self, api_client, data_file_data, user):
         """Test that a Data Analyst is allowed to add data_files to their own STT."""
-        logger = logging.getLogger(__name__)
-        logger.info(user.location)
         response = self.post_data_file_file(api_client, data_file_data)
         self.assert_data_file_created(response)
         self.assert_data_file_exists(data_file_data, 1, user)
