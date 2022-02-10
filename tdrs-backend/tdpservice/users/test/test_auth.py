@@ -461,25 +461,6 @@ class TestLoginAMS:
             "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
         }
 
-    def test_login_with_bad_nonce_and_state(
-        self,
-        mock_decode,
-        ams_states_factory,
-        req_factory,
-    ):
-        """Login should error with a bad nonce and state."""
-        request = req_factory
-        request = create_session(request, ams_states_factory)
-        view = TokenAuthorizationAMS.as_view()
-        request.session["state_nonce_tracker"] = {
-            "nonce": "badnonce",
-            "state": "badstate",
-            "added_on": time.time(),
-            "ams": True,
-        }
-        with pytest.raises(SuspiciousOperation):
-            view(request)
-
     def test_login_with_email_unverified(
         self,
         mock_decode,
@@ -847,26 +828,6 @@ class TestLogin:
         assert response.data == {
             "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
         }
-
-    def test_login_with_bad_nonce_and_state(
-        self,
-        mock,
-        states_factory,
-        req_factory,
-        patch_login_gov_jwt_key
-    ):
-        """Login should error with a bad nonce and state."""
-        request = req_factory
-        request = create_session(request, states_factory)
-        mock_post, mock_decode = mock
-        view = TokenAuthorizationLoginDotGov.as_view()
-        request.session["state_nonce_tracker"] = {
-            "nonce": "badnonce",
-            "state": "badstate",
-            "added_on": time.time(),
-        }
-        with pytest.raises(SuspiciousOperation):
-            view(request)
 
     def test_login_with_email_unverified(
         self,
