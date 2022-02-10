@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import { connectRouter } from 'connected-react-router'
+import { createRouterReducer } from '@lagunovsky/redux-react-router'
 import alert from './alert'
 import auth from './auth'
 import stts from './sttList'
@@ -8,11 +8,11 @@ import reports from './reports'
 
 /**
  * Combines all store reducers
- * @param {object} history - browser history object
+ * @param {History} history - browser history object
  */
-const rootReducer = (history) =>
+const createRootReducer = (history) =>
   combineReducers({
-    router: connectRouter(history),
+    router: createRouterReducer(history),
     alert,
     auth,
     stts,
@@ -20,4 +20,4 @@ const rootReducer = (history) =>
     reports,
   })
 
-export default rootReducer
+export default createRootReducer

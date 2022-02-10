@@ -3,10 +3,12 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { MemoryRouter, Redirect } from 'react-router-dom'
+import { MemoryRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import SplashPage from './SplashPage'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import PrivateRoute from '../PrivateRoute'
+import Welcome from '../Welcome'
 
 const initialState = { auth: { authenticated: false, inactive: false } }
 const mockStore = configureStore([thunk])
@@ -102,14 +104,25 @@ describe('SplashPage', () => {
     const store = mockStore({
       auth: { authenticated: true, user: { email: 'hi@bye.com' } },
     })
-    const wrapper = mount(
+    render(
       <Provider store={store}>
-        <MemoryRouter>
-          <SplashPage />
+        <MemoryRouter initialEntries={['/welcome', '/']}>
+          <Routes>
+            <Route
+              exact
+              path="/welcome"
+              element={
+                <PrivateRoute title="Welcome to TDP">
+                  <Welcome />
+                </PrivateRoute>
+              }
+            />
+            <Route exact path="/" element={<SplashPage />} />
+          </Routes>
         </MemoryRouter>
       </Provider>
     )
-    expect(wrapper).toContainReact(<Redirect to="/welcome" />)
+    expect(screen.getByText('Welcome to TDP')).toBeInTheDocument()
   })
 
   it('changes the background image on every render', async () => {

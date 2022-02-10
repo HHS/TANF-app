@@ -1,0 +1,10 @@
+---
+version: 1
+applications:
+- name: tdp-live-comms
+  buildpacks:
+    - staticfile_buildpack
+  memory: 32M
+  instances: 1
+  disk_quota: 256M
+  timeout: 180
