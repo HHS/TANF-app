@@ -12,8 +12,8 @@ def add_location(apps, schema_editor):
 
     ContentType=apps.get_model("contenttypes", "ContentType")
 
-    region_content_type=ContentType.objects.get_for_model(Region).pk
-    stt_content_type=ContentType.objects.get_for_model(STT).pk
+    region_content_type=ContentType.objects.get_for_model(Region)
+    stt_content_type=ContentType.objects.get_for_model(STT)
 
     regional_staff_role=Group.objects.get(name='OFA Regional Staff').id
     analyst_role=Group.objects.get(name='Data Analyst').id
@@ -24,13 +24,11 @@ def add_location(apps, schema_editor):
 
     for user in regional_users:
         if user.region:
-            user.location_id = user.region.id
-            user.location_type = region_content_type
+            user.location = user.region
 
     for user in analyst_users:
         if user.stt:
-            user.location_id = user.stt.id
-            user.location_type = stt_content_type
+            user.location = user.stt
 
 class Migration(migrations.Migration):
 
