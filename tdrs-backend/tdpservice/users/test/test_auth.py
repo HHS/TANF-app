@@ -1031,7 +1031,7 @@ class TestLoginParam:
     @pytest.mark.parametrize("login_handler, auth_class, states_fac,req_factory",
                              [(TokenAuthorizationLoginDotGov, "LoginDotGov","", req_factory),  # Test Login.Gov
                              (TokenAuthorizationAMS, "AMS","ams", req_factory),       # Test Login AMS
-                              ], indirect=['states_fac','req_factory'])
+                              ], indirect=['states_fac', 'req_factory'])
     def test_login_with_bad_nonce_and_state(
         self,
         login_handler,
@@ -1056,5 +1056,3 @@ class TestLoginParam:
 
         with pytest.raises(SuspiciousOperation):
             view(request)
-
-
