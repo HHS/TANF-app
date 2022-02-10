@@ -1,7 +1,6 @@
 ## Summary of Changes
 _Provide a brief summary of changes_
 Pull request closes #_
-_Acceptance criteria as stated in the issue_
 
 ## How to Test
 _List the steps to test the PR_
