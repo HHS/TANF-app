@@ -461,6 +461,25 @@ class TestLoginAMS:
             "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
         }
 
+    def test_login_with_bad_nonce_and_state(
+        self,
+        mock_decode,
+        ams_states_factory,
+        req_factory,
+    ):
+        """Login should error with a bad nonce and state."""
+        request = req_factory
+        request = create_session(request, ams_states_factory)
+        view = TokenAuthorizationAMS.as_view()
+        request.session["state_nonce_tracker"] = {
+            "nonce": "badnonce",
+            "state": "badstate",
+            "added_on": time.time(),
+            "ams": True,
+        }
+        with pytest.raises(SuspiciousOperation):
+            view(request)
+
     def test_login_with_email_unverified(
         self,
         mock_decode,
@@ -829,6 +848,26 @@ class TestLogin:
             "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
         }
 
+    def test_login_with_bad_nonce_and_state(
+        self,
+        mock,
+        states_factory,
+        req_factory,
+        patch_login_gov_jwt_key
+    ):
+        """Login should error with a bad nonce and state."""
+        request = req_factory
+        request = create_session(request, states_factory)
+        mock_post, mock_decode = mock
+        view = TokenAuthorizationLoginDotGov.as_view()
+        request.session["state_nonce_tracker"] = {
+            "nonce": "badnonce",
+            "state": "badstate",
+            "added_on": time.time(),
+        }
+        with pytest.raises(SuspiciousOperation):
+            view(request)
+
     def test_login_with_email_unverified(
         self,
         mock,
@@ -970,6 +1009,32 @@ class TestLoginParam:
         }
         yield states
 
+    @pytest.fixture(autouse=True)
+    def ams_states_factory(self):
+        """Bundle together nonce, state, and code for tests."""
+        yield {
+            "nonce": "testnonce",
+            "state": "teststate",
+            "code": secrets.token_hex(32),
+            "ams": True
+        }
+
+    @pytest.fixture()
+    def req_factory(self, request, states_fac, mock, api_client):
+        """Generate a client request for API usage, part of DRY."""
+        states = states_fac
+        factory = APIRequestFactory()
+        request = factory.get(
+            "/v1/login",
+            {
+                "state": states["state"],
+                "code": states["code"]
+            }
+        )
+        request.session = api_client.session
+        # Add an origin param to test multiple auth handlers.
+        yield request
+
     @pytest.fixture()
     def mock(self, states_fac, mocker, mock_token):
         """Generate all the mock-up data structs needed for API tests."""
@@ -990,8 +1055,8 @@ class TestLoginParam:
         yield mock_post, mock_decode
 
     @pytest.mark.parametrize("login_handler, auth_class, states_fac,req_factory",
-                             [(TokenAuthorizationLoginDotGov, "LoginDotGov","", req_factory),  # Test Login.Gov
-                             (TokenAuthorizationAMS, "AMS","ams", req_factory),       # Test Login AMS
+                             [(TokenAuthorizationLoginDotGov, "LoginDotGov", "", ""),  # Test Login.Gov
+                             (TokenAuthorizationAMS, "AMS","ams", "ams"),       # Test Login AMS
                               ], indirect=['states_fac', 'req_factory'])
     def test_login_with_bad_nonce_and_state(
         self,
