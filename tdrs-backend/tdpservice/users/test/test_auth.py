@@ -993,27 +993,24 @@ def test_missing_jwt_key():
 
 @pytest.mark.django_db
 class TestLoginParam:
-    @pytest.fixture()
-    def states_factory(self, request):
-        """Bundle together nonce, state, and code for tests."""
-        yield {
-            "nonce": "testnonce",
-            "state": "teststate",
-            "code": secrets.token_hex(32),
-        }
 
     @pytest.fixture()
     def states_fac(self, request):
         """Bundle together nonce, state, and code for tests."""
-        print("::::::::", request.param)
-        yield {
+        states = {
+            "nonce": "testnonce",
+            "state": "teststate",
+            "code": secrets.token_hex(32),
+            "ams": True
+        } if request.param == "ams" else {
             "nonce": "testnonce",
             "state": "teststate",
             "code": secrets.token_hex(32),
         }
+        yield states
 
     @pytest.fixture()
-    def mock(self, states_factory, mocker, mock_token):
+    def mock(self, states_fac, mocker, mock_token):
         """Generate all the mock-up data structs needed for API tests."""
         mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
         token = {
@@ -1027,28 +1024,36 @@ class TestLoginParam:
 
         mock_decode.return_value = decoded_token(
             "test@example.com",
-            states_factory['nonce']
+            states_fac['nonce']
         )
         yield mock_post, mock_decode
 
-    @pytest.mark.parametrize("states_fac,req_factory",
-                             [("state_param", req_factory),  # Test Login.Gov
-                                 # (TokenAuthorizationAMS, ams_states_factory, req_factory, {}),       # Test Login AMS
-                              ], indirect=True)
+    @pytest.mark.parametrize("login_handler, auth_class, states_fac,req_factory",
+                             [(TokenAuthorizationLoginDotGov, "LoginDotGov","", req_factory),  # Test Login.Gov
+                             (TokenAuthorizationAMS, "AMS","ams", req_factory),       # Test Login AMS
+                              ], indirect=['states_fac','req_factory'])
     def test_login_with_bad_nonce_and_state(
         self,
+        login_handler,
+        auth_class,
         states_fac,
         req_factory,
     ):
         """Login should error with a bad nonce and state."""
         request = req_factory
         request = create_session(request, states_fac)
-        view = TokenAuthorizationLoginDotGov.as_view()
+        view = login_handler.as_view()
         request.session["state_nonce_tracker"] = {
             "nonce": "badnonce",
             "state": "badstate",
             "added_on": time.time(),
+        } if auth_class == "LoginDotGov" else {
+            "nonce": "badnonce",
+            "state": "badstate",
+            "added_on": time.time(),
+            "ams": True,
         }
+
         with pytest.raises(SuspiciousOperation):
             view(request)
 
