@@ -12,9 +12,6 @@ def add_location(apps, schema_editor):
 
     ContentType=apps.get_model("contenttypes", "ContentType")
 
-    region_content_type=ContentType.objects.get_for_model(Region)
-    stt_content_type=ContentType.objects.get_for_model(STT)
-
     regional_staff_role=Group.objects.get(name='OFA Regional Staff').id
     analyst_role=Group.objects.get(name='Data Analyst').id
 
