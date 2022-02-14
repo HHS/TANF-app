@@ -97,7 +97,6 @@ def req_factory(states_factory, mock, api_client):
     # Add an origin param to test multiple auth handlers.
     yield request
 
-
 @pytest.mark.django_db
 def test_authentication(user):
     """Test authentication method."""
@@ -995,48 +994,7 @@ def test_missing_jwt_key():
 class TestLoginParam:
 
     @pytest.fixture()
-    def states_fac(self, request):
-        """Bundle together nonce, state, and code for tests."""
-        states = {
-            "nonce": "testnonce",
-            "state": "teststate",
-            "code": secrets.token_hex(32),
-            "ams": True
-        } if request.param == "ams" else {
-            "nonce": "testnonce",
-            "state": "teststate",
-            "code": secrets.token_hex(32),
-        }
-        yield states
-
-    @pytest.fixture(autouse=True)
-    def ams_states_factory(self):
-        """Bundle together nonce, state, and code for tests."""
-        yield {
-            "nonce": "testnonce",
-            "state": "teststate",
-            "code": secrets.token_hex(32),
-            "ams": True
-        }
-
-    @pytest.fixture()
-    def req_factory(self, request, states_fac, mock, api_client):
-        """Generate a client request for API usage, part of DRY."""
-        states = states_fac
-        factory = APIRequestFactory()
-        request = factory.get(
-            "/v1/login",
-            {
-                "state": states["state"],
-                "code": states["code"]
-            }
-        )
-        request.session = api_client.session
-        # Add an origin param to test multiple auth handlers.
-        yield request
-
-    @pytest.fixture()
-    def mock(self, states_fac, mocker, mock_token):
+    def mock(self, states_factory, mocker, mock_token):
         """Generate all the mock-up data structs needed for API tests."""
         mock_post = mocker.patch("tdpservice.users.api.login.requests.post")
         token = {
@@ -1050,35 +1008,129 @@ class TestLoginParam:
 
         mock_decode.return_value = decoded_token(
             "test@example.com",
-            states_fac['nonce']
+            states_factory['nonce']
         )
+
         yield mock_post, mock_decode
 
-    @pytest.mark.parametrize("login_handler, auth_class, states_fac,req_factory",
-                             [(TokenAuthorizationLoginDotGov, "LoginDotGov", "", ""),  # Test Login.Gov
-                             (TokenAuthorizationAMS, "AMS","ams", "ams"),       # Test Login AMS
-                              ], indirect=['states_fac', 'req_factory'])
+    mock_configuration = {
+        "authorization_endpoint": "http://openid-connect/auth",
+        "end_session_endpoint": "http://openid-connect/logout",
+        "token_endpoint": "http://openid-connect/token",
+        "jwks_uri": "http://openid-connect/certs",
+        "issuer": "http://realms/ams",
+        "userinfo_endpoint": "http://openid-connect/userinfo"
+    }
+
+    test_hhs_id = str(uuid.uuid4())
+
+    @pytest.fixture(autouse=True)
+    def ams_states_factory(self):
+        """Bundle together nonce, state, and code for tests."""
+        yield {
+            "nonce": "testnonce",
+            "state": "teststate",
+            "code": secrets.token_hex(32),
+            "ams": True
+        }
+
+    @pytest.fixture()
+    def mock_ams_configuration(self, requests_mock, settings, mock_token):
+
+        """Mock outgoing requests in various parts of the AMS flow."""
+        requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json=TestLoginAMS.mock_configuration)
+
+        jwk = {
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+            "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
+            "kid": "Public key used in JWS spec Appendix A.3 example",
+        }
+        requests_mock.get(TestLoginAMS.mock_configuration["jwks_uri"], json={"keys": [jwk]})
+
+        requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
+                           json={"email": "test_existing@example.com", "hhs_id": self.test_hhs_id})
+
+        requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={
+            "access_token": "hhJES3wcgjI55jzjBvZpNQ",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "id_tohttps://idp.int.identitysandbox.gov/api/opken": mock_token,
+        })
+        yield requests_mock
+
+    @pytest.fixture(autouse=True)
+    def mock_decode(self, ams_states_factory, mocker):
+        """Generate all the mock-up data structs needed for API tests."""
+        mock_decode = mocker.patch("tdpservice.users.api.login.jwt.decode")
+
+        mock_decode.return_value = decoded_token(
+            "test@example.com",
+            ams_states_factory['nonce']
+        )
+
+        yield mock_decode
+
+    @pytest.fixture()
+    def ams_req_factory(self, ams_states_factory, api_client):
+        """Generate a client request for API usage, part of DRY."""
+        states = ams_states_factory
+        factory = APIRequestFactory()
+        request = factory.get(
+            "/v1/login",
+            {
+                "state": states["state"],
+                "code": states["code"]
+            }
+        )
+        request.session = api_client.session
+        # Add an origin param to test multiple auth handlers.
+        yield request
+
+    @pytest.mark.parametrize("login_handler, mocking_config, mock_, states_factory_, req_factory_",
+                             [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # Test Login.Gov
+                              ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory"),       # Test Login AMS
+                              ], indirect=[])
     def test_login_with_bad_nonce_and_state(
         self,
+        request,
         login_handler,
-        auth_class,
-        states_fac,
-        req_factory,
+        mock_,
+        states_factory_,
+        req_factory_,
+        patch_login_gov_jwt_key,
+        mocking_config
     ):
         """Login should error with a bad nonce and state."""
-        request = req_factory
-        request = create_session(request, states_fac)
-        view = login_handler.as_view()
-        request.session["state_nonce_tracker"] = {
-            "nonce": "badnonce",
-            "state": "badstate",
-            "added_on": time.time(),
-        } if auth_class == "LoginDotGov" else {
-            "nonce": "badnonce",
-            "state": "badstate",
-            "added_on": time.time(),
-            "ams": True,
-        }
+        # LoginDotGov
+        requests_mock = request.getfixturevalue(mocking_config)
+        mock = request.getfixturevalue(mock_)
+
+        if login_handler == 'AMS':
+            ams_states_factory = request.getfixturevalue(states_factory_)
+            ams_req_factory = request.getfixturevalue(req_factory_)
+            request = create_session(ams_req_factory, ams_states_factory)
+            view = TokenAuthorizationAMS.as_view()
+            request.session["state_nonce_tracker"] = {
+                "nonce": "badnonce",
+                "state": "badstate",
+                "added_on": time.time(),
+                "ams": True,
+            }
+
+        elif login_handler == 'LoginDotGov':
+            states_factory = request.getfixturevalue(states_factory_)
+            req_factory = request.getfixturevalue(req_factory_)
+            request = req_factory
+            request = create_session(request, states_factory)
+            mock_post, mock_decode = mock
+            view = TokenAuthorizationLoginDotGov.as_view()
+            request.session["state_nonce_tracker"] = {
+                "nonce": "badnonce",
+                "state": "badstate",
+                "added_on": time.time(),
+            }
 
         with pytest.raises(SuspiciousOperation):
             view(request)
