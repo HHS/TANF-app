@@ -1,18 +1,31 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
+import logging
+logger = logging.getLogger(__name__)
+
 def remove_federal_stt(apps, schema_editor):
+    STT=apps.get_model('stts','STT')
+    # We're getting rid of the explicit Federal government stt/location
+    # From now on, users with no location are implicitly assumed to be
+    # from the federal government.
+
     try:
-        STT=apps.get_model('stts','STT')
-        User=apps.get_model('users','User')
+
+        # With no explicitly federal users, we expect this line to fail.
+        # This would always be the case in the test enviornment,
+        # As the populate_stts command is run after migrations,
+        # and the test environment would not be previously populated.
         federal_stt=STT.objects.get(name='Federal Government')
+
+        User=apps.get_model('users','User')
         federal_stt_users=User.objects.filter(stt=federal_stt.id)
 
         for user in federal_stt_users:
             user.location_type = None
             user.location_id = None
-    except:
-        pass
+    except STT.DoesNotExist:
+        logger.info("No Federal Government STT users to migrate.")
 
 
 class Migration(migrations.Migration):
