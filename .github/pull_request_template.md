@@ -18,7 +18,7 @@ cd tdrs-backend && docker-compose -f docker-compose.yml -f docker-compose.local.
 ## Tabletop
 
 - [ ] Ready for Tabletop (Reviewer check this)
-- [ ] Tabletop scheduled (Bug writer check this)
+- [ ] Tabletop scheduled (Assignee check this)
 - [ ] Tabletop approval 
 
 ## Deliverables
