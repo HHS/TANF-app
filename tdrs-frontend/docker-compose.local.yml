@@ -1,6 +1,6 @@
 # Local version of Docker compose, using the localdev docker build target
 # instead and additionally mounts node_modules for faster builds
-version: "3.9"
+version: "3.4"
 
 services:
   tdp-frontend:

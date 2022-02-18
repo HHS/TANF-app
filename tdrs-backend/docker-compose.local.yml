@@ -1,5 +1,5 @@
 # Base Docker compose for all environments
-version: "3.9"
+version: "3.4"
 
 services:
   postgres:
@@ -34,6 +34,7 @@ services:
     env_file:
       - .env
     environment:
+      - CLAMAV_NEEDED
       - AV_SCAN_URL=http://clamav-rest:9000/scan
       - DB_HOST=postgres
       - DB_NAME=tdrs_test
