@@ -31,6 +31,8 @@ services:
 
   web:
     restart: always
+    env_file:
+      - .env
     environment:
       - AV_SCAN_URL=http://clamav-rest:9000/scan
       - DB_HOST=postgres

@@ -1,19 +1,12 @@
 # Local version of Docker compose, using the localdev docker build target
 # instead and additionally mounts node_modules for faster builds
 version: "3.4"
+
 services:
   tdp-frontend:
-    stdin_open: true # docker run -i
-    tty: true        # docker run -t
     build:
       context: .
-      target: nginx
-    ports:
-      - 3000:80
+      target: localdev
+    command: npm run start
     volumes:
-      - ./:/home/node/app
-    networks:
-      - local
-networks:
-  local:
-    driver: bridge
+      - /home/node/app/node_modules
