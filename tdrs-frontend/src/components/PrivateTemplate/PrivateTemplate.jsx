@@ -28,6 +28,7 @@ export default function PrivateTemplate({ title, children }) {
         className="font-serif-2xl margin-bottom-0 text-normal"
         ref={headerRef}
         tabIndex={-1}
+        aria-describedby="page-alert"
       >
         {title}
       </h1>
