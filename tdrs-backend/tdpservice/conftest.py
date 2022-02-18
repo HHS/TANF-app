@@ -46,28 +46,35 @@ def user():
 @pytest.fixture
 def regional_user(region, stt):
     """Return a regional staff user."""
-    return STTUserFactory.create(
+    user = STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
-        region=region,
     )
+    user.location = region
+    user.save()
+    return user
 
 
+# Might be made redundent by changes in 1587
 @pytest.fixture
 def user_in_region(stt, region):
     """Return a user in the same region as a regional staff user."""
-    return STTUserFactory.create(
+    user = STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
-        stt=stt,
     )
+    user.location = stt
+    user.save()
+    return user
 
 
 @pytest.fixture
 def user_in_other_region(other_stt, other_region):
     """Return a user that is not in the same region as the tested regional staff."""
-    return STTUserFactory.create(
+    user = STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
-        stt=other_stt,
     )
+    user.location = other_stt
+    user.save()
+    return user
 
 
 @pytest.fixture
@@ -79,7 +86,8 @@ def stt_user():
 @pytest.fixture
 def ofa_admin_stt_user():
     """Return an admin user without an STT for Data File tests."""
-    return AdminSTTUserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
+    return AdminSTTUserFactory.create(
+        groups=(Group.objects.get(name="OFA Admin"),))
 
 
 @pytest.fixture
@@ -91,13 +99,21 @@ def ofa_admin():
 @pytest.fixture
 def ofa_system_admin():
     """Return on OFA System Admin user."""
-    return UserFactory.create(groups=(Group.objects.get(name='OFA System Admin'),))
+    return UserFactory.create(
+        groups=(
+            Group.objects.get(
+                name='OFA System Admin'),))
 
 
 @pytest.fixture
-def data_analyst():
+def data_analyst(stt):
     """Return a data analyst user."""
-    return UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),))
+    user = UserFactory.create(
+        groups=(Group.objects.get(name="Data Analyst"),),
+    )
+    user.location = stt
+    user.save()
+    return user
 
 
 @pytest.fixture
@@ -192,17 +208,17 @@ def infected_data_file(infected_file, fake_file_name):
 
 
 @pytest.fixture
-def base_data_file_data(fake_file_name, user):
+def base_data_file_data(fake_file_name, data_analyst):
     """Return data file creation data without a file."""
     return {
         "original_filename": fake_file_name,
         "slug": str(uuid.uuid4()),
         "extension": "txt",
         "section": "Active Case Data",
-        "user": str(user.id),
+        "user": str(data_analyst.id),
         "quarter": "Q1",
         "year": 2020,
-        "stt": int(user.stt.id)
+        "stt": int(data_analyst.stt.id)
     }
 
 
@@ -237,7 +253,8 @@ def other_stt(other_region):
 
 
 @pytest.fixture
-def other_base_regional_data_file_data(fake_file_name, regional_user, other_stt):
+def other_base_regional_data_file_data(
+        fake_file_name, regional_user, other_stt):
     """Return data file creation data without a file."""
     return {
         "original_filename": fake_file_name,
@@ -271,7 +288,9 @@ def regional_data_file_data(base_regional_data_file_data, data_file):
 
 
 @pytest.fixture
-def other_regional_data_file_data(other_base_regional_data_file_data, data_file):
+def other_regional_data_file_data(
+        other_base_regional_data_file_data,
+        data_file):
     """Return data file creation data for the other reigon."""
     return {
         "file": data_file,
