@@ -441,44 +441,6 @@ class TestLoginAMS:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.data == {"error": "The token is expired."}
 
-    def test_login_with_bad_validation_code(
-        self,
-        ams_states_factory,
-        req_factory,
-        requests_mock
-    ):
-        """Login should error with a bad validation code."""
-        request = req_factory
-        request = create_session(request, ams_states_factory)
-
-        requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={}, status_code=400)
-
-        view = TokenAuthorizationAMS.as_view()
-        response = view(request)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data == {
-            "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
-        }
-
-    def test_login_with_bad_nonce_and_state(
-        self,
-        mock_decode,
-        ams_states_factory,
-        req_factory,
-    ):
-        """Login should error with a bad nonce and state."""
-        request = req_factory
-        request = create_session(request, ams_states_factory)
-        view = TokenAuthorizationAMS.as_view()
-        request.session["state_nonce_tracker"] = {
-            "nonce": "badnonce",
-            "state": "badstate",
-            "added_on": time.time(),
-            "ams": True,
-        }
-        with pytest.raises(SuspiciousOperation):
-            view(request)
-
     def test_login_with_email_unverified(
         self,
         mock_decode,
@@ -826,47 +788,6 @@ class TestLogin:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.data == {"error": "The token is expired."}
 
-    def test_login_with_bad_validation_code(
-        self,
-        mock,
-        states_factory,
-        req_factory,
-        patch_login_gov_jwt_key
-    ):
-        """Login should error with a bad validation code."""
-        request = req_factory
-        request = create_session(request, states_factory)
-        mock_post, mock_decode = mock
-        mock_post.return_value = MockRequest(
-            data={}, status_code=status.HTTP_400_BAD_REQUEST
-        )
-        view = TokenAuthorizationLoginDotGov.as_view()
-        response = view(request)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data == {
-            "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
-        }
-
-    def test_login_with_bad_nonce_and_state(
-        self,
-        mock,
-        states_factory,
-        req_factory,
-        patch_login_gov_jwt_key
-    ):
-        """Login should error with a bad nonce and state."""
-        request = req_factory
-        request = create_session(request, states_factory)
-        mock_post, mock_decode = mock
-        view = TokenAuthorizationLoginDotGov.as_view()
-        request.session["state_nonce_tracker"] = {
-            "nonce": "badnonce",
-            "state": "badstate",
-            "added_on": time.time(),
-        }
-        with pytest.raises(SuspiciousOperation):
-            view(request)
-
     def test_login_with_email_unverified(
         self,
         mock,
@@ -1088,28 +1009,36 @@ class TestLoginParam:
         # Add an origin param to test multiple auth handlers.
         yield request
 
-    @pytest.mark.parametrize("login_handler, mocking_config, mock_, states_factory_, req_factory_",
-                             [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # Test Login.Gov
-                              ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory"),       # Test Login AMS
-                              ], indirect=[])
+    @pytest.mark.parametrize(
+        "login_handler, fix_mock_config, fix_mock, fix_states_factory, fix_req_factory",
+        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),                          # LoginDotGov
+         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
+         ])
     def test_login_with_bad_nonce_and_state(
         self,
-        request,
-        login_handler,
-        mock_,
-        states_factory_,
-        req_factory_,
-        patch_login_gov_jwt_key,
-        mocking_config
+        request,                    # Pytest request: provides information on the executing pytest fixture
+        login_handler,              # LoginDotGov or AMS
+        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov
+        fix_mock,                   # mock and mock_decode fixture
+        fix_states_factory,         # states_factory
+        fix_req_factory,            # request_factory
+        patch_login_gov_jwt_key,    # LoginDotGov jwt
     ):
         """Login should error with a bad nonce and state."""
-        # LoginDotGov
-        requests_mock = request.getfixturevalue(mocking_config)
-        mock = request.getfixturevalue(mock_)
 
+        """
+        To ensure correct fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call an run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
+        # AMS
         if login_handler == 'AMS':
-            ams_states_factory = request.getfixturevalue(states_factory_)
-            ams_req_factory = request.getfixturevalue(req_factory_)
+            # run associated fixtures for AMS
+            mock_decode = request.getfixturevalue(fix_mock)
+            requests_mock = request.getfixturevalue(fix_mock_config)
+            ams_states_factory = request.getfixturevalue(fix_states_factory)
+            ams_req_factory = request.getfixturevalue(fix_req_factory)
             request = create_session(ams_req_factory, ams_states_factory)
             view = TokenAuthorizationAMS.as_view()
             request.session["state_nonce_tracker"] = {
@@ -1119,9 +1048,13 @@ class TestLoginParam:
                 "ams": True,
             }
 
+        # LoginDotGov
         elif login_handler == 'LoginDotGov':
-            states_factory = request.getfixturevalue(states_factory_)
-            req_factory = request.getfixturevalue(req_factory_)
+            # run associated fixtures for LogindotGov
+            mock = request.getfixturevalue(fix_mock)
+            states_factory = request.getfixturevalue(fix_states_factory)
+            req_factory = request.getfixturevalue(fix_req_factory)
+
             request = req_factory
             request = create_session(request, states_factory)
             mock_post, mock_decode = mock
@@ -1134,3 +1067,160 @@ class TestLoginParam:
 
         with pytest.raises(SuspiciousOperation):
             view(request)
+
+    @pytest.mark.parametrize(
+        "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
+        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),                             # LoginDotGov
+         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")   # AMS
+         ])
+    def test_login_with_bad_validation_code(
+        self,
+        request,                    # Pytest request: provides information on the executing pytest fixture
+        login_handler,              # LoginDotGov or AMS
+        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,                   # mock and mock_decode fixture
+        fix_states_factory,         # states_factory
+        fix_req_factory,            # request_factory
+        patch_login_gov_jwt_key     # LoginDotGov jwt
+    ):
+        """Login should error with a bad validation code."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
+        if login_handler == 'AMS':
+            # run associated fixtures for AMS
+            requests_mock = request.getfixturevalue(fix_mock_config)
+            ams_states_factory = request.getfixturevalue(fix_states_factory)
+            ams_req_factory = request.getfixturevalue(fix_req_factory)
+
+            request = ams_req_factory
+            request = create_session(request, ams_states_factory)
+            requests_mock.post(TestLoginAMS.mock_configuration["token_endpoint"], json={}, status_code=400)
+            view = TokenAuthorizationAMS.as_view()
+
+        elif login_handler == 'LoginDotGov':
+            # run associated fixtures for LoginDotGov
+            mock = request.getfixturevalue(fix_mock)
+            states_factory = request.getfixturevalue(fix_states_factory)
+            req_factory = request.getfixturevalue(fix_req_factory)
+
+            request = req_factory
+            request = create_session(request, states_factory)
+            mock_post, mock_decode = mock
+            mock_post.return_value = MockRequest(
+                data={}, status_code=status.HTTP_400_BAD_REQUEST
+            )
+            view = TokenAuthorizationLoginDotGov.as_view()
+
+        response = view(request)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {
+            "error": "Invalid Validation Code Or OpenID Connect Authenticator Down!"
+        }
+
+    @pytest.mark.parametrize(
+        "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
+        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),                             # LoginDotGov
+         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")   # AMS
+         ])
+    def test_login_with_email_unverified(
+        self,
+        request,                    # Pytest request: provides information on the executing pytest fixture
+        login_handler,              # LoginDotGov or AMS
+        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,                   # mock and mock_decode fixture
+        fix_states_factory,         # states_factory
+        fix_req_factory,            # request_factory
+        patch_login_gov_jwt_key     # LoginDotGov jwt
+    ):
+        """Login should fail with unverified email."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
+        if login_handler == 'AMS':
+            # run associated fixtures for AMS
+            requests_mock = request.getfixturevalue(fix_mock_config)
+            mock_decode = request.getfixturevalue(fix_mock)
+            ams_states_factory = request.getfixturevalue(fix_states_factory)
+            ams_req_factory = request.getfixturevalue(fix_req_factory)
+
+            states = ams_states_factory
+            request = ams_req_factory
+            request = create_session(request, ams_states_factory)
+            mock_decode.return_value = decoded_token(
+                "test@example.com",
+                states['nonce'],
+                email_verified=False
+            )
+            view = TokenAuthorizationAMS.as_view()
+        elif login_handler == 'LoginDotGov':            # run associated fixtures for LoginDotGov
+            mock = request.getfixturevalue(fix_mock)
+            states_factory = request.getfixturevalue(fix_states_factory)
+            req_factory = request.getfixturevalue(fix_req_factory)
+
+            states = states_factory
+            request = req_factory
+            request = create_session(request, states_factory)
+            mock_post, mock_decode = mock
+            mock_decode.return_value = decoded_token(
+                "test@example.com",
+                states['nonce'],
+                email_verified=False
+            )
+            view = TokenAuthorizationLoginDotGov.as_view()
+
+        response = view(request)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {"error": "Unverified email!"}
+
+    @pytest.mark.parametrize(
+        "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
+        [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
+         ("AMS", "mock_ams_configuration", "mock_decode", "ams_states_factory", "ams_req_factory")  # AMS
+         ])
+    def test_login_with_existing_token(
+        self,
+        request,  # Pytest request: provides information on the executing pytest fixture
+        login_handler,  # LoginDotGov or AMS
+        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,  # mock and mock_decode fixture
+        fix_states_factory,  # states_factory
+        fix_req_factory,  # request_factory
+        patch_login_gov_jwt_key  # LoginDotGov jwt
+    ):
+        """Login should proceed when token already exists."""
+        if login_handler == 'AMS':
+            # run associated fixtures for AMS
+            requests_mock = request.getfixturevalue(fix_mock_config)
+            mock_decode = request.getfixturevalue(fix_mock)
+            ams_states_factory = request.getfixturevalue(fix_states_factory)
+            ams_req_factory = request.getfixturevalue(fix_req_factory)
+
+            view = TokenAuthorizationAMS.as_view()
+            request = ams_req_factory
+            request.session["token"] = "testtoken"
+            request = create_session(request, ams_states_factory)
+
+        elif login_handler == 'LoginDotGov':
+            # run associated fixtures for LoginDotGov
+            mock = request.getfixturevalue(fix_mock)
+            states_factory = request.getfixturevalue(fix_states_factory)
+            req_factory = request.getfixturevalue(fix_req_factory)
+
+            view = TokenAuthorizationLoginDotGov.as_view()
+            request = req_factory
+            request.session["token"] = "testtoken"
+            request = create_session(request, states_factory)
+            response = view(request)
+            assert response.status_code == status.HTTP_302_FOUND
+
+        response = view(request)
+        assert response.status_code == status.HTTP_302_FOUND
