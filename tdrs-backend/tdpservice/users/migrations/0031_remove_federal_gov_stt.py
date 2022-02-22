@@ -13,7 +13,7 @@ def remove_federal_stt(apps, schema_editor):
     try:
 
         # With no explicitly federal users, we expect this line to fail.
-        # This would always be the case in the test enviornment,
+        # This would always be the case in the test environment,
         # As the populate_stts command is run after migrations,
         # and the test environment would not be previously populated.
         federal_stt=STT.objects.get(name='Federal Government')
@@ -26,6 +26,9 @@ def remove_federal_stt(apps, schema_editor):
             user.location_id = None
     except STT.DoesNotExist:
         logger.info("No Federal Government STT users to migrate.")
+    except FieldError as e:
+        logger.info("User model has no field `stt` to filter on.")
+
 
 
 class Migration(migrations.Migration):
