@@ -17,10 +17,16 @@ def remove_federal_stt(apps, schema_editor):
         # As the populate_stts command is run after migrations,
         # and the test environment would not be previously populated.
         federal_stt=STT.objects.get(name='Federal Government')
-
+        
+        ContentType=apps.get_model("contenttypes", "ContentType")
+        stt_content_type=ContentType.objects.get_for_model(STT)
         User=apps.get_model('users','User')
-        federal_stt_users=User.objects.filter(stt=federal_stt.id)
-
+        
+        federal_stt_users=User.objects.filter(
+            location_type=stt_content_type,
+            location_id=federal_stt.id
+        )
+        
         for user in federal_stt_users:
             user.location_type = None
             user.location_id = None
@@ -28,7 +34,6 @@ def remove_federal_stt(apps, schema_editor):
         logger.info("No Federal Government STT users to migrate.")
     except django.core.exceptions.FieldError:
         logger.info("User model has no field `stt` to filter on.")
-
 
 
 class Migration(migrations.Migration):
