@@ -1,6 +1,6 @@
 import django.db.models.deletion
 from django.db import migrations, models
-
+import django.core.exceptions
 import logging
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def remove_federal_stt(apps, schema_editor):
             user.location_id = None
     except STT.DoesNotExist:
         logger.info("No Federal Government STT users to migrate.")
-    except FieldError as e:
+    except django.core.exceptions.FieldError:
         logger.info("User model has no field `stt` to filter on.")
 
 
