@@ -34,6 +34,17 @@ class STTPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
         return STTSerializer(instance).data
 
 
+class RegionPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    """Accept Region ID only for updates but return full Region in response."""
+
+    queryset = Region.objects.all()
+
+    def to_representation(self, value):
+        """Return full Region object on outgoing serialization."""
+        instance = self.queryset.get(pk=value.pk)
+        return RegionSerializer(instance).data
+
+
 class RegionSerializer(serializers.ModelSerializer):
     """Region serializer."""
 

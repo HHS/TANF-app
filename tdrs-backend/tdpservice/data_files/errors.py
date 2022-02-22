@@ -1,5 +1,6 @@
 """All special error cases related to data_files."""
 
+
 class ImmutabilityError(BaseException):
     """An error to guard against changes to a data file entry."""
 

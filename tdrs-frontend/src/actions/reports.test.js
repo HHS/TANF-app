@@ -60,10 +60,7 @@ describe('actions/reports', () => {
     const actions = store.getActions()
 
     expect(actions[0].type).toBe(SET_FILE_ERROR)
-    expect(actions[0].payload).toHaveProperty(
-      'error',
-      TypeError("Cannot read property 'name' of undefined")
-    )
+    expect(actions[0].payload).toHaveProperty('error')
   })
 
   it('should dispatch OPEN_FILE_DIALOG when a file has been successfully downloaded', async () => {

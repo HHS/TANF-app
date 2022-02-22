@@ -12,6 +12,7 @@ from ..serializers import UserProfileSerializer
 
 logger = logging.getLogger(__name__)
 
+
 class AuthorizationCheck(APIView):
     """Check if user is authorized."""
 
