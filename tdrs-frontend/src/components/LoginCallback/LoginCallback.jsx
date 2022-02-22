@@ -40,7 +40,7 @@ function LoginCallback() {
     return <Navigate to="/" />
   }
 
-  return authenticated ? <Navigate to="/welcome" /> : null
+  return authenticated ? <Navigate to="/home" /> : null
 }
 
 export default LoginCallback

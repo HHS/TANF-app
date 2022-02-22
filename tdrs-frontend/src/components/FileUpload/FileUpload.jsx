@@ -87,6 +87,7 @@ function FileUpload({ section, setLocalAlertState }) {
     const filereader = new FileReader()
 
     filereader.onloadend = (evt) => {
+      /* istanbul ignore next */
       if (!evt.target.error) {
         // Read in the file blob "headers: and create a hex string signature
         const uint = new Uint8Array(evt.target.result)
@@ -126,6 +127,7 @@ function FileUpload({ section, setLocalAlertState }) {
         // known binary files
         fileType.fromBlob(blob).then((res) => {
           // res should be undefined for non-binary files
+          /* istanbul ignore next */
           if (res) {
             // reject the file and create an error message
             createFileInputErrorState(input, dropTarget)

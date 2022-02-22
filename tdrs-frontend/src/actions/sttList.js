@@ -10,7 +10,7 @@ export const CLEAR_STTS = 'CLEAR_STTS'
  * This action fires an HTTP GET request to the API
  * to get a list of state, tribes and territories.
  *
- * This is imported into EditProfile.jsx and called every
+ * This is imported into Profile.jsx and called every
  * time the page rerenders.
  *
  * This call is made with `withCredentials` to include

@@ -39,15 +39,18 @@ class UnverifiedEmail(Exception):
 
     pass
 
+
 class ACFUserLoginDotGov(Exception):
     """Exception for catching ACF Users using Login.gov."""
 
     pass
 
+
 class ExpiredToken(Exception):
     """Expired Token Error Handler."""
 
     pass
+
 
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define abstract methods for handling OIDC login requests."""
@@ -320,6 +323,7 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
             raise ACFUserLoginDotGov(
                 '{} attempted Login.gov authentication with role(s): {}'.format(user.email, user_groups)
             )
+
 
 class TokenAuthorizationAMS(TokenAuthorizationOIDC):
     """Define methods for handling login request from HHS AMS."""
