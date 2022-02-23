@@ -97,6 +97,7 @@ def req_factory(states_factory, mock, api_client):
     # Add an origin param to test multiple auth handlers.
     yield request
 
+
 @pytest.mark.django_db
 def test_authentication(user):
     """Test authentication method."""
@@ -117,11 +118,13 @@ def test_get_admin_user(ofa_system_admin):
     found_user = CustomAuthentication.get_user(ofa_system_admin.pk)
     assert found_user.username == ofa_system_admin.username
 
+
 @pytest.mark.django_db
 def test_auth_user_by_hhs_id(user):
     """Test get_user method."""
     authenticated_user = CustomAuthentication.authenticate(hhs_id=user.hhs_id)
     assert str(authenticated_user.hhs_id) == user.hhs_id
+
 
 @pytest.mark.django_db
 def test_get_non_user(user):
@@ -224,22 +227,6 @@ class TestLoginAMS:
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
-    def test_login_with_valid_state_and_code(
-        self,
-        ams_states_factory,
-        req_factory,
-        user,
-    ):
-        """Test login with state and code."""
-        request = req_factory
-        request = create_session(request, ams_states_factory)
-        user.username = "test_existing@example.com"
-        user.save()
-
-        view = TokenAuthorizationAMS.as_view()
-        response = view(request)
-        assert response.status_code == status.HTTP_302_FOUND
-
     def test_hhs_login_with_valid_state_and_code(
         self,
         ams_states_factory,
@@ -255,99 +242,6 @@ class TestLoginAMS:
         user.save()
 
         view = TokenAuthorizationAMS.as_view()
-        response = view(request)
-        assert response.status_code == status.HTTP_302_FOUND
-
-    def test_login_with_existing_token(
-        self,
-        ams_states_factory,
-        req_factory
-    ):
-        """Login should proceed when token already exists."""
-        view = TokenAuthorizationAMS.as_view()
-        request = req_factory
-        request.session["token"] = "testtoken"
-        request = create_session(request, ams_states_factory)
-        response = view(request)
-        assert response.status_code == status.HTTP_302_FOUND
-
-    def test_login_with_general_exception(
-        self,
-        ams_states_factory,
-        req_factory
-    ):
-        """Test login with state and code."""
-        states = ams_states_factory
-        request = req_factory
-        view = TokenAuthorizationAMS.as_view()
-
-        # A custom session will throw a general exception
-        request.session = {}
-        request = create_session(request, states)
-        response = view(request)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data == {
-            "error": (
-                "Email verified, but experienced internal issue "
-                "with login/registration."
-            )
-        }
-
-    def test_login_with_inactive_user(
-        self,
-        inactive_user,
-        ams_states_factory,
-        mock_decode,
-        requests_mock,
-        req_factory
-    ):
-        """
-        Login with inactive user should error and return message.
-
-        Note this test considers the `is_active` field, and *not* `deactivated`,
-        which are different.
-        """
-        request = req_factory
-
-        inactive_user.username = "test_inactive@example.com"
-        inactive_user.save()
-
-        requests_mock.post(TestLoginAMS.mock_configuration["userinfo_endpoint"],
-                           json={"email": "test_inactive@example.com"})
-
-        mock_decode.return_value = decoded_token(
-            "test_inactive@example.com",
-            ams_states_factory['nonce'],
-        )
-
-        view = TokenAuthorizationAMS.as_view()
-        request = create_session(request, ams_states_factory)
-        response = view(request)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        assert response.data == {
-            "error": f'Login failed, user account is inactive: {inactive_user.username}'
-        }
-
-    def test_login_with_existing_user(
-        self,
-        user,
-        mock_decode,
-        ams_states_factory,
-        req_factory
-    ):
-        """Login should work with existing user."""
-        states = ams_states_factory
-        request = req_factory
-        request = create_session(request, ams_states_factory)
-
-        user.username = "test_existing@example.com"
-        user.save()
-        view = TokenAuthorizationAMS.as_view()
-        mock_decode.return_value = decoded_token(
-            "test_existing@example.com",
-            states["nonce"],
-        )
-
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
@@ -375,91 +269,6 @@ class TestLoginAMS:
 
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
-
-    def test_login_with_old_email(
-        self,
-        mock_decode,
-        ams_states_factory,
-        req_factory,
-        user
-    ):
-        """Login should work with existing user."""
-        user.username = "test_old_email@example.com"
-        user.save()
-        states = ams_states_factory
-        request = req_factory
-        request = create_session(request, ams_states_factory)
-        view = TokenAuthorizationAMS.as_view()
-        mock_decode.return_value = decoded_token(
-            "test_new_email@example.com",
-            states["nonce"],
-        )
-        response = view(request)
-        # Ensure the user's username was updated with new email.
-        assert User.objects.filter(username="test_new_email@example.com").exists()
-        assert response.status_code == status.HTTP_302_FOUND
-
-    def test_login_with_initial_superuser(
-        self,
-        mock_decode,
-        ams_states_factory,
-        req_factory,
-        settings,
-        user
-    ):
-        """Login should work with existing user."""
-        # How to set os vars for sudo su??
-        test_username = "test_superuser@example.com"
-        settings.DJANGO_SUPERUSER_NAME = test_username
-        user.username = test_username
-        user.login_gov_uuid = None
-        user.save()
-        states = ams_states_factory
-        request = req_factory
-        request = create_session(request, ams_states_factory)
-        mock_decode.return_value = decoded_token(test_username, states["nonce"])
-        view = TokenAuthorizationAMS.as_view()
-        response = view(request)
-
-        user = User.objects.get(username=test_username)
-        assert str(user.login_gov_uuid) == mock_decode.return_value["sub"]
-        assert response.status_code == status.HTTP_302_FOUND
-
-    def test_login_with_expired_token(
-        self,
-        mock_decode,
-        ams_states_factory,
-        req_factory,
-    ):
-        """Login should proceed when token already exists."""
-        request = req_factory
-        request = create_session(request, ams_states_factory)
-        mock_decode.side_effect = jwt.ExpiredSignatureError()
-
-        view = TokenAuthorizationAMS.as_view()
-        response = view(request)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        assert response.data == {"error": "The token is expired."}
-
-    def test_login_with_email_unverified(
-        self,
-        mock_decode,
-        ams_states_factory,
-        req_factory,
-    ):
-        """Login should fail with unverified email."""
-        states = ams_states_factory
-        request = req_factory
-        request = create_session(request, ams_states_factory)
-        mock_decode.return_value = decoded_token(
-            "test@example.com",
-            states['nonce'],
-            email_verified=False
-        )
-        view = TokenAuthorizationAMS.as_view()
-        response = view(request)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data == {"error": "Unverified email!"}
 
 
 def test_login_gov_redirect(api_client):
@@ -576,118 +385,6 @@ class TestLogin:
 
         yield mock_post, mock_decode
 
-    def test_login_with_valid_state_and_code(
-        self,
-        patch_login_gov_jwt_key,
-        states_factory,
-        mock,
-        req_factory
-    ):
-        """Test login with state and code."""
-        request = req_factory
-        request = create_session(request, states_factory)
-        view = TokenAuthorizationLoginDotGov.as_view()
-        response = view(request)
-        assert response.status_code == status.HTTP_302_FOUND
-
-    def test_login_with_existing_token(
-        self,
-        patch_login_gov_jwt_key,
-        states_factory,
-        mock,
-        req_factory
-    ):
-        """Login should proceed when token already exists."""
-        view = TokenAuthorizationLoginDotGov.as_view()
-        request = req_factory
-        request.session["token"] = "testtoken"
-        request = create_session(request, states_factory)
-        response = view(request)
-        assert response.status_code == status.HTTP_302_FOUND
-
-    def test_login_with_general_exception(
-        self,
-        patch_login_gov_jwt_key,
-        states_factory,
-        mock,
-        req_factory
-    ):
-        """Test login with state and code."""
-        states = states_factory
-        request = req_factory
-        view = TokenAuthorizationLoginDotGov.as_view()
-
-        # A custom session will throw a general exception
-        request.session = {}
-        request = create_session(request, states)
-        response = view(request)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data == {
-            "error": (
-                "Email verified, but experienced internal issue "
-                "with login/registration."
-            )
-        }
-
-    def test_login_with_inactive_user(
-        self,
-        inactive_user,
-        patch_login_gov_jwt_key,
-        states_factory,
-        mock,
-        req_factory
-    ):
-        """
-        Login with inactive user should error and return message.
-
-        Note this test considers the `is_active` field, and *not* `deactivated`,
-        which are different.
-        """
-        request = req_factory
-        mock_post, mock_decode = mock
-
-        inactive_user.username = "test_inactive@example.com"
-        inactive_user.save()
-
-        mock_decode.return_value = decoded_token(
-            "test_inactive@example.com",
-            states_factory['nonce'],
-            sub=inactive_user.login_gov_uuid
-        )
-        view = TokenAuthorizationLoginDotGov.as_view()
-        request = create_session(request, states_factory)
-        response = view(request)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        assert response.data == {
-            "error": f'Login failed, user account is inactive: {inactive_user.username}'
-        }
-
-    def test_login_with_existing_user(
-        self,
-        user,
-        patch_login_gov_jwt_key,
-        mock,
-        states_factory,
-        req_factory
-    ):
-        """Login should work with existing user."""
-        states = states_factory
-        request = req_factory
-        request = create_session(request, states_factory)
-
-        user.username = "test_existing@example.com"
-        user.save()
-        view = TokenAuthorizationLoginDotGov.as_view()
-        mock_post, mock_decode = mock
-        mock_decode.return_value = decoded_token(
-            "test_existing@example.com",
-            states["nonce"],
-            sub=user.login_gov_uuid
-        )
-
-        response = view(request)
-        assert response.status_code == status.HTTP_302_FOUND
-
     def test_logindotgov_with_acf_user(
         self,
         ofa_system_admin,
@@ -715,100 +412,6 @@ class TestLogin:
 
         response = view(request)
         assert response.status_code == status.HTTP_403_FORBIDDEN
-
-    def test_login_with_old_email(
-        self,
-        mock,
-        states_factory,
-        req_factory,
-        patch_login_gov_jwt_key,
-        user
-    ):
-        """Login should work with existing user."""
-        user.username = "test_old_email@example.com"
-        user.save()
-        states = states_factory
-        request = req_factory
-        request = create_session(request, states_factory)
-        view = TokenAuthorizationLoginDotGov.as_view()
-        mock_post, mock_decode = mock
-        mock_decode.return_value = decoded_token(
-            "test_new_email@example.com",
-            states["nonce"],
-            sub=user.login_gov_uuid
-        )
-        response = view(request)
-        # Ensure the user's username was updated with new email.
-        assert User.objects.filter(username="test_new_email@example.com").exists()
-        assert response.status_code == status.HTTP_302_FOUND
-
-    def test_login_with_initial_superuser(
-        self,
-        mock,
-        states_factory,
-        req_factory,
-        patch_login_gov_jwt_key,
-        settings,
-        user
-    ):
-        """Login should work with existing user."""
-        # How to set os vars for sudo su??
-        test_username = "test_superuser@example.com"
-        settings.DJANGO_SUPERUSER_NAME = test_username
-        user.username = test_username
-        user.login_gov_uuid = None
-        user.save()
-        states = states_factory
-        request = req_factory
-        request = create_session(request, states_factory)
-        mock_post, mock_decode = mock
-        mock_decode.return_value = decoded_token(test_username, states["nonce"])
-        view = TokenAuthorizationLoginDotGov.as_view()
-        response = view(request)
-
-        user = User.objects.get(username=test_username)
-        assert str(user.login_gov_uuid) == mock_decode.return_value["sub"]
-        assert response.status_code == status.HTTP_302_FOUND
-
-    def test_login_with_expired_token(
-        self,
-        mock,
-        states_factory,
-        req_factory,
-        patch_login_gov_jwt_key
-    ):
-        """Login should proceed when token already exists."""
-        request = req_factory
-        request = create_session(request, states_factory)
-        mock_post, mock_decode = mock
-        mock_decode.side_effect = jwt.ExpiredSignatureError()
-
-        view = TokenAuthorizationLoginDotGov.as_view()
-        response = view(request)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        assert response.data == {"error": "The token is expired."}
-
-    def test_login_with_email_unverified(
-        self,
-        mock,
-        states_factory,
-        req_factory,
-        patch_login_gov_jwt_key
-    ):
-        """Login should fail with unverified email."""
-        states = states_factory
-        request = req_factory
-        request = create_session(request, states_factory)
-        mock_post, mock_decode = mock
-        mock_decode.return_value = decoded_token(
-            "test@example.com",
-            states['nonce'],
-            email_verified=False
-        )
-        view = TokenAuthorizationLoginDotGov.as_view()
-        response = view(request)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.data == {"error": "Unverified email!"}
 
 
 @pytest.mark.django_db
@@ -1188,15 +791,22 @@ class TestLoginParam:
          ])
     def test_login_with_existing_token(
         self,
-        request,  # Pytest request: provides information on the executing pytest fixture
-        login_handler,  # LoginDotGov or AMS
-        fix_mock_config,  # mock configuration fixture. Not needed for LoginDotGov.
-        fix_mock,  # mock and mock_decode fixture
-        fix_states_factory,  # states_factory
-        fix_req_factory,  # request_factory
-        patch_login_gov_jwt_key  # LoginDotGov jwt
+        request,                    # Pytest request: provides information on the executing pytest fixture
+        login_handler,              # LoginDotGov or AMS
+        fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
+        fix_mock,                   # mock and mock_decode fixture
+        fix_states_factory,         # states_factory
+        fix_req_factory,            # request_factory
+        patch_login_gov_jwt_key     # LoginDotGov jwt
     ):
         """Login should proceed when token already exists."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
         if login_handler == 'AMS':
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
@@ -1242,6 +852,13 @@ class TestLoginParam:
         user
     ):
         """Login should proceed when token already exists."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
         if login_handler == 'AMS':
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
@@ -1300,6 +917,13 @@ class TestLoginParam:
         patch_login_gov_jwt_key,    # LoginDotGov jwt
     ):
         """Login should proceed when token already exists."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
         if login_handler == 'AMS':
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
@@ -1331,7 +955,6 @@ class TestLoginParam:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.data == {"error": "The token is expired."}
 
-
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
         [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
@@ -1348,6 +971,13 @@ class TestLoginParam:
         patch_login_gov_jwt_key,    # LoginDotGov jwt
     ):
         """Login should proceed when token already exists."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
         if login_handler == 'AMS':
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
@@ -1403,6 +1033,13 @@ class TestLoginParam:
         inactive_user
     ):
         """Login should proceed when token already exists."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
         if login_handler == 'AMS':
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
@@ -1471,7 +1108,7 @@ class TestLoginParam:
          ])
     def test_login_with_initial_superuser(
         self,
-        request,                    # Pytest request: provides information on the executing pytest fixture
+        request,                    # Pytest request: providexs information on the executing pytest fixture
         login_handler,              # LoginDotGov or AMS
         fix_mock_config,            # mock configuration fixture. Not needed for LoginDotGov.
         fix_mock,                   # mock and mock_decode fixture
@@ -1482,6 +1119,13 @@ class TestLoginParam:
         settings,
     ):
         """Login should proceed when token already exists."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
         if login_handler == 'AMS':
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
@@ -1543,6 +1187,14 @@ class TestLoginParam:
         user,
     ):
         """Login should proceed when token already exists."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
+        # Test AMS
         if login_handler == 'AMS':
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
@@ -1560,7 +1212,7 @@ class TestLoginParam:
                 "test_new_email@example.com",
                 states["nonce"],
             )
-
+        # Test LoginDotGov
         elif login_handler == 'LoginDotGov':
             # run associated fixtures for LoginDotGov
             mock = request.getfixturevalue(fix_mock)
@@ -1585,7 +1237,6 @@ class TestLoginParam:
         assert User.objects.filter(username="test_new_email@example.com").exists()
         assert response.status_code == status.HTTP_302_FOUND
 
-
     @pytest.mark.parametrize(
         "login_handler,fix_mock_config,fix_mock,fix_states_factory,fix_req_factory",
         [("LoginDotGov", "mock", "mock", "states_factory", "req_factory"),  # LoginDotGov
@@ -1603,6 +1254,13 @@ class TestLoginParam:
         user,
     ):
         """Login should proceed when token already exists."""
+
+        """
+        To ensure fixtures are fetched and ran, instead of adding fixtures
+        as function arguments, we use getfixturevalue to dynamically call and run fixtures.
+        This creates independent test environments for each parametrized tests.
+        """
+
         if login_handler == 'AMS':
             # run associated fixtures for AMS
             requests_mock = request.getfixturevalue(fix_mock_config)
