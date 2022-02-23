@@ -10,7 +10,7 @@ import Button from '../Button'
 /**
  * SplashPage renders the Welcome page for the TANF Data Portal
  * for an unauthenticated user. If a user logs in, they are automatically
- * redirected to `/edit-profile`.
+ * redirected to `/profile`.
  */
 function SplashPage() {
   const authenticated = useSelector((state) => state.auth.authenticated)
@@ -54,7 +54,7 @@ function SplashPage() {
   // during Pa11y tests allows us to just point to a page in the config like
   // we have been doing.
   if (authenticated && !process.env.REACT_APP_PA11Y_TEST) {
-    return <Navigate to="/welcome" />
+    return <Navigate to="/home" />
   }
 
   if (authLoading) {

@@ -1,5 +1,6 @@
 """Basic API User Tests."""
 from django.contrib.auth import get_user_model
+
 import pytest
 from rest_framework import status
 
@@ -7,12 +8,12 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_retrieve_user(api_client, user):
+def test_retrieve_user(api_client, data_analyst):
     """Test user retrieval."""
-    api_client.login(username=user.username, password="test_password")
-    response = api_client.get(f"/v1/users/{user.pk}/")
+    api_client.login(username=data_analyst.username, password="test_password")
+    response = api_client.get(f"/v1/users/{data_analyst.pk}/")
     assert response.status_code == status.HTTP_200_OK
-    assert response.data["username"] == user.username
+    assert response.data["username"] == data_analyst.username
 
 
 @pytest.mark.django_db
@@ -47,6 +48,7 @@ def test_create_user_endpoint_not_present(api_client, user_data):
     response = api_client.post("/v1/users/", user_data)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
+
 @pytest.mark.django_db
 def test_regional_user_update_user_in_region(api_client, regional_user, user_in_region):
     """Test regional staff can update users in their region."""
@@ -56,6 +58,7 @@ def test_regional_user_update_user_in_region(api_client, regional_user, user_in_
         "first_name": "Jane"
     })
     assert response.status_code == status.HTTP_200_OK
+
 
 @pytest.mark.django_db
 def test_regional_user_cannot_update_user_not_in_region(

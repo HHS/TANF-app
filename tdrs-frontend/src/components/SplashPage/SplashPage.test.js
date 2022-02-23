@@ -3,14 +3,39 @@ import thunk from 'redux-thunk'
 import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { MemoryRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import SplashPage from './SplashPage'
 import { render, screen } from '@testing-library/react'
 import PrivateRoute from '../PrivateRoute'
-import Welcome from '../Welcome'
+import Home from '../Home'
 
-const initialState = { auth: { authenticated: false, inactive: false } }
+const initialState = {
+  auth: { authenticated: false, inactive: false },
+  stts: {
+    loading: false,
+    sttList: [
+      {
+        id: 1,
+        type: 'state',
+        code: 'AL',
+        name: 'Alabama',
+      },
+      {
+        id: 2,
+        type: 'state',
+        code: 'AK',
+        name: 'Alaska',
+      },
+      {
+        id: 140,
+        type: 'tribe',
+        code: 'AK',
+        name: 'Aleutian/Pribilof Islands Association, Inc.',
+      },
+    ],
+  },
+}
 const mockStore = configureStore([thunk])
 
 describe('SplashPage', () => {
@@ -100,20 +125,24 @@ describe('SplashPage', () => {
     expect(window.location.href).toEqual(url)
   })
 
-  it('redirects to /welcome when user is already authenticated', () => {
+  it('redirects to /home when user is already authenticated', () => {
     const store = mockStore({
-      auth: { authenticated: true, user: { email: 'hi@bye.com' } },
+      auth: {
+        authenticated: true,
+        user: { email: 'hi@bye.com' },
+      },
+      stts: initialState.stts,
     })
     render(
       <Provider store={store}>
-        <MemoryRouter initialEntries={['/welcome', '/']}>
+        <MemoryRouter initialEntries={['/home', '/']}>
           <Routes>
             <Route
               exact
-              path="/welcome"
+              path="/home"
               element={
                 <PrivateRoute title="Welcome to TDP">
-                  <Welcome />
+                  <Home />
                 </PrivateRoute>
               }
             />

@@ -2,9 +2,6 @@
 
 import factory
 
-from tdpservice.stts.test.factories import STTFactory
-
-
 class BaseUserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
 
@@ -23,7 +20,7 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     is_active = True
     is_staff = False
     is_superuser = False
-    stt = factory.SubFactory(STTFactory)
+
     login_gov_uuid = factory.Faker("uuid4")
     deactivated = False
     # For testing convenience, though most users won't have both a login_gov_uuid and hhs_id
@@ -44,11 +41,10 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
             for group in extracted:
                 self.groups.add(group)
 
-
 class UserFactory(BaseUserFactory):
     """General purpose user factory used through out most tests."""
 
-    stt = factory.SubFactory(STTFactory)
+    location = None
 
 
 class STTUserFactory(BaseUserFactory):
@@ -58,7 +54,8 @@ class STTUserFactory(BaseUserFactory):
     # The stt factory and the command were competing over the right to set the stt.
     # Our solution was to not set the STT specifically for the STT tests that
     # were calling the `populate_stt` command.
-    stt = None
+    location = None
+
 
 class AdminSTTUserFactory(STTUserFactory):
     """Generate an admin user who has no stt assigned."""
@@ -70,6 +67,7 @@ class AdminSTTUserFactory(STTUserFactory):
 class AdminUserFactory(UserFactory):
     """Generate Admin User."""
 
+    location = None
     is_staff = True
     is_superuser = True
 
