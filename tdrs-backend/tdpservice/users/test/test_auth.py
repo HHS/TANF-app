@@ -642,6 +642,7 @@ class TestLoginParam:
             requests_mock = request.getfixturevalue(fix_mock_config)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
+
             request = create_session(ams_req_factory, ams_states_factory)
             view = TokenAuthorizationAMS.as_view()
             request.session["state_nonce_tracker"] = {
@@ -1283,6 +1284,7 @@ class TestLoginParam:
             req_factory = request.getfixturevalue(fix_req_factory)
 
             """Test login with state and code."""
+            mock_post, mock_decode = mock
             request = req_factory
             request = create_session(request, states_factory)
             view = TokenAuthorizationLoginDotGov.as_view()
