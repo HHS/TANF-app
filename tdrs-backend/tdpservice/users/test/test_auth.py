@@ -560,7 +560,6 @@ class TestLoginParam:
 
     @pytest.fixture()
     def mock_ams_configuration(self, requests_mock, settings, mock_token):
-
         """Mock outgoing requests in various parts of the AMS flow."""
         requests_mock.get(settings.AMS_CONFIGURATION_ENDPOINT, json=TestLoginAMS.mock_configuration)
 
@@ -638,8 +637,8 @@ class TestLoginParam:
         # AMS
         if login_handler == 'AMS':
             # run associated fixtures for AMS
-            mock_decode = request.getfixturevalue(fix_mock)
-            requests_mock = request.getfixturevalue(fix_mock_config)
+            request.getfixturevalue(fix_mock)
+            request.getfixturevalue(fix_mock_config)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
 
@@ -751,7 +750,7 @@ class TestLoginParam:
 
         if login_handler == 'AMS':
             # run associated fixtures for AMS
-            requests_mock = request.getfixturevalue(fix_mock_config)
+            request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
@@ -810,8 +809,8 @@ class TestLoginParam:
 
         if login_handler == 'AMS':
             # run associated fixtures for AMS
-            requests_mock = request.getfixturevalue(fix_mock_config)
-            mock_decode = request.getfixturevalue(fix_mock)
+            request.getfixturevalue(fix_mock_config)
+            request.getfixturevalue(fix_mock)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
 
@@ -822,7 +821,7 @@ class TestLoginParam:
 
         elif login_handler == 'LoginDotGov':
             # run associated fixtures for LoginDotGov
-            mock = request.getfixturevalue(fix_mock)
+            request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
             req_factory = request.getfixturevalue(fix_req_factory)
 
@@ -862,7 +861,7 @@ class TestLoginParam:
 
         if login_handler == 'AMS':
             # run associated fixtures for AMS
-            requests_mock = request.getfixturevalue(fix_mock_config)
+            request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
@@ -927,7 +926,7 @@ class TestLoginParam:
 
         if login_handler == 'AMS':
             # run associated fixtures for AMS
-            requests_mock = request.getfixturevalue(fix_mock_config)
+            request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
@@ -981,8 +980,8 @@ class TestLoginParam:
 
         if login_handler == 'AMS':
             # run associated fixtures for AMS
-            requests_mock = request.getfixturevalue(fix_mock_config)
-            mock_decode = request.getfixturevalue(fix_mock)
+            request.getfixturevalue(fix_mock_config)
+            request.getfixturevalue(fix_mock)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
 
@@ -996,7 +995,7 @@ class TestLoginParam:
 
         elif login_handler == 'LoginDotGov':
             # run associated fixtures for LoginDotGov
-            mock = request.getfixturevalue(fix_mock)
+            request.getfixturevalue(fix_mock)
             states_factory = request.getfixturevalue(fix_states_factory)
             req_factory = request.getfixturevalue(fix_req_factory)
 
@@ -1055,7 +1054,6 @@ class TestLoginParam:
             which are different.
             """
             request = ams_req_factory
-
             inactive_user.username = "test_inactive@example.com"
             inactive_user.save()
 
@@ -1129,7 +1127,7 @@ class TestLoginParam:
 
         if login_handler == 'AMS':
             # run associated fixtures for AMS
-            requests_mock = request.getfixturevalue(fix_mock_config)
+            request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
@@ -1198,7 +1196,7 @@ class TestLoginParam:
         # Test AMS
         if login_handler == 'AMS':
             # run associated fixtures for AMS
-            requests_mock = request.getfixturevalue(fix_mock_config)
+            request.getfixturevalue(fix_mock_config)
             mock_decode = request.getfixturevalue(fix_mock)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
@@ -1264,10 +1262,11 @@ class TestLoginParam:
 
         if login_handler == 'AMS':
             # run associated fixtures for AMS
-            requests_mock = request.getfixturevalue(fix_mock_config)
-            mock_decode = request.getfixturevalue(fix_mock)
+            request.getfixturevalue(fix_mock_config)
+            request.getfixturevalue(fix_mock)
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
+
 
             """Test login with state and code."""
             request = ams_req_factory
