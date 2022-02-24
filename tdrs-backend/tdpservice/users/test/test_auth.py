@@ -516,6 +516,7 @@ def test_missing_jwt_key():
 
 @pytest.mark.django_db
 class TestLoginParam:
+    """Test class for parametrized tests"""
 
     @pytest.fixture()
     def mock(self, states_factory, mocker, mock_token):
