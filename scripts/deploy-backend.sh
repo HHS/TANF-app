@@ -21,6 +21,12 @@ generate_jwt_cert()
 update_backend()
 {
     cd tdrs-backend || exit
+
+    # The below line will create a named database within the RDS instance beyond the auto-generated one(s). We will let this fail
+    # 99% of the time as this only needs to be run on the initial setup of the database. Ideally, this would be done via Terraform.
+    #app_name=$(echo $CGHOSTNAME_BACKEND |cut -d"-" -f3)
+    #echo "create database tdp_db_${env}_${app_name}" | cf connect-to-service $CGHOSTNAME_BACKEND "tdp-db-${env}"
+
     if [ "$1" = "rolling" ] ; then
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
@@ -45,16 +51,10 @@ strip() {
 
 bind_backend_to_services() {
     env=$(strip $CF_SPACE "tanf-")
-    app_name=$(echo $CGHOSTNAME_BACKEND |cut -d"-" -f3)
-
 
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}"
-
-    # The below line will create a named database within the RDS instance beyond the auto-generated one(s). We will let this fail 
-    # 99% of the time as this only needs to be run on the initial setup of the database. Ideally, this would be done via Terraform.
-    echo "create database tdp_db_${env}_${app_name}" | cf connect-to-service $CGHOSTNAME_BACKEND "tdp-db-${env}" 
 
     bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
 
