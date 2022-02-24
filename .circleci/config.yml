@@ -317,7 +317,7 @@ commands:
               echo "cf_password = \"$<<parameters.cf-password>>\""
               echo "cf_user = \"$<<parameters.cf-username>>\""
               echo "cf_space_name = \"<<parameters.cf-space>>\""
-              echo "backend_appname = \"<<parameters.backend-appname>>\""
+              echo "backend_db_name = \"tdp_db_dev_<<parameters.target_env>>\""
             } >> ./variables.tfvars
       - terraform/init:
           path: <<parameters.tf-path>>
