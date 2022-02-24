@@ -627,7 +627,6 @@ class TestLoginParam:
         patch_login_gov_jwt_key,    # LoginDotGov jwt
     ):
         """Login should error with a bad nonce and state."""
-
         """
         To ensure correct fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call an run fixtures.
@@ -687,7 +686,6 @@ class TestLoginParam:
         patch_login_gov_jwt_key     # LoginDotGov jwt
     ):
         """Login should error with a bad validation code."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
@@ -741,7 +739,6 @@ class TestLoginParam:
         patch_login_gov_jwt_key     # LoginDotGov jwt
     ):
         """Login should fail with unverified email."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
@@ -800,7 +797,6 @@ class TestLoginParam:
         patch_login_gov_jwt_key     # LoginDotGov jwt
     ):
         """Login should proceed when token already exists."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
@@ -852,7 +848,6 @@ class TestLoginParam:
         user
     ):
         """Login should proceed when token already exists."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
@@ -917,7 +912,6 @@ class TestLoginParam:
         patch_login_gov_jwt_key,    # LoginDotGov jwt
     ):
         """Login should proceed when token already exists."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
@@ -971,7 +965,6 @@ class TestLoginParam:
         patch_login_gov_jwt_key,    # LoginDotGov jwt
     ):
         """Login should proceed when token already exists."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
@@ -1033,7 +1026,6 @@ class TestLoginParam:
         inactive_user
     ):
         """Login should proceed when token already exists."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
@@ -1118,7 +1110,6 @@ class TestLoginParam:
         settings,
     ):
         """Login should proceed when token already exists."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
@@ -1186,7 +1177,6 @@ class TestLoginParam:
         user,
     ):
         """Login should proceed when token already exists."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
@@ -1253,7 +1243,6 @@ class TestLoginParam:
         user,
     ):
         """Login should proceed when token already exists."""
-
         """
         To ensure fixtures are fetched and ran, instead of adding fixtures
         as function arguments, we use getfixturevalue to dynamically call and run fixtures.
