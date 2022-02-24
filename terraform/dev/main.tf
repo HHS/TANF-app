@@ -49,11 +49,11 @@ data "cloudfoundry_service" "rds" {
 
 resource "cloudfoundry_service_instance" "database" {
   name             = "tdp-db-dev"
-  db_name          = var.backend_db_name
   space            = data.cloudfoundry_space.space.id
   service_plan     = data.cloudfoundry_service.rds.service_plans["micro-psql"]
   recursive_delete = true
 }
+# TODO for use later: db_name          = var.backend_db_name
 
 ###
 # Provision S3 buckets

@@ -24,8 +24,8 @@ update_backend()
 
     # The below line will create a named database within the RDS instance beyond the auto-generated one(s). We will let this fail
     # 99% of the time as this only needs to be run on the initial setup of the database. Ideally, this would be done via Terraform.
-    #app_name=$(echo $CGHOSTNAME_BACKEND |cut -d"-" -f3)
-    #echo "create database tdp_db_${env}_${app_name}" | cf connect-to-service $CGHOSTNAME_BACKEND "tdp-db-${env}"
+    app_name=$(echo $CGHOSTNAME_BACKEND |cut -d"-" -f3)
+    echo "create database tdp_db_${env}_${app_name}" | cf connect-to-service $CGHOSTNAME_BACKEND "tdp-db-${env}"
 
     if [ "$1" = "rolling" ] ; then
         # Do a zero downtime deploy.  This requires enough memory for

@@ -318,7 +318,6 @@ commands:
               echo "cf_password = \"$<<parameters.cf-password>>\""
               echo "cf_user = \"$<<parameters.cf-username>>\""
               echo "cf_space_name = \"<<parameters.cf-space>>\""
-              echo "backend_db_name = \"tdp_db_dev_<<parameters.target_env>>\""
             } >> ./variables.tfvars
       - terraform/init:
           path: <<parameters.tf-path>>
@@ -571,8 +570,7 @@ workflows:
   dev-deployment:
     when: << pipeline.parameters.run_dev_deployment >>
     jobs:
-      - deploy-infrastructure-dev:
-          target_env: << pipeline.parameters.target_env >>
+      - deploy-infrastructure-dev
       - deploy-dev:
           target_env: << pipeline.parameters.target_env >>
           requires:
