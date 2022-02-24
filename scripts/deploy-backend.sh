@@ -45,10 +45,16 @@ strip() {
 
 bind_backend_to_services() {
     env=$(strip $CF_SPACE "tanf-")
+    app_name=$(echo $CGHOSTNAME_BACKEND |cut -d"-" -f3)
+
 
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}"
+
+    # The below line will create a named database within the RDS instance beyond the auto-generated one(s). We will let this fail 
+    # 99% of the time as this only needs to be run on the initial setup of the database. Ideally, this would be done via Terraform.
+    echo "create database tdp_db_${env}_${app_name}" | cf connect-to-service $CGHOSTNAME_BACKEND "tdp-db-${env}" 
 
     bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
 
