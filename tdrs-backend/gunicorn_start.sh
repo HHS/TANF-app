@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Apply database migrations
 set -e
+
+app_name=$(echo $BASE_URL|cut -d"-" -f3|cut -d"." -f1)
+python manage.py sqlcreate --database="tdp_db_dev_$app_name" | python manage.py dbshell
 echo "Applying database migrations"
 python manage.py makemigrations
 python manage.py migrate
