@@ -16,10 +16,13 @@ import NavItem from '../NavItem/NavItem'
  * @param {object} authenticated - whether the user is authenticated or not
  * @param {object} user - the current user's information
  */
-function HeaderComp() {
+function Header() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
+  const userAccessRequestPending = Boolean(user?.['access_request'])
+  const userAccessRequestApproved =
+    Boolean(user?.['access_request']) && user.roles.length > 0
 
   const menuRef = useRef()
 
@@ -107,22 +110,22 @@ function HeaderComp() {
             <ul className="usa-nav__primary usa-accordion">
               {authenticated && (
                 <>
-                  <NavItem
-                    pathname={pathname}
-                    tabTitle="Welcome"
-                    href="/welcome"
-                  />
-                  <NavItem
-                    pathname={pathname}
-                    tabTitle="Data Files"
-                    href="/data-files"
-                  />
-                  <NavItem
-                    pathname={pathname}
-                    tabTitle="Profile"
-                    href="/edit-profile"
-                  />
-                  {isOFASystemAdmin() && (
+                  <NavItem pathname={pathname} tabTitle="Home" href="/home" />
+                  {userAccessRequestApproved && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Data Files"
+                      href="/data-files"
+                    />
+                  )}
+                  {userAccessRequestPending && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Profile"
+                      href="/profile"
+                    />
+                  )}
+                  {userAccessRequestApproved && isOFASystemAdmin() && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Admin"
@@ -172,4 +175,4 @@ function HeaderComp() {
   )
 }
 
-export default HeaderComp
+export default Header
