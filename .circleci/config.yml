@@ -292,6 +292,7 @@ commands:
       cf-org:
         type: env_var_name
         default: CF_ORG
+
     steps:
       - checkout
       - run:
@@ -570,7 +571,8 @@ workflows:
   dev-deployment:
     when: << pipeline.parameters.run_dev_deployment >>
     jobs:
-      - deploy-infrastructure-dev
+      - deploy-infrastructure-dev:
+          target_env: << pipeline.parameters.target_env >>
       - deploy-dev:
           target_env: << pipeline.parameters.target_env >>
           requires:
