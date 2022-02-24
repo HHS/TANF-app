@@ -1267,7 +1267,6 @@ class TestLoginParam:
             ams_states_factory = request.getfixturevalue(fix_states_factory)
             ams_req_factory = request.getfixturevalue(fix_req_factory)
 
-
             """Test login with state and code."""
             request = ams_req_factory
             request = create_session(request, ams_states_factory)
