@@ -86,6 +86,8 @@ commands:
     steps:
       - run:
           name: Execute OWASP ZAP vulnerability scan
+          #wait up to 60min for scan
+          no_output_timeout: 60m
           command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>>
       - store_artifacts:
           path: tdrs-<<parameters.target>>/reports/owasp_report.html
@@ -580,11 +582,11 @@ workflows:
       - nightly-owasp-scan
     triggers:
       - schedule:
-          cron: "0 0 * * *"
+          cron: "45 9,13 * * *"
           filters:
             branches:
               only:
-               - raft-tdp-main
+               - feat/1534-updating-to-latest-zaproxy
 
   owasp-scan:
     when: << pipeline.parameters.run_owasp_scan >>
