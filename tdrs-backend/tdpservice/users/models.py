@@ -60,6 +60,11 @@ class User(AbstractUser):
         elif self.is_data_analyst and self.region:
             raise ValidationError(
                 _("Data Analyst cannot have a region assigned to them"))
+        elif self.is_ocio_staff:
+            if self.region or self.stt:
+                raise ValidationError(
+                    _("AMS OCIO staff cannot have a region or STT assigned to them"))
+
         super().save(*args, **kwargs)
 
     @property
@@ -77,3 +82,11 @@ class User(AbstractUser):
         Uses a cached_property to prevent repeated calls to the database.
         """
         return self.is_in_group('Data Analyst')
+
+    @property
+    def is_ocio_staff(self) -> bool:
+        """Return whether or not the user is in the ACF OCIO Group.
+
+        Uses a cached_property to prevent repeated calls to the database.
+        """
+        return self.is_in_group('ACF OCIO')
