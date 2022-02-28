@@ -4,11 +4,12 @@ import logging
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
 
-from tdpservice.stts.serializers import STTPrimaryKeyRelatedField
+from tdpservice.stts.serializers import STTPrimaryKeyRelatedField, RegionPrimaryKeyRelatedField
 from tdpservice.users.models import User
 
 
 logger = logging.getLogger(__name__)
+
 
 class PermissionSerializer(serializers.ModelSerializer):
     """Permission serializer."""
@@ -51,6 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "access_request"
         )
         read_only_fields = ("username",)
 
@@ -64,16 +66,19 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only=True,
         source='groups'
     )
-    stt = STTPrimaryKeyRelatedField()
+    stt = STTPrimaryKeyRelatedField(required=False)
+    region = RegionPrimaryKeyRelatedField(required=False)
 
     class Meta:
         """Metadata."""
 
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'stt', 'roles']
+        fields = ['id', 'first_name', 'last_name', 'email', 'stt', 'region', 'roles', 'access_request']
 
         """Enforce first and last name to be in API call and not empty"""
         extra_kwargs = {
             'first_name': {'allow_blank': False, 'required': True},
             'last_name': {'allow_blank': False, 'required': True},
+            'stt': {'allow_blank': True, 'required': False},
+            'region': {'allow_blank': True, 'required': False},
         }

@@ -15,6 +15,12 @@ cd tdrs-backend && docker-compose -f docker-compose.yml -f docker-compose.local.
 1. Test steps should be captured in the demo GIF(s) and/or screenshots below.
 > *Demo GIF(s) and screenshots for testing procedure*
 
+## Tabletop
+
+- [ ] Ready for Tabletop (Reviewer check this)
+- [ ] Tabletop scheduled (Assignee check this)
+- [ ] Tabletop approval 
+
 ## Deliverables
 _More details on how deliverables herein are assessed included [here](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/our-priorities-values-expectations.md#Deliverables)._
 

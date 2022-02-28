@@ -73,8 +73,8 @@
     "concurrently": "^7.0.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
-    "eslint": "^8.9.0",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint": "^8.10.0",
+    "eslint-config-prettier": "^8.4.0",
     "eslint-config-react-app": "^7.0.0",
     "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-prettier": "^4.0.0",
@@ -84,7 +84,7 @@
     "prettier": "^2.4.1",
     "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
-    "sass": "^1.49.7",
+    "sass": "^1.49.8",
     "wait-on": "^6.0.1"
   },
   "jest": {
@@ -96,8 +96,7 @@
       "!src/configureStore.js",
       "!src/mirage.js",
       "!src/middleware/logger.js",
-      "!src/utils/eventLogger.js",
-      "!src/utils/createFileInputErrorState.js"
+      "!src/utils/**/*.js"
     ],
     "coverageThreshold": {
       "global": {
