@@ -17,7 +17,7 @@ def remove_ocio_group(apps, schema_editor):
 
 
 def assign_ocio_permissions(apps, schema_editor):
-    acf_ocio, _ = apps.get_model('auth', 'Group').objects.get(name="ACF OCIO")
+    acf_ocio = apps.get_model('auth', 'Group').objects.get(name="ACF OCIO")
 
     zap_scan_permissions = get_permission_ids_for_model(
         'security',
@@ -37,7 +37,7 @@ def assign_ocio_permissions(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("users", "TODO"),
+        ('users', "0031_remove_federal_gov_stt"),
     ]
 
     operations = [
