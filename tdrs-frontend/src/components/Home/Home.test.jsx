@@ -1,31 +1,202 @@
 import React from 'react'
-import thunk from 'redux-thunk'
-import { mount } from 'enzyme'
-import { Provider } from 'react-redux'
-import configureStore from 'redux-mock-store'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
-import EditProfile, { validation } from './EditProfile'
+import { Provider } from 'react-redux'
+import thunk from 'redux-thunk'
+import { mount } from 'enzyme'
+import Home from '../Home'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import configureStore from 'redux-mock-store'
 import PrivateRoute from '../PrivateRoute'
-import Request from '../Request'
 
-describe('EditProfile', () => {
-  const initialState = {
-    auth: { authenticated: true, user: { email: 'hi@bye.com' } },
-    stts: { sttList: [], loading: false },
-    requestAccess: {
-      requestAccess: false,
-      loading: false,
+const initialState = {
+  auth: {
+    authenticated: true,
+    user: {
+      email: 'hi@bye.com',
+      roles: [],
+      access_request: false,
     },
-  }
+  },
+  stts: {
+    loading: false,
+    sttList: [
+      {
+        id: 1,
+        type: 'state',
+        code: 'AL',
+        name: 'Alabama',
+      },
+      {
+        id: 2,
+        type: 'state',
+        code: 'AK',
+        name: 'Alaska',
+      },
+      {
+        id: 140,
+        type: 'tribe',
+        code: 'AK',
+        name: 'Aleutian/Pribilof Islands Association, Inc.',
+      },
+    ],
+  },
+}
+
+describe('Home', () => {
+  const mockStore = configureStore([thunk])
+
+  it('should render the Home page with the request access subheader', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          roles: [],
+          access_request: true,
+        },
+      },
+    })
+    const { getByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    const header = getByText(
+      `Your request for access is currently being reviewed by an OFA Admin. We'll send you an email when it's been approved.`
+    )
+    expect(header).toBeInTheDocument()
+  })
+
+  it("should render the Home page with the user's current role", () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
+          access_request: true,
+        },
+      },
+    })
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    const header = getByText(
+      "You've been approved as a(n) OFA Admin. You'll be able to do the following in TDP:"
+    )
+    expect(header).toBeInTheDocument()
+  })
+
+  it("should render the Home page with the user's OFA admin role", () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'hi@bye.com',
+          roles: [{ id: 2, name: 'Data Analyst', permission: [] }],
+          access_request: true,
+        },
+      },
+    })
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    const header = getByText(
+      `You've been approved as a(n) Data Analyst. You'll be able to do the following in TDP:`
+    )
+    expect(header).toBeInTheDocument()
+  })
+
+  it("should render the Home page with the user's Data Analyst role and permissions", () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          access_request: true,
+          email: 'hi@bye.com',
+          roles: [
+            {
+              id: 1,
+              name: 'Data Analyst',
+              permissions: [
+                {
+                  id: 8,
+                  codename: 'view_logentry',
+                  name: 'Can view log entry',
+                },
+                {
+                  id: 49,
+                  codename: 'add_datafile',
+                  name: 'Can add data file',
+                },
+                {
+                  id: 52,
+                  codename: 'view_datafile',
+                  name: 'Can view data file',
+                },
+                {
+                  id: 37,
+                  codename: 'add_user',
+                  name: 'Can add user',
+                },
+                {
+                  id: 38,
+                  codename: 'change_user',
+                  name: 'Can change user',
+                },
+                {
+                  id: 40,
+                  codename: 'view_user',
+                  name: 'Can view user',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    })
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    expect(
+      getByText(
+        `You've been approved as a(n) Data Analyst. You'll be able to do the following in TDP:`
+      )
+    ).toBeInTheDocument()
+    expect(getByText('Can view log entry')).toBeInTheDocument()
+    expect(getByText('Can change user')).toBeInTheDocument()
+    expect(getByText('Can add user')).toBeInTheDocument()
+    expect(getByText('Can view log entry')).toBeInTheDocument()
+    expect(getByText('Can add data file')).toBeInTheDocument()
+  })
+})
+
+describe('Pre-approval Home page', () => {
   const mockStore = configureStore([thunk])
 
   it('should have a first name input', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -38,7 +209,7 @@ describe('EditProfile', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -51,7 +222,7 @@ describe('EditProfile', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -68,7 +239,7 @@ describe('EditProfile', () => {
     const store = mockStore(initialState)
     const { container } = render(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -85,7 +256,7 @@ describe('EditProfile', () => {
     const store = mockStore(initialState)
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -122,7 +293,7 @@ describe('EditProfile', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -159,7 +330,7 @@ describe('EditProfile', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -207,7 +378,7 @@ describe('EditProfile', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -267,36 +438,6 @@ describe('EditProfile', () => {
     expect(errorMessages.first().hasClass('display-none')).toEqual(true)
   })
 
-  it("should return 'First Name is required' if fieldName is firstName and fieldValue is empty", () => {
-    const error = validation('firstName', '')
-
-    expect(error).toEqual('First Name is required')
-  })
-
-  it("should return 'Last Name is required' if fieldName is lastName and fieldValue is empty", () => {
-    const error = validation('lastName', '')
-
-    expect(error).toEqual('Last Name is required')
-  })
-
-  it("should return 'A state, tribe, or territory is required' if fieldName is firstName and fieldValue is empty", () => {
-    const error = validation('stt', '')
-
-    expect(error).toEqual('A state, tribe, or territory is required')
-  })
-
-  it("should return ' is required' if fieldName is not passed in and fieldValue is empty", () => {
-    const error = validation('', '')
-
-    expect(error).toEqual(' is required')
-  })
-
-  it('should return null if fieldValue is not empty', () => {
-    const error = validation('firstName', 'peter')
-
-    expect(error).toEqual(null)
-  })
-
   it('should display an error message when the input has been touched', () => {
     const store = mockStore({
       ...initialState,
@@ -325,7 +466,7 @@ describe('EditProfile', () => {
     })
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -396,7 +537,7 @@ describe('EditProfile', () => {
     })
     const { getByLabelText } = render(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -411,12 +552,13 @@ describe('EditProfile', () => {
     expect(select.value).toEqual('alaska')
   })
 
-  it('routes "/edit-profile" to the Request page when user has requested access', () => {
+  it('routes displays the pending approval message when a user has requested access', () => {
     const store = mockStore({
       ...initialState,
       auth: {
         ...initialState.auth,
         user: {
+          access_request: true,
           stt: {
             id: 6,
             type: 'state',
@@ -424,10 +566,6 @@ describe('EditProfile', () => {
             name: 'Colorado',
           },
         },
-      },
-      requestAccess: {
-        ...initialState.requestAccess,
-        requestAccess: true,
       },
       stts: {
         sttList: [
@@ -455,23 +593,14 @@ describe('EditProfile', () => {
 
     render(
       <Provider store={store}>
-        <MemoryRouter initialEntries={['/edit-profile']}>
+        <MemoryRouter initialEntries={['/home']}>
           <Routes>
             <Route
               exact
-              path="/request"
+              path="/home"
               element={
-                <PrivateRoute title="Request Submitted">
-                  <Request />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/edit-profile"
-              element={
-                <PrivateRoute title="Request Access">
-                  <EditProfile />
+                <PrivateRoute title="Home">
+                  <Home />
                 </PrivateRoute>
               }
             />
@@ -482,7 +611,7 @@ describe('EditProfile', () => {
 
     expect(
       screen.getByText(
-        'An administrator will be in touch soon to confirm your access!'
+        `Your request for access is currently being reviewed by an OFA Admin. We'll send you an email when it's been approved.`
       )
     ).toBeInTheDocument()
   })
@@ -517,7 +646,7 @@ describe('EditProfile', () => {
     store.dispatch = jest.fn(origDispatch)
     const wrapper = mount(
       <Provider store={store}>
-        <EditProfile />
+        <Home />
       </Provider>
     )
 
@@ -541,47 +670,6 @@ describe('EditProfile', () => {
       preventDefault: () => {},
     })
 
-    expect(store.dispatch).toHaveBeenCalled()
-  })
-
-  it('should dispatch "setAlert" when form is submitted and there is an error', () => {
-    const store = mockStore({
-      ...initialState,
-      requestAccess: {
-        ...initialState.requestAccess,
-        error: { message: 'This request failed' },
-      },
-      stts: {
-        sttList: [
-          {
-            id: 1,
-            type: 'state',
-            code: 'AL',
-            name: 'Alabama',
-          },
-          {
-            id: 2,
-            type: 'state',
-            code: 'AK',
-            name: 'Alaska',
-          },
-          {
-            id: 140,
-            type: 'tribe',
-            code: 'AK',
-            name: 'Aleutian/Pribilof Islands Association, Inc.',
-          },
-        ],
-      },
-    })
-    const origDispatch = store.dispatch
-    store.dispatch = jest.fn(origDispatch)
-
-    mount(
-      <Provider store={store}>
-        <EditProfile />
-      </Provider>
-    )
     expect(store.dispatch).toHaveBeenCalled()
   })
 })
