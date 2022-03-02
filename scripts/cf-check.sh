@@ -13,5 +13,4 @@ else
 
     apt-get update
     apt-get install cf7-cli
-    cf install-plugin https://github.com/cloud-gov/cf-service-connect/releases/download/1.1.0/cf-service-connect-linux-386 -f
 fi

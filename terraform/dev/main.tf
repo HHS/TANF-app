@@ -52,10 +52,6 @@ resource "cloudfoundry_service_instance" "database" {
   space            = data.cloudfoundry_space.space.id
   service_plan     = data.cloudfoundry_service.rds.service_plans["micro-psql"]
   recursive_delete = true
-  provisioner "local-exec" {
-            command = 'echo "create database tdp_db_dev_sandbox" | cf connect-to-service tdp-backend-sandbox tdp-db-dev'
-            interpreter = ["/bin/bash"]
-  }
 }
 
 

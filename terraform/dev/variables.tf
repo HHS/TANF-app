@@ -31,8 +31,3 @@ variable "cf_password" {
   type        = string
   description = "secret; cloud.gov deployer account password"
 }
-
-variable "backend_db_name" {
-  type        = string
-  description = "Full name for database to be created for the relevant dev environment"
-}
