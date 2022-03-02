@@ -304,6 +304,7 @@ commands:
             apk update
             apk add jq
             apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+            cf install-plugin https://github.com/cloud-gov/cf-service-connect/releases/download/1.1.0/cf-service-connect-linux-386 -f
       - login-cloud-dot-gov
       - run:
           name: Export S3 Credentials for TFState
