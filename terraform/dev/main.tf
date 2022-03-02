@@ -54,7 +54,6 @@ resource "cloudfoundry_service_instance" "database" {
   recursive_delete = true
 }
 
-
 ###
 # Provision S3 buckets
 ###

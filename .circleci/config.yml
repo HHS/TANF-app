@@ -292,7 +292,6 @@ commands:
       cf-org:
         type: env_var_name
         default: CF_ORG
-
     steps:
       - checkout
       - run:
@@ -488,7 +487,6 @@ jobs:
           cf-space: tanf-staging
           tf-path: ./terraform/staging
 
-
   deploy-staging:
     executor: docker-executor
     working_directory: ~/tdp-deploy
@@ -573,7 +571,7 @@ workflows:
     jobs:
       - deploy-infrastructure-dev
       - deploy-dev:
-          target_env: << pipeline.parameters.target_env
+          target_env: << pipeline.parameters.target_env >>
           requires:
             - deploy-infrastructure-dev
 

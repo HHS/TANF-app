@@ -6,7 +6,6 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_BACKEND=${2}
 
-
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
 
@@ -22,7 +21,6 @@ generate_jwt_cert()
 update_backend()
 {
     cd tdrs-backend || exit
-
     if [ "$1" = "rolling" ] ; then
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
