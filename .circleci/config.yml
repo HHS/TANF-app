@@ -564,14 +564,14 @@ workflows:
   #    or:
   #      - << pipeline.parameters.run_dev_deployment >>
   #      - << pipeline.parameters.run_owasp_scan >>
-    jobs:
-      - secrets-check
-      - test-frontend:
-          requires:
-            - secrets-check
-      - test-backend:
-          requires:
-            - secrets-check
+#    jobs:
+#      - secrets-check
+#      - test-frontend:
+#          requires:
+#            - secrets-check
+#      - test-backend:
+#          requires:
+#            - secrets-check
 
   dev-deployment:
     when: << pipeline.parameters.run_dev_deployment >>
