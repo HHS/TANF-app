@@ -49,7 +49,7 @@ data "cloudfoundry_service" "rds" {
 
 resource "cloudfoundry_service_instance" "database" {
   name             = "tdp-db-dev"
-  json_params      = "{\"db_name\": \"${var.backend_db_name}\" }"
+  json_params      = "{\"dbname\": \"${var.backend_db_name}\" }"
   space            = data.cloudfoundry_space.space.id
   service_plan     = data.cloudfoundry_service.rds.service_plans["micro-psql"]
   recursive_delete = true
