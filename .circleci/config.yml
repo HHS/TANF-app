@@ -582,7 +582,7 @@ workflows:
       - nightly-owasp-scan
     triggers:
       - schedule:
-          cron: "45 * * * *"
+          cron: "15 * * * *"
           filters:
             branches:
               only:
