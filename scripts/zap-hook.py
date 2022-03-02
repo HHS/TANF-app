@@ -24,7 +24,7 @@ def zap_started(zap, target):
             10036,  # Server Leaks Version Information
             10055,  # CSP unsafe inline
             10096,  # Informational: Timestamp Disclosure - Unix,
-            10001,  # Unexpected Content-Type was returned
+            100001,  # Unexpected Content-Type was returned
         ]
 
     if 'frontend' in target:
