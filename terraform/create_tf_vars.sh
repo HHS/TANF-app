@@ -17,4 +17,5 @@ CF_SPACE="tanf-dev"
   echo "cf_password = \"$CF_PASSWORD_DEV\""
   echo "cf_user = \"$CF_USERNAME_DEV\""
   echo "cf_space_name = \"$CF_SPACE\""
+  echo "backend_db_name = \"sandbox\"" #TODO make this an actual env later
 } >> ./dev/variables.tfvars

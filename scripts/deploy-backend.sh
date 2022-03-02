@@ -6,6 +6,15 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_BACKEND=${2}
 
+
+strip() {
+    # Usage: strip "string" "pattern"
+    printf '%s\n' "${1##$2}"
+}
+
+#The cloud.gov space defined via environment variable (e.g., "tanf-dev", "tanf-staging")
+env=$(strip $CF_SPACE "tanf-")
+
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
 
@@ -18,14 +27,18 @@ generate_jwt_cert()
     cf set-env "$CGHOSTNAME_BACKEND" JWT_KEY "$(cat key.pem)"
 }
 
-update_backend()
+create_db()
 {
-    cd tdrs-backend || exit
-
     # The below line will create a named database within the RDS instance beyond the auto-generated one(s). We will let this fail
     # 99% of the time as this only needs to be run on the initial setup of the database. Ideally, this would be done via Terraform.
     app_name=$(echo $CGHOSTNAME_BACKEND |cut -d"-" -f3)
-    echo "create database tdp_db_${env}_${app_name}" | cf connect-to-service $CGHOSTNAME_BACKEND "tdp-db-${env}"
+    # Repeated double quotes below are needed else it thinks var is '$env_'.
+    echo "create database tdp_db_$env""_${app_name}" | cf connect-to-service $CGHOSTNAME_BACKEND "tdp-db-${env}"
+}
+
+update_backend()
+{
+    cd tdrs-backend || exit
 
     if [ "$1" = "rolling" ] ; then
         # Do a zero downtime deploy.  This requires enough memory for
@@ -44,21 +57,18 @@ update_backend()
     cd ..
 }
 
-strip() {
-    # Usage: strip "string" "pattern"
-    printf '%s\n' "${1##$2}"
-}
 
 bind_backend_to_services() {
-    env=$(strip $CF_SPACE "tanf-")
 
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-datafiles-${env}"
-    cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}"
+    cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}" -c ""{'db_name': \"${env}
 
     bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
 
     cf restage "$CGHOSTNAME_BACKEND"
+    #create_db
+    #cf restage "$CGHOSTNAME_BACKEND"
 }
 
 

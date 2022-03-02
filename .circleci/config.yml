@@ -292,6 +292,9 @@ commands:
       cf-org:
         type: env_var_name
         default: CF_ORG
+      target_env:
+        type: string
+        default: sandbox
 
     steps:
       - checkout
@@ -318,6 +321,7 @@ commands:
               echo "cf_password = \"$<<parameters.cf-password>>\""
               echo "cf_user = \"$<<parameters.cf-username>>\""
               echo "cf_space_name = \"<<parameters.cf-space>>\""
+              echo "backend_db_name = \"sandbox\""
             } >> ./variables.tfvars
       - terraform/init:
           path: <<parameters.tf-path>>
@@ -465,7 +469,8 @@ jobs:
     executor: terraform/default
     working_directory: ~/tdp-deploy
     steps:
-      - deploy-infrastructure
+      - deploy-infrastructure:
+          target_env: "sandbox"
 
   deploy-dev:
     executor: docker-executor
@@ -487,6 +492,7 @@ jobs:
           cf-username: CF_USERNAME_STAGING
           cf-space: tanf-staging
           tf-path: ./terraform/staging
+
 
   deploy-staging:
     executor: docker-executor
@@ -572,7 +578,7 @@ workflows:
     jobs:
       - deploy-infrastructure-dev
       - deploy-dev:
-          target_env: << pipeline.parameters.target_env >>
+          target_env: << pipeline.parameters.target_env >> #TODO pin this, try using this.
           requires:
             - deploy-infrastructure-dev
 
