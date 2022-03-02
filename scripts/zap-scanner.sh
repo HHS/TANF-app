@@ -58,6 +58,9 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(0\).regex='.*/robots\.txt.*' \
   -config globalexcludeurl.url_list.url\(0\).description='Exclude robots.txt' \
   -config globalexcludeurl.url_list.url\(0\).enabled=true \
+  -config globalexcludeurl.url_list.url\(0\).regex='^https?://.*\.cdn\.mozilla\.(?:com|org|net)/.*$' \
+  -config globalexcludeurl.url_list.url\(0\).description='Site - Mozilla CDN (requests such as getpocket)' \
+  -config globalexcludeurl.url_list.url\(0\).enabled=true \
   -config spider.postform=true"
 
 # How long ZAP will crawl the app with the spider process
