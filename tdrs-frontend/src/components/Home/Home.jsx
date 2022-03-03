@@ -61,6 +61,8 @@ function Home() {
 
   const userAccessRequestApproved = Boolean(user?.['access_request'])
 
+  const shouldShowSttComboBox = user?.email?.includes('@acf.hhs.gov')
+
   const setStt = (sttName) => {
     setProfileInfo((currentState) => ({
       ...currentState,
@@ -159,18 +161,20 @@ function Home() {
             handleChange={handleChange}
             handleBlur={handleBlur}
           />
-          <div
-            className={`usa-form-group ${
-              errors.stt ? 'usa-form-group--error' : ''
-            }`}
-          >
-            <STTComboBox
-              selectStt={setStt}
-              error={Boolean(errors.stt)}
-              selectedStt={profileInfo?.stt}
-              handleBlur={handleBlur}
-            />
-          </div>
+          {shouldShowSttComboBox && (
+            <div
+              className={`usa-form-group ${
+                errors.stt ? 'usa-form-group--error' : ''
+              }`}
+            >
+              <STTComboBox
+                selectStt={setStt}
+                error={Boolean(errors.stt)}
+                selectedStt={profileInfo?.stt}
+                handleBlur={handleBlur}
+              />
+            </div>
+          )}
           <Button type="submit" className="width-full request-access-button">
             Request Access
           </Button>
