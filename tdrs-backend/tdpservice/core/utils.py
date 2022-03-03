@@ -1,9 +1,14 @@
+"""Core utility classes and functions."""
+
+
 class ReadOnlyAdminMixin:
     """Mixin to enforce read-only models in Django Admin.
-        e.g. => class LogEntryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin)
-        This mixin must be first in the param list due to the way Python
-        handles Method Order Resolution for multiple inheritance.
+
+    e.g. => class LogEntryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin)
+    This mixin must be first in the param list due to the way Python
+    handles Method Order Resolution for multiple inheritance.
     """
+
     def has_add_permission(self, request):
         """Deny all add permissions."""
         return False
