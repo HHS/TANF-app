@@ -1,11 +1,12 @@
 """Admin class for DataFile objects."""
 from django.contrib import admin
 from .models import DataFile
+from ..core.utils import ReadOnlyAdminMixin
 
 
 @admin.register(DataFile)
-class DataFileAdmin(admin.ModelAdmin):
-    """Enforce read-only on the Data File admin form."""
+class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Admin class for DataFile models."""
 
     list_display = [
         'id',
