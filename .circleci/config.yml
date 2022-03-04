@@ -582,11 +582,11 @@ workflows:
       - nightly-owasp-scan
     triggers:
       - schedule:
-          cron: "10,40 * * * *"
+          cron: "0 0 * * *"
           filters:
             branches:
               only:
-               - feat/1534-updating-to-latest-zaproxy
+               - raft-tdp-main
 
   owasp-scan:
     when: << pipeline.parameters.run_owasp_scan >>
