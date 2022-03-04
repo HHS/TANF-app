@@ -7,6 +7,9 @@ from django.utils.safestring import mark_safe
 
 from tdpservice.core.utils import ReadOnlyAdminMixin
 
+# LogEntry needs to be de-registered first before registering a custom Admin Model below.
+admin.site.unregister(LogEntry)
+
 
 @admin.register(LogEntry)
 class LogEntryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
