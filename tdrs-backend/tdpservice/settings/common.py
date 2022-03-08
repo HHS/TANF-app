@@ -364,6 +364,29 @@ class Common(Configuration):
 
     ENABLE_DEVELOPER_GROUP = True
 
+    # XMS CONFIG
+    '''
+    "issuer":"https://int.xms.hhs.gov/",
+    "authorization_endpoint":"https://int.xms.hhs.gov/ABaaS/oidc/authorize",
+    "token_endpoint":"https://int.xms.hhs.gov/ABaaS/oidc/token",
+    "userinfo_endpoint":"https://int.xms.hhs.gov/ABaaS/oidc/userinfo",
+    "jwks_uri":"https://int.xms.hhs.gov/ABaaS/oidc/certificates"
+    '''
+
+    XMS_AUTHORIZATION_ENDPOINT = 'https://int.xms.hhs.gov/ABaaS/oidc/authorize'
+
+    XMS_CLIENT_ASSERTION_TYPE = ''
+    XMS_CLIENT_ID = '9YYZOX6HithqNxH'
+    XMS_ISSUER = "https://int.xms.hhs.gov/"
+    XMS_JWKS_ENDPOINT = "https://int.xms.hhs.gov/ABaaS/oidc/certificates"
+    # JWT_KEY must be set, there is no functional default.
+    XMS_JWT_KEY = 'LLctxLSnkqpncXSbabR7-9eeHR4pfali9661ew.~TLgPGGCSMm'
+    XMS_LOGOUT_ENDPOINT = os.getenv(
+        'OIDC_OP_LOGOUT_ENDPOINT',
+        'https://idp.int.identitysandbox.gov/openid_connect/logout'
+    )
+    XMS_TOKEN_ENDPOINT = "https://int.xms.hhs.gov/ABaaS/oidc/token"
+
     # AMS OpenID #
     AMS_CONFIGURATION_ENDPOINT = os.getenv(
         'AMS_CONFIGURATION_ENDPOINT',

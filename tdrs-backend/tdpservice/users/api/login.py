@@ -39,18 +39,15 @@ class UnverifiedEmail(Exception):
 
     pass
 
-
 class ACFUserLoginDotGov(Exception):
     """Exception for catching ACF Users using Login.gov."""
 
     pass
 
-
 class ExpiredToken(Exception):
     """Expired Token Error Handler."""
 
     pass
-
 
 class TokenAuthorizationOIDC(ObtainAuthToken):
     """Define abstract methods for handling OIDC login requests."""
@@ -322,6 +319,53 @@ class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
             user_groups = list(user.groups.values_list('name', flat=True))
             raise ACFUserLoginDotGov(
                 '{} attempted Login.gov authentication with role(s): {}'.format(user.email, user_groups)
+            )
+
+class TokenAuthorizationXMS(TokenAuthorizationOIDC):
+    """Define methods for handling login request from login.gov."""
+
+    def decode_payload(self, token_data, options=None):
+        """Decode the payload with keys for XMS."""
+        id_token = token_data.get("id_token")
+
+        certs_endpoint = settings.XMS_JWKS_ENDPOINT
+        cert_str = generate_jwt_from_jwks(certs_endpoint)
+
+        decoded_id_token = self.decode_jwt(id_token, settings.XMS_ISSUER, settings.XMS_CLIENT_ID, cert_str,
+                                           options)
+        return {"id_token": decoded_id_token}
+
+    def get_token_endpoint_response(self, code):
+        """Build out the query string params and full URL path for token endpoint."""
+        try:
+            options = {
+                "client_assertion": generate_client_assertion(),
+                "client_assertion_type": settings.XMS_GOV_CLIENT_ASSERTION_TYPE
+            }
+            token_params = generate_token_endpoint_parameters(code, options)
+            token_endpoint = settings.XMS_TOKEN_ENDPOINT + "?" + token_params
+            return requests.post(token_endpoint)
+
+        except ValueError as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def get_auth_options(self, access_token, sub):
+        """Add specific auth properties for the CustomAuthentication handler."""
+        auth_options = {"login_gov_uuid": sub}
+        return auth_options
+
+    def verify_email(self, user):
+        """Handle user email exception to disallow ACF staff to utilize non-AMS authentication."""
+        if "@acf.hhs.gov" in user.email:
+            user_groups = list(user.groups.values_list('name', flat=True))
+            raise ACFUserLoginDotGov(
+                '{} attempted XMS authentication with role(s): {}'.format(user.email, user_groups)
             )
 
 
