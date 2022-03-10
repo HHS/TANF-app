@@ -265,7 +265,7 @@ describe('Pre-approval Home page', () => {
     expect(submitBtn).toExist()
   })
 
-  it('should mount a list of options based on stts from the store', () => {
+  it('should mount a list of stt options based on stts from the store', () => {
     const store = mockStore({
       ...initialState,
       stts: {
@@ -300,6 +300,30 @@ describe('Pre-approval Home page', () => {
     const options = wrapper.find('option')
 
     expect(options.length).toEqual(4)
+  })
+
+  it('should not show the stt combno box for non-STT users', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'admin@acf.hhs.gov',
+          roles: [],
+          access_request: false,
+        },
+      },
+    })
+
+    const wrapper = mount(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    const options = wrapper.find('option')
+
+    expect(options).toEqual({})
   })
 
   it('should have errors when you try to submit and first name does not have at least 1 character', () => {

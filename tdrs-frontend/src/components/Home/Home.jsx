@@ -61,7 +61,7 @@ function Home() {
 
   const userAccessRequestApproved = Boolean(user?.['access_request'])
 
-  const shouldShowSttComboBox = user?.email?.includes('@acf.hhs.gov')
+  const shouldShowSttComboBox = !user?.email?.includes('@acf.hhs.gov')
 
   const setStt = (sttName) => {
     setProfileInfo((currentState) => ({
