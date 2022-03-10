@@ -37,6 +37,7 @@ class CloudGov(Common):
 
     cloudgov_space = cloudgov_app.get('space_name', 'tanf-dev')
     cloudgov_space_suffix = cloudgov_space.strip('tanf-')
+    cloudgov_name = cloudgov_app.get('name').split("-")[-1]  # converting "tdp-backend-name" to just "name"
 
     database_creds = get_cloudgov_service_creds_by_instance_name(
         cloudgov_services['aws-rds'],
@@ -60,7 +61,7 @@ class CloudGov(Common):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': database_creds['db_name'],
+            'NAME': f'tdp_db_{cloudgov_space_suffix}_{cloudgov_name}',
             'USER': database_creds['username'],
             'PASSWORD': database_creds['password'],
             'HOST': database_creds['host'],
