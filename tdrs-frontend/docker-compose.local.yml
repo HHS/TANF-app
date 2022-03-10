@@ -8,7 +8,8 @@ services:
     tty: true        # docker run -t
     build:
       context: .
-      target: nginx
+      target: localdev
+    command: npm run start
     ports:
       - 3000:80
     volumes:
