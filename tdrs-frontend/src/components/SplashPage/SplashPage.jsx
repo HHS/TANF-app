@@ -28,9 +28,9 @@ function SplashPage() {
       // This doesn't need to be tested, it will never be reached by jest.
       event.preventDefault()
       dispatch(setMockLoginState())
-    } else if (process.env.REACT_APP_LOGIN_XMS_URL) {
+    } else if (process.env.REACT_APP_LOGIN_XMS_USED) {
       event.preventDefault()
-      window.location.href = process.env.REACT_APP_LOGIN_XMS_URL
+      window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/xms`
     } else {
       event.preventDefault()
       window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login/dotgov`
