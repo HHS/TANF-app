@@ -31,7 +31,7 @@ function Reports() {
   const user = useSelector((state) => state.auth.user)
   const isOFAAdmin =
     user && user.roles.some((role) => role.name === 'OFA Admin')
-  const sttList = useSelector((state) => state.stts.sttList)
+  const sttList = useSelector((state) => state?.stts?.sttList)
 
   const userProfileStt = user?.stt?.name
 

@@ -1,21 +1,22 @@
 """Test data file serializers."""
 from django.core.exceptions import ValidationError
+
 import pytest
 
 from tdpservice.data_files.errors import ImmutabilityError
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.validators import (
     validate_file_extension,
-    validate_file_infection
+    validate_file_infection,
 )
 from tdpservice.security.clients import ClamAVClient
 
 
 @pytest.mark.django_db
-def test_serializer_with_valid_data(data_file_data, user):
+def test_serializer_with_valid_data(data_file_data, data_analyst):
     """If a serializer has valid data it will return a valid object."""
     create_serializer = DataFileSerializer(
-        context={'user': user},
+        context={'user': data_analyst},
         data=data_file_data
     )
     create_serializer.is_valid(raise_exception=True)
@@ -62,10 +63,10 @@ def test_immutability_of_data_file(data_file_instance):
 
 
 @pytest.mark.django_db
-def test_created_at(data_file_data, user):
+def test_created_at(data_file_data, data_analyst):
     """If a serializer has valid data it will return a valid object."""
     create_serializer = DataFileSerializer(
-        context={'user': user},
+        context={'user': data_analyst},
         data=data_file_data
     )
     assert create_serializer.is_valid() is True
@@ -79,7 +80,7 @@ def test_created_at(data_file_data, user):
 def test_data_file_still_created_if_av_scan_fails_to_create(
     data_file_data,
     mocker,
-    user
+    data_analyst
 ):
     """Test valid DataFile is still created if ClamAV scan isn't recorded.
 
@@ -92,7 +93,7 @@ def test_data_file_still_created_if_av_scan_fails_to_create(
         return_value=None
     )
     create_serializer = DataFileSerializer(
-        context={'user': user},
+        context={'user': data_analyst},
         data=data_file_data
     )
     assert create_serializer.is_valid() is True
