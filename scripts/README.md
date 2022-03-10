@@ -15,6 +15,7 @@ understand the role of the scripts.
 + [deploy-frontend.sh](./README.md#deploy-frontendsh)
 + [deploy-infrastructure-dev.sh](./README.md#deploy-infrastructure-devsh)
 + [deploy-infrastructure-staging.sh](./README.md#deploy-infrastructure-stagingsh)
++ [update-ssh-config.sh](./README.md#update-ssh-configsh)
 + [sudo-check.sh](./README.md#sudo-checksh)
 + [cf-checks.sh](./README.md#cf-checkssh)
 + [docker-check.sh](./README.md#docker-checksh)
@@ -206,6 +207,23 @@ Requires installation of jq - https://stedolan.github.io/jq/download/
 ### Where it's used
 
 We don't use this in CI, it is for manually running the CI step with the same name. It is a developer tool.
+
+## update-ssh-config.sh
+### Usage
+```
+scripts/update-ssh-config.sh
+```
+
+### Arguments
+
+no args
+
+### Description
+This script overwrites ~/.ssh/config with the latest GUIDs for our tanf-dev applications to enable [remote development](../docs/Technical-Documentation/remote-development.md) more easily.
+
+### Where it's used
+This script is only used locally and is not part of any CI pipeline. It is a developer tool.
+
 
 # "Check" scripts
 ## sudo-check.sh
