@@ -72,7 +72,7 @@ class CloudGov(Common):
     # Username or email for initial Django Super User
     DJANGO_SUPERUSER_NAME = os.getenv(
         'DJANGO_SU_NAME',
-        'lauren.frohlich@acf.hhs.gov'
+        'alexandra.pennington@acf.hhs.gov'
     )
 
     # Localstack is always disabled in a cloud.gov environment
