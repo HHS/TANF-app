@@ -11,7 +11,7 @@ Please refer to the [Team Members doc](https://hhsgov.sharepoint.com/:w:/r/sites
 * Steve Nino, Raft, facilitator/product manager
 * Miles Reiter, Raft, design lead + senior ux/ui researcher and designer
 * Sreedevi Purayannur, Raft, senior ux/ui researcher and designer
-* Andrew Bottoms, Raft, tech lead
+* Andrew Jameson, Raft, tech lead
 * Aaron Beavers, Raft, full stack engineer
 * Jorge Gonzalez, Raft, full stack engineer
 * Mo Sohani, Raft, full stack engineer
