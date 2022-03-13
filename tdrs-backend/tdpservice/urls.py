@@ -12,7 +12,7 @@ from rest_framework.permissions import AllowAny
 
 from .users.api.authorization_check import AuthorizationCheck
 from .users.api.login import TokenAuthorizationLoginDotGov, TokenAuthorizationAMS, TokenAuthorizationXMS
-from .users.api.login_redirect_oidc import LoginRedirectAMS, LoginRedirectLoginDotGov
+from .users.api.login_redirect_oidc import LoginRedirectAMS, LoginRedirectLoginDotGov, LoginRedirectLoginXMS
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
 from django.contrib.auth.decorators import login_required
@@ -27,7 +27,8 @@ urlpatterns = [
     # TODO: Update redirect path in login.gov to standardize all the login urls.
     path("login/", TokenAuthorizationLoginDotGov.as_view(), name="oidc-dotgov"),
     path("oidc/ams", TokenAuthorizationAMS.as_view(), name="oidc-ams"),
-    path("login/xms", TokenAuthorizationXMS.as_view(), name="oidc-XMS"),
+    path("oidc/xms", TokenAuthorizationXMS.as_view(), name="oidc-xms"),
+    path("login/xms", LoginRedirectLoginXMS.as_view(), name="login-xms"),
     path("login/dotgov", LoginRedirectLoginDotGov.as_view(), name="login-dotgov"),
     path("login/ams", LoginRedirectAMS.as_view(), name="login-ams"),
 

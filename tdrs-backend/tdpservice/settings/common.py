@@ -372,7 +372,10 @@ class Common(Configuration):
     "userinfo_endpoint":"https://int.xms.hhs.gov/ABaaS/oidc/userinfo",
     "jwks_uri":"https://int.xms.hhs.gov/ABaaS/oidc/certificates"
     '''
-
+    XMS_ACR_VALUES = os.getenv(
+        'ACR_VALUES',
+        'http://idmanagement.gov/ns/assurance/ial/1'
+    )
     XMS_AUTHORIZATION_ENDPOINT = 'https://int.xms.hhs.gov/ABaaS/oidc/authorize'
 
     XMS_CLIENT_ASSERTION_TYPE = ''
