@@ -1,7 +1,5 @@
 # Stakeholder Types
 
-<img src="https://goraft.tech/assets/logo.png" width="15%" height="auto" alt="Raft LLC Logo">
-
 Last updated for [Issue #804](https://github.com/raft-tech/TANF-app/issues/804)
 
 ---
@@ -12,22 +10,19 @@ Last updated for [Issue #804](https://github.com/raft-tech/TANF-app/issues/804)
 - [Grantee-level Stakeholders](#grantee-level-stakeholders)
 - [ACF Stakeholders](#acf-stakeholders)
 - [Personas](#personas)
-- [What's Next](#whats-next)
 
 ---
 
 ## Background
 
-As of Summer 2020, a number of groups and prospective stakeholder types had been identified as groups impacted by this project. Some of them interact with TDP directly, and some are impacted indirectly. The original TDP personas that were identified can be found in the personas mural linked below.
+A number of groups and prospective stakeholder types had been identified as groups impacted by this project. Some of them interact with TDP directly, and some are impacted indirectly. The original TDP personas that were identified can be found in the personas mural linked below.
 
 We expect that there will be a couple hundred users who interact with the TDP system, made up of both STT and OFA staff.
-
-For the purposes of the Release 1, the only users who will have access to the application will be OFA Admin and STT (test) users.  Raft team or OFA will be acting as STT users for the OFA MVP.
 
 **Supporting Documentation**
 
 - [Personas mural](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592254280716/2ae8293a3233a95941d548cda4f373faab96b40b) :lock:
-- [Vision and Stakeholders Doc](https://github.com/HHS/TANF-app/blob/main/docs/Product-Strategy/Vision-and-Stakeholders.md)
+- [Vision and Stakeholders Doc](https://github.com/raft-tech/TANF-app/blob/restore-stakeholder-and-personas/docs/Product-Strategy/Vision-and-Stakeholders.md)
 
 ---
 
