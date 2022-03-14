@@ -12,6 +12,7 @@ from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger()
 
+
 class User(AbstractUser):
     """Define user fields and methods."""
 
@@ -98,6 +99,11 @@ class User(AbstractUser):
     def is_data_analyst(self) -> bool:
         """Return whether or not the user is in the Data Analyst Group."""
         return self.is_in_group('Data Analyst')
+
+    @property
+    def is_ocio_staff(self) -> bool:
+        """Return whether or not the user is in the ACF OCIO Group."""
+        return self.is_in_group('ACF OCIO')
 
     @property
     def stt(self):
