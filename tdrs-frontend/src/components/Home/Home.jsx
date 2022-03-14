@@ -25,13 +25,14 @@ export const validation = (fieldName, fieldValue) => {
     case 'lastName':
       field = 'Last Name'
       break
-    case 'stt':
-      field = 'A state, tribe, or territory'
-      break
     default:
       field = ''
   }
-  if (typeof fieldValue === 'string' && fieldValue.trim() === '') {
+  if (
+    Boolean(field) &&
+    typeof fieldValue === 'string' &&
+    fieldValue.trim() === ''
+  ) {
     return `${field} is required`
   }
   return null
