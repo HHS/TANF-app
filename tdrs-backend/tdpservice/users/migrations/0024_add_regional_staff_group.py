@@ -9,9 +9,6 @@ from tdpservice.users.permissions import (
 )
 
 
-
-
-
 def add_regional_staff(apps, schema_editor):
     regional_staff, _ = (
         apps.get_model('auth', 'Group')
@@ -33,8 +30,8 @@ def add_regional_staff(apps, schema_editor):
         filters=[view_permissions_q]
     )
     stt_permissions = get_permission_ids_for_model(
-       'stts',
-       'stt',
+        'stts',
+        'stt',
         filters=[view_permissions_q]
     )
     datafile_permissions = get_permission_ids_for_model(
@@ -64,15 +61,15 @@ def add_regional_staff(apps, schema_editor):
     regional_staff.permissions.add(*logentry_permissions)
     regional_staff.permissions.add(*group_permissions)
 
+
 def remove_regional_staff(apps, schema_editor):
     Group.objects.delete(name="OFA Regional Staff")
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('users',"0020_ofa_system_admin_permissions")
+        ('users', "0020_ofa_system_admin_permissions")
     ]
     operations = [
         migrations.RunPython(add_regional_staff, remove_regional_staff)
     ]
-
