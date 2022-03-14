@@ -16,7 +16,7 @@ This directory includes the following research- and design-related docs and reso
   - Support the design team in pre-planning research to reduce the planning lift of prioritizing any given research topic.
 - **[User Research guide](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/User-Research-Guide.md)** - covers practices and considerations for ensuring participant privacy and safety (including psychological safety).
 - **[Research Syntheses](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research-Syntheses)** - Folder for storing findings from user research sessions.
-- **[Stakeholders and Personas](https://github.com/raft-tech/TANF-app/blob/docs/User-Experience/Research-Syntheses/2020%2C%20Summer%20-%20Understanding%20Stakeholders%20and%20creating%20personas.md)** - Overviews project stakeholder types and personas in use on the project.
+- **[Stakeholders and Personas](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research-Syntheses/2020%2C%20Summer%20-%20Understanding%20Stakeholders%20and%20creating%20personas.md)** - Overviews project stakeholder types and personas in use on the project.
 
 ### Design 
 - **[Design principles](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Design-Principles.md)** - is an overview of the guidelines we're using to design TDP.
