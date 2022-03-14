@@ -28,7 +28,8 @@ def test_role_list(api_client, create_test_users):
         "Developer",
         "OFA Admin",
         "Data Analyst",
-        "OFA System Admin"
+        "OFA System Admin",
+        "ACF OCIO",
     }
 
 
