@@ -75,9 +75,14 @@ function Header() {
     return () => document.removeEventListener('keydown', keyListener)
   }, [keyListenersMap])
 
-  const isOFASystemAdmin = () => {
-    return user?.roles?.some((role) => role.name === 'OFA System Admin')
-  }
+  const isACFOCIOUser = user?.roles?.some((role) => role.name === 'ACF OCIO')
+  const isOFASystemAdmin = user?.roles?.some(
+    (role) => role.name === 'OFA System Admin'
+  )
+
+  const canViewAdmin =
+    userAccessRequestApproved && (isOFASystemAdmin || isACFOCIOUser)
+  const canViewDataFiles = userAccessRequestApproved && isOFASystemAdmin
 
   return (
     <>
@@ -111,7 +116,7 @@ function Header() {
               {authenticated && (
                 <>
                   <NavItem pathname={pathname} tabTitle="Home" href="/home" />
-                  {userAccessRequestApproved && (
+                  {canViewDataFiles && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Data Files"
@@ -125,7 +130,7 @@ function Header() {
                       href="/profile"
                     />
                   )}
-                  {userAccessRequestApproved && isOFASystemAdmin() && (
+                  {canViewAdmin && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Admin"
