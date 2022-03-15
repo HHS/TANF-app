@@ -366,7 +366,7 @@ describe('Pre-approval Home page', () => {
 
     const errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(4)
+    expect(errorMessages.length).toEqual(3)
     expect(errorMessages.at(1).text()).toEqual('First Name is required')
     expect(errorMessages.at(2).text()).toEqual('Last Name is required')
     expect(errorMessages.last().text()).toEqual(
@@ -414,7 +414,7 @@ describe('Pre-approval Home page', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(4)
+    expect(errorMessages.length).toEqual(3)
 
     const firstNameInput = wrapper.find('#firstName')
 
@@ -502,7 +502,7 @@ describe('Pre-approval Home page', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(4)
+    expect(errorMessages.length).toEqual(3)
 
     const firstNameInput = wrapper.find('#firstName')
 
