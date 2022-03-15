@@ -291,6 +291,10 @@ class Common(Configuration):
     ###
     # AV Scanning Settings
     #
+    ###
+
+    # Flag for local testing to enable AV Scans
+    CLAMAV_NEEDED = get_required_env_var_setting('CLAMAV_NEEDED')
 
     # The URL endpoint to send AV scan requests to (clamav-rest)
     AV_SCAN_URL = os.getenv('AV_SCAN_URL')
