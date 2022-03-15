@@ -4,9 +4,18 @@ version: "3.4"
 
 services:
   tdp-frontend:
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
     build:
       context: .
       target: localdev
     command: npm run start
+    ports:
+      - 3000:80
     volumes:
-      - /home/node/app/node_modules
+      - ./:/home/node/app
+    networks:
+      - local
+networks:
+  local:
+    driver: bridge

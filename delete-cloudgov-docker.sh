@@ -4,6 +4,7 @@
 # To actually get it to work, you need to set the
 # YESIREALLYWANTTODOTHIS variable to something
 #
+#
 
 CGHOSTNAME_BACKEND=${1}
 CGHOSTNAME_FRONTEND=${2}
