@@ -13,7 +13,7 @@ alias cd-tdrs-backend='cd "$TDRS_HOME/tdrs-backend"'
 
 # shortcut for applying all relavent compose files for local development
 # I.E. `cd-tdrs-frontend && tdrs-compose-local up`
-alias tdrs-compose-local='docker-compose -f docker-compose.yml -f docker-compose.local.yml'
+alias tdrs-compose-local='docker-compose -f docker-compose.local.yml'
 
 # Stop tdrs backend entirely, then start it up again
 alias tdrs-backend-hard-restart='tdrs-stop-backend && tdrs-start-backend'
@@ -102,7 +102,7 @@ tdrs-rebuild-backend() {
     cd ..
 }
 
-# Fix all automaticly fixable linting errors for the frontend
+# Fix all automatically fixable linting errors for the frontend
 tdrs-fix-lint-frontend() {
     cd-tdrs-frontend
     eslint --fix ./src
@@ -170,3 +170,6 @@ tdrs-run-frontend-owasp() {
 
 # List all aliases and functions associated with tdrs
 alias tdrs-functions='declare -F|grep tdrs && alias|grep tdrs|cut -d" " -f1 --complement'
+
+# Get logs on backend
+alias tdrs-backend-log="docker logs $(docker ps|grep web|awk '{print $1}')"

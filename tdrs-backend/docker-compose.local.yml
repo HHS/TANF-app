@@ -1,7 +1,71 @@
-# Local version of Docker compose, using environment variables passed in by env file
-version: "3"
+# Base Docker compose for all environments
+version: "3.4"
 
 services:
+  postgres:
+    image: postgres:11.6
+    environment:
+      - PGDATA=/var/lib/postgresql/data/
+      - POSTGRES_DB=tdrs_test
+      - POSTGRES_PASSWORD=something_secure
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=tdpuser
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/:rw
+
+  localstack:
+    image: localstack/localstack:0.13.3
+    environment:
+      - SERVICES=s3
+      - DATA_DIR=/tmp/localstack/data
+      - AWS_BUCKET=tdp-datafiles-localstack
+      - AWS_REGION_NAME=us-gov-west-1
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack_data:/tmp/localstack
+      # Copy in the Localstack setup script to configure any buckets needed
+      - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
+
   web:
+    restart: always
     env_file:
       - .env
+    environment:
+      - CLAMAV_NEEDED
+      - AV_SCAN_URL=http://clamav-rest:9000/scan
+      - DB_HOST=postgres
+      - DB_NAME=tdrs_test
+      - DB_PASSWORD=something_secure
+      - DB_PORT=5432
+      - DB_USER=tdpuser
+      - DJANGO_CONFIGURATION=${DJANGO_CONFIGURATION:-Local}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-tdp-dev-insecure}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-tdpservice.settings.local}
+      - LOCALSTACK_HOST=localstack
+      - DJANGO_SU_NAME
+      - JWT_CERT_TEST
+      - JWT_KEY
+      - USE_LOCALSTACK
+      - LOGGING_LEVEL
+      - AMS_CLIENT_ID
+      - AMS_CLIENT_SECRET
+      - AMS_CONFIGURATION_ENDPOINT
+    volumes:
+      - .:/tdpapp
+    image: tdp
+    build: .
+    command: >
+      bash -c "./wait_for_services.sh &&
+               ./gunicorn_start.sh"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - localstack
+      - postgres
+
+volumes:
+  localstack_data:
+  postgres_data:
