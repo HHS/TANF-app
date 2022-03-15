@@ -8,10 +8,10 @@ Please refer to the [Team Members doc](https://hhsgov.sharepoint.com/:w:/r/sites
 * Alexandra Pennington, OFA, tech lead
 
 **Raft**
-* Valerie Collignon, Raft, facilitator/project manager
+* Steve Nino, Raft, facilitator/product manager
 * Miles Reiter, Raft, design lead + senior ux/ui researcher and designer
 * Sreedevi Purayannur, Raft, senior ux/ui researcher and designer
-* Andrew Bottoms, Raft, tech lead
+* Andrew Jameson, Raft, tech lead
 * Aaron Beavers, Raft, full stack engineer
 * Jorge Gonzalez, Raft, full stack engineer
 * Mo Sohani, Raft, full stack engineer
@@ -43,6 +43,7 @@ Please refer to the [Team Members doc](https://hhsgov.sharepoint.com/:w:/r/sites
 ---
 **<Details><Summary>Past Product Team Members</Summary>**
 (most recent first)
+* Valerie Collignon, Raft, facilitator/project manager
 * John Willis, Raft, technical oversight support
 * Dvora Wilensky, OFA, project COR
 * Dmitri Knapp, Raft, visual designer

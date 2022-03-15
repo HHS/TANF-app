@@ -70,4 +70,4 @@ See [Architecture Decision Record 008 - Deployment Flow](docs/Technical-Document
 |--|--|--|--|
 | Product Owner |Lauren Frohlich |@lfrohlich |Lauren.Frohlich@acf.hhs.gov|
 | Government Technical Monitor |Alex Pennington |@adpennington |Alexandra.Pennington@acf.hhs.gov|
-| Vendor Project Manager |Valerie Collignon |@valcollignon |vcollignon@goraft.tech |
+| Vendor Product Manager |Steve Nino |@stevenino |snino@goraft.tech |
