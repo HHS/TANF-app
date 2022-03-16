@@ -24,6 +24,22 @@ function Header() {
   const userAccessRequestApproved =
     Boolean(user?.['access_request']) && user.roles.length > 0
 
+  const isMemberOfOne = (...groupNames) =>
+    user?.roles?.some((role) => groupNames.includes(role.name))
+
+  const isMemberOf = (groupName) =>
+    user?.roles?.some((role) => role.name === groupName)
+
+  const isACFOCIOUser = isMemberOf('ACF OCIO')
+  const isOFASystemAdmin = isMemberOf('OFA System Admin')
+  const isDeveloper = isMemberOf('Developer')
+  const isDataAnalyst = isMemberOf('Developer')
+  const canViewAdmin =
+        userAccessRequestApproved && isMemberOfOne('Developer','OFA System Admin', 'ACF OCIO')
+  const canViewDataFiles =
+    userAccessRequestApproved &&
+    isMemberOfOne('Developer', 'Data Analyst', 'Regional Staff', 'OFA Admin')
+
   const menuRef = useRef()
 
   const keyListenersMap = useMemo(() => {
