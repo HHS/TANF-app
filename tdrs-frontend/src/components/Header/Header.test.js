@@ -14,7 +14,7 @@ describe('Header', () => {
     auth: {
       user: {
         email: 'test@test.com',
-        roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+        roles: [{ id: 1, name: 'Developer', permissions: [] }],
         access_request: true,
       },
       authenticated: true,
