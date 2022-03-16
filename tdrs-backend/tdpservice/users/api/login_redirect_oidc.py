@@ -165,8 +165,8 @@ class LoginRedirectLoginXMS(RedirectView):
             "acr_values": settings.XMS_ACR_VALUES,
             "client_id": settings.XMS_CLIENT_ID,
             "nonce": nonce,
-            "prompt": "select_account",
-            "redirect_uri": settings.BASE_URL + "/login/xms",
+            #"prompt": "select_account",
+            "redirect_uri": settings.BASE_URL + "/oidc/xms",
             "response_type": "code",
             "state": state,
         }

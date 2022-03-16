@@ -379,11 +379,11 @@ class Common(Configuration):
     XMS_AUTHORIZATION_ENDPOINT = 'https://int.xms.hhs.gov/ABaaS/oidc/authorize'
 
     XMS_CLIENT_ASSERTION_TYPE = ''
-    XMS_CLIENT_ID = '9YYZOX6HithqNxH'
+    XMS_CLIENT_ID = 'U2Xzpq6_ZA_5M~Z'
     XMS_ISSUER = "https://int.xms.hhs.gov/"
     XMS_JWKS_ENDPOINT = "https://int.xms.hhs.gov/ABaaS/oidc/certificates"
     # JWT_KEY must be set, there is no functional default.
-    XMS_JWT_KEY = 'LLctxLSnkqpncXSbabR7-9eeHR4pfali9661ew.~TLgPGGCSMm'
+    XMS_JWT_KEY = 'n5i8ZxW.I8N68iobatUBR~ClLkc7t5q2~.oZXkx.N7.L-jvJuo'
     XMS_LOGOUT_ENDPOINT = os.getenv(
         'OIDC_OP_LOGOUT_ENDPOINT',
         'https://idp.int.identitysandbox.gov/openid_connect/logout'
