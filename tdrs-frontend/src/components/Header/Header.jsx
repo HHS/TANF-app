@@ -75,15 +75,6 @@ function Header() {
     return () => document.removeEventListener('keydown', keyListener)
   }, [keyListenersMap])
 
-  const isACFOCIOUser = user?.roles?.some((role) => role.name === 'ACF OCIO')
-  const isOFASystemAdmin = user?.roles?.some(
-    (role) => role.name === 'OFA System Admin'
-  )
-
-  const canViewAdmin =
-    userAccessRequestApproved && (isOFASystemAdmin || isACFOCIOUser)
-  const canViewDataFiles = userAccessRequestApproved && isOFASystemAdmin
-
   return (
     <>
       <div className="usa-overlay" />
