@@ -14,7 +14,7 @@
 - [#1358](https://github.com/raft-tech/tanf-app/issues/1358) - As tech lead, I need a new permissions group for ACF OCIO 
 - [#1540](https://github.com/raft-tech/tanf-app/issues/1540) - As a developer, I want to share tests across our authentication sources
 - [#1156](https://github.com/raft-tech/tanf-app/issues/1234) - As a dev, I need a testable NextGen XMS sandbox
-- [#1439](https://github.com/raft-tech/tanf-app/issues/1234) - As tech lead, I want us using separate databases in shared RDS in the Cloud.gov dev space
+- [#1439](https://github.com/raft-tech/tanf-app/issues/1439) - As tech lead, I want us using separate databases in shared RDS in the Cloud.gov dev space
 - [#1534](https://github.com/raft-tech/tanf-app/issues/1534) - As ACF tech lead, I need the nightly-owasp-scan CircleCI workflow to run successfully and exclude non-TDP URLs in scan report
 - [#1591](https://github.com/raft-tech/tanf-app/issues/1234) - Tree Test (Sitemap) with Grantees
 
