@@ -52,7 +52,9 @@ The syntheses included herein are organized reverse-chronologically from newest 
 - Identified and documented the structure and meaning of flat file metadata to support project team alignment on how TDRS parses files and what information is contained at the highest level of those files.
 
 ### [2020, Summer - Understanding Stakeholders and creating personas](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research-Syntheses/2020%2C%20Summer%20-%20Understanding%20Stakeholders%20and%20creating%20personas.md)
-- [_fill-in_]
+
+- Summarizes stakeholder types and personas relavant to TDP.
+- Links out to living documents stored in Mural concerning personas and their associated journey maps.
 
 ### [2020, Summer - Understanding the OFA Experience](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research-Syntheses/2020%2C%20Summer%20-%20Understanding%20the%20OFA%20Experience.md)
 
