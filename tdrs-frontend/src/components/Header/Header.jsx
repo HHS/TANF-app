@@ -27,13 +27,6 @@ function Header() {
   const isMemberOfOne = (...groupNames) =>
     user?.roles?.some((role) => groupNames.includes(role.name))
 
-  const isMemberOf = (groupName) =>
-    user?.roles?.some((role) => role.name === groupName)
-
-  const isACFOCIOUser = isMemberOf('ACF OCIO')
-  const isOFASystemAdmin = isMemberOf('OFA System Admin')
-  const isDeveloper = isMemberOf('Developer')
-  const isDataAnalyst = isMemberOf('Developer')
   const canViewAdmin =
         userAccessRequestApproved && isMemberOfOne('Developer','OFA System Admin', 'ACF OCIO')
   const canViewDataFiles =
