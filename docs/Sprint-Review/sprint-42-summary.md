@@ -16,7 +16,7 @@
 - [#1156](https://github.com/raft-tech/tanf-app/issues/1156) - As a dev, I need a testable NextGen XMS sandbox
 - [#1439](https://github.com/raft-tech/tanf-app/issues/1439) - As tech lead, I want us using separate databases in shared RDS in the Cloud.gov dev space
 - [#1534](https://github.com/raft-tech/tanf-app/issues/1534) - As ACF tech lead, I need the nightly-owasp-scan CircleCI workflow to run successfully and exclude non-TDP URLs in scan report
-- [#1591](https://github.com/raft-tech/tanf-app/issues/1234) - Tree Test (Sitemap) with Grantees
+- [#1591](https://github.com/raft-tech/tanf-app/issues/1591) - Tree Test (Sitemap) with Grantees
 
 
 
