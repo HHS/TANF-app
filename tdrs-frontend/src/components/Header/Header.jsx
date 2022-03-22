@@ -28,7 +28,8 @@ function Header() {
     user?.roles?.some((role) => groupNames.includes(role.name))
 
   const canViewAdmin =
-        userAccessRequestApproved && isMemberOfOne('Developer','OFA System Admin', 'ACF OCIO')
+    userAccessRequestApproved &&
+    isMemberOfOne('Developer', 'OFA System Admin', 'ACF OCIO')
   const canViewDataFiles =
     userAccessRequestApproved &&
     isMemberOfOne('Developer', 'Data Analyst', 'Regional Staff', 'OFA Admin')
