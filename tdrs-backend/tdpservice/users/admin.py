@@ -29,11 +29,12 @@ class UserForm(forms.ModelForm):
         location_type = cleaned_data['location_type']
         role_location_type_map = {
             'OFA Regional Staff': 'region',
-            'Data Analyst': 'stt'
+            'Data Analyst': 'stt',
+            'Developer':'stt'
         }
 
         correct_location_type = role_location_type_map.get(group.name)
-        location_based_role = group.name in ('OFA Regional Staff', 'Data Analyst')
+        location_based_role = group.name in ('OFA Regional Staff', 'Data Analyst', 'Developer')
 
         if (location_based_role and (location_type and location_type.name != correct_location_type)):
 
