@@ -352,26 +352,68 @@ describe('Pre-approval Home page', () => {
         ],
       },
     })
-    const wrapper = mount(
+    const { getByText } = render(
       <Provider store={store}>
         <Home />
       </Provider>
     )
 
-    const form = wrapper.find('.usa-form').hostNodes()
+    fireEvent.click(getByText('Request Access'))
 
-    form.simulate('submit', {
-      preventDefault: () => {},
+    expect(getByText('First Name is required')).toBeInTheDocument()
+    expect(getByText('Last Name is required')).toBeInTheDocument()
+    expect(
+      getByText('A state, tribe, or territory is required')
+    ).toBeInTheDocument()
+  })
+
+  it('should not require an stt for ofa users', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        authenticated: true,
+        user: {
+          email: 'admin@acf.hhs.gov',
+          roles: [],
+          access_request: false,
+        },
+      },
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+        ],
+      },
     })
-
-    const errorMessages = wrapper.find('.usa-error-message')
-
-    expect(errorMessages.length).toEqual(3)
-    expect(errorMessages.at(1).text()).toEqual('First Name is required')
-    expect(errorMessages.at(2).text()).toEqual('Last Name is required')
-    expect(errorMessages.last().text()).toEqual(
-      'A state, tribe, or territory is required'
+    const { getByText, queryByText } = render(
+      <Provider store={store}>
+        <Home />
+      </Provider>
     )
+
+    fireEvent.click(getByText('Request Access'))
+
+    expect(getByText('First Name is required')).toBeInTheDocument()
+    expect(getByText('Last Name is required')).toBeInTheDocument()
+    expect(
+      queryByText('A state, tribe, or territory is required')
+    ).not.toBeInTheDocument()
   })
 
   it('should remove error message when you add a character and blur out of input', () => {
@@ -414,7 +456,7 @@ describe('Pre-approval Home page', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
 
     const firstNameInput = wrapper.find('#firstName')
 
@@ -502,7 +544,7 @@ describe('Pre-approval Home page', () => {
 
     let errorMessages = wrapper.find('.usa-error-message')
 
-    expect(errorMessages.length).toEqual(3)
+    expect(errorMessages.length).toEqual(4)
 
     const firstNameInput = wrapper.find('#firstName')
 
