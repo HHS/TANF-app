@@ -15,6 +15,8 @@ alias cd-tdrs-backend='cd "$TDRS_HOME/tdrs-backend"'
 # I.E. `cd-tdrs-frontend && tdrs-compose-local up`
 alias tdrs-compose-local='docker-compose -f docker-compose.local.yml'
 
+alias tdrs-start-av='cd-tdrs-frontend && tdrs-compose-local -f docker-compose.yml up -d && cd-tdrs-backend && tdrs-compose-local up -d '
+
 # Stop tdrs backend entirely, then start it up again
 alias tdrs-backend-hard-restart='tdrs-stop-backend && tdrs-start-backend'
 
