@@ -30,7 +30,7 @@ class UserForm(forms.ModelForm):
         role_location_type_map = {
             'OFA Regional Staff': 'region',
             'Data Analyst': 'stt',
-            'Developer':'stt'
+            'Developer': 'stt'
         }
 
         correct_location_type = role_location_type_map.get(group.name)
