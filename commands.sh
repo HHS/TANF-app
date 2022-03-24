@@ -15,8 +15,6 @@ alias cd-tdrs-backend='cd "$TDRS_HOME/tdrs-backend"'
 # I.E. `cd-tdrs-frontend && tdrs-compose-local up`
 alias tdrs-compose-local='docker-compose -f docker-compose.local.yml'
 
-alias tdrs-start-av='cd-tdrs-frontend && tdrs-compose-local -f docker-compose.yml up -d && cd-tdrs-backend && tdrs-compose-local up -d '
-
 # Stop tdrs backend entirely, then start it up again
 alias tdrs-backend-hard-restart='tdrs-stop-backend && tdrs-start-backend'
 
@@ -55,6 +53,8 @@ alias tdrs-restart-backend='tdrs-compose-backend restart'
 
 # to restart just django, keeping the other containers intact.
 alias tdrs-restart-django='tdrs-compose-backend restart web'
+
+alias tdrs-start-av='tdrs-start-frontend --remove-orphans && cd-tdrs-backend && tdrs-compose-local up -d --remove-orphans && docker-compose up -d clamav-rest && cd ..'
 
 # Run frontend unit tests through jest
 alias tdrs-run-jest='tdrs-npm-run test'
