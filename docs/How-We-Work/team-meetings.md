@@ -1,6 +1,6 @@
 # Team Meetings
 
-Sprints start on Wednesdays and end on Tuesdays. Therefore, sprint planning always occurs on the last day of the sprint and the day before the new sprint. Sprint Demos and Sprint Retrospectives also take place on the last day of the current sprint.
+Sprints start on Wednesdays and end on Tuesdays. Therefore, sprint review and sprint planning always occurs on the last day of the sprint and the day before the new sprint. Sprint Demos and Sprint Retrospectives also take place on the last day of the current sprint.
 
 All recurring meetings can be found on this page. This page does not include adhoc pairing sessions, vendor-only meetings, tabletops, or other non-recurring meetings. The team is collaborative and often meets to solve problems together outside of typical scrum ceremonies.
 
@@ -20,7 +20,7 @@ A typical sprint schedule is described in the table below.
 | Day 7 - Thu  | *No meetings*     |
 | Day 8 - Fri  | Product Sync, Cross-Functional Product Sync, Tech Sync    |
 | Day 9 - Mon  | UX Sync     |
-| Day 10 - Tue | Backlog Refinement/Sprint Planning, Sprint Demo, Retro     |
+| Day 10 - Tue | Sprint Review/Internal Demo/Retro/Sprint Planning, Sprint Demo, Backlog Refinement     |
 
 ---
 
@@ -40,58 +40,69 @@ A typical sprint schedule is described in the table below.
 ## Recurring Meetings 
 
 ### Standup
-- **Goal**: To inspect progress towards sprint goal and identify blockers
-- **Attendees**: Core team 
-- **Facilitator**: Raft PM/Scrum Master
-- **When**: Daily 12pm-12:15pm EST and asynchronously on Thursdays and every other Tuesday when the team has sprint ceremonies
-- **Format**: Each team member gives quick update to answer these questions 
-  - Facilitator shares their screen and pulls up assigned tickets for each team member in the current sprint. 
+- **Goal:** To help align the team and share progress, stay accountable, and resolve potential dependencies and blockers quickly.
+- **Attendees:** Core team 
+- **Facilitator:** Raft PM/Scrum Master
+- **When:** Daily 12pm-12:15pm EST and asynchronously on Thursdays and every other Tuesday when the team has sprint ceremonies
+- **Format:** Each team member gives an brief and intentional update to answer these questions 
+  - Facilitator shares their screen and pulls up the tickets for each team member in the current sprint. 
   - *What did you do since the last standup that advances the sprint goals?* 
   - *What are you doing today that advances the sprint goals?*
-  - *Are you encountering any blockers?* 
+  - *Are you being held up by any inner-team dependencies i.e. Reviews, Tabletops, Pairings?* 
+  - *Are you encountering any blockers?*
+  - Use the time directly after Standup to meet with a targetted group of poeple to resolve any issues that came up duirng the meeting
   - If you can’t make Standup in real-time, please post a short async update to the [OFA TDP General Mattermost Channel](https://mattermost.goraft.tech/goraft/channels/guest-ofa-tdp-general)
   
 
 ### Backlog Refinement 
-- **Goal:** To identify goals for next sprint and create issues to be discussed in Sprint Planning 
+- **Goal:** To triage, refine and prioritize issues in preparation for sprint planning, release scheduling and roadmap adjustment.
 - **Attendees:** OFA PO, OFA Tech Lead, Raft PM, Raft Tech Lead, UX Team
 - **Facilitator:** Raft PM/Scrum Master
-- **When:** Every Tuesday 11:00am-12:00pm EST / Combined with Sprint Planning every other Tuesday 10:30am-12pm EST
-- **Format:** The product owner will collaborate with the leads to review the backlog, prioritize issues for the next sprint, and to make sure items are ready for discussion in the upcoming Sprint Planning session. By the end of the session, a set of issues should be selected, acceptance criteria outlined, questions for the team noted within the issue. This set of issues should be sent to the sprint board before Sprint Planning.   
+- **When:** Every Tuesday on non-sprint planning weeks 11:00am-12:00pm EST / Every Tuesday on sprint planning weeks 3:00pm-4:00pm EST
+- **Format:** The product owner and raft product manager will collaborate with the leads to review the backlog and prioritize issues in support of the next release and make sure items are ready for the upcoming Sprint Planning session. By the end of the session, there will be a common understating of the upcoming priorities and acceptance criteria of refined issues. The refined set of issues should be sent to the sprint board before Sprint Planning. If there are outstanding questions on a particular issue they will be noted within the unrefined issue and remain in the backlog. The agenda and notes can be found in the [Product Notebook](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/_layouts/15/Doc.aspx?sourcedoc={cbce2e75-17b2-4e70-b422-60d034fcd4af}&action=edit&wd=target%28Product.one%7Ccfbcc7fb-4b00-4c43-9e29-70bdedd83b98%2FBacklog%20Refinement%7C4ef1b64b-327d-4628-823a-0d1fc5fce6ea%2F%29) within the TDP OneNote.
  
-### Sprint Planning 
-- **Goal:** To define the work we’re committing to complete in the next two weeks 
+ ### Sprint Review 
+- **Goal:** To review the work that was completed in the last two weeks and identify work that will roll over into the next sprint cycle. 
 - **Attendees:** Core team 
 - **Facilitator:** Raft PM/Scrum Master
-- **When:** Every other Tuesday 10:30am-12pm EST (combined with Backlog Refinement) 
-- **Format:** Product owner should come with priority issues prepared and ready to discuss with the rest of the team. Dev and UX leads should come with refined tickets and should be prepared with updates on the current issues. Work in progress should be assessed and the team should decide if work should continue into the new sprint.
+- **When:** Every other Tuesday 10:00am-12pm EST (combined with Internal Demo, Retro and Sprint Planning) 
+- **Format:** The team will start by reviewing/updating the Sprint Board. We will discuss closed/merged tickets and work in progress tickets to assess thier status for the upcoming sprint. Key metrics such as velocity will also be analyzed. By the end of the meeting the team will have a clear undersatnding of what tickets will continue to be worked in the next sprint what finished products will be demoed to the team.
 
-### Sprint Demo Prep  
-- **Goal:** To plan what will be demoed in Sprint Demo 
-- **Attendees:** Raft Team
+### Internal Demo  
+- **Goal:** To demo completed tickets to the team and decide what should be demoed at the larger Sprint Demo later in the day. 
+- **Attendees:** Core team
 - **Facilitator:** Raft PM/Scrum Master
-- **When:**  Every other Wednesday 12:15pm-12:30pm EST 
-- **Format:** The team will start by reviewing/updating the Sprint Board. By the end of the meeting, the team should decide what is ready to be demoed (and label it as “demo”), who will conduct the demo/s, and if special guests should be invited to attend. All demoed issues must be merged first. Facilitator will take note of what issues will be demoed and who will be presenting for each issue. OFA Product Owner and OFA Tech Lead will sign off on Raft's recommendation of issues to be demoed.  
+- **When:**  Every other Tuesday 10:00am-12pm EST (combined with Sprint Review, Retro and Sprint Planning)
+- **Format:** The team will start by demoing completed work that was identified during sprint review. By the end of the meeting, we will have an apprecition of the work that was completed in the last two weeks. The team should decide what is ready to be demoed (and label it as “demo”), who will conduct the demo/s, and if special guests should be invited to attend the larger demo event later in the day. All demoed issues must be merged first. Facilitator will take note of what issues will be demoed and who will be presenting for each issue. OFA Product Owner and OFA Tech Lead will sign off on Raft's recommendation of issues to be demoed.
 
-### Sprint Demo 
-- **Goal:** To inspect the work completed in the sprint and demo new work to team members or other stakeholders. The Sprint Demo is a more formal version of Sprint Review. The issues that are demoed have received product owner’s approval in the Sprint Demo Prep meeting.  
-- **Attendees**: Core team, TANF Data team (Thomas, Yun, Kathleen), and other stakeholders by invitation.  
-- **Facilitator:** Raft PM/Scrum Master
-- **When:** Every other Tuesday 1:15pm-1:45pm
-- **Format:** This meeting is a formal version of Sprint Review with an emphasis on demonstrating work to stakeholders outside the product team. The product owner or her designee will demo new work and features to the attendees. How attendees give feedback on the demo needs to be determined. 
- 
 ### Sprint Retro 
-- **Goal:** To demonstrate the team's progress and work completed in the sprint to core team members and stakeholders. The sprint retrospective is also an opportunity for the team to evaluate actions that should be stopped, started, or continued in order to facilitate an environment of continuous improvement.
+- **Goal:** The sprint retrospective is an opportunity for the team to evaluate actions that should be stopped, started, or continued in order to facilitate an environment of continuous improvement.
 - **Attendees:** Core team  
 - **Facilitator:** Raft PM/Scrum Master
-- **When:** Every other Tuesday 3pm-4pm EST 
+- **When:** Every other Tuesday 10:00am-12pm EST (combined with Sprint Review, Internal Demo and Sprint Planning) 
 - **Format:** The team will work in a Mural board to discuss
   - *What should we start doing?* 
   - *What should we stop doing?* 
   - *What should we continue doing?*
+  - *Call out and discuss "stumbles/homeruns"*
   - *Shoutouts and appreciation to the team*
   - *Action items from last retro - did we follow through with our commitments?*
-  - Whoever facilitates the retro is responsible for documenting commitments in GH issues or Team Charter as appropriate. Mural board links can be found [here](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/_layouts/15/Doc.aspx?sourcedoc={cbce2e75-17b2-4e70-b422-60d034fcd4af}&action=edit&wd=target%28General.one%7C76fa641e-4d01-436b-a079-42ae19270071%2FGeneral%20Links%7C38eda373-ae66-41ed-9d2d-e7b010d5b312%2F%29&wdorigin=703). 
+  - Whoever facilitates the retro is responsible for documenting commitments in GH issues or Team Charter as appropriate. Mural board links can be found [here](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/_layouts/15/Doc.aspx?sourcedoc={cbce2e75-17b2-4e70-b422-60d034fcd4af}&action=edit&wd=target%28General.one%7C76fa641e-4d01-436b-a079-42ae19270071%2FGeneral%20Links%7C38eda373-ae66-41ed-9d2d-e7b010d5b312%2F%29)
+ 
+### Sprint Planning 
+- **Goal:** To define, assign, and point the work we’re committing to complete in the next sprint cycle 
+- **Attendees:** Core team 
+- **Facilitator:** Raft PM/Scrum Master
+- **When:** Every other Tuesday 10:00am-12pm EST (combined with Sprint Review, Internal Demo, and Retro) 
+- **Format:** Product owner and raft product manager should come prepared with refined priority issues for the team to plan into the sprint. TFor better planning, the team will calculate their capacity and point the requested tickets before they pull the work the sprint. At the end of the meeting the team should have a clear understanding and feel comfortable about completing the new work and rollover work they commited to.
+
+### Sprint Demo 
+- **Goal:** To showcase the work completed in the sprint and demo new features to other stakeholders. The Sprint Demo is a more formal version of the internl demo. The issues that are demoed have received product owner’s approval in the internal demo. 
+- **Attendees**: Core team, TANF Data team (Thomas, Yun, Kathleen), and other stakeholders by invitation.  
+- **Facilitator:** Raft PM/Scrum Master
+- **When:** Every other Tuesday 1:15pm-1:45pm
+- **Format:** This meeting is a formal version of internal demo with an emphasis on demonstrating work to stakeholders outside the product team. This demo should emphasize completed work that has a direct impact to the end user, it should not be a status of the work that has been done. The product owner or her designee will demo new work and features to the attendees. How attendees give feedback on the demo needs to be determined. 
+ 
 
 ### UX Sync
 * **Goal:** A weekly discussion between UX and Product for UX updates on research findings, spec, research strategy, or other pressing priorities. 
@@ -110,16 +121,16 @@ A typical sprint schedule is described in the table below.
 ### Product Sync
 * **Goal:** A weekly sync between Raft and OFA Product Management to discuss project roadmap, progress, and other team issues
 * **Attendees:** Raft PM/Scrum Master, OFA PO, OFA Tech Lead
-* **Facilitator:** OFA PO
+* **Facilitator:** Raft PM/Scrum Master
 * **When:** Every Friday 11am-12pm ET
-* **Format:** Agenda is kept in _MS Teams Project Management channel files_ :lock: and any meeting participant can add agenda items prior to meeting. Notes and action items are kept here as well. Raft and OFA Product Team use this time as a weekly discussion and debrief.
+* **Format:** The agenda can be found in the [Product Notebook](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/_layouts/15/Doc.aspx?sourcedoc={cbce2e75-17b2-4e70-b422-60d034fcd4af}&action=edit&wd=target%28Product.one%7Ccfbcc7fb-4b00-4c43-9e29-70bdedd83b98%2FProduct%20Sync%7Cdcf2afc2-a4f6-475c-a62f-af447a19c6dd%2F%29) within the TDP OneNote. Notes and action items are kept here as well. All attendees are invited to add to the agenda prior to the meeting. Raft and OFA Product Team use this time as a weekly discussion and debrief. 
 
 ### Cross-Functional Product Sync
 * **Goal:** A biweekly sync between Raft, OFA Product Management, tech leads, and UX lead to discuss project roadmap, progress, and other team issues
 * **Attendees:** OFA PO, OFA Tech Lead, Raft PM/Scrum Master, Raft Tech Lead, Raft UX lead
-* **Facilitator:** OFA PO
+* **Facilitator:** Raft PM/Scrum Master
 * **When:** Every other Friday 10am-11am ET
-* **Format:** A link to the meeting [agenda](https://hhsgov.sharepoint.com/:o:/r/sites/TANFDataPortalOFA/SiteAssets/TANF%20Data%20Portal%20(OFA)%20Notebook?d=wcbce2e7517b24e70b42260d034fcd4af&csf=1&web=1&e=1mTgNd) (in TDP OneNote) is included in the meeting invite. All attendees are invited to add to the agenda prior to the meeting. Notes and action items will be captured within the meeting agenda link.
+* **Format:** The agenda can be found in the [Product Notebook](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/_layouts/15/Doc.aspx?sourcedoc={cbce2e75-17b2-4e70-b422-60d034fcd4af}&action=edit&wd=target%28Product.one%7Ccfbcc7fb-4b00-4c43-9e29-70bdedd83b98%2FCross%20Product%20Sync%7Cec320778-42b6-43dc-af81-72494962f7bb%2F%29) within the TDP OneNote. Notes and action items are kept here as well. All attendees are invited to add to the agenda prior to the meeting. Raft and OFA Product Team use this time as a weekly discussion and debrief. Participants discuss the status and updates to the roadmap, releases, high priority items.
 
 ### Tech Lead Sync
 * **Goal:** Weekly sync between tech lead to discuss dev team velocity and dev/devops tickets (issues and/or PRs)
