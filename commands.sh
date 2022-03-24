@@ -54,6 +54,7 @@ alias tdrs-restart-backend='tdrs-compose-backend restart'
 # to restart just django, keeping the other containers intact.
 alias tdrs-restart-django='tdrs-compose-backend restart web'
 
+# starts containers with the optional clamav image
 alias tdrs-start-av='tdrs-start-frontend --remove-orphans && cd-tdrs-backend && tdrs-compose-local up -d --remove-orphans && docker-compose up -d clamav-rest && cd ..'
 
 # Run frontend unit tests through jest
