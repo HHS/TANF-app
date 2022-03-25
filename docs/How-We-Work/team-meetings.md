@@ -101,7 +101,7 @@ A typical sprint schedule is described in the table below.
 - **Attendees**: Core team, TANF Data team (Thomas, Yun, Kathleen), and other stakeholders by invitation.  
 - **Facilitator:** Raft PM/Scrum Master
 - **When:** Every other Tuesday 2:00pm-2:30pm EST, as needed
-- **Format:** This meeting is a formal version of internal demo with an emphasis on demonstrating work to stakeholders outside the product team. This demo should emphasize completed work that has a direct impact to the end user, it should not be a status of the work that has been done. The product owner or her designee will demo new work and features to the attendees. How attendees give feedback on the demo needs to be determined. 
+- **Format:** This meeting is a formal version of internal demo with an emphasis on demonstrating work to stakeholders outside the product team. This demo should emphasize completed work that has a direct impact to the end user, it should not be a status of the work that has been done. The author of the feature will demo new work and features to the attendees. Attendees can give feedback during the meeting or in async follow-up. 
  
 
 ### UX Sync
