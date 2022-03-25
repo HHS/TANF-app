@@ -100,7 +100,7 @@ A typical sprint schedule is described in the table below.
 - **Goal:** To showcase the work completed in the sprint and demo new features to other stakeholders. The Sprint Demo is a more formal version of the internl demo. The issues that are demoed have received product owner’s approval in the internal demo. 
 - **Attendees**: Core team, TANF Data team (Thomas, Yun, Kathleen), and other stakeholders by invitation.  
 - **Facilitator:** Raft PM/Scrum Master
-- **When:** Every other Tuesday 1:15pm-1:45pm
+- **When:** Every other Tuesday 2:00pm-2:30pm EST, as needed
 - **Format:** This meeting is a formal version of internal demo with an emphasis on demonstrating work to stakeholders outside the product team. This demo should emphasize completed work that has a direct impact to the end user, it should not be a status of the work that has been done. The product owner or her designee will demo new work and features to the attendees. How attendees give feedback on the demo needs to be determined. 
  
 
