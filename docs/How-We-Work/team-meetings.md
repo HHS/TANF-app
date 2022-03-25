@@ -94,7 +94,7 @@ A typical sprint schedule is described in the table below.
 - **Attendees:** Core team 
 - **Facilitator:** Raft PM/Scrum Master
 - **When:** Every other Tuesday 10:00am-12pm EST (combined with Sprint Review, Internal Demo, and Retro) 
-- **Format:** Product owner and raft product manager should come prepared with refined priority issues for the team to plan into the sprint. TFor better planning, the team will calculate their capacity and point the requested tickets before they pull the work the sprint. At the end of the meeting the team should have a clear understanding and feel comfortable about completing the new work and rollover work they commited to.
+- **Format:** Product owner and raft product manager should come prepared with refined priority issues for the team to plan into the sprint. For better planning, the team will calculate their capacity and point the requested tickets before they pull the work into the sprint. At the end of the meeting the team should have a clear understanding and feel comfortable about completing the new work and rollover work they committed to.
 
 ### Sprint Demo 
 - **Goal:** To showcase the work completed in the sprint and demo new features to other stakeholders. The Sprint Demo is a more formal version of the internl demo. The issues that are demoed have received product owner’s approval in the internal demo. 
