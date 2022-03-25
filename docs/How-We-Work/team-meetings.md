@@ -66,7 +66,7 @@ A typical sprint schedule is described in the table below.
 - **Attendees:** Core team 
 - **Facilitator:** Raft PM/Scrum Master
 - **When:** Every other Tuesday 10:00am-12pm EST (combined with Internal Demo, Retro and Sprint Planning) 
-- **Format:** The team will start by reviewing/updating the Sprint Board. We will discuss closed/merged tickets and work in progress tickets to assess thier status for the upcoming sprint. Key metrics such as velocity will also be analyzed. By the end of the meeting the team will have a clear undersatnding of what tickets will continue to be worked in the next sprint what finished products will be demoed to the team.
+- **Format:** The team will start by reviewing/updating the Sprint Board. We will discuss closed/merged tickets and work in progress tickets to assess their status for the upcoming sprint. Key metrics such as velocity will also be analyzed. By the end of the meeting, the team will have a clear understanding of which tickets will continue to be worked in the next sprint and which finished products will be demoed to the team.
 
 ### Internal Demo  
 - **Goal:** To demo completed tickets to the team and decide what should be demoed at the larger Sprint Demo later in the day. 
