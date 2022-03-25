@@ -44,7 +44,7 @@ A typical sprint schedule is described in the table below.
 - **Attendees:** Core team 
 - **Facilitator:** Raft PM/Scrum Master
 - **When:** Daily 12pm-12:15pm EST and asynchronously on Thursdays and every other Tuesday when the team has sprint ceremonies
-- **Format:** Each team member gives an brief and intentional update to answer these questions 
+- **Format:** Each team member gives a brief and intentional update to answer these questions 
   - Facilitator shares their screen and pulls up the tickets for each team member in the current sprint. 
   - *What did you do since the last standup that advances the sprint goals?* 
   - *What are you doing today that advances the sprint goals?*
