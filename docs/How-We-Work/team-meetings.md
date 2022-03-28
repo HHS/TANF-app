@@ -133,7 +133,7 @@ A typical sprint schedule is described in the table below.
 * **Format:** The agenda can be found in the [Product Notebook](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/_layouts/15/Doc.aspx?sourcedoc={cbce2e75-17b2-4e70-b422-60d034fcd4af}&action=edit&wd=target%28Product.one%7Ccfbcc7fb-4b00-4c43-9e29-70bdedd83b98%2FCross%20Product%20Sync%7Cec320778-42b6-43dc-af81-72494962f7bb%2F%29) within the TDP OneNote. Notes and action items are kept here as well. All attendees are invited to add to the agenda prior to the meeting. Raft and OFA Product Team use this time as a biweekly discussion and debrief. Participants discuss the status and updates to the roadmap, releases, high priority items.
 
 ### Tech Lead Sync
-* **Goal:** Weekly sync between tech lead to discuss dev team velocity and dev/devops tickets (issues and/or PRs)
+* **Goal:** Weekly sync between tech leads to discuss dev team velocity and dev/devops tickets (issues and/or PRs)
 * **Attendees:** Raft Tech Lead, OFA Tech Lead
 * **Facilitator:** Co-facilitated by Raft Tech Lead and OFA Tech Lead
 * **When:** Every Friday at 2p ET
