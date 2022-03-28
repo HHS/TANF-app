@@ -87,7 +87,7 @@ class Common(Configuration):
     # Whether to use localstack in place of a live AWS S3 environment
     USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "no")))
 
-    # Those who will receive error notifications from django via email
+    # Those who will receive error notifications from django via emailF
     ADMINS = (("Admin1", "ADMIN_EMAIL_FIRST"), ("Admin2", "ADMIN_EMAIL_SECOND"))
 
     DATABASES = {
@@ -294,7 +294,9 @@ class Common(Configuration):
     ###
 
     # Flag for local testing to enable AV Scans
-    CLAMAV_NEEDED = os.getenv('CLAMAV_NEEDED', True)
+    raw_clamav = os.getenv('CLAMAV_NEEDED', "True").strip("\"")
+    logger.debug("raw clamav variable: "+str(raw_clamav))
+    CLAMAV_NEEDED = bool(strtobool(raw_clamav))
 
     # The URL endpoint to send AV scan requests to (clamav-rest)
     AV_SCAN_URL = os.getenv('AV_SCAN_URL')
