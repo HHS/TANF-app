@@ -432,13 +432,16 @@ jobs:
     steps:
       - checkout
       - sudo-check
+      - docker-compose-check
+      - docker-compose-up-backend
       - run:
           name: Install graphviz and run graph_models
           command: |
             cd tdrs-backend;
             sudo apt-get install -y libgraphviz-dev && 
-            pip install pygraphviz &&
-            ./manage.py graph_models -a -g -o tdp_erd.png
+            docker-compose run --rm web -c \
+            "pip install pygraphviz &&
+            ./manage.py graph_models -a -g -o tdp_erd.png"
       - store_artifacts:
           path: tdrs-backend/tdp_erd.png
 
