@@ -8,15 +8,19 @@ assignees: ''
 ---
 
 **Description:**
+
 —Describe the scope of ticket and problem to be solved. Reference any related tickets that might be helpful to cite for design, discussion, or review. These should typically range between 3 and 13 points.—
 
 **Related User Stories:**
+
 —As a [user type] I want the page to exist so that I can see it.—
 
 **Recommended pa11y actions:**
+
 —‘click element #error-report’,—
 
 **AC:**
+
 - [ ] Documentation work for the following has occurred:
    - [ ] Relevant User stories.
    - [ ] Recommended pa11y checks.
@@ -34,7 +38,9 @@ assignees: ''
 > </details>
 
 **Tasks:**
+
 - [ ] —Draft design in Figma—
 
 **Supporting Documentation:**
+
 —Link to Figma and Dev-Ready Design folder PDF—
