@@ -431,10 +431,7 @@ jobs:
     working_directory: ~/tdp_apps
     steps:
       - checkout
-      - sudo-check
       - docker-compose-check
-      #- docker-compose-up-backend #sudo apt-get install -y libgraphviz-dev && 
-      # also pip install graphviz --- noticed its in our pipfile
       - run:
           name: Install graphviz and run graph_models
           command: |
