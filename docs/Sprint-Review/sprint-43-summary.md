@@ -8,7 +8,7 @@ Velocity: 16
 * Continue Django accessibility
 * Finish permissions epic #888
 * Closing out in progress tickets
-* UX - pick up 1+ onboarding ticket
+* UX - Onboarding
  
 
 ## Tickets
