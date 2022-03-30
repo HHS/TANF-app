@@ -103,7 +103,7 @@ commands:
           name: Install graphviz and run graph_models
           command: |
             cd tdrs-backend;
-            apt-get install -y libgraphviz-dev && 
+            sudo apt-get install -y libgraphviz-dev && 
             pip install pygraphviz &&
             ./manage.py graph_models -a -g -o tdp_erd.png
       - store_artifacts:
@@ -431,6 +431,7 @@ jobs:
     working_directory: ~/tdp_apps
     steps:
       - checkout
+      - sudo-check
       - graph_models
 
   frontend-owasp-scan:
