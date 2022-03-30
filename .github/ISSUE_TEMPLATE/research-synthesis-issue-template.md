@@ -9,7 +9,7 @@ assignees: ''
 
 **Description:**
 
-*---Link to research planning, facilitation tickets, other relevant supporting information.---*
+--Link to research planning, facilitation tickets, other relevant supporting information.--
 
 **AC:**
 
@@ -18,8 +18,8 @@ assignees: ''
 
 **Tasks:**
 
-- [ ] *---Aggregate notes from research sessions---*
+- [ ] --Aggregate notes from research sessions--
 
 **Supporting Documentation:**
 
-- *---Link to hack.md---*
+- --Link to hack.md--
