@@ -1,7 +1,7 @@
 ---
 name: Research facilitation issue template
 about: Template for research facilitation issues (1 per research session)
-title: "[Research Planning] "
+title: "[Research Facilitation] "
 labels: "Research & Design"
 assignees: ''
 
