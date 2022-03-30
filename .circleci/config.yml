@@ -92,15 +92,19 @@ commands:
       - store_artifacts:
           path: tdrs-<<parameters.target>>/reports/owasp_report.html
 
+
+  ###
+  # libgraphviz-dev might need this
+  #
   graph_models:
     description: Runs graphviz and stores resulting diagram
     steps:
       - run:
-        name: Execute graphviz
-        command: |
-          cd tdrs-backend;
-          pip install pygraphviz
-          ./manage.py graph_models -a -g -o tdp_erd.png
+          name: Install graphviz and run graph_models
+          command: |
+            cd tdrs-backend;
+            pip install pygraphviz
+            ./manage.py graph_models -a -g -o tdp_erd.png
       - store_artifacts:
           path: tdrs-backend/tdp_erd.png
 
@@ -423,7 +427,7 @@ jobs:
 
   make_erd:
     executor: machine-executor
-    working_directory: ~tdp_apps
+    working_directory: ~/tdp_apps
     steps:
       - checkout
       - graph_models
