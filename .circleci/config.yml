@@ -103,7 +103,8 @@ commands:
           name: Install graphviz and run graph_models
           command: |
             cd tdrs-backend;
-            pip install pygraphviz
+            apt-get install -y libgraphviz-dev && 
+            pip install pygraphviz &&
             ./manage.py graph_models -a -g -o tdp_erd.png
       - store_artifacts:
           path: tdrs-backend/tdp_erd.png
