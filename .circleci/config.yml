@@ -433,15 +433,15 @@ jobs:
       - checkout
       - sudo-check
       - docker-compose-check
-      #- docker-compose-up-backend
+      #- docker-compose-up-backend #sudo apt-get install -y libgraphviz-dev && 
+      # also pip install graphviz --- noticed its in our pipfile
       - run:
           name: Install graphviz and run graph_models
           command: |
             cd tdrs-backend;
-            sudo apt-get install -y libgraphviz-dev && 
+            
             docker-compose run --rm web bash -c \
-            "pip install pygraphviz &&
-            ./manage.py graph_models -a -g -o tdp_erd.png"
+            "./manage.py graph_models -a -g -o tdp_erd.png"
       - store_artifacts:
           path: tdrs-backend/tdp_erd.png
 
