@@ -9,7 +9,7 @@ assignees: ''
 
 **Description:**
 
---Link to research planning, facilitation tickets, other relevant supporting information.--
+--Link to research planning, facilitation tickets, other relevant supporting information. Typically pointed at 13 points.--
 
 **AC:**
 
