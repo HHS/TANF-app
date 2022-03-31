@@ -27,12 +27,15 @@ function Header() {
   const isMemberOfOne = (...groupNames) =>
     user?.roles?.some((role) => groupNames.includes(role.name))
 
+  const hasPermission = (permissionName) =>
+    user?.roles?.[0]?.permissions?.some(
+      (perm) => perm.codename === permissionName
+    )
+
   const canViewAdmin =
     userAccessRequestApproved &&
     isMemberOfOne('Developer', 'OFA System Admin', 'ACF OCIO')
-  const canViewDataFiles =
-    userAccessRequestApproved &&
-    isMemberOfOne('Developer', 'Data Analyst', 'Regional Staff', 'OFA Admin')
+  const canViewDataFiles = hasPermission('view_datafile')
 
   const menuRef = useRef()
 
