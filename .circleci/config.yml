@@ -92,23 +92,6 @@ commands:
       - store_artifacts:
           path: tdrs-<<parameters.target>>/reports/owasp_report.html
 
-
-  ###
-  # libgraphviz-dev might need this
-  #
-  graph_models:
-    description: Runs graphviz and stores resulting diagram
-    steps:
-      - run:
-          name: Install graphviz and run graph_models
-          command: |
-            cd tdrs-backend;
-            sudo apt-get install -y libgraphviz-dev && 
-            pip install pygraphviz &&
-            ./manage.py graph_models -a -g -o tdp_erd.png
-      - store_artifacts:
-          path: tdrs-backend/tdp_erd.png
-
   sudo-check:
     steps:
       - run:
@@ -433,10 +416,9 @@ jobs:
       - checkout
       - docker-compose-check
       - run:
-          name: Install graphviz and run graph_models
+          name: Run graph_models
           command: |
             cd tdrs-backend;
-            
             docker-compose run --rm web bash -c \
             "./manage.py graph_models -a -g -o tdp_erd.png"
       - store_artifacts:
@@ -627,7 +609,7 @@ workflows:
          filters:
              branches:
                  only:
-                     spike/1614-erd-automation
+                     raft-tdp-main
 
   owasp-scan:
     when: << pipeline.parameters.run_owasp_scan >>
