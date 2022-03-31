@@ -9,35 +9,6 @@ import STTComboBox from '../STTComboBox'
 import { requestAccess } from '../../actions/requestAccess'
 
 /**
- *
- * @param {string} fieldName - The name of the element that is being validated
- * @param {string || object} fieldValue - The value of the field. A string from
- * First Name and Last Name.
- * The STT fieldValue is either a string or an object if there is a selected
- * STT.
- */
-export const validation = (fieldName, fieldValue) => {
-  let field
-  switch (fieldName) {
-    case 'firstName':
-      field = 'First Name'
-      break
-    case 'lastName':
-      field = 'Last Name'
-      break
-    case 'stt':
-      field = 'A state, tribe, or territory'
-      break
-    default:
-      field = ''
-  }
-  if (typeof fieldValue === 'string' && fieldValue.trim() === '') {
-    return `${field} is required`
-  }
-  return null
-}
-
-/**
  * Home renders the Request Access form for creating a profile, and displays
  * a pending-approval state, before showing the user their active roles and
  * permissions once they are approved by an Admin in the backend.
@@ -60,6 +31,25 @@ function Home() {
   const sttList = useSelector((state) => state?.stts?.sttList)
 
   const userAccessRequestApproved = Boolean(user?.['access_request'])
+
+  const shouldShowSttComboBox = !user?.email?.includes('@acf.hhs.gov')
+
+  const validation = (fieldName, fieldValue) => {
+    const field = {
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      stt: shouldShowSttComboBox && 'A state, tribe, or territory',
+    }[fieldName]
+
+    if (
+      Boolean(field) &&
+      typeof fieldValue === 'string' &&
+      fieldValue.trim() === ''
+    ) {
+      return `${field} is required`
+    }
+    return null
+  }
 
   const setStt = (sttName) => {
     setProfileInfo((currentState) => ({
@@ -159,18 +149,20 @@ function Home() {
             handleChange={handleChange}
             handleBlur={handleBlur}
           />
-          <div
-            className={`usa-form-group ${
-              errors.stt ? 'usa-form-group--error' : ''
-            }`}
-          >
-            <STTComboBox
-              selectStt={setStt}
-              error={Boolean(errors.stt)}
-              selectedStt={profileInfo?.stt}
-              handleBlur={handleBlur}
-            />
-          </div>
+          {shouldShowSttComboBox && (
+            <div
+              className={`usa-form-group ${
+                errors.stt ? 'usa-form-group--error' : ''
+              }`}
+            >
+              <STTComboBox
+                selectStt={setStt}
+                error={Boolean(errors.stt)}
+                selectedStt={profileInfo?.stt}
+                handleBlur={handleBlur}
+              />
+            </div>
+          )}
           <Button type="submit" className="width-full request-access-button">
             Request Access
           </Button>

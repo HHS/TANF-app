@@ -8,12 +8,12 @@ export const SET_REQUEST_ACCESS_ERROR = 'SET_REQUEST_ACCESS_ERROR'
 export const CLEAR_REQUEST_ACCESS = 'CLEAR_REQUEST_ACCESS'
 
 export const requestAccess =
-  ({ firstName, lastName, stt: { id } }) =>
+  ({ firstName, lastName, stt }) =>
   async (dispatch) => {
     dispatch({ type: PATCH_REQUEST_ACCESS })
     try {
       const URL = `${process.env.REACT_APP_BACKEND_URL}/users/request_access/`
-      const user = { first_name: firstName, last_name: lastName, stt: id }
+      const user = { first_name: firstName, last_name: lastName, stt: stt?.id }
       const { data } = await (
         await axiosInstance
       ).patch(URL, user, {
