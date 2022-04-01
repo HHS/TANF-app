@@ -1,6 +1,4 @@
-# Stakeholder Types
-
-<img src="https://goraft.tech/assets/logo.png" width="15%" height="auto" alt="Raft LLC Logo">
+# Stakeholders and Personas
 
 Last updated for [Issue #804](https://github.com/raft-tech/TANF-app/issues/804)
 
@@ -12,22 +10,19 @@ Last updated for [Issue #804](https://github.com/raft-tech/TANF-app/issues/804)
 - [Grantee-level Stakeholders](#grantee-level-stakeholders)
 - [ACF Stakeholders](#acf-stakeholders)
 - [Personas](#personas)
-- [What's Next](#whats-next)
 
 ---
 
 ## Background
 
-As of Summer 2020, a number of groups and prospective stakeholder types had been identified as groups impacted by this project. Some of them interact with TDP directly, and some are impacted indirectly. The original TDP personas that were identified can be found in the personas mural linked below.
+A number of groups and prospective stakeholder types had been identified as groups impacted by this project. Some of them interact with TDP directly, and some are impacted indirectly. The original TDP personas that were identified can be found in the personas mural linked below.
 
 We expect that there will be a couple hundred users who interact with the TDP system, made up of both STT and OFA staff.
-
-For the purposes of the Release 1, the only users who will have access to the application will be OFA Admin and STT (test) users.  Raft team or OFA will be acting as STT users for the OFA MVP.
 
 **Supporting Documentation**
 
 - [Personas mural](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592254280716/2ae8293a3233a95941d548cda4f373faab96b40b) :lock:
-- [Vision and Stakeholders Doc](https://github.com/HHS/TANF-app/blob/main/docs/Product-Strategy/Vision-and-Stakeholders.md)
+- [Vision and Stakeholders Doc](https://github.com/raft-tech/TANF-app/blob/restore-stakeholder-and-personas/docs/Product-Strategy/Vision-and-Stakeholders.md)
 
 ---
 
@@ -105,9 +100,10 @@ Regional program specialists are grantee's primary OFA point of contact. They tr
 
 The Office of Planning, Research, and Evaluation (OPRE) studies ACF programs and the populations they serve through rigorous research and evaluation projects. They use TANF data in their analyses. More research is needed in this area, especially on where duties and responsibilities overlap with OFA analysts.
 
-### OCIO staff
+### ACF OCIO Staff
 
-Office of the Chief Information Officer (OCIO) staff oversees technology projects within ACF. They provide technical and security support to ACF's tech products.
+Office of the Chief Information Officer (OCIO) staff oversees technology projects within ACF. They provide technical and security support to ACF's tech products. In 
+respect to TDP, OCIO staff will have access to subsets of the Django Admin experience so as to be able to view logs to ensure and audit security.
 
 ---
 
@@ -145,14 +141,3 @@ Research up to this point has suggested a need for two working personas; an OFA 
 
 - [Grantee Attributes](<https://hhsgov.sharepoint.com/:x:/r/sites/TANFDataPortalOFA-UserResearch/_layouts/15/WopiFrame2.aspx?sourcedoc=%7Be83f84f1-71a0-459f-80a4-0d39bc250be9%7D&action=view&cid=f2e656cb-9245-4f02-af6d-2d7e1db6573d>) :lock:
 - [Working Journey Maps & Personas Mural](https://app.mural.co/t/officeoffamilyassistance2744/m/officeoffamilyassistance2744/1608238114372/191c53b8ef538838bc8c179daa238dd5c5dcc9e8) :lock:
-
----
-
-## What's Next
-
-Personas and their associated journey maps will continue to be kept up to date with our most recent research findings. Future research insights or updates to the roadmap may also suggest a need for additional personas. For instance, if we discover that grantee program directors can and want to play a role in administering their own teams within the data portal it may prove useful to divide the grantee persona into two; covering grantee staff with and without administrative duties respectively. 
-
-In the shorter term, we plan to:
-
-- [Issue #841](https://github.com/raft-tech/TANF-app/issues/841) Likely a priority for Round 6 research. Evaluates functionality for regional specialists and identifies any functionality gaps needed to allow them to support the first grantee-facing data portal release. Additional detail regarding the approach to this research will be added as part of the Round 6 planning sprint.
-- [Issue #840](https://github.com/raft-tech/TANF-app/issues/840) Validate whether grantee program directors can/will take on admin responsibilities in the data portal in respect to managing their own teams.
