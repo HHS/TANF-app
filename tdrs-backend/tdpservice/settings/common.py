@@ -2,6 +2,7 @@
 
 import logging
 import os
+import sys
 from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
@@ -209,6 +210,7 @@ class Common(Configuration):
                 "level": LOGGING_LEVEL,
                 "class": "logging.StreamHandler",
                 "formatter": "simple",
+                'strm': sys.stdout
             },
         },
         "loggers": {
