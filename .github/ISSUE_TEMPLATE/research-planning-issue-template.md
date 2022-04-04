@@ -13,7 +13,7 @@ assignees: ''
 
 **AC:**
 - [ ] A research plan has been created which includes:
-    - [ ] Relevant research questions.
+    - [ ] Research goals, relevant research questions.
     - [ ] Recruitment criteria & target participants.
     - [ ] Recruitment/participation email templates.
     - [ ] Timeline (for recruitment and for research sessions).
