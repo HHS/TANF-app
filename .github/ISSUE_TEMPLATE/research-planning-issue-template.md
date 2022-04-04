@@ -19,6 +19,8 @@ assignees: ''
     - [ ] Timeline (for recruitment and for research sessions).
     - [ ] Testable Designs/Content (if applicable).
 
+  - [ ] Ethics, privacy concerns 
+
 
 **Tasks:**
 - [ ] *---Create a hack.md for research plan drafting---*
