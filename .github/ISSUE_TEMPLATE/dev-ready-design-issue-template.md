@@ -33,7 +33,7 @@ assignees: ''
 > - It uses [USWDS components and follows it’s UX guidance](https://designsystem.digital.gov/components/), or a deviation is clearly documented
 > 
 > - Language is intentional and [plain](https://plainlanguage.gov/guidelines/); placeholders are clearly documented
-> - It follows [accessibility guidelines] and accessibility implementation notes are documented(https://accessibility.digital.gov/) (e.g. clear information hierarchy, color is not the only way meaning is communicated, etc.)
+> - It follows [accessibility guidelines](https://accessibility.digital.gov/) and accessibility implementation notes are documented (e.g. clear information hierarchy, color is not the only way meaning is communicated, etc.)
 > - If feedback identifies bigger questions or unknowns, create additional issues to investigate
 > </details>
 
