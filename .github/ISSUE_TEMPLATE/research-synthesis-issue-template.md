@@ -20,6 +20,8 @@ assignees: ''
 
 - [ ] --Aggregate notes from research sessions--
 
+- [ ] Document synthesis - Scope (research goal(s)), High-level findings, Actionable learnings, Issues that have to be added to Zenhub, Takeways for future research
+
 **Supporting Documentation:**
 
 - --Link to hack.md--
