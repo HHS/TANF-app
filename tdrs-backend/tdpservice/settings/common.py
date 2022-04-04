@@ -210,7 +210,7 @@ class Common(Configuration):
                 "level": LOGGING_LEVEL,
                 "class": "logging.StreamHandler",
                 "formatter": "simple",
-                'strm': sys.stdout
+                'stream': sys.stdout
             },
         },
         "loggers": {
