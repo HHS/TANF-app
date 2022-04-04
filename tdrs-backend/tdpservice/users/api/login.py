@@ -383,6 +383,8 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             # See https://github.com/raft-tech/TANF-app/issues/1136#issuecomment-996822564
             auth_options["username"] = user_info["email"]
             if "hhs_id" in user_info:
+                logger.debug("hhs_id: {}".format(user_info.get("hss_id")))
                 auth_options["hhs_id"] = user_info.get("hss_id")
-
+            else:
+                logger.debug("hhs_id isn't in user_info")
             return auth_options
