@@ -1,4 +1,6 @@
-# Scenario: Sys Admin Account(s) Compromised
+# System Admin Account Restoration Strategy
+
+## Scenario: Sys Admin Account(s) Compromised
 
 **TDP has 2 sys admins, and one has turned evil :smiling_imp: and decided to compromise the other's account such that they can no longer access TDP DAC. Below is a screenshot of the compromised account:**
 
@@ -9,8 +11,8 @@ _When the sys admin tries to sign back in, she is taken to the request access pa
 
 ![](https://i.imgur.com/urYLj5a.png)
 
-## Example mitigation steps:
-- Follow communication protocol (who? what? when? how?)
+## Example mitigation steps
+- Follow [communication protocol](#communication-protocol-if-sys-admin-account-compromised)
 - Sys admin with compromised account should work with System owner to confirm appropriate admin roles are assigned to their cloud.gov account. This account will be necessary to change TDP DAC access remotely. 
 - Sys admin with compromised account should use CF CLI to remotely restore permissions: 
 
@@ -116,7 +118,7 @@ _TDP backend DAC view:_
     - What lessons were learned?
     - Next steps?
 
-## Communication protocol if `sys admin` account compromised
+### Communication protocol if `sys admin` account compromised
 - Contact system owner via [Mattermost OFA TDP Product Channel](https://mattermost.goraft.tech/goraft/channels/ofa-tdp-product). If Mattermost isn't available, please send an email and cc: ACF Tech Lead, Product Manager, vendor Tech Lead. 
 
 - Include details of the compromise, which should include:
@@ -127,9 +129,9 @@ _TDP backend DAC view:_
     
 - If system admin's compromised account is not restored by following the abovementioned steps, this could because the evil user also changed the admin's cloud.gov account permissions and/or compromised other components of TDP. If this is the case, the `system owner` should reach out to cloud.gov (https://cloud.gov/docs/help/) support to have any necessary user permissions and/or services (e.g. database) restored. 
 
-## Notes
+### Notes
 
-- Tools needed for this drill:
+- Tools needed for this incident response strategy:
     - cloud.gov account with `user` and `manager` roles assigned at <org> and <space> levels.
     - [git bash](https://git-scm.com/downloads) - _this usually comes with the download package for Git for Windows. Can alternatively use Command Prompt._
     - [Curl for Windows 64 bit](https://curl.se/windows/) - _this usually comes with the download package for Git for Windows_
@@ -138,7 +140,7 @@ _TDP backend DAC view:_
 - Mitigation steps outlined above target `hhs-acf-prototyping` org, `tdp-staging` space and `tdp-backend-staging` app. <org>, <space>, and <app> targets will need to be modified in a production context. 
 - Review the latest TDP Incidence Response Plan [here](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FTANFDataPortalOFA%2FShared%20Documents%2Fcompliance&viewid=6ecbc5f1%2Dfa9c%2D4b0a%2Da454%2D35e222e8044e), and [see incidence response tips from cloud.gov](https://cloud.gov/docs/ops/security-ir/). 
 
-## Drill discussion topics
+### Q&A
 - Should Sys owner and sys admins all have the same <org>  roles in [cloudgov](https://docs.cloudfoundry.org/concepts/roles.html#roles)? Is this an acceptable risk? 
   - Yes. System owner should reach out to cloud.gov support if a privileged user's cloud.gov account roles are compromised.  
 - Compromised account will still appear as a user in TDP DAC. Should we delete this user account? 
