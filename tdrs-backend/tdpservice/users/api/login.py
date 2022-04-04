@@ -61,6 +61,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     def validate_and_decode_payload(self, request, state, token_data):
         """Perform validation and error handling on the payload once decoded with abstract method."""
+        logger.info("tokenoidc::validate")
         id_token = token_data.get("id_token")
 
         decoded_payload = self.decode_payload(token_data)
@@ -88,6 +89,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     @staticmethod
     def decode_jwt(payload, issuer, audience, cert_sr, options=None):
         """Decode jwt payloads."""
+        logger.info("tokenoidc::decode_jwt")
         if not options:
             options = {'verify_nbf': False}
 
@@ -116,6 +118,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
+        logger.info("tokenoidc::handle_user")
         # get user from database if they exist. if not, create a new one
         if "token" not in request.session:
             request.session["token"] = id_token
@@ -201,6 +204,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""
+        logger.info("tokenoidc::get()")
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
 
@@ -330,6 +334,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
     def decode_payload(self, token_data, options=None):
         """Decode the payload with keys for AMS."""
+        logger.info("tokenams::decode")
         id_token = token_data.get("id_token")
         access_token = token_data.get("access_token")
 
@@ -350,6 +355,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
     def get_token_endpoint_response(self, code):
         """Build out the query string params and full URL path for token endpoint."""
+        logger.info("tokenams::decode")
         # First fetch the token endpoint from AMS.
         ams_configuration = LoginRedirectAMS.get_ams_configuration()
         options = {
@@ -369,6 +375,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
     def get_auth_options(self, access_token, sub):
         """Add specific auth properties for the CustomAuthentication handler."""
+        logger.info("tokenams::auth_opt")
         logger.info(access_token)
         if access_token:
             auth_options = {}

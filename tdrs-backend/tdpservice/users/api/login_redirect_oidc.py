@@ -75,7 +75,7 @@ class LoginRedirectAMS(RedirectView):
     permanent = False
     query_string = True
     pattern_name = "oidc-ams"
-
+    logger.info("loginredirectams")
     """
     Redirects user to AMS openid with the needed query parameter strings
 
@@ -93,12 +93,14 @@ class LoginRedirectAMS(RedirectView):
 
         Includes currently published URLs for authorization, token, etc.
         """
+        logger.info("loginams::getcfg")
         r = requests.get(settings.AMS_CONFIGURATION_ENDPOINT)
         data = r.json()
         return data
 
     def get(self, request, *args, **kwargs):
         """Handle login workflow based on request origin."""
+        logger.info("loginams::get")
         # Create state and nonce to track requests
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)

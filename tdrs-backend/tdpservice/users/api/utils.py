@@ -89,6 +89,7 @@ Generate a token to be passed to the login.gov/token endpoint
 
 def generate_token_endpoint_parameters(code, options={}):
     """Generate token parameters."""
+    logger.info("generate_token_endpoint_params")
     params = {
         "code": code,
         "grant_type": "authorization_code",
