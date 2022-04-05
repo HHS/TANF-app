@@ -2,7 +2,7 @@ version: 1
 applications:
 - name: clamav-rest
   instances: 1
-  memory: 2G
+  memory: 1G
   disk_quota: 2G
   docker:
     image: rafttech/clamav-rest:0.103.2

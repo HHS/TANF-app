@@ -12,7 +12,7 @@ class CustomAuthentication(BaseAuthentication):
     def authenticate(username=None, login_gov_uuid=None, hhs_id=None):
         """Authenticate user with the request and username."""
         User = get_user_model()
-
+        logger.debug("CustomAuthentication::authenticate:hhs_id {}".format(hhs_id))
         try:
             if login_gov_uuid:
                 return User.objects.get(login_gov_uuid=login_gov_uuid)

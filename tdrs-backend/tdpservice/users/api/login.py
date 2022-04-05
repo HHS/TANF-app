@@ -1,5 +1,6 @@
 """Login.gov/authorize is redirected to this endpoint to start a django user session."""
 import logging
+import sys
 from abc import abstractmethod
 
 from django.conf import settings
@@ -151,6 +152,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 return initial_user
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
+        logger.info("hhsid in authopt: {}".format(auth_options["hhs_id"]))
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
@@ -205,6 +207,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""
         logger.info("tokenoidc::get()")
+        print("whatever, test", file=sys.stdout)
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
 
