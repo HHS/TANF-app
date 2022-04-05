@@ -3,7 +3,8 @@
 from django.contrib.auth import get_user_model
 
 from rest_framework.authentication import BaseAuthentication
-
+import logging
+logger = logging.getLogger(__name__)
 
 class CustomAuthentication(BaseAuthentication):
     """Define authentication and get user functions for custom authentication."""
