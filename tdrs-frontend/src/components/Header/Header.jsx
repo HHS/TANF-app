@@ -24,6 +24,19 @@ function Header() {
   const userAccessRequestApproved =
     Boolean(user?.['access_request']) && user.roles.length > 0
 
+  const isMemberOfOne = (...groupNames) =>
+    user?.roles?.some((role) => groupNames.includes(role.name))
+
+  const hasPermission = (permissionName) =>
+    user?.roles?.[0]?.permissions?.some(
+      (perm) => perm.codename === permissionName
+    )
+
+  const canViewAdmin =
+    userAccessRequestApproved &&
+    isMemberOfOne('Developer', 'OFA System Admin', 'ACF OCIO')
+  const canViewDataFiles = hasPermission('view_datafile')
+
   const menuRef = useRef()
 
   const keyListenersMap = useMemo(() => {
@@ -74,15 +87,6 @@ function Header() {
 
     return () => document.removeEventListener('keydown', keyListener)
   }, [keyListenersMap])
-
-  const isACFOCIOUser = user?.roles?.some((role) => role.name === 'ACF OCIO')
-  const isOFASystemAdmin = user?.roles?.some(
-    (role) => role.name === 'OFA System Admin'
-  )
-
-  const canViewAdmin =
-    userAccessRequestApproved && (isOFASystemAdmin || isACFOCIOUser)
-  const canViewDataFiles = userAccessRequestApproved && isOFASystemAdmin
 
   return (
     <>
