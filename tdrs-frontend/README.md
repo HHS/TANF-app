@@ -125,7 +125,7 @@ In addition to [Jest's matchers](https://jestjs.io/docs/en/expect), this project
 
 ### Cloud.gov Deployments:
 
-Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
+Although CircleCi is [set up to auto deploy](../.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
 
 1.) Log into your cloud.gov account and set your space and organization:
 

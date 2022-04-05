@@ -89,6 +89,6 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
 
     ### Open final PR for staging
 
-    5. Open a pull request to 'raft-tdp-main' and assign to Technical Lead
+    5. Open a pull request to 'develop' and assign to Technical Lead
     6. Merging pull request shall trigger rolling deploy of the updated buildpack(s) to staging & (eventually) prod without downtime
 </details>

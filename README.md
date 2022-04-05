@@ -6,7 +6,7 @@ Our vision is to build a new, secure, web-based data reporting system to improve
 
 ## Current Build
 
-|| Raft-Tech(raft-tdp-main) |  HHS(main) |
+|| Raft-Tech(develop) |  HHS(main) |
 |---|---|---|
 |**Build**| [![CircleCI-Dev](https://circleci.com/gh/raft-tech/TANF-app/tree/raft-tdp-main.svg?style=shield)](https://circleci.com/gh/raft-tech/TANF-app/tree/raft-tdp-main) | [![CircleCI-HHS](https://circleci.com/gh/HHS/TANF-app/tree/main.svg?style=shield)](https://circleci.com/gh/HHS/TANF-app/tree/main)|
 |**Security**| [Dependabot-Dev](https://github.com/raft-tech/TANF-app/security/dependabot) | [Advisories-HHS](https://github.com/HHS/TANF-app/security/advisories) |
@@ -44,24 +44,24 @@ TDP Uses Infrastructure as Code (IaC) and DevSecOps automation
 TDP application requires strong multi-factor authentication (MFA) for all users, and Personal Identity Verification (PIV) authentication must be used as the 2nd factor for all internal ACF staff. 
 [ACF AMS]() authentication service is being used for ACF users, and [NextGen XMS]() authentication service is being used for external users. 
 
-See [Architecture Decision Record 005 - Application Authentication](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/Architecture-Decision-Record/005-application-authentication.md) - for more details.
+See [Architecture Decision Record 005 - Application Authentication](./docs/Technical-Documentation/Architecture-Decision-Record/005-application-authentication.md) - for more details.
 
 ### Cloud Environment
 
 [Cloud.gov](https://cloud.gov/) is being used as the cloud environment. This platform-as-a-service (PaaS) removes almost all of the infrastructure monitoring and maintenance from the system, is already procured for OFA, and has a FedRAMP Joint Authorization Board Provisional Authority to Operate (JAB P-ATO) on file. 
 
-See [Architecture Decision Record 003 - Application Hosting](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/Architecture-Decision-Record/003-Application-hosting.md) - for more details.
+See [Architecture Decision Record 003 - Application Hosting](./docs/Technical-Documentation/Architecture-Decision-Record/003-Application-hosting.md) - for more details.
 ### CI/CD Pipelines with CircleCI
 
 #### Continuous Integration (CI)
 
 On each git push and merge, a comprehensive list of automated checks are run: Unit tests ([Jest](https://jestjs.io/), Linting tests ([ESLint](https://eslint.org/), Accessibility tests ([Pa11y](https://pa11y.org/)), and Security Scanning ([OWASP ZAP](https://owasp.org/www-project-zap/)). The configurations for CI are kept in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml). 
 
-See [Architecture Decision Record 006 - Continuous integration](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/Architecture-Decision-Record/006-continuous-integration.md) and [TDP's CircleCi Workflows, Environment Variables, and Builds](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/circle-ci.md)- for more details.
+See [Architecture Decision Record 006 - Continuous integration](./docs/Technical-Documentation/Architecture-Decision-Record/006-continuous-integration.md) and [TDP's CircleCi Workflows, Environment Variables, and Builds](./docs/Technical-Documentation/circle-ci.md)- for more details.
 
 #### Continuous Deployment
 
-The application is continuously deployed to the dev, staging, or prod environments based on the git branch the code is merged in. The configuration for different branches is maintained in [`.circleci/config.yml`](https://github.com/HHS/TANF-app/blob/main/.circleci/config.yml#L107).
+The application is continuously deployed to the dev, staging, or prod environments based on the git branch the code is merged in. The configuration for different branches is maintained in [`.circleci/config.yml`](./.circleci/config.yml#L107).
 
 See [Architecture Decision Record 008 - Deployment Flow](docs/Technical-Documentation/Architecture-Decision-Record/008-deployment-flow.md) - for more details.
 

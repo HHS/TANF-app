@@ -19,7 +19,7 @@ Additionally, as of January 2021, the project has only a single deployment envir
 Deploy Environment | Cloud.gov Space | Cloud.gov Dev Access | Role                                             | Deploys when ...                                  |
 -------------------|-----------------|----------------------|--------------------------------------------------|---------------------------------------------------|
 Dev                | Tanf-Dev        | Vendor & Gov      | Deploy code submitted for gov review             | Relevant github label assigned as shown below     |
-Staging            | Tanf-Staging    | Gov               | Deploy code once gov-approved                    | Code merged to `raft-tech/TANF-app:raft-tdp-main` |
+Staging            | Tanf-Staging    | Gov               | Deploy code once gov-approved                    | Code merged to `raft-tech/TANF-app:develop` |
 Production         | Tanf-Prod       | Gov                  | Deploy code tested in staging & ready for prod   | Code merged to `HHS/TANF-app:master`                |  
 
 ### Gitflow and Deployments
