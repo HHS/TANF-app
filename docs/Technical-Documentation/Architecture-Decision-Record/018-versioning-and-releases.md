@@ -1,20 +1,22 @@
-# 17. Elasticsearch Architecture
+# 18. Versioning and Release strategy
 
-Date: 2021-01-12 (yyyy-mm-dd)
+Date: 2022-04-05 (yyyy-mm-dd)
 
 ## Status
 
 Accepted
 
 ## Context
-
-To modernize the eventual reporting stack for TDP, we have a need for a usable data backend. To establish parity with the legacy TDRS system, we originally planned to store parsed TANF and SSP data in our PostGreSQL database; however, the data required cleaning that is burdensome to perform prior to storage so a faster, scalable solution is desired. 
+As discussed briefly in [deployment-flow](./008-deployment-flow.md), we will need a strategy for our versioning and releases.
 
 ## Decision
 
-We will use an Elastisearch and Kibana stack for their modern feature set and scalability with large data sets. The Elastisearch/Kibana cluster will be an application hosted in Cloud.gov with the rest of our TDP application so we can leverage all the work surrounding authentication, security, and data compliance.
+We will use the industry standard "gitflow" to handle releases, versioning, and process. You can read more about it [here](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) and [here](https://datasift.github.io/gitflow/IntroducingGitFlow.html). For versinoning we will be adopting [semver]
+() as you can redhttps://semver.org/
 
 ## Consequences
+
+Branch nomenclature will become more standardized and will adopt the semver standard for versioning
 
 ### Benefits
 
@@ -39,7 +41,4 @@ We will use an Elastisearch and Kibana stack for their modern feature set and sc
 
 ## Notes
 
-These changes are slated for later in our releases: currently release 3 but might not be fully implemented until v4.
-
-Please also see these notes: https://gist.github.com/jtwillis92/a6840a412676fc2d3f58c0dccbf10da1
 
