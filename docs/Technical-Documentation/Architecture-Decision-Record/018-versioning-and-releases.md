@@ -20,6 +20,13 @@ Source: https://nvie.com/posts/a-successful-git-branching-model
 
 For versioning, we will be adopting [semver](https://semver.org/) for our versioning strategy. Semver is not just a rubric for incrementing our numbers but has a technical meaning for backwards compatibility of our API(s) and codebase generally. As we gear up for production, we will be releasing v1.0.0 which serves MAJOR version 1 with no extra features. As detailed in the semver link, minor and patches updates will be backwards compatible. Feature sets that add functionality will increment the minor version and bug fixes will increment the patch version. Each version of our codebase will require an entry into the changelog file for a high-level overview of what was added, changed, or obsolesced. This changelog will be stored [here](../tanf-app-changelog.md).
 
+### Hotfixes
+Hotfixes should always be the exception but may become necessary in a production environment for a severe bug or breakage and should essentially be a user-stopping emergency. As you'll note below, the hotfix will be split directly from the master branch and merged directly back in with a new version with the patch updated. We will also need to update the changelog and have this new hotfix merged and tested within the develop branch. If the issue is not a show-stopper, it should be treated as a regular feature would be and created as a bug ticket and branch (e.g., `bug/####-branch-description`).
+
+![image](https://user-images.githubusercontent.com/84722778/161772154-f2c64025-95f4-4aa2-9635-f6cb5b507356.png)
+
+Source: https://nvie.com/posts/a-successful-git-branching-model
+
 ## Consequences
 
 ### Benefits
