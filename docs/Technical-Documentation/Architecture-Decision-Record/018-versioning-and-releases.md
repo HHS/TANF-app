@@ -11,33 +11,24 @@ As discussed briefly in [deployment-flow](./008-deployment-flow.md), we will nee
 
 ## Decision
 
-We will use the industry standard "gitflow" to handle releases, versioning, and process. You can read more about it [here](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) and [here](https://datasift.github.io/gitflow/IntroducingGitFlow.html). For versinoning we will be adopting [semver]
-() as you can redhttps://semver.org/
+We will use the industry standards "gitflow" to handle release branching above our [git-workflow](./009-git-workflow.md). You can read more about gitflow [here](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) and [here](https://datasift.github.io/gitflow/IntroducingGitFlow.html). As shown below, the raft team will merge any relevant feature branches of the form `feat/###-branch-description` into the `develop` branch which will deploy to staging sites. From this branch, we will split off a release-specific branch of the form `release/v#.#.#`. Once this release is ready, it will be merged to `HHS/TANF-app:master` which should contain only finalized merge commits of the release versions and will deploy to production.
+
+![image](https://user-images.githubusercontent.com/84722778/161764906-d9c9e66a-ea44-4042-850d-5f0e927c8c81.png)
+
+Source: https://nvie.com/posts/a-successful-git-branching-model
+
+
+For versioning, we will be adopting [semver](https://semver.org/) for our versioning strategy. Semver is not just a rubric for incrementing our numbers but has a technical meaning for backwards compatibility of our API(s) and codebase generally. As we gear up for production, we will be releasing v1.0.0 which serves MAJOR version 1 with no extra features. As detailed in the semver link, minor and patches updates will be backwards compatible. Feature sets that add functionality will increment the minor version and bug fixes will increment the patch version. Each version of our codebase will require an entry into the changelog file for a high-level overview of what was added, changed, or obsolesced. This changelog will be stored [here](../tanf-app-changelog.md).
 
 ## Consequences
 
-Branch nomenclature will become more standardized and will adopt the semver standard for versioning
-
 ### Benefits
 
- * Significant performance increase at large scales.
-   * Elasticsearch retains near real-time search capabilities even with datasets measured in hundreds of Terabytes.
-   * PostgreSQL encounters table/index bloatings with very large data sets (>=1 MM rows) which negatively affect performance without advanced DBA operations.
- * Built in Reporting and Analytics capabilities - with UI capabilities to create Saved Searches, Visualizations and Dashboards.
- * Built in CSV export of Visualization data.
- * Access over REST API or Kibana UI, no database client needed.
-   * This has the added security benefit of ensuring there is not direct database access and users must be passed through our standard authentication which for OFA users will include PIV/CAC card.
- * Auto-generated index mappings, which can be tweaked to gain further performance advantages. These are also much more flexible than traditional schemas used by relational databases.
- * Capabilities to perform ML and AI analytics on data sets.
- * Cloud.gov includes the ES service with FISMA moderate pricing.
- * Automated Index Lifecycle Management policies can be configured to move data into cold storage, etc to satisfy retention requirements.
+ * We have an established well-known set of processes and notation for release branching and versioning.
+ * We will understand based on a label what changesets will be breaking in nature.
 
 ### Risks
- * New query language and interface to learn for OFA staff members who will have access
-   - This is mostly mitigated through a SQL Workbench provided in Kibana where you can use regular SQL syntax to query records.
- * More infrastructure to manage.
-   * This is mostly mitigated due to using a Cloud.gov managed service for ES and Terraform, this greatly simplifies scaling the cluster and abstracts away a lot of the difficult cluster management tasks we would have to do if we didn't use a managed service.
-   * Additional overhead to run a proxy application to control access to ES + Kibana
+ * New notation and process to learn for the team
 
 ## Notes
 
