@@ -23,12 +23,7 @@ Staging            | Tanf-Staging    | Gov               | Deploy code once gov-
 Production         | Tanf-Prod       | Gov                  | Deploy code tested in staging & ready for prod   | Code merged to `HHS/TANF-app:master`                |  
 
 ### Gitflow and Deployments
-We will be following the Gitflow process which is an industry standard. You can read more about it [here](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) and [here](https://datasift.github.io/gitflow/IntroducingGitFlow.html). I will just highlight the parts relevant for our deployment and versioning strategy. As shown below, the raft team will merge any relevant feature branches of the form `feat/###-branch-description` into the develop branch which should deploy to `staging`. From this branch, we will split off a release-specific branch of the form `release/v#.#.#`. Once this release is ready, it will be merged to HHS:master which should contain only finalized merge commits of the release versions and should deploy to production.
-
-![image](https://user-images.githubusercontent.com/84722778/161764906-d9c9e66a-ea44-4042-850d-5f0e927c8c81.png)
-
-Source: https://nvie.com/posts/a-successful-git-branching-model
-
+We will be following the Gitflow process which is an industry standard. You can read more about it [in our ADR](./018-versioning-and-releases.md). I will just highlight the parts relevant for our deployment strategy. Release branches will be merged to `HHS/TANF-app:master` which will deploy to our production sites. Code merged to `raft-tech/TANF-app:develop` will be deployed to our staging sites.
 
 ### Dev deployments
 Within the dev space, there is no correlation for branch to environment as these feature or bugfix branches will constantly vary:

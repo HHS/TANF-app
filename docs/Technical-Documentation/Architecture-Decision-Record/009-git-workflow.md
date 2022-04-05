@@ -37,7 +37,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
 
 3. Finalize pull request template.
     * Confirm all tasks in issue are completed/checked off.
-    * Add ACs and testing steps to the [template](https://github.com/raft-tech/TANF-app/blob/develop/.github/pull_request_template.md).
+    * Add ACs and testing steps to the [template](../../../.github/pull_request_template.md).
     * Add in-line comments to the file changes to provide context for the proposed changes.
     * Ensure there are no merge conflicts. 
     * Ensure CI/CD pipelines are green.
