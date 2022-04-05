@@ -586,7 +586,7 @@ workflows:
           filters:
             branches:
               only:
-               - raft-tdp-main
+               - develop
 
   owasp-scan:
     when: << pipeline.parameters.run_owasp_scan >>
@@ -601,16 +601,16 @@ workflows:
           filters:
             branches:
               only:
-                - raft-tdp-main
+                - develop
       - deploy-infrastructure-staging:
           filters:
             branches:
               only:
-                - raft-tdp-main
+                - develop
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
               only:
-                - raft-tdp-main
+                - develop
