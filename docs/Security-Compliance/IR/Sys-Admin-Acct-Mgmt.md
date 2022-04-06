@@ -113,7 +113,7 @@ _TDP backend DAC view:_
 ![](https://i.imgur.com/PkwjXNU.png)
 </details>
     
-- Conduct post-mortem
+- Conduct post-mortem:
 
     - How did the system admin's account get compromised? What facilitated this? 
     - What was the impact of this compromise?
