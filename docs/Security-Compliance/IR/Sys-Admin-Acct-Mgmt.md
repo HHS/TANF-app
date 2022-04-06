@@ -79,7 +79,7 @@ ssh -p 22 cf:<PROCESS_GUID>/0@ssh.fr.cloud.gov
 vcap@SomeHashValue...
 ```
 
-* Initiate interactive SSH session using the following 2 commands (press <enter> after each command):
+* Initiate interactive SSH session using the following 2 commands (press `enter` after each command):
 
 ```
 /tmp/lifecycle/shell 
