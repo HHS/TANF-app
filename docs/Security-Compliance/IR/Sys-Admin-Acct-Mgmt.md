@@ -9,7 +9,8 @@ _Sys admin account (i.e. `alexandra.pennington@acf.hhs.gov`)  has been modified 
 
 _When the sys admin tries to sign back in, she is taken to the request access page. She will be unable to access TDP DAC until this request is approved by a user with `OFA System Admin` permissions_
 
-![](https://i.imgur.com/urYLj5a.png)
+![incident_sysadmin1](https://user-images.githubusercontent.com/63075587/162066631-86c90d4c-1168-48e2-941f-9212c811581e.PNG)
+
 
 ## Example mitigation steps
 - Follow [communication protocol](#communication-protocol-if-sys-admin-account-compromised)
