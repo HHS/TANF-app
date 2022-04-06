@@ -110,7 +110,8 @@ _TDP frontend view:_
 
 
 _TDP backend DAC view:_
-![](https://i.imgur.com/PkwjXNU.png)
+![incident_sysadmin3](https://user-images.githubusercontent.com/63075587/162067096-039cc639-60ed-4c4d-abc5-b2c9f6571bf0.PNG)
+
 </details>
     
 - Conduct post-mortem:
