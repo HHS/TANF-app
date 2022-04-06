@@ -5,7 +5,7 @@
 **TDP has 2 sys admins, and one has turned evil :smiling_imp: and decided to compromise the other's account such that they can no longer access TDP DAC. Below is a screenshot of the compromised account:**
 
 _Sys admin account (i.e. `alexandra.pennington@acf.hhs.gov`)  has been modified with a different username/email address, first name, and last name._
-![](https://i.imgur.com/416KxSy.png)
+![incident_sysadmin](https://user-images.githubusercontent.com/63075587/162066471-cc5a1f88-aada-4309-9629-b341e61cdb5d.PNG)
 
 _When the sys admin tries to sign back in, she is taken to the request access page. She will be unable to access TDP DAC until this request is approved by a user with `OFA System Admin` permissions_
 
