@@ -130,7 +130,7 @@ _TDP backend DAC view:_
     - preliminary assessment of the scope and impact of the compromise (e.g. were spaces and/or services deleted? was PII compromised? exposed?)
     - Next steps (e.g. schedule mtg to discuss incident response plan, rotate keys, etc.)
     
-- If system admin's compromised account is not restored by following the abovementioned steps, this could because the evil user also changed the admin's cloud.gov account permissions and/or compromised other components of TDP. If this is the case, the `system owner` should reach out to cloud.gov (https://cloud.gov/docs/help/) support to have any necessary user permissions and/or services (e.g. database) restored. 
+- If system admin's compromised account is not restored by following the abovementioned steps, this could be because the evil user also changed the admin's cloud.gov account permissions and/or compromised other components of TDP. If this is the case, the `system owner` should reach out to cloud.gov (https://cloud.gov/docs/help/) support to have any necessary user permissions and/or services (e.g. database) restored. 
 
 ### Notes
 
