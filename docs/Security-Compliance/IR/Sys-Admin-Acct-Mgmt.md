@@ -148,5 +148,5 @@ _TDP backend DAC view:_
   - Yes. System owner should reach out to cloud.gov support if a privileged user's cloud.gov account roles are compromised.  
 - Compromised account will still appear as a user in TDP DAC. Should we delete this user account? 
   - No. This account will remained in a deactivated state. 
-- The evil user's account should-- at a minimum-- be deactivated from TDP, but should we delete it (presume this person will no longer be working for ACF) 
+- The evil user's account should-- at a minimum-- be deactivated from TDP, but should we delete it? (presume this person will no longer be working for ACF) 
   - No. This account will remain in a deactivated state. Deleting the account would result in losing the history of activity associated with the user which should be kept for auditing purposes. Additionally, this prevents the evil user from attempting to re-request access to TDP. 
