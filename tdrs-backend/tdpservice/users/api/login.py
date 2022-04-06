@@ -119,7 +119,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
-        logger.info("tokenoidc::handle_user")
+        logger.info("tokenoidc::handle_user0")
+        print("tokenoidc::handle_user:flush", flush=True)
+        print("tokenoidc::handle_user:stderr", file=sys.stderr)
+        print("tokenoidc::handle_user:stdout", file=sys.stdout)
         # get user from database if they exist. if not, create a new one
         if "token" not in request.session:
             request.session["token"] = id_token
@@ -208,7 +211,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""
         logger.info("tokenoidc::get()")
-        print("whatever, test", file=sys.stdout)
+        print("whatever, test", file=sys.stderr)
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
 
