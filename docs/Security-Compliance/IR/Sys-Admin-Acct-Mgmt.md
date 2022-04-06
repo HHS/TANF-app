@@ -140,7 +140,7 @@ _TDP backend DAC view:_
     - [Curl for Windows 64 bit](https://curl.se/windows/) - _this usually comes with the download package for Git for Windows_
     - [cloud foundry binary for Windows 64 bit](https://github.com/cloudfoundry/cli/blob/master/doc/installation-instructions/installation-instructions-v7.md#installers-and-compressed-binaries)
     - [JQuery version 1.6 for Windows 64 bit](https://stedolan.github.io/jq/download/)
-- Mitigation steps outlined above target `hhs-acf-prototyping` org, `tdp-staging` space and `tdp-backend-staging` app. <org>, <space>, and <app> targets will need to be modified in a production context. 
+- Mitigation steps outlined above target `hhs-acf-prototyping` org, `tdp-staging` space and `tdp-backend-staging` app. `org`, `space`, and `app` targets will need to be modified in a production context. 
 - Review the latest TDP Incidence Response Plan [here](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FTANFDataPortalOFA%2FShared%20Documents%2Fcompliance&viewid=6ecbc5f1%2Dfa9c%2D4b0a%2Da454%2D35e222e8044e), and [see incidence response tips from cloud.gov](https://cloud.gov/docs/ops/security-ir/). 
 
 ### Q&A
