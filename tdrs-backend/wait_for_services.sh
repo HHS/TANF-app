@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
-wait-for-it \
-    --service http://clamav-rest:9000 \
-    --service http://localstack:4566/health \
-    --timeout 60 \
-    -- echo "ClamAV and Localstack are ready!"
+
+if [ "$CLAMAV_NEEDED" == "True" ]; then
+    wait-for-it \
+        --service http://clamav-rest:9000 \
+        --service http://localstack:4566/health \
+        --timeout 60 \
+        -- echo "ClamAV and Localstack are ready!"
+elif [ "$CLAMAV_NEEDED" == "False" ]; then
+    wait-for-it \
+        --service http://localstack:4566/health \
+        --timeout 60 \
+        -- echo "Localstack is ready!"
+else
+    echo "[wait_for_services] Could not parse environment variable CLAMAV_NEEDED: $CLAMAV_NEEDED"
+    exit 1
+fi
 
 # Wait for Localstack to create the necessary S3 bucket, if in use
 if [ -z "$USE_LOCALSTACK" ] || [ "$USE_LOCALSTACK" = "yes" ]; then
