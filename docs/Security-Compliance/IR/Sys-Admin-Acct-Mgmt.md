@@ -17,7 +17,7 @@ _When the sys admin tries to sign back in, she is taken to the request access pa
 - Sys admin with compromised account should work with System owner to confirm appropriate admin roles are assigned to their cloud.gov account. This account will be necessary to change TDP DAC access remotely. 
 - Sys admin with compromised account should use CF CLI to remotely restore permissions: 
 
-**<details><summary>CLI commands</summary>**
+**<details><summary>CF CLI commands</summary>**
     
 **1. Login via CF CLI**
 
