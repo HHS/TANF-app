@@ -398,7 +398,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             auth_options["username"] = user_info["email"]
             try:
                 auth_options["hhs_id"] = user_info["hssid"]
-            except e:
+            except KeyError:
                 if "hhsid" in user_info:
                     print("hhs_id: {}".format(user_info.get("hss_id")),flush=True)
                     auth_options["hhs_id"] = user_info.get("hssid")
