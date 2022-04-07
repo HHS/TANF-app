@@ -156,7 +156,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
         if "hhs_id" in auth_options:
-            logger.info("hhsid in authopt: {}".format(auth_options["hhs_id"]))
+            logger.info("hhs_id in authopt: {}".format(auth_options["hhs_id"]))
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
@@ -396,9 +396,15 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             # TODO Use `hhs_id` as primary authentication key
             # See https://github.com/raft-tech/TANF-app/issues/1136#issuecomment-996822564
             auth_options["username"] = user_info["email"]
-            if "hhs_id" in user_info:
-                logger.debug("hhs_id: {}".format(user_info.get("hss_id")))
-                auth_options["hhs_id"] = user_info.get("hss_id")
-            else:
-                logger.debug("hhs_id isn't in user_info")
+            try:
+                auth_options["hhs_id"] = user_info["hssid"]
+            except e:
+                if "hhsid" in user_info:
+                    print("hhs_id: {}".format(user_info.get("hss_id")),flush=True)
+                    auth_options["hhs_id"] = user_info.get("hssid")
+                else:
+                    print("hhsid isn't in user_info",flush=True)
+                    print("accessing [another way]: {}".format(user_info["hss_id"], flush=True)
+                    print("keys: {}".format(user_info.keys()), flush=True)
+
             return auth_options
