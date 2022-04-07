@@ -403,6 +403,9 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             except KeyError:
                 if "hhsid" in user_info:
                     print("hhs_id: {}".format(user_info.get("hss_id")),flush=True)
+                    print("hhsid isn't in user_info",flush=True)
+                    print("accessing [another way]: {}".format(user_info["hss_id"]), flush=True)
+                    print("keys: {}".format(user_info.keys()), flush=True)
                     auth_options["hhs_id"] = user_info.get("hssid")
                 else:
                     print("hhsid isn't in user_info",flush=True)
