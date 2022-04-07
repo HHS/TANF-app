@@ -155,8 +155,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 return initial_user
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
+        print("authopt: {}".format(auth_options), flush=True)
+
         if "hhs_id" in auth_options:
-            logger.info("hhs_id in authopt: {}".format(auth_options["hhs_id"]))
+            print("hhs_id in authopt: {}".format(auth_options["hhs_id"]), flush=True)
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
