@@ -73,7 +73,9 @@ A typical sprint schedule is described in the table below.
 - **Attendees:** Core team
 - **Facilitator:** Raft PM/Scrum Master
 - **When:**  Every other Tuesday 10:00am-12pm EST (combined with Sprint Review, Retro and Sprint Planning)
-- **Format:** The team will start by demoing completed work that was identified during sprint review. By the end of the meeting, we will have an appreciation of the work that was completed in the last two weeks. The team should decide what is ready to be demoed (and label it as “demo”), who will conduct the demo/s, and if special guests should be invited to attend the larger demo event later in the day. All demoed issues must be merged first. Facilitator will take note of what issues will be demoed and who will be presenting for each issue. OFA Product Owner and OFA Tech Lead will sign off on Raft's recommendation of issues to be demoed.
+- **Format:** The team will start by demoing completed work that was identified during sprint review. By the end of the meeting, we will have an appreciation of the work that was completed in the last two weeks. The team should decide what is ready to be demoed (and label it as “demo”) at the larger demo event later in the day and if special guests should be invited to attend. All demoed issues must be merged first. Facilitator will take note of what issues will be demoed. OFA Product Owner and OFA Tech Lead will sign off on Raft's recommendation of issues to be demoed.
+  - *The facilitator is responsible for coordinating with the authors of the completed issues the day prior to the meeting to ensure that they are prepared to present.*
+  - *All demos will be presented by the author of the issue unless the author is unavailable, gives explicit permission, and  there is an immediate need to perform the demo.*
 
 ### Sprint Retro 
 - **Goal:** The sprint retrospective is an opportunity for the team to evaluate actions that should be stopped, started, or continued in order to facilitate an environment of continuous improvement.
@@ -102,7 +104,7 @@ A typical sprint schedule is described in the table below.
 - **Facilitator:** Raft PM/Scrum Master
 - **When:** Every other Tuesday 2:00pm-2:30pm EST, as needed
 - **Format:** This meeting is a formal version of internal demo with an emphasis on demonstrating work to stakeholders outside the product team. This demo should emphasize completed work that has a direct impact to the end user, it should not be a status of the work that has been done. The author of the feature will demo new work and features to the attendees. Attendees can give feedback during the meeting or in async follow-up. 
- 
+  - *All demos will be presented by the author of the issue unless the author is unavailable, gives explicit permission, and there is an immediate need to perform the demo.*
 
 ### UX Sync
 * **Goal:** A weekly discussion between UX and Product for UX updates on research findings, spec, research strategy, or other pressing priorities. 

@@ -7,6 +7,7 @@ import configureStore from 'redux-mock-store'
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import Header from './Header'
+import { permissions } from './developer_permissions'
 
 describe('Header', () => {
   const initialState = {
@@ -14,12 +15,13 @@ describe('Header', () => {
     auth: {
       user: {
         email: 'test@test.com',
-        roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+        roles: [{ id: 1, name: 'Developer', permissions }],
         access_request: true,
       },
       authenticated: true,
     },
   }
+
   const mockStore = configureStore([thunk])
 
   it('should have a title link', () => {
