@@ -38,9 +38,9 @@ class User(AbstractUser):
     # In the future, `TokenAuthorizationAMS.get_auth_options` will use `hhs_id` as the primary auth field.
     # See also: CustomAuthentication.py
     hhs_id = models.PositiveIntegerField(editable=False,
-                              blank=True,
-                              null=True,
-                              unique=True)
+                                         blank=True,
+                                         null=True,
+                                         unique=True)
 
     # Note this is handled differently than `is_active`, which comes from AbstractUser.
     # Django will totally prevent a user with is_active=True from authorizing.
