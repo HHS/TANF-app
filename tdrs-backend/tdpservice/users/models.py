@@ -37,7 +37,7 @@ class User(AbstractUser):
     # Note: This field, while currently implemented, is *not* one returned by AMS.
     # In the future, `TokenAuthorizationAMS.get_auth_options` will use `hhs_id` as the primary auth field.
     # See also: CustomAuthentication.py
-    hhs_id = models.UUIDField(editable=False,
+    hhs_id = models.PositiveIntegerField(editable=False,
                               blank=True,
                               null=True,
                               unique=True)

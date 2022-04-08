@@ -401,13 +401,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             try:
                 auth_options["hhs_id"] = user_info["hhsid"]
             except KeyError:
-                print(type(user_info), flush=True)
-                if "hhsid" in user_info:
-                    print("hhs_id: {}".format(user_info.get("hhs_id")), flush=True)
-                    print("keys: {}".format(user_info.keys()), flush=True)
-                    auth_options["hhs_id"] = user_info.get("hhsid")
-                else:
-                    print("hhsid isn't in user_info", flush=True)
-                    print("user_info: {}".format(user_info), flush=True)
+                print("Expected key 'hhsid' AMS response", flush=True)
+                print("user_info: {}".format(user_info), flush=True)
 
             return auth_options
