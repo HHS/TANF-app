@@ -384,7 +384,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
     def get_auth_options(self, access_token, sub):
         """Add specific auth properties for the CustomAuthentication handler."""
-        logger.info("tokenams::auth_opt")
+        logging.info("tokenams::auth_opt")
         logger.info(access_token)
         if access_token:
             auth_options = {}
