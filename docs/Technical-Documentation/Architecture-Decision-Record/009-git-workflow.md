@@ -34,6 +34,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
 
 2. Implement, Test, Review work independently
     * If content is devops oriented, developer can freely merge to `HHS:hhs-dev-devops` to test their changes. No merges from `HHS:hhs-dev-devops` to `HHS:main` will be accepted.
+    * If development work will be incrementing the external [Django Admin 508 repo](https://github.com/raft-tech/django-admin-508), please do *NOT* skip versions but increment sequentially (e.g., 0.1.0 -> 0.1.1 -> 0.1.2; not 0.1.0 -> 0.1.3).
 
 3. Finalize pull request template.
     * Confirm all tasks in issue are completed/checked off.
@@ -41,7 +42,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * Add in-line comments to the file changes to provide context for the proposed changes.
     * Ensure there are no merge conflicts. 
     * Ensure CI/CD pipelines are green.
-    * Update the title to remove `DRAFT` and change the PR to [Ready for Review](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/changing-the-stage-of-a-pull-request), assign label `raft review`.
+    * Update the title to remove `WIP` and change the PR to [Ready for Review](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/changing-the-stage-of-a-pull-request), assign label `raft review`.
 
 4. Assign Raft reviewer(s): 
     * For research and design work, assign **at least two** of the following: `reitermb`, `sreedevip` or `valeriecollignon`. 
