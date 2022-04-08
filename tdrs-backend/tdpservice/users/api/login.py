@@ -399,14 +399,13 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             # See https://github.com/raft-tech/TANF-app/issues/1136#issuecomment-996822564
             auth_options["username"] = user_info["email"]
             try:
-                auth_options["hhs_id"] = user_info["hssid"]
+                auth_options["hhs_id"] = user_info["hhsid"]
             except KeyError:
+                print(type(user_info), flush=True)
                 if "hhsid" in user_info:
-                    print("hhs_id: {}".format(user_info.get("hss_id")), flush=True)
-                    print("hhsid isn't in user_info", flush=True)
-                    print("accessing [another way]: {}".format(user_info["hssid"]), flush=True)
+                    print("hhs_id: {}".format(user_info.get("hhs_id")), flush=True)
                     print("keys: {}".format(user_info.keys()), flush=True)
-                    auth_options["hhs_id"] = user_info.get("hssid")
+                    auth_options["hhs_id"] = user_info.get("hhsid")
                 else:
                     print("hhsid isn't in user_info", flush=True)
                     print("user_info: {}".format(user_info), flush=True)
