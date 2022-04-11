@@ -1,6 +1,6 @@
 # 9. Git Workflow
 
-Date: 2021-02-23 (_updated 2022-01-06_)
+Date: 2021-02-23 (_updated 2022-04-11_)
 
 ## Status
 
@@ -14,7 +14,7 @@ Throughout the project all vendor development work has been done in the vendor's
 
 This has created a situation where the vendor has needed to continuously rebase with the government repository to make sure the vendor's repository was up to date. As a result, problems with the Git history have arisen that make it confusing for both the government and the vendor to track the history of the work.
 
-The proposed workflow below provides a remedy to these issues, as well as many others, as detailed in the [Consequences](https://github.com/raft-tech/TANF-app/blob/dffd79adf7a5ae87cf1a93c8adf655c76cf45089/docs/Architecture%20Decision%20Record/009-git-workflow.md#consequences) section.
+The proposed workflow below provides a remedy to these issues, as well as many others, as detailed in the [Consequences](./009-git-workflow.md#consequences) section.
 
 ## Decision
 
@@ -71,7 +71,6 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * assigning `lfrohlich` or `adpennington`as Government as reviewers. They will approve and  merge to `HHS:main` which will trigger the CI/CD process to deploy code to the prod environment. 
 </details>
 
-![](images/TANF-Git-Workflow.jpg)
 [Figma link to TDP git workflow diagram](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=6249%3A49390)
 
 ## Consequences
