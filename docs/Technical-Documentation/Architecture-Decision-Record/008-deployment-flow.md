@@ -49,4 +49,4 @@ Within the dev space, there is no correlation for branch to environment as these
 
 ## Notes
 
-- As of December 2021, merges into `HHS/TANF-app:main` do not deploy to any environment, since we are pending activation of the production space (#721). 
+- As of April 2022, merges into `HHS/TANF-app:master` do not deploy to any environment, since we are pending activation of the production space (#895). 
