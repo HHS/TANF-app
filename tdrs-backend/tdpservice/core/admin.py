@@ -5,11 +5,14 @@ from django.utils.html import escape
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+from tdpservice.core.utils import ReadOnlyAdminMixin
+
+# LogEntry needs to be de-registered first before registering a custom Admin Model below.
 admin.site.unregister(LogEntry)
 
 
 @admin.register(LogEntry)
-class LogEntryAdmin(admin.ModelAdmin):
+class LogEntryAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Customize and restrict the LogEntry table in Django Admin."""
 
     date_hierarchy = 'action_time'
@@ -33,6 +36,8 @@ class LogEntryAdmin(admin.ModelAdmin):
         'action_flag',
         'change_message',
     ]
+
+    exclude = ['object_id']
 
     def object_link(self, obj):
         """Create a link to to corresponding objects for a given LogEntry."""
