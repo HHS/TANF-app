@@ -1,11 +1,12 @@
 """Admin classes for the tdpservice.security app."""
 from django.contrib import admin
 
+from tdpservice.core.utils import ReadOnlyAdminMixin
 from tdpservice.security.models import ClamAVFileScan, OwaspZapScan
 
 
 @admin.register(ClamAVFileScan)
-class ClamAVFileScanAdmin(admin.ModelAdmin):
+class ClamAVFileScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Admin interface for Clam AV File Scan instances."""
 
     list_display = [
@@ -30,7 +31,7 @@ class ClamAVFileScanAdmin(admin.ModelAdmin):
 
 
 @admin.register(OwaspZapScan)
-class OwaspZapScanAdmin(admin.ModelAdmin):
+class OwaspZapScanAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Admin interface for OWASP Zap Scan reports."""
 
     list_display = [
