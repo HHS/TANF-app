@@ -9,10 +9,10 @@ An overview of how our team works together to deliver a quality TDP product is i
 
 ## Our Priorities
 
-The [TDP product team](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/Team-Composition.md#primary-product-team) is committed to the following:
+The [TDP product team](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/Team-Composition.md#primary-product-team) is committed to the following:
 
 1. **Prioritizing quality over time and scope.**  Issues should be written and completed in a way that delivers quality insights, design, and/or features and should not come at the cost of time and scope. Issue scope should be refined to ensure progress toward the product vision is timely and demonstrable. 
-2. **Accessibility needs are considered early in the [our workflow](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/team-charter/our-workflow.md).** Issues must be refined before the work to address it starts, and refinement includes consideration for how users will interact with TDP features ([ref](https://www.deque.com/shift-left/)). 
+2. **Accessibility needs are considered early in the [our workflow](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/team-charter/our-workflow.md).** Issues must be refined before the work to address it starts, and refinement includes consideration for how users will interact with TDP features ([ref](https://www.deque.com/shift-left/)). 
 3. **Issues move to `QASP review` pipeline on a rolling basis and must first pass through the `Raft review` pipeline.** Raft is responsible for ensuring acceptance criteria are met before submitting the issue for government review. For each sprint, at least one issue passes `raft review` and is submitted for `QASP review`.
 
 ## Our Values 
@@ -26,9 +26,9 @@ The [TDP product team](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/
 
 ## Our Quality Expectations
 
-The government uses the **Quality Assurance Surveillance Plan (QASP)** to monitor the quality of the team's deliverables and performance. This helps ensure that TDP is a quality product built using agile practices. [Our workflow for developing TDP](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/team-charter/our-workflow.md) is designed with the QASP in mind. 
+The government uses the **Quality Assurance Surveillance Plan (QASP)** to monitor the quality of the team's deliverables and performance. This helps ensure that TDP is a quality product built using agile practices. [Our workflow for developing TDP](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/team-charter/our-workflow.md) is designed with the QASP in mind. 
 
-Research, design, and feature work must pass both [`raft review`](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/team-charter/our-workflow.md#the-issue-is-ready-for-raft-review) and the [`QASP review`](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/team-charter/our-workflow.md#the-issue-is-ready-for-qasp-review) and will involve an assessment of 8 **[deliverables](#Deliverables)**. 
+Research, design, and feature work must pass both [`raft review`](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/team-charter/our-workflow.md#the-issue-is-ready-for-raft-review) and the [`QASP review`](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/team-charter/our-workflow.md#the-issue-is-ready-for-qasp-review) and will involve an assessment of 8 **[deliverables](#Deliverables)**. 
 
 Below is a description of each deliverable and the manual practices that the team will follow to check deliverables against the QASP in addition to the automated testing checks.
 
@@ -64,7 +64,7 @@ Review to ensure code coverage isn’t manually skipped (using “pragma: no cov
 
 Review Circle CI to ensure: [flake8](https://pypi.org/project/flake8/) and [AirBnb’s react style guides](https://github.com/airbnb/javascript/tree/master/react) are being used. 
 
-Also, review to ensure methods, variables, etc. are appropriately named. For methods that are more than 75 lines, consider refactoring into multiple shorter methods or by extracting functionality by following Don’t Repeat Yourself (DRY) principles. See [guidelines government uses to assess code maintainability](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/Heuristics.md#code-maintainability).
+Also, review to ensure methods, variables, etc. are appropriately named. For methods that are more than 75 lines, consider refactoring into multiple shorter methods or by extracting functionality by following Don’t Repeat Yourself (DRY) principles. See [guidelines government uses to assess code maintainability](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/Heuristics.md#code-maintainability).
 </details>
 
 #### Deliverable 4: Accessibility
@@ -76,7 +76,7 @@ Also, review to ensure methods, variables, etc. are appropriately named. For met
 
 Review to ensure each screen follows the guidelines below to meet the accessibility WCAG2.1 AA performance standard (**_see dropdown below for more details on how gov will test a11y_**). Aditionally, `raft review` should include documenting evidence that the guidelines below were followed. 
 
-- Follow [Raft’s Accessibility Do’s and Don’ts](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Technical-Documentation/rafts-accessibility-dos-and-donts.md#raftsaccessibility-dos-and-donts) guidelines
+- Follow [Raft’s Accessibility Do’s and Don’ts](https://github.com/raft-tech/TANF-app/blob/develop/docs/Technical-Documentation/rafts-accessibility-dos-and-donts.md#raftsaccessibility-dos-and-donts) guidelines
 - Use [DHS Trusted Tester v5 Conformance Test](https://section508coordinators.github.io/TrustedTester/), [Tota11y](https://github.com/Khan/tota11y), and [WAVE](https://wave.webaim.org/)
 - Run the Accessibility Insight for [Web “Fast Pass” tool](https://accessibilityinsights.io/docs/en/web/getstarted/fastpass)
 - Run the Accessibility Insight for Web "Manual test for tab stops"
@@ -168,7 +168,7 @@ Review to ensure any false positives are documented and granular details on desc
 
 Prior to government review, Raft reviews the artifacts based on a research plan
     
-See [guidelines](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/How-We-Work/Heuristics.md#design) government uses to assess user research and design work.
+See [guidelines](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/Heuristics.md#design) government uses to assess user research and design work.
     
     
 </details>
@@ -177,8 +177,8 @@ See [guidelines](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/H
 ## Additional resources
 
 - [Final TDRS/TDP RFQ](https://github.com/18F/tdrs-app-rfq/blob/main/Final-RFQ/FINAL-TDRS-software-development-RFQ.md) 
-- [Government Heuristics ](https://github.com/raft-tech/TANF-app/tree/raft-tdp-main/docs/How-We-Work/Heuristics.md)
-- [PR template](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.github/pull_request_template.md)
+- [Government Heuristics ](https://github.com/raft-tech/TANF-app/tree/develop/docs/How-We-Work/Heuristics.md)
+- [PR template](https://github.com/raft-tech/TANF-app/blob/develop/.github/pull_request_template.md)
 
 
 

@@ -1,6 +1,6 @@
 # STTs
 
-Supports returning a list of STTs in no particular order if [authenticated](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/tdrs-backend/docs/api/api/authentication.md)
+Supports returning a list of STTs in no particular order if [authenticated](./authentication.md)
 
 **Request:**
 `GET /v1/stts/`
