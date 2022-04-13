@@ -7,6 +7,6 @@ This subdirectory contains documentation that describes our practices as it rela
 * **[White House Cybersecurity Executive Order 14208](./WH_CybersecurityEO.md)** - includes information about the status of TANF Data Portal's compliance with White House Cybersecurity Executive Order 14208 issued on May 12, 2021.
 * **[Boundary Diagram and Description](./boundary-diagram.md)** - includes a visual and description of how TDP's system code is deployed as well as how the data flows through the system. 
 * **[Records Management](./records-management.md)** - describes the security and compliance standards for TDP
-* **[Secret Key Management](./Secret-Key-Mgmt.md)** - lays out TDP's standards for minimizing the risk of leaking secret keys (i.e. sensitive information that--if exposed--opens the door for unauthorized access to the system and/or data therein).
+* **[Secret Key Management](./Incidence-Response/Secret-Key-Mgmt.md)** - lays out TDP's standards for minimizing the risk of leaking secret keys (i.e. sensitive information that--if exposed--opens the door for unauthorized access to the system and/or data therein).
 * **[Incidence Response](./Incidence-Response/)** - is a repository for all incident response (IR) protocols to be followed for TDP. 
 
