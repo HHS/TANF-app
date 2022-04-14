@@ -6,7 +6,7 @@ There are six dynamic status reporting badges being included in the root README.
 
 - `https://github.com/HHS/TANF-app/tree/main` 
 
-- `https://github.com/raft-tech/TANF-app/tree/raft-tdp-main`
+- `https://github.com/raft-tech/TANF-app/tree/develop`
 
 
 The badges will report on the following criteria:
@@ -25,13 +25,13 @@ The badges will report on the following criteria:
    - This badge is provided directly from CircleCi configured to point directly to the latest build results of that branch.
    
      Example:
-     [![CircleCI-Dev](https://circleci.com/gh/raft-tech/TANF-app/tree/raft-tdp-main.svg?style=shield)](https://circleci.com/gh/raft-tech/TANF-app/tree/raft-tdp-main)
+     [![CircleCI-Dev](https://circleci.com/gh/raft-tech/TANF-app/tree/develop.svg?style=shield)](https://circleci.com/gh/raft-tech/TANF-app/tree/develop)
 
 - Code Coverage percentage as reported to codecov.io will be the same process for the frontend and backend.
    - This badge is provided directly from codecode.io and will be tied to tags for frontend and backend reports that have been uploaded to its server.
    
      Example:
-      [![Codecov-Backend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main/graph/badge.svg?flag=dev-backend)](https://codecov.io/gh/raft-tech/TANF-app/branch/raft-tdp-main?flag=dev-backend)
+      [![Codecov-Backend-Dev](https://codecov.io/gh/raft-tech/TANF-app/branch/develop/graph/badge.svg?flag=dev-backend)](https://codecov.io/gh/raft-tech/TANF-app/branch/develop?flag=dev-backend)
 
 
 ## Decision

@@ -2,7 +2,7 @@
 
 It is important to periodically audit Circle CI to make sure that it can catch failures as expected. This file serves as a template which outlines the major components which should be audited on a scheduled basis. 
 
-For testing create a new branch off raft-tdp-main and make commits there. This branch will not be merged and is only used for testing purposes. Ensure that you delete it following this audit.
+For testing create a new branch off develop and make commits there. This branch will not be merged and is only used for testing purposes. Ensure that you delete it following this audit.
 
 ## Confirm secrets-check functionality
 - [ ] Commit a randomly generated secret key to the repo and push your changes.
