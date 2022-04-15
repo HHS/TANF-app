@@ -34,13 +34,13 @@ class User(AbstractUser):
                                       unique=True)
 
     # Unique `hhsid` user claim for AMS OpenID users.
-    # Note: This field, while currently implemented, is *not* one returned by AMS.
     # In the future, `TokenAuthorizationAMS.get_auth_options` will use `hhs_id` as the primary auth field.
     # See also: CustomAuthentication.py
-    hhs_id = models.PositiveIntegerField(editable=False,
-                                         blank=True,
-                                         null=True,
-                                         unique=True)
+    hhs_id = models.CharField(editable=False,
+                              max_length=12,
+                              blank=True,
+                              null=True,
+                              unique=True)
 
     # Note this is handled differently than `is_active`, which comes from AbstractUser.
     # Django will totally prevent a user with is_active=True from authorizing.

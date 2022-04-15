@@ -147,7 +147,7 @@ class TestLoginAMS:
         "userinfo_endpoint": "http://openid-connect/userinfo"
     }
 
-    test_hhs_id = 1234567890
+    test_hhs_id = "1234567890"
 
     @pytest.fixture(autouse=True)
     def ams_states_factory(self):
@@ -547,7 +547,7 @@ class TestLoginParam:
         "userinfo_endpoint": "http://openid-connect/userinfo"
     }
 
-    test_hhs_id = 1234567890
+    test_hhs_id = "1234567890"
 
     @pytest.fixture(autouse=True)
     def ams_states_factory(self):
