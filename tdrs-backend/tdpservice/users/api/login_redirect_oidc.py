@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class LoginRedirectLoginDotGov(RedirectView):
     """Handle login workflow for login.gov clients."""
+    
     permanent = False
     query_string = True
     pattern_name = "oidc-logindotgov"
@@ -70,6 +71,7 @@ class LoginRedirectLoginDotGov(RedirectView):
 
 class LoginRedirectAMS(RedirectView):
     """Handle login workflow for login.gov clients."""
+
     permanent = False
     query_string = True
     pattern_name = "oidc-ams"
