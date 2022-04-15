@@ -64,7 +64,9 @@ alias tdrs-run-jest-cov='tdrs-npm-run test:cov'
 alias tdrs-run-migrations='tdrs-compose-backend run web sh -c "python manage.py migrate"'
 
 # Generate new migrations from changes to models for django backend
-alias tdrs-run-migrations='tdrs-compose-backend run web sh -c "python manage.py makemigrations"'
+alias tdrs-make-migrations='tdrs-compose-backend run web sh -c "python manage.py makemigrations"'
+# TODO: This just dropped me at python interpretter. Retest and resolve.
+
 
 # Nuke all non running docker data
 alias tdrs-prune-all-docker-data='docker system prune -a && docker system prune --volumes'
