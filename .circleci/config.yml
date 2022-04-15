@@ -609,7 +609,7 @@ workflows:
          filters:
              branches:
                  only:
-                     raft-tdp-main
+                     develop
 
   owasp-scan:
     when: << pipeline.parameters.run_owasp_scan >>
