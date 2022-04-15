@@ -23,7 +23,6 @@ from tdpservice.users.api.utils import (
 from tdpservice.users.authentication import CustomAuthentication
 from tdpservice.users.models import User
 
-
 class MockRequest:
     """Mock request class."""
 
@@ -122,9 +121,8 @@ def test_get_admin_user(ofa_system_admin):
 @pytest.mark.django_db
 def test_auth_user_by_hhs_id(user):
     """Test get_user method."""
-    authenticated_user = CustomAuthentication.authenticate(hhs_id=user.hhs_id)
+    authenticated_user = CustomAuthentication.authenticate(hhs_id=user.hhs_id, username=user.username)
     assert str(authenticated_user.hhs_id) == user.hhs_id
-
 
 @pytest.mark.django_db
 def test_get_non_user(user):
