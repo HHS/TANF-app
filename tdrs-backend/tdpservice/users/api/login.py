@@ -1,6 +1,5 @@
 """Login.gov/authorize is redirected to this endpoint to start a django user session."""
 import logging
-import sys
 from abc import abstractmethod
 
 from django.conf import settings
@@ -62,7 +61,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     def validate_and_decode_payload(self, request, state, token_data):
         """Perform validation and error handling on the payload once decoded with abstract method."""
-        logger.info("tokenoidc::validate")
         id_token = token_data.get("id_token")
 
         decoded_payload = self.decode_payload(token_data)
@@ -90,7 +88,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
     @staticmethod
     def decode_jwt(payload, issuer, audience, cert_sr, options=None):
         """Decode jwt payloads."""
-        logger.info("tokenoidc::decode_jwt")
         if not options:
             options = {'verify_nbf': False}
 
@@ -119,10 +116,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     def handle_user(self, request, id_token, decoded_token_data):
         """Handle the incoming user."""
-        logger.info("tokenoidc::handle_user0")
-        print("tokenoidc::handle_user:flush", flush=True)
-        print("tokenoidc::handle_user:stderr", file=sys.stderr)
-        print("tokenoidc::handle_user:stdout", file=sys.stdout)
         # get user from database if they exist. if not, create a new one
         if "token" not in request.session:
             request.session["token"] = id_token
@@ -155,10 +148,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 return initial_user
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
-        print("authopt: {}".format(auth_options), flush=True)
+        logging.debug("authopt: {}".format(auth_options), flush=True)
 
         if "hhs_id" in auth_options:
-            print("hhs_id in authopt: {}".format(auth_options["hhs_id"]), flush=True)
+            logging.debug("hhs_id in authopt: {}".format(auth_options["hhs_id"]), flush=True)
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
@@ -212,8 +205,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
 
     def get(self, request, *args, **kwargs):
         """Handle decoding auth token and authenticate user."""
-        logger.info("tokenoidc::get()")
-        print("whatever, test", file=sys.stderr)
         code = request.GET.get("code", None)
         state = request.GET.get("state", None)
 
@@ -343,7 +334,6 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
     def decode_payload(self, token_data, options=None):
         """Decode the payload with keys for AMS."""
-        logger.info("tokenams::decode")
         id_token = token_data.get("id_token")
         access_token = token_data.get("access_token")
 
@@ -364,7 +354,6 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
     def get_token_endpoint_response(self, code):
         """Build out the query string params and full URL path for token endpoint."""
-        logger.info("tokenams::decode")
         # First fetch the token endpoint from AMS.
         ams_configuration = LoginRedirectAMS.get_ams_configuration()
         options = {
@@ -384,7 +373,6 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
 
     def get_auth_options(self, access_token, sub):
         """Add specific auth properties for the CustomAuthentication handler."""
-        logging.info("tokenams::auth_opt")
         logger.info(access_token)
         if access_token:
             auth_options = {}
@@ -394,14 +382,14 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             userinfo_response = requests.post(ams_configuration["userinfo_endpoint"],
                                               {"access_token": access_token})
             user_info = userinfo_response.json()
-            print(user_info, flush=True)
+            logging.debug(user_info, flush=True)
             # TODO Use `hhs_id` as primary authentication key
             # See https://github.com/raft-tech/TANF-app/issues/1136#issuecomment-996822564
             auth_options["username"] = user_info["email"]
             try:
                 auth_options["hhs_id"] = user_info["hhsid"]
             except KeyError:
-                print("Expected key 'hhsid' AMS response", flush=True)
-                print("user_info: {}".format(user_info), flush=True)
+                logging.error("Expected key 'hhsid' AMS response", flush=True)
+                logging.error("user_info: {}".format(user_info), flush=True)
 
             return auth_options
