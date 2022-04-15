@@ -177,6 +177,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 f'Login failed, user account is inactive: {user.username}'
             )
         else:
+            logging.info("Ended up in handle_user():else")
             User = get_user_model()
 
             if 'username' in auth_options:
