@@ -159,7 +159,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         logger.info("AUTH_OPTIONS")
         logger.info(auth_options)
         user = CustomAuthentication.authenticate(**auth_options)
-        print("user obj:{}".format(user), flush=True)
+        logging.debug("user obj:{}".format(user))
 
         if user and user.is_active:
             # Users are able to update their emails on login.gov
@@ -177,7 +177,6 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 f'Login failed, user account is inactive: {user.username}'
             )
         else:
-            print("Ended up in handle_user():else", flush=True)
             User = get_user_model()
 
             if 'username' in auth_options:

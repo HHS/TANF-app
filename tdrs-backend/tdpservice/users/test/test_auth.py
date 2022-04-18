@@ -268,6 +268,14 @@ class TestLoginAMS:
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
+    def test_auth_user_hhs_id_update(self, user):
+        """Test updating pre-existing user w/ hhs_id field."""
+        user.hhs_id = ''
+        user.save()
+        user_by_name = CustomAuthentication.authenticate(username=user.username)
+        assert user_by_name.username == user.username
+        user_by_id = CustomAuthentication.authenticate(username=user.username, hhs_id=self.test_hhs_id)
+        assert str(user_by_id.hhs_id) == self.test_hhs_id
 
 def test_login_gov_redirect(api_client):
     """Test login.gov login url redirects."""
