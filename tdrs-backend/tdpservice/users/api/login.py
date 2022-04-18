@@ -383,8 +383,7 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
                                               {"access_token": access_token})
             user_info = userinfo_response.json()
             logging.debug(user_info)
-            # TODO Use `hhs_id` as primary authentication key
-            # See https://github.com/raft-tech/TANF-app/issues/1136#issuecomment-996822564
+
             auth_options["username"] = user_info["email"]
             try:
                 auth_options["hhs_id"] = user_info["hhsid"]
