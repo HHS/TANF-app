@@ -27,6 +27,11 @@ class CustomAuthentication(BaseAuthentication):
                     user.hhs_id = hhs_id
                     user.save()
                     logging.debug("Updated user {} with hhs_id {}.".format(user.username, user.hhs_id))
+                except django.db.utils.IntegrityError:
+                    logging.debug("duplicate key on username. Will try to save anyway")
+                    user.hhs_id = hhs_id
+                    user.save()
+                    logging.debug("Updated user {} with hhs_id {}.".format(user.username, user.hhs_id))
                 # else email doesn't exist in postgres yet, but we have a new hhsid
                 # below return triggers else clause in login.py::handler_user() and will create new user
                 return User.objects.get(hhs_id=hhs_id)
