@@ -19,21 +19,13 @@ class CustomAuthentication(BaseAuthentication):
         try:
             if hhs_id:
                 try:
-                    user = User.objects.get(username=username)
-                    # Attempting to trigger error if user already exists but
-                    # hhs_id hasn't been filled in, if so, update it
+                    user = User.objects.filter(hhs_id=hhs_id)
                     logging.info("User.hhsid: {}".format(user.hhs_id))
-                except AttributeError:
-                    user.hhs_id = hhs_id
-                    user.save()
+                except AttributeError:  # 'user' likely None aka hhs_id hasn't been filled in, try to update it
+                    User.objects.filter(username=username).update(hhs_id=hhs_id)
                     logging.debug("Updated user {} with hhs_id {}.".format(user.username, user.hhs_id))
-                except django.db.utils.IntegrityError:
-                    logging.debug("duplicate key on username. Will try to save anyway")
-                    user.hhs_id = hhs_id
-                    user.save()
-                    logging.debug("Updated user {} with hhs_id {}.".format(user.username, user.hhs_id))
-                # else email doesn't exist in postgres yet, but we have a new hhsid
-                # below return triggers else clause in login.py::handler_user() and will create new user
+                    # if 'username' doesn't exist in postgres then the below `return` triggers
+                    # login.py::handler_user() to create new user w/ username and hhs_id
                 return User.objects.get(hhs_id=hhs_id)
 
             elif login_gov_uuid:
