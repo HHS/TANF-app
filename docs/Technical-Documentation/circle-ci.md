@@ -4,7 +4,7 @@
 * A set of rules for defining run order/conditions for a group of jobs
 * Without filters a workflow will run on every commit
 * We use filters within workflows to ensure certain jobs are only run on designated branches
-* Such as deploy-infrastructure-staging and deploy-staging - which only run when the branch being committed to is `raft-tdp-main`
+* Such as deploy-infrastructure-staging and deploy-staging - which only run when the branch being committed to is `develop`
 * The `requires` tag allows us to make sure a certain job has completed before moving to the next step in the workflow
 * Additional vocab:
     * Commands: reusable steps for jobs
@@ -16,7 +16,7 @@
     * `dev-deployment`: Deploys a PR to the dev space. Triggered by a GitHub action whenever one of the relevant deployment labels is assigned via an API call to Circle CI with the pipeline parameter `run_dev_deployment`.
     * `nightly`: Runs every night at UTC midnight and performs an OWASP scan against the staging site for both backend and frontend then stores the results in Django using a Cloud Foundry task.
     * `owasp-scan`: Runs an OWASP scan against the backend and frontend for a given PR. Triggered by a GitHub action whenever the `QASP Review` label is assigned via an API call to Circle CI with the pipeline parameter `run_owasp_scan`.
-    * `staging-deployment`: Deploys the main branch to the staging space in Cloud.gov. Triggered via merges to the branch `raft-tdp-main`.
+    * `staging-deployment`: Deploys the main branch to the staging space in Cloud.gov. Triggered via merges to the branch `develop`.
 
 ## How are environment variables supplied in CI?
 We manually set some environment variables in the project settings for Circle CI. From there, they are used in several places:

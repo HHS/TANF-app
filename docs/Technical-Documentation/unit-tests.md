@@ -43,4 +43,4 @@ $ tdrs-run-pa11y
 
 ## Notes
 
-See **[Commands.sh](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/commands.sh)** for a list and description of standardized commands for running these tests as part of local development. The code sections above are aliases or functions from `commands.sh`.
+See **[Commands.sh](https://github.com/raft-tech/TANF-app/blob/develop/commands.sh)** for a list and description of standardized commands for running these tests as part of local development. The code sections above are aliases or functions from `commands.sh`.

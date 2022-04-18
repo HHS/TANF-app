@@ -409,6 +409,21 @@ jobs:
           environment: circle
           target: backend
 
+  make_erd:
+    executor: machine-executor
+    working_directory: ~/tdp_apps
+    steps:
+      - checkout
+      - docker-compose-check
+      - run:
+          name: Run graph_models
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c \
+            "./manage.py graph_models -a -g -o tdp_erd.png"
+      - store_artifacts:
+          path: tdrs-backend/tdp_erd.png
+
   frontend-owasp-scan:
     executor: machine-executor
     working_directory: ~/tdp-apps
@@ -586,7 +601,15 @@ workflows:
           filters:
             branches:
               only:
-               - raft-tdp-main
+               - develop
+
+  erd:
+    jobs:
+      - make_erd:
+         filters:
+             branches:
+                 only:
+                     develop
 
   owasp-scan:
     when: << pipeline.parameters.run_owasp_scan >>
@@ -601,16 +624,16 @@ workflows:
           filters:
             branches:
               only:
-                - raft-tdp-main
+                - develop
       - deploy-infrastructure-staging:
           filters:
             branches:
               only:
-                - raft-tdp-main
+                - develop
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
               only:
-                - raft-tdp-main
+                - develop

@@ -22,7 +22,7 @@ New team members: Alex Pennington, Jorge Gonzalez & John Willis
 - [#517 Multifactor authentication in DAC](https://github.com/raft-tech/TANF-app/pull/537)
 - [#518 Remove API endpoint for creating new users](https://github.com/raft-tech/TANF-app/issues/518)
 - [#510 Env variables](https://github.com/raft-tech/TANF-app/issues/510)
-- [Improving our Git Workflow (as part of infrastructure)](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Architecture%20Decision%20Record/009-git-workflow.md)
+- [Improving our Git Workflow (as part of infrastructure)](https://github.com/raft-tech/TANF-app/blob/develop/docs/Architecture%20Decision%20Record/009-git-workflow.md)
 - [Vendor Staging Site deployed](https://github.com/raft-tech/TANF-app/issues/521)
 - Documentation updates to [Team composition](https://github.com/raft-tech/TANF-app/pull/715) and [Definition of done](https://github.com/raft-tech/TANF-app/pull/713)
 - [#672 Regional Office and Tribal TANF meeting](https://github.com/raft-tech/TANF-app/issues/672)
