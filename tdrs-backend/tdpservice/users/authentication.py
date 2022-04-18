@@ -28,7 +28,13 @@ class CustomAuthentication(BaseAuthentication):
                     logging.debug("Updated user {} with hhs_id {}.".format(user.username, user.hhs_id))
                     # if 'username' doesn't exist in postgres then the below `return` triggers
                     # login.py::handler_user() to create new user w/ username and hhs_id
-                return User.objects.get(hhs_id=hhs_id)
+                except Exception as e:
+                    print("hit general exception: {}".format(e), flush=True)
+                    raise e
+                finally:
+                    hhs_user = User.objects.get(hhs_id=hhs_id)
+                    print("hhs_user: {}".format(hhs_user), flush=True)
+                    return hhs_user
 
             elif login_gov_uuid:
                 return User.objects.get(login_gov_uuid=login_gov_uuid)
