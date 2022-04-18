@@ -22,8 +22,8 @@ class CustomAuthentication(BaseAuthentication):
                 try:
                     user = User.objects.get(hhs_id=hhs_id)
                     logging.info("User.hhsid: {}".format(user.hhs_id))
-                except AttributeError:  # 'user' likely None aka hhs_id hasn't been filled in, try to update it
-                    print("Hit attribute error, did not find hhs_id. Will try to update.", flush=True)
+                except User.DoesNotExist:  # 'user' likely None aka hhs_id hasn't been filled in, try to update it
+                    print("Hit DNE error, did not find hhs_id. Will try to update.", flush=True)
                     User.objects.filter(username=username).update(hhs_id=hhs_id)
                     logging.debug("Updated user {} with hhs_id {}.".format(user.username, user.hhs_id))
                     # if 'username' doesn't exist in postgres then the below `return` triggers
@@ -41,7 +41,6 @@ class CustomAuthentication(BaseAuthentication):
             else:
                 return User.objects.get(username=username)
         except User.DoesNotExist:
-            print("user.DNE", flush=True)
             return None
 
     @staticmethod
