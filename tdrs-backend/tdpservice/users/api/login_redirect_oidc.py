@@ -75,6 +75,7 @@ class LoginRedirectAMS(RedirectView):
     permanent = False
     query_string = True
     pattern_name = "oidc-ams"
+
     """
     Redirects user to AMS openid with the needed query parameter strings
 

@@ -23,6 +23,7 @@ from tdpservice.users.api.utils import (
 from tdpservice.users.authentication import CustomAuthentication
 from tdpservice.users.models import User
 
+
 class MockRequest:
     """Mock request class."""
 

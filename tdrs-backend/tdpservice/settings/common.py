@@ -208,7 +208,7 @@ class Common(Configuration):
             "console": {
                 "level": LOGGING_LEVEL,
                 "class": "logging.StreamHandler",
-                "formatter": "simple"
+                "formatter": "simple",
             },
         },
         "loggers": {
