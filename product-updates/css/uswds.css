@@ -22,7 +22,6 @@
 .usa-prose > ul li,
 .usa-prose > ol li, .usa-list li{
   margin-bottom:0.25em;
-  max-width:68ex;
 }
 .usa-prose > ul li:last-child,
 .usa-prose > ol li:last-child, .usa-list li:last-child{

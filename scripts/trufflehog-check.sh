@@ -23,7 +23,7 @@ CIRCLE_BRANCH=$1
 # Get the hash of the latest commit in the target branch.
 last_merge=$(git log --format=format:"%H" -n 1 "$CIRCLE_BRANCH")
 
-# --since_commit - Look at all commits since the last merge into raft-tdp-main
+# --since_commit - Look at all commits since the last merge into develop
 # --entropy=True - Entropy checks on large git diffs
 python ./trufflehog-check/lib/python$pythonVersion/site-packages/truffleHog/truffleHog.py \
   --regex \
