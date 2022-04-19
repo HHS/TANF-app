@@ -1,2 +1,2 @@
 packages:
-  - postgresql-client
+  - postgresql-client-12
