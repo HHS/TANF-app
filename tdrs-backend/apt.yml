@@ -1,5 +1,5 @@
 cleancache: true
 repos:
-  -	https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-12/postgresql-client-12_12.10-1.pgdg110+1_arm64.deb
+  - deb https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-12/postgresql-client-12_12.10-1.pgdg110+1_arm64.deb
 packages:
   - postgresql-client-12
