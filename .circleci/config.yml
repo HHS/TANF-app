@@ -303,7 +303,6 @@ commands:
             apk add jq
             apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
       - login-cloud-dot-gov:
-          tf-path: <<parameters.tf-path>>
           cf-password: <<parameters.cf-password>>
           cf-username: <<parameters.cf-username>>
           cf-space: <<parameters.cf-space>>
