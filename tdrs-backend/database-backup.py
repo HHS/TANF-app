@@ -1,4 +1,4 @@
-"""Back up the database to S3 bucket"""
+"""Back up the database to S3 bucket."""
 import subprocess
 import os
 import boto3
