@@ -6,6 +6,8 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_BACKEND=${2}
 
+CF_SPACE=${3}
+
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
 
