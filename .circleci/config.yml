@@ -544,16 +544,26 @@ jobs:
           name: Deploy TDP Project Updates Site
           command: ./scripts/deploy-tdp-product-update-site.sh rolling tdp-project-updates
 
-  deploy-prod:
+  deploy-infrastructure-production:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_PROD
+          cf-username: CF_USERNAME_PROD
+          cf-space: tanf-prod
+          tf-path: ./terraform/production
+
+  deploy-production:
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-prod
+          frontend-appname: tdp-frontend-prod
           cf-password: CF_PASSWORD_PROD
           cf-space: tanf-prod
           cf-username: CF_USERNAME_PROD
-          frontend-appname: tdp-frontend-prod
 
 parameters:
   run_dev_deployment:
@@ -637,3 +647,19 @@ workflows:
             branches:
               only:
                 - develop
+
+  production-deployment:
+    unless: << pipeline.parameters.run_dev_deployment >>
+    jobs:
+      - deploy-infrastructure-production:
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-production:
+          requires:
+            - deploy-infrastructure-production
+          filters:
+            branches:
+              only:
+                - master
