@@ -9,12 +9,6 @@ CGHOSTNAME_BACKEND=${2}
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
 
-strip() {
-    # Usage: strip "string" "pattern"
-    printf '%s\n' "${1##$2}"
-}
-#The cloud.gov space defined via environment variable (e.g., "tanf-dev", "tanf-staging")
-env=$(strip $CF_SPACE "tanf-")
 
 #Helper method to generate JWT cert and keys for new environment
 generate_jwt_cert() 
@@ -27,7 +21,7 @@ generate_jwt_cert()
 
 update_backend()
 {
-    bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
+#    bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
     cd tdrs-backend || exit
     if [ "$1" = "rolling" ] ; then
         # Do a zero downtime deploy.  This requires enough memory for
@@ -46,9 +40,15 @@ update_backend()
     cd ..
 }
 
-
+strip() {
+    # Usage: strip "string" "pattern"
+    printf '%s\n' "${1##$2}"
+}
 
 bind_backend_to_services() {
+    #The cloud.gov space defined via environment variable (e.g., "tanf-dev", "tanf-staging")
+    env=$(strip $CF_SPACE "tanf-")
+
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}"
