@@ -19,7 +19,7 @@ variable "cf_org_name" {
 variable "cf_space_name" {
   type        = string
   description = "cloud.gov space name"
-  default     = "tanf-production"
+  default     = "tanf-prod"
 }
 
 variable "cf_user" {

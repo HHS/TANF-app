@@ -551,7 +551,7 @@ jobs:
       - deploy-infrastructure:
           cf-password: CF_PASSWORD_PROD
           cf-username: CF_USERNAME_PROD
-          cf-space: tanf-staging
+          cf-space: tanf-prod
           tf-path: ./terraform/production
 
   deploy-production:
