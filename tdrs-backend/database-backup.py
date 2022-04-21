@@ -1,3 +1,4 @@
+"""Back up the database to S3 bucket"""
 import subprocess
 import os
 import boto3
@@ -55,7 +56,7 @@ pg_dump -F c \
     postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME}
 '''
 
-os.system(postgres_client_add, "-F c --no-acl -f backup.pg", DATABASE_URI)
+os.system(postgres_client_add + "-F c --no-acl -f backup.pg" + DATABASE_URI)
 
 # s3 upload
 s3_ = boto3.s3
