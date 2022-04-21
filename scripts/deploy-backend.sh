@@ -49,6 +49,9 @@ bind_backend_to_services() {
     #The cloud.gov space defined via environment variable (e.g., "tanf-dev", "tanf-staging")
     env=$(strip $CF_SPACE "tanf-")
 
+    echo $CF_SPACE
+    echo $env
+
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}"
