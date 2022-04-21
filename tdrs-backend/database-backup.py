@@ -1,6 +1,6 @@
 import subprocess
-import json
 import os
+import boto3
 
 ORGANIZATION = "hhs-acf-prototyping"
 SPACE = "tanf-dev"
@@ -58,3 +58,4 @@ pg_dump -F c \
 os.system(postgres_client_add, "-F c --no-acl -f backup.pg", DATABASE_URI)
 
 # s3 upload
+s3_ = boto3.s3
