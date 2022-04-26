@@ -59,7 +59,7 @@ class CloudGov(Common):
     # Dynamic Database configuration based on cloud.gov services
     #
 
-    db_name = database_creds['db_name'] if cloudgov_space_suffix == "prod" else f'tdp_db_{cloudgov_space_suffix}'
+    db_name = database_creds['db_name'] if cloudgov_space_suffix == "prod" else f'tdp_db_{cloudgov_space_suffix}_{cloudgov_name}'
 
     DATABASES = {
         'default': {
