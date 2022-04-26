@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9927f96654cab507436b36147be3aa5cdb6e2fc24d19700a2b87a049669fde13"
+            "sha256": "ef71b0692244de28cc29ac07c833eebcc9ce54f435f021ff111ef248a63296e5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,14 @@
         ]
     },
     "default": {
+        "appnope": {
+            "hashes": [
+                "sha256:02bd91c4de869fbb1e1c50aafc4098827a7a54ab2f39d9dcba6c9547ed920e24",
+                "sha256:265a455292d0bd8a72453494fa24df5a11eb18373a60c7c0430889f22548605e"
+            ],
+            "markers": "sys_platform == 'darwin'",
+            "version": "==0.1.3"
+        },
         "asgiref": {
             "hashes": [
                 "sha256:2f8abc20f7248433085eda803936d98992f1343ddb022065779f37c5da0181d0",
@@ -164,7 +172,7 @@
                 "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330",
                 "sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_version >= '3.5'",
             "version": "==5.1.1"
         },
         "deprecated": {
@@ -193,11 +201,11 @@
         },
         "django-admin-508": {
             "hashes": [
-                "sha256:55cac2c36fe71a4bc67aa6fb8c2dea4d1d93dce7cc8fa0af5fa6c58f2a462708",
-                "sha256:cc4bd495f4ca17f10946519d25815a9276e21aa6c81a08814acf09003ebc5ad7"
+                "sha256:172b991c9b6f0c1773e56a16a293adc4f360f151e307798735041a563745b352",
+                "sha256:ed17ef2082b724dd63829e3e00fd2b26b41024294b68dec03932ec4e98831f33"
             ],
             "index": "pypi",
-            "version": "==0.1.10"
+            "version": "==0.2.0"
         },
         "django-admin-logs": {
             "hashes": [
@@ -686,14 +694,6 @@
             ],
             "version": "==0.4.2"
         },
-        "setuptools": {
-            "hashes": [
-                "sha256:26ead7d1f93efc0f8c804d9fafafbe4a44b179580a7105754b245155f9af05a8",
-                "sha256:47c7b0c0f8fc10eec4cf1e71c6fdadf8decaa74ffa087e68cd1c20db7ad6a592"
-            ],
-            "markers": "python_version >= '3.7'",
-            "version": "==62.1.0"
-        },
         "six": {
             "hashes": [
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
@@ -715,7 +715,7 @@
                 "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b",
                 "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==0.10.2"
         },
         "traitlets": {
@@ -839,11 +839,11 @@
         },
         "awscli": {
             "hashes": [
-                "sha256:3a7d9260ecb44e677f04640fd9959fb4310189e39ef0a42fbb652888843890a3",
-                "sha256:54772140fa9fe72c36f1214cd8f2a210af420940983d8f663f5cdf4b103b7e58"
+                "sha256:16e655238a0593de9596f3cbc9db536f78e6437e22db8eb41fc346fcbb704352",
+                "sha256:bfd3d7e46a870231aec6dd8d0f2cb0ffbc63d80e5ed7e8a1a247264230867a30"
             ],
             "index": "pypi",
-            "version": "==1.22.101"
+            "version": "==1.23.0"
         },
         "awscli-local": {
             "hashes": [
@@ -878,11 +878,11 @@
         },
         "colorama": {
             "hashes": [
-                "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff",
-                "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"
+                "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b",
+                "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
-            "version": "==0.4.3"
+            "version": "==0.4.4"
         },
         "coverage": {
             "extras": [
