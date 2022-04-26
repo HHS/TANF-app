@@ -58,10 +58,13 @@ class CloudGov(Common):
     ###
     # Dynamic Database configuration based on cloud.gov services
     #
+
+    db_name = database_creds['db_name'] if cloudgov_space_suffix == "prod" else f'tdp_db_{cloudgov_space_suffix}'
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': database_creds['db_name'], # f'tdp_db_{cloudgov_space_suffix}',
+            'NAME': db_name,
             'USER': database_creds['username'],
             'PASSWORD': database_creds['password'],
             'HOST': database_creds['host'],
