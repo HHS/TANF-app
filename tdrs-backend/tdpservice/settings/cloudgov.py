@@ -61,7 +61,7 @@ class CloudGov(Common):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': f'tdp_db_{cloudgov_space_suffix}',
+            'NAME': database_creds['db_name'], # f'tdp_db_{cloudgov_space_suffix}',
             'USER': database_creds['username'],
             'PASSWORD': database_creds['password'],
             'HOST': database_creds['host'],
