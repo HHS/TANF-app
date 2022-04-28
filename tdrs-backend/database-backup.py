@@ -46,7 +46,8 @@ def backup_database(file_name,
                     postgres_client,
                     database_uri
                     ):
-    """Back up postgres database into file.
+    """Back up postgres database into file."""
+    """
     :param file_name: back up file name
     :param postgres_client: directory address for postgres application
     :param database_uri: postgres URI
