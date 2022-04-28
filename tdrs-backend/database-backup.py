@@ -161,21 +161,15 @@ def handle_args(argv):
 
     if arg_to_backup:
         # back up database
-        is_database_backed_up = backup_database(file_name=arg_file,
-                                                postgres_client=POSTGRES_CLIENT,
-                                                database_uri=arg_database)
+        backup_database(file_name=arg_file,
+                        postgres_client=POSTGRES_CLIENT,
+                        database_uri=arg_database)
 
-        if is_database_backed_up:
-            # upload backup file
-            is_backup_uploaded = upload_file(file_name=arg_file,
-                                             bucket=S3_BUCKET,
-                                             region=S3_REGION)
-            if not is_backup_uploaded:
-                sys.exit(2)
-            else:
-                sys.exit(1)
-        else:
-            sys.exit(2)
+        # upload backup file
+        upload_file(file_name=arg_file,
+                    bucket=S3_BUCKET,
+                    region=S3_REGION)
+
     elif arg_to_restore:
         # download file from s3
         download_file(bucket=S3_BUCKET,
