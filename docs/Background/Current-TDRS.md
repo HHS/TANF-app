@@ -33,7 +33,7 @@ See below for a visual of this data flow.
 ![dataflow_tdrs](https://i.imgur.com/1bK7HMJ.jpg)
 [Figma link to data flow](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=5617%3A47733)
 
-We've also outlined what we've observed from [user research](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research-Syntheses/2020%2C%20Fall%20-%20Understanding%20STT%20Roles%2C%20Source%20of%20Truth%2C%20and%20Metadata.md) about how data is prepared, transmitted, and used. This includes details about: 
+We've also outlined what we've observed from [user research](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2020%2C%20Fall%20-%20Understanding%20STT%20Roles%2C%20Source%20of%20Truth%2C%20and%20Metadata.md) about how data is prepared, transmitted, and used. This includes details about: 
  * the kinds of data STTs can submit
  * tools STTs use to prepare data files (fTANF, etc.)
  * resources OFA provides to STTs on how to prepare and validate their files
@@ -47,7 +47,7 @@ We've also outlined what we've observed from [user research](https://github.com/
 
 A desktop application designed by ACF's IT shop that STTs could download and use to prepare data files that could then be exported and transmitted to OFA. fTANF.exe can prepare all sections of data, check these data for the same types of errors that TDRS uses during processing/validation. The data could be entered by importing a previously-generated transmission file or by manual entry.  The application is no longer supported and is incompatible with newer versions of Windows, but many STTs with older versions of Windows still use it.
     
-STTs using this tool are tracked [here](https://github.com/raft-tech/TANF-app/tree/raft-tdp-main/tdrs-backend/tdpservice/stts/management/commands/data). These STTs will have an `SSN_Encrypted` value of 1. This may change over time. 
+STTs using this tool are tracked [here](https://github.com/raft-tech/TANF-app/tree/develop/tdrs-backend/tdpservice/stts/management/commands/data). These STTs will have an `SSN_Encrypted` value of 1. This may change over time. 
 </details>
 
 ---
@@ -77,7 +77,7 @@ Many STTs use SFTP clients like Winscp or IPSwitch. Others (especially STTs that
 A minimum of 3 data files are included in each quarterly report--1 file per section (1, 2, and 3) of the TANF data report. Note:
 * Section 4 is required *only* for STTs that submit data for a *sample* of its full caseload. 
     
-* STTs that submit the SSP-MOE data report or sample data can vary by fiscal year. Their status for the current fiscal year are captured in the `SSP` and `Sample` indicators [here](https://github.com/raft-tech/TANF-app/tree/raft-tdp-main/tdrs-backend/tdpservice/stts/management/commands/data).
+* STTs that submit the SSP-MOE data report or sample data can vary by fiscal year. Their status for the current fiscal year are captured in the `SSP` and `Sample` indicators [here](https://github.com/raft-tech/TANF-app/tree/develop/tdrs-backend/tdpservice/stts/management/commands/data).
 </details>
 
 **<details><summary>How are the data organized in each file?</summary>**
@@ -164,11 +164,11 @@ Data file sizes vary by section of the TANF/SSP-MOE reports and are as follows:
 
 "Encryption" is an artifact of STTs using executables like FTANF.exe and SSPMOE.exe to prepare their data transmissions files. Encryption in this context means that the values in the SSN position of Section 1 and Section 2 data files are replaced with other alphanumeric characters. 
     
-TDRS has a decryption script that runs on transmitted files if (and only if) the files have an "E" as the [encryption indicator in the header record](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research-Syntheses/2020,%20Fall%20-%20Flatfile%20Metadata%20Guide.md#header-structure). For future reference: in the absence of checking the header record, if the SSN includes special characters, this is also evidence of encryption.
+TDRS has a decryption script that runs on transmitted files if (and only if) the files have an "E" as the [encryption indicator in the header record](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2020,%20Fall%20-%20Flatfile%20Metadata%20Guide.md#header-structure). For future reference: in the absence of checking the header record, if the SSN includes special characters, this is also evidence of encryption.
     
 This decryption ensures that SSNs stored in the database can be used to match to other administrative data sources (e.g. matching to wage records to track employment outcomes for individuals receiving TANF). 
 
-STTs using these executables are tracked [here](https://github.com/raft-tech/TANF-app/tree/raft-tdp-main/tdrs-backend/tdpservice/stts/management/commands/data). These STTs will have an `SSN_Encrypted` value of 1. This may change over time. 
+STTs using these executables are tracked [here](https://github.com/raft-tech/TANF-app/tree/develop/tdrs-backend/tdpservice/stts/management/commands/data). These STTs will have an `SSN_Encrypted` value of 1. This may change over time. 
 
 The decryption code is included the [parsing notebooks](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FTANFDataPortalOFA%2FShared%20Documents%2Fdev%2FParsing&viewid=6ecbc5f1%2Dfa9c%2D4b0a%2Da454%2D35e222e8044e) :lock:
 </details>
@@ -190,7 +190,7 @@ Current TDRS checks (which are being revised and expanded upon for TDP) are incl
 
 **<details><summary>What types of metadata does OFA collect about data transmissions?</summary>**
 
-TDRS tracks data transmissions from the point that data files are *successfully* picked up for processing (i.e. if files are not picked up, no metadata is tracked) to storage into the dB. Metadata collected include: when the data was processed, the reporting period, all information from the [header record](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/User-Experience/Research/2020%2C%20Fall%20-%20Flat%20File%20Metadata%20Guide.md#header-structure), which tells the system how to process and store the data, and a list of any errors detected by the system. 
+TDRS tracks data transmissions from the point that data files are *successfully* picked up for processing (i.e. if files are not picked up, no metadata is tracked) to storage into the dB. Metadata collected include: when the data was processed, the reporting period, all information from the [header record](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research/2020%2C%20Fall%20-%20Flat%20File%20Metadata%20Guide.md#header-structure), which tells the system how to process and store the data, and a list of any errors detected by the system. 
 
 See [Transmissions notebook](https://hhsgov.sharepoint.com/sites/TANFDataPortalOFA/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FTANFDataPortalOFA%2FShared%20Documents%2FDesign%2FTransmissionsDemo%2Ehtml&parent=%2Fsites%2FTANFDataPortalOFA%2FShared%20Documents%2FDesign) for more details :lock:. 
 </details>
@@ -259,7 +259,7 @@ The table below is a representation of each publication OFA produces, frequency 
 </details>
 
 ## Additional resources:
-* [Project Glossary](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Background/Project-Glossary.md) 
+* [Project Glossary](https://github.com/raft-tech/TANF-app/blob/develop/docs/Background/Project-Glossary.md) 
 * [Instructions and form templates for all sections](https://www.acf.hhs.gov/ofa/resource/policy/pi-ofa/2008/200809/tanf-acf-pi-2008-07)
 
 

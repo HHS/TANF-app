@@ -30,7 +30,7 @@ understand the role of the scripts.
 
 # Interacting with Cloud.gov
 
-## [set-backend-env-vars.sh](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/scripts/set-backend-env-vars.sh) 
+## [set-backend-env-vars.sh](./set-backend-env-vars.sh) 
 
 ### Usage 
 
@@ -47,7 +47,7 @@ understand the role of the scripts.
 * `CG_SPACE`: the space the app you are trying to set up for is deployed in.
   * Example: `tanf-dev`
 
-[A full list](https://github.com/raft-tech/TANF-app/blob/c0c9423dcd4d9b87930eb655a74dd8f2701e3dcf/docs/Technical-Documentation/TDP-environments-README.md) of spaces and backends can be found here
+[A full list](../docs/Technical-Documentation/TDP-environments-README.md) of spaces and backends can be found here
 
 ### Description
 
@@ -69,7 +69,7 @@ provided Cloud.gov App Name.
 The script `deploy-backend` invokes this script if the `DEPLOY_STRATEGY` is `initial`, `bind` or `rebuild`. Can optionally be run locally on its own.
 
 
-## [copy-login-gov-keypair.sh](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/scripts/copy-login-gov-keypair.sh)
+## [copy-login-gov-keypair.sh](./copy-login-gov-keypair.sh)
 
 ### Usage
 
@@ -348,7 +348,7 @@ git-secrets-check.sh is used in the [secrets-check command](../.circleci/config.
 ### Description
 
 Installs truffleHog in a python virtual environment and gets the hash of the latest commit in the target branch.
-Looks at all commits since the last merge into raft-tdp-main, and entropy checks on large git diffs. 
+Looks at all commits since the last merge into develop, and entropy checks on large git diffs. 
 If there are issues, they will be listed then script will abort.
 
 ### Where it's used 
@@ -410,7 +410,7 @@ Python hook that can be used to disable ignored rules in ZAP scans.
 This hook runs after the ZAP API has been successfully started.
 
 This is needed to disable passive scanning rules which we have set to IGNORE
-in the [ZAP configuration file](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/tdrs-backend/reports/zap.conf). Due to an unresolved issue with the scripts
+in the [ZAP configuration file](../tdrs-backend/reports/zap.conf). Due to an unresolved issue with the scripts
 the HTML report generated will still include ignored passive rules so this
 allows us to ensure they never run and won't be present in the HTML report.
 

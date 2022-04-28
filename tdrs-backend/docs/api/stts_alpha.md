@@ -1,6 +1,6 @@
 # STTs Sorted by Name
 
-Supports returning a list of STTs sorted in alphabetical order by name if [authenticated](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/tdrs-backend/docs/api/api/authentication.md)
+Supports returning a list of STTs sorted in alphabetical order by name if [authenticated](./authentication.md)
 
 **Request:**
 `GET /v1/stts/alpha`
