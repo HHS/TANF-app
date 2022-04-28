@@ -130,9 +130,8 @@ def list_s3_files(bucket,
     return my_bucket.objects.all()
 
 
-def main(argv):
-    """Perform main task."""
-
+def handle_args(argv):
+    """Handle commandline args."""
     arg_file = "backup.pg"
     arg_database = DATABASE_URI
     arg_to_restore = False
@@ -189,6 +188,11 @@ def main(argv):
                          postgres_client=POSTGRES_CLIENT,
                          database_uri=arg_database)
         sys.exit(0)  # successful
+
+
+def main(argv):
+    """Perform main task."""
+    handle_args(argv=argv)
 
 
 if __name__ == '__main__':
