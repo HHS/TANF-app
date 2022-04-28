@@ -70,7 +70,7 @@ def restore_database(file_name, postgres_client, database_uri):
     pg_restore -F c -d postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME} -f backup.pg
     """
     try:
-        os.system(postgres_client + "pg_restore -F c -d" + database_uri + " -f " + file_name)
+        os.system(postgres_client + "pg_restore --clean --no-owner --no-acl -F c -d" + database_uri + " " + file_name)
         return True
     except Exception as e:
         logging.log(e)
