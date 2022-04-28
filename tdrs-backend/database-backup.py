@@ -61,7 +61,9 @@ def backup_database(file_name,
 
 
 def restore_database(file_name, postgres_client, database_uri):
-    """Restores the database from filename
+    """Restore the database from filename."""
+
+    """
     :param file_name: database backup filename
     :param postgres_client: directory address for postgres application
     :param database_uri: database URI
@@ -76,7 +78,9 @@ def restore_database(file_name, postgres_client, database_uri):
 
 
 def upload_file(file_name, bucket, object_name=None, region='us-gov-west-1'):
-    """Upload a file to an S3 bucket.
+    """Upload a file to an S3 bucket."""
+
+    """
     :param file_name: file name being uploaded to s3 bucket
     :param bucket: bucket name
     :param object_name: S3 object name. If not specified then file_name is used
@@ -100,7 +104,9 @@ def download_file(bucket,
                   region,
                   object_name=None,
                   ):
-    """Downloads file from s3 bucket.
+    """Download file from s3 bucket."""
+
+    """
     :param bucket
     :param file_name
     :param region
@@ -114,7 +120,8 @@ def download_file(bucket,
 
 def list_s3_files(bucket,
                   region):
-    """Lists the files in s3 bucket.
+    """List the files in s3 bucket.
+
     :param bucket:
     :param region:
     """
@@ -127,6 +134,7 @@ def list_s3_files(bucket,
 
 
 def main(argv):
+    """Main method."""
     arg_file = "backup.pg"
     arg_database = DATABASE_URI
     arg_to_restore = False
