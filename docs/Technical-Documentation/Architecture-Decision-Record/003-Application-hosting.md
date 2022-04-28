@@ -21,7 +21,7 @@ We will use Cloud.gov to host the new TDP app.
 
 
 ### Risks
- - Maintaining compliance with any new security standards (e.g. [White House Cybersecurity Executive Order 14208](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/docs/Security-Compliance/WH_CybersecurityEO.md#white-house-cybersecurity-executive-order-14208) enforced by ACF OCIO may take time and coordination with cloud.gov. 
+ - Maintaining compliance with any new security standards (e.g. [White House Cybersecurity Executive Order 14208](https://github.com/raft-tech/TANF-app/blob/develop/docs/Security-Compliance/WH_CybersecurityEO.md#white-house-cybersecurity-executive-order-14208) enforced by ACF OCIO may take time and coordination with cloud.gov. 
  
 
 ## Notes
