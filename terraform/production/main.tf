@@ -50,7 +50,7 @@ data "cloudfoundry_service" "rds" {
 resource "cloudfoundry_service_instance" "database" {
   name             = "tdp-db-prod"
   space            = data.cloudfoundry_space.space.id
-  service_plan     = data.cloudfoundry_service.rds.service_plans["micro-psql"]
+  service_plan     = data.cloudfoundry_service.rds.service_plans["medium-psql"]
   recursive_delete = true
 }
 
@@ -72,6 +72,6 @@ resource "cloudfoundry_service_instance" "staticfiles" {
 resource "cloudfoundry_service_instance" "datafiles" {
   name             = "tdp-datafiles-prod"
   space            = data.cloudfoundry_space.space.id
-  service_plan     = data.cloudfoundry_service.s3.service_plans["basic-sandbox"]
+  service_plan     = data.cloudfoundry_service.s3.service_plans["basic"]
   recursive_delete = true
 }
