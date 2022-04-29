@@ -78,11 +78,11 @@ commands:
       environment:
         description: The environment this script is being run for.
         type: enum
-        enum: ["circle", "nightly"]
+        enum: [ "circle", "nightly" ]
       target:
         description: The target application to be scanned.
         type: enum
-        enum: ["backend", "frontend"]
+        enum: [ "backend", "frontend" ]
     steps:
       - run:
           name: Execute OWASP ZAP vulnerability scan
@@ -104,7 +104,7 @@ commands:
       component:
         description: The component of the application being tested, either backend or frontend.
         type: enum
-        enum: ["backend", "frontend"]
+        enum: [ "backend", "frontend" ]
       coverage-report:
         description: The path to the coverage report being uploaded.
         type: string
@@ -601,6 +601,15 @@ workflows:
           requires:
             - secrets-check
 
+  dev-deployment:
+    when: << pipeline.parameters.run_dev_deployment >>
+    jobs:
+      - deploy-infrastructure-dev
+      - deploy-dev:
+          target_env: << pipeline.parameters.target_env >>
+          requires:
+            - deploy-infrastructure-dev
+
   nightly:
     jobs:
       - nightly-owasp-scan
@@ -610,15 +619,15 @@ workflows:
           filters:
             branches:
               only:
-               - develop
+                - develop
 
   erd:
     jobs:
       - make_erd:
-         filters:
-             branches:
-                 only:
-                     develop
+          filters:
+            branches:
+              only:
+                develop
 
   owasp-scan:
     when: << pipeline.parameters.run_owasp_scan >>
