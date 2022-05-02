@@ -64,10 +64,10 @@ alias tdrs-run-jest='tdrs-npm-run test'
 alias tdrs-run-jest-cov='tdrs-npm-run test:cov'
 
 # run any new migrations for django backend
-alias tdrs-run-migrations='tdrs-compose-backend run web sh -c "python manage.py migrate"'
+alias tdrs-run-migrations='tdrs-compose-backend run web python manage.py migrate'
 
 # Generate new migrations from changes to models for django backend
-alias tdrs-run-migrations='tdrs-compose-backend run web sh -c "python manage.py makemigrations"'
+alias tdrs-make-migrations='tdrs-compose-backend run --rm web python manage.py makemigrations'
 
 # Nuke all non running docker data
 alias tdrs-prune-all-docker-data='docker system prune -a && docker system prune --volumes'
@@ -130,6 +130,7 @@ tdrs-run-pa11y() {
 tdrs-run-pytest () {
 
     cd-tdrs
+    tdrs-start-av
     cd tdrs-backend/
 
     # to escape quoted arguements that would be passed to docker inside of a quote

@@ -40,6 +40,7 @@ tmp
 compliance/opencontrols/
 compliance/exports/
 tdrs-backend/tdpservice/static/*
+*gunicorn.log
 
 # don't ignore requirements.txt
 !requirements.txt
