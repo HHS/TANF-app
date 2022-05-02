@@ -13,7 +13,7 @@ variable "cf_api_url" {
 variable "cf_org_name" {
   type        = string
   description = "cloud.gov organization name"
-  default     = "hhs-acf-prototyping"
+  default     = "hhs-acf-ofa"
 }
 
 variable "cf_space_name" {
