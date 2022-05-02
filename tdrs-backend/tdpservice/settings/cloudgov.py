@@ -136,7 +136,7 @@ class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
 
     # TODO: Add production ACF domain when known
-    ALLOWED_HOSTS = ['tdp-backend-production.app.cloud.gov']
+    ALLOWED_HOSTS = ['api.tanfdata.acf.hhs.gov']
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
         'OIDC_RP_CLIENT_ID',
