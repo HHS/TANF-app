@@ -58,10 +58,14 @@ class CloudGov(Common):
     ###
     # Dynamic Database configuration based on cloud.gov services
     #
+    env_based_db_name = f'tdp_db_{cloudgov_space_suffix}_{cloudgov_name}'
+
+    db_name = database_creds['db_name'] if cloudgov_space_suffix == "prod" else env_based_db_name
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': f'tdp_db_{cloudgov_space_suffix}_{cloudgov_name}',
+            'NAME': db_name,
             'USER': database_creds['username'],
             'PASSWORD': database_creds['password'],
             'HOST': database_creds['host'],
@@ -132,7 +136,7 @@ class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
 
     # TODO: Add production ACF domain when known
-    ALLOWED_HOSTS = ['tdp-backend-production.app.cloud.gov']
+    ALLOWED_HOSTS = ['api.tanfdata.acf.hhs.gov']
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
         'OIDC_RP_CLIENT_ID',
