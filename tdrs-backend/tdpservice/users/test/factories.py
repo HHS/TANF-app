@@ -1,6 +1,7 @@
 """Generate test data for users."""
 
 import factory
+import factory.fuzzy
 
 class BaseUserFactory(factory.django.DjangoModelFactory):
     """Generate test data for users."""
@@ -24,7 +25,8 @@ class BaseUserFactory(factory.django.DjangoModelFactory):
     login_gov_uuid = factory.Faker("uuid4")
     deactivated = False
     # For testing convenience, though most users won't have both a login_gov_uuid and hhs_id
-    hhs_id = factory.Faker("uuid4")
+
+    hhs_id = factory.fuzzy.FuzzyText(length=12, chars="1234567890")
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):

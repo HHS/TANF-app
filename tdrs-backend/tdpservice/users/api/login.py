@@ -148,6 +148,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 return initial_user
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
+        logging.debug("authopt: {}".format(auth_options))
+
+        if "hhs_id" in auth_options:
+            logging.debug("hhs_id in authopt: {}".format(auth_options["hhs_id"]))
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
@@ -155,7 +159,7 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         logger.info("AUTH_OPTIONS")
         logger.info(auth_options)
         user = CustomAuthentication.authenticate(**auth_options)
-        logger.info(user)
+        logging.debug("user obj:{}".format(user))
 
         if user and user.is_active:
             # Users are able to update their emails on login.gov
@@ -378,11 +382,13 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             userinfo_response = requests.post(ams_configuration["userinfo_endpoint"],
                                               {"access_token": access_token})
             user_info = userinfo_response.json()
-            logger.info(user_info)
-            # TODO Use `hhs_id` as primary authentication key
-            # See https://github.com/raft-tech/TANF-app/issues/1136#issuecomment-996822564
+            logging.debug(user_info)
+
             auth_options["username"] = user_info["email"]
-            if "hhs_id" in user_info:
-                auth_options["hhs_id"] = user_info.get("hss_id")
+            try:
+                auth_options["hhs_id"] = user_info["hhsid"]
+            except KeyError:
+                logging.error("Expected key 'hhsid' AMS response")
+                logging.error("user_info: {}".format(user_info))
 
             return auth_options
