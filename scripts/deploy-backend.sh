@@ -32,7 +32,7 @@ update_backend()
 {
     cd tdrs-backend || exit
     if [ "$1" = "rolling" ] ; then
-          bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
+          bash ../scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
 
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.

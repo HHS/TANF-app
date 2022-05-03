@@ -209,7 +209,7 @@ class Common(Configuration):
             "console": {
                 "level": LOGGING_LEVEL,
                 "class": "logging.StreamHandler",
-                "formatter": "verbose",
+                "formatter": "simple",
                 'stream': sys.stdout
             },
         },
@@ -226,6 +226,10 @@ class Common(Configuration):
                 "propagate": False,
             },
             "django.db.backends": {"handlers": ["console"], "level": "INFO"},
+        },
+        "root": {
+            'level': LOGGING_LEVEL,
+            'handlers': ["console"],
         },
     }
 
