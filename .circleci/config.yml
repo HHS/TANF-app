@@ -78,11 +78,11 @@ commands:
       environment:
         description: The environment this script is being run for.
         type: enum
-        enum: ["circle", "nightly"]
+        enum: [ "circle", "nightly" ]
       target:
         description: The target application to be scanned.
         type: enum
-        enum: ["backend", "frontend"]
+        enum: [ "backend", "frontend" ]
     steps:
       - run:
           name: Execute OWASP ZAP vulnerability scan
@@ -104,7 +104,7 @@ commands:
       component:
         description: The component of the application being tested, either backend or frontend.
         type: enum
-        enum: ["backend", "frontend"]
+        enum: [ "backend", "frontend" ]
       coverage-report:
         description: The path to the coverage report being uploaded.
         type: string
@@ -175,6 +175,9 @@ commands:
       backend-appname:
         default: tdp-backend
         type: string
+      cf-space:
+        default: tanf-dev
+        type: string
     steps:
       - get-app-deploy-strategy:
           appname: <<parameters.backend-appname>>
@@ -183,7 +186,8 @@ commands:
           command: |
             bash ./scripts/deploy-backend.sh \
               $DEPLOY_STRATEGY \
-              <<parameters.backend-appname>>
+              <<parameters.backend-appname>> \
+              <<parameters.cf-space>>
 
   deploy-clamav:
     parameters:
@@ -269,6 +273,7 @@ commands:
           cf-username: <<parameters.cf-username>>
       - deploy-backend:
           backend-appname: <<parameters.backend-appname>>
+          cf-space: <<parameters.cf-space>>
       - deploy-clamav:
           backend-appname: <<parameters.backend-appname>>
           cf-org: <<parameters.cf-org>>
@@ -302,7 +307,10 @@ commands:
             apk update
             apk add jq
             apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
-      - login-cloud-dot-gov
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-username: <<parameters.cf-username>>
+          cf-space: <<parameters.cf-space>>
       - run:
           name: Export S3 Credentials for TFState
           command: |
@@ -544,16 +552,26 @@ jobs:
           name: Deploy TDP Project Updates Site
           command: ./scripts/deploy-tdp-product-update-site.sh rolling tdp-project-updates
 
-  deploy-prod:
+  deploy-infrastructure-production:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_PROD
+          cf-username: CF_USERNAME_PROD
+          cf-space: tanf-prod
+          tf-path: ./terraform/production
+
+  deploy-production:
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-prod
+          frontend-appname: tdp-frontend-prod
           cf-password: CF_PASSWORD_PROD
           cf-space: tanf-prod
           cf-username: CF_USERNAME_PROD
-          frontend-appname: tdp-frontend-prod
 
 parameters:
   run_dev_deployment:
@@ -601,15 +619,15 @@ workflows:
           filters:
             branches:
               only:
-               - develop
+                - develop
 
   erd:
     jobs:
       - make_erd:
-         filters:
-             branches:
-                 only:
-                     develop
+          filters:
+            branches:
+              only:
+                develop
 
   owasp-scan:
     when: << pipeline.parameters.run_owasp_scan >>
@@ -637,3 +655,19 @@ workflows:
             branches:
               only:
                 - develop
+
+  production-deployment:
+    unless: << pipeline.parameters.run_dev_deployment >>
+    jobs:
+      - deploy-infrastructure-production:
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-production:
+          requires:
+            - deploy-infrastructure-production
+          filters:
+            branches:
+              only:
+                - master
