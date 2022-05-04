@@ -47,7 +47,7 @@ Unlike Development, the Staging environment contains a single frontend and backe
 **Cloud.gov AWS S3 `(tanf-staging)`**
 
 - `tdp-tf-states` - Stores the Terraform state files used to create and re-recreate services infrastructure. Note this
-  S3 bucket lives in the development space.
+  S3 bucket lives in the staging space.
 
 ## Production
 
