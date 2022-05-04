@@ -67,10 +67,10 @@ def restore_database(file_name, postgres_client, database_uri):
     :param file_name: database backup filename
     :param postgres_client: directory address for postgres application
     :param database_uri: database URI
-    pg_restore -F c -d postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME} -f backup.pg
     """
     try:
-        os.system(postgres_client + "pg_restore --clean --no-owner --no-acl -F c -d" + database_uri + " " + file_name)
+        os.system(postgres_client + "pg_restore --clean --no-owner --no-password --no-privileges "
+                                    "--no-acl -F c -d" + database_uri + " " + file_name)
         return True
     except Exception as e:
         logging.log(e)
