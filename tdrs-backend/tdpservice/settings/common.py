@@ -192,7 +192,7 @@ class Common(Configuration):
             },
             "verbose": {
                 "format": (
-                    "[%(asctime)s %(levelname)s %(filename)s::%(funcName)s::%(lineno)d :  %(message)s"
+                    "[%(asctime)s %(levelname)s %(filename)s::%(funcName)s:L%(lineno)d :  %(message)s"
                 )
             },
             "simple": {"format": "%(levelname)s %(message)s"},
