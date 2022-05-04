@@ -211,24 +211,27 @@ class Common(Configuration):
                 "formatter": "simple",
             },
             "application": {
-                "level": LOGGING_LEVEL,
                 "class": "logging.StreamHandler",
                 "formatter": "verbose",
+                "stream": sys.stdout,
             },
         },
         "loggers": {
             "tdpservice": {
-                "handlers": ["application"],
-                "propagate": True
+               "handlers": ["application"],
+               "propagate": True,
+               "level": LOGGING_LEVEL
             },
             "django": {"handlers": ["console"], "propagate": True},
             "django.server": {
                 "handlers": ["django.server"],
                 "propagate": False,
+                "level": LOGGING_LEVEL
             },
             "django.request": {
                 "handlers": ["console"],
                 "propagate": False,
+                "level": LOGGING_LEVEL
             },
             "django.db.backends": {"handlers": ["console"], "level": "INFO"},
         },
