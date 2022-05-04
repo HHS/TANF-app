@@ -101,6 +101,9 @@ class CloudGov(Common):
     AWS_S3_STATICFILES_BUCKET_NAME = s3_staticfiles_creds['bucket']
     AWS_S3_STATICFILES_ENDPOINT = f'https://{s3_staticfiles_creds["endpoint"]}'
     AWS_S3_STATICFILES_REGION_NAME = s3_staticfiles_creds['region']
+
+    AWS_LOCATION=cloudgov_name
+
     MEDIA_URL = \
         f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/'
 
