@@ -6,8 +6,9 @@ from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
 
-from configurations import Configuration
 from django.core.exceptions import ImproperlyConfigured
+
+from configurations import Configuration
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -300,6 +301,7 @@ class Common(Configuration):
 
     # The URL endpoint to send AV scan requests to (clamav-rest)
     AV_SCAN_URL = os.getenv('AV_SCAN_URL')
+    print(f"AV SCAN URL {AV_SCAN_URL}")
 
     # The factor used to determine how long to wait before retrying failed scans
     # NOTE: This value exponentially increases up to the maximum retries allowed
