@@ -28,6 +28,7 @@ class STT(models.Model):
         max_length=200, blank=True, null=True, choices=EntityType.choices
     )
     code = models.CharField(max_length=2, blank=True, null=True)
+    code_number = models.PositiveIntegerField(blank=True, null=True)
     name = models.CharField(max_length=1000)
     region = models.ForeignKey(
         Region, on_delete=models.CASCADE, related_name="stts", null=True
