@@ -146,7 +146,6 @@ def handle_args(argv):
 
     try:
         opts, args = getopt.getopt(argv, "hbrf:d", ["help", "file", "backup", "restore", "database"])
-
         for opt, arg in opts:
             if "backup" in opt or "-b" in opt:
                 arg_to_backup = True
@@ -186,10 +185,6 @@ def handle_args(argv):
                          postgres_client=POSTGRES_CLIENT,
                          database_uri=arg_database)
         sys.exit(0)  # successful
-
-    elif arg_to_list:
-        list_s3_files(bucket=S3_BUCKET,
-                      region=S3_REGION)
 
 
 def main(argv):
