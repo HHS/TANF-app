@@ -72,6 +72,7 @@ class Common(Configuration):
         "tdpservice.middleware.NoCacheMiddleware",
     )
 
+    APP_NAME = "dev"
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = "tdpservice.urls"
     SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
