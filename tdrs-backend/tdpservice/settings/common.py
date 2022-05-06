@@ -194,8 +194,7 @@ class Common(Configuration):
             },
             "verbose": {
                 "format": (
-                    "%(levelname)s %(asctime)s %(module)s "
-                    "%(process)d %(thread)d %(message)s"
+                    "[%(asctime)s %(levelname)s %(filename)s::%(funcName)s:L%(lineno)d :  %(message)s"
                 )
             },
             "simple": {"format": "%(levelname)s %(message)s"},
@@ -212,18 +211,27 @@ class Common(Configuration):
                 "class": "logging.StreamHandler",
                 "formatter": "simple",
             },
+            "application": {
+                "class": "logging.StreamHandler",
+                "formatter": "verbose",
+            },
         },
         "loggers": {
+            "tdpservice": {
+               "handlers": ["application"],
+               "propagate": True,
+               "level": LOGGING_LEVEL
+            },
             "django": {"handlers": ["console"], "propagate": True},
             "django.server": {
                 "handlers": ["django.server"],
-                "level": LOGGING_LEVEL,
                 "propagate": False,
+                "level": LOGGING_LEVEL
             },
             "django.request": {
                 "handlers": ["console"],
-                "level": LOGGING_LEVEL,
                 "propagate": False,
+                "level": LOGGING_LEVEL
             },
             "django.db.backends": {"handlers": ["console"], "level": "INFO"},
         },
