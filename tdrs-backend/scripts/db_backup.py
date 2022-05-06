@@ -133,7 +133,7 @@ def list_s3_files(bucket,
 
 def handle_args(argv):
     """Handle commandline args."""
-    arg_file = "backup.pg"
+    arg_file = "../../scripts/backup.pg"
     arg_database = DATABASE_URI
     arg_to_restore = False
     arg_to_backup = False
@@ -176,7 +176,7 @@ def handle_args(argv):
         download_file(bucket=S3_BUCKET,
                       file_name=arg_file,
                       region=S3_REGION,
-                      object_name=arg_file)
+                      object_name="/backup/"+arg_file)
 
         # restore database
         restore_database(file_name=arg_file,
