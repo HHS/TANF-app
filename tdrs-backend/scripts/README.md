@@ -28,7 +28,13 @@ The db_backup.py is written as a python script to perform backup and restore com
 + Download remote s3 file 
 + List S3 files (To be added)
 
-### Preparation: 
+### Preparation
+SSH to the instance:
+```bash
+cf ssh <instance name>
+```
+instance name: e.g.: tdp-backend-raft
+
 We need to have postgres12 and Python available before being able to use the script: 
 ```bash
 export LD_LIBRARY_PATH=~/deps/#/python/lib
