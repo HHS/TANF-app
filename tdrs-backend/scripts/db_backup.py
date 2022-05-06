@@ -146,7 +146,7 @@ def handle_args(argv):
                "Database URI as postgresql://$<USERNAME>:$<PASSWORD>@$<HOST>:$<PORT>/$<NAME>"
 
     try:
-        opts, args = getopt.getopt(argv, "hbrlf:d", ["help", "file", "backup", "restore", "list", "database"])
+        opts, args = getopt.getopt(argv, "hbrf:d", ["help", "file", "backup", "restore", "database"])
 
         for opt, arg in opts:
             if "backup" in opt or "-b" in opt:
