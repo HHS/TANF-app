@@ -63,6 +63,6 @@ python -r -f <filename>
 ```
 where:
 + -r: run restore script
-+ -f <filename>: defines the fielname for backup file. If not defines, it defaults to backup.pg
++ -f <filename>: defines the filename for backup file. If not defines, it defaults to backup.pg
 
 The utility uses the URI which includes all addresses needed to connect to remote AWS RDS.
