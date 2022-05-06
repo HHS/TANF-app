@@ -137,7 +137,6 @@ def handle_args(argv):
     arg_database = DATABASE_URI
     arg_to_restore = False
     arg_to_backup = False
-    arg_to_list = False
     arg_help = "-f <filename> \t\t: the file name used for backup file \n" \
                "-h \t\t\t: help \n" \
                "-b \t\t\t: backup \n" \
