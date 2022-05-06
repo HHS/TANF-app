@@ -22,8 +22,6 @@ while we need to create shell scripts.
 
 The db_backup.py is written as a python script to perform backup and restore commands.
 
-+ [list](./README.md#lkjlk)
-
 + Backup database 
 + Restore the backup 
 + Save local file to S3 instance 
