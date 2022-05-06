@@ -137,6 +137,7 @@ def handle_args(argv):
     arg_database = DATABASE_URI
     arg_to_restore = False
     arg_to_backup = False
+    arg_to_list = False
     arg_help = "-f <filename> \t\t: the file name used for backup file \n" \
                "-h \t\t\t: help \n" \
                "-b \t\t\t: backup \n" \
@@ -145,7 +146,7 @@ def handle_args(argv):
                "Database URI as postgresql://$<USERNAME>:$<PASSWORD>@$<HOST>:$<PORT>/$<NAME>"
 
     try:
-        opts, args = getopt.getopt(argv, "hbrf:d", ["help", "file", "backup", "restore", "database"])
+        opts, args = getopt.getopt(argv, "hbrlf:d", ["help", "file", "backup", "restore", "list", "database"])
         for opt, arg in opts:
             if "backup" in opt or "-b" in opt:
                 arg_to_backup = True
@@ -155,6 +156,8 @@ def handle_args(argv):
                 arg_file = arg
             elif "database" in opt or "-d" in opt:
                 arg_database = arg
+            elif "list" in opt or "-l" in opt:
+                arg_to_list = True
     except Exception as e:
         print(e)
         print(arg_help)
@@ -169,7 +172,8 @@ def handle_args(argv):
         # upload backup file
         upload_file(file_name=arg_file,
                     bucket=S3_BUCKET,
-                    region=S3_REGION)
+                    region=S3_REGION,
+                    object_name="/backup/"+arg_file)
 
     elif arg_to_restore:
         # download file from s3
@@ -183,6 +187,10 @@ def handle_args(argv):
                          postgres_client=POSTGRES_CLIENT,
                          database_uri=arg_database)
         sys.exit(0)  # successful
+
+    elif arg_to_list:
+        list_s3_files(bucket=S3_BUCKET,
+                      region=S3_REGION)
 
 
 def main(argv):
