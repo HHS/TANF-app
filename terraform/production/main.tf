@@ -1,5 +1,5 @@
 ###
-# Terraform settings and backend
+# Terraform production settings and backend
 ###
 
 terraform {
@@ -11,8 +11,8 @@ terraform {
   }
 
   backend "s3" {
-    bucket  = "cg-750fc828-2c32-4256-bd2c-34dfca0304dc"
-    key     = "terraform.tfstate.staging"
+    bucket  = "cg-220d7939-3fdc-474f-905f-cd254dd1219a"
+    key     = "terraform.tfstate.production"
     encrypt = true
     region  = "us-gov-west-1"
   }
@@ -48,9 +48,9 @@ data "cloudfoundry_service" "rds" {
 }
 
 resource "cloudfoundry_service_instance" "database" {
-  name             = "tdp-db-staging"
+  name             = "tdp-db-prod"
   space            = data.cloudfoundry_space.space.id
-  service_plan     = data.cloudfoundry_service.rds.service_plans["micro-psql"]
+  service_plan     = data.cloudfoundry_service.rds.service_plans["medium-psql"]
   recursive_delete = true
 }
 
@@ -63,15 +63,15 @@ data "cloudfoundry_service" "s3" {
 }
 
 resource "cloudfoundry_service_instance" "staticfiles" {
-  name             = "tdp-staticfiles-staging"
+  name             = "tdp-staticfiles-prod"
   space            = data.cloudfoundry_space.space.id
   service_plan     = data.cloudfoundry_service.s3.service_plans["basic-public-sandbox"]
   recursive_delete = true
 }
 
 resource "cloudfoundry_service_instance" "datafiles" {
-  name             = "tdp-datafiles-staging"
+  name             = "tdp-datafiles-prod"
   space            = data.cloudfoundry_space.space.id
-  service_plan     = data.cloudfoundry_service.s3.service_plans["basic-sandbox"]
+  service_plan     = data.cloudfoundry_service.s3.service_plans["basic"]
   recursive_delete = true
 }

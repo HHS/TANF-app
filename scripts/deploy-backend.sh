@@ -6,6 +6,8 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_BACKEND=${2}
 
+CF_SPACE=${3}
+
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
 
@@ -15,6 +17,7 @@ strip() {
 }
 #The cloud.gov space defined via environment variable (e.g., "tanf-dev", "tanf-staging")
 env=$(strip $CF_SPACE "tanf-")
+
 
 #Helper method to generate JWT cert and keys for new environment
 generate_jwt_cert() 
@@ -27,9 +30,10 @@ generate_jwt_cert()
 
 update_backend()
 {
-    bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
     cd tdrs-backend || exit
     if [ "$1" = "rolling" ] ; then
+          bash ./scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
+
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
         cf push "$CGHOSTNAME_BACKEND" --no-route  -f manifest.buildpack.yml  --strategy rolling || exit 1
@@ -49,6 +53,8 @@ update_backend()
 
 
 bind_backend_to_services() {
+
+
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGHOSTNAME_BACKEND" "tdp-db-${env}"
