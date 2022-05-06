@@ -133,7 +133,7 @@ def list_s3_files(bucket,
 
 def handle_args(argv):
     """Handle commandline args."""
-    arg_file = "../../scripts/backup.pg"
+    arg_file = "/tmp/backup.pg"
     arg_database = DATABASE_URI
     arg_to_restore = False
     arg_to_backup = False
