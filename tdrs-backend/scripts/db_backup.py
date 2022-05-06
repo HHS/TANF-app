@@ -147,11 +147,10 @@ def handle_args(argv):
 
     try:
         opts, args = getopt.getopt(argv, "hbrlf:d", ["help", "file", "backup", "restore", "list", "database"])
+
         for opt, arg in opts:
             if "backup" in opt or "-b" in opt:
                 arg_to_backup = True
-            elif "list" in opt or "-l" in opt:
-                arg_to_list = True
             elif "restore" in opt or "-r" in opt:
                 arg_to_restore = True
             elif "file" in opt or "-f" in opt:
