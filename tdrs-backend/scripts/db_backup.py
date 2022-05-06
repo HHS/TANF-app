@@ -44,7 +44,7 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = S3_SECRET_ACCESS_KEY
 
 def backup_database(file_name,
                     postgres_client,
-                    database_uri
+                    database_uri=DATABASE_URI
                     ):
     """Back up postgres database into file."""
     """
@@ -61,7 +61,7 @@ def backup_database(file_name,
         return False
 
 
-def restore_database(file_name, postgres_client, database_uri):
+def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     """Restore the database from filename."""
     """
     :param file_name: database backup filename
@@ -128,7 +128,7 @@ def list_s3_files(bucket,
                             region_name=region)
     s3 = session.resource('s3')
     my_bucket = s3.Bucket(bucket)
-    return my_bucket.objects.all()
+    return list(_ for _ in my_bucket.objects.all())
 
 
 def handle_args(argv):
@@ -171,14 +171,14 @@ def handle_args(argv):
         upload_file(file_name=arg_file,
                     bucket=S3_BUCKET,
                     region=S3_REGION,
-                    object_name="/backup/"+arg_file)
+                    object_name="/backup"+arg_file)
 
     elif arg_to_restore:
         # download file from s3
         download_file(bucket=S3_BUCKET,
                       file_name=arg_file,
                       region=S3_REGION,
-                      object_name="/backup/"+arg_file)
+                      object_name="/backup"+arg_file)
 
         # restore database
         restore_database(file_name=arg_file,
