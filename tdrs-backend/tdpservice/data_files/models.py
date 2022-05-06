@@ -3,11 +3,19 @@ import os
 
 from django.db import models
 from django.db.models import Max
+from io import StringIO
+from typing import Union
+import logging
+from django.contrib.admin.models import ContentType, LogEntry, ADDITION
+from django.core.files.base import File
+from django.db import models
 
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
+
+logger = logging.getLogger(__name__)
 
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
@@ -138,3 +146,109 @@ class DataFile(File):
         return self.objects.filter(
             version=version, year=year, quarter=quarter, section=section, stt=stt,
         ).first()
+
+class LegacyFileTransferManager(models.Manager):
+    """Extends object manager functionality for LegacyFileTransfer model."""
+
+    def record_scan(
+        self,
+        file: Union[File, StringIO],
+        file_name: str,
+        msg: str,
+        result: 'LegacyFileTransfer.Result',
+        uploaded_by: User
+    ) -> 'LegacyFileTransfer':
+        """Create a new LegacyFileTransfer instance with associated LogEntry."""
+        try:
+            file_shasum = get_file_shasum(file)
+        except (AttributeError, TypeError, ValueError) as err:
+            logger.error(f'Encountered error deriving file hash: {err}')
+            file_shasum = 'INVALID'
+
+        # Create the LegacyFileTransfer instance.
+        fileTransfer = self.model.objects.create(
+            file_name=file_name,
+            file_size=(
+                file.size
+                if isinstance(file, File)
+                else len(file.getvalue())
+            ),
+            file_shasum=file_shasum,
+            result=result,
+            uploaded_by=uploaded_by
+        )
+
+        # Create a new LogEntry that is tied to this model instance.
+        content_type = ContentType.objects.get_for_model(LegacyFileTransfer)
+        LogEntry.objects.log_action(
+            user_id=uploaded_by.pk,
+            content_type_id=content_type.pk,
+            object_id=fileTransfer.pk,
+            object_repr=str(fileTransfer),
+            action_flag=ADDITION,
+            change_message=msg
+        )
+
+        return fileTransfer
+
+
+class LegacyFileTransfer(models.Model):
+    """Represents a file transferred to ACF Titan for an uploaded file."""
+
+    class Meta:
+        """Model Meta options."""
+
+        verbose_name = 'Legacy File Transfer'
+
+    class Result(models.TextChoices):
+        """Represents the possible results from a completed transfer."""
+
+        COMPLETED = 'COMPLETED'
+        ERROR = 'ERROR'
+
+    sent_at = models.DateTimeField(auto_now_add=True)
+    file_name = models.TextField()
+    file_size = models.PositiveBigIntegerField(
+        help_text='The file size in bytes'
+    )
+    file_shasum = models.TextField(
+        help_text='The SHA256 checksum of the uploaded file'
+    )
+    result = models.CharField(
+        choices=Result.choices,
+        help_text='Transfer result for uploaded file',
+        max_length=12
+    )
+    uploaded_by = models.ForeignKey(
+        User,
+        help_text='The user that uploaded the data file',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='fileTransfer'
+    )
+
+    data_file = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The resulting DataFile object, if this transfer was completed',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='fileTransfer'
+    )
+
+    objects = LegacyFileTransferManager()
+
+    def __str__(self) -> str:
+        """Return string representation of model instance."""
+        return f'{self.file_name} ({self.file_size_humanized}) - {self.result}'
+
+    @property
+    def file_size_humanized(self) -> str:
+        """Convert the file size into the largest human-readable unit."""
+        size = self.file_size
+        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+            if size < 1024.0:
+                break
+            size /= 1024.0
+
+        return f'{size:.{2}f}{unit}'
