@@ -150,14 +150,15 @@ def handle_args(argv):
         for opt, arg in opts:
             if "backup" in opt or "-b" in opt:
                 arg_to_backup = True
+            elif "list" in opt or "-l" in opt:
+                arg_to_list = True
             elif "restore" in opt or "-r" in opt:
                 arg_to_restore = True
             elif "file" in opt or "-f" in opt:
                 arg_file = arg
             elif "database" in opt or "-d" in opt:
                 arg_database = arg
-            elif "list" in opt or "-l" in opt:
-                arg_to_list = True
+
     except Exception as e:
         print(e)
         print(arg_help)
