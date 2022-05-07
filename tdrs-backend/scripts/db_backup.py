@@ -67,7 +67,7 @@ def backup_database(file_name,
     pg_dump -F c --no-acl --no-owner -f backup.pg postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME}
     """
     try:
-        os.system(postgres_client + "pg_dump -Fc --no-acl -f " +file_name + " " + database_uri)
+        os.system(postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " " + database_uri)
         return True
     except Exception as e:
         logging.log(e)
