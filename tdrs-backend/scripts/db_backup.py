@@ -14,48 +14,46 @@ import getopt
 
 OS_ENV = os.environ
 
-#try:
-SPACE = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
+try:
+    SPACE = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
 
-# Postgres client pg_dump directory
-f = subprocess.Popen(["find", "/", "-iname", "pg_dump"], stdout=subprocess.PIPE)
-f.wait()
-output, error = f.communicate()
-output = output.decode("utf-8").split('\n')
-if output[0] == '':
-    raise Exception("Postgres client is not found")
+    # Postgres client pg_dump directory
+    f = subprocess.Popen(["find", "/", "-iname", "pg_dump"], stdout=subprocess.PIPE)
+    f.wait()
+    output, error = f.communicate()
+    output = output.decode("utf-8").split('\n')
+    if output[0] == '':
+        raise Exception("Postgres client is not found")
 
-POSTGRES_CLIENT = None
-for _ in output:
-    if 'pg_dump' in str(_) and 'postgresql' in str(_):
-        POSTGRES_CLIENT = _[:_.find('pg_dump')]
+    POSTGRES_CLIENT = None
+    for _ in output:
+        if 'pg_dump' in str(_) and 'postgresql' in str(_):
+            POSTGRES_CLIENT = _[:_.find('pg_dump')]
 
-S3_ENV_VARS = json.loads(OS_ENV['VCAP_SERVICES'])['s3']
-S3_CREDENTIALS = S3_ENV_VARS[0]['credentials']
-S3_ACCESS_KEY_ID = S3_CREDENTIALS['access_key_id']
-S3_SECRET_ACCESS_KEY = S3_CREDENTIALS['secret_access_key']
-S3_BUCKET = S3_CREDENTIALS['bucket']
-S3_REGION = S3_CREDENTIALS['region']
-DATABASE_URI = OS_ENV['DATABASE_URL']
+    S3_ENV_VARS = json.loads(OS_ENV['VCAP_SERVICES'])['s3']
+    S3_CREDENTIALS = S3_ENV_VARS[0]['credentials']
+    S3_ACCESS_KEY_ID = S3_CREDENTIALS['access_key_id']
+    S3_SECRET_ACCESS_KEY = S3_CREDENTIALS['secret_access_key']
+    S3_BUCKET = S3_CREDENTIALS['bucket']
+    S3_REGION = S3_CREDENTIALS['region']
+    DATABASE_URI = OS_ENV['DATABASE_URL']
 
-# Set AWS credentials in env, Boto3 uses the env variables for connection
-os.environ["AWS_ACCESS_KEY_ID"] = S3_ACCESS_KEY_ID
-os.environ["AWS_SECRET_ACCESS_KEY"] = S3_SECRET_ACCESS_KEY
+    # Set AWS credentials in env, Boto3 uses the env variables for connection
+    os.environ["AWS_ACCESS_KEY_ID"] = S3_ACCESS_KEY_ID
+    os.environ["AWS_SECRET_ACCESS_KEY"] = S3_SECRET_ACCESS_KEY
 
-# Set Database connection info
-AWS_RDS_SERVICE_JSON = json.loads(OS_ENV['VCAP_SERVICES'])['aws-rds'][0]['credentials']
-DATABASE_PORT = AWS_RDS_SERVICE_JSON['port']
-DATABASE_PASSWORD = AWS_RDS_SERVICE_JSON['password']
-DATABASE_DB_NAME = AWS_RDS_SERVICE_JSON['db_name']
-DATABASE_HOST = AWS_RDS_SERVICE_JSON['host']
-DATABASE_USERNAME = AWS_RDS_SERVICE_JSON['username']
+    # Set Database connection info
+    AWS_RDS_SERVICE_JSON = json.loads(OS_ENV['VCAP_SERVICES'])['aws-rds'][0]['credentials']
+    DATABASE_PORT = AWS_RDS_SERVICE_JSON['port']
+    DATABASE_PASSWORD = AWS_RDS_SERVICE_JSON['password']
+    DATABASE_DB_NAME = AWS_RDS_SERVICE_JSON['db_name']
+    DATABASE_HOST = AWS_RDS_SERVICE_JSON['host']
+    DATABASE_USERNAME = AWS_RDS_SERVICE_JSON['username']
 
-"""
+
 except Exception as e:
     print(e)
     sys.exit(1)
-"""
-
 
 
 def backup_database(file_name,
@@ -92,10 +90,6 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     except Exception as e:
         logging.log(e)
         return False
-
-# C:\Program Files\PostgreSQL\12\bin\pg_restore.exe --host "localhost" --port "5432"
-# --username "postgres" --no-password --dbname "cgawsbrokerprodx9hbe1uy1srystc"
-# --no-owner --no-privileges --clean --verbose "C:\\Users\\MATSOH~1\\DOCUME~1\\backup.pg"
 
 
 def upload_file(file_name, bucket, object_name=None, region='us-gov-west-1'):
