@@ -84,7 +84,7 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     """
     try:
         os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges "
-                                    "--no-acl" + " --host " + DATABASE_HOST
+                                    "--no-acl" + " --host " + DATABASE_HOST + " --username " + DATABASE_USERNAME
                   + " --port " + DATABASE_PORT + " --dbname " + DATABASE_DB_NAME + "  " + file_name)
         return True
     except Exception as e:
