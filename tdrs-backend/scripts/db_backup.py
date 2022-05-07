@@ -67,7 +67,7 @@ def backup_database(file_name,
     pg_dump -F c --no-acl --no-owner -f backup.pg postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME}
     """
     try:
-        os.system(postgres_client + "pg_dump -Fc --no-acl -f " + "/tmp/"+file_name + " " + database_uri)
+        os.system(postgres_client + "pg_dump -Fc --no-acl -f " +file_name + " " + database_uri)
         return True
     except Exception as e:
         logging.log(e)
@@ -166,14 +166,14 @@ def handle_args(argv):
             elif "restore" in opt or "-r" in opt:
                 arg_to_restore = True
             elif "file" in opt or "-f" in opt:
-                arg_file = arg
+                arg_file = arg if "/" in arg else "/tmp/" + arg
             elif "database" in opt or "-d" in opt:
                 arg_database = arg
 
     except Exception as e:
         print(e)
         print(arg_help)
-        sys.exit(2)
+        sys.exit(1)
 
     if arg_to_backup:
         # back up database
