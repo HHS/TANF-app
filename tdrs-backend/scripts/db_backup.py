@@ -51,7 +51,7 @@ try:
     DATABASE_USERNAME = AWS_RDS_SERVICE_JSON['username']
 
     # write .pgpass
-    with open('/home/vcap/.pgpass','w') as f:
+    with open('/home/vcap/.pgpass', 'w') as f:
         f.write(DATABASE_HOST+":"+DATABASE_PORT+":"+DATABASE_DB_NAME+":"+DATABASE_USERNAME+":"+DATABASE_PASSWORD)
     os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
 
