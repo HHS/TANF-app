@@ -50,6 +50,10 @@ try:
     DATABASE_HOST = AWS_RDS_SERVICE_JSON['host']
     DATABASE_USERNAME = AWS_RDS_SERVICE_JSON['username']
 
+    # write .pgpass
+    with open('/home/vcap/.pgpass') as f:
+        f.write(DATABASE_HOST+":"+DATABASE_PORT+":"+DATABASE_DB_NAME+":"+DATABASE_USERNAME+":"+DATABASE_PASSWORD)
+    os.environ['PGPASSFILE'] = '/home/user/.pgpass'
 
 except Exception as e:
     print(e)
@@ -83,8 +87,8 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     :param database_uri: database URI
     """
     try:
-        os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges "
-                                    "--no-acl" + " --host " + DATABASE_HOST + " --username " + DATABASE_USERNAME
+        os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges --no-acl"
+                  + " --host " + DATABASE_HOST + " --username " + DATABASE_USERNAME
                   + " --port " + DATABASE_PORT + " --dbname " + DATABASE_DB_NAME + "  " + file_name)
         return True
     except Exception as e:
