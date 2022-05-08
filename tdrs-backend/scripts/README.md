@@ -5,8 +5,7 @@ version 12. According to [Cloud.Gov documentation](https://cloud.gov/docs/servic
 the RDS service that is used by Cloud.Gov uses 14 days retention for automatic backups. These backups can be restored by 
 Cloud.Gov support.
 
-There are also other approaches to access database data by performing backups using 
-pg_dump such as using: 
+There are other approaches to access database data by performing backups using pg_dump such as using: 
 ```bash
 cg-manage-rds export -o "-F c" -f ./backup.pg ${SERVICE_NAME}
 ```
@@ -43,26 +42,27 @@ Note: '#' can change depending on programs/packages installed on the instance. N
 
 Then:
 ```bash
-.~/deps/#/python/python3
+cd /home/vcap/deps/#/python/bin
 ```
 This runs the python3 version installed on the system	
 
 
 ## Backup
 ```bash
-python -b -f <filename> -d <database URI>
+./python /app/scripts/db_backup.py -b -f <filename> -d <database URI>
 ```
 where:
 + -b: run backup script
-+ -f <filename>: defines the filename for backup file. If not defines, it defaults to backup.pg
-+ -d <database URI>: URI format: ```postgresql://$<USERNAME>:$<PASSWORD>@$<HOST>:$<PORT>/$<NAME>```
++ -f <filename> [Optional]: defines the filename for backup file. If not defines, it defaults to backup.pg. The filename
+also accepts absolute path: e.g: /tmp/backup.pg
++ -d <database URI> [Optional]: URI format: ```postgresql://$<USERNAME>:$<PASSWORD>@$<HOST>:$<PORT>/$<NAME>```
 
 ## Restore
 ```bash
-python -r -f <filename>
+./python /app/scripts/db_backup.py -r -f <filename>
 ```
 where:
 + -r: run restore script
-+ -f <filename>: defines the filename for backup file. If not defines, it defaults to backup.pg
-
++ -f <filename> [Optional]: defines the filename for backup file. If not defines, it defaults to backup.pg. The filename
+also accepts absolute path: e.g: /tmp/backup.pg
 The utility uses the URI which includes all addresses needed to connect to remote AWS RDS.

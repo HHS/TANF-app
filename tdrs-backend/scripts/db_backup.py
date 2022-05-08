@@ -51,9 +51,9 @@ try:
     DATABASE_USERNAME = AWS_RDS_SERVICE_JSON['username']
 
     # write .pgpass
-    with open('/home/vcap/.pgpass') as f:
+    with open('/home/vcap/.pgpass','w') as f:
         f.write(DATABASE_HOST+":"+DATABASE_PORT+":"+DATABASE_DB_NAME+":"+DATABASE_USERNAME+":"+DATABASE_PASSWORD)
-    os.environ['PGPASSFILE'] = '/home/user/.pgpass'
+    os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
 
 except Exception as e:
     print(e)
@@ -79,12 +79,11 @@ def backup_database(file_name,
         return False
 
 
-def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
+def restore_database(file_name, postgres_client):
     """Restore the database from filename."""
     """
     :param file_name: database backup filename
     :param postgres_client: directory address for postgres application
-    :param database_uri: database URI
     """
     try:
         os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges --no-acl"
@@ -137,8 +136,8 @@ def download_file(bucket,
 
 def list_s3_files(bucket,
                   region):
-    """List the files in s3 bucket.
-
+    """List the files in s3 bucket."""
+    """
     :param bucket:
     :param region:
     """
@@ -201,8 +200,7 @@ def handle_args(argv):
 
         # restore database
         restore_database(file_name=arg_file,
-                         postgres_client=POSTGRES_CLIENT,
-                         database_uri=arg_database)
+                         postgres_client=POSTGRES_CLIENT,)
         sys.exit(0)  # successful
 
 
