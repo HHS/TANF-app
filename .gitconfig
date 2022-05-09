@@ -10,6 +10,7 @@
 	allowed = regexes.json:.*
 	allowed = ./scripts/copy-login-gov-keypair.sh:14:JWT_KEY=.*
 	allowed = ./scripts/set-backend-env-vars.sh:.*
+	allowed = ./scripts/deploy-backend.sh:.*
 	allowed = .git/config:.*
 	allowed = .gitconfig:.*
 	allowed = .*DJANGO_SECRET_KEY=.*tdp-dev-insecure
