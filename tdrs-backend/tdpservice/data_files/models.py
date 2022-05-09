@@ -111,7 +111,7 @@ class DataFile(File):
         STT_TYPES = ["state", "territory", "tribe"]
         SECTION = [i.value for i in list(self.Section)]
         #str(STT_TYPES.index(self.stt.type)+1)
-        return ''.join(prefix+'.FTP'+str(SECTION.index(self.section))+'.TS' + self.stt.code)
+        return ''.join(prefix+'.FTP'+str(SECTION.index(self.section))+'.TS' + str(self.stt.stt_code))
 
     @classmethod
     def create_new_version(self, data):

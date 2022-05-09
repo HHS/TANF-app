@@ -61,3 +61,23 @@ def test_find_latest_version_number(data_file_instance):
         stt=data_file_instance.stt.id
     )
     assert latest_version == new_data_file.version
+
+@pytest.mark.django_db
+def test_create_titan_name(data_file_instance):
+    """
+    Test method to generate filenames
+    def create_filename(self, prefix='ADS.E2J'):
+        STT_TYPES = ["state", "territory", "tribe"]
+        SECTION = [i.value for i in list(self.Section)]
+        #str(STT_TYPES.index(self.stt.type)+1)
+        return ''.join(prefix+'.FTP'+str(SECTION.index(self.section))+'.TS' + self.stt.code)
+    """
+
+
+    whaticareabout = data_file_instance.stt
+    print("DF {}".format(whaticareabout))
+    print("DF dir: {}".format(dir(whaticareabout)))
+    print("sttcode {} vs. filenames {}".format(whaticareabout.stt_code, whaticareabout.filenames))
+    assert data_file_instance.create_filename() == "ADS.E2J.blah"
+
+
