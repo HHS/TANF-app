@@ -34,10 +34,10 @@ class User(AbstractUser):
                                       unique=True)
 
     # Unique `hhsid` user claim for AMS OpenID users.
-    # Note: This field, while currently implemented, is *not* one returned by AMS.
     # In the future, `TokenAuthorizationAMS.get_auth_options` will use `hhs_id` as the primary auth field.
     # See also: CustomAuthentication.py
-    hhs_id = models.UUIDField(editable=False,
+    hhs_id = models.CharField(editable=False,
+                              max_length=12,
                               blank=True,
                               null=True,
                               unique=True)
@@ -75,9 +75,9 @@ class User(AbstractUser):
 
     def validate_location(self):
         """Throw a validation error if a user has a location type incompatable with their role."""
-        if (not (self.is_regional_staff or self.is_data_analyst)) and self.location:
+        if (not (self.is_regional_staff or self.is_data_analyst or self.is_developer)) and self.location:
             raise ValidationError(
-                _("Users other than Regional Staff and data analysts do not get assigned a location"))
+                _("Users other than Regional Staff, Developers, Data Analysts do not get assigned a location"))
         elif self.is_regional_staff and self.location_type and self.location_type.model != 'region':
             raise ValidationError(
                 _("Regional staff cannot have a location type other than region"))
@@ -89,6 +89,11 @@ class User(AbstractUser):
         """Prevent save if attributes are not necessary for a user given their role."""
         super().clean(*args, **kwargs)
         self.validate_location()
+
+    @property
+    def is_developer(self) -> bool:
+        """Return whether or not the user is in the OFA Regional Staff Group."""
+        return self.is_in_group("Developer")
 
     @property
     def is_regional_staff(self) -> bool:

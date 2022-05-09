@@ -122,9 +122,8 @@ def test_get_admin_user(ofa_system_admin):
 @pytest.mark.django_db
 def test_auth_user_by_hhs_id(user):
     """Test get_user method."""
-    authenticated_user = CustomAuthentication.authenticate(hhs_id=user.hhs_id)
+    authenticated_user = CustomAuthentication.authenticate(hhs_id=user.hhs_id, username=user.username)
     assert str(authenticated_user.hhs_id) == user.hhs_id
-
 
 @pytest.mark.django_db
 def test_get_non_user(user):
@@ -147,7 +146,7 @@ class TestLoginAMS:
         "userinfo_endpoint": "http://openid-connect/userinfo"
     }
 
-    test_hhs_id = str(uuid.uuid4())
+    test_hhs_id = "1234567890"
 
     @pytest.fixture(autouse=True)
     def ams_states_factory(self):
@@ -270,6 +269,14 @@ class TestLoginAMS:
         response = view(request)
         assert response.status_code == status.HTTP_302_FOUND
 
+    def test_auth_user_hhs_id_update(self, user):
+        """Test updating pre-existing user w/ hhs_id field."""
+        user.hhs_id = ''
+        user.save()
+        user_by_name = CustomAuthentication.authenticate(username=user.username)
+        assert user_by_name.username == user.username
+        user_by_id = CustomAuthentication.authenticate(username=user.username, hhs_id=self.test_hhs_id)
+        assert str(user_by_id.hhs_id) == self.test_hhs_id
 
 def test_login_gov_redirect(api_client):
     """Test login.gov login url redirects."""
@@ -547,7 +554,7 @@ class TestLoginParam:
         "userinfo_endpoint": "http://openid-connect/userinfo"
     }
 
-    test_hhs_id = str(uuid.uuid4())
+    test_hhs_id = "1234567890"
 
     @pytest.fixture(autouse=True)
     def ams_states_factory(self):

@@ -58,7 +58,7 @@
  
 ## Sprint Summary Report 
 
-- Sprint Summary Reports are created at the end of each sprint and added to Code<>Docs. [View them here.](https://github.com/raft-tech/TANF-app/tree/raft-tdp-main/docs/Sprint-Review)
+- Sprint Summary Reports are created at the end of each sprint and added to Code<>Docs. [View them here.](https://github.com/raft-tech/TANF-app/tree/develop/docs/Sprint-Review)
 - Goal: To document the vendor’s work and satisfy OCIO’s requirements and share during sprint demos.
   - Raft creates markdown file covering all the sprint’s work. 
   - Contains sprint goals, accomplishments, and issues by status (with #s and URLs)

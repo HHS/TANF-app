@@ -1,6 +1,6 @@
 # STTs By Region
 
-Supports returning a list of STTs and Regions with STTs grouped by the region if [authenticated](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/tdrs-backend/docs/api/api/authentication.md)
+Supports returning a list of STTs and Regions with STTs grouped by the region if [authenticated](./authentication.md)
 
 **Request:**
 `GET /v1/stts/by_region`

@@ -1,6 +1,6 @@
 # 8. Deployment Flow
 
-Date: 2021-01-27 (_Updated 2021-12-27_)
+Date: 2021-01-27 (_Updated 2022-04-05_)
 
 ## Status
 
@@ -19,18 +19,21 @@ Additionally, as of January 2021, the project has only a single deployment envir
 Deploy Environment | Cloud.gov Space | Cloud.gov Dev Access | Role                                             | Deploys when ...                                  |
 -------------------|-----------------|----------------------|--------------------------------------------------|---------------------------------------------------|
 Dev                | Tanf-Dev        | Vendor & Gov      | Deploy code submitted for gov review             | Relevant github label assigned as shown below     |
-Staging            | Tanf-Staging    | Gov               | Deploy code once gov-approved                    | Code merged to `raft-tech/TANF-app:raft-tdp-main` |
-Production         | Tanf-Prod       | Gov                  | Deploy code tested in staging & ready for prod   | Code merged to `HHS/TANF-app:main`                |  
+Staging            | Tanf-Staging    | Gov               | Deploy code once gov-approved                    | Code merged to `raft-tech/TANF-app:develop` |
+Production         | Tanf-Prod       | Gov                  | Deploy code tested in staging & ready for prod   | Code merged to `HHS/TANF-app:master`                |  
 
+### Gitflow and Deployments
+We will be following the Gitflow process which is an industry standard. You can read more about it [in our ADR](./018-versioning-and-releases.md). I will just highlight the parts relevant for our deployment strategy. Release branches will be merged to `HHS/TANF-app:master` which will deploy to our production sites. Code merged to `raft-tech/TANF-app:develop` will be deployed to our staging sites.
 
-Within the dev space:
+### Dev deployments
+Within the dev space, there is no correlation for branch to environment as these feature or bugfix branches will constantly vary:
 
 | Dev Site | Frontend URL | Backend URL | Purpose                                          |
 | -------- | -------- | -------- |--------------------------------------------------|
-| Sandbox     | https://tdp-frontend-sandbox.app.cloud.gov | https://tdp-backend-sandbox.app.cloud.gov/admin/     | Space for devs to test in a deployed environment |
+| Sandbox     | https://tdp-frontend-sandbox.app.cloud.gov | https://tdp-backend-sandbox.app.cloud.gov/admin/     | Space for development in a deployed environment |
 | A11y | https://tdp-frontend-a11y.app.cloud.gov | https://tdp-backend-a11y.app.cloud.gov/admin/ | Space for accessibility testing                  |
 | QASP | https://tdp-frontend-qasp.app.cloud.gov | https://tdp-backend-qasp.app.cloud.gov/admin/ | Space for QASP review                            |
-| raft | https://tdp-frontend-raft.app.cloud.gov | https://tdp-backend-raft.app.cloud.gov/admin/ | Space for vendor review                          |
+| raft | https://tdp-frontend-raft.app.cloud.gov | https://tdp-backend-raft.app.cloud.gov/admin/ | Space for Raft review                          |
 
 ## Consequences
 
@@ -46,4 +49,4 @@ Within the dev space:
 
 ## Notes
 
-- As of December 2021, merges into `HHS/TANF-app:main` do not deploy to any environment, since we are pending activation of the production space (#721). 
+- As of April 2022, merges into `HHS/TANF-app:master` do not deploy to any environment, since we are pending activation of the production space (#895). 
