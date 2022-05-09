@@ -149,6 +149,24 @@ def list_s3_files(bucket,
     return list(_ for _ in my_bucket.objects.all())
 
 
+def get_database_credentials(database_uri):
+    """Export database credentials from database URI."""
+    """
+    :param database_uri: Database URI as postgresql://$<USERNAME>:$<PASSWORD>@$<HOST>:$<PORT>/$<NAME>
+    """
+    database_uri = database_uri[database_uri.find('//')+2:]
+    username = database_uri[:database_uri.find(':')]
+    database_uri = database_uri[database_uri.find(':')+1:]
+    password = database_uri[:database_uri.find('@')]
+    database_uri = database_uri[database_uri.find('@') + 1:]
+    host = database_uri[:database_uri.find(':')]
+    database_uri = database_uri[database_uri.find(':') + 1:]
+    port = database_uri[:database_uri.find('/')]
+    database_uri = database_uri[database_uri.find('/') + 1:]
+    database_name = database_uri
+    return [username, password, host, port, database_name]
+
+
 def handle_args(argv):
     """Handle commandline args."""
     arg_file = "/tmp/backup.pg"
@@ -163,7 +181,7 @@ def handle_args(argv):
                "Database URI as postgresql://$<USERNAME>:$<PASSWORD>@$<HOST>:$<PORT>/$<NAME>"
 
     try:
-        opts, args = getopt.getopt(argv, "hbrf:d", ["help", "file", "backup", "restore", "database"])
+        opts, args = getopt.getopt(argv, "hbrf:d", ["help", "file", "backup", "restore", "database", ])
         for opt, arg in opts:
             if "backup" in opt or "-b" in opt:
                 arg_to_backup = True
@@ -173,6 +191,8 @@ def handle_args(argv):
                 arg_file = arg if "/" in arg else "/tmp/" + arg
             elif "database" in opt or "-d" in opt:
                 arg_database = arg
+                [DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_HOST, DATABASE_PORT, DATABASE_DB_NAME] = \
+                    get_database_credentials(arg_database)
 
     except Exception as e:
         print(e)
