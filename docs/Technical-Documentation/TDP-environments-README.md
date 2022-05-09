@@ -44,10 +44,10 @@ Unlike Development, the Staging environment contains a single frontend and backe
 - `tdp-staticfiles-staging` - Stores static HTML/CSS for Django Admin.
 - `tdp-datafiles-staging` - Stores the files uploaded by STTs (no real STT data to be stored in staging).
 
-**Cloud.gov AWS S3 `(tanf-dev)`**
+**Cloud.gov AWS S3 `(tanf-staging)`**
 
 - `tdp-tf-states` - Stores the Terraform state files used to create and re-recreate services infrastructure. Note this
-  S3 bucket lives in the development space.
+  S3 bucket lives in the staging space.
 
 ## Production
 
