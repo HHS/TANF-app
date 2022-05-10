@@ -105,7 +105,6 @@ class CloudGov(Common):
     AWS_S3_STATICFILES_REGION_NAME = s3_staticfiles_creds['region']
 
     AWS_LOCATION = cloudgov_name
-    print(f"AWS LOCATION {AWS_LOCATION}")
 
     MEDIA_URL = \
         f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{AWS_LOCATION}'
