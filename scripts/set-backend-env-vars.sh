@@ -9,14 +9,22 @@ DEFAULT_ROUTE="https://$CGAPPNAME_BACKEND.app.cloud.gov"
 if [ -n "$BASE_URL" ]; then
   # Use Shell Parameter Expansion to replace localhost in the URL
   BASE_URL="${BASE_URL//http:\/\/localhost:8080/$DEFAULT_ROUTE}"
+elif [ "$CG_SPACE" = "tanf-prod" ]; then
+  # Keep the base url set explicitly for production.
+  BASE_URL="$BASE_URL/v1"
 else
+  # Default to the route formed with the cloud.gov env for the lower environments.
   BASE_URL="$DEFAULT_ROUTE/v1"
 fi
 
 DEFAULT_FRONTEND_ROUTE="${DEFAULT_ROUTE//backend/frontend}"
 if [ -n "$FRONTEND_BASE_URL" ]; then
   FRONTEND_BASE_URL="${FRONTEND_BASE_URL//http:\/\/localhost:3000/$DEFAULT_FRONTEND_ROUTE}"
+elif [ "$CG_SPACE" = "tanf-prod" ]; then
+  # Keep the base url set explicitly for production.
+  FRONTEND_BASE_URL="$FRONTEND_BASE_URL"
 else
+  # Default to the route formed with the cloud.gov env for the lower environments.
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
 fi
 
@@ -44,4 +52,7 @@ cf set-env "$CGAPPNAME_BACKEND" CLAMAV_NEEDED "$CLAMAV_NEEDED"
 cf set-env "$CGAPPNAME_BACKEND" JWT_KEY "$JWT_KEY"
 cf set-env "$CGAPPNAME_BACKEND" DJANGO_SU_NAME "$DJANGO_SU_NAME"
 cf set-env "$CGAPPNAME_BACKEND" LOGGING_LEVEL "$LOGGING_LEVEL"
-
+cf set-env "$CGAPPNAME_BACKEND" ACR_VALUES "$ACR_VALUES"
+cf set-env "$CGAPPNAME_BACKEND" AMS_CLIENT_ID "$AMS_CLIENT_ID"
+cf set-env "$CGAPPNAME_BACKEND" AMS_CLIENT_SECRET "$AMS_CLIENT_SECRET"
+cf set-env "$CGAPPNAME_BACKEND" AMS_CONFIGURATION_ENDPOINT "$AMS_CONFIGURATION_ENDPOINT"
