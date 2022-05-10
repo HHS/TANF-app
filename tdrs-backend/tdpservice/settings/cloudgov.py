@@ -104,10 +104,13 @@ class CloudGov(Common):
     AWS_S3_STATICFILES_ENDPOINT = f'https://{s3_staticfiles_creds["endpoint"]}'
     AWS_S3_STATICFILES_REGION_NAME = s3_staticfiles_creds['region']
 
-    AWS_LOCATION = cloudgov_name
+    # TODO This was supose to be able to handle our s3 prefixes in 1 line, but
+    # we rolled a custom solution to multiple buckets with boto3 django extension
+    # instead of prefixing then. We'd like to be able to use this, as it is simpler
+    ## AWS_LOCATION = cloudgov_name
 
     MEDIA_URL = \
-        f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{AWS_LOCATION}'
+        f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}'
 
     # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching#cache-control
     # Response can be cached by browser and any intermediary caches
