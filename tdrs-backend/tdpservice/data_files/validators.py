@@ -50,7 +50,9 @@ def validate_file_infection(file, file_name, uploaded_by):
     """Validate file is not infected by scanning with ClamAV."""
     try:
         is_file_clean = True
+        logger.debug("CLAMAV_NEEDED value: {}".format(settings.CLAMAV_NEEDED))
         if settings.CLAMAV_NEEDED is True:
+            logger.debug("CLAMAV_NEEDED noted as True, proceeding with scan.")
             is_file_clean = ClamAVClient().scan_file(file, file_name, uploaded_by)
 
     except ClamAVClient.ServiceUnavailable:

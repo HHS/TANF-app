@@ -39,11 +39,18 @@ class ClamAVClient:
     def init_session(self):
         """Create a new request session that can retry failed connections."""
         session = Session()
+        logger.debug("Session: {}".format(dir(session)))
+        logger.debug("AV_backoff: {}".format(settings.AV_SCAN_BACKOFF_FACTOR))
+        logger.debug("MAX_RETRIES: {}".format(settings.AV_SCAN_MAX_RETRIES))
+
         retries = Retry(
             backoff_factor=settings.AV_SCAN_BACKOFF_FACTOR,
             status_forcelist=self.SCAN_CODES['ERROR'],
             total=settings.AV_SCAN_MAX_RETRIES
         )
+
+        logger.debug("retries: {}".format(dir(retries)))
+        logger.debug("endpoint url aka AV_SCAN_URL: {}".format(self.endpoint_url))
         session.mount(self.endpoint_url, HTTPAdapter(max_retries=retries))
         return session
 
