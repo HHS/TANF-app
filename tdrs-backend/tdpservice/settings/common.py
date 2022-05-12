@@ -233,8 +233,6 @@ class Common(Configuration):
             },
             "django.db.backends": {"handlers": ["console"], "level": "INFO"},
         },
-    
-        "root": { "handlers": ["application"], "level": "DEBUG"},
     }
 
     # Custom user app
