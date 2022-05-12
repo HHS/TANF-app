@@ -5,5 +5,5 @@ applications:
   instances: 1
   disk_quota: 2G
   buildpacks:
-  - python-buildpack.git
+  - python-buildpack
   command: "./gunicorn_start.sh"
