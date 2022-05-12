@@ -5,5 +5,5 @@ applications:
   instances: 1
   disk_quota: 2G
   buildpacks:
-  - https://github.com/cloudfoundry/python-buildpack.git#1.7.53
+  - python-buildpack.git
   command: "./gunicorn_start.sh"
