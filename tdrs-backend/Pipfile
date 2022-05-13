@@ -38,7 +38,6 @@ djangorestframework = "==3.12.4"
 drf-yasg = "==1.20.0"
 gunicorn = "==20.0.4"
 ipdb = "==0.13.9"
-ipython = "==7.25.0"
 jwcrypto = "==0.9.1"
 markdown = "==3.3.4"
 psycopg2-binary = "==2.9.1"
@@ -48,4 +47,4 @@ wait-for-it = "==2.2.0"
 requests-mock = "==1.9.3"
 
 [requires]
-python_version = "3.10.1"
+python_version = "3.10.4"
