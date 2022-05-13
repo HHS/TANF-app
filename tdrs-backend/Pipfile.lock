@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7ec887c5b66369940cf2ec156bff2034e4a9f117596a68070924cea80c8b2bf5"
+            "sha256": "f1a28538465d34aa1cd5ffca73c81b31b4c8c5a3b1105b62e86ea541d2589ac8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -200,11 +200,11 @@
         },
         "django-admin-508": {
             "hashes": [
-                "sha256:55cac2c36fe71a4bc67aa6fb8c2dea4d1d93dce7cc8fa0af5fa6c58f2a462708",
-                "sha256:cc4bd495f4ca17f10946519d25815a9276e21aa6c81a08814acf09003ebc5ad7"
+                "sha256:172b991c9b6f0c1773e56a16a293adc4f360f151e307798735041a563745b352",
+                "sha256:ed17ef2082b724dd63829e3e00fd2b26b41024294b68dec03932ec4e98831f33"
             ],
             "index": "pypi",
-            "version": "==0.1.10"
+            "version": "==0.2.0"
         },
         "django-admin-logs": {
             "hashes": [
@@ -874,11 +874,11 @@
         },
         "awscli": {
             "hashes": [
-                "sha256:17fffd646146a4506431de21ff63ee1c8b3f1878219efc9dbb22185c65c328af",
-                "sha256:bcdb0aba228b057dfdbf22b81e87fd4d3646d9159f2c5b7b8855b3de8e79b443"
+                "sha256:642b02b701840597e9b0f0c70df6dfee3b9b56492a5dcd4cccbf54ac7ae7adf5",
+                "sha256:792a6e5d61ab61fa83b8f8045edca8531b7c82f49310d1848d8e0fe99890e23d"
             ],
             "index": "pypi",
-            "version": "==1.23.11"
+            "version": "==1.23.13"
         },
         "awscli-local": {
             "hashes": [
