@@ -11,8 +11,9 @@ terraform {
   }
 
   backend "s3" {
-    bucket  = "cg-5940b4e1-0f70-44fc-b8df-9ec9be33c3a2"
+    bucket  = vars.aws_bucket
     key     = "terraform.tfstate.dev"
+    prefix = vars.cf_app_name
     encrypt = true
     region  = "us-gov-west-1"
   }

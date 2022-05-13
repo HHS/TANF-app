@@ -4,6 +4,11 @@ variable "aws_region" {
   default     = "us-gov-west-1"
 }
 
+variable "aws_bucket" {
+  type        = string
+  description = "The bucket we use for s3 backend"
+}
+
 variable "cf_api_url" {
   type        = string
   description = "cloud.gov api url"
@@ -30,4 +35,9 @@ variable "cf_user" {
 variable "cf_password" {
   type        = string
   description = "secret; cloud.gov deployer account password"
+}
+
+variable "cf_app_name" {
+  type = string
+  description = "name of app"
 }
