@@ -299,6 +299,9 @@ commands:
       cf-org:
         type: env_var_name
         default: CF_ORG
+      cf-app:
+        type: env_var_name
+        default: CF_APP
     steps:
       - checkout
       - run:
@@ -327,6 +330,7 @@ commands:
               echo "cf_password = \"$<<parameters.cf-password>>\""
               echo "cf_user = \"$<<parameters.cf-username>>\""
               echo "cf_space_name = \"<<parameters.cf-space>>\""
+              echo "cf_app_name = \"<<parameters.cf-app>>\""
             } >> ./variables.tfvars
       - terraform/init:
           path: <<parameters.tf-path>>
