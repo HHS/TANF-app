@@ -107,7 +107,7 @@ class CloudGov(Common):
     # TODO This was supose to be able to handle our s3 prefixes in 1 line, but
     # we rolled a custom solution to multiple buckets with boto3 django extension
     # instead of prefixing then. We'd like to be able to use this, as it is simpler
-    ## AWS_LOCATION = cloudgov_name
+    # AWS_LOCATION = cloudgov_name
 
     MEDIA_URL = \
         f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}'
