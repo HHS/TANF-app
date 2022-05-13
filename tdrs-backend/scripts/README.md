@@ -59,7 +59,7 @@ also accepts absolute path: e.g: /tmp/backup.pg
 
 ## Restore
 ```bash
-./python /app/scripts/db_backup.py -r -f <filename>
+./python /app/scripts/db_backup.py -r -f <filename> -d <database URI>
 ```
 where:
 + -r: run restore script

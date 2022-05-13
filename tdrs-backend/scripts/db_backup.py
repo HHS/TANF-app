@@ -62,7 +62,6 @@ except Exception as e:
 
 def backup_database(file_name,
                     postgres_client,
-                    database_uri=DATABASE_URI
                     ):
     """Back up postgres database into file."""
     """
@@ -72,7 +71,9 @@ def backup_database(file_name,
     pg_dump -F c --no-acl --no-owner -f backup.pg postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME}
     """
     try:
-        os.system(postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " " + database_uri)
+        os.system(postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " " +
+                  + " --host " + DATABASE_HOST + " --username " + DATABASE_USERNAME
+                  + " --port " + DATABASE_PORT + " --dbname " + DATABASE_DB_NAME)
         return True
     except Exception as e:
         logging.log(e)
@@ -86,7 +87,7 @@ def restore_database(file_name, postgres_client):
     :param postgres_client: directory address for postgres application
     """
     try:
-        os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges --no-acl"
+        os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges --no-acl --create"
                   + " --host " + DATABASE_HOST + " --username " + DATABASE_USERNAME
                   + " --port " + DATABASE_PORT + " --dbname " + DATABASE_DB_NAME + "  " + file_name)
         return True
