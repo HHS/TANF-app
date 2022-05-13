@@ -300,7 +300,7 @@ commands:
         type: env_var_name
         default: CF_ORG
       cf-app:
-        type: env_var_name
+        type: string
         default: CF_APP
     steps:
       - checkout
