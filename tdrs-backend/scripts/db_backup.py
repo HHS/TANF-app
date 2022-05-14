@@ -189,8 +189,6 @@ def handle_args(argv):
                 arg_file = arg if arg[0] == "/" else "/tmp/" + arg
             elif "database" in opt or "-d" in opt:
                 arg_database = arg
-                #[DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_HOST, DATABASE_PORT, DATABASE_DB_NAME] = \
-                #    get_database_credentials(arg_database)
 
     except Exception as e:
         print(e)
