@@ -62,7 +62,7 @@ except Exception as e:
 
 def backup_database(file_name,
                     postgres_client,
-                    ):
+                    database_uri):
     """Back up postgres database into file."""
     """
     :param file_name: back up file name
@@ -71,16 +71,14 @@ def backup_database(file_name,
     pg_dump -F c --no-acl --no-owner -f backup.pg postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME}
     """
     try:
-        os.system(postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " " +
-                  + " --host " + DATABASE_HOST + " --username " + DATABASE_USERNAME
-                  + " --port " + DATABASE_PORT + " --dbname " + DATABASE_DB_NAME)
+        os.system(postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " -d " + database_uri)
         return True
     except Exception as e:
         logging.log(e)
         return False
 
 
-def restore_database(file_name, postgres_client):
+def restore_database(file_name, postgres_client, database_uri):
     """Restore the database from filename."""
     """
     :param file_name: database backup filename
@@ -88,8 +86,7 @@ def restore_database(file_name, postgres_client):
     """
     try:
         os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges --no-acl --create"
-                  + " --host " + DATABASE_HOST + " --username " + DATABASE_USERNAME
-                  + " --port " + DATABASE_PORT + " --dbname " + DATABASE_DB_NAME + "  " + file_name)
+                                    " -d " + database_uri + " " + file_name)
         return True
     except Exception as e:
         logging.log(e)
@@ -189,11 +186,11 @@ def handle_args(argv):
             elif "restore" in opt or "-r" in opt:
                 arg_to_restore = True
             elif "file" in opt or "-f" in opt:
-                arg_file = arg if "/" in arg else "/tmp/" + arg
+                arg_file = arg if arg[0] == "/" else "/tmp/" + arg
             elif "database" in opt or "-d" in opt:
                 arg_database = arg
-                [DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_HOST, DATABASE_PORT, DATABASE_DB_NAME] = \
-                    get_database_credentials(arg_database)
+                #[DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_HOST, DATABASE_PORT, DATABASE_DB_NAME] = \
+                #    get_database_credentials(arg_database)
 
     except Exception as e:
         print(e)
@@ -221,7 +218,8 @@ def handle_args(argv):
 
         # restore database
         restore_database(file_name=arg_file,
-                         postgres_client=POSTGRES_CLIENT,)
+                         postgres_client=POSTGRES_CLIENT,
+                         database_uri=arg_database)
         sys.exit(0)  # successful
 
 
