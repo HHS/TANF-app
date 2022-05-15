@@ -171,12 +171,6 @@ def handle_args(argv):
     arg_database = DATABASE_URI
     arg_to_restore = False
     arg_to_backup = False
-    arg_help = "-f <filename> \t\t: the file name used for backup file \n" \
-               "-h \t\t\t: help \n" \
-               "-b \t\t\t: backup \n" \
-               "-r \t\t\t: restore \n" \
-               "-d <database URI> \t: " \
-               "Database URI as postgresql://$<USERNAME>:$<PASSWORD>@$<HOST>:$<PORT>/$<NAME>"
 
     try:
         opts, args = getopt.getopt(argv, "hbrf:d", ["help", "file", "backup", "restore", "database", ])
@@ -191,6 +185,7 @@ def handle_args(argv):
                 arg_database = arg
 
     except Exception as e:
+        print(e)
         sys.exit(1)
 
     if arg_to_backup:
