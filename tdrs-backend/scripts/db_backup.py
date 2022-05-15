@@ -78,22 +78,17 @@ def backup_database(file_name,
         return False
 
 
-def restore_database(file_name, postgres_client, database_uri):
+def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     """Restore the database from filename."""
     """
     :param file_name: database backup filename
     :param postgres_client: directory address for postgres application
     """
-    print("in restore")
-    print("file name:", file_name)
-    print("postgres_client:", postgres_client)
-    print("database_uri:", database_uri)
     try:
         os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges --no-acl --create"
                                     " -d " + database_uri + " " + file_name)
         return True
     except Exception as e:
-        print(e)
         logging.log(e)
         return False
 
@@ -190,14 +185,12 @@ def handle_args(argv):
                 arg_to_backup = True
             elif "restore" in opt or "-r" in opt:
                 arg_to_restore = True
-            elif "file" in opt or "-f" in opt:
+            if "file" in opt or "-f" in opt:
                 arg_file = arg if arg[0] == "/" else "/tmp/" + arg
-            elif "database" in opt or "-d" in opt:
+            if "database" in opt or "-d" in opt:
                 arg_database = arg
 
     except Exception as e:
-        print(e)
-        print(arg_help)
         sys.exit(1)
 
     if arg_to_backup:
