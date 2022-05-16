@@ -173,7 +173,7 @@ def handle_args(argv):
     arg_to_backup = False
 
     try:
-        opts, args = getopt.getopt(argv, "hbr:f:d", ["help", "backup", "restore", "file", "database", ])
+        opts, args = getopt.getopt(argv, "hbr:f:d:", ["help", "backup", "restore", "file", "database", ])
         for opt, arg in opts:
             if "backup" in opt or "-b" in opt:
                 arg_to_backup = True
