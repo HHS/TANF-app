@@ -85,6 +85,9 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     :param postgres_client: directory address for postgres application
     """
     try:
+        print('in restore')
+        print('filename:', file_name)
+        print('database_uri:', database_uri)
         os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges --no-acl --create"
                                     " -d " + database_uri + " " + file_name)
         return True
