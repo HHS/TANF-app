@@ -85,9 +85,6 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     :param postgres_client: directory address for postgres application
     """
     try:
-        print('in restore')
-        print('filename:', file_name)
-        print('database_uri:', database_uri)
         os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges --no-acl --create"
                                     " -d " + database_uri + " " + file_name)
         return True
@@ -176,7 +173,7 @@ def handle_args(argv):
     arg_to_backup = False
 
     try:
-        opts, args = getopt.getopt(argv, "hbrf:d", ["help", "file", "backup", "restore", "database", ])
+        opts, args = getopt.getopt(argv, "hbr:f:d", ["help", "backup", "restore", "file", "database", ])
         for opt, arg in opts:
             if "backup" in opt or "-b" in opt:
                 arg_to_backup = True
