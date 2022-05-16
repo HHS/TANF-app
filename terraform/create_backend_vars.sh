@@ -16,5 +16,4 @@ REGION=$(echo "${S3_CREDENTIALS}" | jq -r '.region')
   echo "access_key = \"$ACCESS_KEY\""
   echo "secret_key = \"$SECRET_KEY\""
   echo "region = \"$REGION\""
-  echo "aws_bucket = \"$(echo "${S3_CREDENTIALS}" | jq -r '.bucket)\""
 } >> ./dev/backend_config.tfvars
