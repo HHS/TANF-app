@@ -37,49 +37,12 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
 
     Below is the restaging process in full:
 
-    1. Upon receipt of email from cloud.gov, restage against dev:
-        
-    ```bash
-    user@host$ cf login -a api.fr.cloud.gov --sso
-    API endpoint: api.fr.cloud.gov
-
-    Temporary Authentication Code ( Get one at https://login.fr.cloud.gov/passcode ): 
-    Authenticating...
-    OK
-
-
-    Targeted org hhs-acf-prototyping.
-
-    Select a space:
-    1. tanf-dev
-    2. tanf-staging
-
-    Space (enter to skip): 1
-    Targeted space tanf-dev.
-
-    API endpoint:   https://api.fr.cloud.gov
-    API version:    3.101.0
-    user:           abottoms@goraft.tech
-    org:            hhs-acf-prototyping
-    space:          tanf-dev 
-    $ cf restage tdp-backend-a11y
-    $ cf restage tdp-backend-raft
-    $ cf restage tdp-backend-qasp
-    $ cf restage tdp-backend-sandbox
-    OR
-    $ cf restage tdp-frontend-a11y
-    $ cf restage tdp-frontend-raft
-    $ cf restage tdp-frontend-qasp
-    $ cf restage tdp-frontend-sandbox
-
-    ```
-
     ### Find version changes
-    2. Inspect dev environment in cloud.gov for new buildpack versions after restage
-    3. Inspect relevant official changelog(s):
+    0. **DO NOT RESTAGE ENVIRONMENTS**
+    1. Inspect relevant official changelog(s):
         * https://github.com/cloudfoundry/nginx-buildpack/blob/master/CHANGELOG
         * https://github.com/cloudfoundry/python-buildpack/blob/master/CHANGELOG
-    4. On a new branch, update docs/Technical-Documentation/buildpack-changelog.md with information of the following format:
+    2. On a new branch, update docs/Technical-Documentation/buildpack-changelog.md with information of the following format:
 
         ```
         ## Buildpacks Changelog
@@ -87,8 +50,16 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
         - 07/13/2021 [python-buildpack v1.7.43](https://github.com/cloudfoundry/python-buildpack/releases/tag/v1.7.43)
         ```
 
+    3. Still on this branch, increment the buildpack versions in our relevant manifest files (tdrs-*end/manifest.buildpack.yml)
+        ```
+          buildpacks:
+            - https://github.com/cloudfoundry/python-buildpack.git#v1.7.53
+        ```
+    4. Deploy this dev branch to a dev environment to ensure it will deploy successfully and without errors on startup.
+
     ### Open final PR for staging
 
-    5. Open a pull request to 'develop' and assign to Technical Lead
-    6. Merging pull request shall trigger rolling deploy of the updated buildpack(s) to staging & (eventually) prod without downtime
+    5. Open a pull request to `develop` and assign to Technical Lead
+    6. Merging pull request shall trigger rolling deploy of the updated buildpack(s) to staging without downtime.
+    7. As `develop` has been updated, buildpack updates will get merged into feature branches through our regular processes.
 </details>
