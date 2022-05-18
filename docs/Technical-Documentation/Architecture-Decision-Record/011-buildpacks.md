@@ -50,7 +50,7 @@ Our recommendation is to move to Cloud.gov buildpacks at this time. They are alr
         - 07/13/2021 [python-buildpack v1.7.43](https://github.com/cloudfoundry/python-buildpack/releases/tag/v1.7.43)
         ```
 
-    3. Still on this branch, increment the buildpack versions in our relevant manifest files (tdrs-*end/manifest.buildpack.yml)
+    3. Still on this branch, increment the buildpack versions in our relevant manifest files (tdrs-*end/manifest.buildpack.yml). Please note the version syntax at the end: `[...].git#v1.2.3`
         ```
           buildpacks:
             - https://github.com/cloudfoundry/python-buildpack.git#v1.7.53
