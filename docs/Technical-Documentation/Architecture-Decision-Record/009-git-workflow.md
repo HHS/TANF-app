@@ -1,6 +1,6 @@
 # 9. Git Workflow
 
-Date: 2021-02-23 (_updated 2022-04-11_)
+Date: 2021-02-23 (_updated 2022-05-12_)
 
 ## Status
 
@@ -69,8 +69,12 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * opening a PR from `develop` to `HHS:main`
     * updating the PR template to change `addresses` to `closes` so that issue [can be automatically closed when the Government merges](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
     * ensuring the CI/CD pipelines are green
-    * assigning `lfrohlich` or `adpennington`as Government as reviewers. They will approve and  merge to `HHS:main` which will trigger the CI/CD process to deploy code to the prod environment. 
+    * assigning `lfrohlich` or `adpennington`as Government as reviewers. They will approve and merge to `HHS:main` which will trigger the CI/CD process to deploy code to the staging environment. 
+   
+8. `adpennington` (or her back-up) will open a PR from `HHS:main` to `HHS:master` and assign a government reviewer for PR approval. Merging this PR will trigger the CI/CD process to deploy code to the production environment. 
+   
 </details>
+
 
 [Figma link to TDP git workflow diagram](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=6249%3A49390)
 
