@@ -4,7 +4,6 @@
 
 To maintain good security, we will periodically rotate the following secret keys, which are used to control authentication and authorization to our application:
 - JWT keys 
-- Django secret key
 
 This document outlines the process of how to do this.
 
@@ -12,32 +11,11 @@ This document outlines the process of how to do this.
 
 ## Rotation procedure
 **<details><summary>JWT Keys</summary>**
-_to be updated after #1153 completed_
 ### 1. Generate New Keys
 
 In your Mac terminal (or bash terminal in Windows), enter the following command:
 ```bash=
-openssl req -nodes -x509 -days 90 -newkey rsa:2048 -keyout jwtRS256prv.pem -out jwtRS256pub.crt
-```
-
-You will receive the following response. Answering questions when prompted is not necessary.
-
-```bash
------
-You are about to be asked to enter information that will be incorporated
-into your certificate request.
-What you are about to enter is what is called a Distinguished Name or a DN.
-There are quite a few fields but you can leave some blank
-For some fields there will be a default value,
-If you enter '.', the field will be left blank.
------
-Country Name (2 letter code) [AU]:
-State or Province Name (full name) [Some-State]:
-Locality Name (eg, city) []:
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:
-Organizational Unit Name (eg, section) []:
-Common Name (e.g. server FQDN or YOUR name) []:
-Email Address []:
+yes 'XX' | openssl req -nodes -x509 -days 100 -newkey rsa:4096 -keyout jwtRS256prv.pem -out jwtRS256pub.crt
 ```
 
 You can now check the contents of your keys with these commands
@@ -60,7 +38,7 @@ cat jwtRS256prv.pem.base64
 
 NOTE: Linux users must disable line wrapping by adding the argument `-w 0` to get a properly formatted one-line value.
 ```bash
-openssl enc -base64 -w 0 -in jwtRS256prv.pem -out jwtRS256prv.pem.base64
+cat jwtRS256prv.pem | base64 -w 0 > jwtRS256prv.pem.base64
 cat jwtRS256prv.pem.base64
 ```
 
@@ -90,10 +68,4 @@ Production environment key distribution will be handled by Government authorized
 **Note** 
 - We will need to update this document with the link to login to the login.gov production environment setup when we have access to it.
 - More information on `openssl` can be found at [openssl.org](https://www.openssl.org/docs/manmaster/man1/openssl.html)
-</details>
-
-**<details><summary>Django Secret Key</summary>**
-
-_forthcoming after #1153 completed_
-
 </details>
