@@ -10,7 +10,7 @@ This document outlines the process of how to do this.
 **Warning** Production sites will need to be taken down for maintenance when rotating keys, as the rotation will automatically invalidate all current sessions.
 
 ## Rotation procedure
-**<details><summary>JWT Keys</summary>**
+**<summary>JWT Keys</summary>**
 ### 1. Generate New Keys
 
 In your Mac terminal (or bash terminal in Windows), enter the following command:
@@ -56,7 +56,7 @@ Note: Login.gov requires the key to be uploaded in PEM format, which is the form
 #### CI/CD Environment
 **Note** _Please generate a separate set of keys for the CI/CD environment_
 1. Distribute the private key to development staff securely to copy to `.env` files as the value for key `JWT_CERT_TEST`
-2. Update the variable `JWT_KEY_TEST` in CircleCI with the new public key.
+2. Update the variable `JWT_CERT_TEST` in CircleCI with the new public key.
 
 #### Production Environment
 **Note** _Please generate a separate set of keys for the Production environment_
@@ -68,4 +68,3 @@ Production environment key distribution will be handled by Government authorized
 **Note** 
 - We will need to update this document with the link to login to the login.gov production environment setup when we have access to it.
 - More information on `openssl` can be found at [openssl.org](https://www.openssl.org/docs/manmaster/man1/openssl.html)
-</details>
