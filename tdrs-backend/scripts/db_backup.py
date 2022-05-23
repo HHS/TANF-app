@@ -205,6 +205,9 @@ def handle_args(argv):
                     region=S3_REGION,
                     object_name="/backup"+arg_file)
 
+        os.system('rm ' + arg_file)
+        sys.exit(0)
+
     elif arg_to_restore:
         # download file from s3
         download_file(bucket=S3_BUCKET,
@@ -216,6 +219,8 @@ def handle_args(argv):
         restore_database(file_name=arg_file,
                          postgres_client=POSTGRES_CLIENT,
                          database_uri=arg_database)
+
+        os.system('rm ' + arg_file)
         sys.exit(0)  # successful
 
 
