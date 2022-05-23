@@ -323,7 +323,6 @@ commands:
               echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
               echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
               echo "bucket = \"$(echo "${S3_CREDENTIALS}" | jq -r '.bucket')\""
-              echo "prefix = \"<<parameters.cf-app>>\""
             } >> ./backend_config.tfvars
       - run:
           name: Prepare Terraform Variables
@@ -333,6 +332,7 @@ commands:
               echo "cf_password = \"$<<parameters.cf-password>>\""
               echo "cf_user = \"$<<parameters.cf-username>>\""
               echo "cf_space_name = \"<<parameters.cf-space>>\""
+              echo "cf_app_name = \"<<parameters.cf-app>>\""
             } >> ./variables.tfvars
       - terraform/init:
           path: <<parameters.tf-path>>
