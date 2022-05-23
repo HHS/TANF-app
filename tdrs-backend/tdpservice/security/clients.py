@@ -34,6 +34,7 @@ class ClamAVClient:
             endpoint_url = settings.AV_SCAN_URL
 
         self.endpoint_url = endpoint_url
+        logger.debug("Set clamav endpoint_url as '{}'".format(endpoint_url))
         self.session = self.init_session()
 
     def init_session(self):
