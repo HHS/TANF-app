@@ -148,16 +148,10 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 return initial_user
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
-        logging.debug("authopt: {}".format(auth_options))
-
-        if "hhs_id" in auth_options:
-            logging.debug("hhs_id in authopt: {}".format(auth_options["hhs_id"]))
+        logging.debug("auth_options: {}".format(auth_options))
 
         # Authenticate with `sub` and not username, as user's can change their
         # corresponding emails externally.
-
-        logger.info("AUTH_OPTIONS")
-        logger.info(auth_options)
         user = CustomAuthentication.authenticate(**auth_options)
         logging.debug("user obj:{}".format(user))
 
