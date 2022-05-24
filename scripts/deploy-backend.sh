@@ -72,24 +72,6 @@ set_cf_envs()
 
 }
 
-set_backend_env_vars()
-{
-  echo "Setting environment variables for $CGAPPNAME_BACKEND"
-
-  # Test to see if the backend app exists yet
-  cf set-env "$CGAPPNAME_BACKEND" TEMPORARY_DEPLOYMENT_STATUS_FLAG "true"
-  RESULT=$? # Get result of previous command
-  if [ $RESULT == 0 ]; then
-    set_cf_envs
-  else
-    echo "Error trying to set environment variables for $CGAPPNAME_BACKEND"
-    exit 1
-  fi
-
-  cf unset-env "$CGAPPNAME_BACKEND" TEMPORARY_DEPLOYMENT_STATUS_FLAG
-  echo "$CGAPPNAME_BACKEND variables loaded"
-}
-
 
 # Helper method to generate JWT cert and keys for new environment
 generate_jwt_cert() 
@@ -104,7 +86,7 @@ update_backend()
 {
     cd tdrs-backend || exit
     if [ "$1" = "rolling" ] ; then
-          bash ../scripts/set-backend-env-vars.sh "$CGHOSTNAME_BACKEND" "$CF_SPACE"
+        set_cf_envs
 
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
@@ -118,7 +100,7 @@ update_backend()
             generate_jwt_cert
         fi
     fi
-    set_backend_env_vars
+    set_cf_envs
     cf map-route "$CGAPPNAME_BACKEND" app.cloud.gov --hostname "$CGAPPNAME_BACKEND"
     cd ..
 }
