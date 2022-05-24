@@ -5,7 +5,6 @@ set -e
 # Global Variable Decls 
 ##############################
 
-
 # The deployment strategy you wish to employ ( rolling update or setting up a new environment)
 DEPLOY_STRATEGY=${1}
 
@@ -27,12 +26,9 @@ echo CF_SPACE: "$CF_SPACE"
 echo env: "$env"
 
 
-
 ##############################
 # Function Decls
 ##############################
-
-
 
 set_cf_envs()
 {
@@ -71,7 +67,6 @@ set_cf_envs()
   done
 
 }
-
 
 # Helper method to generate JWT cert and keys for new environment
 generate_jwt_cert() 
@@ -113,11 +108,9 @@ bind_backend_to_services() {
     cf restage "$CGAPPNAME_BACKEND"
 }
 
-
 ##############################
 # Main script body
 ##############################
-
 
 # Determine the appropriate BASE_URL for the deployed instance based on the
 # provided Cloud.gov App Name
@@ -156,7 +149,6 @@ elif [ "$CF_SPACE" = "tanf-staging" ]; then
 else
   DJANGO_CONFIGURATION="Development"
 fi
-
 
 if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
     # Perform a rolling update for the backend and frontend deployments if
