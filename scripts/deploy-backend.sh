@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 
 ##############################
 # Global Variable Decls 
