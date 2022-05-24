@@ -119,6 +119,7 @@ class Development(CloudGov):
 
     # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
     ALLOWED_HOSTS = ['.app.cloud.gov']
+    AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-dev-clamav-rest.apps.internal:9000')
 
 
 class Staging(CloudGov):
@@ -130,7 +131,7 @@ class Staging(CloudGov):
         'OIDC_RP_CLIENT_ID',
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging'
     )
-
+    AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-staging-clamav-rest.apps.internal:9000')
 
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
@@ -142,5 +143,5 @@ class Production(CloudGov):
         'OIDC_RP_CLIENT_ID',
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
     )
-
+    AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-prod-clamav-rest.apps.internal:9000')
     ENABLE_DEVELOPER_GROUP = False
