@@ -2,7 +2,7 @@
 set -e
 
 ##############################
-# Global Variable Decls 
+# Global Variable Decls
 ##############################
 
 # The deployment strategy you wish to employ ( rolling update or setting up a new environment)
