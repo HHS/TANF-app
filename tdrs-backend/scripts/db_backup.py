@@ -54,6 +54,7 @@ try:
     with open('/home/vcap/.pgpass', 'w') as f:
         f.write(DATABASE_HOST+":"+DATABASE_PORT+":"+DATABASE_DB_NAME+":"+DATABASE_USERNAME+":"+DATABASE_PASSWORD)
     os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
+    os.system('chmod 600 ~/.pgpass')
 
 except Exception as e:
     print(e)
@@ -85,6 +86,8 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     :param postgres_client: directory address for postgres application
     """
     try:
+        [DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_HOST, DATABASE_PORT,
+         DATABASE_DB_NAME] = get_database_credentials(database_uri)
         os.system(postgres_client + "createdb " + "-U " + DATABASE_USERNAME + " -h " + DATABASE_HOST +
                   " -T template0 " + DATABASE_DB_NAME)
     except Exception as e:
