@@ -57,6 +57,7 @@ try:
     os.system('chmod 600 ~/.pgpass')
 
 except Exception as e:
+    logging.log(e)
     sys.exit(1)
 
 
