@@ -102,7 +102,7 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     os.system('chmod 0600 ~/.pgpass')
 
     os.system(postgres_client + "pg_restore --no-owner --no-privileges --no-acl" + " -p " + DATABASE_PORT + " -h " +
-              DATABASE_HOST + " -u " + DATABASE_USERNAME + "-d " + DATABASE_DB_NAME + " " + file_name)
+              DATABASE_HOST + " -U " + DATABASE_USERNAME + "-d " + DATABASE_DB_NAME + " " + file_name)
 
 
 def upload_file(file_name, bucket, object_name=None, region='us-gov-west-1'):
