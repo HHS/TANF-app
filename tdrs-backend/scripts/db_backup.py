@@ -90,8 +90,8 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
      DATABASE_DB_NAME] = get_database_credentials(database_uri)
     os.environ['PGPASSWORD'] = DATABASE_PASSWORD
     try:
-        os.system(postgres_client + "createdb " + "-U " + DATABASE_USERNAME + " -h " + DATABASE_HOST +
-              " -T template0 " + DATABASE_DB_NAME)
+        os.system(postgres_client + "createdb " + "-U " + DATABASE_USERNAME + " -h " + DATABASE_HOST + " -T template0 "
+                  + DATABASE_DB_NAME)
     except Exception as e:
         logging.log(e)
 
