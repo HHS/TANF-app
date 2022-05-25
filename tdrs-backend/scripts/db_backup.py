@@ -196,6 +196,7 @@ def handle_args(argv):
                 arg_database = arg
 
     except Exception as e:
+        logging.log(e)
         sys.exit(1)
 
     if arg_to_backup:
