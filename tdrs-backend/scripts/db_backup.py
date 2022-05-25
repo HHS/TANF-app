@@ -89,21 +89,10 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     [DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_HOST, DATABASE_PORT,
      DATABASE_DB_NAME] = get_database_credentials(database_uri)
     os.environ['PGPASSWORD'] = DATABASE_PASSWORD
-    with open('/home/vcap/.pgpass', 'w') as f:
-        f.write(
-            DATABASE_HOST + ":" + DATABASE_PORT + ":" + DATABASE_DB_NAME + ":" +
-            DATABASE_USERNAME + ":" + DATABASE_PASSWORD)
-    os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
     os.system(postgres_client + "createdb " + "-U " + DATABASE_USERNAME + " -h " + DATABASE_HOST +
               " -T template0 " + DATABASE_DB_NAME)
-
-    os.system(postgres_client + "pg_restore --clean --no-owner --no-privileges --no-acl --create"
+    os.system(postgres_client + "pg_restore --no-owner --no-privileges --no-acl"
                                 " -d " + database_uri + " " + file_name)
-    try:
-        return True
-    except Exception as e:
-        logging.log(e)
-        return False
 
 
 def upload_file(file_name, bucket, object_name=None, region='us-gov-west-1'):
