@@ -101,7 +101,7 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
     os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
     os.system('chmod 0600 ~/.pgpass')
     print(postgres_client + "pg_restore" + " -p " + DATABASE_PORT + " -h " +
-              DATABASE_HOST + " -U " + DATABASE_USERNAME + "-d " + DATABASE_DB_NAME + " " + file_name)
+          DATABASE_HOST + " -U " + DATABASE_USERNAME + "-d " + DATABASE_DB_NAME + " " + file_name)
     os.system(postgres_client + "pg_restore" + " -p " + DATABASE_PORT + " -h " +
               DATABASE_HOST + " -U " + DATABASE_USERNAME + "-d " + DATABASE_DB_NAME + " " + file_name)
 
