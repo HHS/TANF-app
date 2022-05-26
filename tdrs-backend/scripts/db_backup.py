@@ -17,7 +17,8 @@ try:
     SPACE = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
 
     # Postgres client pg_dump directory
-    f = subprocess.Popen(["find", "/", "-iname", "pg_dump", ">2", "/dev/null", "|", "grep", "postgresql"], stdout=subprocess.PIPE)
+    f = subprocess.Popen(["find", "/", "-iname", "pg_dump", ">2", "/dev/null", "|", "grep", "postgresql"],
+                         stdout=subprocess.PIPE)
     f.wait()
     output, error = f.communicate()
     output = output.decode("utf-8").split('\n')
