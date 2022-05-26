@@ -7,7 +7,6 @@
 import subprocess
 import os
 import boto3
-import logging
 import json
 import sys
 import getopt
@@ -18,7 +17,7 @@ try:
     SPACE = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
 
     # Postgres client pg_dump directory
-    f = subprocess.Popen(["find", "/", "-iname", "pg_dump"], stdout=subprocess.PIPE)
+    f = subprocess.Popen(["find", "/", "-iname", "pg_dump", ">2", "/dev/null", "|", "grep", "postgresql"], stdout=subprocess.PIPE)
     f.wait()
     output, error = f.communicate()
     output = output.decode("utf-8").split('\n')
@@ -57,7 +56,7 @@ try:
     os.system('chmod 0600 ~/.pgpass')
 
 except Exception as e:
-    logging.log(e)
+    print(e)
     sys.exit(1)
 
 
@@ -75,7 +74,7 @@ def backup_database(file_name,
         os.system(postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " -d " + database_uri)
         return True
     except Exception as e:
-        logging.log(e)
+        print(e)
         return False
 
 
@@ -93,7 +92,7 @@ def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
         os.system(postgres_client + "createdb " + "-U " + DATABASE_USERNAME + " -h " + DATABASE_HOST + " -T template0 "
                   + DATABASE_DB_NAME)
     except Exception as e:
-        logging.log(e)
+        print(e)
         return False
 
     # write .pgpass
@@ -124,7 +123,7 @@ def upload_file(file_name, bucket, object_name=None, region='us-gov-west-1'):
         s3_client.upload_file(file_name, bucket, object_name)
         return True
     except Exception as e:
-        logging.error(e)
+        print(e)
         return False
 
 
@@ -187,19 +186,19 @@ def handle_args(argv):
     arg_to_backup = False
 
     try:
-        opts, args = getopt.getopt(argv, "hbrfd:", ["help", "backup", "restore", "file", "database", ])
+        opts, args = getopt.getopt(argv, "hbrf:d:", ["help", "backup", "restore", "file=", "database=", ])
         for opt, arg in opts:
             if "backup" in opt or "-b" in opt:
                 arg_to_backup = True
             elif "restore" in opt or "-r" in opt:
                 arg_to_restore = True
-            if "file" in opt or "-f" in opt:
+            if "file" in opt or "-f" in opt and arg:
                 arg_file = arg if arg[0] == "/" else "/tmp/" + arg
             if "database" in opt or "-d" in opt:
                 arg_database = arg
 
     except Exception as e:
-        logging.log(e)
+        print(e)
         sys.exit(1)
 
     if arg_to_backup:
