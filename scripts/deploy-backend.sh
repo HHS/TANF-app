@@ -2,7 +2,7 @@
 set -e
 
 ##############################
-# Global Variable Decls
+# Global Variable Decls 
 ##############################
 
 # The deployment strategy you wish to employ ( rolling update or setting up a new environment)
@@ -56,13 +56,12 @@ set_cf_envs()
   "XMS_CLIENT_SECRET")
 
   for var_name in ${var_list[@]}; do
-
     # Intentionally not setting variable if empty
     if [[ -z "${!var_name}" ]]; then
         echo "WARNING: Empty value for $var_name"
         continue
-    fi
-    cf_cmd="cf set-env "$CGAPPNAME_BACKEND" $var_name \"${!var_name}\""
+    cf_cmd="cf set-env "$CGAPPNAME_BACKEND" $var_name ${!var_name}"
+    echo "Debugging: $cf_cmd"
     $cf_cmd
   done
 
