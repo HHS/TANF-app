@@ -60,6 +60,7 @@ set_cf_envs()
     if [[ -z "${!var_name}" ]]; then
         echo "WARNING: Empty value for $var_name"
         continue
+    fi
     cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
     echo "Debugging: $cf_cmd"
     $cf_cmd
