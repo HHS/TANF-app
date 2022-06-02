@@ -9,6 +9,7 @@ class OverriddenCredentialsS3Storage(S3Boto3Storage):
     This is needed because S3Boto3Storage does not support using different
     credentials and regions between different S3 storage classes.
     """
+
     location = settings.APP_NAME
 
     def get_default_settings(self):
