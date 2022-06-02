@@ -9,6 +9,7 @@ class OverriddenCredentialsS3Storage(S3Boto3Storage):
     This is needed because S3Boto3Storage does not support using different
     credentials and regions between different S3 storage classes.
     """
+    location = settings.APP_NAME
 
     def get_default_settings(self):
         """Override the base class method to use specific credentials/region."""
@@ -17,7 +18,8 @@ class OverriddenCredentialsS3Storage(S3Boto3Storage):
             'access_key': self.access_key,
             'endpoint_url': self.endpoint_url,
             'region_name': self.region_name,
-            'secret_key': self.secret_key
+            'secret_key': self.secret_key,
+            'location': self.location
         }
 
 
@@ -44,6 +46,8 @@ class StaticFilesS3Storage(OverriddenCredentialsS3Storage):
     # Copied from s3boto3.S3StaticStorage - Querystring auth must be disabled so
     # that url() returns a consistent output.
     querystring_auth = False
+
+    location = settings.APP_NAME
 
     # Use distinct credentials for the tdp-staticfiles service
     access_key = settings.AWS_S3_STATICFILES_ACCESS_KEY
