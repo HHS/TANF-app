@@ -1,19 +1,17 @@
 """Define data file models."""
+import logging
 import os
-
-from django.db import models
-from django.db.models import Max
 from io import StringIO
 from typing import Union
-import logging
-from django.contrib.admin.models import ContentType, LogEntry, ADDITION
+
+from django.contrib.admin.models import ADDITION, ContentType, LogEntry
 from django.core.files.base import File
 from django.db import models
+from django.db.models import Max
 
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
-
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +25,7 @@ def get_s3_upload_path(instance, filename):
 
 # The Data File model was starting to explode, and I think that keeping this logic
 # in its own abstract class is better for documentation purposes.
-class File(models.Model):
+class FileRecord(models.Model):
     """Abstract type representing a file stored in S3."""
 
     class Meta:
@@ -49,7 +47,7 @@ class File(models.Model):
     extension = models.CharField(max_length=8, default="txt")
 
 
-class DataFile(File):
+class DataFile(FileRecord):
     """Represents a version of a data file."""
 
     class Section(models.TextChoices):
@@ -108,9 +106,10 @@ class DataFile(File):
     )
 
     def create_filename(self, prefix='ADS.E2J'):
-        STT_TYPES = ["state", "territory", "tribe"]
+        """Returns a valid file name for sftp transfer."""
+        # STT_TYPES = ["state", "territory", "tribe"]
         SECTION = [i.value for i in list(self.Section)]
-        #str(STT_TYPES.index(self.stt.type)+1)
+        # str(STT_TYPES.index(self.stt.type)+1)
         return ''.join(prefix+'.FTP'+str(SECTION.index(self.section))+'.TS' + str(self.stt.stt_code))
 
     @classmethod
@@ -160,6 +159,8 @@ class LegacyFileTransferManager(models.Manager):
     ) -> 'LegacyFileTransfer':
         """Create a new LegacyFileTransfer instance with associated LogEntry."""
         try:
+            # Was their an expectation here? THis wasn't ever defined.
+            # Probbly pseudo code.
             file_shasum = get_file_shasum(file)
         except (AttributeError, TypeError, ValueError) as err:
             logger.error(f'Encountered error deriving file hash: {err}')

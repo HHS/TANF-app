@@ -33,7 +33,7 @@ class STT(models.Model):
     region = models.ForeignKey(
         Region, on_delete=models.CASCADE, related_name="stts", null=True
     )
-    filenames = models.CharField(max_length=512, blank=True, null=True) # largest length in data so far is 332.
+    filenames = models.CharField(max_length=512, blank=True, null=True)  # largest length in data so far is 332.
     stt_code = models.PositiveIntegerField(blank=True, null=True)
     # Tribes have a state, which we need to store.
     state = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)

@@ -1,7 +1,8 @@
 """Admin class for DataFile objects."""
 from django.contrib import admin
-from .models import DataFile, LegacyFileTransfer, LegacyFileTransferManager
+
 from ..core.utils import ReadOnlyAdminMixin
+from .models import DataFile, LegacyFileTransfer
 
 
 @admin.register(DataFile)
