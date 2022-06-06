@@ -1,6 +1,7 @@
 """Define data file models."""
 import logging
 import os
+from hashlib import sha256
 from io import StringIO
 from typing import Union
 
@@ -14,6 +15,36 @@ from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
+
+def get_file_shasum(file: Union[File, StringIO]) -> str:
+    """Derive the SHA256 checksum of a file."""
+    _hash = sha256()
+
+    # If the file has the `open` method it needs to be called, otherwise this
+    # input is a file-like object (ie. StringIO) and doesn't need to be opened.
+    if hasattr(file, 'open'):
+        f = file.open('rb')
+    else:
+        f = file
+
+    # For large files we need to read it in by chunks to prevent invalid hashes
+    if hasattr(f, 'multiple_chunks') and f.multiple_chunks():
+        for chunk in f.chunks():
+            _hash.update(chunk)
+    else:
+        content = f.read()
+
+        # If the content is returned as a string we must encode it to bytes
+        # or an error will be raised.
+        if isinstance(content, str):
+            content = content.encode('utf-8')
+
+        _hash.update(content)
+
+    # Ensure to reset the file so it can be read in further operations.
+    f.seek(0)
+
+    return _hash.hexdigest()
 
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
