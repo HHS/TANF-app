@@ -26,5 +26,4 @@ BUCKET=$(echo "${S3_CREDENTIALS}" | jq -r '.region')
   echo "cf_password = \"$CF_PASSWORD_DEV\""
   echo "cf_user = \"$CF_USERNAME_DEV\""
   echo "cf_space_name = \"$CF_SPACE\""
-  echo "aws_bucket = \"$S3_BUCKET\""
 } >> ./dev/variables.tfvars
