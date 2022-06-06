@@ -107,7 +107,7 @@ class DataFile(FileRecord):
     )
 
     def create_filename(self, prefix='ADS.E2J'):
-        """Returns a valid file name for sftp transfer."""
+        """Return a valid file name for sftp transfer."""
         # STT_TYPES = ["state", "territory", "tribe"]
         SECTION = [i.value for i in list(self.Section)]
         # str(STT_TYPES.index(self.stt.type)+1)
