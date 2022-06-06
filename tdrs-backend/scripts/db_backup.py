@@ -17,18 +17,18 @@ try:
     SPACE = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
 
     # Postgres client pg_dump directory
-    f = subprocess.Popen(["find", "/", "-iname", "pg_dump", ">2", "/dev/null", "|", "grep", "postgresql"],
-                         stdout=subprocess.PIPE)
-    f.wait()
-    output, error = f.communicate()
-    output = output.decode("utf-8").split('\n')
-    if output[0] == '':
+    pgdump_search = subprocess.Popen(["find", "/", "-iname", "pg_dump"], stderr = subprocess.DEVNULL, stdout=subprocess.PIPE)
+    pgdump_search.wait()
+    pg_dump_paths, pgdump_search_error = pgdump_search.communicate()
+    pg_dump_paths = pg_dump_paths.decode("utf-8").split('\n')
+    if pg_dump_paths[0] == '':
         raise Exception("Postgres client is not found")
 
     POSTGRES_CLIENT = None
-    for _ in output:
+    for _ in pg_dump_paths:
         if 'pg_dump' in str(_) and 'postgresql' in str(_):
             POSTGRES_CLIENT = _[:_.find('pg_dump')]
+            print("Found PG client here: {}".format(_))
 
     S3_ENV_VARS = json.loads(OS_ENV['VCAP_SERVICES'])['s3']
     S3_CREDENTIALS = S3_ENV_VARS[0]['credentials']
@@ -73,6 +73,7 @@ def backup_database(file_name,
     """
     try:
         os.system(postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " -d " + database_uri)
+        print("Wrote pg dumpfile to {}".format(file_name))
         return True
     except Exception as e:
         print(e)
@@ -116,12 +117,14 @@ def upload_file(file_name, bucket, object_name=None, region='us-gov-west-1'):
     :param region: s3 AWS region to be used. defaults to government west
     :return: True is file is uploaded, False if not successful
     """
+    print("Uploaded {} to S3 in {}/{}".format(file_name, bucket, object_name))
     if object_name is None:
         object_name = os.path.basename(file_name)
     # upload the file
     s3_client = boto3.client('s3', region_name=region)
     try:
         s3_client.upload_file(file_name, bucket, object_name)
+        print("Uploaded {} to S3:{}{}".format(file_name, bucket, object_name))
         return True
     except Exception as e:
         print(e)
@@ -144,6 +147,7 @@ def download_file(bucket,
         object_name = os.path.basename(file_name)
     s3 = boto3.client('s3', region_name=region)
     s3.download_file(bucket, object_name, file_name)
+    print("Downloaded s3 file {}{} to {}.".format(bucket, object_name, file_name))
 
 
 def list_s3_files(bucket,
@@ -199,8 +203,7 @@ def handle_args(argv):
                 arg_database = arg
 
     except Exception as e:
-        print(e)
-        sys.exit(1)
+        raise e
 
     if arg_to_backup:
         # back up database
