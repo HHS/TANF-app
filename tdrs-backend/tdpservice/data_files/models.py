@@ -12,6 +12,7 @@ from django.db.models import Max
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
+from tdpservice.security.models import get_file_shasum
 
 logger = logging.getLogger(__name__)
 
