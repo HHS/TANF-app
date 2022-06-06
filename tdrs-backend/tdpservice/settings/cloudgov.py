@@ -35,7 +35,6 @@ class CloudGov(Common):
     cloudgov_app = get_json_env_var('VCAP_APPLICATION')
     APP_NAME = cloudgov_app.get('application_name')
 
-    print(f"APP NAME {APP_NAME}")
 
     cloudgov_services = get_json_env_var('VCAP_SERVICES')
 
