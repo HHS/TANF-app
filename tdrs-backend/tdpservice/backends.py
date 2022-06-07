@@ -1,5 +1,6 @@
 """Storage backends available for use within tdpservice."""
 from django.conf import settings
+
 from storages.backends.s3boto3 import S3Boto3Storage
 
 
@@ -10,6 +11,8 @@ class OverriddenCredentialsS3Storage(S3Boto3Storage):
     credentials and regions between different S3 storage classes.
     """
 
+    # Usually setting AWS_LOCATION in settings would set this, since we are subclassing
+    # `S3Boto3Storage`, it doesn't work so we have to add it here.
     location = settings.APP_NAME
 
     def get_default_settings(self):
