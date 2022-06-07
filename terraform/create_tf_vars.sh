@@ -13,15 +13,6 @@ CF_PASSWORD_DEV=$(echo "$KEYS_JSON" | jq -r '.password')
 
 CF_SPACE="tanf-dev"
 
-S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
-if [ -z "$S3_CREDENTIALS" ]; then
-    echo "Unable to get service-keys, you may need to login to Cloud.gov first"
-    echo "Run cf login --sso and attempt to retry running this script"
-    exit 1
-fi
-
-BUCKET=$(echo "${S3_CREDENTIALS}" | jq -r '.region')
-
 {
   echo "cf_password = \"$CF_PASSWORD_DEV\""
   echo "cf_user = \"$CF_USERNAME_DEV\""
