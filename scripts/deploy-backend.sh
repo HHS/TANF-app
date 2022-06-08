@@ -52,8 +52,7 @@ set_cf_envs()
   "JWT_KEY"
   "LOGGING_LEVEL"
   "OIDC_RP_CLIENT_ID"
-  "XMS_CLIENT_ID"
-  "XMS_CLIENT_SECRET")
+  )
 
   for var_name in ${var_list[@]}; do
     # Intentionally not setting variable if empty
