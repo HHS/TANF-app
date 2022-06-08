@@ -1,12 +1,14 @@
 """`populate_stts` command."""
 
 import csv
+import json
 import logging
 from pathlib import Path
+
 from django.core.management import BaseCommand
-from ...models import Region, STT
 from django.utils import timezone
 
+from ...models import STT, Region
 
 DATA_DIR = BASE_DIR = Path(__file__).resolve().parent / "data"
 logger = logging.getLogger(__name__)
@@ -29,7 +31,7 @@ def _get_states():
                 name=row["Name"],
                 region_id=row["Region"],
                 type=STT.EntityType.STATE,
-                filenames=row["filenames"],
+                filenames=json.loads(row["filenames"].replace('\'', '"')),
                 stt_code=row["STT_CODE"],
             )
             for row in reader
@@ -45,7 +47,7 @@ def _get_territories():
                 name=row["Name"],
                 region_id=row["Region"],
                 type=STT.EntityType.TERRITORY,
-                filenames=row["filenames"],
+                filenames=json.loads(row["filenames"].replace('\'', '"')),
                 stt_code=row["STT_CODE"],
             )
             for row in reader
@@ -61,7 +63,7 @@ def _populate_tribes():
                 region_id=row["Region"],
                 state=STT.objects.get(code=row["Code"]),
                 type=STT.EntityType.TRIBE,
-                filenames=row["filenames"],
+                filenames=json.loads(row["filenames"].replace('\'', '"')),
                 stt_code=row["STT_CODE"],
             )
             for row in reader
