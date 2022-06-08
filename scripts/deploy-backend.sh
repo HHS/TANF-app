@@ -62,7 +62,6 @@ set_cf_envs()
         continue
     fi
     cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
-    echo "Debugging: $cf_cmd"
     $cf_cmd
   done
 
