@@ -25,20 +25,10 @@ def test_stt_string_representation(stts):
 @pytest.mark.django_db
 def test_each_stt_has_file_name(stts):
     DATA_DIR = Path(__file__).resolve().parent.parent / "management/commands/data"
-    with open(DATA_DIR / "tribes.csv") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            stt = STT.objects.get(name=row["Name"])
-            assert json.loads(row["filenames"].replace('\'', '"')) == stt.filenames
-
-    with open(DATA_DIR / "territories.csv") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            stt = STT.objects.get(name=row["Name"])
-            assert json.loads(row["filenames"].replace('\'', '"')) == stt.filenames
-
-    with open(DATA_DIR / "territories.csv") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            stt = STT.objects.get(name=row["Name"])
-            assert json.loads(row["filenames"].replace('\'', '"')) == stt.filenames
+    stt_types = ["tribes", "territories", "tribes"]
+    for stt_type in stt_types:
+        with open(DATA_DIR / f"{stt_type}.csv") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                stt = STT.objects.get(name=row["Name"])
+                assert json.loads(row["filenames"].replace('\'', '"')) == stt.filenames

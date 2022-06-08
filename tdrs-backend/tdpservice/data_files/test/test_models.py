@@ -91,56 +91,21 @@ def test_data_files_filename_is_expected(stts, data_analyst):
     # all_stts = STT.objects.all()
     # for stt in all_stts.iterator():
     DATA_DIR = Path(__file__).resolve().parent.parent.parent / "stts/management/commands/data"
-    with open(DATA_DIR / "tribes.csv") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            for section in list(DataFile.Section):
-                stt = STT.objects.get(name=row["Name"])
-                new_data_file = DataFile.create_new_version({
-                    "year": 2020,
-                    "quarter": "Q1",
-                    "section": section,
-                    "user": data_analyst,
-                    "stt": stt
-                })
-                try:
-                    assert new_data_file.filename == stt.filenames[section]
-                except KeyError:
-                    assert new_data_file.filename == new_data_file.create_filename()
-
-    with open(DATA_DIR / "territories.csv") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            for section in list(DataFile.Section):
-                stt = STT.objects.get(name=row["Name"])
-                new_data_file = DataFile.create_new_version({
-                    "year": 2020,
-                    "quarter": "Q1",
-                    "section": section,
-                    "user": data_analyst,
-                    "stt": stt
-                })
-                try:
-                    assert new_data_file.filename == stt.filenames[section]
-                except KeyError:
-                    assert new_data_file.filename == new_data_file.create_filename()
-
-    with open(DATA_DIR / "territories.csv") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            for section in list(DataFile.Section):
-                stt = STT.objects.get(name=row["Name"])
-                new_data_file = DataFile.create_new_version({
-                    "year": 2020,
-                    "quarter": "Q1",
-                    "section": section,
-                    "user": data_analyst,
-                    "stt": stt
-                })
-                try:
-                    assert new_data_file.filename == stt.filenames[section]
-                except KeyError:
-                    assert new_data_file.filename == new_data_file.create_filename()
-
-
-
+    stt_types = ["tribes", "territories", "tribes"]
+    for stt_type in stt_types:
+        with open(DATA_DIR / f"{stt_type}.csv") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                for section in list(DataFile.Section):
+                    stt = STT.objects.get(name=row["Name"])
+                    new_data_file = DataFile.create_new_version({
+                        "year": 2020,
+                        "quarter": "Q1",
+                        "section": section,
+                        "user": data_analyst,
+                        "stt": stt
+                    })
+                    try:
+                        assert new_data_file.filename == stt.filenames[section]
+                    except KeyError:
+                        assert new_data_file.filename == new_data_file.create_filename()
