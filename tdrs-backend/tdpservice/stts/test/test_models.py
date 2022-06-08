@@ -1,6 +1,4 @@
 """Module for testing the stt and region models."""
-import csv
-import json
 from pathlib import Path
 
 import pytest

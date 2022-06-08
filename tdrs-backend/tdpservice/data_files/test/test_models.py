@@ -1,7 +1,4 @@
 """Module testing for data file model."""
-import csv
-from pathlib import Path
-
 from django.core.management import call_command
 
 import pytest
@@ -85,33 +82,16 @@ def test_find_latest_version_number(data_file_instance):
 #     assert data_file_instance.create_filename() == "ADS.E2J.blah"
 
 @pytest.mark.django_db
-def test_data_files_filename_is_expected(stts, data_analyst):
-    """Test the validity of the file names associated with each data file."""
-    data_dir = Path(__file__).resolve().parent.parent.parent / "stts/management/commands/data"
-    stt_types = ["tribes", "territories", "tribes"]
-    for stt_type in stt_types:
-        with open(data_dir / f"{stt_type}.csv") as csvfile:
-            # In order to avoid mock stts that currently aren't getting their filenames attributes set
-            # We are reading from the csv files we generate the stt records from so we only check stts
-            # that are supose to be here.
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                for section in list(DataFile.Section):
-                    stt = STT.objects.get(name=row["Name"])
-                    new_data_file = DataFile.create_new_version({
-                        "year": 2020,
-                        "quarter": "Q1",
-                        "section": section,
-                        "user": data_analyst,
-                        "stt": stt
-                    })
-                    try:
-                        assert new_data_file.filename == stt.filenames[section]
-                    except KeyError:
-                        # We are currently expecting a few failiures because the file names
-                        # currently in the csv files don't match our original expecations.
-                        # When a given stt has a file uploaded with a section that is not
-                        # included in the csv files, we generate a reasonable file name.
-                        # TODO: frontend has to get refactored so the choices for files to
-                        # upload always match what we have stored in filenames
-                        assert new_data_file.filename == new_data_file.create_filename()
+def test_data_files_filename_is_expected(stts, user):
+    """Test the validity of the file names associated with each data file"""
+    all_stts = STT.objects.all()
+    for stt in all_stts.iterator():
+        for section in stt.filenames:
+            new_data_file = DataFile.create_new_version({
+                "year": 2020,
+                "quarter": "Q1",
+                "section": section,
+                "user": user,
+                "stt": stt
+            })
+            assert new_data_file.filename == stt.filenames[section]
