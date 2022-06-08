@@ -135,11 +135,16 @@ class DataFile(FileRecord):
         null=True,
         blank=True
     )
+    @property
+    def filename(self):
+        """The correct filename for this data file."""
+        return self.stt.filenames.get(self.section, self.create_filename())
 
     def create_filename(self, prefix='ADS.E2J'):
         """Return a valid file name for sftp transfer."""
         # STT_TYPES = ["state", "territory", "tribe"]
         SECTION = [i.value for i in list(self.Section)]
+
         # str(STT_TYPES.index(self.stt.type)+1)
         return ''.join(prefix+'.FTP'+str(SECTION.index(self.section))+'.TS' + str(self.stt.stt_code))
 
