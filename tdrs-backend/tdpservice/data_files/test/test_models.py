@@ -108,4 +108,10 @@ def test_data_files_filename_is_expected(stts, data_analyst):
                     try:
                         assert new_data_file.filename == stt.filenames[section]
                     except KeyError:
+                        # We are currently expecting a few failiures because the file names
+                        # currently in the csv files don't match our original expecations.
+                        # When a given stt has a file uploaded with a section that is not
+                        # included in the csv files, we generate a reasonable file name.
+                        # TODO: frontend has to get refactored so the choices for files to
+                        # upload always match what we have stored in filenames
                         assert new_data_file.filename == new_data_file.create_filename()
