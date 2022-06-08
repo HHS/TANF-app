@@ -1,8 +1,17 @@
 """Module testing for data file model."""
+from django.core.management import call_command
+
 import pytest
+
+from tdpservice.stts.models import STT
 
 from ..models import DataFile
 
+
+@pytest.fixture
+def stts():
+    """Populate STTs."""
+    call_command("populate_stts")
 
 @pytest.mark.django_db
 def test_create_new_data_file_version(data_file_instance):
@@ -63,11 +72,32 @@ def test_find_latest_version_number(data_file_instance):
     )
     assert latest_version == new_data_file.version
 
+# @pytest.mark.django_db
+# def test_create_titan_name(data_file_instance):
+#     """Test method to generate filenames."""
+#     whaticareabout = data_file_instance.stt
+#     print("DF {}".format(whaticareabout))
+#     print("DF dir: {}".format(dir(whaticareabout)))
+#     print("sttcode {} vs. filenames {}".format(whaticareabout.stt_code, whaticareabout.filenames))
+#     assert data_file_instance.create_filename() == "ADS.E2J.blah"
+
 @pytest.mark.django_db
-def test_create_titan_name(data_file_instance):
-    """Test method to generate filenames."""
-    whaticareabout = data_file_instance.stt
-    print("DF {}".format(whaticareabout))
-    print("DF dir: {}".format(dir(whaticareabout)))
-    print("sttcode {} vs. filenames {}".format(whaticareabout.stt_code, whaticareabout.filenames))
-    assert data_file_instance.create_filename() == "ADS.E2J.blah"
+def test_data_files_filename_is_expected(stts, data_analyst):
+    """Test the validity of the file names associated with each data file"""
+    all_stts = STT.objects.all()
+    for stt in all_stts.iterator():
+        for section in list(DataFile.Section):
+            new_data_file = DataFile.create_new_version({
+                "year": 2020,
+                "quarter": "Q1",
+                "section": section,
+                "user": data_analyst,
+                "stt": stt
+            })
+            try:
+                assert new_data_file.filename == stt.filenames[section]
+            except KeyError:
+                assert new_data_file.filename == new_data_file.create_filename()
+
+
+
