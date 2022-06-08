@@ -24,6 +24,7 @@ def test_stt_string_representation(stts):
 
 @pytest.mark.django_db
 def test_each_stt_has_file_name(stts):
+    """Check that each of the stts have a set of filenames associated with them."""
     DATA_DIR = Path(__file__).resolve().parent.parent / "management/commands/data"
     stt_types = ["tribes", "territories", "tribes"]
     for stt_type in stt_types:

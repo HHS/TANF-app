@@ -1,6 +1,5 @@
 """Module testing for data file model."""
 import csv
-import json
 from pathlib import Path
 
 from django.core.management import call_command
@@ -87,13 +86,14 @@ def test_find_latest_version_number(data_file_instance):
 
 @pytest.mark.django_db
 def test_data_files_filename_is_expected(stts, data_analyst):
-    """Test the validity of the file names associated with each data file"""
-    # all_stts = STT.objects.all()
-    # for stt in all_stts.iterator():
-    DATA_DIR = Path(__file__).resolve().parent.parent.parent / "stts/management/commands/data"
+    """Test the validity of the file names associated with each data file."""
+    data_dir = Path(__file__).resolve().parent.parent.parent / "stts/management/commands/data"
     stt_types = ["tribes", "territories", "tribes"]
     for stt_type in stt_types:
-        with open(DATA_DIR / f"{stt_type}.csv") as csvfile:
+        with open(data_dir / f"{stt_type}.csv") as csvfile:
+            # In order to avoid mock stts that currently aren't getting their filenames attributes set
+            # We are reading from the csv files we generate the stt records from so we only check stts
+            # that are supose to be here.
             reader = csv.DictReader(csvfile)
             for row in reader:
                 for section in list(DataFile.Section):

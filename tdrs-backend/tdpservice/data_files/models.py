@@ -135,9 +135,10 @@ class DataFile(FileRecord):
         null=True,
         blank=True
     )
+
     @property
     def filename(self):
-        """The correct filename for this data file."""
+        """Return the correct filename for this data file."""
         return self.stt.filenames.get(self.section, self.create_filename())
 
     def create_filename(self, prefix='ADS.E2J'):
