@@ -1,7 +1,11 @@
 """Module for testing the stt and region models."""
+import csv
+import json
+from pathlib import Path
+
 import pytest
 
-from ..models import Region, STT
+from ..models import STT, Region
 
 
 @pytest.mark.django_db
@@ -16,3 +20,25 @@ def test_stt_string_representation(stts):
     """Test STT string representation."""
     first_stt = STT.objects.filter(type=STT.EntityType.STATE).first()
     assert str(first_stt) == first_stt.name
+
+
+@pytest.mark.django_db
+def test_each_stt_has_file_name(stts):
+    DATA_DIR = Path(__file__).resolve().parent.parent / "management/commands/data"
+    with open(DATA_DIR / "tribes.csv") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            stt = STT.objects.get(name=row["Name"])
+            assert json.loads(row["filenames"].replace('\'', '"')) == stt.filenames
+
+    with open(DATA_DIR / "territories.csv") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            stt = STT.objects.get(name=row["Name"])
+            assert json.loads(row["filenames"].replace('\'', '"')) == stt.filenames
+
+    with open(DATA_DIR / "territories.csv") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            stt = STT.objects.get(name=row["Name"])
+            assert json.loads(row["filenames"].replace('\'', '"')) == stt.filenames
