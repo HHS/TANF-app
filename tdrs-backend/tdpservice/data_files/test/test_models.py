@@ -72,15 +72,6 @@ def test_find_latest_version_number(data_file_instance):
     )
     assert latest_version == new_data_file.version
 
-# @pytest.mark.django_db
-# def test_create_titan_name(data_file_instance):
-#     """Test method to generate filenames."""
-#     whaticareabout = data_file_instance.stt
-#     print("DF {}".format(whaticareabout))
-#     print("DF dir: {}".format(dir(whaticareabout)))
-#     print("sttcode {} vs. filenames {}".format(whaticareabout.stt_code, whaticareabout.filenames))
-#     assert data_file_instance.create_filename() == "ADS.E2J.blah"
-
 @pytest.mark.django_db
 def test_data_files_filename_is_expected(stts, user):
     """Test the validity of the file names associated with each data file."""
