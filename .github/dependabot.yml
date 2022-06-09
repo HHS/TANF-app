@@ -7,7 +7,7 @@ updates:
     directory: "/tdrs-frontend"
     schedule:
       interval: "daily"
-    target-branch: "raft-tdp-main"
+    target-branch: "develop"
     labels:
       - "dependencies"
       - "frontend"
@@ -32,7 +32,7 @@ updates:
     directory: "/tdrs-backend"
     schedule:
       interval: "daily"
-    target-branch: "raft-tdp-main"
+    target-branch: "develop"
     labels:
       - "dependencies"
       - "backend"
