@@ -1,6 +1,4 @@
 """Module for testing the stt and region models."""
-from pathlib import Path
-
 import pytest
 
 from ..models import STT, Region

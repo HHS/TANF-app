@@ -83,7 +83,7 @@ def test_find_latest_version_number(data_file_instance):
 
 @pytest.mark.django_db
 def test_data_files_filename_is_expected(stts, user):
-    """Test the validity of the file names associated with each data file"""
+    """Test the validity of the file names associated with each data filel"""
     all_stts = STT.objects.all()
     for stt in all_stts.iterator():
         for section in stt.filenames:

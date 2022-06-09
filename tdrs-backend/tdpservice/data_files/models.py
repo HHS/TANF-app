@@ -83,6 +83,7 @@ class DataFile(FileRecord):
 
     class Section(models.TextChoices):
         """Enum for data file section."""
+
         TRIBAL_CLOSED_CASE_DATA = 'Tribal Closed Case Data'
         TRIBAL_ACTIVE_CASE_DATA = 'Tribal Active Case Data'
         TRIBAL_AGGREGATE_DATA = 'Tribal Aggregate Data'
