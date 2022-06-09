@@ -9,7 +9,7 @@ TDP`System Admins` will be assigning and updating application user roles through
 `<backend-domain-name>/admin/` (e.g. `https://tdp-backend-staging.app.cloud.gov/admin/`)
 
 The admin interface requires special privileges which can only be granted via the Django CLI [detailed below](#cli) or a Django Data migration. Once a user has been granted privileges, they can go to the admin page described above and log in. The admin interface provides links to [Users](), [STTs](), [Regions](), submitted [Data files](), and Groups which
-can can be each be modified through the interface.
+can each be modified through the interface.
 
 ### Log in to Admin
 
