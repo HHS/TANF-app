@@ -4,12 +4,13 @@
 # Need to run "export LD_LIBRARY_PATH=~/deps/1/python/lib/" before running python from ~/deps/1/python
 # which has boto3 available
 
-import subprocess
-import os
-import boto3
-import json
-import sys
 import getopt
+import json
+import os
+import subprocess
+import sys
+
+import boto3
 
 OS_ENV = os.environ
 
@@ -17,7 +18,8 @@ try:
     SPACE = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
 
     # Postgres client pg_dump directory
-    pgdump_search = subprocess.Popen(["find", "/", "-iname", "pg_dump"], stderr = subprocess.DEVNULL, stdout=subprocess.PIPE)
+    pgdump_search = subprocess.Popen(["find", "/", "-iname", "pg_dump"],
+                                     stderr=subprocess.DEVNULL, stdout=subprocess.PIPE)
     pgdump_search.wait()
     pg_dump_paths, pgdump_search_error = pgdump_search.communicate()
     pg_dump_paths = pg_dump_paths.decode("utf-8").split('\n')
