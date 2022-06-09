@@ -6,8 +6,9 @@ from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
 
-from configurations import Configuration
 from django.core.exceptions import ImproperlyConfigured
+
+from configurations import Configuration
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -71,6 +72,7 @@ class Common(Configuration):
         "tdpservice.middleware.NoCacheMiddleware",
     )
 
+    APP_NAME = "dev"
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = "tdpservice.urls"
     SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
