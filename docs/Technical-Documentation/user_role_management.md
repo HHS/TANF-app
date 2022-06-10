@@ -129,6 +129,6 @@ data_prepper.user_set.add(user)
 	
 1.) Users targeted for Superuser creation will have to be manually elevated by system administrators with access to the intended Cloud.gov environment. 
 
-2.) Admins with access will have to ssh into the environment and assign permissions. Instructions for how to do this are included [here](https://github.com/raft-tech/TANF-app/blob/develop/docs/Security-Compliance/Incidence-Response/Sys-Admin-Acct-Mgmt.md#example-mitigation-steps) under **CF CLI Commands**.
+2.) Admins with access will have to ssh into the environment and assign permissions. Instructions for how to do this are included [here](../Security-Compliance/Incidence-Response/Sys-Admin-Acct-Mgmt.md#example-mitigation-steps) under **CF CLI Commands**.
 
  
