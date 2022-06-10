@@ -533,6 +533,27 @@ jobs:
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
 
+  deploy-infrastructure-develop:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          tf-path: ./terraform/staging
+
+  deploy-develop:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-develop
+          frontend-appname: tdp-frontend-develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+
   deploy-project-updates-site:
     parameters:
       cf-org:
@@ -658,10 +679,22 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - staging
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - staging
+      - deploy-infrastructure-develop:
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-develop:
+          requires:
+            - deploy-infrastructure-develop
           filters:
             branches:
               only:
