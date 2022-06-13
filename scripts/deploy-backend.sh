@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 ##############################
 # Global Variable Decls 
@@ -102,7 +101,7 @@ bind_backend_to_services() {
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-db-${env}"
-
+    set_cf_envs
     cf restage "$CGAPPNAME_BACKEND"
 }
 
