@@ -128,7 +128,7 @@ class Development(CloudGov):
 class Staging(CloudGov):
     """Settings for applications deployed in the Cloud.gov staging space."""
 
-    ALLOWED_HOSTS = ['tdp-backend-staging.app.cloud.gov','tdp-backend-develop.app.cloud.gov']
+    ALLOWED_HOSTS = ['tdp-backend-staging.app.cloud.gov', 'tdp-backend-develop.app.cloud.gov']
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
         'OIDC_RP_CLIENT_ID',
