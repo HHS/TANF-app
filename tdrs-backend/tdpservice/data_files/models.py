@@ -1,7 +1,6 @@
 """Define data file models."""
 import os
 
-from django.conf import settings
 from django.db import models
 from django.db.models import Max
 
@@ -13,7 +12,7 @@ from tdpservice.users.models import User
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     return os.path.join(
-        f'{settings.APP_NAME}/data_files/{instance.stt.id}/{instance.quarter}',
+        f'data_files/{instance.stt.id}/{instance.quarter}',
         filename
     )
 
