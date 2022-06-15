@@ -679,14 +679,14 @@ workflows:
           filters:
             branches:
               only:
-                - staging
+                - main
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
               only:
-                - staging
+                - main
       - deploy-infrastructure-develop:
           filters:
             branches:
