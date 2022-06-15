@@ -299,6 +299,9 @@ commands:
       cf-org:
         type: env_var_name
         default: CF_ORG
+      cf-app:
+        type: string
+        default: CF_APP
     steps:
       - checkout
       - run:
@@ -319,14 +322,17 @@ commands:
               echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)\""
               echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
               echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
+              echo "bucket = \"$(echo "${S3_CREDENTIALS}" | jq -r '.bucket')\""
             } >> ./backend_config.tfvars
       - run:
           name: Prepare Terraform Variables
           command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
             {
               echo "cf_password = \"$<<parameters.cf-password>>\""
               echo "cf_user = \"$<<parameters.cf-username>>\""
               echo "cf_space_name = \"<<parameters.cf-space>>\""
+              echo "cf_app_name = \"<<parameters.cf-app>>\""
             } >> ./variables.tfvars
       - terraform/init:
           path: <<parameters.tf-path>>
@@ -488,8 +494,12 @@ jobs:
   deploy-infrastructure-dev:
     executor: terraform/default
     working_directory: ~/tdp-deploy
+    parameters:
+      target_env:
+        type: string
     steps:
-      - deploy-infrastructure
+      - deploy-infrastructure:
+          cf-app: << parameters.target_env >>
 
   deploy-dev:
     executor: docker-executor
@@ -604,7 +614,8 @@ workflows:
   dev-deployment:
     when: << pipeline.parameters.run_dev_deployment >>
     jobs:
-      - deploy-infrastructure-dev
+      - deploy-infrastructure-dev:
+          target_env: << pipeline.parameters.target_env >>
       - deploy-dev:
           target_env: << pipeline.parameters.target_env >>
           requires:
