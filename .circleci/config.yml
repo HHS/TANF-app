@@ -686,19 +686,19 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - test-main
       - deploy-infrastructure-develop:
           filters:
             branches:
               only:
-                - develop
+                - test-develop
       - deploy-develop:
           requires:
             - deploy-infrastructure-develop
           filters:
             branches:
               only:
-                - develop
+                - test-develop
 
   production-deployment:
     unless: << pipeline.parameters.run_dev_deployment >>
