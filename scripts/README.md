@@ -16,6 +16,7 @@ understand the role of the scripts.
 + [deploy-infrastructure-dev.sh](./README.md#deploy-infrastructure-devsh)
 + [deploy-infrastructure-staging.sh](./README.md#deploy-infrastructure-stagingsh)
 + [update-ssh-config.sh](./README.md#update-ssh-configsh)
++ [sync-backend.sh](./README.md#sync-backendsh)
 + [sudo-check.sh](./README.md#sudo-checksh)
 + [cf-checks.sh](./README.md#cf-checkssh)
 + [docker-check.sh](./README.md#docker-checksh)
@@ -224,6 +225,16 @@ This script overwrites ~/.ssh/config with the latest GUIDs for our tanf-dev appl
 ### Where it's used
 This script is only used locally and is not part of any CI pipeline. It is a developer tool.
 
+## sync-backend.sh
+
+### Usage
+```
+scripts/sync-backend.sh <app-name>
+```
+### Description
+Sync the local files with one of the 4 development backend deployments. Runs update-ssh-config.sh, and requires [sshpass](https://www.tecmint.com/sshpass-non-interactive-ssh-login-shell-script-ssh-password/) to be installed
+### Where it's used
+This script is only used locally and is not part of any CI pipeline. It is a developer tool.
 
 # "Check" scripts
 ## sudo-check.sh
