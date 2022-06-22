@@ -1,5 +1,7 @@
-import { createServer } from 'miragejs'
+import { createServer, Model } from 'miragejs'
 import { v4 as uuidv4 } from 'uuid'
+import faker from 'faker'
+
 import {
   AUTH_CHECK_DATA,
   FAILED_AUTH_CHECK_DATA,
@@ -8,11 +10,16 @@ import {
 } from './mirage.data.js'
 
 export default function startMirage(
-  { environment } = { environment: 'development' }
+  { environment, models } = {
+    environment: 'development',
+    models: {
+      users: Model,
+    },
+  }
 ) {
   return createServer({
     environment,
-
+    models,
     routes() {
       this.urlPrefix = 'http://localhost:8080/v1'
       this.get('/auth_check/', () => {
@@ -31,8 +38,21 @@ export default function startMirage(
       // if/when we add integration/e2e tests, the rest of these
       // routes will need some work done on them
 
-      this.patch('/users/set_profile', () => {
-        return {}
+      this.patch('/users/set_profile', (schema, request) => {
+        const { first_name, last_name, stt } = JSON.parse(request.requestBody)
+        return {
+          id: faker.datatype.uuid(),
+          first_name: faker.name.firstName(),
+          last_name: faker.name.lastName(),
+          email: faker.internet.email(),
+          stt: {
+            id: 31,
+            type: 'state',
+            code: 'NJ',
+            name: 'New Jersey',
+          },
+          roles: [],
+        }
       })
       this.get('/stts/alpha', () => STT_ALPHA_DATA)
       this.get('/reports/', () => REPORTS_DATA)
