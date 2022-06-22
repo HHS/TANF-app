@@ -36,16 +36,15 @@ function Profile() {
           {user?.first_name} {user?.last_name}
         </p>
         <p>{user?.email}</p>
-        <p>{primaryRole?.name }</p>
-
+        <p>{primaryRole?.name}</p>
         <p>
           {(() => {
             if (primaryRole?.name === 'Data Analyst') {
-              return user?.stt?.name
+              return user?.stt?.name // is there a problem if they don't have an stt?
             } else if (primaryRole?.name === 'OFA Regional Staff') {
-              return user?.region?.name
+              return user?.region?.id
             } else {
-              return user?.stt?.name || "Federal Government"
+              return user?.stt?.name || user?.region?.id || 'Federal Government'
             }
           })()}
         </p>
