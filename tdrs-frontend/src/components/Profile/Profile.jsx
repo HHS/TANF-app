@@ -42,12 +42,23 @@ function Profile() {
             if (primaryRole?.name === 'Data Analyst') {
               return user?.stt?.name // is there a problem if they don't have an stt?
             } else if (primaryRole?.name === 'OFA Regional Staff') {
-              return user?.region?.id // also here, is there an issue if this isn't?
+              return `Region ${user?.region?.id}` // also here, is there an issue if this isn't?
             } else {
               return user?.stt?.name || user?.region?.id || 'Federal Government'
             }
           })()}
         </p>
+
+        {(() => {
+          if (
+            ['Data Analyst', 'Developer'].includes(primaryRole?.name) &&
+            user?.stt
+          ) {
+            return <p> Region {user.stt.region} </p>
+          } else {
+            return null
+          }
+        })()}
       </div>
       <div className="margin-top-5">
         <p className="text-bold">Email and Password</p>
