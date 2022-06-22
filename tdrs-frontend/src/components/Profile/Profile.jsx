@@ -36,7 +36,7 @@ function Profile() {
           {user?.first_name} {user?.last_name}
         </p>
         <p>{user?.email}</p>
-        <p>{primaryRole?.name}</p>
+        <p>{primaryRole?.name }</p>
 
         <p>
           {(() => {
@@ -45,8 +45,7 @@ function Profile() {
             } else if (primaryRole?.name === 'OFA Regional Staff') {
               return user?.region?.name
             } else {
-              return user?.stt?.name
-              return 'Federal Government'
+              return user?.stt?.name || "Federal Government"
             }
           })()}
         </p>
