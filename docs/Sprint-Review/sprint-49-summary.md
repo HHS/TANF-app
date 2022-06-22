@@ -22,6 +22,7 @@ Velocity: 26
 ## Moved to Next Sprint (Raft Review, In Progress, Current Sprint Backlog)
 
 ### Blocked
+* N/A
 ### Raft Review
 * [#1736 - As a developer, I need to know the file naming convention for ACF Titan](https://github.com/raft-tech/TANF-app/issues/1736)
 * [#1746 - As tech lead, I need new routes and services for deployments from tanf-app/develop branch to tanf-staging space](https://github.com/raft-tech/TANF-app/issues/1746)
