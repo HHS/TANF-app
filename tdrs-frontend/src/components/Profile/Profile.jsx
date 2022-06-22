@@ -42,7 +42,7 @@ function Profile() {
             if (primaryRole?.name === 'Data Analyst') {
               return user?.stt?.name // is there a problem if they don't have an stt?
             } else if (primaryRole?.name === 'OFA Regional Staff') {
-              return user?.region?.id
+              return user?.region?.id // also here, is there an issue if this isn't?
             } else {
               return user?.stt?.name || user?.region?.id || 'Federal Government'
             }
