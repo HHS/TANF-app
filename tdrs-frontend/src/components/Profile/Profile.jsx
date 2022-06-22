@@ -45,6 +45,7 @@ function Profile() {
             } else if (primaryRole?.name === 'OFA Regional Staff') {
               return user?.region?.name
             } else {
+              return user?.stt?.name
               return 'Federal Government'
             }
           })()}
