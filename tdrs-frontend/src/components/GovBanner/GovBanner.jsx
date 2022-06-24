@@ -26,28 +26,28 @@ function GovBanner() {
                   switch (process.env.NODE_ENV) {
                     case 'development':
                       return ' Development Demo '
-                    break
+                      break
                     case 'test':
                       return ' Test Demo '
-                    break
+                      break
                     case 'production':
                       switch (process.env.REACT_APP_CF_SPACE) {
                         case 'dev':
                           return ' Dev Demo '
-                        break
+                          break
                         case 'staging':
                           return ' Staging Demo '
-                        break
+                          break
                         case 'prod':
                           return 'n Official '
-                        break
+                          break
                         default:
                           return ' Demo '
-                        break
+                          break
                       }
                     default:
                       return ' Demo '
-                    break
+                      break
                   }
                 })()}
                 website of the United States government
