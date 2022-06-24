@@ -8,11 +8,6 @@ from tdpservice.stts.models import STT
 from ..models import DataFile
 
 
-@pytest.fixture
-def stts():
-    """Populate STTs."""
-    call_command("populate_stts")
-
 @pytest.mark.django_db
 def test_create_new_data_file_version(data_file_instance):
     """Test version incrementing logic for data files."""
@@ -73,8 +68,8 @@ def test_find_latest_version_number(data_file_instance):
     assert latest_version == new_data_file.version
 
 @pytest.mark.django_db
-def test_data_files_filename_is_expected(stts, user):
-    """Test the validity of the file names associated with each data file."""
+def test_data_files_filename_is_expected(user):
+    """Test that the file name matches the file name expected based on the stt of each data file. """
     all_stts = STT.objects.all()
     for stt in all_stts.iterator():
         for section in stt.filenames:
