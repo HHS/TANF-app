@@ -8,6 +8,7 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_FRONTEND=${2}
 CGHOSTNAME_BACKEND=${3}
+CF_SPACE=${3}
 
 update_frontend()
 {
@@ -18,6 +19,7 @@ update_frontend()
 
     echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
     echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
+    echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
     npm run build
     unlink .env.production
     mkdir deployment

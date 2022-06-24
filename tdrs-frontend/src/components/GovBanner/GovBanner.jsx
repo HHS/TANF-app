@@ -21,7 +21,29 @@ function GovBanner() {
             </div>
             <div className="grid-col-fill tablet:grid-col-auto">
               <p className="usa-banner__header-text">
-                A DEMO website of the United States government
+                A
+                {(() => {
+                  switch (process.env.NODE_ENV) {
+                    case 'development':
+                      return ' Development Instance '
+                    case 'test':
+                      return ' Test Instance '
+                    case 'production':
+                      switch (process.env.REACT_APP_CF_SPACE) {
+                        case 'dev':
+                          return ' Dev Demo '
+                        case 'staging':
+                          return ' Staging Demo '
+                        case 'prod':
+                          return 'n Official '
+                        default:
+                          return ' Demo '
+                      }
+                    default:
+                      return ' Demo '
+                  }
+                })()}
+                website of the United States government
               </p>
               <p className="usa-banner__header-action" aria-hidden="true">
                 Here’s how you know
