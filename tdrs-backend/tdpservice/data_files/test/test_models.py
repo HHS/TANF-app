@@ -1,6 +1,4 @@
 """Module testing for data file model."""
-from django.core.management import call_command
-
 import pytest
 
 from tdpservice.stts.models import STT
@@ -69,7 +67,7 @@ def test_find_latest_version_number(data_file_instance):
 
 @pytest.mark.django_db
 def test_data_files_filename_is_expected(user):
-    """Test that the file name matches the file name expected based on the stt of each data file. """
+    """Test that the file name matches the file name expected based on the stt of each data file."""
     all_stts = STT.objects.all()
 
     if (all_stts.count == 0):
