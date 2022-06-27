@@ -13,7 +13,7 @@ This document outlines the process for doing this for each set of keys.
 
 **Warning(s):** 
 - Production sites will need to be taken down for maintenance when rotating keys, as the rotation will automatically invalidate all current sessions.
-- As of June 2022, CircleCI supplies environment variable key-value pairs to multiple environments (e.g. Raft's CircleCI deploys applications to dev and staging environments). The values from CircleCI are expected to be unique per environment, so until [#1826](https://github.com/raft-tech/TANF-app/issues/1826) is researched and addressed, these values will need to be manually corrected in cloud.gov immediately following the execution of the `<env>-deployment` CircleCI workflow. This workaround applies to backend applications in the TDP staging environment. 
+- As of June 2022, CircleCI supplies environment variable key-value pairs to multiple environments (e.g. Raft's CircleCI deploys applications to dev and staging environments). The values from CircleCI are expected to be unique per environment, so until [#1826](https://github.com/raft-tech/TANF-app/issues/1826) is researched and addressed, these values will need to be manually corrected in cloud.gov immediately following the execution of the [`<env>-deployment` CircleCI workflow](../../.circleci/config.yml). This workaround applies to backend applications in the TDP staging environment. 
 
 ## Rotation procedures
 **<details><summary>JWT Keys</summary>**
