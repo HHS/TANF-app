@@ -8,7 +8,7 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_FRONTEND=${2}
 CGHOSTNAME_BACKEND=${3}
-CF_SPACE=${3}
+CF_SPACE=${4}
 
 update_frontend()
 {
