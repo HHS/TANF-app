@@ -1,31 +1,31 @@
 """Globally available pytest fixtures."""
-from io import StringIO
 import uuid
+from io import StringIO
 
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import Group
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 from factory.faker import faker
 from pytest_factoryboy import register
 from rest_framework.test import APIClient
-import pytest
-
-from tdpservice.stts.models import Region, STT
 
 from tdpservice.core.admin import LogEntryAdmin
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.security.test.factories import OwaspZapScanFactory
+from tdpservice.stts.models import STT, Region
 from tdpservice.users.test.factories import (
-    UserFactory,
-    StaffUserFactory,
-    AdminUserFactory,
-    STTUserFactory,
-    InactiveUserFactory,
     AdminSTTUserFactory,
+    AdminUserFactory,
     DeactivatedUserFactory,
+    InactiveUserFactory,
+    StaffUserFactory,
+    STTUserFactory,
+    UserFactory,
 )
 
 _faker = faker.Faker()
@@ -317,9 +317,9 @@ def infected_data_file_data(base_data_file_data, infected_data_file):
 
 
 @pytest.fixture
-def data_file_instance():
+def data_file_instance(stt):
     """Return a data file."""
-    return DataFileFactory.create()
+    return DataFileFactory.create(stt=stt)
 
 
 @pytest.fixture

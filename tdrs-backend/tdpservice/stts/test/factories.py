@@ -23,7 +23,7 @@ class STTFactory(factory.django.DjangoModelFactory):
     """Generate test data for stts."""
 
     class Meta:
-        """Hardcoded metata data for stts."""
+        """Hardcoded metadata for stts."""
 
         model = "stts.STT"
 
@@ -31,6 +31,9 @@ class STTFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "teststt%d" % n)
     code = "TT"
     type = "STATE"
+    filenames = "{'Active Case Data': 'ADS.E2J.FTP1.TS72', 'Closed Case Data': 'ADS.E2J.FTP2.TS72', " \
+                "'Aggregate Data': 'ADS.E2J.FTP3.TS72', 'Stratum Data': 'ADS.E2J.FTP4.TS72'}"
+    stt_code = 42
     region = factory.SubFactory(RegionFactory)
 
     @classmethod
