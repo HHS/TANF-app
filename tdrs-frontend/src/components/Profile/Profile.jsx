@@ -50,14 +50,7 @@ function Profile() {
         </p>
 
         {(() => {
-          if (
-            ['Data Analyst', 'Developer'].includes(primaryRole?.name) &&
-            user?.stt
-          ) {
-            return <p> Region {user.stt.region} </p>
-          } else {
-            return null
-          }
+          return <p> Region {user?.stt?.name || user?.region?.id} </p>
         })()}
       </div>
       <div className="margin-top-5">
