@@ -202,15 +202,13 @@ commands:
         type: string
     steps:
       - run:
-          name: Delete existing ClamAV REST application
-          command: cf delete -r clamav-rest -f
-      - run:
           name: Deploy ClamAV REST application
           command: |
             cf push clamav-rest -f tdrs-backend/manifest.clamav.yml \
-              --var cf-space=<<parameters.cf-space>>
+              --var cf-space=<<parameters.cf-space>> \
+              --strategy rolling
       - run:
-          name: Enable internal route between backend and clamav-rest apps
+          name: Enable internal route between backend and clamav-rest app
           command: |
             cf add-network-policy <<parameters.backend-appname>> clamav-rest \
               -s <<parameters.cf-space>> \
