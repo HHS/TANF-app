@@ -41,7 +41,7 @@ def add_filenames(apps, schema_editor):
             filenames = row["filenames"] = row["filenames"].replace('\'', '"')
             rows.append(row)
             territory = STT.objects.get(name=row["Name"])
-            state.filenames = json.loads(filenames)
+            territory.filenames = json.loads(filenames)
             territory.save()
 
 class Migration(migrations.Migration):
