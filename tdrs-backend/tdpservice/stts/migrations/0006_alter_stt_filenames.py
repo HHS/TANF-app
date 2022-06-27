@@ -31,7 +31,7 @@ def add_filenames(apps, schema_editor):
             filenames = row["filenames"] = row["filenames"].replace('\'', '"')
             rows.append(row)
             tribe = STT.objects.get(name=row["Name"])
-            state.filenames = json.loads(filenames)
+            tribe.filenames = json.loads(filenames)
             tribe.save()
 
     with open(data_dir / "territories.csv", "r") as csvfile:
