@@ -32,13 +32,13 @@ function GovBanner() {
                       break
                     case 'production':
                       switch (process.env.REACT_APP_CF_SPACE) {
-                        case 'dev':
+                        case 'tanf-dev':
                           return ' Dev Demo '
                           break
-                        case 'staging':
+                        case 'tanf-staging':
                           return ' Staging Demo '
                           break
-                        case 'prod':
+                        case 'tanf-prod':
                           return 'n Official '
                           break
                         default:

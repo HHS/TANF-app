@@ -44,7 +44,7 @@ describe('GovBanner', () => {
 
     test('displays correct behavior in dev', () => {
       process.env.NODE_ENV = 'production'
-      process.env.REACT_APP_CF_SPACE = 'dev'
+      process.env.REACT_APP_CF_SPACE = 'tanf-dev'
 
       const wrapper = shallow(<GovBanner />)
       expect(
@@ -56,7 +56,7 @@ describe('GovBanner', () => {
 
     test('displays correct behavior in staging', () => {
       process.env.NODE_ENV = 'production'
-      process.env.REACT_APP_CF_SPACE = 'staging'
+      process.env.REACT_APP_CF_SPACE = 'tanf-staging'
 
       const wrapper = shallow(<GovBanner />)
       expect(
@@ -67,7 +67,7 @@ describe('GovBanner', () => {
     })
     test('displays correct behavior in prod', () => {
       process.env.NODE_ENV = 'production'
-      process.env.REACT_APP_CF_SPACE = 'prod'
+      process.env.REACT_APP_CF_SPACE = 'tanf-prod'
       const wrapper = shallow(<GovBanner />)
       expect(
         wrapper
