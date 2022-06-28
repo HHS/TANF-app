@@ -81,10 +81,8 @@ describe('Profile', () => {
         `Your request for access is currently being reviewed by an OFA Admin. We’ll send you an email when it’s been approved.`
       )
     ).not.toBeInTheDocument()
-
   })
-  it('should display all information about the user correctly when approved',() => {
-
+  it('should display all information about the user correctly when approved', () => {
     const store = mockStore(initialState)
 
     render(
@@ -96,7 +94,6 @@ describe('Profile', () => {
     expect(screen.getByText('test@example.com')).toBeInTheDocument()
     expect(screen.getByText('No one really knows')).toBeInTheDocument()
     expect(screen.getByText('Region 9999')).toBeInTheDocument()
-
   })
 
   it('should navigate to external login client settings', () => {

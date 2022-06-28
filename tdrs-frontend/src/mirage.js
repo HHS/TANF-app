@@ -42,10 +42,10 @@ export default function startMirage(
         const { first_name, last_name, stt } = JSON.parse(request.requestBody)
         return {
           id: faker.datatype.uuid(),
-          first_name: faker.name.firstName(),
-          last_name: faker.name.lastName(),
+          first_name: first_name,
+          last_name: last_name,
           email: faker.internet.email(),
-          stt: {
+          stt: stt || {
             id: 31,
             type: 'state',
             code: 'NJ',
