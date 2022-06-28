@@ -20,7 +20,7 @@ Deploy Environment | Cloud.gov Space | Cloud.gov Dev Access | Role              
 -------------------|-----------------|----------------------|--------------------------------------------------|---------------------------------------------------|
 Dev                | Tanf-Dev        | Vendor & Gov      | Deploy code submitted for gov review                | Relevant github label assigned as shown below     |
 Develop            | Tanf-Staging    | Gov               | Deploy code once gov-approved                       | Code merged to `raft-tech/TANF-app:develop` |
-Staging            | Tanf-Staging    | Gov               | Deploy code once gov-approved                       | Code merged to `raft-tech/TANF-app:develop` |
+Staging            | Tanf-Staging    | Gov               | Deploy code once gov-approved                       | Code merged to `HHS/TANF-app:main` |
 Production         | Tanf-Prod       | Gov               | Deploy code tested in staging & ready for prod      | Code merged to `HHS/TANF-app:master`                |  
 
 ### Gitflow and Deployments
