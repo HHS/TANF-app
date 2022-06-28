@@ -32,7 +32,7 @@ function Profile() {
         </div>
       )}
       <div>
-        <p className="text-bold">
+        <p id="full-name" className="text-bold">
           {user?.first_name} {user?.last_name}
         </p>
         <p>{user?.email}</p>
@@ -50,7 +50,9 @@ function Profile() {
         </p>
 
         {(() => {
-          return <p> Region {user?.stt?.name || user?.region?.id} </p>
+          console.log(user?.stt?.region?.id)
+          console.log(user)
+          return <p> Region {user?.stt?.region || user?.region?.id} </p>
         })()}
       </div>
       <div className="margin-top-5">
