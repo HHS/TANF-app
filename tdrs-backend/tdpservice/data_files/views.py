@@ -51,6 +51,11 @@ class DataFileViewSet(ModelViewSet):
     # we will be able to appropriately refer to the latest versions only.
     ordering = ['-version']
 
+    def perform_create(self):
+        """
+        TODO: create has to be done here
+        """
+
     def filter_queryset(self, queryset):
         """Only apply filters to the list action."""
         if self.action != 'list':

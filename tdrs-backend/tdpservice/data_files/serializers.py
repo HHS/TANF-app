@@ -53,6 +53,8 @@ class DataFileSerializer(serializers.ModelSerializer):
             av_scan.data_file = data_file
             av_scan.save()
 
+        # TODO: Add Titan upload here
+
         return data_file
 
     def update(self, instance, validated_data):
