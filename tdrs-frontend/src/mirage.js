@@ -1,6 +1,5 @@
 import { createServer } from 'miragejs'
 import { v4 as uuidv4 } from 'uuid'
-import faker from 'faker'
 
 import {
   AUTH_CHECK_DATA,
@@ -10,7 +9,7 @@ import {
 } from './mirage.data.js'
 
 export default function startMirage(
-  { environment } = {environment: 'development'}
+  { environment } = { environment: 'development' }
 ) {
   return createServer({
     environment,
