@@ -50,8 +50,6 @@ function Profile() {
         </p>
 
         {(() => {
-          console.log(user?.stt?.region?.id)
-          console.log(user)
           return <p> Region {user?.stt?.region || user?.region?.id} </p>
         })()}
       </div>
