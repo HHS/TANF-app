@@ -1,6 +1,5 @@
 import { createServer } from 'miragejs'
 import { v4 as uuidv4 } from 'uuid'
-
 import {
   AUTH_CHECK_DATA,
   FAILED_AUTH_CHECK_DATA,
@@ -31,7 +30,7 @@ export default function startMirage(
       // if/when we add integration/e2e tests, the rest of these
       // routes will need some work done on them
 
-      this.patch('/users/set_profile', (schema, request) => {
+      this.patch('/users/set_profile', () => {
         return {}
       })
       this.get('/stts/alpha', () => STT_ALPHA_DATA)
