@@ -152,21 +152,39 @@ function SplashPage() {
           </div>
           <div className="tablet:grid-col-8">
             <ul className="usa-card-group grid-col-12">
-              <li className="usa-card tablet:grid-col-4 mobile-lg:grid-col-12 resource-card">
+              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
+                <div className="usa-card__container">
+                  <header className="usa-card__header">
+                    <h3 className="usa-card__heading">TDP Knowledge Center</h3>
+                  </header>
+                  <div>
+                    <Button
+                      onClick={() => {
+                        alert('Hi')
+                      }}
+                      type="button"
+                    >
+                      View Knowledge Center
+                    </Button>
+                  </div>
+                </div>
+              </li>
+              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">Resource 1</h3>
                   </header>
                 </div>
               </li>
-              <li className="usa-card tablet:grid-col-4 mobile-lg:grid-col-12 resource-card">
+              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">Resource 1</h3>
                   </header>
                 </div>
               </li>
-              <li className="usa-card tablet:grid-col-4 mobile-lg:grid-col-12 resource-card">
+
+              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">Resource 1</h3>
