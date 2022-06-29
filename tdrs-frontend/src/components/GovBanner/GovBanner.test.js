@@ -18,7 +18,7 @@ describe('GovBanner', () => {
     afterAll(() => {
       process.env = OLD_ENV
     })
-    test('displays correct behavior in development', () => {
+    it('displays correct behavior in development', () => {
       process.env.NODE_ENV = 'development'
 
       const wrapper = shallow(<GovBanner />)
@@ -31,7 +31,7 @@ describe('GovBanner', () => {
       ).toBe(true)
     })
 
-    test('displays correct behavior in test', () => {
+    it('displays correct behavior in test', () => {
       process.env.NODE_ENV = 'test'
 
       const wrapper = shallow(<GovBanner />)
@@ -42,7 +42,7 @@ describe('GovBanner', () => {
       ).toBe(true)
     })
 
-    test('displays correct behavior in dev', () => {
+    it('displays correct behavior in dev', () => {
       process.env.NODE_ENV = 'production'
       process.env.REACT_APP_CF_SPACE = 'tanf-dev'
 
@@ -54,7 +54,7 @@ describe('GovBanner', () => {
       ).toBe(true)
     })
 
-    test('displays correct behavior in staging', () => {
+    it('displays correct behavior in staging', () => {
       process.env.NODE_ENV = 'production'
       process.env.REACT_APP_CF_SPACE = 'tanf-staging'
 
@@ -65,7 +65,7 @@ describe('GovBanner', () => {
           .includes('A Staging Demo website of the United States government')
       ).toBe(true)
     })
-    test('displays correct behavior in prod', () => {
+    it('displays correct behavior in prod', () => {
       process.env.NODE_ENV = 'production'
       process.env.REACT_APP_CF_SPACE = 'tanf-prod'
       const wrapper = shallow(<GovBanner />)
@@ -76,7 +76,7 @@ describe('GovBanner', () => {
       ).toBe(true)
     })
 
-    test('displays correct behavior in some other hypothetical yet to exist environment', () => {
+    it('displays correct behavior in some other hypothetical yet to exist environment', () => {
       process.env.NODE_ENV = 'space'
       process.env.REACT_APP_CF_SPACE = 'super-prod'
       const wrapper = shallow(<GovBanner />)
