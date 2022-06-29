@@ -38,18 +38,22 @@ function Profile() {
         <p>{user?.email}</p>
         <p>{primaryRole?.name}</p>
         {(() => {
-          if (primaryRole?.name === 'Data Analyst') {
-            return <>
-              <p> {user?.stt?.name} </p>
-              <p> Region {user?.stt?.region || user?.region?.id} </p>
-            </>
-          } else if (primaryRole?.name === 'OFA Regional Staff') {
-            return <p>{`Region ${user?.region?.id}`}</p>
+          const stt = user?.stt?.name || 'Federal Government'
+          const region = user?.stt?.region || user?.region?.id
+
+          console.log({ stt, region })
+
+          if (stt === 'Federal Government' && !region) {
+            return <p> {stt} </p>
           } else {
-            return <p>{user?.stt?.name || user?.region?.id || 'Federal Government'}</p>
+            return (
+              <>
+                <p> {stt} </p>
+                <p> Region {region} </p>
+              </>
+            )
           }
         })()}
-
       </div>
       <div className="margin-top-5">
         <p className="text-bold">Email and Password</p>

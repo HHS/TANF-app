@@ -82,6 +82,29 @@ describe('Profile', () => {
       )
     ).not.toBeInTheDocument()
   })
+
+  it('Should not display region for federal staff.', () => {
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: {
+          roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+          access_request: true,
+        },
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <Profile />
+      </Provider>
+    )
+    expect(
+      screen.queryByText(
+        'Region'
+      )
+    ).not.toBeInTheDocument()
+  })
   it('should display all information about the user correctly when approved', () => {
     const store = mockStore(initialState)
 
