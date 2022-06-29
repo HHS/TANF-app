@@ -37,23 +37,19 @@ function Profile() {
         </p>
         <p>{user?.email}</p>
         <p>{primaryRole?.name}</p>
-        <p>
-          {(() => {
-            if (primaryRole?.name === 'Data Analyst') {
-              return user?.stt?.name // is there a problem if they don't have an stt?
-            } else if (primaryRole?.name === 'OFA Regional Staff') {
-              return `Region ${user?.region?.id}` // also here, is there an issue if this isn't?
-            } else {
-              return user?.stt?.name || user?.region?.id || 'Federal Government'
-            }
-          })()}
-        </p>
-
         {(() => {
-          console.log(user?.stt?.region?.id)
-          console.log(user)
-          return <p> Region {user?.stt?.region || user?.region?.id} </p>
+          if (primaryRole?.name === 'Data Analyst') {
+            return <>
+              <p> {user?.stt?.name} </p>
+              <p> Region {user?.stt?.region || user?.region?.id} </p>
+            </>
+          } else if (primaryRole?.name === 'OFA Regional Staff') {
+            return <p>{`Region ${user?.region?.id}`}</p>
+          } else {
+            return <p>{user?.stt?.name || user?.region?.id || 'Federal Government'}</p>
+          }
         })()}
+
       </div>
       <div className="margin-top-5">
         <p className="text-bold">Email and Password</p>
