@@ -1,6 +1,5 @@
 import { createServer } from 'miragejs'
 import { v4 as uuidv4 } from 'uuid'
-
 import {
   AUTH_CHECK_DATA,
   FAILED_AUTH_CHECK_DATA,
@@ -13,6 +12,7 @@ export default function startMirage(
 ) {
   return createServer({
     environment,
+
     routes() {
       this.urlPrefix = 'http://localhost:8080/v1'
       this.get('/auth_check/', () => {
