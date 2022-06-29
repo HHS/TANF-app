@@ -41,8 +41,6 @@ function Profile() {
           const stt = user?.stt?.name || 'Federal Government'
           const region = user?.stt?.region || user?.region?.id
 
-          console.log({ stt, region })
-
           if (stt === 'Federal Government' && !region) {
             return <p> {stt} </p>
           } else {
