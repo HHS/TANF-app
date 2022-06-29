@@ -1,4 +1,4 @@
-import { createServer, Model } from 'miragejs'
+import { createServer } from 'miragejs'
 import { v4 as uuidv4 } from 'uuid'
 import faker from 'faker'
 
@@ -10,16 +10,10 @@ import {
 } from './mirage.data.js'
 
 export default function startMirage(
-  { environment, models } = {
-    environment: 'development',
-    models: {
-      users: Model,
-    },
-  }
+  { environment } = {environment: 'development'}
 ) {
   return createServer({
     environment,
-    models,
     routes() {
       this.urlPrefix = 'http://localhost:8080/v1'
       this.get('/auth_check/', () => {
@@ -39,20 +33,7 @@ export default function startMirage(
       // routes will need some work done on them
 
       this.patch('/users/set_profile', (schema, request) => {
-        const { first_name, last_name, stt } = JSON.parse(request.requestBody)
-        return {
-          id: faker.datatype.uuid(),
-          first_name: first_name,
-          last_name: last_name,
-          email: faker.internet.email(),
-          stt: stt || {
-            id: 31,
-            type: 'state',
-            code: 'NJ',
-            name: 'New Jersey',
-          },
-          roles: [],
-        }
+        return {}
       })
       this.get('/stts/alpha', () => STT_ALPHA_DATA)
       this.get('/reports/', () => REPORTS_DATA)
