@@ -35,26 +35,24 @@ k. Establishes a process for reissuing shared/group account credentials (if depl
 For CSP Only: AC-2 (j) [at least annually]
 
 ## TDP Implementation
-a. The TDP system accounts are System Admin, OFA Admin and Data Prepper.  TDP Implementation is completed by the Developers.
+a. The TDP system accounts are OFA System Admin, OFA Admin, OFA Regional Staff, ACF OCIO and (STT) Data Analyst.  TDP Implementation is completed by the Developers.
 
-b. The System Admin is responsible for managing the system accounts.  
+b. The OFA System Admin is responsible for managing the system accounts.  
 
-c. Members in the roles of System Admin, OFA Admin and Data Preppers are based on their job responsibilities.  The activities of each of the roles can be found in [AC-05](../ac-5/index.md)
+c. Members in the roles of OFA System Admin, OFA Admin and Data Analysts are based on their job responsibilities.  The activities of each of the roles can be found in [AC-05](../ac-5/index.md)
 
-d. The roles in the TDP system follow the principles of least privilege and separation of duties as described in [AC-05](../ac-5/index.md) and [AC-06](../ac-6/index.md).  Users within each role inherit the responsibilities, duties, and permissions of that role.  Outside of the TDP system, groups/roles/access for Developers are enforced through the access management features of GitHub/Cloud.gov
+d. The roles in the TDP system follow the principles of least privilege and separation of duties as described in [AC-05](../ac-5/index.md) and [AC-06](../ac-6/index.md).  Users within each role inherit the responsibilities, duties, and permissions of that role.  Outside of the TDP system, groups/roles/access for Developers are enforced through the access management features of GitHub and Cloud.gov.
 
-e. All users who require access to the TDP application must create a Login.gov account.  In order to be able to submit/view reports within the TDP application, users must submit a request.  The System Admin reviews and approves the request.  Once the request is approved, the user will be able to perform their assigned duties.  Additionally, the System Admin approves requests for accounts to GitHub/Cloud.gov as well.
+e. All internal (i.e. ACF) users who require access to TDP must authenticate via ACF AMS with their PIV/CAC credentials. All external (i.e. non-ACF) users who require access to the TDP application must create a Login.gov account.  In order to be able to submit/view reports within the TDP application, users must submit a request.  The OFA system admin reviews and approves the request.  Once the request is approved, the user will be able to perform their assigned duties.  Additionally, the OFA system admin approves requests for accounts to GitHub and Cloud.gov as well.
 
-f. The System Admin is the only role that has the ability to approve new users, update profile information, inactivate and reactivate users.
+f. The OFA System Admin is the only role that has the ability to approve new users, update profile information, inactivate and reactivate users.
 
-g. The System Admin reviews the list of TDP application users on a monthly basis and/or when the status of a user is changed to inactive or terminated.  Additinally, Django Admin provides logs of user actions that can be monitored and reviewed, and Cloud.gov provides tools to audit the logs of Developer actions.
+g. The OFA System Admin reviews the list of TDP application users on a monthly basis and/or when the status of a user is changed to inactive or terminated.  Additinally, Django Admin provides logs of user actions that can be monitored and reviewed, and Cloud.gov provides tools to audit the logs of Developer actions.
 
-h. For the OFA MVP, internal processes are done to satisfy this, including the System Admin manually checking the list of active/expected users with those registered in the system on a periodic basis.
+h. For the OFA MVP, internal processes are done to satisfy this, including the OFA system admin manually checking the list of active/expected users with those registered in the system on a periodic basis.
 
-i. All users must submit a request through the TDP application to be able to perform their duties.  Users identify their intended system usage in the request.  The System Admin reviews and approves/disapproves all requests. 
+i. All users must submit a request through the TDP application to be able to perform their duties.  Users identify their intended system usage in the request.  The OFA system admin reviews and approves/disapproves all requests. 
 
-j. The System Admin reviews the TDP application users list every 180 days.
+j. The OFA system admin reviews the TDP application users list every 180 days.
 
 k. Not Applicable - there are no shared/group account credentials in the TDP application.
-
-### Related Files
