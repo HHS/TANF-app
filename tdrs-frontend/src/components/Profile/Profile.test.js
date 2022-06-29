@@ -99,11 +99,7 @@ describe('Profile', () => {
         <Profile />
       </Provider>
     )
-    expect(
-      screen.queryByText(
-        'Region'
-      )
-    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Region')).not.toBeInTheDocument()
   })
   it('should display all information about the user correctly when approved', () => {
     const store = mockStore(initialState)
