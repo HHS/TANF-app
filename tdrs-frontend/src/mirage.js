@@ -12,6 +12,7 @@ export default function startMirage(
 ) {
   return createServer({
     environment,
+
     routes() {
       this.urlPrefix = 'http://localhost:8080/v1'
       this.get('/auth_check/', () => {
