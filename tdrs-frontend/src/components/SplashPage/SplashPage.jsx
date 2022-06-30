@@ -150,45 +150,105 @@ function SplashPage() {
               </p>
             </div>
           </div>
-          <div className="tablet:grid-col-8">
-            <ul className="usa-card-group grid-col-12">
+          <div className="usa-accordian__content">
+            <ul className="usa-card-group">
               <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">TDP Knowledge Center</h3>
                   </header>
-                  <div>
-                    <Button
-                      onClick={() => {
-                        alert('Hi')
-                      }}
-                      type="button"
+                  <div className="usa-card__body">
+                    <p>
+                      The knowledge center contains resources on all things TDP
+                      from account creation to data submission.
+                    </p>
+                  </div>
+                  <div className="usa-card__footer">
+                    <a
+                      href="http://tdp-project-updates.app.cloud.gov/knowledge-center/"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      View Knowledge Center
-                    </Button>
+                      <Button class="usa-button">View Knowledge Center</Button>
+                    </a>
                   </div>
                 </div>
               </li>
               <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
-                    <h3 className="usa-card__heading">Resource 1</h3>
+                    <h3 className="usa-card__heading">
+                      Transmission File Layouts & Edits
+                    </h3>
                   </header>
+                  <div className="usa-card__body">
+                    <p>
+                      All transmission file layouts and edits (i.e. error codes)
+                      for TANF and SSP-MOE data reporting.
+                    </p>
+                  </div>
+                  <div className="usa-card__footer">
+                    <a
+                      href="https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button class="usa-button">View Layouts & Edits</Button>
+                    </a>
+                  </div>
                 </div>
               </li>
               <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
-                    <h3 className="usa-card__heading">Resource 1</h3>
+                    <h3 className="usa-card__heading">
+                      Tribal TANF Data Coding Instructions
+                    </h3>
                   </header>
+                  <div className="usa-card__body">
+                    <p>
+                      File coding instructions addressing each data point that
+                      Tribal TANF grantees are required to report upon.
+                    </p>
+                  </div>
+                  <div className="usa-card__footer">
+                    <a
+                      href="https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button class="usa-button">
+                        View Tribal TANF Coding Instructions
+                      </Button>
+                    </a>
+                  </div>
                 </div>
               </li>
-
               <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
-                    <h3 className="usa-card__heading">Resource 1</h3>
+                    <h3 className="usa-card__heading">
+                      ACF-199 and ACF-209 Instructions
+                    </h3>
                   </header>
+                  <div className="usa-card__body">
+                    <p>
+                      Instructions and definitions for completion of forms
+                      ACF-199 (TANF Fate Reoirt) and ACF-209 (SSP-MOE Data
+                      Report).
+                    </p>
+                  </div>
+                  <div className="usa-card__footer">
+                    <a
+                      href="https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_reports_tan_ssp_instructions_definitions.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button class="usa-button">
+                        View ACF Form Instructions
+                      </Button>
+                    </a>
+                  </div>
                 </div>
               </li>
             </ul>
