@@ -152,7 +152,7 @@ function SplashPage() {
           </div>
           <div className="usa-accordian__content">
             <ul className="usa-card-group">
-              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
+              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">TDP Knowledge Center</h3>
@@ -174,7 +174,7 @@ function SplashPage() {
                   </div>
                 </div>
               </li>
-              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
+              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">
@@ -198,7 +198,7 @@ function SplashPage() {
                   </div>
                 </div>
               </li>
-              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
+              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">
@@ -224,7 +224,7 @@ function SplashPage() {
                   </div>
                 </div>
               </li>
-              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12 resource-card">
+              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">
