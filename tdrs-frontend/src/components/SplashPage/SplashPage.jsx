@@ -134,7 +134,7 @@ function SplashPage() {
         </div>
       </section>
 
-      <section className="grid-container usa-section">
+      <section className="desktop:grid-container-widescreen usa-section">
         <div className="grid-row grid-gap">
           <div className="tablet:grid-col-4">
             <h2 className="resources-header font-heading-2xl margin-top-0 tablet:margin-bottom-0">
@@ -151,8 +151,8 @@ function SplashPage() {
             </div>
           </div>
           <div className="grid-col">
-            <ul className="usa-card-group">
-              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12">
+            <ul className="grid-row usa-card-group">
+              <li className="usa-card--header-first padding-2 tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">TDP Knowledge Center</h3>
@@ -176,7 +176,7 @@ function SplashPage() {
                   </div>
                 </div>
               </li>
-              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12">
+              <li className="usa-card--header-first padding-2 tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">
@@ -202,7 +202,7 @@ function SplashPage() {
                   </div>
                 </div>
               </li>
-              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12">
+              <li className="usa-card--header-first padding-2 tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">
@@ -228,7 +228,7 @@ function SplashPage() {
                   </div>
                 </div>
               </li>
-              <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12">
+              <li className="usa-card--header-first padding-2 tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">
