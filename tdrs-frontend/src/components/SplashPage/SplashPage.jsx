@@ -67,7 +67,7 @@ function SplashPage() {
         className={`usa-hero usa-hero${randomIndex()}`}
         aria-label="Introduction"
       >
-        <div className="desktop:grid-container-widescreen">
+        <div className="desktop:grid-container-widescreen ">
           {isInactive && (
             <div className="usa-alert usa-alert--slim usa-alert--error margin-bottom-4">
               <div className="usa-alert__body">
@@ -134,9 +134,9 @@ function SplashPage() {
         </div>
       </section>
 
-      <section className="desktop:grid-container-widescreen usa-section bg-base-lightest">
-        <div className="grid-row grid-gap">
-          <div className="grid-col-4">
+      <section className="desktop:grid-container-widescreen padding-top-4 height-full usa-section bg-base-lightest">
+        <div className="grid-row">
+          <div className="grid-col-3">
             <h2 className="resources-header font-heading-2xl margin-top-0 tablet:margin-bottom-0">
               Featured TANF Resources
             </h2>
@@ -150,9 +150,9 @@ function SplashPage() {
               </p>
             </div>
           </div>
-          <div className="grid-col-8">
+          <div className="grid-col-9">
             <ul className="grid-row usa-card-group">
-              <li className="usa-card--header-first padding-2 tablet:grid-col-6 mobile-lg:grid-col-12">
+              <li className="usa-card--header-first padding-bottom-4 padding-right-2 tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">TDP Knowledge Center</h3>
@@ -176,7 +176,7 @@ function SplashPage() {
                   </div>
                 </div>
               </li>
-              <li className="usa-card--header-first padding-2 tablet:grid-col-6 mobile-lg:grid-col-12">
+              <li className="usa-card--header-first padding-bottom-4 tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">
@@ -202,7 +202,7 @@ function SplashPage() {
                   </div>
                 </div>
               </li>
-              <li className="usa-card--header-first padding-2 tablet:grid-col-6 mobile-lg:grid-col-12">
+              <li className="usa-card--header-first padding-right-2 tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">
@@ -228,7 +228,7 @@ function SplashPage() {
                   </div>
                 </div>
               </li>
-              <li className="usa-card--header-first padding-2 tablet:grid-col-6 mobile-lg:grid-col-12">
+              <li className="usa-card--header-first tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
                     <h3 className="usa-card__heading">
