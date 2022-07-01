@@ -45,6 +45,8 @@ pyjwt = "==2.4.0"
 requests = "==2.27.1"
 wait-for-it = "==2.2.0"
 requests-mock = "==1.9.3"
+celery = "*"
+redis = "*"
 
 [requires]
 python_version = "3.10.4"

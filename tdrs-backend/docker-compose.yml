@@ -80,6 +80,13 @@ services:
       - clamav-rest
       - localstack
       - postgres
+      - redis-server
+
+  redis-server:
+    image: "redis:alpine"
+    command: redis-server
+    ports:
+      - "6380:6379"
 
 volumes:
   localstack_data:

@@ -397,3 +397,11 @@ class Common(Configuration):
         'AMS_CLIENT_SECRET',
         ''
     )
+
+    # CELERY CONFIG
+    BROKER_URL = 'redis://redis-server:6380'
+    CELERY_RESULT_BACKEND = 'redis://redis-server:6380'
+    CELERY_ACCEPT_CONTENT = ['application/json']
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
+    CELERY_TIMEZONE = 'Africa/Nairobi'
