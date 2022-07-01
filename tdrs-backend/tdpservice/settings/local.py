@@ -43,3 +43,4 @@ class Local(Common):
         'level': 'DEBUG',
         'handlers': ['console']
     }
+
