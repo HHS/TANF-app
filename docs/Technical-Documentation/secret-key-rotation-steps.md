@@ -99,7 +99,7 @@ Service requests tickets must be submitted by Government-authorized personnel wi
 
 **<details><summary>Django secret keys</summary>**
 
-`DJANGO_SECRET_KEY` is dynamically generated since [Issue 967: Dynamically generate DJANGO_SECRET_KEY for initial deployments]([#1151](https://github.com/raft-tech/TANF-app/pull/1151)), so all that needs to be done to rotate this key in any environment is to re-run the relevant environment's deployment workflow in CircleCI. These are as follows:
+`DJANGO_SECRET_KEY` is dynamically generated since [#1151](https://github.com/raft-tech/TANF-app/pull/1151), so all that needs to be done to rotate this key in any environment is to re-run the relevant environment's deployment workflow in CircleCI. These are as follows:
 - dev environment workflow (`dev-deployment`) is run from CircleCI for _raft-tech/TANF-app_. 
 - staging environment workflow (`staging-deployment`) is run from CircleCI for _raft-tech/TANF-app_  via `deploy-develop`.
 - staging environment workflow  (`staging-deployment`) is run from CircleCI for _HHS/TANF-app_ via `deploy-staging`.
