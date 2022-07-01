@@ -150,7 +150,7 @@ function SplashPage() {
               </p>
             </div>
           </div>
-          <div className="usa-accordian__content">
+          <div className="grid-col">
             <ul className="usa-card-group">
               <li className="usa-card tablet:grid-col-6 mobile-lg:grid-col-12">
                 <div className="usa-card__container">
@@ -169,7 +169,9 @@ function SplashPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Button class="usa-button">View Knowledge Center</Button>
+                      <Button type="button" class="usa-button">
+                        View Knowledge Center
+                      </Button>
                     </a>
                   </div>
                 </div>
@@ -193,7 +195,9 @@ function SplashPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Button class="usa-button">View Layouts & Edits</Button>
+                      <Button type="button" class="usa-button">
+                        View Layouts & Edits
+                      </Button>
                     </a>
                   </div>
                 </div>
@@ -217,7 +221,7 @@ function SplashPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Button class="usa-button">
+                      <Button type="button" class="usa-button">
                         View Tribal TANF Coding Instructions
                       </Button>
                     </a>
@@ -244,7 +248,7 @@ function SplashPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Button class="usa-button">
+                      <Button type="button" class="usa-button">
                         View ACF Form Instructions
                       </Button>
                     </a>
