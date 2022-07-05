@@ -16,8 +16,6 @@ RUN apt-get -y update
 RUN apt-get -y upgrade
 # Install a new package:
 RUN apt-get install -y gcc && apt-get install -y graphviz && apt-get install -y graphviz-dev
-# Install Redis
-# RUN apt-get install -y redis-server
 # Install pipenv
 RUN pip install --upgrade pip pipenv && pipenv install --dev --system --deploy
 
