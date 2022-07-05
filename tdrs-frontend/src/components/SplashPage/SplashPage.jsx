@@ -134,7 +134,7 @@ function SplashPage() {
 
       <section className="desktop:grid-container-widescreen padding-top-4 height-full usa-section">
         <div className="grid-row">
-          <div className="desktop:grid-col-3">
+          <div className="desktop:grid-col-3 mobile:grid-container">
             <h2 className="resources-header font-heading-2xl margin-top-0 margin-bottom-0">
               Featured TANF Resources
             </h2>
