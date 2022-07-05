@@ -149,7 +149,7 @@ function SplashPage() {
             </div>
           </div>
           <div className="desktop:grid-col-9">
-            <ul className="grid-row usa-card-group">
+            <ul className="grid-row usa-card-group mobile:margin-0">
               <li className="usa-card--header-first padding-bottom-4 desktop:padding-right-2 desktop:grid-col-6 mobile:grid-col-12">
                 <div className="usa-card__container">
                   <header className="usa-card__header">
