@@ -12,7 +12,6 @@ from configurations import Configuration
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 def get_required_env_var_setting(
     env_var_name: str,
     setting_name: Optional[str] = None
@@ -397,11 +396,3 @@ class Common(Configuration):
         'AMS_CLIENT_SECRET',
         ''
     )
-
-    # CELERY CONFIG
-    CELERY_BROKER_URL = "redis://redis-server:6379/0"
-    CELERY_RESULT_BACKEND = "redis://redis-server:6379/0"
-    CELERY_ACCEPT_CONTENT = ['application/json']
-    CELERY_TASK_SERIALIZER = 'json'
-    CELERY_RESULT_SERIALIZER = 'json'
-    CELERY_TIMEZONE = 'UTC'
