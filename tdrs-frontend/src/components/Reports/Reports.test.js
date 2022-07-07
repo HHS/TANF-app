@@ -148,7 +148,7 @@ describe('Reports', () => {
     )
 
     const sttDropdown = getByLabelText(
-      'Associated State, Tribe, or Territory',
+      'Associated State, Tribe, or Territory*',
       { selector: 'input' }
     )
 
