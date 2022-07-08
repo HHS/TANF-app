@@ -166,8 +166,13 @@ function SplashPage() {
                       href="http://tdp-project-updates.app.cloud.gov/knowledge-center/"
                       target="_blank"
                       rel="noopener noreferrer"
+                      tabindex="-1"
                     >
-                      <Button type="button" class="usa-button">
+                      <Button
+                        type="button"
+                        class="usa-button"
+                        id="viewKnowledgeCenterButton"
+                      >
                         View Knowledge Center
                       </Button>
                     </a>
@@ -192,8 +197,13 @@ function SplashPage() {
                       href="https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits"
                       target="_blank"
                       rel="noopener noreferrer"
+                      tabindex="-1"
                     >
-                      <Button type="button" class="usa-button">
+                      <Button
+                        type="button"
+                        class="usa-button"
+                        id="viewLayoutsButton"
+                      >
                         View Layouts & Edits
                       </Button>
                     </a>
@@ -218,8 +228,13 @@ function SplashPage() {
                       href="https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions"
                       target="_blank"
                       rel="noopener noreferrer"
+                      tabindex="-1"
                     >
-                      <Button type="button" class="usa-button">
+                      <Button
+                        type="button"
+                        class="usa-button"
+                        id="viewTribalCodingInstructions"
+                      >
                         View Tribal TANF Coding Instructions
                       </Button>
                     </a>
@@ -245,8 +260,13 @@ function SplashPage() {
                       href="https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_reports_tan_ssp_instructions_definitions.pdf"
                       target="_blank"
                       rel="noopener noreferrer"
+                      tabindex="-1"
                     >
-                      <Button type="button" class="usa-button">
+                      <Button
+                        type="button"
+                        class="usa-button"
+                        id="viewACFFormInstructions"
+                      >
                         View ACF Form Instructions
                       </Button>
                     </a>
