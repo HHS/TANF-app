@@ -15,6 +15,7 @@ function Button({
   onClick,
   className,
   disabled,
+  url,
 }) {
   const isBig = size ? size === 'big' : false
   const isSmall = size ? size === 'small' : false
@@ -33,18 +34,33 @@ function Button({
     },
     className
   )
-
-  return (
-    <button
-      type={type} // eslint-disable-line
-      className={classes}
-      onClick={onClick}
-      data-testid="button"
-      disabled={disabled}
-    >
-      {children}
-    </button>
-  )
+  if (url == undefined) {
+    return (
+      <button
+        type={type} // eslint-disable-line
+        className={classes}
+        onClick={onClick}
+        data-testid="button"
+        disabled={disabled}
+      >
+        {children}
+      </button>
+    )
+  } else {
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" tabIndex="-1">
+        <button
+          type={type} // eslint-disable-line
+          className={classes}
+          onClick={onClick}
+          data-testid="button"
+          disabled={disabled}
+        >
+          {children}
+        </button>
+      </a>
+    )
+  }
 }
 
 Button.propTypes = {
