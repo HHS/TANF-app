@@ -31,6 +31,7 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
       selected={selectedStt}
       handleBlur={handleBlur}
       placeholder="- Select or Search -"
+      aria-required="true"
     >
       <option value="" disabled hidden>
         - Select or Search -
