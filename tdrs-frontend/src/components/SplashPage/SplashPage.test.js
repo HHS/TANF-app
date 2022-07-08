@@ -98,7 +98,8 @@ describe('SplashPage', () => {
         <SplashPage />
       </Provider>
     )
-    const link = wrapper.find('#viewTribalCodingInstructions').getElement().props['url']
+    const link = wrapper.find('#viewTribalCodingInstructions').getElement()
+      .props['url']
 
     expect(link).toEqual(url)
   })
@@ -121,7 +122,9 @@ describe('SplashPage', () => {
       </Provider>
     )
 
-    const link = wrapper.find('#viewKnowledgeCenterButton').getElement().props['url']
+    const link = wrapper.find('#viewKnowledgeCenterButton').getElement().props[
+      'url'
+    ]
 
     expect(link).toEqual(url)
   })
@@ -164,7 +167,9 @@ describe('SplashPage', () => {
         <SplashPage />
       </Provider>
     )
-    const link = wrapper.find('#viewACFFormInstructions').getElement().props['url']
+    const link = wrapper.find('#viewACFFormInstructions').getElement().props[
+      'url'
+    ]
     expect(link).toEqual(url)
   })
 
