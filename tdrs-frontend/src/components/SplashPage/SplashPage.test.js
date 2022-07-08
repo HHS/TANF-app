@@ -84,7 +84,8 @@ describe('SplashPage', () => {
   it('redirects Tribal Coding page when View Tribal Coding Instructions clicked', () => {
     const store = mockStore(initialState)
 
-    const url = 'https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions'
+    const url =
+      'https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions'
     global.window = Object.create(window)
     Object.defineProperty(window, 'location', {
       value: {
@@ -98,51 +99,6 @@ describe('SplashPage', () => {
       </Provider>
     )
     wrapper.find('#viewTribalCodingInstructions').simulate('click', {
-      preventDefault: () => {},
-    })
-    expect(window.location.href).toEqual(url)
-  })
-
-
-  it('redirects to TDP Knowledge Center when View Knowledge Center clicked', () => {
-    const store = mockStore(initialState)
-
-    const url = 'http://tdp-project-updates.app.cloud.gov/knowledge-center/'
-    global.window = Object.create(window)
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-      },
-    })
-
-    const wrapper = mount(
-      <Provider store={store}>
-        <SplashPage />
-      </Provider>
-    )
-    wrapper.find('#viewKnowledgeCenterButton').simulate('click', {
-      preventDefault: () => {},
-    })
-    expect(window.location.href).toEqual(url)
-  })
-
-  it('redirects ACF Layouts page when View Layouts clicked', () => {
-    const store = mockStore(initialState)
-
-    const url = 'https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits'
-    global.window = Object.create(window)
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-      },
-    })
-
-    const wrapper = mount(
-      <Provider store={store}>
-        <SplashPage />
-      </Provider>
-    )
-    wrapper.find('#viewLayoutsButton').simulate('click', {
       preventDefault: () => {},
     })
     expect(window.location.href).toEqual(url)

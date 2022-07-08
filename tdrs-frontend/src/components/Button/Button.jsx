@@ -34,7 +34,7 @@ function Button({
     },
     className
   )
-  if (url == undefined) {
+  if (url === undefined) {
     return (
       <button
         type={type} // eslint-disable-line
