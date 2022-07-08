@@ -91,7 +91,7 @@ function Header() {
   return (
     <>
       <div className="usa-overlay" />
-      <header className="usa-header usa-header--extended">
+      <header className="usa-header grid-container-widescreen">
         <div className="usa-navbar">
           <div className="usa-logo" id="extended-logo">
             <em className="usa-logo__text">
