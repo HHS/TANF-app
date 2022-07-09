@@ -233,7 +233,7 @@ function SplashPage() {
                   <div className="usa-card__body">
                     <p>
                       Instructions and definitions for completion of forms
-                      ACF-199 (TANF Fate Reoirt) and ACF-209 (SSP-MOE Data
+                      ACF-199 (TANF Date Reoirt) and ACF-209 (SSP-MOE Data
                       Report).
                     </p>
                   </div>
