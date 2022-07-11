@@ -89,7 +89,7 @@ function SplashPage() {
               </div>
             </div>
           )}
-          <div className="usa-hero__callout desktop:margin-left-0 desktop:margin-right-0 mobile:margin-left-2 mobile:margin-right-2">
+          <div className="usa-hero__callout">
             <h1 className="usa-hero__heading">
               <span className="usa-hero__heading--alt font-serif-2xl margin-bottom-5">
                 Sign into TANF Data Portal
@@ -133,7 +133,7 @@ function SplashPage() {
       </section>
 
       <section className="desktop:grid-container-widescreen padding-top-4 usa-section">
-        <div className="grid-row desktop:margin-left-0 desktop:margin-right-0 mobile:margin-left-2 mobile:margin-right-2">
+        <div className="grid-row">
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-3">
             <h2 className="resources-header font-heading-2xl margin-top-0 margin-bottom-0">
               Featured TANF Resources
