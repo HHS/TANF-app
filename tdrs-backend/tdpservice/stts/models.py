@@ -28,10 +28,13 @@ class STT(models.Model):
         max_length=200, blank=True, null=True, choices=EntityType.choices
     )
     code = models.CharField(max_length=2, blank=True, null=True)
+    code_number = models.PositiveIntegerField(blank=True, null=True)
     name = models.CharField(max_length=1000)
     region = models.ForeignKey(
         Region, on_delete=models.CASCADE, related_name="stts", null=True
     )
+    filenames = models.JSONField(max_length=512, blank=True, null=True)  # largest length in data so far is 332.
+    stt_code = models.PositiveIntegerField(blank=True, null=True)
     # Tribes have a state, which we need to store.
     state = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
 

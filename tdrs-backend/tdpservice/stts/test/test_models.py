@@ -1,7 +1,7 @@
 """Module for testing the stt and region models."""
 import pytest
 
-from ..models import Region, STT
+from ..models import STT, Region
 
 
 @pytest.mark.django_db
