@@ -67,7 +67,7 @@ function SplashPage() {
         className={`usa-hero usa-hero${randomIndex()}`}
         aria-label="Introduction"
       >
-        <div className="desktop:grid-container-widescreen">
+        <div className="grid-container-widescreen">
           {isInactive && (
             <div className="usa-alert usa-alert--slim usa-alert--error margin-bottom-4">
               <div className="usa-alert__body">
@@ -132,7 +132,7 @@ function SplashPage() {
         </div>
       </section>
 
-      <section className="desktop:grid-container-widescreen padding-top-4 usa-section">
+      <section className="grid-container-widescreen padding-top-4 usa-section">
         <div className="grid-row">
           <div className="mobile:grid-container desktop:padding-0 desktop:grid-col-3">
             <h2 className="resources-header font-heading-2xl margin-top-0 margin-bottom-0">
