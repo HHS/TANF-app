@@ -6,6 +6,9 @@ import Profile from '../Profile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 import Reports from '../Reports'
+
+import SiteMap from '../SiteMap'
+
 import Home from '../Home'
 import { useSelector } from 'react-redux'
 
@@ -44,6 +47,16 @@ const AppRoutes = () => {
         element={
           <PrivateRoute title="TANF Data Files">
             <Reports />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        exact
+        path="/site-map"
+        element={
+          <PrivateRoute title="Site Map">
+            <SiteMap />
           </PrivateRoute>
         }
       />
