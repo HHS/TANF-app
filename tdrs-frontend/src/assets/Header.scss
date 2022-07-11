@@ -30,3 +30,10 @@
 .usa-nav__primary > .usa-nav__primary-item > .usa-current {
   font-weight: 700;
 }
+
+.usa-nav__wide {
+  align-items: center;
+  border-color: #dfe1e2;
+  display: flex;
+  padding-right: 0;
+}

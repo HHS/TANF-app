@@ -92,7 +92,7 @@ function Header() {
     <>
       <div className="usa-overlay" />
       <header className="usa-header usa-header--extended">
-        <div className="usa-navbar">
+        <div className="grid-container-widescreen usa-nav__wide desktop:padding-left-4 desktop:border-bottom-0 mobile:border-bottom-1px mobile:padding-left-0">
           <div className="usa-logo" id="extended-logo">
             <em className="usa-logo__text">
               <a href="/" title="Home" aria-label="Home">
