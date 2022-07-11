@@ -42,7 +42,7 @@ describe('GovBanner', () => {
       ).toBe(true)
     })
 
-    it('renders with "A Dev Demo" in the title running in a deployed environment with in tanf-dev space.', () => {
+    it('renders with "A Dev Demo" in the title running in a deployed environment within tanf-dev space.', () => {
       process.env.NODE_ENV = 'production'
       process.env.REACT_APP_CF_SPACE = 'tanf-dev'
 
@@ -54,7 +54,7 @@ describe('GovBanner', () => {
       ).toBe(true)
     })
 
-    it('renders with "A Dev Demo" in the title running in a deployed environment with in tanf-staging space.', () => {
+    it('renders with "A Dev Demo" in the title running in a deployed environment within tanf-staging space.', () => {
       process.env.NODE_ENV = 'production'
       process.env.REACT_APP_CF_SPACE = 'tanf-staging'
 
@@ -65,7 +65,7 @@ describe('GovBanner', () => {
           .includes('A Staging Demo website of the United States government')
       ).toBe(true)
     })
-    it('renders with "A Dev Demo" in the title running in a deployed environment with in tanf-production space.', () => {
+    it('renders with "An Official Website" in the title running in a deployed environment within tanf-production space.', () => {
       process.env.NODE_ENV = 'production'
       process.env.REACT_APP_CF_SPACE = 'tanf-prod'
       const wrapper = shallow(<GovBanner />)
