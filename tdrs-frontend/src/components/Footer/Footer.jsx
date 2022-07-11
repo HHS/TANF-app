@@ -20,6 +20,16 @@ function Footer() {
                     Privacy policy
                   </a>
                 </li>
+                <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                  <a
+                    className="usa-footer__primary-link"
+                    href="/site-map"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Site Map
+                  </a>
+                </li>
               </ul>
             </nav>
           </div>
