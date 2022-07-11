@@ -47,6 +47,8 @@ wait-for-it = "==2.2.0"
 requests-mock = "==1.9.3"
 celery = "*"
 redis = "*"
+flower = "1.1.0"
+django-celery-beat = "2.3.0"
 
 [requires]
 python_version = "3.10.4"

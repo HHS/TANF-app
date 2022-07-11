@@ -76,6 +76,7 @@ services:
                ./gunicorn_start.sh"
     ports:
       - "8080:8080"
+      - "5555:5555"
     depends_on:
       - clamav-rest
       - localstack
