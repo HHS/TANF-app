@@ -54,6 +54,7 @@ class Common(Configuration):
         "tdpservice.stts",
         "tdpservice.data_files",
         "tdpservice.security",
+        "tdpservice.scheduling",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
