@@ -112,7 +112,7 @@ function Header() {
           aria-label="Primary navigation"
           className="usa-nav"
         >
-          <div className="usa-nav__inner">
+          <div className="desktop:margin-left-4">
             <button type="button" className="usa-nav__close">
               <img src={closeIcon} alt="close" />
             </button>
