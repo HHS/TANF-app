@@ -10,7 +10,7 @@ const SiteMap = () => (
     <SiteMap.Link text="Data Files" link="/data-files" />
     <SiteMap.Link text="Profile" link="/profile" />
     <SiteMap.Link
-      text="Home"
+      text="Admin"
       link={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
     />
   </div>
