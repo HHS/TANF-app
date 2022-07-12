@@ -25,7 +25,7 @@
 
 ## Staging
 
-the Staging environment contains two frontend and backend deployments.
+The Staging environment contains two frontend and backend deployments.
 
 | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- |
