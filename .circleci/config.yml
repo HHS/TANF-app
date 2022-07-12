@@ -684,7 +684,7 @@ workflows:
           filters:
             branches:
               only:
-                - test-main
+                - main
       - deploy-infrastructure-develop:
           filters:
             branches:
