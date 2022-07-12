@@ -696,7 +696,7 @@ workflows:
           filters:
             branches:
               only:
-                - test-develop
+                - develop
 
   production-deployment:
     unless: << pipeline.parameters.run_dev_deployment >>
