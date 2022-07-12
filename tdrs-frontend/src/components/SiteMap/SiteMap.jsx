@@ -21,7 +21,7 @@ SiteMap.Link = ({ text, link }) => (
     className="usa-footer__primary-link"
     href={link}
     target="_blank"
-    rel="noreferrer"
+    rel="noopener noreferrer"
   >
     {text}
   </a>
