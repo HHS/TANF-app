@@ -12,15 +12,18 @@ import SiteMap from '../SiteMap'
 import Home from '../Home'
 import { useSelector } from 'react-redux'
 
+const isMemberOfOne = (user, ...groupNames) =>
+      !!user?.roles?.some((role) => groupNames.includes(role.name))
+
 /**
  * This component renders the routes for the app.
  * Routes have the 'exact' prop, so the order of routes
  * does not matter.
  */
-const AppRoutes = () => {
-  const user = useSelector((state) => state.auth.user)
+const AppRoutes = ({ user }) => {
   const role = user?.roles
   const hasRole = Boolean(role?.length > 0)
+
   const userAccessRequestApproved = Boolean(user?.['access_request'])
 
   const homeTitle =
@@ -56,7 +59,7 @@ const AppRoutes = () => {
         path="/site-map"
         element={
           <PrivateRoute title="Site Map">
-            <SiteMap />
+            <SiteMap user={user}/>
           </PrivateRoute>
         }
       />
