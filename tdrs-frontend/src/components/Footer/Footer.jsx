@@ -1,8 +1,10 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 
 import ACFLogo from '../../assets/ACFLogo.svg'
 
 function Footer() {
+  const authenticated = useSelector((state) => state.auth.authenticated)
   return (
     <footer className="usa-footer usa-footer--slim">
       <div className="usa-footer__primary-section">
@@ -20,16 +22,18 @@ function Footer() {
                     Privacy policy
                   </a>
                 </li>
-                <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
-                  <a
-                    className="usa-footer__primary-link"
-                    href="/site-map"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Site Map
-                  </a>
-                </li>
+                {authenticated ? (
+                  <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                    <a
+                      className="usa-footer__primary-link"
+                      href="/site-map"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Site Map
+                    </a>
+                  </li>
+                ) : null}
               </ul>
             </nav>
           </div>
