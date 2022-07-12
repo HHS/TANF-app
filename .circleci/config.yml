@@ -677,7 +677,7 @@ workflows:
           filters:
             branches:
               only:
-                - test-main
+                - main
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
