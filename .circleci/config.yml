@@ -689,7 +689,7 @@ workflows:
           filters:
             branches:
               only:
-                - test-develop
+                - develop
       - deploy-develop:
           requires:
             - deploy-infrastructure-develop
