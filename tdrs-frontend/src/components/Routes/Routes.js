@@ -13,7 +13,7 @@ import Home from '../Home'
 import { useSelector } from 'react-redux'
 
 const isMemberOfOne = (user, ...groupNames) =>
-      !!user?.roles?.some((role) => groupNames.includes(role.name))
+  !!user?.roles?.some((role) => groupNames.includes(role.name))
 
 /**
  * This component renders the routes for the app.
@@ -59,7 +59,7 @@ const AppRoutes = ({ user }) => {
         path="/site-map"
         element={
           <PrivateRoute title="Site Map">
-            <SiteMap user={user}/>
+            <SiteMap user={user} />
           </PrivateRoute>
         }
       />
