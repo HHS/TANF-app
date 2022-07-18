@@ -31,10 +31,34 @@ So if the CircleCI jobs are all green, then the failure happened inside Cloud.go
 
 
 ### Check that all environment variables exist in the backend app.
+1. Run the following command to see env variables for the target application: `cf env tdp-backend-<target>|less`
+	2. Compare against other backend apps within cloud.gov to ensure the values are similar and that we are not missing any. You can also reference `deploy-backend.sh` for those that are set automatically.
+
+
 ### Check that all services, routes are bound.
-You can reference the TDP diagram to find the relevant services [here](link TODO).
+You can reference the TDP diagram to find the relevant services [here](images/tdp-environments.png).
 
 Routes for dev environments should only be `tdp-frontend.apps.cloud.gov`, `tdp-backend-prod.apps.cloud.gov`, and the clamav-rest route.
+
+## Apps cannot connect to each other (e.g., backend can't use clamav)
+Using the logs via `cf logs tdp-backend-<name>`, you can check for network connectivity issues like below:
+```
+09:38:02.638: [APP/PROC/WEB.0] [2022-07-18 13:38:02,637 DEBUG clients.py::__init__:L37 :  Set clamav endpoint_url as 'http://tanf-staging-clamav-rest.apps.internal:9000'
+09:38:02.638: [APP/PROC/WEB.0] Set clamav endpoint_url as 'http://tanf-staging-clamav-rest.apps.internal:9000'
+09:38:02.638: [APP/PROC/WEB.0] [2022-07-18 13:38:02,637 DEBUG clients.py::scan_file:L64 :  Initiating virus scan for file: test_Section1
+09:38:02.638: [APP/PROC/WEB.0] Initiating virus scan for file: test_Section1
+09:38:02.644: [APP/PROC/WEB.0] Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fd4a6cfb550>: Failed to establish a new connection: [Errno 111] Connection refused')': /
+09:38:04.648: [APP/PROC/WEB.0] Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fd4a6cfb7f0>: Failed to establish a new connection: [Errno 111] Connection refused')': /
+09:38:08.655: [APP/PROC/WEB.0] Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fd4a6cfba00>: Failed to establish a new connection: [Errno 111] Connection refused')': /
+```
+
+In this instance, it is a connection issue between the staging backend and the respective clamav app. You can allow network access using the following command:
+
+```
+cf add-network-policy <source> <destination>
+```
+Learn more by running `cf add-network-policy --help`
+
 ### Misc stacktrace in the log
 If the app is crashed or still staging, you likely won't be able to use a rolling update per the CircleCI flow so we would need to run `deploy-backend.sh` manually with a rebuild strategy which typically requires double-checking the relevant services and binding new routes manually. To do so, you will need to export all relevant environment variables including the non-standard CF_SPACE variable in your local shell environment for the script to be able to set those environment variables. You can inspect the script for a list of default variables to be  expected.
 
