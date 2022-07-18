@@ -1,7 +1,9 @@
 """API User Set Profile Tests."""
 from django.core.management import call_command
+
 import pytest
 from rest_framework import status
+
 
 @pytest.mark.django_db
 @pytest.fixture(scope="function")
@@ -50,7 +52,7 @@ def test_set_profile_data_access_request(api_client, user, stt):
         "email": user.username,
         "first_name": "Joe",
         "last_name": "Bloggs",
-        "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
+        "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, "region": stt.region.id},
         "region": None,
         "roles": [],
         "access_request": False
@@ -71,7 +73,7 @@ def test_set_profile_data_access_request(api_client, user, stt):
             "first_name": "Joe",
             "last_name": "Bloggs",
             "access_request": True,
-            "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, },
+            "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, "region": stt.region.id},
             "region": None,
             "roles": [],
         }
