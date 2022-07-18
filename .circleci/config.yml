@@ -224,6 +224,13 @@ commands:
       frontend-appname:
         default: tdp-frontend
         type: string
+
+# So the frontend knows what space its in for the banner.
+# I am unclear if the domain is a reliable metric to make this function 
+# It seems like it might not be working
+      cf-space:
+        default: dev 
+        type: string
     steps:
       - install-nodejs:
           node-version: "16.13"
@@ -238,7 +245,8 @@ commands:
             bash ./scripts/deploy-frontend.sh \
               $DEPLOY_STRATEGY \
               <<parameters.frontend-appname>> \
-              <<parameters.backend-appname>>
+              <<parameters.backend-appname>> \
+              <<parameters.cf-space>> 
 
   deploy-cloud-dot-gov:
     parameters:
@@ -279,6 +287,7 @@ commands:
       - deploy-frontend:
           backend-appname: <<parameters.backend-appname>>
           frontend-appname: <<parameters.frontend-appname>>
+          cf-space: <<parameters.cf-space>>
 
   deploy-infrastructure:
     parameters:
@@ -307,7 +316,10 @@ commands:
           command: |
             apk update
             apk add jq
-            apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+            apk add curl
+            # TODO: Add Signature check
+            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
+            mv cf7 /usr/local/bin/cf
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-username: <<parameters.cf-username>>
