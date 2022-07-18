@@ -689,14 +689,14 @@ workflows:
           filters:
             branches:
               only:
-                - qasp-feat/1746-new-routes-and-services-tanf-staging-space
+                - main
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
               only:
-                - qasp-feat/1746-new-routes-and-services-tanf-staging-space
+                - main
       - deploy-infrastructure-develop:
           filters:
             branches:
