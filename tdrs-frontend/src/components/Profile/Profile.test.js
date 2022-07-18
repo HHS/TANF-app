@@ -10,15 +10,21 @@ const initialState = {
   auth: {
     authenticated: true,
     user: {
-      email: 'hi@bye.com',
-      first_name: 'john',
-      last_name: 'willis',
+      email: 'test@example.com',
+      first_name: 'Bob',
+      last_name: 'Belcher',
       roles: [],
       access_request: true,
+      stt: {
+        name: 'No one really knows',
+        id: 999,
+        type: 'fictional district',
+        code: '??',
+        region: 9999,
+      },
     },
   },
 }
-
 describe('Profile', () => {
   const mockStore = configureStore([thunk])
 
@@ -77,6 +83,38 @@ describe('Profile', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('Should not display region for federal staff.', () => {
+    const store = mockStore({
+      auth: {
+        authenticated: true,
+        user: {
+          roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
+          access_request: true,
+        },
+      },
+    })
+
+    render(
+      <Provider store={store}>
+        <Profile />
+      </Provider>
+    )
+    expect(screen.queryByText('Region')).not.toBeInTheDocument()
+  })
+  it('should display all information about the user correctly when approved', () => {
+    const store = mockStore(initialState)
+
+    render(
+      <Provider store={store}>
+        <Profile />
+      </Provider>
+    )
+    expect(screen.getByText('Bob Belcher')).toBeInTheDocument()
+    expect(screen.getByText('test@example.com')).toBeInTheDocument()
+    expect(screen.getByText('No one really knows')).toBeInTheDocument()
+    expect(screen.getByText('Region 9999')).toBeInTheDocument()
+  })
+
   it('should navigate to external login client settings', () => {
     const store = mockStore({
       auth: {
@@ -108,7 +146,9 @@ describe('Profile', () => {
         <Profile />
       </Provider>
     )
-    expect(screen.getByText('john willis')).toBeInTheDocument()
-    expect(screen.getByText('hi@bye.com')).toBeInTheDocument()
+    expect(screen.getByText('Bob Belcher')).toBeInTheDocument()
+    expect(screen.getByText('test@example.com')).toBeInTheDocument()
+    expect(screen.getByText('No one really knows')).toBeInTheDocument()
+    expect(screen.getByText('Region 9999')).toBeInTheDocument()
   })
 })

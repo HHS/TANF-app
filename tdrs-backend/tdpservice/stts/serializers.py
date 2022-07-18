@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from tdpservice.stts.models import Region, STT
+from tdpservice.stts.models import STT, Region
 
 
 class STTSerializer(serializers.ModelSerializer):
@@ -14,7 +14,7 @@ class STTSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = STT
-        fields = ["id", "type", "code", "name"]
+        fields = ["id", "type", "code", "name", "region"]
 
     def get_code(self, obj):
         """Return the state code."""
