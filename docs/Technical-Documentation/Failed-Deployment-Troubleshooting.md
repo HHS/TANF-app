@@ -10,9 +10,9 @@ In Review
 In preparation for production-ready infrastructure, we wanted to create a living document guide for troubleshooting application failures that is developer/technician oriented.
 
 ## Table of Contents
-+ [CircleCI failures](./Failed-Deployment-Troubleshooting.md#CircleCI-failures)
-+ [Runtime failures](./Failed-Deployment-Troubleshooting.md#Runtime-failures)
-+ [App Connectivity issues](./Failed-Deployment-Troubleshooting.md#App-Connectivity-issues)
++ [CircleCI failures](./Failed-Deployment-Troubleshooting.md#circleci-failures)
++ [Runtime failures](./Failed-Deployment-Troubleshooting.md#compilationruntime-failure)
++ [App Connectivity issues](./Failed-Deployment-Troubleshooting.md#app-connectivity-issues)
 
 ## CircleCI failures
 **Symptom:** I deployed new code (via merging) but the app in Cloud.gov didn't update and is still running old code.
