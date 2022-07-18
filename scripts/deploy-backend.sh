@@ -59,7 +59,6 @@ set_cf_envs()
   "OIDC_OP_JWKS_ENDPOINT"
   "OIDC_OP_LOGOUT_ENDPOINT"
   "OIDC_OP_TOKEN_ENDPOINT"
-  "ENABLE_DEVELOPER_GROUP"
   )
 
   for var_name in ${var_list[@]}; do
