@@ -72,7 +72,7 @@ If the app is crashed or still staging, you likely won't be able to use a rollin
 **NOTE:** This will delete the existing app and *should* rebind relevant services but this is something you should double-check for a crashed app.
 
 ```
-export JWT_KEY=LS0t.......
+export JWT_KEY.......
 export DJANGO_SU_NAME=yourname@goraft.tech
 export LOGGING_LEVEL=DEBUG
 [...]
