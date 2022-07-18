@@ -4,13 +4,15 @@ Date: 2021-07-15
 
 ## Status
 
-In Progress
+In Review
 
 ## Context
 In preparation for production-ready infrastructure, we wanted to create a living document guide for troubleshooting application failures that is developer/technician oriented.
 
 ## Table of Contents
-TBD
++ [CircleCI failures](./Failed-Deployment-Troubleshooting.md#CircleCI-failures)
++ [Runtime failures](./Failed-Deployment-Troubleshooting.md#Runtime-failures)
++ [App Connectivity issues](./Failed-Deployment-Troubleshooting.md#App-Connectivity-issues)
 
 ## CircleCI failures
 **Symptom:** I deployed new code (via merging) but the app in Cloud.gov didn't update and is still running old code.
@@ -18,21 +20,25 @@ TBD
 Initially, we need to find the step where this failed. For your branch, go to CircleCI `https://www.circleci.com/pipelines/github/raft-tech/TANF-app?branch="name-of-your-branch"` and inspect the workflow which failed, likely `build-and-test`.
 
 ### `secrets-check`:
-Check that these steps succeeded. If not, you can expand the steps which should give you a read out of the offending line from either script of git-secrets or truffle0-hpog.
+These steps attempt to prevent developers from accidently committing secrets or hardcoded keys tot he repo. If not, you can expand the steps which should give you a read out of the offending line from either script of git-secrets or truffle-hog.
 ### `test-backend`:
+These steps ensure the backend Django application passes basic unit tests, compilation, and linting.
 ### `test-frontend`:
+These steps ensure the ReactJS application passes basic unit tests, compilation, and linting.
 ### `deploy-infrastructure-dev`:
+These steps include the essential Terraform setup.
 ### `deploy-dev`:
+These steps run through the commands needed to actually deploy this commit to the resulting app(s).
 
 ## Compilation/runtime failure
 **Symptom:** I deployed new code and now the app in Cloud.gov is down/just shows a white screen.
 
-So if the CircleCI jobs are all green, then the failure happened inside Cloud.gov.
+So if the CircleCI jobs are all green, then the failure happened inside Cloud.gov. You can inspect the logs either via the UI or using `cf logs tdp-backend-<name> --recent`.
 
 
 ### Check that all environment variables exist in the backend app.
 1. Run the following command to see env variables for the target application: `cf env tdp-backend-<target>|less`
-	2. Compare against other backend apps within cloud.gov to ensure the values are similar and that we are not missing any. You can also reference `deploy-backend.sh` for those that are set automatically.
+2. Compare against other backend apps within cloud.gov to ensure the values are similar and that we are not missing any. You can also reference `deploy-backend.sh` for those that are set automatically.
 
 
 ### Check that all services, routes are bound.
@@ -40,8 +46,9 @@ You can reference the TDP diagram to find the relevant services [here](images/td
 
 Routes for dev environments should only be `tdp-frontend.apps.cloud.gov`, `tdp-backend-prod.apps.cloud.gov`, and the clamav-rest route.
 
-## Apps cannot connect to each other (e.g., backend can't use clamav)
-Using the logs via `cf logs tdp-backend-<name>`, you can check for network connectivity issues like below:
+### App Connectivity issues
+This section covers what to do when internal apps cannot connect to each other (e.g., backend can't use clamav)
+Using the logs via `cf logs tdp-backend-<name> --recent`, you can check for network connectivity issues like below:
 ```
 09:38:02.638: [APP/PROC/WEB.0] [2022-07-18 13:38:02,637 DEBUG clients.py::__init__:L37 :  Set clamav endpoint_url as 'http://tanf-staging-clamav-rest.apps.internal:9000'
 09:38:02.638: [APP/PROC/WEB.0] Set clamav endpoint_url as 'http://tanf-staging-clamav-rest.apps.internal:9000'
@@ -60,5 +67,14 @@ cf add-network-policy <source> <destination>
 Learn more by running `cf add-network-policy --help`
 
 ### Misc stacktrace in the log
-If the app is crashed or still staging, you likely won't be able to use a rolling update per the CircleCI flow so we would need to run `deploy-backend.sh` manually with a rebuild strategy which typically requires double-checking the relevant services and binding new routes manually. To do so, you will need to export all relevant environment variables including the non-standard CF_SPACE variable in your local shell environment for the script to be able to set those environment variables. You can inspect the script for a list of default variables to be  expected.
+If the app is crashed or still staging, you likely won't be able to use a rolling update per the CircleCI flow so we would need to run `deploy-backend.sh` manually with a rebuild strategy which typically requires double-checking the relevant services and binding new routes manually. To do so, you will need to export all relevant environment variables in your local shell environment for the script to be able to set those environment variables. You can inspect the script for a list of default variables to be expected.
 
+**NOTE:** This will delete the existing app and *should* rebind relevant services but this is something you should double-check for a crashed app.
+
+```
+export JWT_KEY=LS0t.......
+export DJANGO_SU_NAME=yourname@goraft.tech
+export LOGGING_LEVEL=DEBUG
+[...]
+bash scripts/deploy-backend.sh rebuild tdp-backend-raft tanf-dev
+```
