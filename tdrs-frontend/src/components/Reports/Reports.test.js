@@ -88,10 +88,10 @@ describe('Reports', () => {
         <Reports />
       </Provider>
     )
-    const today = new Date() 
+    const today = new Date()
     const fiscalYear =
       today.getMonth() > 8 ? today.getFullYear() : today.getFullYear() + 1
-    
+
     const yearNum = fiscalYear - 2020
 
     const select = getByLabelText('Fiscal Year (October - September)')
