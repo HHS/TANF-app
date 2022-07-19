@@ -672,7 +672,7 @@ workflows:
   test-nightly-owasp:
     jobs:
       - nightly-owasp-scan:
-          target_env: << pipeline.parameters.target_env >>
+          target_env: staging
           filters:
             branches:
               only:
