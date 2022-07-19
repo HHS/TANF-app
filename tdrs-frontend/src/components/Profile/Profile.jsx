@@ -32,23 +32,26 @@ function Profile() {
         </div>
       )}
       <div>
-        <p className="text-bold">
+        <p id="full-name" className="text-bold">
           {user?.first_name} {user?.last_name}
         </p>
         <p>{user?.email}</p>
         <p>{primaryRole?.name}</p>
+        {(() => {
+          const stt = user?.stt?.name || 'Federal Government'
+          const region = user?.stt?.region || user?.region?.id
 
-        <p>
-          {(() => {
-            if (primaryRole?.name === 'Data Analyst') {
-              return user?.stt?.name
-            } else if (primaryRole?.name === 'OFA Regional Staff') {
-              return user?.region?.name
-            } else {
-              return 'Federal Government'
-            }
-          })()}
-        </p>
+          if (stt === 'Federal Government' && !region) {
+            return <p> {stt} </p>
+          } else {
+            return (
+              <>
+                <p> {stt} </p>
+                <p> Region {region} </p>
+              </>
+            )
+          }
+        })()}
       </div>
       <div className="margin-top-5">
         <p className="text-bold">Email and Password</p>

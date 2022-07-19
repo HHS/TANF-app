@@ -54,7 +54,7 @@
 - The UX team creates user workflows and designs for our application in Figma. The corresponding Figma board links are included in the the tickets for the developers to use as they build. 
 
 ## Discord
-- Used primarily by the dev team as a place to quickly meet at any time about various issues in lieu of setting up a more formal Zoom meeting. Click [here](https://discord.gg/evMSvZCyMv) to set up an account or ask Andrew Bottoms for an invite.
+- Used primarily by the dev team as a place to quickly meet at any time about various issues in lieu of setting up a more formal Zoom meeting. Click [here](https://discord.gg/evMSvZCyMv) to set up an account or ask Andrew Jameson for an invite.
  
 ## Sprint Summary Report 
 

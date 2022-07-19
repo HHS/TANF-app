@@ -55,6 +55,10 @@ class UserAdmin(admin.ModelAdmin):
     form = UserForm
     list_filter = ('access_request',)
 
+    def has_add_permission(self, request):
+        """Disable User object creation through Django Admin."""
+        return False
+
 
 admin.site.register(User, UserAdmin)
 admin.site.unregister(TokenProxy)

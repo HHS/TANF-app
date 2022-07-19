@@ -202,15 +202,13 @@ commands:
         type: string
     steps:
       - run:
-          name: Delete existing ClamAV REST application
-          command: cf delete -r clamav-rest -f
-      - run:
           name: Deploy ClamAV REST application
           command: |
             cf push clamav-rest -f tdrs-backend/manifest.clamav.yml \
-              --var cf-space=<<parameters.cf-space>>
+              --var cf-space=<<parameters.cf-space>> \
+              --strategy rolling
       - run:
-          name: Enable internal route between backend and clamav-rest apps
+          name: Enable internal route between backend and clamav-rest app
           command: |
             cf add-network-policy <<parameters.backend-appname>> clamav-rest \
               -s <<parameters.cf-space>> \
@@ -226,6 +224,13 @@ commands:
       frontend-appname:
         default: tdp-frontend
         type: string
+
+# So the frontend knows what space its in for the banner.
+# I am unclear if the domain is a reliable metric to make this function 
+# It seems like it might not be working
+      cf-space:
+        default: dev 
+        type: string
     steps:
       - install-nodejs:
           node-version: "16.13"
@@ -240,7 +245,8 @@ commands:
             bash ./scripts/deploy-frontend.sh \
               $DEPLOY_STRATEGY \
               <<parameters.frontend-appname>> \
-              <<parameters.backend-appname>>
+              <<parameters.backend-appname>> \
+              <<parameters.cf-space>> 
 
   deploy-cloud-dot-gov:
     parameters:
@@ -281,6 +287,7 @@ commands:
       - deploy-frontend:
           backend-appname: <<parameters.backend-appname>>
           frontend-appname: <<parameters.frontend-appname>>
+          cf-space: <<parameters.cf-space>>
 
   deploy-infrastructure:
     parameters:
@@ -299,6 +306,9 @@ commands:
       cf-org:
         type: env_var_name
         default: CF_ORG
+      cf-app:
+        type: string
+        default: CF_APP
     steps:
       - checkout
       - run:
@@ -306,7 +316,10 @@ commands:
           command: |
             apk update
             apk add jq
-            apk add cloudfoundry-cli --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+            apk add curl
+            # TODO: Add Signature check
+            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
+            mv cf7 /usr/local/bin/cf
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-username: <<parameters.cf-username>>
@@ -319,14 +332,17 @@ commands:
               echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)\""
               echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
               echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
+              echo "bucket = \"$(echo "${S3_CREDENTIALS}" | jq -r '.bucket')\""
             } >> ./backend_config.tfvars
       - run:
           name: Prepare Terraform Variables
           command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
             {
               echo "cf_password = \"$<<parameters.cf-password>>\""
               echo "cf_user = \"$<<parameters.cf-username>>\""
               echo "cf_space_name = \"<<parameters.cf-space>>\""
+              echo "cf_app_name = \"<<parameters.cf-app>>\""
             } >> ./variables.tfvars
       - terraform/init:
           path: <<parameters.tf-path>>
@@ -488,8 +504,12 @@ jobs:
   deploy-infrastructure-dev:
     executor: terraform/default
     working_directory: ~/tdp-deploy
+    parameters:
+      target_env:
+        type: string
     steps:
-      - deploy-infrastructure
+      - deploy-infrastructure:
+          cf-app: << parameters.target_env >>
 
   deploy-dev:
     executor: docker-executor
@@ -519,6 +539,27 @@ jobs:
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
           frontend-appname: tdp-frontend-staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+
+  deploy-infrastructure-develop:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          tf-path: ./terraform/staging
+
+  deploy-develop:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-develop
+          frontend-appname: tdp-frontend-develop
           cf-password: CF_PASSWORD_STAGING
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
@@ -604,7 +645,8 @@ workflows:
   dev-deployment:
     when: << pipeline.parameters.run_dev_deployment >>
     jobs:
-      - deploy-infrastructure-dev
+      - deploy-infrastructure-dev:
+          target_env: << pipeline.parameters.target_env >>
       - deploy-dev:
           target_env: << pipeline.parameters.target_env >>
           requires:
@@ -647,10 +689,22 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - main
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-infrastructure-develop:
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-develop:
+          requires:
+            - deploy-infrastructure-develop
           filters:
             branches:
               only:

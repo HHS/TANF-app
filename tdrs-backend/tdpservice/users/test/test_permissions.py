@@ -66,6 +66,10 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'stts.view_stt',
         'users.change_user',
         'users.view_user',
+        'data_files.view_legacyfiletransfer',
+        'data_files.add_legacyfiletransfer',
+        'data_files.change_legacyfiletransfer'
+
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions
