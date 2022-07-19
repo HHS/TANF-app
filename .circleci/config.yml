@@ -668,6 +668,15 @@ workflows:
                 - develop
                 - main
                 - master
+  
+  test-nightly-owasp:
+    jobs:
+      - nightly-owasp-scan:
+          target_env: << pipeline.parameters.target_env >>
+          filters:
+            branches:
+              only:
+                - feat/1754-owasp-on-aditional-branches
 
   erd:
     jobs:
