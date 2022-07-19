@@ -127,9 +127,9 @@ function Reports() {
 
   const constructYearOptions = () => {
     const years = []
-    var today = new Date()
+    const today = new Date()
 
-    var fiscalYear =
+    const fiscalYear =
       today.getMonth() > 8 ? today.getFullYear() : today.getFullYear() + 1
 
     for (let i = 2020; i < fiscalYear; i++) {
