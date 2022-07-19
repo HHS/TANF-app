@@ -462,6 +462,9 @@ jobs:
   nightly-owasp-scan:
     executor: machine-executor
     working_directory: ~/tdp-apps
+    parameters:
+      target_env:
+        type: string
     steps:
       - checkout
       - sudo-check
@@ -497,7 +500,7 @@ jobs:
             CMD="python manage.py process_owasp_scan ${CMD_ARGS[@]}"
 
             # Submit a CF Task for execution that will run the necessary command
-            cf run-task tdp-backend-staging \
+            cf run-task tdp-backend-<< parameters.target_env >> \
               --command "$CMD" \
               --name nightly-owasp-scan
 
@@ -654,7 +657,8 @@ workflows:
 
   nightly:
     jobs:
-      - nightly-owasp-scan
+      - nightly-owasp-scan:
+          target_env: << pipeline.parameters.target_env >>
     triggers:
       - schedule:
           cron: "0 0 * * *"
@@ -662,6 +666,8 @@ workflows:
             branches:
               only:
                 - develop
+                - main
+                - master
 
   erd:
     jobs:
