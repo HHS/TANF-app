@@ -23,3 +23,24 @@ app.autodiscover_tasks()
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
+
+import logging
+logger = logging.getLogger(__name__)
+from celery.schedules import crontab
+from tdpservice.scheduling.tasks import run_backup
+
+@app.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+
+    # Executes every Monday morning at 7:30 a.m.
+    sender.add_periodic_task(
+        crontab(hour='*', minute='*/1', day_of_week='*'),
+        run_backup.s('Happy Mondays!'),
+    )
+
+"""
+@app.task
+def run_backup(b):
+    
+    logger.debug("my arg was" + b)
+"""

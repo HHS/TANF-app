@@ -56,5 +56,7 @@ def upload(
         print(e)
         return False
 
-
-
+@shared_task
+def run_backup(b):
+    """    No params, setup for actual backup call. """
+    logger.debug("my arg was" + b)
