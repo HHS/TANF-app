@@ -125,6 +125,24 @@ function Reports() {
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
   }
 
+  const constructYearOptions = () => {
+    const years = []
+    var today = new Date()
+
+    var fiscalYear =
+      today.getMonth() > 8 ? today.getFullYear() : today.getFullYear() + 1
+
+    for (let i = 2020; i <= fiscalYear; i++) {
+      const option = (
+        <option data-testid={i} value={i}>
+          {i}
+        </option>
+      )
+      years.push(option)
+    }
+    return years
+  }
+
   useEffect(() => {
     if (sttList.length === 0) {
       dispatch(fetchSttList())
@@ -219,10 +237,7 @@ function Reports() {
                 <option value="" disabled hidden>
                   - Select Fiscal Year -
                 </option>
-                <option value="2020">2020</option>
-                <option data-testid="2021" value="2021">
-                  2021
-                </option>
+                {constructYearOptions()}
               </select>
             </label>
           </div>
