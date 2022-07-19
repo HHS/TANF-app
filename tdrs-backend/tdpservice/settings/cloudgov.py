@@ -33,23 +33,28 @@ class CloudGov(Common):
     # Cloud.gov exposes variables for the application and bound services via
     # VCAP_APPLICATION and VCAP_SERVICES environment variables, respectively.
     cloudgov_app = get_json_env_var('VCAP_APPLICATION')
+    APP_NAME = cloudgov_app.get('application_name')
+
     cloudgov_services = get_json_env_var('VCAP_SERVICES')
 
     cloudgov_space = cloudgov_app.get('space_name', 'tanf-dev')
     cloudgov_space_suffix = cloudgov_space.strip('tanf-')
     cloudgov_name = cloudgov_app.get('name').split("-")[-1]  # converting "tdp-backend-name" to just "name"
+    services_basename = cloudgov_name if (
+        cloudgov_name == "develop" and cloudgov_space_suffix == "staging"
+    ) else cloudgov_space_suffix
 
     database_creds = get_cloudgov_service_creds_by_instance_name(
         cloudgov_services['aws-rds'],
-        f'tdp-db-{cloudgov_space_suffix}'
+        f'tdp-db-{services_basename}'
     )
     s3_datafiles_creds = get_cloudgov_service_creds_by_instance_name(
         cloudgov_services['s3'],
-        f'tdp-datafiles-{cloudgov_space_suffix}'
+        f'tdp-datafiles-{services_basename}'
     )
     s3_staticfiles_creds = get_cloudgov_service_creds_by_instance_name(
         cloudgov_services['s3'],
-        f'tdp-staticfiles-{cloudgov_space_suffix}'
+        f'tdp-staticfiles-{services_basename}'
     )
     ############################################################################
 
@@ -60,7 +65,7 @@ class CloudGov(Common):
     #
     env_based_db_name = f'tdp_db_{cloudgov_space_suffix}_{cloudgov_name}'
 
-    db_name = database_creds['db_name'] if cloudgov_space_suffix == "prod" else env_based_db_name
+    db_name = database_creds['db_name'] if (cloudgov_space_suffix in ["prod",  "staging"]) else env_based_db_name
 
     DATABASES = {
         'default': {
@@ -101,8 +106,9 @@ class CloudGov(Common):
     AWS_S3_STATICFILES_BUCKET_NAME = s3_staticfiles_creds['bucket']
     AWS_S3_STATICFILES_ENDPOINT = f'https://{s3_staticfiles_creds["endpoint"]}'
     AWS_S3_STATICFILES_REGION_NAME = s3_staticfiles_creds['region']
+
     MEDIA_URL = \
-        f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/'
+        f'{AWS_S3_STATICFILES_ENDPOINT}/{AWS_S3_STATICFILES_BUCKET_NAME}/{APP_NAME}/'
 
     # https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching#cache-control
     # Response can be cached by browser and any intermediary caches
@@ -119,18 +125,19 @@ class Development(CloudGov):
 
     # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
     ALLOWED_HOSTS = ['.app.cloud.gov']
+    AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-dev-clamav-rest.apps.internal:9000')
 
 
 class Staging(CloudGov):
     """Settings for applications deployed in the Cloud.gov staging space."""
 
-    ALLOWED_HOSTS = ['tdp-backend-staging.app.cloud.gov']
+    ALLOWED_HOSTS = ['tdp-backend-staging.app.cloud.gov', 'tdp-backend-develop.app.cloud.gov']
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
         'OIDC_RP_CLIENT_ID',
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging'
     )
-
+    AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-staging-clamav-rest.apps.internal:9000')
 
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
@@ -142,5 +149,5 @@ class Production(CloudGov):
         'OIDC_RP_CLIENT_ID',
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
     )
-
+    AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-prod-clamav-rest.apps.internal:9000')
     ENABLE_DEVELOPER_GROUP = False

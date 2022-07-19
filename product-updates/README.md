@@ -10,7 +10,7 @@ It is a static website using the static file buildpack provided by cloud foundry
 
 ### Automated
 
-When ever any PR is approved and merged into develop, any changes that were made to this static site will be deployed
+When ever any PR is approved and merged into raft-tdp-main, any changes that were made to this static site will be deployed
 to [https://tdp-project-updates.app.cloud.gov/](https://tdp-project-updates.app.cloud.gov/)
 
 ## Review process
