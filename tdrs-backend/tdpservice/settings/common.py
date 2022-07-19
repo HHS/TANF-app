@@ -47,7 +47,7 @@ class Common(Configuration):
         "corsheaders",
         "django_extensions",
         "drf_yasg",
-        "django_celery_beat",
+        #"django_celery_beat",
         "storages",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
@@ -55,7 +55,7 @@ class Common(Configuration):
         "tdpservice.stts",
         "tdpservice.data_files",
         "tdpservice.security",
-        "tdpservice.scheduling",
+        "tdpservice.scheduling"
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -401,7 +401,7 @@ class Common(Configuration):
 
     # sftp config
     SERVER_ADDRESS = '192.168.1.130'
-    LOCAL_KEY = '/Users/msohani/.ssh/id_rsa_sftp'
+    LOCAL_KEY = '/tdpapp/id_rsa_sftp'
     USERNAME = 'mat'
 
     # CELERY CONFIG

@@ -39,7 +39,7 @@ class DataFileViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'head']
     filterset_class = DataFileFilter
     parser_classes = [MultiPartParser]
-    permission_classes = [DataFilePermissions]
+    #permission_classes = [DataFilePermissions]
     serializer_class = DataFileSerializer
 
     # TODO: Handle versioning in queryset
@@ -51,10 +51,6 @@ class DataFileViewSet(ModelViewSet):
     # we will be able to appropriately refer to the latest versions only.
     ordering = ['-version']
 
-    def perform_create(self):
-        """
-        TODO: create has to be done here
-        """
 
     def filter_queryset(self, queryset):
         """Only apply filters to the list action."""

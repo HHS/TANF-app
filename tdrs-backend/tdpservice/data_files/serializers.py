@@ -11,6 +11,7 @@ from tdpservice.data_files.validators import (
 from tdpservice.security.models import ClamAVFileScan
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
+from tdpservice.scheduling import tasks
 
 
 class DataFileSerializer(serializers.ModelSerializer):
@@ -54,6 +55,11 @@ class DataFileSerializer(serializers.ModelSerializer):
             av_scan.save()
 
         # TODO: Add Titan upload here
+        print(data_file.__dict__)
+        tasks.upload.delay(
+            source=str(data_file.file),
+            destination=str(data_file.file).split('/')[-1]
+        )
 
         return data_file
 
