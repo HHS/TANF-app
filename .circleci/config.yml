@@ -224,6 +224,13 @@ commands:
       frontend-appname:
         default: tdp-frontend
         type: string
+
+# So the frontend knows what space its in for the banner.
+# I am unclear if the domain is a reliable metric to make this function 
+# It seems like it might not be working
+      cf-space:
+        default: dev 
+        type: string
     steps:
       - install-nodejs:
           node-version: "16.13"
@@ -238,7 +245,8 @@ commands:
             bash ./scripts/deploy-frontend.sh \
               $DEPLOY_STRATEGY \
               <<parameters.frontend-appname>> \
-              <<parameters.backend-appname>>
+              <<parameters.backend-appname>> \
+              <<parameters.cf-space>> 
 
   deploy-cloud-dot-gov:
     parameters:
@@ -279,6 +287,7 @@ commands:
       - deploy-frontend:
           backend-appname: <<parameters.backend-appname>>
           frontend-appname: <<parameters.frontend-appname>>
+          cf-space: <<parameters.cf-space>>
 
   deploy-infrastructure:
     parameters:
@@ -534,6 +543,27 @@ jobs:
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
 
+  deploy-infrastructure-develop:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          tf-path: ./terraform/staging
+
+  deploy-develop:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-develop
+          frontend-appname: tdp-frontend-develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+
   deploy-project-updates-site:
     parameters:
       cf-org:
@@ -659,10 +689,22 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - main
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-infrastructure-develop:
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-develop:
+          requires:
+            - deploy-infrastructure-develop
           filters:
             branches:
               only:
