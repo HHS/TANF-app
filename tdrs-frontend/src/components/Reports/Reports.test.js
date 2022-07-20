@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor, screen } from '@testing-library/react'
+import { render, fireEvent, waitFor } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
@@ -411,8 +411,6 @@ describe('Reports', () => {
       </Provider>
     )
 
-    screen.debug()
-
     const select = getByLabelText('Fiscal Year (October - September)')
     const options = select.children
     const expected = options.item(options.length - 1).value
@@ -439,8 +437,6 @@ describe('Reports', () => {
         <Reports />
       </Provider>
     )
-
-    screen.debug()
 
     const select = getByLabelText('Fiscal Year (October - September)')
     const options = select.children
