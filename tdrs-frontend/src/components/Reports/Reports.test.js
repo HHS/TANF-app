@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
@@ -411,10 +411,41 @@ describe('Reports', () => {
       </Provider>
     )
 
+    screen.debug()
+
     const select = getByLabelText('Fiscal Year (October - September)')
     const options = select.children
     const expected = options.item(options.length - 1).value
 
     expect(expected).toEqual((currentYear + 1).toString())
+  })
+
+  it('should show current calander year in fiscal year dropdown in January', () => {
+    const currentYear = new Date().getFullYear()
+
+    const getNow = () => new Date(Date.now())
+
+    jest
+      .spyOn(global.Date, 'now')
+      .mockImplementation(() =>
+        new Date(`January 01, ${currentYear}`).valueOf()
+      )
+    const now = getNow()
+    expect(now).toEqual(new Date(`January 01, ${currentYear}`))
+    const store = mockStore(initialState)
+
+    const { getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    screen.debug()
+
+    const select = getByLabelText('Fiscal Year (October - September)')
+    const options = select.children
+    const expected = options.item(options.length - 1).value
+
+    expect(expected).toEqual(currentYear.toString())
   })
 })
