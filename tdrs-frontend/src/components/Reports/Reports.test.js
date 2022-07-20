@@ -81,7 +81,7 @@ describe('Reports', () => {
       type: 'text/plain',
     })
 
-  it('should render the Fiscal Year dropdown with two options and a placeholder', () => {
+  it('should render the Fiscal Year dropdown with however many years and a placeholder', () => {
     const store = mockStore(initialState)
     const { getByLabelText } = render(
       <Provider store={store}>
@@ -389,5 +389,54 @@ describe('Reports', () => {
     expect(
       getByText('A state, tribe, or territory is required')
     ).toBeInTheDocument()
+  })
+
+
+  it('should show next calander year in fiscal year dropdown in October', () => {
+    const currentYear = new Date().getFullYear()
+
+    const getNow = () => new Date(Date.now())
+
+    jest.spyOn(global.Date, 'now').mockImplementation(() => new Date(`October 01, ${currentYear}`).valueOf())
+    const now = getNow()
+    expect(now).toEqual(new Date(`October 01, ${currentYear}`))
+    const store = mockStore(initialState)
+
+    const { getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const select = getByLabelText('Fiscal Year (October - September)')
+    const options = select.children
+    const expected = options.item(options.length-1).value
+    
+    expect(expected).toEqual((currentYear + 1).toString())
+
+  })
+
+  it('should show next calander year in fiscal year dropdown in October', () => {
+    const currentYear = new Date().getFullYear()
+
+    const getNow = () => new Date(Date.now())
+
+    jest.spyOn(global.Date, 'now').mockImplementation(() => new Date(`October 01, ${currentYear}`).valueOf())
+    const now = getNow()
+    expect(now).toEqual(new Date(`October 01, ${currentYear}`))
+    const store = mockStore(initialState)
+
+    const { getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const select = getByLabelText('Fiscal Year (October - September)')
+    const options = select.children
+    const expected = options.item(options.length-1).value
+    
+    expect(expected).toEqual((currentYear + 1).toString())
+
   })
 })
