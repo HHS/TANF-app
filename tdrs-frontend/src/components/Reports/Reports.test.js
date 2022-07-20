@@ -391,13 +391,16 @@ describe('Reports', () => {
     ).toBeInTheDocument()
   })
 
-
   it('should show next calander year in fiscal year dropdown in October', () => {
     const currentYear = new Date().getFullYear()
 
     const getNow = () => new Date(Date.now())
 
-    jest.spyOn(global.Date, 'now').mockImplementation(() => new Date(`October 01, ${currentYear}`).valueOf())
+    jest
+      .spyOn(global.Date, 'now')
+      .mockImplementation(() =>
+        new Date(`October 01, ${currentYear}`).valueOf()
+      )
     const now = getNow()
     expect(now).toEqual(new Date(`October 01, ${currentYear}`))
     const store = mockStore(initialState)
@@ -410,9 +413,8 @@ describe('Reports', () => {
 
     const select = getByLabelText('Fiscal Year (October - September)')
     const options = select.children
-    const expected = options.item(options.length-1).value
-    
-    expect(expected).toEqual((currentYear + 1).toString())
+    const expected = options.item(options.length - 1).value
 
+    expect(expected).toEqual((currentYear + 1).toString())
   })
 })
