@@ -616,7 +616,7 @@ jobs:
           cf-password: CF_PASSWORD_PROD
           cf-space: tanf-prod
           cf-username: CF_USERNAME_PROD
-
+  
 parameters:
   run_dev_deployment:
     type: boolean
@@ -658,31 +658,26 @@ workflows:
   nightly:
     jobs:
       - nightly-owasp-scan:
-          target_env: << pipeline.parameters.target_env >>
+          target_env: develop
+          filters:
+            branches:
+              only:
+                - develop
+      - nightly-owasp-scan:
+          target_env: staging
+          filters:
+            branches:
+              only:
+                - main
+      - nightly-owasp-scan:
+          target_env: prod
+          filters:
+            branches:
+              only:
+                - master
     triggers:
       - schedule:
           cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - develop
-                - main
-                - master
-  
-  test-nightly-owasp:
-    jobs:
-      - nightly-owasp-scan:
-          target_env: staging
-          filters:
-            branches:
-              only:
-                - develop
-      - nightly-owasp-scan:
-          target_env: staging
-          filters:
-            branches:
-              only:
-                - feat/1754-owasp-on-aditional-branches
 
   erd:
     jobs:
