@@ -24,8 +24,7 @@ app.autodiscover_tasks()
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
 
-import logging
-logger = logging.getLogger(__name__)
+
 from celery.schedules import crontab
 from tdpservice.scheduling.tasks import run_backup
 

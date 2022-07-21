@@ -31,6 +31,8 @@ if not, then either directory exists, or something else happened.
 
 2) Query DISTINCT values based on year, STT
 
+NEW: Do not need this anymore. Should schedule an upload to the server as soon as the file is uploaded.
+However, we will need the file information, to know where it is being uploaded.
 '''
 
 
@@ -55,6 +57,9 @@ def upload(
     except Exception as e:
         print(e)
         return False
+
+import logging
+logger = logging.getLogger(__name__)
 
 @shared_task
 def run_backup(b):
