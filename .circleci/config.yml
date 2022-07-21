@@ -616,7 +616,7 @@ jobs:
           cf-password: CF_PASSWORD_PROD
           cf-space: tanf-prod
           cf-username: CF_USERNAME_PROD
-  
+
 parameters:
   run_dev_deployment:
     type: boolean
@@ -678,6 +678,12 @@ workflows:
     triggers:
       - schedule:
           cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - develop
+                - main
+                - master
 
   erd:
     jobs:
