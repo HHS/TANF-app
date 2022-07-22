@@ -92,10 +92,10 @@ describe('Reports', () => {
     const today = new Date()
     const fiscalYear =
       today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
-    
+
     // added 1 to include the starting year
     const yearNum = fiscalYear - 2021 + 1
-    
+
     const select = getByLabelText('Fiscal Year (October - September)')
     screen.debug(select)
     expect(select).toBeInTheDocument()
