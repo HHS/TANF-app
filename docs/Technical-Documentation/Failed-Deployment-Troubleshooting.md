@@ -4,7 +4,7 @@ Date: 2021-07-15
 
 ## Status
 
-In Review
+Accepted
 
 ## Context
 In preparation for production-ready infrastructure, we wanted to create a living document guide for troubleshooting application failures that is developer/technician oriented.
