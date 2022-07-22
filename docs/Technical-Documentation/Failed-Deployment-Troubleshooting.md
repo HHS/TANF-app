@@ -44,7 +44,7 @@ So if the CircleCI jobs are all green, then the failure happened inside Cloud.go
 ### Check that all services, routes are bound.
 You can reference the TDP diagram to find the relevant services [here](images/tdp-environments.png).
 
-Routes for dev environments should only be `tdp-frontend.apps.cloud.gov`, `tdp-backend-prod.apps.cloud.gov`, and the clamav-rest route.
+Routes for dev environments should only be `tdp-frontend-<target>.apps.cloud.gov`, `tdp-backend-<target>.apps.cloud.gov`, and the clamav-rest route.
 
 ### App Connectivity issues
 This section covers what to do when internal apps cannot connect to each other (e.g., backend can't use clamav)
