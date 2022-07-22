@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
@@ -88,15 +88,22 @@ describe('Reports', () => {
         <Reports />
       </Provider>
     )
+
+    const today = new Date()
+    const fiscalYear =
+      today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
+    
+    // added 1 to include the starting year
+    const yearNum = fiscalYear - 2021 + 1
     
     const select = getByLabelText('Fiscal Year (October - September)')
-
+    screen.debug(select)
     expect(select).toBeInTheDocument()
 
     const options = select.children
 
-    // The placeholder option is included in the length
-    expect(options.length).toEqual(4)
+    // The placeholder option is included in the length so another 1 was added
+    expect(options.length).toEqual(yearNum + 1)
   })
 
   it('should render the STT dropdown with one option, when the user is an OFA Admin', () => {
