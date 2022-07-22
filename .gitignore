@@ -100,3 +100,5 @@ tfapply
 *.tfvars
 *.lock.hcl
 *.tfstate
+
+*.~undo-tree~

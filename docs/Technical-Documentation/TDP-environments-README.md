@@ -25,11 +25,12 @@
 
 ## Staging
 
-Unlike Development, the Staging environment contains a single frontend and backend deployment.
+The Staging environment contains two frontend and backend deployments.
 
 | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- |
 | https://tdp-frontend-staging.app.cloud.gov | https://tdp-backend-staging.app.cloud.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
+| https://tdp-frontend-develop.app.cloud.gov | https://tdp-backend-develop.app.cloud.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
 
 ### Dependencies
 
@@ -38,11 +39,14 @@ Unlike Development, the Staging environment contains a single frontend and backe
 **Cloud.gov AWS RDS `(tanf-staging)`**
 
 - `tdp-db-staging` - Stores application-level models (e.g. Users, Reports).
+- `tdp-db-develop` - Stores application-level models (e.g. Users, Reports).
 
 **Cloud.gov AWS S3 `(tanf-staging)`**
 
 - `tdp-staticfiles-staging` - Stores static HTML/CSS for Django Admin.
+- `tdp-staticfiles-develop` - Stores static HTML/CSS for Django Admin.
 - `tdp-datafiles-staging` - Stores the files uploaded by STTs (no real STT data to be stored in staging).
+- `tdp-datafiles-develop` - Stores the files uploaded by STTs (no real STT data to be stored in staging).
 
 **Cloud.gov AWS S3 `(tanf-staging)`**
 

@@ -66,6 +66,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * When satisfied, the Government reviewer `approves` the PR and tags with the  `ready-to-merge` and removes the `QASP review` label.
 
 7. `abottoms-coder` (or his back-up) merges changes into `develop`. This includes:
+    * This will trigger a deployment to tanf-staging:develop 
     * opening a PR from `develop` to `HHS:main`
     * updating the PR template to change `addresses` to `closes` so that issue [can be automatically closed when the Government merges](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
     * ensuring the CI/CD pipelines are green
