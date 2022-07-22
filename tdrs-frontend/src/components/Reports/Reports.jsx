@@ -132,7 +132,7 @@ function Reports() {
     const fiscalYear =
       today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
 
-    for (let i = 2020; i <= fiscalYear; i++) {
+    for (let i = fiscalYear; i >= 2020; i--) {
       const option = (
         <option data-testid={i} value={i}>
           {i}
