@@ -324,7 +324,7 @@ class Common(Configuration):
 
     s3_src = "s3-us-gov-west-1.amazonaws.com"
 
-    CSP_DEFAULT_SRC = ("'none'")
+    CSP_DEFAULT_SRC = ("'self'", "*.cloud.gov", "tanfdata.acf.hhs.gov", "api-tanfdata.acf.hhs.gov")
     CSP_SCRIPT_SRC = ("'self'", s3_src)
     CSP_IMG_SRC = ("'self'", "data:", s3_src)
     CSP_FONT_SRC = ("'self'", s3_src)
