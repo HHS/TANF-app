@@ -12,5 +12,4 @@
 	allowed = scripts/deploy-backend.sh:.+:DJANGO_SECRET_KEY=..python -c .from secrets import token_urlsafe. print.token_urlsafe..*
 	allowed = .git/config:.*
 	allowed = .gitconfig:.*
-	allowed = .*DJANGO_SECRET_KEY=.*tdp-dev-insecure
-    allowed = ./tdrs-frontend/node_modules/.*
+	allowed = .*DJANGO_SECRET_KEY=.*
