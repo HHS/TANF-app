@@ -10,10 +10,6 @@ import Reports from '../Reports'
 import SiteMap from '../SiteMap'
 
 import Home from '../Home'
-import { useSelector } from 'react-redux'
-
-const isMemberOfOne = (user, ...groupNames) =>
-  !!user?.roles?.some((role) => groupNames.includes(role.name))
 
 /**
  * This component renders the routes for the app.

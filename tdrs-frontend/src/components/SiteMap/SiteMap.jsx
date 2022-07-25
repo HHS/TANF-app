@@ -1,5 +1,4 @@
-import React, { useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
+import React from 'react'
 
 // I copied these from Header.jsx and slightly refactored them to accept a user as their first arguement
 // I am wanting to shift these, and similar reused pieces of code at the top of component functions
@@ -14,11 +13,10 @@ const canViewAdmin = (user) =>
   userAccessRequestApproved(user) &&
   isMemberOfOne(user, 'Developer', 'OFA System Admin', 'ACF OCIO')
 
-
-const hasPermission = (permissionName) =>
-      user?.roles?.[0]?.permissions?.some(
-        (perm) => perm.codename === permissionName
-      )
+// const hasPermission = (permissionName) =>
+//   user?.roles?.[0]?.permissions?.some(
+//     (perm) => perm.codename === permissionName
+//   )
 
 const SiteMap = ({ user }) => (
   <div className="margin-top-5">
