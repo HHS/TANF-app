@@ -56,8 +56,6 @@ class DataFileViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         data_file = DataFile.objects.get(id=response.data.get('id'))
-        print('----------------------:',str(data_file.file).split('/')[-1])
-        tasks.run_backup.delay('======================')
         tasks.upload.delay(
             source=str(data_file.file),
             destination=str(data_file.file).split('/')[-1],
