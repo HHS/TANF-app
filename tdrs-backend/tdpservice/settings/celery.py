@@ -33,7 +33,7 @@ def setup_periodic_tasks(sender, **kwargs):
 
     # Executes every Monday morning at 7:30 a.m.
     sender.add_periodic_task(
-        crontab(hour='*', minute='*/1', day_of_week='*'),
+        crontab(hour='*', minute='1', day_of_week='*'),
         run_backup.s('Happy Mondays!'),
     )
 

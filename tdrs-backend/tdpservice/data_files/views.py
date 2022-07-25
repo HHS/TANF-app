@@ -33,6 +33,8 @@ class DataFileFilter(filters.FilterSet):
         fields = ['stt', 'quarter', 'year']
 
 
+from tdpservice.scheduling import tasks
+
 class DataFileViewSet(ModelViewSet):
     """Data file views."""
 
@@ -51,6 +53,17 @@ class DataFileViewSet(ModelViewSet):
     # we will be able to appropriately refer to the latest versions only.
     ordering = ['-version']
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        data_file = DataFile.objects.get(id=response.data.get('id'))
+        print('----------------------:',str(data_file.file).split('/')[-1])
+        tasks.run_backup.delay('======================')
+        tasks.upload.delay(
+            source=str(data_file.file),
+            destination=str(data_file.file).split('/')[-1],
+            quarter=data_file.quarter
+        )
+        return response
 
     def filter_queryset(self, queryset):
         """Only apply filters to the list action."""
