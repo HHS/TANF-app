@@ -339,6 +339,17 @@ class Common(Configuration):
     CSP_FRAME_ANCESTORS = ("'none'")
     CSP_FORM_ACTION = ("'self'")
     CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
+    CORS_ALLOW_HEADERS = (
+        'x-requested-with',
+        'content-type',
+        'accept',
+        'origin',
+        'authorization',
+        'X-CSRFToken'
+    )
+
+
+
 
     ####################################
     # Authentication Provider Settings #
