@@ -718,6 +718,7 @@ workflows:
             branches:
               only:
                 - master
+                - feat/1945-for-real-the-buttons-are-fix
       - deploy-production:
           requires:
             - deploy-infrastructure-production
@@ -725,3 +726,4 @@ workflows:
             branches:
               only:
                 - master
+                - feat/1945-for-real-the-buttons-are-fix
