@@ -18,7 +18,9 @@ class NoCacheMiddleware(object):
 
 
 class SessionMiddleware(SessionMiddleware):
+    """Patches the existing session middle ware to garentee the correct settings."""
     def process_response(self, request, response):
+        """Augment the behavior of SessionMiddleware to ensure CSRF cookies are correct."""
         response = super(SessionMiddleware, self).process_response(request, response)
 
         # if settings.SESSION_COOKIE_NAME in response.cookies:
