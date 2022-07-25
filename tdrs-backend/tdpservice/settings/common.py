@@ -262,6 +262,7 @@ class Common(Configuration):
     CSRF_TRUSTED_ORIGINS = ['.app.cloud.gov', 'tanfdata.acf.hhs.gov','api-tanfdata.acf.hhs.gov']
     CRSF_COOKIE_SECURE = True
     CRSF_COOKIE_SAMESITE = 'None'
+    CRSF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 
     SESSION_COOKIE_PATH = "/;HttpOnly"
 
