@@ -260,6 +260,7 @@ class Common(Configuration):
     # https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
     CSRF_COOKIE_HTTPONLY = False
     CSRF_TRUSTED_ORIGINS = ['.app.cloud.gov', 'tanfdata.acf.hhs.gov','api-tanfdata.acf.hhs.gov']
+    CRSF_COOKIE_SECURE = True
 
     SESSION_COOKIE_PATH = "/;HttpOnly"
 
