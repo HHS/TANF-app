@@ -41,6 +41,7 @@ update_frontend()
     fi
 
     cf map-route "$CGHOSTNAME_FRONTEND" app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
+    cf map-route "$CGHOSTNAME_FRONTEND" tanfdata.acf.hhs.gov 
     cd ../..
     rm -r tdrs-frontend/deployment
 }
