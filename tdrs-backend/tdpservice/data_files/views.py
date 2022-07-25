@@ -61,7 +61,8 @@ class DataFileViewSet(ModelViewSet):
         tasks.upload.delay(
             source=str(data_file.file),
             destination=str(data_file.file).split('/')[-1],
-            quarter=data_file.quarter
+            quarter=data_file.quarter,
+            data_file_pk=response.data.get('id')
         )
         return response
 

@@ -26,8 +26,16 @@ def debug_task(self):
 
 
 from celery.schedules import crontab
-from tdpservice.scheduling.tasks import run_backup
 
+app.conf.beat_schedule = {
+    'example': {
+        'task': 'tdpservice.scheduling.tasks.run_backup',
+        'schedule': crontab(minute='10'),
+        'args': ['lolo'],
+    },
+}
+
+"""
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
 
@@ -36,6 +44,8 @@ def setup_periodic_tasks(sender, **kwargs):
         crontab(hour='*', minute='1', day_of_week='*'),
         run_backup.s('Happy Mondays!'),
     )
+"""
+
 
 """
 @app.task

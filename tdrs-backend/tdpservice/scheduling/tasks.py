@@ -1,8 +1,13 @@
 from __future__ import absolute_import
+
+import os
+
 from celery import shared_task
 from django.conf import settings
 import datetime
 import paramiko
+
+from tdpservice.data_files.models import DataFile
 
 SERVER_ADDRESS = settings.SERVER_ADDRESS
 LOCAL_KEY = settings.LOCAL_KEY
@@ -16,6 +21,7 @@ def upload(
            source,                      # the file name
            destination,                 # the file name
            quarter,                     # Quarter as number in (1,2,3,4)
+           data_file_pk,
            ):
     print('-------------------------in upload 1')
     today_date = datetime.datetime.today()
@@ -33,6 +39,13 @@ def upload(
 
     sftp = transport.open_sftp()
 
+    data_file = DataFile.objects.get(id=data_file_pk)
+    print('________________________________________________')
+    f = data_file.file.read()
+    with open('temp_file', 'wb') as f1:
+        f1.write(f)
+        f1.close()
+    print('______________________GG________________________')
     # Check if UPPER directory exists, then change to that directory
     try:
         sftp.chdir(upper_directory_name)
@@ -52,7 +65,8 @@ def upload(
     # Upload file
     try:
         # sftp = transport.open_sftp()
-        sftp.put(source, destination)
+        sftp.put('temp_file', destination)
+        os.remove('temp_file')
         return True
     except Exception as e:
         print(e)
@@ -68,3 +82,4 @@ def run_backup(b):
     """    No params, setup for actual backup call. """
     logger.debug("my arg was" + b)
     print('00000000000000000000000000000000000000000')
+    return 0
