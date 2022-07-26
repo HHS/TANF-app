@@ -181,11 +181,7 @@ function Home() {
             We'll send you an email when it's been approved.
           </p>
         </div>
-        <Button
-          type="button"
-          className="width-tablet margin-bottom-4"
-          onClick={signOut}
-        >
+        <Button type="button" onClick={signOut}>
           <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
           Sign Out
         </Button>
