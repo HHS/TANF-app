@@ -45,7 +45,7 @@ This release will parse and validate submitted data and store accepted data in a
 | Users can view their submission history. |
 | All users will submit all of their data through TDP . |
 | TDP enhancements for System administrator users. |
-| A research oriented TDP environment is created. |
+
 
 ## Release 4 and Beyond
 In Release 4, we will begin to deliver features beyond parity with TDRS to address user needs, including (but not limited to) additional user access management tools, user interface enhancements based on usability testing, and reports and analytics. 
