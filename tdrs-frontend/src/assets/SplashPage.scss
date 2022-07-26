@@ -21,11 +21,6 @@
   background-color: $primary-light-pale-blue;
 }
 
-.usa-card__heading {
-  font-size: 16px;
-  font-weight: 400;
-}
-
 .usa-hero__heading--alt {
   color: $primary-acf-blue;
 }
@@ -36,10 +31,6 @@
   font-size: 16px;
   display: flex;
   justify-content: center;
-}
-
-.resource-card {
-  height: 182px;
 }
 
 .visually-hidden:not(:focus):not(:active) {
