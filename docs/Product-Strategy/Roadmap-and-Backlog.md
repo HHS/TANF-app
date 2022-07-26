@@ -39,7 +39,7 @@ This release will parse and validate submitted data and store accepted data in a
 
 | Outcome |
 | -------- | 
-| TDP can parse all data sections and types through to Elasticsearch. |
+| TDP can parse all data sections and types through to the Elasticsearch database. |
 | TDP runs validation checks on all submitted files. |
 | Users receive easy to understand error messages. |
 | Users can view their submission history. |
