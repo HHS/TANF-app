@@ -6,7 +6,6 @@ import SiteMap from './SiteMap'
 import { Provider } from 'react-redux'
 
 describe('SiteMap', () => {
-
   const initialState = {
     router: { location: { pathname: '/home' } },
     auth: {
@@ -65,7 +64,13 @@ describe('SiteMap', () => {
       </Provider>
     )
 
-    const locations = ['Home', 'Privacy Policy', 'Data Files', 'Profile', 'Admin']
+    const locations = [
+      'Home',
+      'Privacy Policy',
+      'Data Files',
+      'Profile',
+      'Admin',
+    ]
     for (let location of locations) {
       expect(getByText(location)).toBeInTheDocument()
     }

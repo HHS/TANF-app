@@ -8,7 +8,6 @@ import Footer from './Footer'
 import { permissions } from '../Header/developer_permissions'
 
 describe('Footer', () => {
-
   const unauthenticatedInitialState = {
     router: { location: { pathname: '/profile' } },
     auth: {
@@ -25,7 +24,7 @@ describe('Footer', () => {
 
   const basicAuthenticatedInitialState = {
     router: { location: { pathname: '/profile' } },
-    auth: {authenticated: true},
+    auth: { authenticated: true },
   }
   const mockStore = configureStore([thunk])
   it('renders the children & families logo', () => {
@@ -70,12 +69,11 @@ describe('Footer', () => {
 
   it('does not render the sitemap link if a user is not authenticated', () => {
     const store = mockStore(unauthenticatedInitialState)
-    const { queryByText} = render(
+    const { queryByText } = render(
       <Provider store={store}>
         <Footer />
       </Provider>
     )
     expect(queryByText('Site Map')).not.toBeInTheDocument()
   })
-
 })
