@@ -29,7 +29,7 @@ This release will allow users to securely upload data into our system in product
 | Users can upload and transmit files securely to TDRS database. |
 | Users can resubmit files with error fixes. |
 | Users will receive email notifications on the status of their account and data. |
-| Users can differentiate TANF and SSP files on the application. |
+| Users can differentiate TANF and SSP files upon submission. |
 | A research oriented TDP environment is created. |
 
 
