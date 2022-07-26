@@ -35,7 +35,7 @@ This release will allow users to securely upload data into our system in product
 
 
 ## Release 3: Parity, Data Parsing, Automated Status, Notifications
-This release will parse and validate submitted data and store accepted data in a database. This workflow will include automated additional email notifications and user-friendly in-app error messages to help users better understand their data errors and submission history. This release will also include Django admin engancements and onboard all users as it will meet parity with the legacy TANF Data Reporting System.
+This release will parse and validate submitted data and store accepted data in a database. This workflow will include additional automated email notifications and user-friendly in-app error messages to help users better understand their data errors and submission history. This release will also include Django admin enhancements and onboard all users as it will meet parity with the legacy TANF Data Reporting System.
 
 | Outcome |
 | -------- | 
