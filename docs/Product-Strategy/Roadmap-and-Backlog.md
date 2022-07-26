@@ -4,7 +4,7 @@ Our [roadmap](https://app.mural.co/t/raft2792/m/raft2792/1649193957647/f8656ffaa
 
 This roadmap provides a high level plan through Release 4. There might be a few shifts in approach, timing or scope, but in general, these outcomes will be worked on by the team. Metrics for success will be added as they are defined for releases.
 
-Beyond that, our iterative agile framework will lend itself to feature sets that best serves our users. This doc will continue to be updated as we make decisions and scope releases. 
+Beyond that, our iterative agile framework will lend itself to feature sets that best serve our users. This doc will continue to be updated as we make decisions and scope releases. 
 
 ## ATO/Release 1  
 Value Delivered: Get approval for the authority to operate and provide reliable application access to internal and external users in a secure production environment. Additionally create a user management interface for OFA and System Admin. It is important that these measures are put into place before sensitive production data is uploaded to the system.
