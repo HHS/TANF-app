@@ -9,8 +9,8 @@ DEPLOY_STRATEGY=${1}
 
 #The application name  defined via the manifest yml for the frontend
 CGAPPNAME_BACKEND=${2}
-
 CF_SPACE=${3}
+
 strip() {
     # Usage: strip "string" "pattern"
     printf '%s\n' "${1##$2}"
@@ -35,7 +35,6 @@ set_cf_envs()
   "ACFTITAN_HOST"
   "ACFTITAN_KEY"
   "ACFTITAN_USERNAME"
-  "ACR_VALUES"
   "AMS_CLIENT_ID"
   "AMS_CLIENT_SECRET"
   "AMS_CONFIGURATION_ENDPOINT"
@@ -47,18 +46,17 @@ set_cf_envs()
   "DJANGO_SETTINGS_MODULE"
   "DJANGO_SU_NAME"
   "FRONTEND_BASE_URL"
-  "JWT_CERT"
-  "JWT_KEY"
+  "PROD_JWT_CERT"
+  "PROD_JWT_KEY"
   "LOGGING_LEVEL"
-  "OIDC_RP_CLIENT_ID"
-  "ACR_VALUES"
-  "OIDC_OP_AUTHORIZATION_ENDPOINT"
-  "CLIENT_ASSERTION_TYPE"
-  "OIDC_RP_CLIENT_ID"
-  "OIDC_OP_ISSUER"
-  "OIDC_OP_JWKS_ENDPOINT"
-  "OIDC_OP_LOGOUT_ENDPOINT"
-  "OIDC_OP_TOKEN_ENDPOINT"
+  "PROD_ACR_VALUES"
+  "PROD_OIDC_OP_AUTHORIZATION_ENDPOINT"
+  "PROD_CLIENT_ASSERTION_TYPE"
+  "PROD_OIDC_RP_CLIENT_ID"
+  "PROD_OIDC_OP_ISSUER"
+  "PROD_OIDC_OP_JWKS_ENDPOINT"
+  "PROD_OIDC_OP_LOGOUT_ENDPOINT"
+  "PROD_OIDC_OP_TOKEN_ENDPOINT"
   )
 
   for var_name in ${var_list[@]}; do
@@ -67,7 +65,16 @@ set_cf_envs()
         echo "WARNING: Empty value for $var_name"
         continue
     fi
-    cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+
+    if [[ "$var_name" =~ "PROD_" ]]; then
+        prod_var_name=$(echo $var_name | sed -e 's/PROD_//g')
+        cf_cmd="cf set-env $CGAPPNAME_BACKEND $prod_var_name ${!var_name}"
+    else
+    
+        cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+    fi
+    
+    echo "Setting var : $var_name"
     $cf_cmd
   done
 
