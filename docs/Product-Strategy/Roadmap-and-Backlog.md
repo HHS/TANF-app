@@ -6,15 +6,25 @@ This roadmap provides a high level plan through Release 4. There might be a few 
 
 Beyond that, our iterative agile framework will lend itself to feature sets that best serve our users. This doc will continue to be updated as we make decisions and scope releases. 
 
-## ATO/Release 1  
-Value Delivered: Get approval for the authority to operate and provide reliable application access to internal and external users in a secure production environment. Additionally create a user management interface for OFA and System Admin. It is important that these measures are put into place before sensitive production data is uploaded to the system.
+## ATO  
+Approval for the authority to operate. 
+
+| Outcome | 
+| -------- |
+| User can log in using login.gov |
+| Users with appropriate privileges can manage users | 
+| Users can upload data files by section and quarter | 
+| Users with appropriate privileges can download files that were previously uploaded     | 
+| Approval to create a production environment |
+
+## Release 1  
+This is the first release to the production environment including the ATO and reliable application access to internal and external users in a secure production environment. Additionally it includes user management interface for OFA and System Admin. It is important that these measures are put into place before sensitive production data is uploaded to the system.
 
 | Outcome | 
 | -------- | 
 | TDP is secure and compliant as a system and for all users. |
 | TDP platform is hardened and stable and robust for deployment and live in a production environment. |
 | TDP Users have a secure login experience. |
-| Users with appropriate privileges can manage users | 
 | Users with appropriate privileges can download files that were previously uploaded     |
 
 
