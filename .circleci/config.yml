@@ -463,6 +463,15 @@ jobs:
     executor: machine-executor
     working_directory: ~/tdp-apps
     parameters:
+      cf_password:
+        type: string
+        default: CF_PASSWORD_STAGING
+      cf_username:
+        type: string
+        default: CF_USERNAME_STAGING
+      cf_space:
+        type: string
+        default: tanf-staging
       target_env:
         type: string
     steps:
@@ -477,9 +486,9 @@ jobs:
           environment: nightly
           target: frontend
       - login-cloud-dot-gov:
-          cf-password: CF_PASSWORD_STAGING
-          cf-space: tanf-staging
-          cf-username: CF_USERNAME_STAGING
+          cf-password: <<parameters.cf_password>>
+          cf-space: <<parameters.cf_space>>
+          cf-username: <<parameters.cf_username>>
       - run:
           name: Run post-processing task to record OWASP ZAP results
           command: |
@@ -671,6 +680,9 @@ workflows:
                 - main
       - nightly-owasp-scan:
           target_env: prod
+          cf_password: CF_PASSWORD_PROD
+          cf_username: CF_USERNAME_PROD
+          cf_space: tanf-prod
           filters:
             branches:
               only:
