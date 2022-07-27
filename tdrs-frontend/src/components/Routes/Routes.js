@@ -6,6 +6,7 @@ import Profile from '../Profile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 import Reports from '../Reports'
+import { useSelector } from 'react-redux'
 
 import SiteMap from '../SiteMap'
 
@@ -16,7 +17,10 @@ import Home from '../Home'
  * Routes have the 'exact' prop, so the order of routes
  * does not matter.
  */
-const AppRoutes = ({ user }) => {
+const AppRoutes = () => {
+  // The logged in user in our Redux state
+  const user = useSelector((state) => state.auth.user)
+
   const role = user?.roles
   const hasRole = Boolean(role?.length > 0)
 

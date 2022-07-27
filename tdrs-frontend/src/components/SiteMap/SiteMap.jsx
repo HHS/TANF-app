@@ -7,16 +7,11 @@ const isMemberOfOne = (user, ...groupNames) =>
   !!user?.roles?.some((role) => groupNames.includes(role.name))
 
 const userAccessRequestApproved = (user) =>
-  !user?.['access_request'] && user?.roles?.length > 0
+  user?.['access_request'] && user?.roles?.length > 0
 
 const canViewAdmin = (user) =>
   userAccessRequestApproved(user) &&
   isMemberOfOne(user, 'Developer', 'OFA System Admin', 'ACF OCIO')
-
-// const hasPermission = (permissionName) =>
-//   user?.roles?.[0]?.permissions?.some(
-//     (perm) => perm.codename === permissionName
-//   )
 
 const SiteMap = ({ user }) => (
   <div className="margin-top-5">
