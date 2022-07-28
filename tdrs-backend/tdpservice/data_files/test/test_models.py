@@ -3,7 +3,7 @@ import pytest
 
 from tdpservice.stts.models import STT
 
-from ..models import DataFile
+from tdpservice.data_files.models import DataFile
 
 
 @pytest.mark.django_db

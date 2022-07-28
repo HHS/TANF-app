@@ -400,9 +400,9 @@ class Common(Configuration):
     )
 
     # sftp config
-    SERVER_ADDRESS = '192.168.1.130'
-    LOCAL_KEY = '/tdpapp/id_rsa_sftp'
-    USERNAME = 'mat'
+    SERVER_ADDRESS = os.getenv('ACFTITAN_HOST', '')
+    LOCAL_KEY = os.getenv('ACFTITAN_KEY', '')
+    USERNAME = os.getenv('ACFTITAN_USERNAME', '')
 
     # CELERY CONFIG
     CELERY_BROKER_URL = "redis://redis-server:6379"
