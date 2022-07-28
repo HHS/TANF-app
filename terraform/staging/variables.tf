@@ -33,6 +33,6 @@ variable "cf_password" {
 }
 
 variable "cf_app_name" {
-  type = string
+  type        = string
   description = "name of app"
 }
