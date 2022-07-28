@@ -30,7 +30,7 @@ d. Summaries of the security scan reports are available in CircleCI.  If there a
 e. Information from the scan reports and control assessments are shared with the appropriate security stakeholders and are available for review in CircleCI and Django Admin. 
 
 *OWASP reports available in Django Admin*
-![screenshot - owasp list in DAC](images/DAC_owasp1.png)	
-![screenshot - owasp report in DAC](images/DAC_owasp2.png)	
+![screenshot - owasp list in DAC](images/DAC_owasp1.PNG)	
+![screenshot - owasp report in DAC](images/DAC_owasp2.PNG)	
 
 #### Related Files
