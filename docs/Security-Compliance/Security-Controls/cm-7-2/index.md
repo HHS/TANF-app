@@ -11,7 +11,7 @@ ACF reviews the TDP cloud.gov environments at least annually to identify unneces
 
 [Architectural decision record 012](../../../Technical-Documentation/Architecture-Decision-Record/012-antivirus-strategy.md) captures information regarding the TDP virus scanning process and includes a description for how anti-virus definitions will be kept up to date automatically. These definitions will be used to isolate known malicious files and prevent them from being uploaded into the system. Results for each file's virus scan is saved in Django Admin, as shown below:
 
-![clamav DAC](images/clamavcm7.png)
+![clamav DAC](images/clamavcm7.PNG)
 
 #### Related Files
 
