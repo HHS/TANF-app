@@ -7,10 +7,10 @@ AC-6 (2) Additional FedRAMP Requirements and Guidance: Examples of security func
 
 ### TDP Implementation
 
-In order to access the TDP application, users must login through Login.gov, using password and Multi-Factor Authentication (MFA).  Only authorized users can access TDP.  
+In order to access the TDP application, non-ACF users must login through Login.gov, using password and Multi-Factor Authentication (MFA). ACF users must login via ACF AMS and use PIV/CAC for authentication. Only authorized users can access TDP.  
 
 AC-6 (2)  
-Once users are logged in the application, users can only perform tasks associated to their user type as described in [AC-5, Part (b)](docs/controls/access_control/ac-05.md).  Privileged functions can only be performed by OFA Admins (e.g. approves new users, updates profile information, and inactivates/reactivates users).  New user accounts are established with no privileges upon creation and only System Admins can grant permissions to those users.
+Once users are logged in the application, users can only perform tasks associated to their user type as described in [AC-5, Part (b)](docs/controls/access_control/ac-05.md).  Privileged functions can only be performed by OFA System Admins (e.g. assigns roles to new users, updates profile information, and inactivates/reactivates users).  New user accounts are established with no privileges upon creation and only system Admins can grant permissions to those users.
 
 #### Related Files
 [AC-5 | Separation of Duties](docs/controls/access_control/ac-05.md)
