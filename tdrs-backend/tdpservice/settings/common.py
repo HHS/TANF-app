@@ -263,6 +263,7 @@ class Common(Configuration):
     CRSF_COOKIE_SECURE = True
     CRSF_COOKIE_SAMESITE = 'None'
     CRSF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+    CRSF_COOKIE_DOMAIN = '.acf.hhs.gov'
 
     SESSION_COOKIE_PATH = "/;HttpOnly"
 
