@@ -17,8 +17,13 @@ update_frontend()
     echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
     cd tdrs-frontend || exit
 
-    echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
-    echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
+    # echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
+    # echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
+
+    # Can't merge with this in here.
+    echo "REACT_APP_BACKEND_URL=https://api-tanfdata.acf.hhs.gov/v1" >> .env.production
+    echo "REACT_APP_BACKEND_HOST=https://api-tanfdata.acf.hhs.gov" >> .env.production
+
     echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
     npm run build
     unlink .env.production
