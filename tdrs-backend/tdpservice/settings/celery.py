@@ -1,7 +1,7 @@
 """Celey configuration file."""
 from __future__ import absolute_import
 import os
-from celery import Celery, shared_task
+from celery import Celery
 import configurations
 
 # Set the default Django settings module for the 'celery' program.
