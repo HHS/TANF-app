@@ -28,6 +28,8 @@ class SessionMiddleware(SessionMiddleware):
         #     response.cookies[settings.SESSION_COOKIE_NAME]['samesite'] = 'None'
 
         response["Access-Control-Allow-Origin"] = "https://tanfdata.acf.hhs.gov"
+
+        response["Access-Control-Allow-Headers"] = "X-CSRFToken, Cookie, Set-Cookie"
         if settings.CSRF_COOKIE_NAME in response.cookies:
             response.cookies[settings.CSRF_COOKIE_NAME]['SameSite'] = 'None'
             response.cookies[settings.CSRF_COOKIE_NAME]['Secure'] = True
