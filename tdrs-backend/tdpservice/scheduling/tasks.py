@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import hashlib
 import os
 
 from celery import shared_task
@@ -7,7 +8,8 @@ from django.conf import settings
 import datetime
 import paramiko
 import logging
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, LegacyFileTransfer
+
 logger = logging.getLogger(__name__)
 
 server_address = settings.SERVER_ADDRESS
@@ -33,7 +35,14 @@ def upload(data_file_pk):
     to sftp server as defined in Settings file
     """
     data_file = DataFile.objects.get(id=data_file_pk)
-    destination = str(data_file.file).split('/')[-1]
+    file_transfer_record = LegacyFileTransfer(
+        data_file=data_file,
+        uploaded_by=data_file.user,
+        file_name=data_file.create_filename(),
+    )
+    logger.info(file_transfer_record)
+    destination = str(data_file.create_filename())
+    logger.info(destination)
     today_date = datetime.datetime.today()
     upper_directory_name = today_date.strftime('%Y%m%d')
     lower_directory_name = today_date.strftime(str(data_file.year) + '-' + str(data_file.quarter))
@@ -49,17 +58,22 @@ def upload(data_file_pk):
     f = data_file.file.read()
     with open(destination, 'wb') as f1:
         f1.write(f)
+        file_transfer_record.file_size = f1.tell()
+        file_transfer_record.file_shasum = hashlib.sha256(f).hexdigest()
         f1.close()
     logger.info(os.listdir())
 
     # Upload file
     try:
-        # sftp = transport.open_sftp()
         # temp file can be the file object
         sftp.put(destination, upper_directory_name + '/' + lower_directory_name + '/' + destination)
         os.remove(destination)
         logger.info('File {} has been successfully uploaded to {}'.format(destination, server_address))
+        file_transfer_record.result = LegacyFileTransfer.Result.COMPLETED
+        file_transfer_record.save()
         return True
     except Exception as e:
         logger.error('Failed to upload {} with error:{}'.format(destination, e))
+        file_transfer_record.result = LegacyFileTransfer.Result.ERROR
+        file_transfer_record.save()
         return False
