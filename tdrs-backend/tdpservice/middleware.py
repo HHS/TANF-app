@@ -25,7 +25,7 @@ class SessionMiddleware(SessionMiddleware):
         response = super(SessionMiddleware, self).process_response(request, response)
 
         response["Access-Control-Allow-Origin"] = "https://tanfdata.acf.hhs.gov"
-        response["Access-Control-Allow-Headers"] = "X-CSRFToken,X-XSRF-token, Cookie, Set-Cookie, Content-type"
+        response["Access-Control-Allow-Headers"] = "xsrf-token, X-CSRFToken,X-XSRF-token, Cookie, Set-Cookie, Content-type"
 
         if settings.SESSION_COOKIE_NAME in response.cookies:
             response.cookies[settings.SESSION_COOKIE_NAME]['samesite'] = 'None'
