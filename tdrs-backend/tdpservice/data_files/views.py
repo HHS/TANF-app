@@ -17,6 +17,7 @@ from rest_framework import status
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
+from tdpservice.scheduling import tasks
 
 logger = logging.getLogger()
 
@@ -33,8 +34,6 @@ class DataFileFilter(filters.FilterSet):
         model = DataFile
         fields = ['stt', 'quarter', 'year']
 
-
-from tdpservice.scheduling import tasks
 
 class DataFileViewSet(ModelViewSet):
     """Data file views."""
@@ -55,6 +54,7 @@ class DataFileViewSet(ModelViewSet):
     ordering = ['-version']
 
     def create(self, request, *args, **kwargs):
+        """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
 
         # Upload to ACF-TITAN only if file is passed the virus scan and created

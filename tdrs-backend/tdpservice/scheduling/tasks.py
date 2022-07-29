@@ -19,7 +19,7 @@ username = settings.USERNAME
 
 def write_key_to_file(private_key):
     """
-    Paramiko require the key in file object format
+    Paramiko require the key in file object format.
     """
     with open('temp_key_file', 'w') as f:
         f.write(private_key)
@@ -30,8 +30,8 @@ def write_key_to_file(private_key):
 @shared_task
 def upload(data_file_pk):
     """
-    This task uploads the file in DataFile object with
-    pk = data_file_pk
+    Upload to SFTP server.
+    This task uploads the file in DataFile object with pk = data_file_pk
     to sftp server as defined in Settings file
     """
     data_file = DataFile.objects.get(id=data_file_pk)

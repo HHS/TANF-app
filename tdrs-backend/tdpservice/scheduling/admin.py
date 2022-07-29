@@ -1,3 +1,3 @@
-from django.contrib import admin
+"""Admin class for Scheduling tasks objects."""
 
 # Register your models here.
