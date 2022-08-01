@@ -6,7 +6,7 @@ function Footer() {
   return (
     <footer className="usa-footer usa-footer--slim">
       <div className="usa-footer__primary-section">
-        <div className="usa-footer__primary-container grid-row">
+        <div className="grid-container-widescreen grid-row">
           <div className="mobile-lg:grid-col-8">
             <nav className="usa-footer__nav" aria-label="Footer navigation">
               <ul className="grid-row grid-gap">
@@ -26,8 +26,8 @@ function Footer() {
         </div>
       </div>
       <div className="usa-footer__secondary-section">
-        <div className="grid-container">
-          <div className="usa-footer__logo grid-row grid-gap-2">
+        <div className="grid-container-widescreen">
+          <div className="usa-footer__logo margin-left-neg-205">
             <div className="grid-col-auto">
               <img
                 className="mobile-lg:maxw-mobile mobile:width-mobile"
