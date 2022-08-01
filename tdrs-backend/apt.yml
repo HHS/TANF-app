@@ -5,3 +5,4 @@ repos:
   - deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main
 packages:
   - postgresql-client-12
+  - redis-tools
