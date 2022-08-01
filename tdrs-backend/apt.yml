@@ -6,4 +6,4 @@ repos:
 packages:
   - postgresql-client-12
   - libjemalloc-dev
-  - redis-tools
+  - redis
