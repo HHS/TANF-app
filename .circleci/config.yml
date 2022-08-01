@@ -83,12 +83,17 @@ commands:
         description: The target application to be scanned.
         type: enum
         enum: [ "backend", "frontend" ]
+      target_env:
+        description: The target environment to be scanned.
+        type: enum
+        default: "staging"
+        enum: [ "staging", "develop", "prod" ]
     steps:
       - run:
           name: Execute OWASP ZAP vulnerability scan
           #wait up to 60min for scan
           no_output_timeout: 60m
-          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>>
+          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>> <<parameters.target_env>>
       - store_artifacts:
           path: tdrs-<<parameters.target>>/reports/owasp_report.html
 
@@ -482,9 +487,11 @@ jobs:
       - run-owasp-scan:
           environment: nightly
           target: backend
+          target_env: <<parameters.target_env>>
       - run-owasp-scan:
           environment: nightly
           target: frontend
+          target_env: <<parameters.target_env>>
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf_password>>
           cf-space: <<parameters.cf_space>>
