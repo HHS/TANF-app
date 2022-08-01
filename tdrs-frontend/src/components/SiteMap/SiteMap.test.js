@@ -45,24 +45,13 @@ describe('SiteMap', () => {
   })
 
   it('When an authenticated Admin visits the sitemap', () => {
-    const mockStore = configureStore([thunk])
-    const store = mockStore({
-      ...initialState,
-      auth: {
-        authenticated: true,
-        user: {
-          email: 'hi@bye.com',
-          roles: [{ id: 1, name: 'OFA System Admin', permission: [] }],
-          access_request: true,
-        },
-      },
-    })
+    const user = {
+      email: 'hi@bye.com',
+      roles: [{ id: 1, name: 'OFA System Admin', permission: [] }],
+      access_request: true,
+    }
 
-    const { getByText } = render(
-      <Provider store={store}>
-        <SiteMap />
-      </Provider>
-    )
+    const { getByText } = render(<SiteMap user={user}></SiteMap>)
 
     const locations = [
       'Home',
