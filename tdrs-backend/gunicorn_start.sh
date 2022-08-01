@@ -7,6 +7,10 @@ python manage.py migrate
 python manage.py populate_stts
 python manage.py collectstatic --noinput
 
+# Run redis server
+export LD_LIBRARY_PATH=~/deps/0/lib/
+./deps/0/bin/redis-server &
+
 #
 celery -A tdpservice.settings worker -l info &
 sleep 5
