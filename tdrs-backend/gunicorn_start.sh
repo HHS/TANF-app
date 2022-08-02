@@ -3,8 +3,8 @@
 set -e
 
 echo "Run redis server"
-export LD_LIBRARY_PATH=/home/vcap/deps/0/lib/:LD_LIBRARY_PATH
-./home/vcap/deps/0/bin/redis-server &
+export LD_LIBRARY_PATH=/home/vcap/deps/0/lib/
+( cd /home/vcap/deps/0/bin/ ; ./redis-server &)
 
 #
 echo "Applying database migrations"
