@@ -78,16 +78,16 @@ commands:
       environment:
         description: The environment this script is being run for.
         type: enum
-        enum: [ "circle", "nightly" ]
+        enum: ["circle", "nightly"] 
       target:
         description: The target application to be scanned.
         type: enum
-        enum: [ "backend", "frontend" ]
+        enum: ["backend", "frontend"]
       target_env:
         description: The target environment to be scanned.
         type: enum
         default: "staging"
-        enum: [ "staging", "develop", "prod" ]
+        enum: ["staging", "develop", "prod"]
     steps:
       - run:
           name: Execute OWASP ZAP vulnerability scan
@@ -478,7 +478,8 @@ jobs:
         type: string
         default: tanf-staging
       target_env:
-        type: string
+        type: enum
+        enum: [ "staging", "develop", "prod" ]
     steps:
       - checkout
       - sudo-check
@@ -696,7 +697,7 @@ workflows:
                 - feat/1754-owasp-on-aditional-branches
     triggers:
       - schedule:
-          cron: "34 0 * * *"
+          cron: "42 * * * *"
           filters:
             branches:
               only:
