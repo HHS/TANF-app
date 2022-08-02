@@ -14,7 +14,7 @@ export LD_LIBRARY_PATH=/home/vcap/deps/0/lib/:LD_LIBRARY_PATH
 #
 celery -A tdpservice.settings worker -l info &
 sleep 5
-celery -A tdpservice.settings --broker=redis://$REDIS_URI:6379 flower &
+celery -A tdpservice.settings --broker=redis://localhost:6379 flower &
 celery -A tdpservice.settings beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler &
 
 echo "Starting Gunicorn"
