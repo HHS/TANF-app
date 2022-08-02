@@ -678,13 +678,13 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - feat/1754-owasp-on-aditional-branches
       - nightly-owasp-scan:
           target_env: staging
           filters:
             branches:
               only:
-                - main
+                - feat/1754-owasp-on-aditional-branches
       - nightly-owasp-scan:
           target_env: prod
           cf_password: CF_PASSWORD_PROD
@@ -693,16 +693,17 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - feat/1754-owasp-on-aditional-branches
     triggers:
       - schedule:
-          cron: "0 0 * * *"
+          cron: "34 * * * *"
           filters:
             branches:
               only:
                 - develop
                 - main
                 - master
+                - feat/1754-owasp-on-aditional-branches
 
   erd:
     jobs:
