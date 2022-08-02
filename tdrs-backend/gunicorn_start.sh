@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 # Apply database migrations
 set -e
+
+echo "Run redis server"
+export LD_LIBRARY_PATH=/home/vcap/deps/0/lib/:LD_LIBRARY_PATH
+./home/vcap/deps/0/bin/redis-server &
+
+#
 echo "Applying database migrations"
 python manage.py makemigrations
 python manage.py migrate
 python manage.py populate_stts
 python manage.py collectstatic --noinput
 
-# Run redis server
-export LD_LIBRARY_PATH=/home/vcap/deps/0/lib/:LD_LIBRARY_PATH
-./home/vcap/deps/0/bin/redis-server &
-
-#
 celery -A tdpservice.settings worker -l info &
 sleep 5
 celery -A tdpservice.settings --broker=redis://localhost:6379 flower &
