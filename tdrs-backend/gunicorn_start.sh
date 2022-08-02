@@ -8,7 +8,7 @@ python manage.py populate_stts
 python manage.py collectstatic --noinput
 
 # Run redis server
-export LD_LIBRARY_PATH=~/deps/0/lib/:LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/home/vcap/deps/0/lib/:LD_LIBRARY_PATH
 ./home/vcap/deps/0/bin/redis-server &
 
 #
