@@ -34,37 +34,37 @@ def upload(data_file_pk):
     This task uploads the file in DataFile object with pk = data_file_pk
     to sftp server as defined in Settings file
     """
-    data_file = DataFile.objects.get(id=data_file_pk)
-    file_transfer_record = LegacyFileTransfer(
-        data_file=data_file,
-        uploaded_by=data_file.user,
-        file_name=data_file.create_filename(),
-    )
-    logger.info(file_transfer_record)
-    destination = str(data_file.create_filename())
-    logger.info(destination)
-    today_date = datetime.datetime.today()
-    upper_directory_name = today_date.strftime('%Y%m%d')
-    lower_directory_name = today_date.strftime(str(data_file.year) + '-' + str(data_file.quarter))
-
-    transport = paramiko.SSHClient()
-    transport.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    transport.connect(server_address, key_filename=write_key_to_file(local_key), username=username)
-    sftp = transport.open_sftp()
-
-    transport.exec_command('mkdir -p ' + upper_directory_name +
-                           '/' + lower_directory_name)
-
-    f = data_file.file.read()
-    with open(destination, 'wb') as f1:
-        f1.write(f)
-        file_transfer_record.file_size = f1.tell()
-        file_transfer_record.file_shasum = hashlib.sha256(f).hexdigest()
-        f1.close()
-    logger.info(os.listdir())
-
     # Upload file
     try:
+        data_file = DataFile.objects.get(id=data_file_pk)
+        file_transfer_record = LegacyFileTransfer(
+            data_file=data_file,
+            uploaded_by=data_file.user,
+            file_name=data_file.create_filename(),
+        )
+        logger.info(file_transfer_record)
+        destination = str(data_file.create_filename())
+        logger.info(destination)
+        today_date = datetime.datetime.today()
+        upper_directory_name = today_date.strftime('%Y%m%d')
+        lower_directory_name = today_date.strftime(str(data_file.year) + '-' + str(data_file.quarter))
+
+        transport = paramiko.SSHClient()
+        transport.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        transport.connect(server_address, key_filename=write_key_to_file(local_key), username=username)
+        sftp = transport.open_sftp()
+
+        transport.exec_command('mkdir -p ' + upper_directory_name +
+                               '/' + lower_directory_name)
+
+        f = data_file.file.read()
+        with open(destination, 'wb') as f1:
+            f1.write(f)
+            file_transfer_record.file_size = f1.tell()
+            file_transfer_record.file_shasum = hashlib.sha256(f).hexdigest()
+            f1.close()
+        logger.info(os.listdir())
+
         # temp file can be the file object
         sftp.put(destination, upper_directory_name + '/' + lower_directory_name + '/' + destination)
         os.remove(destination)
