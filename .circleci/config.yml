@@ -696,7 +696,7 @@ workflows:
                 - feat/1754-owasp-on-aditional-branches
     triggers:
       - schedule:
-          cron: "34 * * * *"
+          cron: "34 0 * * *"
           filters:
             branches:
               only:
