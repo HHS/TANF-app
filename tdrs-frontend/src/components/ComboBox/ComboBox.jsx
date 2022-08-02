@@ -43,6 +43,7 @@ const ComboBox = ({
       if (!error) {
         input.classList.remove('usa-combo-box__input--error')
       }
+      input.setAttribute('aria-required', 'true')
     }
   })
 
