@@ -1,15 +1,12 @@
 """Check if user is authorized."""
 
 import logging
-
 from django.contrib.auth import logout
 from django.middleware import csrf
 from django.utils import timezone
-
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from ..serializers import UserProfileSerializer
 
 logger = logging.getLogger(__name__)
@@ -45,7 +42,7 @@ class AuthorizationCheck(APIView):
                 "Auth check PASS for user: %s on %s", user.username, timezone.now()
             )
             res = Response(auth_params)
-            res["Access-Control-Allow-Headers"] = "X-CSRFToken, Cookie, Set-Cookie"
+            res["Access-Control-Allow-Headers"] = "X-CSRFToken"
             return res
         else:
             logger.info("Auth check FAIL for user on %s", timezone.now())
