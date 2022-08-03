@@ -107,8 +107,15 @@ update_backend()
             generate_jwt_cert
         fi
     fi
+
     set_cf_envs
-    cf map-route "$CGAPPNAME_BACKEND" app.cloud.gov --hostname "$CGAPPNAME_BACKEND"
+
+    if [ "$CF_SPACE" = "tanf-prod" ]; then
+        cf map-route tdp-backend-prod api-tanfdata.acf.hhs.gov
+    else
+        cf map-route "$CGAPPNAME_BACKEND" app.cloud.gov --hostname "$CGAPPNAME_BACKEND"
+    fi
+
     cd ..
 }
 
@@ -133,7 +140,6 @@ if [ -n "$BASE_URL" ]; then
 elif [ "$CF_SPACE" = "tanf-prod" ]; then
   # Keep the base url set explicitly for production.
   BASE_URL="https://api-tanfdata.acf.hhs.gov/v1"
-  cf map-route tdp-backend-prod api-tanfdata.acf.hhs.gov
 else
   # Default to the route formed with the cloud.gov env for the lower environments.
   BASE_URL="$DEFAULT_ROUTE/v1"

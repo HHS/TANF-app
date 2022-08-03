@@ -257,11 +257,6 @@ class Common(Configuration):
     # https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
     CSRF_COOKIE_HTTPONLY = False
     CSRF_TRUSTED_ORIGINS = ['.app.cloud.gov', '.acf.hhs.gov']
-    CRSF_COOKIE_SECURE = True
-    CRSF_COOKIE_SAMESITE = 'None'
-    CRSF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
-    CRSF_COOKIE_DOMAIN = '.acf.hhs.gov'
-
 
     # Django Rest Framework
     REST_FRAMEWORK = {
@@ -336,17 +331,6 @@ class Common(Configuration):
     CSP_FRAME_ANCESTORS = ("'none'")
     CSP_FORM_ACTION = ("'self'")
     CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
-    CORS_ALLOW_HEADERS = (
-        'x-requested-with',
-        'content-type',
-        'accept',
-        'origin',
-        'authorization',
-        'X-CSRFToken'
-    )
-
-
-
 
     ####################################
     # Authentication Provider Settings #
