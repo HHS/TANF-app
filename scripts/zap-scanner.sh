@@ -20,7 +20,7 @@ if [ "$ENVIRONMENT" = "nightly" ]; then
             APP_URL="https://tanfdata.acf.hhs.gov/"
         fi
     fi
-elif [ "$ENVIRONMENT" = "circle" || "$ENVIRONMENT" = "local"]; then
+elif [ "$ENVIRONMENT" = "circle" ] || [ "$ENVIRONMENT" = "local" ]; then
     if [ "$TARGET" = "frontend" ]; then
         APP_URL="http://tdp-frontend/"
     elif [ "$TARGET" = "backend" ]; then
