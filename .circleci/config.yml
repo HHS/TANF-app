@@ -86,7 +86,7 @@ commands:
       target_env:
         description: The target environment to be scanned.
         type: enum
-        default: "staging"
+        default: "develop"
         enum: ["staging", "develop", "prod"]
     steps:
       - run:
@@ -679,13 +679,13 @@ workflows:
           filters:
             branches:
               only:
-                - feat/1754-owasp-on-aditional-branches
+                - develop
       - nightly-owasp-scan:
           target_env: staging
           filters:
             branches:
               only:
-                - feat/1754-owasp-on-aditional-branches
+                - main
       - nightly-owasp-scan:
           target_env: prod
           cf_password: CF_PASSWORD_PROD
@@ -694,17 +694,16 @@ workflows:
           filters:
             branches:
               only:
-                - feat/1754-owasp-on-aditional-branches
+                - master
     triggers:
       - schedule:
-          cron: "42 * * * *"
+          cron: "0 0 * * *"
           filters:
             branches:
               only:
                 - develop
                 - main
                 - master
-                - feat/1754-owasp-on-aditional-branches
 
   erd:
     jobs:
