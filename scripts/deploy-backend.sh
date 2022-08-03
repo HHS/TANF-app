@@ -132,7 +132,8 @@ if [ -n "$BASE_URL" ]; then
   BASE_URL="${BASE_URL//http:\/\/localhost:8080/$DEFAULT_ROUTE}"
 elif [ "$CF_SPACE" = "tanf-prod" ]; then
   # Keep the base url set explicitly for production.
-  BASE_URL="$BASE_URL/v1"
+  BASE_URL="https://api-tanfdata.acf.hhs.gov/v1"
+  cf map-route tdp-backend-prod api-tanfdata.acf.hhs.gov
 else
   # Default to the route formed with the cloud.gov env for the lower environments.
   BASE_URL="$DEFAULT_ROUTE/v1"
