@@ -1,4 +1,4 @@
-const isMemberOfOne = (user, ...groupNames) =>
+const isMemberOfOne = (user, groupNames) =>
   !!user?.roles?.some((role) => groupNames.includes(role.name))
 
 const userAccessRequestApproved = (user) =>
@@ -6,6 +6,6 @@ const userAccessRequestApproved = (user) =>
 
 const canViewAdmin = (user) =>
   userAccessRequestApproved(user) &&
-  isMemberOfOne(user, 'Developer', 'OFA System Admin', 'ACF OCIO')
+  isMemberOfOne(user, ['Developer', 'OFA System Admin', 'ACF OCIO'])
 
 export default canViewAdmin
