@@ -17,7 +17,7 @@ function Footer() {
                     className="usa-footer__primary-link"
                     href="https://www.acf.hhs.gov/privacy-policy"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     Privacy policy
                   </a>
@@ -28,7 +28,7 @@ function Footer() {
                       className="usa-footer__primary-link"
                       href="/site-map"
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                     >
                       Site Map
                     </a>
