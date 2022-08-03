@@ -718,7 +718,6 @@ workflows:
             branches:
               only:
                 - master
-                - feat/1945-back-out-axios
       - deploy-production:
           requires:
             - deploy-infrastructure-production
@@ -726,4 +725,3 @@ workflows:
             branches:
               only:
                 - master
-                - feat/1945-back-out-axios
