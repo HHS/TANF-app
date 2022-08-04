@@ -70,6 +70,8 @@ services:
       - ACFTITAN_HOST
       - ACFTITAN_KEY
       - ACFTITAN_USERNAME
+      - REDIS_URI
+      - REDIS_SERVER_LOCAL
     volumes:
       - .:/tdpapp
     image: tdp
