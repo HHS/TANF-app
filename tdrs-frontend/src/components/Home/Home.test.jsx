@@ -607,7 +607,7 @@ describe('Pre-approval Home page', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Associated State, Tribe, or Territory', {
+    const select = getByLabelText('Associated State, Tribe, or Territory*', {
       selector: 'input',
     })
 
