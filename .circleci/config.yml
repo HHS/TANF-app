@@ -211,7 +211,6 @@ commands:
           command: |
             cf push clamav-rest -f tdrs-backend/manifest.clamav.yml \
               --var cf-space=<<parameters.cf-space>> \
-              --strategy rolling
       - run:
           name: Enable internal route between backend and clamav-rest app
           command: |
