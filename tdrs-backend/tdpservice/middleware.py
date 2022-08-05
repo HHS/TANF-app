@@ -23,7 +23,7 @@ class SessionMiddleware(SessionMiddleware):
         """Augment the behavior of SessionMiddleware to ensure CSRF cookies are correct."""
         response = super(SessionMiddleware, self).process_response(request, response)
 
-        response["Access-Control-Allow-Origin"] = "https://tanfdata.acf.hhs.gov"
+        #response["Access-Control-Allow-Origin"] = "https://tanfdata.acf.hhs.gov"
         response["Access-Control-Allow-Headers"] = "xsrf-token, \
                         X-CSRFToken, \
                         X-XSRF-token, \
