@@ -59,7 +59,7 @@ Like Staging, there is only one Production deployment. Note that developers do *
 
 | Frontend URL | Backend URL | Purpose |
 |--------------|-------------| -------- |
-| https://tanfdata.acf.hhs.gov | https://api.tanfdata.acf.hhs.gov | Production space for active users of the application.    |
+| https://tanfdata.acf.hhs.gov | https://api-tanfdata.acf.hhs.gov | Production space for active users of the application.    |
 
 ### Dependencies
 
