@@ -150,7 +150,7 @@ if [ -n "$FRONTEND_BASE_URL" ]; then
   FRONTEND_BASE_URL="${FRONTEND_BASE_URL//http:\/\/localhost:3000/$DEFAULT_FRONTEND_ROUTE}"
 elif [ "$CF_SPACE" = "tanf-prod" ]; then
   # Keep the base url set explicitly for production.
-  FRONTEND_BASE_URL="$FRONTEND_BASE_URL"
+  FRONTEND_BASE_URL="https://tanfdata.acf.hhs.gov"
 else
   # Default to the route formed with the cloud.gov env for the lower environments.
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
