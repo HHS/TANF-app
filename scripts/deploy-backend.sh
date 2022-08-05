@@ -9,8 +9,8 @@ DEPLOY_STRATEGY=${1}
 
 #The application name  defined via the manifest yml for the frontend
 CGAPPNAME_BACKEND=${2}
-
 CF_SPACE=${3}
+
 strip() {
     # Usage: strip "string" "pattern"
     printf '%s\n' "${1##$2}"
@@ -35,7 +35,6 @@ set_cf_envs()
   "ACFTITAN_HOST"
   "ACFTITAN_KEY"
   "ACFTITAN_USERNAME"
-  "ACR_VALUES"
   "AMS_CLIENT_ID"
   "AMS_CLIENT_SECRET"
   "AMS_CONFIGURATION_ENDPOINT"
@@ -47,10 +46,17 @@ set_cf_envs()
   "DJANGO_SETTINGS_MODULE"
   "DJANGO_SU_NAME"
   "FRONTEND_BASE_URL"
-  "JWT_CERT"
-  "JWT_KEY"
+  "PROD_JWT_CERT"
+  "PROD_JWT_KEY"
   "LOGGING_LEVEL"
-  "OIDC_RP_CLIENT_ID"
+  "PROD_ACR_VALUES"
+  "PROD_OIDC_OP_AUTHORIZATION_ENDPOINT"
+  "PROD_CLIENT_ASSERTION_TYPE"
+  "PROD_OIDC_RP_CLIENT_ID"
+  "PROD_OIDC_OP_ISSUER"
+  "PROD_OIDC_OP_JWKS_ENDPOINT"
+  "PROD_OIDC_OP_LOGOUT_ENDPOINT"
+  "PROD_OIDC_OP_TOKEN_ENDPOINT"
   )
 
   for var_name in ${var_list[@]}; do
@@ -59,7 +65,16 @@ set_cf_envs()
         echo "WARNING: Empty value for $var_name"
         continue
     fi
-    cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+
+    if [[ "$var_name" =~ "PROD_" ]]; then
+        prod_var_name=$(echo $var_name | sed -e 's/PROD_//g')
+        cf_cmd="cf set-env $CGAPPNAME_BACKEND $prod_var_name ${!var_name}"
+    else
+    
+        cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+    fi
+    
+    echo "Setting var : $var_name"
     $cf_cmd
   done
 
@@ -92,8 +107,15 @@ update_backend()
             generate_jwt_cert
         fi
     fi
+
     set_cf_envs
-    cf map-route "$CGAPPNAME_BACKEND" app.cloud.gov --hostname "$CGAPPNAME_BACKEND"
+
+    if [ "$CF_SPACE" = "tanf-prod" ]; then
+        cf map-route tdp-backend-prod api-tanfdata.acf.hhs.gov
+    else
+        cf map-route "$CGAPPNAME_BACKEND" app.cloud.gov --hostname "$CGAPPNAME_BACKEND"
+    fi
+
     cd ..
 }
 
@@ -117,7 +139,7 @@ if [ -n "$BASE_URL" ]; then
   BASE_URL="${BASE_URL//http:\/\/localhost:8080/$DEFAULT_ROUTE}"
 elif [ "$CF_SPACE" = "tanf-prod" ]; then
   # Keep the base url set explicitly for production.
-  BASE_URL="$BASE_URL/v1"
+  BASE_URL="https://api-tanfdata.acf.hhs.gov/v1"
 else
   # Default to the route formed with the cloud.gov env for the lower environments.
   BASE_URL="$DEFAULT_ROUTE/v1"
@@ -128,7 +150,7 @@ if [ -n "$FRONTEND_BASE_URL" ]; then
   FRONTEND_BASE_URL="${FRONTEND_BASE_URL//http:\/\/localhost:3000/$DEFAULT_FRONTEND_ROUTE}"
 elif [ "$CF_SPACE" = "tanf-prod" ]; then
   # Keep the base url set explicitly for production.
-  FRONTEND_BASE_URL="$FRONTEND_BASE_URL"
+  FRONTEND_BASE_URL="https://tanfdata.acf.hhs.gov"
 else
   # Default to the route formed with the cloud.gov env for the lower environments.
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
