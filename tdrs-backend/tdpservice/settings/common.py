@@ -252,7 +252,7 @@ class Common(Configuration):
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = 'None'
-    SESSION_COOKIE_DOMAIN = '.acf.hhs.gov'
+    SESSION_COOKIE_DOMAIN = ['.acf.hhs.gov', 'app.cloud.gov']
     SESSION_COOKIE_PATH = "/;HttpOnly"
     SESSION_TIMEOUT = 30
     # The CSRF token Cookie holds no security benefits when confined to HttpOnly.
@@ -264,7 +264,7 @@ class Common(Configuration):
     CRSF_COOKIE_SECURE = True
     CRSF_COOKIE_SAMESITE = 'None'
     CRSF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
-    CRSF_COOKIE_DOMAIN = '.acf.hhs.gov'
+    CRSF_COOKIE_DOMAIN = ['.acf.hhs.gov', 'app.cloud.gov']
 
     # Django Rest Framework
     REST_FRAMEWORK = {
