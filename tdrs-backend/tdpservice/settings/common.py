@@ -60,7 +60,6 @@ class Common(Configuration):
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
     MIDDLEWARE = (
         "django.middleware.security.SecurityMiddleware",
-        "django.contrib.sessions.middleware.SessionMiddleware",
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",
         "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -71,6 +70,7 @@ class Common(Configuration):
         "csp.middleware.CSPMiddleware",
         "tdpservice.middleware.NoCacheMiddleware",
     )
+    print("just loaded middleware")
 
     APP_NAME = "dev"
     ALLOWED_HOSTS = ["*"]
@@ -250,10 +250,6 @@ class Common(Configuration):
     # Sessions
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
-    # SESSION_COOKIE_SECURE = True
-    # SESSION_COOKIE_SAMESITE = 'None'
-    # SESSION_COOKIE_DOMAIN = ['.acf.hhs.gov', 'app.cloud.gov']
-    # SESSION_COOKIE_PATH = "/;HttpOnly"
     SESSION_TIMEOUT = 30
     # The CSRF token Cookie holds no security benefits when confined to HttpOnly.
     # Setting this to false to allow the frontend to include it in the header
@@ -261,10 +257,7 @@ class Common(Configuration):
     # https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
     CSRF_COOKIE_HTTPONLY = False
     CSRF_TRUSTED_ORIGINS = ['.app.cloud.gov', '.acf.hhs.gov']
-    # CRSF_COOKIE_SECURE = True
-    # CRSF_COOKIE_SAMESITE = 'None'
-    # CRSF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
-    # CRSF_COOKIE_DOMAIN = ['.acf.hhs.gov', 'app.cloud.gov']
+
 
     # Django Rest Framework
     REST_FRAMEWORK = {
@@ -329,24 +322,17 @@ class Common(Configuration):
 
     s3_src = "s3-us-gov-west-1.amazonaws.com"
 
-    CSP_DEFAULT_SRC = ("'none'") # ("'self'", "*.cloud.gov",  "*.acf.hhs.gov")
+    CSP_DEFAULT_SRC = ("'none'")
     CSP_SCRIPT_SRC = ("'self'", s3_src)
     CSP_IMG_SRC = ("'self'", "data:", s3_src)
     CSP_FONT_SRC = ("'self'", s3_src)
-    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov") # , "*.acf.hhs.gov")
+    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov")
     CSP_MANIFEST_SRC = ("'self'")
     CSP_OBJECT_SRC = ("'none'")
     CSP_FRAME_ANCESTORS = ("'none'")
     CSP_FORM_ACTION = ("'self'")
     CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
-    # CORS_ALLOW_HEADERS = (
-    #    'x-requested-with',
-    #    'content-type',
-    #    'accept',
-    #    'origin',
-    #    'authorization',
-    #    'X-CSRFToken'
-    # )
+
 
     ####################################
     # Authentication Provider Settings #

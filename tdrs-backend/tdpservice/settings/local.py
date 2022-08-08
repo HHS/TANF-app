@@ -43,3 +43,5 @@ class Local(Common):
         'level': 'DEBUG',
         'handlers': ['console']
     }
+
+    MIDDLEWARE = ('django.contrib.sessions.middleware.SessionMiddleware', *Common.MIDDLEWARE)
