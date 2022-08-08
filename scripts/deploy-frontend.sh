@@ -16,10 +16,14 @@ update_frontend()
     echo FRONTEND_HOST: "$CGHOSTNAME_FRONTEND"
     echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
     cd tdrs-frontend || exit
-
-    echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
-    echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
-    echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
+    if [ "$CF_SPACE" = "tanf-prod" ]; then
+        echo "REACT_APP_BACKEND_URL=https://api-tanfdata.acf.hhs.gov/v1" >> .env.production
+        echo "REACT_APP_BACKEND_HOST=https://api-tanfdata.acf.hhs.gov" >> .env.production
+        echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
+    else
+        echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
+        echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
+    fi
     npm run build
     unlink .env.production
     mkdir deployment
