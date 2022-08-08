@@ -78,17 +78,22 @@ commands:
       environment:
         description: The environment this script is being run for.
         type: enum
-        enum: [ "circle", "nightly" ]
+        enum: ["circle", "nightly"] 
       target:
         description: The target application to be scanned.
         type: enum
-        enum: [ "backend", "frontend" ]
+        enum: ["backend", "frontend"]
+      target_env:
+        description: The target environment to be scanned.
+        type: enum
+        default: "develop"
+        enum: ["staging", "develop", "prod"]
     steps:
       - run:
           name: Execute OWASP ZAP vulnerability scan
           #wait up to 60min for scan
           no_output_timeout: 60m
-          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>>
+          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>> <<parameters.target_env>>
       - store_artifacts:
           path: tdrs-<<parameters.target>>/reports/owasp_report.html
 
@@ -206,7 +211,6 @@ commands:
           command: |
             cf push clamav-rest -f tdrs-backend/manifest.clamav.yml \
               --var cf-space=<<parameters.cf-space>> \
-              --strategy rolling
       - run:
           name: Enable internal route between backend and clamav-rest app
           command: |
@@ -472,6 +476,19 @@ jobs:
   nightly-owasp-scan:
     executor: machine-executor
     working_directory: ~/tdp-apps
+    parameters:
+      cf_password:
+        type: string
+        default: CF_PASSWORD_STAGING
+      cf_username:
+        type: string
+        default: CF_USERNAME_STAGING
+      cf_space:
+        type: string
+        default: tanf-staging
+      target_env:
+        type: enum
+        enum: [ "staging", "develop", "prod" ]
     steps:
       - checkout
       - sudo-check
@@ -480,13 +497,15 @@ jobs:
       - run-owasp-scan:
           environment: nightly
           target: backend
+          target_env: <<parameters.target_env>>
       - run-owasp-scan:
           environment: nightly
           target: frontend
+          target_env: <<parameters.target_env>>
       - login-cloud-dot-gov:
-          cf-password: CF_PASSWORD_STAGING
-          cf-space: tanf-staging
-          cf-username: CF_USERNAME_STAGING
+          cf-password: <<parameters.cf_password>>
+          cf-space: <<parameters.cf_space>>
+          cf-username: <<parameters.cf_username>>
       - run:
           name: Run post-processing task to record OWASP ZAP results
           command: |
@@ -507,7 +526,7 @@ jobs:
             CMD="python manage.py process_owasp_scan ${CMD_ARGS[@]}"
 
             # Submit a CF Task for execution that will run the necessary command
-            cf run-task tdp-backend-staging \
+            cf run-task tdp-backend-<< parameters.target_env >> \
               --command "$CMD" \
               --name nightly-owasp-scan
 
@@ -664,7 +683,27 @@ workflows:
 
   nightly:
     jobs:
-      - nightly-owasp-scan
+      - nightly-owasp-scan:
+          target_env: develop
+          filters:
+            branches:
+              only:
+                - develop
+      - nightly-owasp-scan:
+          target_env: staging
+          filters:
+            branches:
+              only:
+                - main
+      - nightly-owasp-scan:
+          target_env: prod
+          cf_password: CF_PASSWORD_PROD
+          cf_username: CF_USERNAME_PROD
+          cf_space: tanf-prod
+          filters:
+            branches:
+              only:
+                - master
     triggers:
       - schedule:
           cron: "0 0 * * *"
@@ -672,6 +711,8 @@ workflows:
             branches:
               only:
                 - develop
+                - main
+                - master
 
   erd:
     jobs:
