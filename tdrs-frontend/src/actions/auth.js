@@ -53,7 +53,7 @@ export const fetchAuth = () => async (dispatch) => {
       const { user, csrf } = data
 
       // Work around for csrf cookie issue we encountered in production.
-      
+
       if (process.env.REACT_APP_CF_SPACE === 'tanf-prod') {
         console.log("It thinks we're in tanf-prod maybe")
         axiosInstance.defaults.headers.common['X-CSRFToken'] = csrf
