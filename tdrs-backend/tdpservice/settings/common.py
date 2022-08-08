@@ -70,7 +70,6 @@ class Common(Configuration):
         "csp.middleware.CSPMiddleware",
         "tdpservice.middleware.NoCacheMiddleware",
     )
-    print("just loaded middleware")
 
     APP_NAME = "dev"
     ALLOWED_HOSTS = ["*"]
