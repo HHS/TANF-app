@@ -22,7 +22,7 @@ export default function PrivateTemplate({ title, children }) {
   return (
     <div
       id="private-template-container"
-      className="grid-container margin-top-3"
+      className="grid-container-widescreen margin-top-3"
     >
       <h1
         className="font-serif-2xl margin-bottom-0 text-normal"

@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
@@ -81,7 +81,7 @@ describe('Reports', () => {
       type: 'text/plain',
     })
 
-  it('should render the Fiscal Year dropdown with two options and a placeholder', () => {
+  it('should render the Fiscal Year dropdown with however many years and a placeholder', () => {
     const store = mockStore(initialState)
     const { getByLabelText } = render(
       <Provider store={store}>
@@ -89,14 +89,21 @@ describe('Reports', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Fiscal Year (October - September)')
+    const today = new Date()
+    const fiscalYear =
+      today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
 
+    // added 1 to include the starting year
+    const yearNum = fiscalYear - 2021 + 1
+
+    const select = getByLabelText('Fiscal Year (October - September)')
+    screen.debug(select)
     expect(select).toBeInTheDocument()
 
     const options = select.children
 
-    // The placeholder option is included in the length
-    expect(options.length).toEqual(3)
+    // The placeholder option is included in the length so another 1 was added
+    expect(options.length).toEqual(yearNum + 1)
   })
 
   it('should render the STT dropdown with one option, when the user is an OFA Admin', () => {
@@ -148,7 +155,7 @@ describe('Reports', () => {
     )
 
     const sttDropdown = getByLabelText(
-      'Associated State, Tribe, or Territory',
+      'Associated State, Tribe, or Territory*',
       { selector: 'input' }
     )
 
@@ -384,5 +391,59 @@ describe('Reports', () => {
     expect(
       getByText('A state, tribe, or territory is required')
     ).toBeInTheDocument()
+  })
+
+  it('should show next calander year in fiscal year dropdown in October', () => {
+    const currentYear = new Date().getFullYear()
+
+    const getNow = () => new Date(Date.now())
+
+    jest
+      .spyOn(global.Date, 'now')
+      .mockImplementation(() =>
+        new Date(`October 01, ${currentYear}`).valueOf()
+      )
+    const now = getNow()
+    expect(now).toEqual(new Date(`October 01, ${currentYear}`))
+    const store = mockStore(initialState)
+
+    const { getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const select = getByLabelText('Fiscal Year (October - September)')
+    const options = select.children
+    const expected = options.item(1).value
+
+    expect(expected).toEqual((currentYear + 1).toString())
+  })
+
+  it('should show current calander year in fiscal year dropdown in January', () => {
+    const currentYear = new Date().getFullYear()
+
+    const getNow = () => new Date(Date.now())
+
+    jest
+      .spyOn(global.Date, 'now')
+      .mockImplementation(() =>
+        new Date(`January 01, ${currentYear}`).valueOf()
+      )
+    const now = getNow()
+    expect(now).toEqual(new Date(`January 01, ${currentYear}`))
+    const store = mockStore(initialState)
+
+    const { getByLabelText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    const select = getByLabelText('Fiscal Year (October - September)')
+    const options = select.children
+    const expected = options.item(1).value
+
+    expect(expected).toEqual(currentYear.toString())
   })
 })
