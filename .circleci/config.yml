@@ -759,7 +759,7 @@ workflows:
             branches:
               only:
                 - master
-                - main
+                # - main
       - deploy-production:
           requires:
             - deploy-infrastructure-production
@@ -767,4 +767,4 @@ workflows:
             branches:
               only:
                 - master
-                - main
+                # - main
