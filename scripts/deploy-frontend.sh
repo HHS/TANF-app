@@ -21,13 +21,13 @@ update_frontend()
     if [ "$CF_SPACE" = "tanf-prod" ]; then
         echo "REACT_APP_BACKEND_URL=https://api-tanfdata.acf.hhs.gov/v1" >> .env.production
         echo "REACT_APP_BACKEND_HOST=https://api-tanfdata.acf.hhs.gov" >> .env.production
+        echo "REACT_APP_LOGIN_GOV_URL=https://secure.login.gov/" >> .env.production
     else
         echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
     fi
 
     echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
-    echo "REACT_APP_LOGIN_GOV_URL=https://secure.login.gov/" >> .env.production
     
     npm run build:$ENVIRONMENT
     unlink .env.production
