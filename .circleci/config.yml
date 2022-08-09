@@ -772,11 +772,11 @@ workflows:
           filters:
             branches:
               only:
-                - bug/2035-manage-account-button-incorrect-link
+                - master
       - deploy-production:
           requires:
             - deploy-infrastructure-production
           filters:
             branches:
               only:
-                - bug/2035-manage-account-button-incorrect-link
+                - master
