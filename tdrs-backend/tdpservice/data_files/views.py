@@ -1,7 +1,7 @@
 """Check if user is authorized."""
 import logging
 
-from django.http import StreamingHttpResponse
+from django.http import FileResponse
 from django_filters import rest_framework as filters
 from drf_yasg.openapi import Parameter
 from drf_yasg.utils import swagger_auto_schema
@@ -68,12 +68,10 @@ class DataFileViewSet(ModelViewSet):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
 
-        response = StreamingHttpResponse(
+        response = FileResponse(
             FileWrapper(record.file),
-            content_type='txt/plain'
+            filename = record.original_filename
         )
-        file_name = record.original_filename
-        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
         return response
 
 
