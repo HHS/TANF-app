@@ -9,6 +9,7 @@ DEPLOY_STRATEGY=${1}
 CGHOSTNAME_FRONTEND=${2}
 CGHOSTNAME_BACKEND=${3}
 CF_SPACE=${4}
+ENVIRONMENT=${5}
 
 update_frontend()
 {
@@ -20,13 +21,15 @@ update_frontend()
     if [ "$CF_SPACE" = "tanf-prod" ]; then
         echo "REACT_APP_BACKEND_URL=https://api-tanfdata.acf.hhs.gov/v1" >> .env.production
         echo "REACT_APP_BACKEND_HOST=https://api-tanfdata.acf.hhs.gov" >> .env.production
+        echo "REACT_APP_LOGIN_GOV_URL=https://secure.login.gov/" >> .env.production
     else
         echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
     fi
 
     echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
-    npm run build
+    
+    npm run build:$ENVIRONMENT
     unlink .env.production
     mkdir deployment
 
