@@ -70,7 +70,7 @@ class DataFileViewSet(ModelViewSet):
 
         response = FileResponse(
             FileWrapper(record.file),
-            filename = record.original_filename
+            filename=record.original_filename
         )
         return response
 
