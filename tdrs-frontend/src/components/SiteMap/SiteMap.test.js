@@ -1,9 +1,6 @@
 import React from 'react'
-import thunk from 'redux-thunk'
 import { render } from '@testing-library/react'
-import configureStore from 'redux-mock-store'
 import SiteMap from './SiteMap'
-import { Provider } from 'react-redux'
 import { mount } from 'enzyme'
 
 describe('SiteMap', () => {
@@ -28,7 +25,13 @@ describe('SiteMap', () => {
 
     const { getByText } = render(<SiteMap user={user}></SiteMap>)
 
-    const locations = ['Home', 'Privacy Policy', 'Data Files', 'Profile', 'Admin']
+    const locations = [
+      'Home',
+      'Privacy Policy',
+      'Data Files',
+      'Profile',
+      'Admin',
+    ]
     for (let location of locations) {
       expect(getByText(location)).toBeInTheDocument()
     }
@@ -43,11 +46,17 @@ describe('SiteMap', () => {
 
     const { getByText } = render(<SiteMap user={user}></SiteMap>)
 
-    const locations = ['Home', 'Privacy Policy', 'Data Files', 'Profile', 'Admin']
+    const locations = [
+      'Home',
+      'Privacy Policy',
+      'Data Files',
+      'Profile',
+      'Admin',
+    ]
     for (let location of locations) {
       expect(getByText(location)).toBeInTheDocument()
     }
-  }) 
+  })
 
   it('When an authenticated ACF OCIO visits the sitemap', () => {
     const user = {
@@ -58,7 +67,13 @@ describe('SiteMap', () => {
 
     const { getByText } = render(<SiteMap user={user}></SiteMap>)
 
-    const locations = ['Home', 'Privacy Policy', 'Data Files', 'Profile', 'Admin']
+    const locations = [
+      'Home',
+      'Privacy Policy',
+      'Data Files',
+      'Profile',
+      'Admin',
+    ]
     for (let location of locations) {
       expect(getByText(location)).toBeInTheDocument()
     }
@@ -79,5 +94,5 @@ describe('SiteMap', () => {
     const wrapper = mount(<SiteMap user={user}></SiteMap>)
     expect(wrapper.html()).not.toContain('Admin')
     expect(wrapper.html()).toContain('Home')
-  }) 
+  })
 })
