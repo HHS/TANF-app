@@ -1,4 +1,4 @@
-"""Test the upload configurations."""
+"""Test class for the upload configurations."""
 
 from datetime import datetime
 

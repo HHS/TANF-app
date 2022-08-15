@@ -1,4 +1,4 @@
-"""Tasks class for upload configurations."""
+"""Task class for upload configurations."""
 
 from __future__ import absolute_import
 
