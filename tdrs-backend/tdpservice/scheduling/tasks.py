@@ -1,6 +1,6 @@
-"""Task class for upload configurations."""
+"""schedule tasks."""
 
-from __future__ import absolute_import
+# The tasks
 
 import hashlib
 import os
@@ -45,7 +45,7 @@ def upload(data_file_pk,
     )
 
     def create_dir(directory_name):
-        """The code snippet to create directory"""
+        """Code snippet to create directory."""
         try:
             sftp.chdir(directory_name)  # Test if remote_path exists
         except IOError:

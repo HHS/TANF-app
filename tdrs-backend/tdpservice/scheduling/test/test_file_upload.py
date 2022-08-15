@@ -1,4 +1,4 @@
-"""Test class for the upload configurations."""
+"""Scheduling tests."""
 
 from datetime import datetime
 
@@ -23,7 +23,7 @@ def stt_instance(region):
 
 @pytest.fixture
 def data_file_instance():
-    """Data file fixture instance for testing datafile."""
+    """Prepare data file fixture instance for testing datafile."""
     return DataFileFactory.create(
         created_at=datetime.now(),
     )
