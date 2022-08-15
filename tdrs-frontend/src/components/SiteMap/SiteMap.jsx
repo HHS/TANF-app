@@ -1,8 +1,5 @@
 import React from 'react'
 import canViewAdmin from '../../utils/canViewAdmin'
-// I copied these from Header.jsx and slightly refactored them to accept a user as their first arguement
-// I am wanting to shift these, and similar reused pieces of code at the top of component functions
-// up the tree to be passed in from the router.
 
 const SiteMap = ({ user }) => (
   <div className="margin-top-5">
