@@ -1,4 +1,5 @@
-"""Celery task configurations."""
+"""Tasks class for upload configurations."""
+
 from __future__ import absolute_import
 
 import hashlib
@@ -13,10 +14,6 @@ from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 
 logger = logging.getLogger(__name__)
 
-server_address = settings.SERVER_ADDRESS
-local_key = settings.LOCAL_KEY
-username = settings.USERNAME
-
 
 def write_key_to_file(private_key):
     """Paramiko require the key in file object format."""
@@ -27,7 +24,12 @@ def write_key_to_file(private_key):
 
 
 @shared_task
-def upload(data_file_pk):
+def upload(data_file_pk,
+           server_address=settings.SERVER_ADDRESS,
+           local_key=settings.LOCAL_KEY,
+           username=settings.USERNAME,
+           port=22
+           ):
     """
     Upload to SFTP server.
 
@@ -42,21 +44,35 @@ def upload(data_file_pk):
         file_name=data_file.create_filename(),
     )
 
+    def create_dir(directory_name):
+        """The code snippet to create directory"""
+        try:
+            sftp.chdir(directory_name)  # Test if remote_path exists
+        except IOError:
+            sftp.mkdir(directory_name)  # Create remote_path
+            sftp.chdir(directory_name)
+
     try:
-        logger.info(str(file_transfer_record.__dict__))
+        # Create directory names for ACF titan
         destination = str(data_file.create_filename())
-        logger.info(destination)
         today_date = datetime.datetime.today()
         upper_directory_name = today_date.strftime('%Y%m%d')
         lower_directory_name = today_date.strftime(str(data_file.year) + '-' + str(data_file.quarter))
+
+        # Paramiko SSH connection requires private key as file
+        temp_key_file = write_key_to_file(local_key)
+        os.chmod(temp_key_file, 0o666)
+
+        # Create SFTP/SSH connection
         transport = paramiko.SSHClient()
         transport.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        temp_key_file = write_key_to_file(local_key)
-        transport.connect(server_address, key_filename=temp_key_file, username=username)
+        transport.connect(server_address, key_filename=temp_key_file, username=username, port=port)
         os.remove(temp_key_file)
         sftp = transport.open_sftp()
-        transport.exec_command('mkdir -p ' + upper_directory_name +
-                               '/' + lower_directory_name)
+
+        # Create remote directory
+        create_dir(upper_directory_name)
+        create_dir(lower_directory_name)
         f = data_file.file.read()
         with open(destination, 'wb') as f1:
             f1.write(f)
@@ -64,16 +80,17 @@ def upload(data_file_pk):
             file_transfer_record.file_shasum = hashlib.sha256(f).hexdigest()
             f1.close()
 
-        # temp file can be the file object
-        sftp.put(destination, upper_directory_name + '/' + lower_directory_name + '/' + destination)
+        sftp.put(destination, destination)
         os.remove(destination)
         logger.info('File {} has been successfully uploaded to {}'.format(destination, server_address))
         file_transfer_record.result = LegacyFileTransfer.Result.COMPLETED
         file_transfer_record.save()
+        transport.close()
         return True
     except Exception as e:
         logger.error('Failed to upload {} with error:{}'.format(destination, e))
         file_transfer_record.file_size = 0
         file_transfer_record.result = LegacyFileTransfer.Result.ERROR
         file_transfer_record.save()
+        transport.close()
         return False
