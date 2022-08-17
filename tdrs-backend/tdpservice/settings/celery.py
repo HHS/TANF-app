@@ -1,12 +1,12 @@
 """Celey configuration file."""
 from __future__ import absolute_import
-# import os
+import os
 from celery import Celery
 import configurations
 
 # Set the default Django settings module for the 'celery' program.
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tdpservice.settings.local")
-# os.environ.setdefault("DJANGO_CONFIGURATION", "Local")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tdpservice.settings.cloudgov")
+os.environ.setdefault("DJANGO_CONFIGURATION", "CloudGov")
 import logging
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,5 @@ app = Celery('settings')
 # - namespace='CELERY' means all celery-related configuration keys
 #   should have a `CELERY_` prefix.
 app.config_from_object('django.conf:settings', namespace='CELERY')
-logger.debug('+++++++++++++++++++++ ' + str(app.__dict__))
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
