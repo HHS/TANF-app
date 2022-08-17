@@ -47,7 +47,7 @@ class Common(Configuration):
         "corsheaders",
         "django_extensions",
         "drf_yasg",
-        "django_celery_beat",
+        #"django_celery_beat",
         "storages",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
