@@ -27,7 +27,7 @@ function Footer() {
                     <a
                       className="usa-footer__primary-link"
                       href="/site-map"
-                      target="_blank"
+                      target="_self"
                       rel="noopener noreferrer"
                     >
                       Site Map

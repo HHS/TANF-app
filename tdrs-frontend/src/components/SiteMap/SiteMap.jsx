@@ -7,8 +7,11 @@ const SiteMap = ({ user }) => (
     <SiteMap.Link
       text="Privacy Policy"
       link="https://www.acf.hhs.gov/privacy-policy"
+      target="_blank"
     />
-    <SiteMap.Link text="Data Files" link="/data-files" />
+    {user?.['access_request'] && (
+      <SiteMap.Link text="Data Files" link="/data-files" />
+    )}
     <SiteMap.Link text="Profile" link="/profile" />
 
     {canViewAdmin(user) && (
@@ -20,11 +23,11 @@ const SiteMap = ({ user }) => (
   </div>
 )
 
-SiteMap.Link = ({ text, link }) => (
+SiteMap.Link = ({ text, link, target = '_self' }) => (
   <a
     className="usa-footer__primary-link"
     href={link}
-    target="_blank"
+    target={target}
     rel="noopener noreferrer"
   >
     {text}
