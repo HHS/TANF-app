@@ -1,14 +1,13 @@
 """Celey configuration file."""
 from __future__ import absolute_import
 import os
-from celery import Celery
 import configurations
+from celery import Celery
+
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tdpservice.settings.cloudgov")
 os.environ.setdefault("DJANGO_CONFIGURATION", "CloudGov")
-import logging
-logger = logging.getLogger(__name__)
 
 configurations.setup()
 
