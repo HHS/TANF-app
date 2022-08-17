@@ -69,6 +69,7 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'data_files.view_legacyfiletransfer',
         'data_files.add_legacyfiletransfer',
         'data_files.change_legacyfiletransfer',
+        """
         'django_celery_beat.add_clockedschedule',
         'django_celery_beat.add_crontabschedule',
         'django_celery_beat.add_intervalschedule',
@@ -86,7 +87,8 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'django_celery_beat.view_intervalschedule',
         'django_celery_beat.view_periodictask',
         'django_celery_beat.view_periodictasks',
-        'django_celery_beat.view_solarschedule',
+        'django_celery_beat.view_solarschedule',      
+        """
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions
