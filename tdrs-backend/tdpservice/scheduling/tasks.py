@@ -25,9 +25,9 @@ def write_key_to_file(private_key):
 
 @shared_task
 def upload(data_file_pk,
-           server_address=settings.SERVER_ADDRESS,
-           local_key=settings.LOCAL_KEY,
-           username=settings.USERNAME,
+           server_address=settings.ACFTITAN_SERVER_ADDRESS,
+           local_key=settings.ACFTITAN_LOCAL_KEY,
+           username=settings.ACFTITAN_USERNAME,
            port=22
            ):
     """
@@ -61,7 +61,7 @@ def upload(data_file_pk,
 
         # Paramiko SSH connection requires private key as file
         temp_key_file = write_key_to_file(local_key)
-        os.chmod(temp_key_file, 0o666)
+        os.chmod(temp_key_file, 0o600)
 
         # Create SFTP/SSH connection
         transport = paramiko.SSHClient()

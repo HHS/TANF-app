@@ -3,6 +3,7 @@ import logging
 
 from django.http import StreamingHttpResponse
 from django_filters import rest_framework as filters
+from django.conf import settings
 from drf_yasg.openapi import Parameter
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser
@@ -60,7 +61,11 @@ class DataFileViewSet(ModelViewSet):
         # Upload to ACF-TITAN only if file is passed the virus scan and created
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
             tasks.upload.delay(
-                data_file_pk=response.data.get('id')
+                data_file_pk=response.data.get('id'),
+                server_address=settings.ACFTITAN_SERVER_ADDRESS,
+                local_key=settings.ACFTITAN_LOCAL_KEY,
+                username=settings.ACFTITAN_USERNAME,
+                port=22
             )
         return response
 
