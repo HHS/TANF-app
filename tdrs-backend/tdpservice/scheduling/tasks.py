@@ -30,13 +30,13 @@ def upload(data_file_pk,
            username=settings.ACFTITAN_USERNAME,
            port=22
            ):
-    logger.info('__________________in upload')
     """
     Upload to SFTP server.
 
     This task uploads the file in DataFile object with pk = data_file_pk
     to sftp server as defined in Settings file
     """
+    logger.info('__________________in upload')
     # Upload file
     data_file = DataFile.objects.get(id=data_file_pk)
     file_transfer_record = LegacyFileTransfer(
