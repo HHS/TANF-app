@@ -11,7 +11,7 @@ from tdpservice.data_files.validators import (
 from tdpservice.security.models import ClamAVFileScan
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class DataFileSerializer(serializers.ModelSerializer):
     """Serializer for Data files."""

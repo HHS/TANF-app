@@ -20,7 +20,7 @@ from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import tasks
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class DataFileFilter(filters.FilterSet):
