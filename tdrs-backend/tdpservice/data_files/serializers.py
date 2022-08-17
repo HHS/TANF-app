@@ -1,5 +1,5 @@
 """Serialize stt data."""
-
+import logging
 from rest_framework import serializers
 
 from tdpservice.data_files.errors import ImmutabilityError
@@ -11,7 +11,7 @@ from tdpservice.data_files.validators import (
 from tdpservice.security.models import ClamAVFileScan
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
-
+logger = logging.getLogger()
 
 class DataFileSerializer(serializers.ModelSerializer):
     """Serializer for Data files."""
