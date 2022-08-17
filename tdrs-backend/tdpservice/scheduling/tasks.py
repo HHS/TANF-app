@@ -30,6 +30,7 @@ def upload(data_file_pk,
            username=settings.ACFTITAN_USERNAME,
            port=22
            ):
+    logger.info('__________________in upload')
     """
     Upload to SFTP server.
 
