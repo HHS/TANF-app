@@ -95,4 +95,22 @@ describe('SiteMap', () => {
     expect(wrapper.html()).not.toContain('Admin')
     expect(wrapper.html()).toContain('Home')
   })
+
+  it('When an authenticated user that does not yet have access visits the sitemap', () => {
+    const user = {
+      email: 'hi@bye.com',
+      roles: [],
+      access_request: false,
+    }
+
+    const { getByText } = render(<SiteMap user={user}></SiteMap>)
+
+    const locations = ['Home', 'Privacy Policy', 'Profile']
+    for (let location of locations) {
+      expect(getByText(location)).toBeInTheDocument()
+    }
+    const wrapper = mount(<SiteMap user={user}></SiteMap>)
+    expect(wrapper.html()).not.toContain('Admin')
+    expect(wrapper.html()).toContain('Home')
+  })
 })
