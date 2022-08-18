@@ -44,6 +44,7 @@ class Local(Common):
         'handlers': ['console']
     }
 
+    """
     REDIS_SERVER_LOCAL = os.getenv('REDIS_SERVER_LOCAL', False)
     print(REDIS_SERVER_LOCAL)
     if REDIS_SERVER_LOCAL:
@@ -51,6 +52,7 @@ class Local(Common):
             SFTP_PYTEST_ENV_VAR = f.read()
     else:
         SFTP_PYTEST_ENV_VAR = ''
+    """
 
     # sftp test key
-    ACFTITAN_SFTP_PYTEST = os.getenv('ACFTITAN_SFTP_PYTEST', SFTP_PYTEST_ENV_VAR)
+    ACFTITAN_SFTP_PYTEST = os.getenv("ACFTITAN_SFTP_PYTEST")
