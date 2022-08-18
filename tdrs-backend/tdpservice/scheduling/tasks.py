@@ -74,9 +74,13 @@ def upload(data_file_pk,
         # Create SFTP/SSH connection
         transport = paramiko.SSHClient()
         transport.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
         pkey = paramiko.RSAKey.from_private_key_file(temp_key_file)
-        transport.connect(server_address, pkey=pkey, username=username, port=port, look_for_keys=False)
+        transport.connect(server_address,
+                          pkey=pkey,
+                          username=username,
+                          port=port,
+                          look_for_keys=False,
+                          disabled_algorithms={'pubkeys': ['rsa-sha2-512', 'rsa-sha2-256']})
         # remove temp key file
         os.remove(temp_key_file)
         sftp = transport.open_sftp()
