@@ -59,6 +59,14 @@ def upload(data_file_pk,
         upper_directory_name = today_date.strftime('%Y%m%d')
         lower_directory_name = today_date.strftime(str(data_file.year) + '-' + str(data_file.quarter))
 
+        # Paramiko need local file
+        f = data_file.file.read()
+        with open(destination, 'wb') as f1:
+            f1.write(f)
+            file_transfer_record.file_size = f1.tell()
+            file_transfer_record.file_shasum = hashlib.sha256(f).hexdigest()
+            f1.close()
+
         # Paramiko SSH connection requires private key as file
         temp_key_file = write_key_to_file(local_key)
         os.chmod(temp_key_file, 0o600)
@@ -66,7 +74,9 @@ def upload(data_file_pk,
         # Create SFTP/SSH connection
         transport = paramiko.SSHClient()
         transport.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        transport.connect(server_address, key_filename=temp_key_file, username=username, port=port)
+
+        pkey = paramiko.RSAKey.from_private_key_file(temp_key_file)
+        transport.connect(server_address, pkey=pkey, username=username, port=port)
         # remove temp key file
         os.remove(temp_key_file)
         sftp = transport.open_sftp()
@@ -74,14 +84,6 @@ def upload(data_file_pk,
         # Create remote directory
         create_dir(upper_directory_name, sftp_server=sftp)
         create_dir(lower_directory_name, sftp_server=sftp)
-        f = data_file.file.read()
-
-        # Paramiko need local file
-        with open(destination, 'wb') as f1:
-            f1.write(f)
-            file_transfer_record.file_size = f1.tell()
-            file_transfer_record.file_shasum = hashlib.sha256(f).hexdigest()
-            f1.close()
 
         # Put the file in SFTP server
         sftp.put(destination, destination)

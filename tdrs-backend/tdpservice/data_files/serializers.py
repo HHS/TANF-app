@@ -40,7 +40,6 @@ class DataFileSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create a new entry with a new version number."""
-        logger.debug('_________ in serializer create')
         data_file = DataFile.create_new_version(validated_data)
 
         # Determine the matching ClamAVFileScan for this DataFile.
