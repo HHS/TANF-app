@@ -12,6 +12,16 @@ from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger()
 
+class AccountApprovalStatusChoices(models.TextChoices):
+    """Enum of options for `account_approval_status`"""
+    INITIAL = 'Initial'
+    ACCESS_REQUEST = 'Access request'
+    PENDING = 'Pending'
+    APPROVED = 'Approved'
+    DENIED = 'Denied'
+    DEACTIVATED = 'Deactivated'
+
+    # is "pending", "approved", and "denied" enough to cover functionality?
 
 class User(AbstractUser):
     """Define user fields and methods."""
@@ -42,6 +52,7 @@ class User(AbstractUser):
                               null=True,
                               unique=True)
 
+    # deprecated: use `account_approval_status`
     # Note this is handled differently than `is_active`, which comes from AbstractUser.
     # Django will totally prevent a user with is_active=True from authorizing.
     # This field `deactivated` helps us to notify the user client-side of their status
@@ -50,19 +61,35 @@ class User(AbstractUser):
         _('deactivated'),
         default=False,
         help_text=_(
+            'Deprecated: use Account Approval Status instead - '
             'Designates whether this user should be treated as active. '
             'Unselect this instead of deleting accounts.'
         ),
     )
 
+    # deprecated: use `account_approval_status` instead
     # This shows access request has been submitted and needs approval. When flag is True, Admin
     # sees the request and has to assign user to group
     access_request = models.BooleanField(
         default=False,
         help_text=_(
+            'Deprecated: use Account Approval Status instead - '
             'Designates whether this user account has requested access to TDP. '
-            'Users with this checked must have groups assigned for the application to work correctly.'
+            'Users with this checked must have groups assigned for the application to work correctly.' # with this _checked_?
         ),
+    )
+
+    # replaces the deprecated `access_request` and `deactivated` fields above
+    # Designate an account's approval status. options: INITIAL, ACCESS_REQUEST, PENDING, APPROVED, DENIED, DEACTIVATED
+    # property `is_deactivated` below returns True if `account_approval_status` is `DEACTIVATED`
+    account_approval_status = models.CharField(
+        max_length=40,
+        choices=AccountApprovalStatusChoices.choices,
+        default=AccountApprovalStatusChoices.INITIAL,
+        help_text=_(
+            'Designates whether this user account is active and approved to access TDP. '
+            'Users in an approved state are allowed access.'
+        )
     )
 
     def __str__(self):
@@ -139,3 +166,8 @@ class User(AbstractUser):
             raise ValidationError(
                 _("Data Analyst cannot have a region assigned to them"))
         self.location = value
+
+    @property
+    def is_deactivated(self):
+        """Returns True if the user's account has been set to status 'Deactivated'"""
+        return self.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED
