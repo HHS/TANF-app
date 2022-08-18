@@ -44,7 +44,7 @@ class Local(Common):
         'handlers': ['console']
     }
 
-    if os.getenv(REDIS_SERVER_LOCAL,False):
+    if os.getenv('REDIS_SERVER_LOCAL', False):
         with open('LOCAL_SFTP_KEY.PRIV', 'r') as f:
             SFTP_PYTEST_ENV_VAR = f.read()
 
