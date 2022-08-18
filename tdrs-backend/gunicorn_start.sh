@@ -9,7 +9,7 @@ if [[ "$REDIS_SERVER_LOCAL" = "TRUE" ]]; then
 else
     echo "Run redis server locally"
     export LD_LIBRARY_PATH=/home/vcap/deps/0/lib/:/home/vcap/deps/1/lib:$LD_LIBRARY_PATH
-    ( cd  /home/vcap/deps/0/bin/; echo 'maxmemory 64mb' | ./redis-server &)
+    ( cd  /home/vcap/deps/0/bin/; ./redis-server /home/vcap/app/redis.conf &)
 fi
 
 #
