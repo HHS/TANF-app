@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from tdpservice.users.models import User
+from tdpservice.users.models import User, AccountApprovalStatusChoices
 from tdpservice.users.permissions import DjangoModelCRUDPermissions, UserPermissions
 from tdpservice.users.serializers import (
     GroupSerializer,
@@ -52,11 +52,10 @@ class UserViewSet(
 
     @action(methods=["PATCH"], detail=False)
     def request_access(self, request, pk=None):
-        """Request access for user with pk."""
-        request.data['access_request'] = True
+        """Set the currently logged-in user's (required) first/last name, then set `account_approval_status` to 'Access Request'"""
         serializer = self.get_serializer(self.request.user, request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST)
         logger.info(
             "Access request for user: %s on %s", self.request.user, timezone.now()
         )
