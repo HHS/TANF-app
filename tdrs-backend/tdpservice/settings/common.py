@@ -401,11 +401,8 @@ class Common(Configuration):
 
     # sftp config
     ACFTITAN_SERVER_ADDRESS = os.getenv('ACFTITAN_HOST', '')
-    ACFTITAN_LOCAL_KEY = os.getenv('ACFTITAN_KEY', '')
+    ACFTITAN_LOCAL_KEY = os.getenv('ACFTITAN_KEY', '').replace('_', '\n')
     ACFTITAN_USERNAME = os.getenv('ACFTITAN_USERNAME', '')
-
-    # sftp test key
-    ACFTITAN_SFTP_PYTEST = os.getenv('ACFTITAN_SFTP_PYTEST', '')
 
     # CELERY CONFIG
     REDIS_URI = os.getenv(
