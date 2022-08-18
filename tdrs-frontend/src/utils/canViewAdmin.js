@@ -6,6 +6,11 @@ const userAccessRequestApproved = (user) =>
 
 const canViewAdmin = (user) =>
   userAccessRequestApproved(user) &&
-  isMemberOfOne(user, ['Developer', 'OFA System Admin', 'ACF OCIO'])
+  isMemberOfOne(user, [
+    'Developer',
+    'OFA System Admin',
+    'ACF OCIO',
+    'OFA Admin',
+  ])
 
 export default canViewAdmin
