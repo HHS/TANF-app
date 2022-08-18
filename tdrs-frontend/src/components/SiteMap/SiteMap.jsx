@@ -1,5 +1,8 @@
 import React from 'react'
-import canViewAdmin from '../../utils/canViewAdmin'
+import {
+  canViewAdmin,
+  userAccessRequestApproved,
+} from '../../utils/canViewAdmin'
 
 const SiteMap = ({ user }) => (
   <div className="margin-top-5">
@@ -9,7 +12,7 @@ const SiteMap = ({ user }) => (
       link="https://www.acf.hhs.gov/privacy-policy"
       target="_blank"
     />
-    {user?.['access_request'] && (
+    {userAccessRequestApproved(user) && (
       <SiteMap.Link text="Data Files" link="/data-files" />
     )}
     <SiteMap.Link text="Profile" link="/profile" />

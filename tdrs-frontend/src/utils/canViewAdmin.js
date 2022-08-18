@@ -1,10 +1,10 @@
 const isMemberOfOne = (user, groupNames) =>
   user?.roles?.some((role) => groupNames.includes(role.name))
 
-const userAccessRequestApproved = (user) =>
+export const userAccessRequestApproved = (user) =>
   user?.['access_request'] && user?.roles?.length > 0
 
-const canViewAdmin = (user) =>
+export const canViewAdmin = (user) =>
   userAccessRequestApproved(user) &&
   isMemberOfOne(user, [
     'Developer',
@@ -12,5 +12,3 @@ const canViewAdmin = (user) =>
     'ACF OCIO',
     'OFA Admin',
   ])
-
-export default canViewAdmin
