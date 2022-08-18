@@ -55,4 +55,4 @@ class Local(Common):
     """
 
     # sftp test key
-    ACFTITAN_SFTP_PYTEST = os.getenv("ACFTITAN_SFTP_PYTEST")
+    ACFTITAN_SFTP_PYTEST = os.getenv("ACFTITAN_SFTP_PYTEST").replace('_','\n')
