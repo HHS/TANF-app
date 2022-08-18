@@ -51,9 +51,9 @@ class UserAdmin(admin.ModelAdmin):
     """Customize the user admin functions."""
 
     exclude = ['password', 'user_permissions', 'is_active']
-    readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request']
+    readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'account_approval_status']
     form = UserForm
-    list_filter = ('access_request',)
+    list_filter = ('account_approval_status',)
 
     def has_add_permission(self, request):
         """Disable User object creation through Django Admin."""
