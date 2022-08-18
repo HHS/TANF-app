@@ -12,7 +12,7 @@ from django.conf import settings
 
 """
 To mock sftp server, pytest_sftpserver (https://github.com/ulope/pytest-sftpserver) is used.
-The package provides two main fixtures for testing: sftpserver and sftpclient 
+The package provides two main fixtures for testing: sftpserver and sftpclient.
 """
 
 @pytest.fixture
@@ -51,6 +51,7 @@ def sftp_connection_values(sftpserver):
 
 @pytest.fixture(scope="session")
 def sftpclient(sftpserver):
+    """SFTP client for local sftp server."""
     transport = Transport((sftpserver.host, sftpserver.port))
     transport.connect(username="a", password="b")
     sftpclient = SFTPClient.from_transport(transport)

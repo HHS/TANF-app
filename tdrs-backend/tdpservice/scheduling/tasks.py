@@ -36,7 +36,6 @@ def upload(data_file_pk,
     This task uploads the file in DataFile object with pk = data_file_pk
     to sftp server as defined in Settings file
     """
-    logger.info('__________________in upload')
     # Upload file
     data_file = DataFile.objects.get(id=data_file_pk)
     file_transfer_record = LegacyFileTransfer(
@@ -45,13 +44,13 @@ def upload(data_file_pk,
         file_name=data_file.create_filename(),
     )
 
-    def create_dir(directory_name):
-        """Code snippet to create directory."""
+    def create_dir(directory_name, sftp_server):
+        """Code snippet to create directory in SFTP server."""
         try:
-            sftp.chdir(directory_name)  # Test if remote_path exists
+            sftp_server.chdir(directory_name)  # Test if remote_path exists
         except IOError:
-            sftp.mkdir(directory_name)  # Create remote_path
-            sftp.chdir(directory_name)
+            sftp_server.mkdir(directory_name)  # Create remote_path
+            sftp_server.chdir(directory_name)
 
     try:
         # Create directory names for ACF titan
@@ -68,26 +67,35 @@ def upload(data_file_pk,
         transport = paramiko.SSHClient()
         transport.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         transport.connect(server_address, key_filename=temp_key_file, username=username, port=port)
+        # remove temp key file
         os.remove(temp_key_file)
         sftp = transport.open_sftp()
 
         # Create remote directory
-        create_dir(upper_directory_name)
-        create_dir(lower_directory_name)
+        create_dir(upper_directory_name, sftp_server=sftp)
+        create_dir(lower_directory_name, sftp_server=sftp)
         f = data_file.file.read()
+
+        # Paramiko need local file
         with open(destination, 'wb') as f1:
             f1.write(f)
             file_transfer_record.file_size = f1.tell()
             file_transfer_record.file_shasum = hashlib.sha256(f).hexdigest()
             f1.close()
 
+        # Put the file in SFTP server
         sftp.put(destination, destination)
+
+        # Delete temp file
         os.remove(destination)
         logger.info('File {} has been successfully uploaded to {}'.format(destination, server_address))
+
+        # Add the log LegacyFileTransfer
         file_transfer_record.result = LegacyFileTransfer.Result.COMPLETED
         file_transfer_record.save()
         transport.close()
         return True
+
     except Exception as e:
         logger.error('Failed to upload {} with error:{}'.format(destination, e))
         file_transfer_record.file_size = 0

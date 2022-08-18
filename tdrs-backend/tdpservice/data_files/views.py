@@ -1,5 +1,4 @@
 """Check if user is authorized."""
-import logging
 
 from django.http import StreamingHttpResponse
 from django_filters import rest_framework as filters
@@ -19,8 +18,6 @@ from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import tasks
-
-logger = logging.getLogger(__name__)
 
 
 class DataFileFilter(filters.FilterSet):
@@ -57,12 +54,9 @@ class DataFileViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
-        logger.debug('_________ in create')
-        logger.debug(str(response.status_code))
-        logger.debug(settings.ACFTITAN_LOCAL_KEY)
+
         # Upload to ACF-TITAN only if file is passed the virus scan and created
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
-            logger.debug('----- submitting task -----')
             tasks.upload.delay(
                 data_file_pk=response.data.get('id'),
                 server_address=settings.ACFTITAN_SERVER_ADDRESS,

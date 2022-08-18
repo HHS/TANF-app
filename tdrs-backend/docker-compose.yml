@@ -68,7 +68,7 @@ services:
       - AMS_CLIENT_SECRET
       - AMS_CONFIGURATION_ENDPOINT
       - ACFTITAN_HOST
-      - ACFTITAN_KEY
+      - ACFTITAN_KEY=(`cat LOCAL_SFTP_KEY.PRIV`)
       - ACFTITAN_USERNAME
       - REDIS_URI
       - REDIS_SERVER_LOCAL
@@ -90,9 +90,11 @@ services:
 
   redis-server:
     image: "redis:alpine"
-    command: redis-server
+    command: redis-server /tdpapp/redis.conf
     ports:
       - "6379:6379"
+    volumes:
+      - .:/tdpapp
 
 volumes:
   localstack_data:

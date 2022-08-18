@@ -19,10 +19,10 @@ python manage.py migrate
 python manage.py populate_stts
 python manage.py collectstatic --noinput
 
-celery -A tdpservice.settings worker -c 4 --max-memory-per-child 2000
-# sleep 5
-# celery -A tdpservice.settings --broker=$REDIS_URI flower &
-# celery -A tdpservice.settings beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler &
+celery -A tdpservice.settings worker -c 4 --max-memory-per-child 2000 &
+sleep 5
+celery -A tdpservice.settings --broker=$REDIS_URI flower &
+celery -A tdpservice.settings beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler &
 
 echo "Starting Gunicorn"
 if [[ "$DJANGO_CONFIGURATION" = "Development" || "$DJANGO_CONFIGURATION" = "Local" ]]; then
