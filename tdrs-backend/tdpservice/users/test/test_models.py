@@ -38,3 +38,9 @@ def test_is_regional_user_property(data_analyst, regional_user):
     """Test that short hand property correctly indicates that user is regional staff."""
     assert data_analyst.is_regional_staff is False
     assert regional_user.is_regional_staff is True
+
+@pytest.mark.django_db
+def test_is_deactivated_user_property(user, deactivated_user):
+    """Test that the `is_deactivated` property on the User model returns the correct value for the given `account_approval_status`"""
+    assert user.is_deactivated is False
+    assert deactivated_user.is_deactivated is True
