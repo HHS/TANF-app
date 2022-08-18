@@ -72,6 +72,7 @@ services:
       - ACFTITAN_USERNAME
       - REDIS_URI
       - REDIS_SERVER_LOCAL
+      - ACFTITAN_SFTP_PYTEST
     volumes:
       - .:/tdpapp
     image: tdp
