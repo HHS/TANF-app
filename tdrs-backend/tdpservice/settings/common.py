@@ -404,9 +404,6 @@ class Common(Configuration):
     ACFTITAN_LOCAL_KEY = os.getenv('ACFTITAN_KEY', '')
     ACFTITAN_USERNAME = os.getenv('ACFTITAN_USERNAME', '')
 
-    # sftp test key
-    ACFTITAN_SFTP_PYTEST = os.getenv('ACFTITAN_SFTP_PYTEST', '')
-
     # CELERY CONFIG
     REDIS_URI = os.getenv(
         'REDIS_URI',
