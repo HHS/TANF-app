@@ -76,7 +76,7 @@ def upload(data_file_pk,
         transport.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         pkey = paramiko.RSAKey.from_private_key_file(temp_key_file)
-        transport.connect(server_address, pkey=pkey, username=username, port=port)
+        transport.connect(server_address, pkey=pkey, username=username, port=port, look_for_keys=False)
         # remove temp key file
         os.remove(temp_key_file)
         sftp = transport.open_sftp()
