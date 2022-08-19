@@ -75,7 +75,7 @@ class User(AbstractUser):
         help_text=_(
             'Deprecated: use Account Approval Status instead - '
             'Designates whether this user account has requested access to TDP. '
-            'Users with this checked must have groups assigned for the application to work correctly.' # with this _checked_?
+            'Users with this checked must have groups assigned for the application to work correctly.'
         ),
     )
 

@@ -52,7 +52,10 @@ class UserViewSet(
 
     @action(methods=["PATCH"], detail=False)
     def request_access(self, request, pk=None):
-        """Set the currently logged-in user's (required) first/last name, then set `account_approval_status` to 'Access Request'"""
+        """
+        Updates logged-in user's profile with provided first/last name and location
+        and sets `account_approval_status` to 'Access Request'
+        """
         serializer = self.get_serializer(self.request.user, request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST)

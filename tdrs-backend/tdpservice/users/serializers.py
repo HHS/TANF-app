@@ -55,7 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
             "access_request",
             "account_approval_status"
         )
-        read_only_fields = ("username","account_approval_status",)
+        read_only_fields = ("username", "account_approval_status",)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -74,7 +74,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'stt', 'region', 'roles', 'access_request', 'account_approval_status']
+        fields = [
+            'id',
+            'first_name',
+            'last_name',
+            'email',
+            'stt',
+            'region',
+            'roles',
+            'access_request',
+            'account_approval_status'
+        ]
         read_only_fields = ("account_approval_status",)
 
         """Enforce first and last name to be in API call and not empty"""

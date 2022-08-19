@@ -42,28 +42,6 @@ def test_set_profile_data(api_client, user):
 def test_user_can_request_access(api_client, user, stt):
     """Test `access_request` endpoint updates the `account_approval_status` field to `Access Request`"""
     api_client.login(username=user.username, password="test_password")
-    # don't really think this needs to be here
-    # response = api_client.patch(
-    #     "/v1/users/set_profile/",
-    #     {"first_name": "Joe", "last_name": "Bloggs", "stt": stt.id, },
-    #     format="json",
-    # )
-    # assert response.status_code == status.HTTP_200_OK
-    # assert response.data == {
-    #     "id": user.id,
-    #     "email": user.username,
-    #     "first_name": "Joe",
-    #     "last_name": "Bloggs",
-    #     "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, "region": stt.region.id},
-    #     "region": None,
-    #     "roles": [],
-    #     "access_request": False,
-    #     "account_approval_status": 'Initial'
-    # }
-    # user.refresh_from_db()
-    # assert user.first_name == "Joe"
-    # assert user.last_name == "Bloggs"
-    # assert user.stt.name == stt.name
 
     response = api_client.patch(
             "/v1/users/request_access/",
@@ -75,8 +53,8 @@ def test_user_can_request_access(api_client, user, stt):
             "email": user.username,
             "first_name": "Joe",
             "last_name": "Bloggs",
-            "access_request": False, # old value no longer touched
-            "account_approval_status": "Access request", # new value updated
+            "access_request": False,  # old value no longer touched
+            "account_approval_status": "Access request",  # new value updated
             "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, "region": stt.region.id},
             "region": None,
             "roles": [],
@@ -91,14 +69,14 @@ def test_cannot_set_account_approval_status_through_api(api_client, user):
     response = api_client.patch(
         "/v1/users/set_profile/",
         {
-            "first_name": "Mike", # required field
-            "last_name": "O'Hare", # required field
+            "first_name": "Mike",  # required field
+            "last_name": "O'Hare",  # required field
             "account_approval_status": "Approved"
         },
         impformat="json"
     )
-    assert response.data['account_approval_status'] == "Initial" # value doesn't update
-    assert response.status_code == status.HTTP_200_OK # even though the request succeeds
+    assert response.data['account_approval_status'] == "Initial"  # value doesn't update
+    assert response.status_code == status.HTTP_200_OK  # even though the request succeeds
 
 @pytest.mark.django_db
 def test_set_profile_data_last_name_apostrophe(api_client, user):
