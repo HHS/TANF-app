@@ -145,7 +145,7 @@ class Staging(CloudGov):
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
 
-    ALLOWED_HOSTS = ['api.tanfdata.acf.hhs.gov', 'tdp-backend-prod.app.cloud.gov']
+    ALLOWED_HOSTS = ['api-tanfdata.acf.hhs.gov', 'tdp-backend-prod.app.cloud.gov']
     CSP_DEFAULT_SRC = ("'self'", "*.cloud.gov",  "*.acf.hhs.gov")
     CSP_CONNECT_SRC = ("'self'", "*.cloud.gov", "*.acf.hhs.gov")
     CRSF_COOKIE_SECURE = True
