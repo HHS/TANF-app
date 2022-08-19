@@ -772,11 +772,11 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
       - deploy-production:
           requires:
             - deploy-infrastructure-production
           filters:
             branches:
               only:
-                - master
+                - main
