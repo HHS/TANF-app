@@ -348,7 +348,6 @@ class Common(Configuration):
         'X-CSRFToken'
     )
 
-
     ####################################
     # Authentication Provider Settings #
     ####################################

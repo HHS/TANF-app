@@ -5,6 +5,7 @@ import os
 
 from tdpservice.settings.common import Common
 
+
 def get_json_env_var(variable_name):
     """Retrieve and serialize a JSON environment variable."""
     return json.loads(
@@ -145,27 +146,8 @@ class Staging(CloudGov):
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
 
+    # TODO: Add production ACF domain when known
     ALLOWED_HOSTS = ['api-tanfdata.acf.hhs.gov', 'tdp-backend-prod.app.cloud.gov']
-    CSP_DEFAULT_SRC = ("'self'", "*.cloud.gov",  "*.acf.hhs.gov")
-    CSP_CONNECT_SRC = ("'self'", "*.cloud.gov", "*.acf.hhs.gov")
-    CRSF_COOKIE_SECURE = True
-    CRSF_COOKIE_SAMESITE = 'None'
-    CRSF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
-    CRSF_COOKIE_DOMAIN = ['.acf.hhs.gov', 'app.cloud.gov']
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_SAMESITE = 'None'
-    SESSION_COOKIE_DOMAIN = ['.acf.hhs.gov', 'app.cloud.gov']
-    SESSION_COOKIE_PATH = "/;HttpOnly"
-    CORS_ALLOW_HEADERS = (
-       'x-requested-with',
-       'content-type',
-       'accept',
-       'origin',
-       'authorization',
-       'X-CSRFToken'
-    )
-
-    MIDDLEWARE = ('tdpservice.middleware.SessionMiddleware', *Common.MIDDLEWARE)
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
         'OIDC_RP_CLIENT_ID',
