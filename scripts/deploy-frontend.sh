@@ -26,8 +26,8 @@ update_frontend()
         echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
         echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
 
-        cf set-env "$CGAPPNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGAPPNAME_FRONTEND.app.cloud.gov"
-        cf set-env "$CGAPPNAME_FRONTEND" CONNECT_SRC '*.app.cloud.gov'
+        cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.app.cloud.gov"
+        cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.app.cloud.gov'
     fi
 
     echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
