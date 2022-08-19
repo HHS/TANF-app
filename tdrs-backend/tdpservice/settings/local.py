@@ -46,7 +46,7 @@ class Local(Common):
 
     # SFTP TEST KEY
     """
-    To be able to fit the PRIVATE KEY in one line as environment variable, we replace the EOL 
+    To be able to fit the PRIVATE KEY in one line as environment variable, we replace the EOL
     with an underscore char.
     The next line replaces the _ with EOL before using the PRIVATE KEY
     """
