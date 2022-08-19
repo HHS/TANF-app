@@ -169,5 +169,5 @@ class User(AbstractUser):
 
     @property
     def is_deactivated(self):
-        """Returns True if the user's account has been set to status 'Deactivated'"""
+        """Check if the user's account status has been set to 'Deactivated'."""
         return self.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED

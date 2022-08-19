@@ -40,7 +40,7 @@ def test_set_profile_data(api_client, user):
 
 @pytest.mark.django_db
 def test_user_can_request_access(api_client, user, stt):
-    """Test `access_request` endpoint updates the `account_approval_status` field to `Access Request`"""
+    """Test `access_request` endpoint updates the `account_approval_status` field to `Access Request`."""
     api_client.login(username=user.username, password="test_password")
 
     response = api_client.patch(
@@ -64,7 +64,7 @@ def test_user_can_request_access(api_client, user, stt):
 
 @pytest.mark.django_db
 def test_cannot_set_account_approval_status_through_api(api_client, user):
-    """Test that the `account_approval_status` field cannot be updated through an api call to `set_profile`"""
+    """Test that the `account_approval_status` field cannot be updated through an api call to `set_profile`."""
     api_client.login(username=user.username, password="test_password")
     response = api_client.patch(
         "/v1/users/set_profile/",
