@@ -399,12 +399,17 @@ class Common(Configuration):
         ''
     )
 
-    # sftp config
+    # ------- SFTP CONFIG
     ACFTITAN_SERVER_ADDRESS = os.getenv('ACFTITAN_HOST', '')
+    """
+    To be able to fit the PRIVATE KEY in one line as environment variable, we replace the EOL 
+    with an underscore char.
+    The next line replaces the _ with EOL before using the PRIVATE KEY
+    """
     ACFTITAN_LOCAL_KEY = os.getenv('ACFTITAN_KEY', '').replace('_', '\n')
     ACFTITAN_USERNAME = os.getenv('ACFTITAN_USERNAME', '')
 
-    # CELERY CONFIG
+    # -------- CELERY CONFIG
     REDIS_URI = os.getenv(
         'REDIS_URI',
         'redis://redis-server:6379'
