@@ -62,11 +62,13 @@ set_cf_envs()
   for var_name in ${var_list[@]}; do
     # Intentionally not setting variable if empty
     if [[ -z "${!var_name}" ]]; then
-        echo "WARNING: Empty value for $var_name"
+        echo "WARNING: Empty value for $var_name. It will now be unset."
+        cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+        $cf_cmd
         continue
     fi
 
-    if [[ "$var_name" =~ "PROD_" ]]; then
+    if [[ "$var_name" =~ "PROD_" ]] && [[ "$CF_SPACE" = "tanf-prod" ]]; then
         prod_var_name=$(echo $var_name | sed -e 's/PROD_//g')
         cf_cmd="cf set-env $CGAPPNAME_BACKEND $prod_var_name ${!var_name}"
     else
