@@ -744,14 +744,14 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
               only:
-                - master
+                - main
       - deploy-infrastructure-develop:
           filters:
             branches:
