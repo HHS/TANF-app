@@ -15,8 +15,9 @@ class NoCacheMiddleware(object):
         add_never_cache_headers(response)
         return response
 
+
 class SessionMiddleware(SessionMiddleware):
-    """Patches the existing session middleware to guarantee the correct CRSF settings for prod."""
+    """Patches the existing session middle ware to garentee the correct settings."""
 
     def process_response(self, request, response):
         """Augment the behavior of SessionMiddleware to ensure CSRF cookies are correct."""
