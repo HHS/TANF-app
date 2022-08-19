@@ -4,14 +4,17 @@ import { Navigate } from 'react-router-dom'
 
 import loginLogo from '../../assets/login-gov-logo.svg'
 import Button from '../Button'
+import {
+  accountIsInReview,
+  accountIsMissingAccessRequest,
+} from '../../selectors/auth'
 
 function Profile() {
   const user = useSelector((state) => state.auth.user)
-  const hasRoles = user?.roles.length > 0
   // Most higher-env users will only have a single role, so just grab the first one.
   const primaryRole = user?.roles[0]
-  const missingAccessRequest = !Boolean(user?.access_request)
-  const isAccessRequestPending = Boolean(user?.access_request) && !hasRoles
+  const missingAccessRequest = useSelector(accountIsMissingAccessRequest)
+  const isAccessRequestPending = useSelector(accountIsInReview)
 
   const isAMSUser = user?.email?.includes('@acf.hhs.gov')
 

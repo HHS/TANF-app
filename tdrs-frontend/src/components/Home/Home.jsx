@@ -7,6 +7,10 @@ import signOut from '../../utils/signOut'
 import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
 import { requestAccess } from '../../actions/requestAccess'
+import {
+  accountStatusIsApproved,
+  accountIsInReview,
+} from '../../selectors/auth'
 
 /**
  * Home renders the Request Access form for creating a profile, and displays
@@ -30,7 +34,8 @@ function Home() {
 
   const sttList = useSelector((state) => state?.stts?.sttList)
 
-  const userAccessRequestApproved = Boolean(user?.['access_request'])
+  const userAccessInReview = useSelector(accountIsInReview)
+  const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
   const shouldShowSttComboBox = !user?.email?.includes('@acf.hhs.gov')
 
@@ -113,7 +118,22 @@ function Home() {
     return setTimeout(() => errorRef.current.focus(), 0)
   }
 
-  if (!userAccessRequestApproved) {
+  if (userAccessInReview) {
+    return (
+      <div className="margin-top-5">
+        <div className="margin-top-5">
+          <p className="margin-top-1 margin-bottom-4" id="page-alert">
+            Your request for access is currently being reviewed by an OFA Admin.
+            We'll send you an email when it's been approved.
+          </p>
+        </div>
+        <Button type="button" onClick={signOut}>
+          <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
+          Sign Out
+        </Button>
+      </div>
+    )
+  } else if (!userAccessRequestApproved) {
     return (
       <div className="margin-top-5">
         <p className="margin-top-1 margin-bottom-4">
@@ -168,23 +188,6 @@ function Home() {
             Request Access
           </Button>
         </form>
-      </div>
-    )
-  }
-
-  if (userAccessRequestApproved && !hasRole) {
-    return (
-      <div className="margin-top-5">
-        <div className="margin-top-5">
-          <p className="margin-top-1 margin-bottom-4" id="page-alert">
-            Your request for access is currently being reviewed by an OFA Admin.
-            We'll send you an email when it's been approved.
-          </p>
-        </div>
-        <Button type="button" onClick={signOut}>
-          <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
-          Sign Out
-        </Button>
       </div>
     )
   }

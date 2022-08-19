@@ -15,7 +15,8 @@ const initialState = {
     user: {
       email: 'hi@bye.com',
       roles: [],
-      access_request: false,
+      access_request: false, // !! buncha uses throughout
+      account_approval_status: 'Initial',
     },
   },
   stts: {
@@ -54,7 +55,8 @@ describe('Home', () => {
         user: {
           email: 'hi@bye.com',
           roles: [],
-          access_request: true,
+          access_request: false,
+          account_approval_status: 'Access request',
         },
       },
     })
@@ -78,7 +80,8 @@ describe('Home', () => {
         user: {
           email: 'hi@bye.com',
           roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
-          access_request: true,
+          access_request: false,
+          account_approval_status: 'Approved',
         },
       },
     })
@@ -103,7 +106,8 @@ describe('Home', () => {
         user: {
           email: 'hi@bye.com',
           roles: [{ id: 2, name: 'Data Analyst', permission: [] }],
-          access_request: true,
+          access_request: false,
+          account_approval_status: 'Approved',
         },
       },
     })
@@ -126,7 +130,8 @@ describe('Home', () => {
       auth: {
         authenticated: true,
         user: {
-          access_request: true,
+          access_request: false,
+          account_approval_status: 'Approved',
           email: 'hi@bye.com',
           roles: [
             {
@@ -624,7 +629,8 @@ describe('Pre-approval Home page', () => {
       auth: {
         ...initialState.auth,
         user: {
-          access_request: true,
+          account_approval_status: 'Pending',
+          access_request: false,
           stt: {
             id: 6,
             type: 'state',
