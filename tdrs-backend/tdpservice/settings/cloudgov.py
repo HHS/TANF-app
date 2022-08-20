@@ -154,3 +154,4 @@ class Production(CloudGov):
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
     )
     ENABLE_DEVELOPER_GROUP = False
+    MIDDLEWARE = ('tdpservice.middleware.SessionMiddleware', *Common.MIDDLEWARE)
