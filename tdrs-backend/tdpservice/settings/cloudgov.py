@@ -154,4 +154,8 @@ class Production(CloudGov):
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
     )
     ENABLE_DEVELOPER_GROUP = False
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_DOMAIN = '.acf.hhs.gov'
+    SESSION_COOKIE_PATH = "/;HttpOnly"
     MIDDLEWARE = ('tdpservice.middleware.SessionMiddleware', *Common.MIDDLEWARE)
