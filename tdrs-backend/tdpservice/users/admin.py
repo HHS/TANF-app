@@ -33,17 +33,19 @@ class UserForm(forms.ModelForm):
             'Developer': 'stt'
         }
 
-        correct_location_type = role_location_type_map.get(group.name)
-        location_based_role = group.name in ('OFA Regional Staff', 'Data Analyst', 'Developer')
+        if group is not None:
+            correct_location_type = role_location_type_map.get(group.name)
+            location_based_role = group.name in ('OFA Regional Staff', 'Data Analyst', 'Developer')
 
-        if (location_based_role and (location_type and location_type.name != correct_location_type)):
+            if (location_based_role and (location_type and location_type.name != correct_location_type)):
 
-            raise ValidationError("Incorrect location type for role")
+                raise ValidationError("Incorrect location type for role")
 
-        if not location_based_role and cleaned_data['location_type']:
+            if not location_based_role and cleaned_data['location_type']:
 
-            raise ValidationError(
-                "Users other than Regional Staff and data analysts do not get assigned a location")
+                raise ValidationError(
+                    "Users other than Regional Staff and data analysts do not get assigned a location")
+
         return cleaned_data
 
 
