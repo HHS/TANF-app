@@ -123,7 +123,6 @@ function Header() {
               {authenticated && (
                 <>
                   <NavItem pathname={pathname} tabTitle="Home" href="/home" />
-                  {/* potential issue here with assigning a group to an account with a pending status. */}
                   {canViewDataFiles && (
                     <NavItem
                       pathname={pathname}
