@@ -127,7 +127,7 @@ class Development(CloudGov):
     # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
     ALLOWED_HOSTS = ['.app.cloud.gov']
     AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-dev-clamav-rest.apps.internal:9000')
-    MIDDLEWARE = (*Common.MIDDLEWARE, 'django.contrib.sessions.middleware.SessionMiddleware')
+    MIDDLEWARE = ('django.contrib.sessions.middleware.SessionMiddleware', *Common.MIDDLEWARE)
 
 
 class Staging(CloudGov):
@@ -141,7 +141,7 @@ class Staging(CloudGov):
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging'
     )
     AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-staging-clamav-rest.apps.internal:9000')
-    MIDDLEWARE = (*Common.MIDDLEWARE, 'django.contrib.sessions.middleware.SessionMiddleware')
+    MIDDLEWARE = ('django.contrib.sessions.middleware.SessionMiddleware', *Common.MIDDLEWARE)
 
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
@@ -158,4 +158,4 @@ class Production(CloudGov):
     SESSION_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_DOMAIN = '.acf.hhs.gov'
     SESSION_COOKIE_PATH = "/;HttpOnly"
-    MIDDLEWARE = (*Common.MIDDLEWARE, 'tdpservice.middleware.SessionMiddleware')
+    MIDDLEWARE = ('tdpservice.middleware.SessionMiddleware', *Common.MIDDLEWARE)
