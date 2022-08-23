@@ -408,6 +408,7 @@ class Common(Configuration):
     """
     ACFTITAN_LOCAL_KEY = os.getenv('ACFTITAN_KEY', '').replace('_', '\n')
     ACFTITAN_USERNAME = os.getenv('ACFTITAN_USERNAME', '')
+    ACFTITAN_DIECTORY = os.getenv('ACFTITAN_DIECTORY', '')
 
     # -------- CELERY CONFIG
     REDIS_URI = os.getenv(
