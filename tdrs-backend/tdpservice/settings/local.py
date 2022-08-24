@@ -22,8 +22,6 @@ class Local(Common):
     # NOTE: Defaults to True when this settings module is in use
     USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "yes")))
 
-    AV_SCAN_URL = 'http://localhost:9000/scan'
-
     if USE_LOCALSTACK:
         # To get s3 signed URLs to work with localstack we must pass in
         # dummy credentials of `test` per the docs
