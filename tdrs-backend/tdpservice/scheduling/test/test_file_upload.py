@@ -5,7 +5,7 @@ from datetime import datetime
 import pytest
 from paramiko import Transport
 from paramiko.sftp_client import SFTPClient
-from tdpservice.scheduling.tasks import upload
+from tdpservice.scheduling.sftp_task import upload
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.stts.models import STT
 from django.conf import settings
