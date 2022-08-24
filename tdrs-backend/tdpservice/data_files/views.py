@@ -17,7 +17,7 @@ from rest_framework import status
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
-from tdpservice.scheduling import tasks
+from tdpservice.scheduling import sftp_task
 
 
 class DataFileFilter(filters.FilterSet):
@@ -57,7 +57,7 @@ class DataFileViewSet(ModelViewSet):
 
         # Upload to ACF-TITAN only if file is passed the virus scan and created
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
-            tasks.upload.delay(
+            sftp_task.upload.delay(
                 data_file_pk=response.data.get('id'),
                 server_address=settings.ACFTITAN_SERVER_ADDRESS,
                 local_key=settings.ACFTITAN_LOCAL_KEY,

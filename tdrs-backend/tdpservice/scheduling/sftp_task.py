@@ -15,14 +15,6 @@ from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 logger = logging.getLogger(__name__)
 
 
-def write_key_to_file(private_key):
-    """Paramiko require the key in file object format."""
-    with open('temp_key_file', 'w') as f:
-        f.write(private_key)
-        f.close()
-    return 'temp_key_file'
-
-
 @shared_task
 def upload(data_file_pk,
            server_address=settings.ACFTITAN_SERVER_ADDRESS,
@@ -44,6 +36,13 @@ def upload(data_file_pk,
         file_name=data_file.create_filename(),
     )
 
+    def write_key_to_file(private_key):
+        """Paramiko require the key in file object format."""
+        with open('temp_key_file', 'w') as f:
+            f.write(private_key)
+            f.close()
+        return 'temp_key_file'
+
     def create_dir(directory_name, sftp_server):
         """Code snippet to create directory in SFTP server."""
         try:
@@ -60,11 +59,11 @@ def upload(data_file_pk,
         lower_directory_name = today_date.strftime(str(data_file.year) + '-' + str(data_file.quarter))
 
         # Paramiko need local file
-        f = data_file.file.read()
+        paramiko_local_file = data_file.file.read()
         with open(destination, 'wb') as f1:
-            f1.write(f)
+            f1.write(paramiko_local_file)
             file_transfer_record.file_size = f1.tell()
-            file_transfer_record.file_shasum = hashlib.sha256(f).hexdigest()
+            file_transfer_record.file_shasum = hashlib.sha256(paramiko_local_file).hexdigest()
             f1.close()
 
         # Paramiko SSH connection requires private key as file
