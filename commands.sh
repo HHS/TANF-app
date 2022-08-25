@@ -156,7 +156,7 @@ tdrs-run-backend-owasp() {
                    "PATH=$PATH:/home/zap/.local/bin &&
                pip install wait-for-it &&
                wait-for-it --service http://web:8080 \
-                           --timeout 60 \
+                           --timeout 120 \
                            -- echo \"Django is ready\""
     cd ..
     ./scripts/zap-scanner.sh backend circle
