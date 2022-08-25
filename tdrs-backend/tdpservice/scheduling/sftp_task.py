@@ -87,7 +87,7 @@ def upload(data_file_pk,
         # Create remote directory
         create_dir(upper_directory_name, sftp_server=sftp)
         create_dir(lower_directory_name, sftp_server=sftp)
-        create_dir(settings.ACFTITAN_DIECTORY, sftp_server=sftp)
+        create_dir(settings.ACFTITAN_DIRECTORY, sftp_server=sftp)
 
         # Put the file in SFTP server
         sftp.put(destination, destination)
