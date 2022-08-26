@@ -27,7 +27,7 @@ EXPOSE 80
 # ---
 # Stage 1: Create a production build
 FROM localdev AS build
-RUN npm run build:development
+RUN npm run build
 
 # ---
 # Stage 2: Serve over nginx
