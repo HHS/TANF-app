@@ -22,7 +22,7 @@ def stt_instance(region):
         name="first",
         region=region,
         code="AR",
-        stt_codee=1234,
+        stt_code=1234,
     )
     return stt
 
