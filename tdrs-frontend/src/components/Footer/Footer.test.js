@@ -13,4 +13,14 @@ describe('Footer', () => {
     const { getByText } = render(<Footer />)
     expect(getByText('Privacy policy')).toBeInTheDocument()
   })
+  it('renders the vulnerability disclosure policy link', () => {
+    const { getByText } = render(<Footer />)
+    expect(getByText('Vulnerability Disclosure Policy')).toBeInTheDocument()
+    expect(
+      getByText('Vulnerability Disclosure Policy').closest('a')
+    ).toHaveAttribute(
+      'href',
+      'https://www.hhs.gov/vulnerability-disclosure-policy/index.html'
+    )
+  })
 })
