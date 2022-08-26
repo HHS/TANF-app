@@ -443,7 +443,6 @@ jobs:
       - run-owasp-scan:
           environment: circle
           target: backend
-          target_env: staging
 
   make_erd:
     executor: machine-executor
@@ -480,7 +479,6 @@ jobs:
       - run-owasp-scan:
           environment: circle
           target: frontend
-          target_env: staging
 
   nightly-owasp-scan:
     executor: machine-executor
