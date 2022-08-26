@@ -4,7 +4,7 @@ set -e
 
 echo "REDIS_SERVER"
 echo $REDIS_SERVER_LOCAL
-if [[ "$REDIS_SERVER_LOCAL" = "TRUE" ]]; then
+if [[ "$REDIS_SERVER_LOCAL" = "TRUE" || "$CIRCLE_JOB" = "backend-owasp-scan" ]]; then
     echo "Run redis server on docker"
 else
     echo "Run redis server locally"
