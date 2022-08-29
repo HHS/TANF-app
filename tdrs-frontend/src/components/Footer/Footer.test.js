@@ -48,7 +48,7 @@ describe('Footer', () => {
   })
 
   it('renders the vulnerability disclosure policy link', () => {
-      const {getByText} = render(<Footer/>)
+    const {getByText} = render(<Footer/>)
     expect(getByText('Vulnerability Disclosure Policy')).toBeInTheDocument()
     expect(
         getByText('Vulnerability Disclosure Policy').closest('a')
