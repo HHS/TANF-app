@@ -496,6 +496,10 @@ jobs:
       target_env:
         type: enum
         enum: [ "staging", "develop", "prod" ]
+      project_slug:
+        type: enum
+        enum: [ "raft-tech/TANF-app", "HHS/TANF-app" ]
+        default: "raft-tech/TANF-app"
     steps:
       - checkout
       - sudo-check
@@ -526,6 +530,7 @@ jobs:
               --frontend-pass-count ${ZAP_FRONTEND_PASS_COUNT:-0}
               --frontend-warn-count ${ZAP_FRONTEND_WARN_COUNT:-0}
               --frontend-fail-count ${ZAP_FRONTEND_FAIL_COUNT:-0}
+              --project-slug <<parameters.project_slug>>
             )
             # Evaluate the full command before passing it in so it doesn't
             # get improperly interpolated by Cloud.gov.
@@ -696,12 +701,14 @@ workflows:
                 - develop
       - nightly-owasp-scan:
           target_env: staging
+          project_slug: HHS/TANF-app
           filters:
             branches:
               only:
                 - main
       - nightly-owasp-scan:
           target_env: prod
+          project_slug: HHS/TANF-app
           cf_password: CF_PASSWORD_PROD
           cf_username: CF_USERNAME_PROD
           cf_space: tanf-prod
