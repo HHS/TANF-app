@@ -39,6 +39,7 @@ class CloudGov(Common):
 
     cloudgov_space = cloudgov_app.get('space_name', 'tanf-dev')
     cloudgov_space_suffix = cloudgov_space.strip('tanf-')
+    AV_SCAN_URL = f'http://tanf-{cloudgov_space_suffix}-clamav-rest.apps.internal:9000/scan'
     cloudgov_name = cloudgov_app.get('name').split("-")[-1]  # converting "tdp-backend-name" to just "name"
     services_basename = cloudgov_name if (
         cloudgov_name == "develop" and cloudgov_space_suffix == "staging"
@@ -125,7 +126,6 @@ class Development(CloudGov):
 
     # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
     ALLOWED_HOSTS = ['.app.cloud.gov']
-    AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-dev-clamav-rest.apps.internal:9000')
 
 
 class Staging(CloudGov):
@@ -137,17 +137,15 @@ class Staging(CloudGov):
         'OIDC_RP_CLIENT_ID',
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-proto-staging'
     )
-    AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-staging-clamav-rest.apps.internal:9000')
 
 class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
 
     # TODO: Add production ACF domain when known
-    ALLOWED_HOSTS = ['api.tanfdata.acf.hhs.gov']
+    ALLOWED_HOSTS = ['api-tanfdata.acf.hhs.gov', 'tdp-backend-prod.app.cloud.gov']
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
         'OIDC_RP_CLIENT_ID',
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
     )
-    AV_SCAN_URL = os.getenv('AV_SCAN_URL', 'http://tanf-prod-clamav-rest.apps.internal:9000')
     ENABLE_DEVELOPER_GROUP = False
