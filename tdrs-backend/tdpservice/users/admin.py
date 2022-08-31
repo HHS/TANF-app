@@ -33,6 +33,10 @@ class UserForm(forms.ModelForm):
             'Developer': 'stt'
         }
 
+        # allow saving the user without a group type
+        # updating a user's account approval status without assigning a group used to throw an error
+        # a group assignment can give the user access to some frontend features regardless of `account_approval_status`
+        # users in `Pending` status should not have a group assigned
         if group is not None:
             correct_location_type = role_location_type_map.get(group.name)
             location_based_role = group.name in ('OFA Regional Staff', 'Data Analyst', 'Developer')
