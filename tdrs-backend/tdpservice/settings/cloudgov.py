@@ -131,6 +131,7 @@ class Development(CloudGov):
 class Staging(CloudGov):
     """Settings for applications deployed in the Cloud.gov staging space."""
 
+    # TODO: why not just 'appcloudgov'?
     ALLOWED_HOSTS = ['tdp-backend-staging.app.cloud.gov', 'tdp-backend-develop.app.cloud.gov']
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
@@ -149,3 +150,8 @@ class Production(CloudGov):
         'urn:gov:gsa:openidconnect.profiles:sp:sso:hhs:tanf-prod'
     )
     ENABLE_DEVELOPER_GROUP = False
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_DOMAIN = '.acf.hhs.gov'
+    SESSION_COOKIE_PATH = "/;HttpOnly"
+    MIDDLEWARE = ('tdpservice.middleware.SessionMiddleware', *Common.MIDDLEWARE)

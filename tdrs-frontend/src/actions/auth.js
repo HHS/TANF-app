@@ -54,9 +54,7 @@ export const fetchAuth = () => async (dispatch) => {
 
       // Work around for csrf cookie issue we encountered in production.
       axiosInstance.defaults.headers.common['X-CSRFToken'] = csrf
-      axiosInstance.defaults.headers.common['Cookie'] = `csrftoken=${csrf}`
-      axiosInstance.defaults.headers['X-XSRF-Token'] = csrf
-      axiosInstance.defaults.headers['XSRF-Token'] = csrf
+
       dispatch({ type: SET_AUTH, payload: { user } })
     } else {
       dispatch({ type: CLEAR_AUTH })
