@@ -71,6 +71,7 @@ commands:
             nvm alias default v16.13
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+
   run-owasp-scan:
     description: Runs OWASP ZAP scanner and stores resulting artifacts.
     parameters:
