@@ -56,6 +56,7 @@ See [Architecture Decision Record 005 - Application Authentication](./docs/Techn
 [Cloud.gov](https://cloud.gov/) is being used as the cloud environment. This platform-as-a-service (PaaS) removes almost all of the infrastructure monitoring and maintenance from the system, is already procured for OFA, and has a FedRAMP Joint Authorization Board Provisional Authority to Operate (JAB P-ATO) on file. 
 
 See [Architecture Decision Record 003 - Application Hosting](./docs/Technical-Documentation/Architecture-Decision-Record/003-Application-hosting.md) - for more details.
+
 ### **CI/CD Pipelines with CircleCI**
 
 #### Continuous Integration (CI)
