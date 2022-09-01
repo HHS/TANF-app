@@ -252,7 +252,6 @@ class Common(Configuration):
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
     SESSION_TIMEOUT = 30
-
     # The CSRF token Cookie holds no security benefits when confined to HttpOnly.
     # Setting this to false to allow the frontend to include it in the header
     # of API POST calls to prevent false negative authorization errors.
@@ -260,7 +259,6 @@ class Common(Configuration):
     CSRF_COOKIE_HTTPONLY = False
     CSRF_TRUSTED_ORIGINS = ['.app.cloud.gov', '.acf.hhs.gov']
 
-    SESSION_COOKIE_PATH = "/;HttpOnly"
 
     # Django Rest Framework
     REST_FRAMEWORK = {
@@ -335,6 +333,7 @@ class Common(Configuration):
     CSP_FRAME_ANCESTORS = ("'none'")
     CSP_FORM_ACTION = ("'self'")
     CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
+
 
     ####################################
     # Authentication Provider Settings #
