@@ -72,11 +72,8 @@ function Profile() {
               className="sign-in-button"
               type="button"
               id="loginDotGovSignIn"
-              onClick={(event) => {
-                event.preventDefault()
-                window.location.href =
-                  'https://idp.int.identitysandbox.gov/account'
-              }}
+              target={'_self'}
+              href={`${process.env.REACT_APP_LOGIN_GOV_URL}`}
             >
               <div className="mobile:margin-x-auto mobile-lg:margin-0">
                 Manage Your Account at{' '}

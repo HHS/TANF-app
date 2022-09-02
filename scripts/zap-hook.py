@@ -19,14 +19,14 @@ def zap_started(zap, target):
 
     # The `target` argument will contain the URL passed to the ZAP scripts, we
     # can use this to determine the appropriate rules to ignore.
-    if 'web' in target or 'backend' in target:
+    if 'web' in target or 'backend' in target or 'https://api-tanfdata.acf.hhs.gov' in target:
         ignored_passive_scan_ids = [
             10036,  # Server Leaks Version Information
             10055,  # CSP unsafe inline
             10096,  # Informational: Timestamp Disclosure - Unix,
         ]
 
-    if 'frontend' in target:
+    if 'frontend' in target or 'https://tanfdata.acf.hhs.gov' in target:
         ignored_passive_scan_ids = [
             10020,  # X-Frame-Option Header Not Set
             10021,  # X-Content-Type-Options Header Missing

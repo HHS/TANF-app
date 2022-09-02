@@ -1,7 +1,8 @@
 import React from 'react'
 import thunk from 'redux-thunk'
+import { mount } from 'enzyme'
 import { Provider } from 'react-redux'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 
 import Profile from './Profile'
 import configureStore from 'redux-mock-store'
@@ -126,16 +127,17 @@ describe('Profile', () => {
       },
     })
 
-    render(
+    const url = 'https://idp.int.identitysandbox.gov/account'
+
+    const wrapper = mount(
       <Provider store={store}>
         <Profile />
       </Provider>
     )
 
-    fireEvent.click(screen.getByText('Manage Your Account at'))
-    expect(window.location.href).toBe(
-      'https://idp.int.identitysandbox.gov/account'
-    )
+    const link = wrapper.find('#loginDotGovSignIn').getElement().props['href']
+
+    expect(link).toEqual(url)
   })
 
   it("should display user's info during the pending approval state", () => {
