@@ -33,7 +33,7 @@ def upload(data_file_pk,
     file_transfer_record = LegacyFileTransfer(
         data_file=data_file,
         uploaded_by=data_file.user,
-        file_name=data_file.create_filename(),
+        file_name=data_file.filename(),
     )
 
     def write_key_to_file(private_key):
