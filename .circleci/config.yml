@@ -497,6 +497,7 @@ jobs:
         type: enum
         enum: [ "staging", "develop", "prod" ]
       project-slug:
+        type: string
         default: echo << pipeline.project.git_url >> | sed 's/https:\/\/github.com\///g'
     steps:
       - checkout
