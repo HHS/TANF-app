@@ -496,10 +496,8 @@ jobs:
       target_env:
         type: enum
         enum: [ "staging", "develop", "prod" ]
-      project_slug:
-        type: enum
-        enum: [ "raft-tech/TANF-app", "HHS/TANF-app" ]
-        default: "raft-tech/TANF-app"
+      project-slug:
+        default: echo << pipeline.project.git_url >> | sed 's/https:\/\/github.com\///g'
     steps:
       - checkout
       - sudo-check
@@ -701,14 +699,12 @@ workflows:
                 - develop
       - nightly-owasp-scan:
           target_env: staging
-          project_slug: HHS/TANF-app
           filters:
             branches:
               only:
                 - main
       - nightly-owasp-scan:
           target_env: prod
-          project_slug: HHS/TANF-app
           cf_password: CF_PASSWORD_PROD
           cf_username: CF_USERNAME_PROD
           cf_space: tanf-prod
