@@ -33,7 +33,7 @@ def upload(data_file_pk,
     file_transfer_record = LegacyFileTransfer(
         data_file=data_file,
         uploaded_by=data_file.user,
-        file_name=data_file.filename(),
+        file_name=data_file.filename,
     )
 
     def write_key_to_file(private_key):
@@ -53,7 +53,7 @@ def upload(data_file_pk,
 
     try:
         # Create directory names for ACF titan
-        destination = str(data_file.create_filename())
+        destination = str(data_file.filename)
         today_date = datetime.datetime.today()
         upper_directory_name = today_date.strftime('%Y%m%d')
         lower_directory_name = today_date.strftime(str(data_file.year) + '-' + str(data_file.quarter))

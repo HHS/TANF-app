@@ -23,14 +23,19 @@ def stt_instance(region):
         region=region,
         code="AR",
         stt_code=1234,
+        filenames={
+            'Aggregate Data': 'ADS.E2J.NDM3.TS22',
+            'Active Case Data': 'test',
+            'Closed Case Data': 'ADS.E2J.NDM2.TS22'}
     )
     return stt
 
 @pytest.fixture
-def data_file_instance():
+def data_file_instance(stt_instance):
     """Prepare data file fixture instance for testing datafile."""
     return DataFileFactory.create(
         created_at=datetime.now(),
+        stt = stt_instance
     )
 
 
@@ -83,4 +88,4 @@ def test_new_data_file(sftpserver, data_file_instance, sftp_connection_values, s
                                                    '-' +
                                                    str(data_file_instance.quarter))
         assert sftpclient.listdir(upper_directory_name+'/'+lower_directory_name)[0] == \
-               data_file_instance.create_filename()
+               data_file_instance.filename
