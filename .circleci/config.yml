@@ -496,9 +496,6 @@ jobs:
       target_env:
         type: enum
         enum: [ "staging", "develop", "prod" ]
-      project-slug:
-        type: string
-        default: echo << pipeline.project.git_url >> | sed 's/https:\/\/github.com\///g'
     steps:
       - checkout
       - sudo-check
@@ -529,7 +526,7 @@ jobs:
               --frontend-pass-count ${ZAP_FRONTEND_PASS_COUNT:-0}
               --frontend-warn-count ${ZAP_FRONTEND_WARN_COUNT:-0}
               --frontend-fail-count ${ZAP_FRONTEND_FAIL_COUNT:-0}
-              --project-slug <<parameters.project_slug>>
+              --project-slug echo << pipeline.project.git_url >> | sed 's/https:\/\/github.com\///g'
             )
             # Evaluate the full command before passing it in so it doesn't
             # get improperly interpolated by Cloud.gov.
