@@ -35,7 +35,7 @@ def data_file_instance(stt_instance):
     """Prepare data file fixture instance for testing datafile."""
     return DataFileFactory.create(
         created_at=datetime.now(),
-        stt = stt_instance
+        stt=stt_instance
     )
 
 
