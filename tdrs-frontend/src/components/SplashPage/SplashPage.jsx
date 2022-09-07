@@ -166,7 +166,7 @@ function SplashPage() {
                       type="button"
                       class="usa-button"
                       id="viewKnowledgeCenterButton"
-                      url="http://tdp-project-updates.app.cloud.gov/knowledge-center/"
+                      href="http://tdp-project-updates.app.cloud.gov/knowledge-center/"
                     >
                       View Knowledge Center
                     </Button>
@@ -191,7 +191,7 @@ function SplashPage() {
                       type="button"
                       class="usa-button"
                       id="viewLayoutsButton"
-                      url="https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits"
+                      href="https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits"
                     >
                       View Layouts & Edits
                     </Button>
@@ -216,7 +216,7 @@ function SplashPage() {
                       type="button"
                       class="usa-button"
                       id="viewTribalCodingInstructions"
-                      url="https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions"
+                      href="https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions"
                     >
                       View Tribal TANF Coding Instructions
                     </Button>
@@ -242,7 +242,7 @@ function SplashPage() {
                       type="button"
                       class="usa-button"
                       id="viewACFFormInstructions"
-                      url="https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_reports_tan_ssp_instructions_definitions.pdf"
+                      href="https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_reports_tan_ssp_instructions_definitions.pdf"
                     >
                       View ACF Form Instructions
                     </Button>

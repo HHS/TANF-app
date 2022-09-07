@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor, screen } from '@testing-library/react'
+import { render, fireEvent, waitFor } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
@@ -97,7 +97,7 @@ describe('Reports', () => {
     const yearNum = fiscalYear - 2021 + 1
 
     const select = getByLabelText('Fiscal Year (October - September)')
-    screen.debug(select)
+
     expect(select).toBeInTheDocument()
 
     const options = select.children
