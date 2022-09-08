@@ -149,9 +149,12 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
-        return self.stt.filenames.get(
-            self.section if self.stt.type == 'state' else 'Tribal ' + self.section,
-            self.create_filename())
+        # TODO: This is interim logic, it has to be changed when all sections are available to requester
+        if self.stt.type == 'tribe':
+            return self.stt.filenames.get('Tribal ' if 'Tribal' not in self.section else '' + self.section,
+                                          self.create_filename())
+        else:
+            return self.stt.filenames.get(self.section, self.create_filename())
 
     def create_filename(self, prefix='ADS.E2J'):
         """Return a valid file name for sftp transfer."""

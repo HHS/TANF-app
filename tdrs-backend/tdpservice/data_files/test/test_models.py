@@ -81,4 +81,7 @@ def test_data_files_filename_is_expected(user):
                 "user": user,
                 "stt": stt
             })
-            assert new_data_file.filename == stt.filenames[section]
+            if stt.type == 'tribe':
+                assert new_data_file.filename == stt.filenames['Tribal ' if 'Tribal' not in section else '' + section]
+            else:
+                assert new_data_file.filename == stt.filenames[section]
