@@ -54,7 +54,7 @@ describe('Footer', () => {
         <Footer />
       </Provider>
     )
-    expect(getByText('Privacy policy')).toBeInTheDocument()
+    expect(getByText('Privacy Policy')).toBeInTheDocument()
   })
 
   it('renders the vulnerability disclosure policy link as an unauthenticated user', () => {
