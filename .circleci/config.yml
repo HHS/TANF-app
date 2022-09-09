@@ -516,12 +516,8 @@ jobs:
       - run:
           name: Run post-processing task to record OWASP ZAP results
           command: |
-            # The project slug is used to identify the project that CircleCI is runing for.
-            # It is found here by taking the git url and removing the prefix.
-            # For example:
-            #   https://github.com/raft-tech/TANF-app -> raft-tech/TANF-app
-            #   https://github.com/HHS/TANF-app -> HHS/TANF-app
-            PROJECT_SLUG=$(echo << pipeline.project.git_url >> | sed 's/https:\/\/github.com\///g')
+            # Construct the project slug from the current branch name and user
+            PROJECT_SLUG=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
 
             # These environment variables are exported to Circle CI's BASH_ENV
             # by the zap-scanner.sh script for each respective app target.
