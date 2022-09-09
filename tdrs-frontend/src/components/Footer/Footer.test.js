@@ -44,7 +44,7 @@ describe('Footer', () => {
         <Footer />
       </Provider>
     )
-    expect(getByText('Privacy policy')).toBeInTheDocument()
+    expect(getByText('Privacy Policy')).toBeInTheDocument()
   })
 
   it('renders the privacy policy link as an authenticated user', () => {
