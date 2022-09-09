@@ -5,23 +5,22 @@ set -o pipefail
 
 TARGET=$1
 ENVIRONMENT=$2
+TARGET_ENV=$3
 
 TARGET_DIR="$(pwd)/tdrs-$TARGET"
 CONFIG_FILE="zap.conf"
 REPORT_NAME=owasp_report.html
 
+
 if [ "$ENVIRONMENT" = "nightly" ]; then
-    APP_URL="https://tdp-$TARGET-staging.app.cloud.gov/"
-elif [ "$ENVIRONMENT" = "circle" ]; then
-    if [ "$TARGET" = "frontend" ]; then
-        APP_URL="http://tdp-frontend/"
-    elif [ "$TARGET" = "backend" ]; then
-        APP_URL="http://web:8080/"
-    else
-        echo "Invalid target $TARGET"
-        exit 1
+    APP_URL="https://tdp-$TARGET-$TARGET_ENV.app.cloud.gov/"
+    if [ "$TARGET_ENV" = "prod" ]; then
+        APP_URL="https://api-tanfdata.acf.hhs.gov/"
+        if [ "$TARGET" = "frontend" ]; then
+            APP_URL="https://tanfdata.acf.hhs.gov/"
+        fi
     fi
-elif [ "$ENVIRONMENT" = "local" ]; then
+elif [ "$ENVIRONMENT" = "circle" ] || [ "$ENVIRONMENT" = "local" ]; then
     if [ "$TARGET" = "frontend" ]; then
         APP_URL="http://tdp-frontend/"
     elif [ "$TARGET" = "backend" ]; then

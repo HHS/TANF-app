@@ -120,6 +120,7 @@ function Home() {
           Please enter your information to request access from an OFA
           administrator
         </p>
+        <p>Fields marked with an asterisk (*) are required.</p>
         <form className="usa-form" onSubmit={handleSubmit}>
           <div
             className={`usa-error-message ${
