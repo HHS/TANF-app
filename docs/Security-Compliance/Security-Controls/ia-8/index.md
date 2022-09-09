@@ -4,6 +4,6 @@
 The information system uniquely identifies and authenticates non-organizational users (or processes acting on behalf of non-organizational users).
 
 ### TDP Implementation
-a. Authentication is inherited from login.gov
+a. Authentication is inherited from login.gov (for non-ACF users) or ACF AMS (for ACF users)
 
 #### Related Files

@@ -12,11 +12,11 @@ AC-7(b) [locks the account/node for thirty minutes]
 
 ### TDP Implementation
 
-	a. This is inherited from login.gov  
+	a. This control is inherited from login.gov for non-ACF users and from ACF AMS for ACF users. 
 
 	
 #### Related Files
-a. Evidence of login attempts
+a. Evidence of login attempts via login.gov 
 	1. 12:02![12-02-01](https://user-images.githubusercontent.com/77121362/112881489-5b383500-9091-11eb-96fc-841241ab2c29.png)
 	2. 12:03![12-03-15](https://user-images.githubusercontent.com/77121362/112881526-668b6080-9091-11eb-9e6d-5ee040a80918.png)
 	3. 12:04![12-04-33](https://user-images.githubusercontent.com/77121362/112881542-6d19d800-9091-11eb-94e2-7c0102a2c5de.png)
