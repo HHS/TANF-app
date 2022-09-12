@@ -99,7 +99,7 @@ describe('SplashPage', () => {
       </Provider>
     )
     const link = wrapper.find('#viewTribalCodingInstructions').getElement()
-      .props['url']
+      .props['href']
 
     expect(link).toEqual(url)
   })
@@ -123,7 +123,7 @@ describe('SplashPage', () => {
     )
 
     const link = wrapper.find('#viewKnowledgeCenterButton').getElement().props[
-      'url'
+      'href'
     ]
 
     expect(link).toEqual(url)
@@ -146,7 +146,7 @@ describe('SplashPage', () => {
         <SplashPage />
       </Provider>
     )
-    const link = wrapper.find('#viewLayoutsButton').getElement().props['url']
+    const link = wrapper.find('#viewLayoutsButton').getElement().props['href']
     expect(link).toEqual(url)
   })
 
@@ -155,12 +155,6 @@ describe('SplashPage', () => {
 
     const url =
       'https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_reports_tan_ssp_instructions_definitions.pdf'
-    global.window = Object.create(window)
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-      },
-    })
 
     const wrapper = mount(
       <Provider store={store}>
@@ -168,7 +162,7 @@ describe('SplashPage', () => {
       </Provider>
     )
     const link = wrapper.find('#viewACFFormInstructions').getElement().props[
-      'url'
+      'href'
     ]
     expect(link).toEqual(url)
   })
