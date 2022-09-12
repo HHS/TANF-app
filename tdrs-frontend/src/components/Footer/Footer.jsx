@@ -19,7 +19,7 @@ function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Privacy policy
+                    Privacy Policy
                   </a>
                 </li>
                 {authenticated ? (
@@ -34,6 +34,18 @@ function Footer() {
                     </a>
                   </li>
                 ) : null}
+              </ul>
+              <ul className="grid-row">
+                <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                  <a
+                    className="usa-footer__primary-link"
+                    href="https://www.hhs.gov/vulnerability-disclosure-policy/index.html"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Vulnerability Disclosure Policy
+                  </a>
+                </li>
               </ul>
             </nav>
           </div>

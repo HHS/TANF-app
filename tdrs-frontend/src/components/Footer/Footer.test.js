@@ -44,7 +44,7 @@ describe('Footer', () => {
         <Footer />
       </Provider>
     )
-    expect(getByText('Privacy policy')).toBeInTheDocument()
+    expect(getByText('Privacy Policy')).toBeInTheDocument()
   })
 
   it('renders the privacy policy link as an authenticated user', () => {
@@ -54,7 +54,33 @@ describe('Footer', () => {
         <Footer />
       </Provider>
     )
-    expect(getByText('Privacy policy')).toBeInTheDocument()
+    expect(getByText('Privacy Policy')).toBeInTheDocument()
+  })
+
+  it('renders the vulnerability disclosure policy link as an unauthenticated user', () => {
+    const store = mockStore(unauthenticatedInitialState)
+    const { getByText } = render(
+      <Provider store={store}>
+        <Footer />
+      </Provider>
+    )
+    expect(getByText('Vulnerability Disclosure Policy')).toBeInTheDocument()
+    expect(
+      getByText('Vulnerability Disclosure Policy').closest('a')
+    ).toHaveAttribute(
+      'href',
+      'https://www.hhs.gov/vulnerability-disclosure-policy/index.html'
+    )
+  })
+
+  it('renders the vulnerability disclosure policy link as an authenticated user', () => {
+    const store = mockStore(basicAuthenticatedInitialState)
+    const { getByText } = render(
+      <Provider store={store}>
+        <Footer />
+      </Provider>
+    )
+    expect(getByText('Vulnerability Disclosure Policy')).toBeInTheDocument()
   })
 
   it('renders the site map link if a user is authenticated', () => {

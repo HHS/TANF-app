@@ -12,6 +12,11 @@ const SiteMap = ({ user }) => (
       link="https://www.acf.hhs.gov/privacy-policy"
       target="_blank"
     />
+    <SiteMap.Link
+      text="Vulnerability Disclosure Policy"
+      link="https://www.hhs.gov/vulnerability-disclosure-policy/index.html"
+      target="_blank"
+    />
     {userAccessRequestApproved(user) && (
       <SiteMap.Link text="Data Files" link="/data-files" />
     )}

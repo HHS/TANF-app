@@ -105,7 +105,12 @@ describe('SiteMap', () => {
 
     const { getByText } = render(<SiteMap user={user}></SiteMap>)
 
-    const locations = ['Home', 'Privacy Policy', 'Profile']
+    const locations = [
+      'Home',
+      'Privacy Policy',
+      'Vulnerability Disclosure Policy',
+      'Profile',
+    ]
     for (let location of locations) {
       expect(getByText(location)).toBeInTheDocument()
     }
