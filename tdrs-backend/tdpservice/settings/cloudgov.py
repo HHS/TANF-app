@@ -155,3 +155,6 @@ class Production(CloudGov):
     SESSION_COOKIE_DOMAIN = '.acf.hhs.gov'
     SESSION_COOKIE_PATH = "/;HttpOnly"
     MIDDLEWARE = ('tdpservice.middleware.SessionMiddleware', *Common.MIDDLEWARE)
+
+    # Email Server
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

@@ -84,7 +84,7 @@ class Common(Configuration):
     BASE_URL = os.getenv('BASE_URL', 'http://localhost:8080/v1')
     FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL', 'http://localhost:3000')
 
-    # Email Server
+    # Email Server only production uses a real email server, this is set in cloudgov.py
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
     # Whether to use localstack in place of a live AWS S3 environment
