@@ -66,7 +66,6 @@ class DataFileViewSet(ModelViewSet):
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
-        
         if send_email('test', 'test', ['csmart@goraft.tech']):
             print('======================= email sent =======================')
 

@@ -1,6 +1,5 @@
 from django.core.mail import send_mail, send_mass_mail
 from celery import shared_task
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 import logging
@@ -19,10 +18,12 @@ def send_email(subject: str, message: str, recipient_list: list) -> bool:
         recipient_list=valid_emails,
         fail_silently=False,
     )
+    print(response)
     return True
 
 @shared_task
 def send_mass_email(subject: str, message: str, sender: str, recipient_list: list):
+    """Send an email to a list of recipients. Uses send_mass_mail."""
     send_mass_mail(
         subject,
         message,
