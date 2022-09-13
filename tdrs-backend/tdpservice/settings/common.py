@@ -86,7 +86,8 @@ class Common(Configuration):
 
     # Email Server
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
+    EMAIL_HOST = 'smtp.ees.hhs.gov'
+    
     # Whether to use localstack in place of a live AWS S3 environment
     USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "no")))
 
