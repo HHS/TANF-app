@@ -151,7 +151,7 @@ class DataFile(FileRecord):
         """Return the correct filename for this data file."""
         # TODO: This is interim logic, it has to be changed when all sections are available to requester
         if str(self.stt.type).lower() == 'tribe':
-            return self.stt.filenames.get('Tribal ' if 'Tribal' not in self.section else '' + self.section,
+            return self.stt.filenames.get(('Tribal ' if 'Tribal' not in self.section else '') + self.section,
                                           self.create_filename())
         else:
             return self.stt.filenames.get(self.section, self.create_filename())
