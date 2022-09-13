@@ -134,7 +134,7 @@ function Reports() {
 
     for (let i = fiscalYear; i >= 2021; i--) {
       const option = (
-        <option data-testid={i} value={i}>
+        <option key={i} data-testid={i} value={i}>
           {i}
         </option>
       )
