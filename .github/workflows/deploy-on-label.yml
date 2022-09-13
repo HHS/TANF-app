@@ -58,11 +58,6 @@ jobs:
         STATE=${{ fromJson(steps.get-pr-checks.outputs.data).state }}
         echo "::set-output name=STATE::$STATE"
         echo "Current PR state: $STATE"
-    - name: Set success on QASP label since it is broken
-      if: ${{ github.event.label.name == 'QASP Review' }}
-      run: |
-        STATE="success"
-        echo "::set-output name=STATE::success"
     - name: Circle CI Deployment Trigger
       id: curl-circle-ci
       if: steps.get-pr-state.outputs.STATE == 'success'
