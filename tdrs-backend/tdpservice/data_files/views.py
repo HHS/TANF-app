@@ -14,10 +14,13 @@ from rest_framework.decorators import action
 from wsgiref.util import FileWrapper
 from rest_framework import status
 
+
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import sftp_task
+from tdpservice.email.email import mail
+from tdpservice.email.email_enums import EmailType
 
 
 class DataFileFilter(filters.FilterSet):
@@ -64,6 +67,8 @@ class DataFileViewSet(ModelViewSet):
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
+            mail(email_type=EmailType.DATA_SUBMITTED, recipient_email='csmart@goraft.tech', first_name='Cameron', group_permission='OFA Admin', stt_name='Graft', submission_date='2021-01-01')
+        
         return response
 
     def filter_queryset(self, queryset):
