@@ -39,7 +39,7 @@ def mail(email_type: EmailType,
         'fiscal_year': get_fiscal_year(date)
         }
     html_message = get_email_template(email_type, email_context)
-    print(html_message)
+    
     send_email(subject, html_message, [recipient_email])
 
 
@@ -84,7 +84,7 @@ def send_email(subject: str, message: str, recipient_list: list) -> bool:
     valid_emails = validate_emails(recipient_list)
 
     # error handling for emails that worked
-    send_mail(
+    response = send_mail(
         subject=subject,
         message=message,
         html_message=message,
@@ -92,6 +92,8 @@ def send_email(subject: str, message: str, recipient_list: list) -> bool:
         recipient_list=valid_emails,
         fail_silently=False,
     )
+
+    logger.info(f"Email sent with following response: {response}")
     return True
 
 @shared_task
