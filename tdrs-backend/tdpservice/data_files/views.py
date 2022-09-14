@@ -67,7 +67,7 @@ class DataFileViewSet(ModelViewSet):
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
-            mail(email_type=EmailType.DATA_SUBMITTED, recipient_email='csmart@goraft.tech', first_name='Cameron', group_permission='OFA Admin', stt_name='Graft', submission_date='2021-01-01')
+            mail(email_type=EmailType.DATA_SUBMITTED, context={'subject' : 'Data submitted', 'recipient_email' : 'csmart@goraft.tech', 'first_name' : 'Cameron' })
         
         return response
 

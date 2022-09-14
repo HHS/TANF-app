@@ -2,11 +2,12 @@ from enum import Enum
 
 
 class EmailType(Enum):
-    ACCESS_REQUEST_SUBMITTED = 'Access Request Submitted'
-    DATA_SUBMITTED = 'Data Submitted'
-    REQUEST_APPROVED = 'Request Approved'
-    REQUEST_DENIED = 'Request Denied'
-    INACTIVE_ACCOUNT_10_DAYS = 'Inactive Account (10 days)'
-    INACTIVE_ACCOUNT_3_DAYS = 'Inactive Account (3 days)'
-    INACTIVE_ACCOUNT_1_DAYS = 'Inactive Account (1 days)'
-    ACCOUNT_DEACTIVATED = 'Account is Deactivated'
+    """Email type enum."""
+    ACCESS_REQUEST_SUBMITTED = 'access-request-submitted'
+    DATA_SUBMITTED = 'data-submitted'
+    REQUEST_APPROVED = 'request-approved'
+    REQUEST_DENIED = 'request-denied'
+    INACTIVE_ACCOUNT_10_DAYS = 'inactive-account-10-days'
+    INACTIVE_ACCOUNT_3_DAYS = 'inactive-account-3-days'
+    INACTIVE_ACCOUNT_1_DAYS = 'inactive-account-1-days'
+    ACCOUNT_DEACTIVATED = 'account-deactivated'
