@@ -1,10 +1,9 @@
 """Send emails."""
 
-from django.core.mail import send_mail, send_mass_mail
+from django.core.mail import send_mail
 from celery import shared_task
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist
@@ -26,7 +25,7 @@ def get_email_template(email_type, context):
     return template.render(context)
 
 @shared_task
-def mail(email_type: EmailType, recipient_email:str, email_context: dict = None) -> None:
+def mail(email_type: EmailType, recipient_email: str, email_context: dict = None) -> None:
     """Send email to user."""
     subject = email_context['subject']
     html_message = get_email_template(email_type, email_context)
@@ -50,7 +49,7 @@ def send_email(subject: str, message: str, recipient_list: list) -> bool:
     if response == 0:
         logger.error('Email failed to send')
         return False
-    
+
     logger.info('Email sent successfully')
     return True
 

@@ -1,8 +1,10 @@
+"""Enum fot email types that map to email templates."""
 from enum import Enum
 
 
 class EmailType(Enum):
     """Email type enum."""
+
     ACCESS_REQUEST_SUBMITTED = 'access-request-submitted'
     DATA_SUBMITTED = 'data-submitted'
     REQUEST_APPROVED = 'request-approved'

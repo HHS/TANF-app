@@ -5,7 +5,13 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.template import TemplateDoesNotExist
 
-from tdpservice.email.email import send_email, validate_emails, validate_single_email, validate_sender_email, get_email_template
+from tdpservice.email.email import (
+    send_email,
+    validate_emails,
+    validate_single_email,
+    validate_sender_email,
+    get_email_template
+)
 
 class EmailTest(TestCase):
     """Email test class."""
@@ -68,7 +74,7 @@ class EmailTest(TestCase):
 
         with self.assertRaises(ValidationError):
             validate_sender_email(email)
-    
+
     def get_email_template_fails(self):
         """Test get email template failure. Expect a failure because the template does not exist."""
         email_type = "test"
