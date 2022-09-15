@@ -33,7 +33,8 @@ class EmailTest(TestCase):
         message = "This is a test email."
         recipient_list = ["test_user"]
 
-        self.assertEqual(send_email(subject, message, recipient_list), False)
+        with self.assertRaises(ValidationError):
+            send_email(subject, message, recipient_list)
         self.assertEqual(len(mail.outbox), 0)
 
     def test_validate_emails(self):
@@ -59,8 +60,7 @@ class EmailTest(TestCase):
         """Test validate single email raised ValidationError ."""
         email = "test_user"
 
-        with self.assertRaises(ValidationError):
-            validate_single_email(email)
+        self.assertEqual(validate_single_email(email), False)
 
     def test_validate_sender_email(self):
         """Test validate sender email."""
@@ -69,11 +69,10 @@ class EmailTest(TestCase):
         self.assertEqual(validate_sender_email(email), True)
 
     def test_validate_sender_email_fails(self):
-        """Test validate sender email raised ValidationError ."""
+        """Test validate sender email."""
         email = "test_user"
 
-        with self.assertRaises(ValidationError):
-            validate_sender_email(email)
+        self.assertEqual(validate_sender_email(email), False)
 
     def get_email_template_fails(self):
         """Test get email template failure. Expect a failure because the template does not exist."""

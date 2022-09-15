@@ -36,7 +36,6 @@ def send_email(subject: str, message: str, recipient_list: list) -> bool:
     """Send an email to a list of recipients."""
     valid_emails = validate_emails(recipient_list)
 
-    # error handling for emails that worked
     response = send_mail(
         subject=subject,
         message='This is a test message.',
