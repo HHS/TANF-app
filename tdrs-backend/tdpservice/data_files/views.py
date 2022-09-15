@@ -68,13 +68,13 @@ class DataFileViewSet(ModelViewSet):
                 port=22
             )
             mail(
-                EmailType.DATA_SUBMITTED,
-                request.user.email,
+                email_type=EmailType.DATA_SUBMITTED,
+                recipient_email='csmart@goraft.tech',
                 email_context={
-                    'first_name': request.user.first_name,
-                    'stt_name': request.user.stt.name,
-                    'submission_date': response.data.get('created_at'),
-                    'fiscal_year': response.data.get('year'),
+                    'first_name': 'foo-bar',
+                    'stt_name': 'foo-stt',
+                    'submission_date': 'foo-date',
+                    'fiscal_year': 'foo-year',
                 }
             )
         return response
