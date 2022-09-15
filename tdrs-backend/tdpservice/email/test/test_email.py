@@ -1,6 +1,5 @@
 """Django test case that tests the send_email function in the email.py file."""
 
-from cgitb import html
 from django.core import mail
 from django.test import TestCase
 from django.core.exceptions import ValidationError
