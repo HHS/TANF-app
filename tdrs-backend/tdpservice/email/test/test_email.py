@@ -23,8 +23,7 @@ class EmailTest(TestCase):
         html_message = "<DOCTYPE html><html><body><h1>This is a test email.</h1></body></html>"
         recipient_list = ["test_user@hhs.gov"]
 
-        # clear mail.outbox
-        mail.outbox = []
+        mail.outbox.clear()
 
         send_email(subject=subject, message=message, html_message=html_message, recipient_list=recipient_list)
 
@@ -38,8 +37,7 @@ class EmailTest(TestCase):
         html_message = "<DOCTYPE html><html><body><h1>This is a test email.</h1></body></html>"
         recipient_list = ["test_user"]
 
-        # clear mail.outbox
-        mail.outbox = []
+        mail.outbox.clear()
 
         with self.assertRaises(ValidationError):
             send_email(subject=subject, message=message, html_message=html_message, recipient_list=recipient_list)

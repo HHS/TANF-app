@@ -17,12 +17,13 @@ logger = logging.getLogger(__name__)
 @shared_task
 def construct_email(email_type, context):
     """Get email template."""
+    template_path = email_type.value + ".html"
     try:
-        template = get_template(email_type.value)
+        template = get_template(template_path)
     except TemplateDoesNotExist:
-        logger.error('Template does not exist')
+        logger.error(f'Template {template_path} does not exist')
         return
-    template += '.html'
+    
     return template.render(context)
 
 @shared_task
