@@ -70,10 +70,13 @@ class DataFileViewSet(ModelViewSet):
             mail(
                 EmailType.DATA_SUBMITTED,
                 request.user.email,
-                first_name=request.user.first_name,
-                stt_name=request.user.stt.name,
-                submission_date=response.data.get('created_at'),
-                file_name='2022')
+                email_context={
+                    'first_name': request.user.first_name,
+                    'stt_name': request.user.stt.name,
+                    'submission_date': response.data.get('created_at'),
+                    'fiscal_year': response.data.get('year'),
+                }
+            )
         return response
 
     def filter_queryset(self, queryset):
