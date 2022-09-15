@@ -195,6 +195,10 @@ function Home() {
 
   return (
     <div className="margin-top-5">
+      <p className="margin-top-1 margin-bottom-4">
+        You've been approved as a(n) {role.name}. You'll be able to do the
+        following in TDP:
+      </p>
       <ul>
         {role.permissions?.map((permission) => (
           <li key={permission.id} id={permission.id}>
