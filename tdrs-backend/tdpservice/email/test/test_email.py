@@ -1,5 +1,6 @@
 """Django test case that tests the send_email function in the email.py file."""
 
+from cgitb import html
 from django.core import mail
 from django.test import TestCase
 from django.core.exceptions import ValidationError
@@ -20,9 +21,10 @@ class EmailTest(TestCase):
         """Test email."""
         subject = "Test email"
         message = "This is a test email."
+        html_message = "<DOCTYPE html><html><body><h1>This is a test email.</h1></body></html>"
         recipient_list = ["test_user@hhs.gov"]
 
-        send_email(subject, message, recipient_list)
+        send_email(subject=subject, message=message, html_message=html_message, recipient_list=recipient_list)
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
@@ -31,10 +33,11 @@ class EmailTest(TestCase):
         """Test email failure. Expect a failure because the recipient email is invalid."""
         subject = "Test email"
         message = "This is a test email."
+        html_message = "<DOCTYPE html><html><body><h1>This is a test email.</h1></body></html>"
         recipient_list = ["test_user"]
 
         with self.assertRaises(ValidationError):
-            send_email(subject, message, recipient_list)
+            send_email(subject=subject, message=message, html_message=html_message, recipient_list=recipient_list)
         self.assertEqual(len(mail.outbox), 0)
 
     def test_validate_emails(self):

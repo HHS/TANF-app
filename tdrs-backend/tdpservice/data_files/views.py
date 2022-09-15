@@ -19,6 +19,8 @@ from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import sftp_task
+from tdpservice.email.email import mail
+from tdpservice.email.email_enums import EmailType
 
 
 class DataFileFilter(filters.FilterSet):
@@ -65,7 +67,13 @@ class DataFileViewSet(ModelViewSet):
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
-
+            mail(
+                EmailType.DATA_SUBMITTED,
+                request.user.email,
+                first_name=request.user.first_name,
+                stt_name=request.user.stt.name,
+                submission_date=response.data.get('created_at'),
+                file_name='2022')
         return response
 
     def filter_queryset(self, queryset):
