@@ -15,7 +15,8 @@ const initialState = {
       first_name: 'Bob',
       last_name: 'Belcher',
       roles: [],
-      access_request: true,
+      access_request: false,
+      account_approval_status: 'Access request',
       stt: {
         name: 'No one really knows',
         id: 999,
@@ -67,7 +68,8 @@ describe('Profile', () => {
         authenticated: true,
         user: {
           roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
-          access_request: true,
+          access_request: false,
+          account_approval_status: 'Approved',
         },
       },
     })
@@ -77,11 +79,20 @@ describe('Profile', () => {
         <Profile />
       </Provider>
     )
+
     expect(
       screen.queryByText(
         `Your request for access is currently being reviewed by an OFA Admin. We’ll send you an email when it’s been approved.`
       )
     ).not.toBeInTheDocument()
+
+    // above assertion still passes even when `account_approval_status` is `null` or `undefined`, though it *shouldn't*
+    // asserting that `mockLocation.href` is `example.com` and `mockLocation.replace` wasn't invoked
+    // shows that navigation away from the profile page has not happened
+    expect(window.location.href).toBe(mockLocation.href)
+    expect(mockLocation.replace).not.toHaveBeenCalled()
+    // funny part is this test doesn't fail because of the assertions, but because
+    // returning <Navigate> without a parent <Router> throws an exception
   })
 
   it('Should not display region for federal staff.', () => {
@@ -90,7 +101,8 @@ describe('Profile', () => {
         authenticated: true,
         user: {
           roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
-          access_request: true,
+          access_request: false,
+          account_approval_status: 'Approved',
         },
       },
     })
@@ -122,7 +134,8 @@ describe('Profile', () => {
         authenticated: true,
         user: {
           roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
-          access_request: true,
+          access_request: false,
+          account_approval_status: 'Approved',
         },
       },
     })

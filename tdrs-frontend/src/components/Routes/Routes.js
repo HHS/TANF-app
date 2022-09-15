@@ -8,6 +8,7 @@ import LoginCallback from '../LoginCallback'
 import Reports from '../Reports'
 import Home from '../Home'
 import { useSelector } from 'react-redux'
+import { accountIsInReview } from '../../selectors/auth'
 
 /**
  * This component renders the routes for the app.
@@ -15,15 +16,8 @@ import { useSelector } from 'react-redux'
  * does not matter.
  */
 const AppRoutes = () => {
-  const user = useSelector((state) => state.auth.user)
-  const role = user?.roles
-  const hasRole = Boolean(role?.length > 0)
-  const userAccessRequestApproved = Boolean(user?.['access_request'])
-
-  const homeTitle =
-    userAccessRequestApproved && !hasRole
-      ? 'Request Submitted'
-      : 'Welcome to TDP'
+  const userAccountInReview = useSelector(accountIsInReview)
+  const homeTitle = userAccountInReview ? 'Request Submitted' : 'Welcome to TDP'
 
   return (
     <Routes>
