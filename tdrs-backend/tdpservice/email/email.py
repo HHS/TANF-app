@@ -4,6 +4,7 @@ from django.core.mail import send_mail
 from celery import shared_task
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist
@@ -14,7 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 @shared_task
-def get_email_template(email_type, context):
+def construct_email(email_type, context):
     """Get email template."""
     try:
         template = get_template(email_type.value)
@@ -28,13 +29,20 @@ def get_email_template(email_type, context):
 def mail(email_type: EmailType, recipient_email: str, email_context: dict = None) -> None:
     """Send email to user."""
     subject = email_context['subject']
-    html_message = get_email_template(email_type, email_context)
-    send_email(subject, html_message, [recipient_email])
+    html_message = construct_email(email_type, email_context)
+    text_message = email_context['text_message']
+    send_email(subject, text_message, html_message, [recipient_email])
 
 @shared_task
-def send_email(subject: str, message: str, recipient_list: list) -> bool:
+def send_email(subject: str, message: str, html_message: str, recipient_list: list) -> bool:
     """Send an email to a list of recipients."""
     valid_emails = validate_emails(recipient_list)
+
+    # use EmailMultiAlternatives using the html_message and message
+
+    msg = EmailMultiAlternatives(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list)
+    msg.attach_alternative(html_message, "text/html")
+    msg.send()
 
     response = send_mail(
         subject=subject,

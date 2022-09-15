@@ -10,7 +10,7 @@ from tdpservice.email.email import (
     validate_emails,
     validate_single_email,
     validate_sender_email,
-    get_email_template
+    construct_email
 )
 
 class EmailTest(TestCase):
@@ -74,10 +74,10 @@ class EmailTest(TestCase):
 
         self.assertEqual(validate_sender_email(email), False)
 
-    def get_email_template_fails(self):
+    def construct_email_fails(self):
         """Test get email template failure. Expect a failure because the template does not exist."""
         email_type = "test"
         context = {}
 
         with self.assertRaises(TemplateDoesNotExist):
-            get_email_template(email_type, context)
+            construct_email(email_type, context)
