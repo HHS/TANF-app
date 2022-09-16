@@ -80,4 +80,6 @@ def validate_sender_email(email: str) -> bool:
         validate_email(email)
         return True
     except ValidationError as exc:
-        raise ValidationError(f"{email} is not a valid email address. Cannot send from this email. No emails will be sent.") from exc
+        raise ValidationError(
+            f"{email} is not a valid email address. Cannot send from this email. No emails will be sent."
+            ) from exc
