@@ -6,8 +6,11 @@ import Profile from '../Profile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 import Reports from '../Reports'
-import Home from '../Home'
 import { useSelector } from 'react-redux'
+
+import SiteMap from '../SiteMap'
+
+import Home from '../Home'
 
 /**
  * This component renders the routes for the app.
@@ -15,9 +18,12 @@ import { useSelector } from 'react-redux'
  * does not matter.
  */
 const AppRoutes = () => {
+  // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
+
   const role = user?.roles
   const hasRole = Boolean(role?.length > 0)
+
   const userAccessRequestApproved = Boolean(user?.['access_request'])
 
   const homeTitle =
@@ -44,6 +50,16 @@ const AppRoutes = () => {
         element={
           <PrivateRoute title="TANF Data Files">
             <Reports />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        exact
+        path="/site-map"
+        element={
+          <PrivateRoute title="Site Map">
+            <SiteMap user={user} />
           </PrivateRoute>
         }
       />
