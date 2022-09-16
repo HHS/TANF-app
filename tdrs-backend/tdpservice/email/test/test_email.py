@@ -78,7 +78,8 @@ class EmailTest(TestCase):
         """Test validate sender email."""
         email = "test_user"
 
-        self.assertEqual(validate_sender_email(email), False)
+        with self.assertRaises(ValidationError):
+            validate_sender_email(email)
 
     def construct_email_fails(self):
         """Test get email template failure. Expect a failure because the template does not exist."""
