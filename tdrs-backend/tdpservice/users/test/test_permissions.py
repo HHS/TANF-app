@@ -68,8 +68,25 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'users.view_user',
         'data_files.view_legacyfiletransfer',
         'data_files.add_legacyfiletransfer',
-        'data_files.change_legacyfiletransfer'
-
+        'data_files.change_legacyfiletransfer',
+        'django_celery_beat.add_clockedschedule',
+        'django_celery_beat.add_crontabschedule',
+        'django_celery_beat.add_intervalschedule',
+        'django_celery_beat.add_periodictask',
+        'django_celery_beat.add_periodictasks',
+        'django_celery_beat.add_solarschedule',
+        'django_celery_beat.change_clockedschedule',
+        'django_celery_beat.change_crontabschedule',
+        'django_celery_beat.change_intervalschedule',
+        'django_celery_beat.change_periodictask',
+        'django_celery_beat.change_periodictasks',
+        'django_celery_beat.change_solarschedule',
+        'django_celery_beat.view_clockedschedule',
+        'django_celery_beat.view_crontabschedule',
+        'django_celery_beat.view_intervalschedule',
+        'django_celery_beat.view_periodictask',
+        'django_celery_beat.view_periodictasks',
+        'django_celery_beat.view_solarschedule',
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions
