@@ -1,8 +1,8 @@
 """Check if user is authorized."""
-import logging
 
 from django.http import StreamingHttpResponse
 from django_filters import rest_framework as filters
+from django.conf import settings
 from drf_yasg.openapi import Parameter
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser
@@ -12,12 +12,12 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from wsgiref.util import FileWrapper
+from rest_framework import status
 
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
-
-logger = logging.getLogger()
+from tdpservice.scheduling import sftp_task
 
 
 class DataFileFilter(filters.FilterSet):
@@ -50,6 +50,21 @@ class DataFileViewSet(ModelViewSet):
     # is the one presented in the UI. Once we implement the above linked issue
     # we will be able to appropriately refer to the latest versions only.
     ordering = ['-version']
+
+    def create(self, request, *args, **kwargs):
+        """Override create to upload in case of successful scan."""
+        response = super().create(request, *args, **kwargs)
+
+        # Upload to ACF-TITAN only if file is passed the virus scan and created
+        if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
+            sftp_task.upload.delay(
+                data_file_pk=response.data.get('id'),
+                server_address=settings.ACFTITAN_SERVER_ADDRESS,
+                local_key=settings.ACFTITAN_LOCAL_KEY,
+                username=settings.ACFTITAN_USERNAME,
+                port=22
+            )
+        return response
 
     def filter_queryset(self, queryset):
         """Only apply filters to the list action."""

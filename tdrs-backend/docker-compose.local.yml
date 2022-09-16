@@ -22,6 +22,8 @@ services:
       - DATA_DIR=/tmp/localstack/data
       - AWS_BUCKET=tdp-datafiles-localstack
       - AWS_REGION_NAME=us-gov-west-1
+      - HOSTNAME=localstack
+      - HOSTNAME_EXTERNAL=localstack
     ports:
       - "4566:4566"
     volumes:
