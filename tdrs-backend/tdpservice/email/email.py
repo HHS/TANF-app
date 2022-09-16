@@ -19,11 +19,9 @@ def construct_email(email_type: EmailType, context: dict):
     template_path = email_type.value + ".html"
     try:
         template = get_template(template_path)
-    except TemplateDoesNotExist:
-        logger.error(f'Template {template_path} does not exist')
-        return
-
-    return template.render(context)
+        return template.render(context)
+    except TemplateDoesNotExist as exc:
+        raise TemplateDoesNotExist(f"Template {template_path} does not exist") from exc
 
 @shared_task
 def mail(email_type: EmailType, recipient_email: str, email_context: dict = None) -> None:
@@ -42,8 +40,6 @@ def mail(email_type: EmailType, recipient_email: str, email_context: dict = None
 def send_email(subject: str, message: str, html_message: str, recipient_list: list) -> bool:
     """Send an email to a list of recipients."""
     valid_emails = validate_emails(recipient_list)
-
-    # use EmailMultiAlternatives using the html_message and message
 
     msg = EmailMultiAlternatives(subject, message, settings.DEFAULT_FROM_EMAIL, valid_emails)
     msg.attach_alternative(html_message, "text/html")
@@ -83,6 +79,5 @@ def validate_sender_email(email: str) -> bool:
     try:
         validate_email(email)
         return True
-    except ValidationError:
-        logger.info(f"{email} is not a valid email address. Cannot send from this email. No emails will be sent.")
-        return False
+    except ValidationError as exc:
+        raise ValidationError(f"{email} is not a valid email address. Cannot send from this email. No emails will be sent.") from exc
