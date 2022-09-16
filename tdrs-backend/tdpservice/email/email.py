@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 @shared_task
-def construct_email(email_type, context):
+def construct_email(email_type: EmailType, context: dict):
     """Get email template."""
     template_path = email_type.value + ".html"
     try:
