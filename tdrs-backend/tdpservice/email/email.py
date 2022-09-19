@@ -8,20 +8,12 @@ from django.conf import settings
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist
 from tdpservice.email.email_enums import EmailType
+from time import sleep
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-@shared_task
-def construct_email(email_type: EmailType, context: dict):
-    """Get email template."""
-    template_path = email_type.value + ".html"
-    try:
-        template = get_template(template_path)
-        return template.render(context)
-    except TemplateDoesNotExist as exc:
-        raise TemplateDoesNotExist(f"Template {template_path} does not exist") from exc
 
 @shared_task
 def mail(email_type: EmailType, recipient_email: str, email_context: dict = None) -> None:
@@ -36,7 +28,16 @@ def mail(email_type: EmailType, recipient_email: str, email_context: dict = None
 
     send_email(subject, text_message, html_message, [recipient_email])
 
-@shared_task
+def construct_email(email_type: EmailType, context: dict):
+    """Get email template."""
+    sleep(10)
+    template_path = email_type.value + ".html"
+    try:
+        template = get_template(template_path)
+        return template.render(context)
+    except TemplateDoesNotExist as exc:
+        raise TemplateDoesNotExist(f"Template {template_path} does not exist") from exc
+
 def send_email(subject: str, message: str, html_message: str, recipient_list: list) -> bool:
     """Send an email to a list of recipients."""
     valid_emails = validate_emails(recipient_list)
@@ -52,7 +53,6 @@ def send_email(subject: str, message: str, html_message: str, recipient_list: li
     logger.info('Email sent successfully')
     return True
 
-@shared_task
 def validate_emails(emails: list) -> list:
     """Validate email addresses."""
     valid_emails = []
@@ -63,7 +63,6 @@ def validate_emails(emails: list) -> list:
         raise ValidationError("No valid emails provided.")
     return valid_emails
 
-@shared_task
 def validate_single_email(email: str) -> bool:
     """Validate email address."""
     try:
@@ -73,7 +72,6 @@ def validate_single_email(email: str) -> bool:
         logger.info(f"{email} is not a valid email address. An email will not be sent to this address.")
         return False
 
-@shared_task
 def validate_sender_email(email: str) -> bool:
     """Validate sender email address."""
     try:
