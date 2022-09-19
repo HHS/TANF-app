@@ -47,8 +47,8 @@ def send_email(subject: str, message: str, html_message: str, recipient_list: li
     response = msg.send()
 
     if response == 0:
-        logger.error('Email failed to send')
-        return False
+        raise Exception(f"Emails were attempted to the following email list: {valid_emails}. \
+        But none were sent. They may be invalid.")
 
     logger.info('Email sent successfully')
     return True
