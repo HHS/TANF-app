@@ -149,21 +149,7 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
-        # TODO: This is interim logic, it has to be changed when all sections are available to requester
-        if str(self.stt.type).lower() == 'tribe':
-            return self.stt.filenames.get(('Tribal ' if 'Tribal' not in self.section else '') + self.section,
-                                          self.create_filename())
-        else:
-            return self.stt.filenames.get(self.section, self.create_filename())
-
-    def create_filename(self, prefix='ADS.E2J'):
-        """Return a valid file name for sftp transfer."""
-        """TODO: This method has to be removed"""
-        # STT_TYPES = ["state", "territory", "tribe"]
-        SECTION = [i.value for i in list(self.Section)]
-
-        # str(STT_TYPES.index(self.stt.type)+1)
-        return ''.join(prefix+'.FTP'+str(SECTION.index(self.section))+'.TS' + str(self.stt.stt_code))
+        return self.stt.filenames.get(self.section, None)
 
     @classmethod
     def create_new_version(self, data):
