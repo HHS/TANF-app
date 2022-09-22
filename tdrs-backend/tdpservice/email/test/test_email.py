@@ -8,7 +8,6 @@ from django.template import TemplateDoesNotExist
 from tdpservice.email.email import (
     send_email,
     validate_emails,
-    validate_single_email,
     validate_sender_email,
     construct_email
 )
@@ -55,18 +54,6 @@ class EmailTest(TestCase):
 
         with self.assertRaises(ValidationError):
             validate_emails(emails)
-
-    def test_validate_single_email(self):
-        """Test validate single email."""
-        email = "test_user@hhs.gov"
-
-        self.assertEqual(validate_single_email(email), True)
-
-    def test_validate_single_email_fails(self):
-        """Test validate single email raised ValidationError ."""
-        email = "test_user"
-
-        self.assertEqual(validate_single_email(email), False)
 
     def test_validate_sender_email(self):
         """Test validate sender email."""
