@@ -29,12 +29,16 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def mail(email_path: str, recipient_email: str, email_context: dict = None) -> None:
-    """Send email to user.
+    """Send an automated email to a user.
 
-    Args:
-        email_path (str): Path to email template.
-        recipient_email (str): Email address of recipient.
-        email_context (dict): Context variables to be used in email template.
+    Parameters
+    ----------
+    email_path : str
+        Path to email template.
+    recipient_email : str
+        Email address of recipient.
+    email_context : dict, optional
+    Context variables to be used in email template, by default None.
     """
     subject = email_context["subject"]
     html_message = construct_email(email_path, email_context)
