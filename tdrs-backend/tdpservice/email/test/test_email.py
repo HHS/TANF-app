@@ -7,8 +7,7 @@ from django.template import TemplateDoesNotExist
 
 from tdpservice.email.email import (
     send_email,
-    validate_emails,
-    validate_sender_email,
+    filter_valid_emails,
     construct_email
 )
 
@@ -29,7 +28,7 @@ class EmailTest(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, subject)
 
-    def test_send_email_fails(self):
+    def test_send_email_fails_with_invalid_email(self):
         """Test email failure. Expect a failure because the recipient email is invalid."""
         subject = "Test email"
         message = "This is a test email."
@@ -42,33 +41,20 @@ class EmailTest(TestCase):
             send_email(subject=subject, message=message, html_message=html_message, recipient_list=recipient_list)
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_validate_emails(self):
+    def test_filter_valid_emails(self):
         """Test validate emails."""
         emails = ["test_user@hhs.gov", "foo", "bar"]
 
-        self.assertEqual(validate_emails(emails), ["test_user@hhs.gov"])
+        self.assertEqual(filter_valid_emails(emails), ["test_user@hhs.gov"])
 
-    def test_validate_emails_fails(self):
+    def test_filter_valid_emails_fails(self):
         """Test validate emails raised ValidationError ."""
         emails = ["foo", "bar"]
 
         with self.assertRaises(ValidationError):
-            validate_emails(emails)
+            filter_valid_emails(emails)
 
-    def test_validate_sender_email(self):
-        """Test validate sender email."""
-        email = "test_user@hhs.gov"
-
-        self.assertEqual(validate_sender_email(email), True)
-
-    def test_validate_sender_email_fails(self):
-        """Test validate sender email."""
-        email = "test_user"
-
-        with self.assertRaises(ValidationError):
-            validate_sender_email(email)
-
-    def construct_email_fails(self):
+    def construct_email_fails_with_no_template(self):
         """Test get email template failure. Expect a failure because the template does not exist."""
         email_type = "test"
         context = {}

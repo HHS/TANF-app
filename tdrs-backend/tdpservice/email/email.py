@@ -20,7 +20,6 @@ from django.core.validators import validate_email
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import get_template
-from django.template import TemplateDoesNotExist
 
 import logging
 
@@ -28,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task
-def mail(email_path: str, recipient_email: str, email_context: dict = None) -> None:
+def mail(email_path: str, recipient_email: str, email_context: dict = {}) -> None:
     """Send an automated email to a user.
 
     Parameters
@@ -52,39 +51,32 @@ def mail(email_path: str, recipient_email: str, email_context: dict = None) -> N
 
 def construct_email(email_path: str, context: dict):
     """Get email template."""
-    try:
-        template = get_template(email_path)
-        return template.render(context)
-    except TemplateDoesNotExist as exc:
-        raise TemplateDoesNotExist(f"Template {email_path} does not exist") from exc
+    template = get_template(email_path)
+    return template.render(context)
 
 
 def send_email(
     subject: str, message: str, html_message: str, recipient_list: list
 ) -> bool:
     """Send an email to a list of recipients."""
-    valid_emails = validate_emails(recipient_list)
-    if validate_sender_email(settings.EMAIL_HOST_USER):
-        email = EmailMultiAlternatives(
-            subject=subject,
-            body=message,
-            from_email=settings.EMAIL_HOST_USER,
-            to=valid_emails,
+    valid_emails = filter_valid_emails(recipient_list)
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=message,
+        from_email=settings.EMAIL_HOST_USER,
+        to=valid_emails,
+    )
+    email.attach_alternative(html_message, "text/html")
+    num_emails_sent = email.send()
+    if num_emails_sent == 0:
+        raise Exception(
+            f"Emails were attempted to the following email list: {valid_emails}. \
+        But none were sent. They may be invalid."
         )
-        email.attach_alternative(html_message, "text/html")
-        num_emails_sent = email.send()
-        if num_emails_sent == 0:
-            raise Exception(
-                f"Emails were attempted to the following email list: {valid_emails}. \
-            But none were sent. They may be invalid."
-            )
-        else:
-            logger.info("Email sent successfully")
-            return True
     return False
 
 
-def validate_emails(emails: list) -> list:
+def filter_valid_emails(emails: list) -> list:
     """Validate email addresses."""
     valid_emails = []
     for email in emails:
@@ -98,14 +90,3 @@ def validate_emails(emails: list) -> list:
     if len(valid_emails) == 0:
         raise ValidationError("No valid emails provided.")
     return valid_emails
-
-
-def validate_sender_email(email: str) -> bool:
-    """Validate sender email address."""
-    try:
-        validate_email(email)
-        return True
-    except ValidationError as exc:
-        raise ValidationError(
-            f"{email} is not a valid email address. Cannot send from this email. No emails will be sent."
-        ) from exc
