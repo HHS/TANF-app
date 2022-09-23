@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/uswds.css" />
     <link rel="icon" type="image/x-icon" href="img/favicons/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="js/uswds.min.js"></script>
 
   </head>
@@ -68,7 +68,11 @@
       </button>
       <ul class="usa-nav__primary usa-accordion">
         <li class="usa-nav__primary-item">
-          <a href="./index.html" class="usa-current" aria-current="page">
+          <a href="index.html" class="usa-current" aria-current="page">
+            <span>August 2022</span>
+          </a>
+        <li class="usa-nav__primary-item">
+          <a href="april-2022-update.html" class="usa-nav__link">
             <span>April 2022</span>
           </a>
         </li>
@@ -101,7 +105,10 @@
         <nav aria-label="Secondary navigation">
           <ul class="usa-sidenav">
             <li class="usa-sidenav__item">
-              <a href="./index.html" class="usa-current" aria-current="page">April 2022</a>
+              <a href="./index.html" class="usa-current" aria-current="page">August 2022</a>
+            </li>
+            <li class="usa-sidenav__item">
+              <a href="april-2022-update.html">April 2022</a>
             </li>
             <li class="usa-sidenav__item">
               <a href="January-2022-Update.html">January 2022</a>
@@ -120,194 +127,79 @@
         class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
         id="main-content"
       >
-        <h1>TDP Project Update - April 2022</h1>
 
-        <p class="usa-intro">
-        Since our last update focused on the results of our research around resubmission, we have been researching the navigation hierarchy of the new TANF Data Portal (TDP).
-        </p>
+      <h1 id="tdp-update-month">TDP Project Update - August 2022</h1>
 
-        <p>As you maybe aware, TDP is a web-based platform that will—in its first release—allow users to securely upload and download quarterly TANF files. Future releases will introduce a host of other functionality that enhances the data transmission experience for our users (e.g. revamped transmission and questionable case reports in TDP).</p>
-        <p>The way pages are organized in a website—its Information Architecture (IA)—is an important aspect of the user experience of any application or website; it’s something that can make the difference between a frustrating or enjoyable experience. Our research on this front has been aimed at ensuring that our users will be able to easily navigate TDP and find information that they need on it right from its earliest versions—as well as to make sure that as TDP grows more advanced in its functionality it doesn’t become more confusing to use.</p>
+      <p class="usa-intro">The TANF Data Portal Pilot kicked off earlier this month in time to handle the Fiscal Year 2022 Quarter 3 data submission for eleven  TANF grantees!</p>
 
-        <h2 id="how-the-test-was-set-up">How the test was set up</h2>
-        <p>There are two core methods used to test the IA of a website:</p>
-        <ul>
-          <li>Card sorting, where users group menu labels into headers that make sense to them.</li>
-          <li>Tree testing, where users are asked to find specific functions within a list of nested labels.</li>
-        </ul>
+      <h2 id="the-pilot-program">The Pilot Program</h2>
 
+      <p>The purpose of the pilot program was centered around core TDP functionality, the ability to:
+
+      - Create an account,
+      - Request and receive access to TDP, and
+      - Submit quarterly TANF transmission files inside the portal.
+
+      Testing these core functions with a small sample of grantees was aimed not only at ensuring these worked properly—with real data on a wide variety of computer setups—but to validate that <em>how</em> those functions work in TDP are intuitive and a strong foundation to build all future functionality on top of.</p>
 
 
-        <p>
-        To understand the usability and legibility of labels associated with current and future pages of the TDP platform we opted for a type of tree-testing. Using Google Forms, we created a survey that replicated the questions and answers of a typical tree-test and administered the first round to our users in the Office of Family Assistance (OFA). The second round was facilitated with a variety of TANF grantees.
-        </p>
-
-        <p>Through this current study, we wanted to understand whether different pages of the new TDP website are easily identifiable and reachable. In other words, we want to know if the navigation patterns of the new website made sense to user and supported their ability to quickly find what they’re looking for on the portal.</p>
-
-
-        <hr style="border: 2px solid #0050d8; margin-top: 40px;">
-
-        <h2 id="how-the-form-worked">How the form worked</h2>
-
-          <p>
-            Through a carefully prepared Google Form, we asked questions about where users could find something on the website and asked them to choose from a list of options. Each of these options represented a page or tab within a page on the portal. Each question had two parts. The first introduced a set of menu labels one tier above the intended answer in the page hierarchy (e.g., Sign up, Log in). The second introduced the sections of a page where the user could actually find information they were seeking (e.g. Profile information, Request Access to Portal).
-    </p>
-
-    <h2 id="who-participated">Who participated</h2>
+      <h3 id="who">Who participated in the Pilot</h3>
+      <p>We recruited grantees based primarily on the following criteria:</p>
+      <ul>
+      <li>Interest in participating in the pilot</li>
+      <li>Current reliance on email transmission (Tribes)</li>
+      <li>Recent submission of partial data</li>
+      <li>Not submitting SSP data</li>
+      </ul>
 
 
-      <p>Most participants correctly identified menu labels and successfully found relevant information by choosing options that led to destinations aligned with our existing plans for TDP’s Information Architecture.</p>
-      <p>One of the key metrics used to evaluate a tree-test is its success rate, which is the percentage of participants reaching the intended destination for a particular task. Devoid of any visual cues like search bars or hyperlinks, tree-tests by nature are stripped down to bare menu labels that users are asked to make sense of.</p>
-      <p>We derived the success rate by calculating the total number of participants who arrived at the correct answer to each question. Statistically, this meant calculating the number of correct answers for Part 2 of each question and dividing those by the total number of participants. Results were interpreted based on the importance and relevance of tasks based on essential TDP functionality for different types of users. For example, for an OFA user might need to navigate some of TDP’s administrative pages whereas an STT user will only need to navigate the more data-centric pages.</p>
-      <p>Below is a table that details the success rate for our study.</p>
+      <p>Aligned to those criteria we spoke to participants representing:</p>
 
-      <table class="usa-table usa-table--borderless">
-  <caption>
-Success Rates
-              </caption>
-  <thead>
-    <tr>
-      <th scope="col">Categories (OFA & STT)</th>
-      <th scope="col">Correct Path</th>
-      <th scope="col">Success Rate (25 Participants; 15 OFA, 10 STT)</th>
-      <th scope="col">Number of participants who arrived at Question Part 2</th>
-      <th scope="col">Visualized Pathway Results</th>
-
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">TANF Information</th>
+      <ul>
+      <li>5 Tribes (3 in moderated sessions)</li>
+      <li>6 States (3 in moderated sessions)</li>
+      </ul>
 
 
-              <td>Resources-> TANF Transmission File Layout	</td>
-              <td>68%</td>
-              <td>21</td>
-              <td><a href="https://user-images.githubusercontent.com/28515874/162357897-85a4c40c-430e-40ed-b80e-3de69cd3d8d0.jpg"><img src="https://user-images.githubusercontent.com/28515874/162357897-85a4c40c-430e-40ed-b80e-3de69cd3d8d0.jpg" alt="Path chart of Resources to TANF Transmission File Layout showing success rate of 68% with 'Privacy Policy', 'Log In', and 'TANF Program Information' as incorrect branches."></a></td>
+      <h3 id="how-it-went">Insights from the Pilot</h3>
+      <p>By all our measures the pilot was a success. Participants were able to access TDP and navigate the process of submitting their data—not to mention able to provide us with insights and feedback that will be instrumental in enhancing this and all future versions of TDP. While our top level findings focus on areas where we can improve TDP it's also worth mentioning that we received enthusiasticly positive feedback from participating grantees as well, a great sentiment to hear even in these early versions of TDP.</p>
+
+      <p>Below are some highlights from the full synthesis which can be found in the project repo.</p>
+
+      <h4 id="login-and-auth">Areas of the login and authentication experience may introduce friction for some grantees</h4>
+      <p>The TANF Data Portal utilizes Login.gov for account access. While our ability to change how it functions is limited, it does represent an important part of the TDP experience and should be considered as we expand access to TDP and continue to enhance the Knowledge Center. Identified areas where documentation might be enhanced include:</p>
+      <ul>
+          <li>Direction to check spam folders if confirmation emails don't show up</li>
+          <li>Direction to resend authentication codes if text messages don't promptly appear</li>
+          <li>Additional detail on how to configure various methods of 2 Factor Authentication</li>
+      </ul>
 
 
-    </tr>
-    <tr>
-      <th scope="row">Submission History</th>
+      <h4 id="terminology">Some terminology used to identify sections and certain UI elements lead to friction among some participants</h4>
+      <p>Moderated testing re-emphasized past findings that certain terms have different meanings to different grantees informed both by past experiences with the TANF program and software tools used to prepare TANF data. These differing meanings proved a surmountable obstacle during the pilot but was associated with some degree of friction or decreased confidence in what TDP was asking of them. These areas included:</p>
+      <ul>
+          <li>"Closed Cases" vs "Negative Cases" (an older term many grantees are familiar with from past documentation and TANF data tools</li>
+          <li>The option to upload statrum data was confusing for grantees who provide universe data</li>
+      </ul>
 
-      <td>Log in->Data files->Submission History</td>
-      <td>76%</td>
-      <td>19</td>
-      <td><a href="https://user-images.githubusercontent.com/28515874/162357902-9395dd35-0b2e-41ac-8181-d8195e52877b.jpg"><img src="https://user-images.githubusercontent.com/28515874/162357902-9395dd35-0b2e-41ac-8181-d8195e52877b.jpg" alt="Path Chart of Data Files to Submission History showing success rate of 76% with 'Profile' and 'Reports' as incorrect branches."></a></td>
+      <h4 id="resolution">Most participants used TDP at resolutions that obscured submission status from view</h4>
+      <p>
+          The majority of moderated participants weren't immediately able to see the status of their submission appear after submitting their files. This was a useful reminder of the resolutions most commonly used by grantees and the importance of affordances we should make sure to build in such as one that would scroll the interface to ensure any alerts that pop up are visible on-screen.
+      </p>
 
-    </tr>
-
-    <tr>
-      <th scope="row">Reports</th>
-
-      <td>Log in -> Reports -> Feedback Report</td>
-      <td>68%</td>
-      <td>20</td>
-      <td><a href="https://user-images.githubusercontent.com/28515874/162357898-1c6f606a-b3d5-476d-b141-1af5ec3dc9a1.jpg"><img src="https://user-images.githubusercontent.com/28515874/162357898-1c6f606a-b3d5-476d-b141-1af5ec3dc9a1.jpg" alt="Path Chart of Reports to Feedback Reports showing success rate of 68% with 'Admin', 'Data Files', 'Profile', 'WPR reports', and 'Transmission Reports' as incorrect branches."></a></td>
-
-    </tr>
-
-    <tr>
-      <th scope="row">Onboarding</th>
-
-      <td>Log in -> Help-> Tutorials</td>
-      <td>40%</td>
-      <td>13</td>
-      <td><a href="https://user-images.githubusercontent.com/28515874/162357904-abfa91aa-c92f-4f66-ac96-38358505a60c.jpg"><img src="https://user-images.githubusercontent.com/28515874/162357904-abfa91aa-c92f-4f66-ac96-38358505a60c.jpg" alt="Path Chart of Help to Tutorials showing success rate of 40% with 'Home', 'Data Files', 'Reports', 'Admin', and 'FAQs' as incorrect branches."></a></td>
-
-    </tr>
-
-    <tr>
-      <th scope="row">Data Dashboard</th>
-
-      <td>Log in -> Help-> Tutorials</td>
-      <td>76%</td>
-      <td>19</td>
-      <td><a href="https://user-images.githubusercontent.com/28515874/162357896-e3762c45-6c1b-430c-abf9-a9388f28506e.jpg"><img src="https://user-images.githubusercontent.com/28515874/162357896-e3762c45-6c1b-430c-abf9-a9388f28506e.jpg" alt="Path Chart of Analytics to Data Dashboard showing success rate of 76% with 'Reports', 'Data Files', and 'Profile' as incorrect branches."></a></td>
-
-    </tr>
-
-    <tr>
-      <th scope="row">OFA User Management</th>
-
-      <td>Log in->Admin Profile->Manage Users</td>
-      <td>87%</td>
-      <td>13</td>
-      <td><a href="https://user-images.githubusercontent.com/28515874/162357893-d89eaaf5-652c-4760-9da9-2eea9ae66179.jpg"><img src="https://user-images.githubusercontent.com/28515874/162357893-d89eaaf5-652c-4760-9da9-2eea9ae66179.jpg" alt="Path Chart of OFA User Management to Manage Users showing success rate of 86% with 'Help' and 'Home' as incorrect branches."></a></td>
-
-    </tr>
-
-    <tr>
-      <th scope="row">STT User Access</th>
-
-      <td>Log in->Home-> Request Access to Portal</td>
-      <td>20%</td>
-      <td>2</td>
-      <td><a href="https://user-images.githubusercontent.com/28515874/162357899-281539f8-f255-49b3-a555-567992975319.jpg"><img src="https://user-images.githubusercontent.com/28515874/162357899-281539f8-f255-49b3-a555-567992975319.jpg" alt="Path Chart of Homepage to Request Access showing success rate of 13% with 'Help', 'Admin', and 'Profile' as incorrect branches."></a></td>
-
-    </tr>
-
-    <tr>
-      <th scope="row">STT File Upload</th>
-
-      <td>Log In -> Data Files -> Upload File by Quarter</td>
-      <td>70%</td>
-      <td>8</td>
-      <td><a href="https://user-images.githubusercontent.com/28515874/162357905-d49801c0-da55-42c3-9264-ab3245612fd7.jpg"><img src="https://user-images.githubusercontent.com/28515874/162357905-d49801c0-da55-42c3-9264-ab3245612fd7.jpg" alt="Path Chart of Data Files to Upload Files showing success rate of 86% with 'Home', 'Reports', and 'Current Submission' as incorrect branches."></a></td>
-
-    </tr>
-
-  </tbody>
-</table>
-
-<p>The success rate is depicted in the table above along with other relevant choices for some questions. These choices are useful for further onboarding research and helping users familiarize with the platform.</p>
+      <a href="https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Summer%20-%20TDP%202.0%20Pilot%20Program.md" class="usa-button">
+<span style="color: white;">View Full Synthesis</span>      </a>
 
 
-        <h3 id="interpreting-results" style="margin-top: 100px;">Interpreting the results</h3>
+      <h2 id="knowledge-center">The TDP Knowledge Center</h2>
 
-            <p>The proposed hierarchy of pages and nested labels for TDP were found to work for both OFA and STT users. Many our users were able to correctly find TANF information, Manage Users and Access Submission History, Feedback Reports and Analytics according to this survey.</p>
-            <p>However, finding onboarding material like in-app tutorials proved confusing for many users, with only 40% of participants arriving at the correct choices.</p>
+      <p>In addition to TDP itself, we also launched a Knowledge Center in paralell to the pilot program—a resource documenting all things How-To-TDP; from creating an account to resubmitting data. You can access it right now at <a href="https://tdp-project-updates.app.cloud.gov/knowledge-center/">https://tdp-project-updates.app.cloud.gov/knowledge-center/</a>. As we move forward to build additional value into TDP we'll be keeping the Knowledge Center updated with release notes detailing all the new features being added and associated how-to articles.</p>
 
+      <h2 id="whats-next">What's Next</h2>
 
-        <h3 id="project-impact" style="margin-top: 100px;">Project impact</h3>
-            <p>A significant insight from the first phase of tree-testing is that the proposed Information Architecture is usable and navigable. However, to create a friction-free navigation experience, it is critical to address and control for incorrect pathways and gaps in success rates.</p>
-            <p>We map project impact by analyzing the level of risk associated with a user not arriving at an intended destination. In other words, if a user cannot perform critical functions within the app because of confusing navigation patterns, it might require changes to the TDP Sitemap, or to other designs.</p>
-          <a href="https://user-images.githubusercontent.com/28515874/162357900-98e07af2-95f0-4c96-84c6-a1bcba108739.jpg">
-            <img src="https://user-images.githubusercontent.com/28515874/162357900-98e07af2-95f0-4c96-84c6-a1bcba108739.jpg" alt="Graph with axes 'Non critical' to 'Critical' and 'Minimal Risk' to 'High Risk'. High risk:Critical contains STT User Access and Onboarding. Minimal Risk:Critical contains Submission History, Reports, Data Dashboard, and File Upload. Minimal Risk:Non Critical contains TANF Resources.">
-          </a>
-            <p>Risk Categories:</p>
-            <ul>
-              <li><strong>High Risk</strong> - Critical function, low success rate (less than 50%)</li>
-              <li><strong>Moderate Risk</strong> - Non-critical function, low success rate (less than 50%)</li>
-              <li><strong>Low Risk</strong> - Critical & non-critical function, medium success rate (between 50-80%)</li>
-              <li><strong>Minimal Risk</strong> - Critical & non-critical function, high success rate (greater than 80%)</li>
-            </ul>
+      <p>The way we've engineered TDP means that now we've launched it with its first users it's going to continue to be available to our current pilot group from here on out (excepting short instances of downtime now and then so that we can conduct system maintenance). We're also eager to begin expanding the size of that pilot group to allow more TANF programs to benefit from it and —as always—to line up opportunities for us to hear directly from them to continue channeling feedback into making TDP the best tool it can be!</p>
 
-
-
-
-
-
- <h2 id="conclusions">Conclusions and future research</h2>
-
-        <p>Our findings broadly indicate that the new TANF Data Portal (TDP) will have a usable and navigable structure with two areas of potential improvement—User Access and Onboarding.</p>
-        <p><strong>User Access</strong></p>
-        <p>Given elements of how logging into TDP will need to happen for security reasons, User Access is one of the less alterable areas of functionality. To ensure that sign-up and sign-in to TDP is a smooth experience we’re pursuing a step by step guide on Getting Started in TDP as one of the first materials prospective new users will receive for OFA.</p>
-        <p><strong>Onboarding</strong></p>
-        <p>The ‘Help’ label leading to Tutorials and FAQs is one of the areas with a low success rate. Though it is an area that can be addressed by onboarding, as a future page, its position in the hierarchy can be further explored and is a likely area for future research. Future research could also explore whether a different name for the page would be more successful.</p>
-
-        <hr style="border: 2px solid #0050d8; margin-top: 40px;">
-
-        <h2 id="office-hours">Reminder: We have office hours!</h2>
-
-        <p>
-          In addition to many upcoming structured and planned rounds of research we'd love to offer up some unstructured time to hear from you.
-          If you have questions about the project, feedback about elements of the current system you'd like to see TDP address, or have
-          anything else in mind, we'll be offering a number of time slots to hear it each month. If the available times don't work with your
-          schedule or you'd simply like to get it touch via email, please feel free to continue reaching out via <a href = "mailto: mreiter@goraft.tech">mreiter@goraft.tech</a>.
-        </p>
-
-                <a href="https://doodle.com/bp/milesreiter/tanf-data-portal-tdp-research-office-hours" class="usa-button"><span style="color: white;">Book Office Hours</span></a>
+      <p>If you're interested in gaining access to TDP in time to use it for the next quarterly data submission deadline this November we'd love to hear from you! Please reach out to <a href="mailto:mreiter@goraft.tech">mreiter@goraft.tech</a> to learn more or if the available slots fit your schedule you can book office hours below!</p>
 
 
       </main>
