@@ -1,4 +1,4 @@
-"""Enum fot email types that map to email templates."""
+"""Enum for email types that map to email templates."""
 from enum import Enum
 
 

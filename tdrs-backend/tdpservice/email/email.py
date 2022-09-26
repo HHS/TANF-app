@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task
-def mail(email_path: str, recipient_email: str, email_context: dict = {}) -> None:
+def mail(email_path, recipient_email, email_context):
     """Send an automated email to a user.
 
     Parameters
@@ -49,15 +49,13 @@ def mail(email_path: str, recipient_email: str, email_context: dict = {}) -> Non
     send_email(subject, text_message, html_message, [recipient_email])
 
 
-def construct_email(email_path: str, context: dict):
+def construct_email(email_path, context):
     """Get email template."""
     template = get_template(email_path)
     return template.render(context)
 
 
-def send_email(
-    subject: str, message: str, html_message: str, recipient_list: list
-) -> bool:
+def send_email(subject, message, html_message, recipient_list):
     """Send an email to a list of recipients."""
     valid_emails = filter_valid_emails(recipient_list)
     email = EmailMultiAlternatives(
@@ -76,7 +74,7 @@ def send_email(
     return False
 
 
-def filter_valid_emails(emails: list) -> list:
+def filter_valid_emails(emails):
     """Validate email addresses."""
     valid_emails = []
     for email in emails:

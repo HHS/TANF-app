@@ -686,7 +686,6 @@ workflows:
           requires:
             - deploy-infrastructure-dev
 
-
   nightly:
     jobs:
       - nightly-owasp-scan:
