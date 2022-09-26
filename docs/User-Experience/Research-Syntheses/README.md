@@ -7,7 +7,7 @@ The syntheses included herein are organized reverse-chronologically from newest 
 
 ### [2022, Summer - TDP 2.0 Pilot Program](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Summer%20-%20TDP%202.0%20Pilot%20Program.md)
 
-- Brought 11 grantees into a production version of TDP to use to submit their Q3 2022 data.
+- Invited 11 grantees into a production version of TDP to use to submit their Q3 2022 data.
 - Ran a series of research sessions to usability test 2.0 TDP functionality, gather feedback, and measure grantee sentiment toward launch functionality.
 
 ### [2021, Fall - Investigating Partial Submission & Evaluating TDP Submission History](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2021%2C%20Fall%20-%20Investigating%20Partial%20Submission%20%26%20Evaluating%20TDP%20Submission%20History.md)
