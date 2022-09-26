@@ -149,7 +149,12 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
-        return self.stt.filenames.get(self.section, None)
+        if str(self.stt.type).lower() == 'tribe':
+            return self.stt.filenames.get(
+                ('Tribal ' if 'Tribal' not in self.section else '') + self.section, 
+                None)
+        else:
+            return self.stt.filenames.get(self.section, None)
 
     @classmethod
     def create_new_version(self, data):
