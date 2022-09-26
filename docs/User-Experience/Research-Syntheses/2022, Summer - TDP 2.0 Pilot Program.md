@@ -88,7 +88,7 @@ In addition to data captured from grantee participants, the pilot also afforded 
 ---
 
 ### What went well
-By all our measures the pilot was a success. Participants were able to access TDP and navigate the process of submitting their data—not to mention able to provide us with insights and feedback that will be instrumental in enhancing this and all future versions of TDP. While our top level findings focus on areas where we can improve TDP it's also well worth mentioning that we received enthusiasticly positive feedback from participating grantees as well. 
+By all our measures the pilot was a success. Participants were able to access TDP and navigate the process of submitting their data—not to mention able to provide us with insights and feedback that will be instrumental in enhancing this and all future versions of TDP. While our top level findings focus on areas where we can improve TDP it's also well worth mentioning that we received enthusiastically positive feedback from participating grantees as well. 
 
 ### Areas of the login and authentication experience may introduce friction for some grantees
 
