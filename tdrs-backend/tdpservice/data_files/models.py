@@ -151,7 +151,7 @@ class DataFile(FileRecord):
         """Return the correct filename for this data file."""
         if str(self.stt.type).lower() == 'tribe':
             return self.stt.filenames.get(
-                ('Tribal ' if 'Tribal' not in self.section else '') + self.section, 
+                ('Tribal ' if 'Tribal' not in self.section else '') + self.section,
                 None)
         else:
             return self.stt.filenames.get(self.section, None)
