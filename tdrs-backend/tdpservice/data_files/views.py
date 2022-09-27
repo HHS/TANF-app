@@ -67,7 +67,7 @@ class DataFileViewSet(ModelViewSet):
                 port=22
             )
         mail(
-            email_type=EmailType.DATA_SUBMITTED.value(),
+            email_type=EmailType.DATA_SUBMITTED.value,
             recipient_email='csmart@goraft.tech',
             email_context={
                 'subject': 'Foo Data Submitted',
