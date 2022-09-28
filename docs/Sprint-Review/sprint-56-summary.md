@@ -32,7 +32,6 @@ Velocity: 33
 
 ### Raft Review
 * [#1952 - As a developer, I'd like to use a task queue to handle sending notification emails](https://github.com/raft-tech/TANF-app/issues/1952)
-* [#2042 - [Research Planning] Human-Readable Error Messages (Section 1)](https://github.com/raft-tech/TANF-app/issues/2042)
 
 ### In Progress
 * [#1351 - Elasticsearch - Define Index Mappings (TANF Section 1)](https://github.com/raft-tech/TANF-app/issues/1351)
