@@ -6,6 +6,25 @@ export const selectUser = (state) => state.auth.user || null
 export const selectUserAccountApprovalStatus = (state) =>
   selectUser(state)?.['account_approval_status']
 
+export const selectUserRoles = (state) => selectUser(state)?.['roles'] || []
+
+export const selectPrimaryUserRole = (state) => {
+  const roles = selectUserRoles(state)
+  if (roles.length > 0) {
+    return roles[0]
+  }
+  return null
+}
+
+export const selectUserPermissions = (state) => {
+  const roles = selectUserRoles(state)
+  let permissions = []
+  roles.forEach((role) => {
+    permissions = [...permissions, role['permissions']]
+  })
+  return permissions
+}
+
 export const accountStatusIsInitial = (state) =>
   selectUserAccountApprovalStatus(state) === 'Initial'
 
@@ -16,7 +35,9 @@ export const accountStatussIsPending = (state) =>
   selectUserAccountApprovalStatus(state) === 'Pending'
 
 export const accountIsInReview = (state) =>
-  accountStatusIsAccessRequestSubmitted(state) || accountStatussIsPending(state)
+  accountStatusIsAccessRequestSubmitted(state) ||
+  accountStatussIsPending(state) ||
+  (accountStatusIsApproved(state) && selectUserRoles(state).length === 0)
 
 export const accountStatusIsApproved = (state) =>
   selectUserAccountApprovalStatus(state) === 'Approved'
