@@ -1,7 +1,7 @@
 # Sprint 56 Summary
 9/14/22-9/27/22
 
-Velocity: 25
+Velocity: 33
 ## Sprint Goals
 * Finalize the SFTP transfer, complete the foundation for email notifications and begin working the Elasticsearch epic. Additionally, research the human readable error messages.
  
