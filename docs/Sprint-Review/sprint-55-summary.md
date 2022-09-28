@@ -23,7 +23,6 @@ Velocity: 19
 
 ### Submitted (QASP Review, OCIO Review)
 * [#1104 - As OFA tech lead, I need to update ATO docs for release 2](https://github.com/raft-tech/TANF-app/issues/1104)
-* [#1979 - As system owner, I want to add a vulnerability disclosure policy link to TDP frontend](https://github.com/raft-tech/TANF-app/issues/1979)
 * [#2058 - [Reearch Synthesis] Pilot Research Synthesis](https://github.com/raft-tech/TANF-app/issues/2058)
 
 
