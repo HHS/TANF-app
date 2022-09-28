@@ -15,7 +15,7 @@ Velocity: 33
 * [#1979 - As system owner, I want to add a vulnerability disclosure policy link to TDP frontend](https://github.com/raft-tech/TANF-app/issues/1979)
 * [#2090 - Transferred files must be renamed on ACF Titan](https://github.com/raft-tech/TANF-app/issues/2090)
 * [#2125 - Users in Approved status with no group assignment get blank screen](https://github.com/raft-tech/TANF-app/issues/2125)
-
+* [#2042 - [Research Planning] Human-Readable Error Messages (Section 1)](https://github.com/raft-tech/TANF-app/issues/2042)
 ### Ready to Merge
 * N/A
 
