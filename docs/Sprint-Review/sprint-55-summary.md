@@ -18,7 +18,7 @@ Velocity: 19
 
 
 ### Ready to Merge
-* N/A
+* [#1979 - As system owner, I want to add a vulnerability disclosure policy link to TDP frontend](https://github.com/raft-tech/TANF-app/issues/1979)
 
 
 ### Submitted (QASP Review, OCIO Review)
