@@ -475,7 +475,7 @@ jobs:
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
                pip install wait-for-it &&
-               wait-for-it --service http://web:3000 \
+               wait-for-it --service http://tdp-frontend/ \
                            --timeout 60 \
                            -- echo \"Frontend is ready\""
       - run-owasp-scan:
@@ -735,7 +735,6 @@ workflows:
                 develop
 
   owasp-scan:
-    when: << pipeline.parameters.run_owasp_scan >>
     jobs:
       - backend-owasp-scan
       - frontend-owasp-scan
