@@ -18,8 +18,6 @@ from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import sftp_task
-from tdpservice.email.email import mail
-from tdpservice.email.email_enums import EmailType
 
 
 class DataFileFilter(filters.FilterSet):
@@ -66,18 +64,6 @@ class DataFileViewSet(ModelViewSet):
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
-        mail(
-            email_path=EmailType.DATA_SUBMITTED.value,
-            recipient_email='ajameson@goraft.tech',
-            email_context={
-                'subject': 'Foo Data Submitted',
-                'text_message': 'Your foo data has been submitted',
-                'first_name': 'foo-bar',
-                'stt_name': 'foo-stt',
-                'submission_date': 'foo-date',
-                'fiscal_year': 'foo-year',
-            }
-        )
         return response
 
     def filter_queryset(self, queryset):
