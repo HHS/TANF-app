@@ -1,16 +1,4 @@
-"""
-This module currently uses the EmailMultiAlternatives class from Django to send emails with HTML content.
-A optional plain text message can be included as well. Emails should be sent using mail.delay()
-
-The mail function is the main entry point for sending emails.
-It takes in a EmailType enum(that has a template path as the value), a list of recipients,
-and a dictionary of context variables to be used in the email template. The context vlaues can be found in the
-templates directory.
-
-There are optimizations that can be made to this module for sending mass emails.
-Django's send_mass_mail function can be used to send multiple emails at once.
-https://docs.djangoproject.com/en/4.1/topics/email/#send-mass-mail
-"""
+""" Wrapper to send emails with Django. """
 
 from celery import shared_task
 from django.core.exceptions import ValidationError
@@ -26,17 +14,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def mail(email_path, recipient_email, email_context):
-    """Send an automated email to a user.
-
-    Parameters
-    ----------
-    email_path : str
-        Path to email template.
-    recipient_email : str
-        Email address of recipient.
-    email_context : dict, optional
-        Context variables to be used in email template, by default None.
-    """
+    """Send an automated email to a user. Use mail.delay() to send asynchronously."""
     subject = email_context["subject"]
     html_message = construct_email(email_path, email_context)
 
