@@ -68,7 +68,7 @@ class DataFileViewSet(ModelViewSet):
             )
         mail(
             email_path=EmailType.DATA_SUBMITTED.value,
-            recipient_email='csmart@goraft.tech',
+            recipient_email='ajameson@goraft.tech',
             email_context={
                 'subject': 'Foo Data Submitted',
                 'text_message': 'Your foo data has been submitted',
