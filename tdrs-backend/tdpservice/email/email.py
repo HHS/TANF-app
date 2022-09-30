@@ -1,6 +1,4 @@
 """
-Send emails.
-
 This module currently uses the EmailMultiAlternatives class from Django to send emails with HTML content.
 A optional plain text message can be included as well. Emails should be sent using mail.delay()
 
@@ -37,7 +35,7 @@ def mail(email_path, recipient_email, email_context):
     recipient_email : str
         Email address of recipient.
     email_context : dict, optional
-    Context variables to be used in email template, by default None.
+        Context variables to be used in email template, by default None.
     """
     subject = email_context["subject"]
     html_message = construct_email(email_path, email_context)
