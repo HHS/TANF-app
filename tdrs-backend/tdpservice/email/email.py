@@ -1,4 +1,4 @@
-""" Wrapper to send emails with Django. """
+"""Wrapper to send emails with Django."""
 
 from celery import shared_task
 from django.core.exceptions import ValidationError
