@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def nightly_postgres(*args):
-    logger.debug("We have nightly registered w/ arg: " + ''.join(args))
-    #run_backup(arg)
+    arg = ''.join(args)
+    logger.debug("We have nightly registered w/ arg: " + arg)
+    run_backup(arg)
     return True

@@ -252,8 +252,7 @@ def main(argv, sys_values):
 #@shared_task
 def run_backup(arg): #name=celery
     """    No params, setup for actual backup call. """
-    logger.debug("my arg was" + arg)
-    #main([arg], sys_values=get_system_values()) 
+    main([arg], sys_values=get_system_values()) 
 
 if __name__ == '__main__':
     main(sys.argv[1:])

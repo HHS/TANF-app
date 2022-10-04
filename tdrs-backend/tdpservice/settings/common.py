@@ -9,6 +9,7 @@ from typing import Any, Optional
 from django.core.exceptions import ImproperlyConfigured
 
 from configurations import Configuration
+from celery.schedules import crontab
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -424,7 +425,7 @@ class Common(Configuration):
     CELERY_BEAT_SCHEDULE = {
         'name': {
             'task': 'tdpservice.scheduling.tasks.nightly_postgres',
-            'schedule': 1.0,
+            'schedule': crontab(minute='*', hour='*'),
             'args': "-b",
             'options': {
                 'expires': 15.0,
