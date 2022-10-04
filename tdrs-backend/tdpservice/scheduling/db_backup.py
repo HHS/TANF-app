@@ -17,62 +17,102 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 OS_ENV = os.environ
+
 def get_system_values():
     sys_values = {}
 
-    try:
-        sys_values['SPACE'] = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
+    if settings.REDIS_SERVER_LOCAL is True:
 
-        # Postgres client pg_dump directory
-        pgdump_search = subprocess.Popen(["find", "/", "-iname", "pg_dump"],
-                                         stderr=subprocess.DEVNULL, stdout=subprocess.PIPE)
-        pgdump_search.wait()
-        pg_dump_paths, pgdump_search_error = pgdump_search.communicate()
-        pg_dump_paths = pg_dump_paths.decode("utf-8").split('\n')
-        if pg_dump_paths[0] == '':
-            raise Exception("Postgres client is not found")
+            #TODO: ensure pg_client is available in docker images
 
-        POSTGRES_CLIENT = None
-        for _ in pg_dump_paths:
-            if 'pg_dump' in str(_) and 'postgresql' in str(_):
-                sys_values['POSTGRES_CLIENT'] = _[:_.find('pg_dump')]
-                print("Found PG client here: {}".format(_))
+            sys_values['POSTGRES_CLIENT'] = "/usr/bin/"
 
-        sys_values['S3_ENV_VARS'] = json.loads(OS_ENV['VCAP_SERVICES'])['s3']
-        sys_values['S3_CREDENTIALS'] = S3_ENV_VARS[0]['credentials']
-        sys_values['S3_ACCESS_KEY_ID'] = S3_CREDENTIALS['access_key_id']
-        sys_values['S3_SECRET_ACCESS_KEY'] = S3_CREDENTIALS['secret_access_key']
-        sys_values['S3_BUCKET'] = S3_CREDENTIALS['bucket']
-        sys_values['S3_REGION'] = S3_CREDENTIALS['region']
-        sys_values['DATABASE_URI'] = OS_ENV['DATABASE_URL']
+            sys_values['S3_ACCESS_KEY_ID'] = settings.AWS_S3_DATAFILES_ACCESS_KEY 
+            sys_values['S3_SECRET_ACCESS_KEY'] = settings.AWS_S3_DATAFILES_SECRET_KEY 
+            sys_values['S3_BUCKET'] = settings.AWS_S3_DATAFILES_BUCKET_NAME 
+            sys_values['S3_REGION'] = settings.AWS_S3_DATAFILES_REGION_NAME 
 
-        # Set AWS credentials in env, Boto3 uses the env variables for connection
-        os.environ["AWS_ACCESS_KEY_ID"] = S3_ACCESS_KEY_ID
-        os.environ["AWS_SECRET_ACCESS_KEY"] = S3_SECRET_ACCESS_KEY
 
-        # Set Database connection info
-        AWS_RDS_SERVICE_JSON = json.loads(OS_ENV['VCAP_SERVICES'])['aws-rds'][0]['credentials']
-        sys_values['DATABASE_PORT'] = AWS_RDS_SERVICE_JSON['port']
-        sys_values['DATABASE_PASSWORD'] = AWS_RDS_SERVICE_JSON['password']
-        sys_values['DATABASE_DB_NAME'] = AWS_RDS_SERVICE_JSON['db_name']
-        sys_values['DATABASE_HOST'] = AWS_RDS_SERVICE_JSON['host']
-        sys_values['DATABASE_USERNAME'] = AWS_RDS_SERVICE_JSON['username']
+            # Set Database connection info
+            host = settings.DATABASES['default']["HOST"]
+            port = settings.DATABASES['default']["PORT"]
+            user = settings.DATABASES['default']["USER"]
+            pw = settings.DATABASES['default']["PASSWORD"]
+            db_name = settings.DATABASES['default']["NAME"]
 
-        # write .pgpass
-        with open('/home/vcap/.pgpass', 'w') as f:
-            f.write(sys_values['DATABASE_HOST'] + ":"\
-                    + sys_values['DATABASE_PORT'] + ":"\
-                    + sys_values['DATABASE_DB_NAME'] + ":"\
-                    + sys_values['DATABASE_USERNAME'] + ":"\
-                    + sys_values['DATABASE_PASSWORD'])
-        os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
-        os.system('chmod 0600 ~/.pgpass')
-        return sys_values
+            sys_values['DATABASE_PORT'] = port
+            sys_values['DATABASE_PASSWORD'] = pw
+            sys_values['DATABASE_DB_NAME'] = db_name
+            sys_values['DATABASE_HOST'] =  host
+            sys_values['DATABASE_USERNAME'] = user
+            sys_values['DATABASE_URI'] = "postgresql://"+user+":"+pw+"@"+host+":"+str(port)+"/"+db_name
+        
+            # write .pgpass
+            with open('/root/.pgpass', 'w') as f:
+                f.write(sys_values['DATABASE_HOST'] + ":"\
+                        + sys_values['DATABASE_PORT'] + ":"\
+                        + sys_values['DATABASE_DB_NAME'] + ":"\
+                        + sys_values['DATABASE_USERNAME'] + ":"\
+                        + sys_values['DATABASE_PASSWORD'])
+            os.environ['PGPASSFILE'] = '/root/.pgpass'
+            os.system('chmod 0600 /root/.pgpass')
+            return sys_values
+    else:
+        try:
+            sys_values['SPACE'] = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
 
-    except Exception as e:
-        print(e)
-        sys.exit(1)
+            # Postgres client pg_dump directory
+            pgdump_search = subprocess.Popen(["find", "/", "-iname", "pg_dump"],
+                                             stderr=subprocess.DEVNULL, stdout=subprocess.PIPE)
+            pgdump_search.wait()
+            pg_dump_paths, pgdump_search_error = pgdump_search.communicate()
+            pg_dump_paths = pg_dump_paths.decode("utf-8").split('\n')
+            if pg_dump_paths[0] == '':
+                raise Exception("Postgres client is not found")
+
+            POSTGRES_CLIENT = None
+            for _ in pg_dump_paths:
+                if 'pg_dump' in str(_) and 'postgresql' in str(_):
+                    sys_values['POSTGRES_CLIENT'] = _[:_.find('pg_dump')]
+                    print("Found PG client here: {}".format(_))
+
+            sys_values['S3_ENV_VARS'] = json.loads(OS_ENV['VCAP_SERVICES'])['s3']
+            sys_values['S3_CREDENTIALS'] = S3_ENV_VARS[0]['credentials']
+            sys_values['S3_ACCESS_KEY_ID'] = S3_CREDENTIALS['access_key_id']
+            sys_values['S3_SECRET_ACCESS_KEY'] = S3_CREDENTIALS['secret_access_key']
+            sys_values['S3_BUCKET'] = S3_CREDENTIALS['bucket']
+            sys_values['S3_REGION'] = S3_CREDENTIALS['region']
+            sys_values['DATABASE_URI'] = OS_ENV['DATABASE_URL']
+
+            # Set AWS credentials in env, Boto3 uses the env variables for connection
+            os.environ["AWS_ACCESS_KEY_ID"] = S3_ACCESS_KEY_ID
+            os.environ["AWS_SECRET_ACCESS_KEY"] = S3_SECRET_ACCESS_KEY
+
+            # Set Database connection info
+            AWS_RDS_SERVICE_JSON = json.loads(OS_ENV['VCAP_SERVICES'])['aws-rds'][0]['credentials']
+            sys_values['DATABASE_PORT'] = AWS_RDS_SERVICE_JSON['port']
+            sys_values['DATABASE_PASSWORD'] = AWS_RDS_SERVICE_JSON['password']
+            sys_values['DATABASE_DB_NAME'] = AWS_RDS_SERVICE_JSON['db_name']
+            sys_values['DATABASE_HOST'] = AWS_RDS_SERVICE_JSON['host']
+            sys_values['DATABASE_USERNAME'] = AWS_RDS_SERVICE_JSON['username']
+
+            # write .pgpass
+            with open('/home/vcap/.pgpass', 'w') as f:
+                f.write(sys_values['DATABASE_HOST'] + ":"\
+                        + sys_values['DATABASE_PORT'] + ":"\
+                        + sys_values['DATABASE_DB_NAME'] + ":"\
+                        + sys_values['DATABASE_USERNAME'] + ":"\
+                        + sys_values['DATABASE_PASSWORD'])
+            os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
+            os.system('chmod 0600 ~/.pgpass')
+            return sys_values
+
+        except Exception as e:
+            print(e)
+            sys.exit(1)
+
 
 def backup_database(file_name,
                     postgres_client,
@@ -121,7 +161,7 @@ def restore_database(file_name, postgres_client, database_uri):
     return True
 
 
-def upload_file(file_name, bucket, object_name=None, region='us-gov-west-1'):
+def upload_file(file_name, bucket, sys_values, object_name=None, region='us-gov-west-1'):
     """Upload a file to an S3 bucket."""
     """
     :param file_name: file name being uploaded to s3 bucket
@@ -130,11 +170,10 @@ def upload_file(file_name, bucket, object_name=None, region='us-gov-west-1'):
     :param region: s3 AWS region to be used. defaults to government west
     :return: True is file is uploaded, False if not successful
     """
-    print("Uploaded {} to S3 in {}/{}".format(file_name, bucket, object_name))
     if object_name is None:
         object_name = os.path.basename(file_name)
     # upload the file
-    s3_client = boto3.client('s3', region_name=region)
+    s3_client = boto3.client('s3', region_name=region, aws_secret_access_key=sys_values['S3_SECRET_ACCESS_KEY'], aws_access_key_id=sys_values['S3_ACCESS_KEY_ID'])
     try:
         s3_client.upload_file(file_name, bucket, object_name)
         print("Uploaded {} to S3:{}{}".format(file_name, bucket, object_name))
@@ -227,9 +266,9 @@ def main(argv, sys_values):
         # upload backup file
         upload_file(file_name=arg_file,
                     bucket=sys_values['S3_BUCKET'],
+                    sys_values=sys_values,
                     region=sys_values['S3_REGION'],
                     object_name="/backup"+arg_file)
-
         os.system('rm ' + arg_file)
         sys.exit(0)
 
@@ -238,7 +277,7 @@ def main(argv, sys_values):
         download_file(bucket=sys_values['S3_BUCKET'],
                       file_name=arg_file,
                       region=sys_values['S3_REGION'],
-                      object_name="/backup"+arg_file)
+                      object_name="backup"+arg_file)
 
         # restore database
         restore_database(file_name=arg_file,

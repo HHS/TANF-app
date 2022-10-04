@@ -44,6 +44,8 @@ class Local(Common):
         'handlers': ['console']
     }
 
+    REDIS_SERVER_LOCAL = bool(strtobool(os.getenv("REDIS_SERVER_LOCAL", "TRUE")))
+    
     # SFTP TEST KEY
     """
     To be able to fit the PRIVATE KEY in one line as environment variable, we replace the EOL

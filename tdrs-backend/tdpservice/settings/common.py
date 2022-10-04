@@ -425,7 +425,7 @@ class Common(Configuration):
     CELERY_BEAT_SCHEDULE = {
         'name': {
             'task': 'tdpservice.scheduling.tasks.nightly_postgres',
-            'schedule': crontab(minute='*', hour='*'),
+            'schedule': 10.0, # crontab(minute='*', hour='*'),
             'args': "-b",
             'options': {
                 'expires': 15.0,
