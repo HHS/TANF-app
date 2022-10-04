@@ -9,59 +9,70 @@ import json
 import os
 import subprocess
 import sys
-
+from celery import shared_task
+from django.conf import settings
 import boto3
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 OS_ENV = os.environ
+def get_system_values():
+    sys_values = {}
 
-try:
-    SPACE = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
+    try:
+        sys_values['SPACE'] = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
 
-    # Postgres client pg_dump directory
-    pgdump_search = subprocess.Popen(["find", "/", "-iname", "pg_dump"],
-                                     stderr=subprocess.DEVNULL, stdout=subprocess.PIPE)
-    pgdump_search.wait()
-    pg_dump_paths, pgdump_search_error = pgdump_search.communicate()
-    pg_dump_paths = pg_dump_paths.decode("utf-8").split('\n')
-    if pg_dump_paths[0] == '':
-        raise Exception("Postgres client is not found")
+        # Postgres client pg_dump directory
+        pgdump_search = subprocess.Popen(["find", "/", "-iname", "pg_dump"],
+                                         stderr=subprocess.DEVNULL, stdout=subprocess.PIPE)
+        pgdump_search.wait()
+        pg_dump_paths, pgdump_search_error = pgdump_search.communicate()
+        pg_dump_paths = pg_dump_paths.decode("utf-8").split('\n')
+        if pg_dump_paths[0] == '':
+            raise Exception("Postgres client is not found")
 
-    POSTGRES_CLIENT = None
-    for _ in pg_dump_paths:
-        if 'pg_dump' in str(_) and 'postgresql' in str(_):
-            POSTGRES_CLIENT = _[:_.find('pg_dump')]
-            print("Found PG client here: {}".format(_))
+        POSTGRES_CLIENT = None
+        for _ in pg_dump_paths:
+            if 'pg_dump' in str(_) and 'postgresql' in str(_):
+                sys_values['POSTGRES_CLIENT'] = _[:_.find('pg_dump')]
+                print("Found PG client here: {}".format(_))
 
-    S3_ENV_VARS = json.loads(OS_ENV['VCAP_SERVICES'])['s3']
-    S3_CREDENTIALS = S3_ENV_VARS[0]['credentials']
-    S3_ACCESS_KEY_ID = S3_CREDENTIALS['access_key_id']
-    S3_SECRET_ACCESS_KEY = S3_CREDENTIALS['secret_access_key']
-    S3_BUCKET = S3_CREDENTIALS['bucket']
-    S3_REGION = S3_CREDENTIALS['region']
-    DATABASE_URI = OS_ENV['DATABASE_URL']
+        sys_values['S3_ENV_VARS'] = json.loads(OS_ENV['VCAP_SERVICES'])['s3']
+        sys_values['S3_CREDENTIALS'] = S3_ENV_VARS[0]['credentials']
+        sys_values['S3_ACCESS_KEY_ID'] = S3_CREDENTIALS['access_key_id']
+        sys_values['S3_SECRET_ACCESS_KEY'] = S3_CREDENTIALS['secret_access_key']
+        sys_values['S3_BUCKET'] = S3_CREDENTIALS['bucket']
+        sys_values['S3_REGION'] = S3_CREDENTIALS['region']
+        sys_values['DATABASE_URI'] = OS_ENV['DATABASE_URL']
 
-    # Set AWS credentials in env, Boto3 uses the env variables for connection
-    os.environ["AWS_ACCESS_KEY_ID"] = S3_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = S3_SECRET_ACCESS_KEY
+        # Set AWS credentials in env, Boto3 uses the env variables for connection
+        os.environ["AWS_ACCESS_KEY_ID"] = S3_ACCESS_KEY_ID
+        os.environ["AWS_SECRET_ACCESS_KEY"] = S3_SECRET_ACCESS_KEY
 
-    # Set Database connection info
-    AWS_RDS_SERVICE_JSON = json.loads(OS_ENV['VCAP_SERVICES'])['aws-rds'][0]['credentials']
-    DATABASE_PORT = AWS_RDS_SERVICE_JSON['port']
-    DATABASE_PASSWORD = AWS_RDS_SERVICE_JSON['password']
-    DATABASE_DB_NAME = AWS_RDS_SERVICE_JSON['db_name']
-    DATABASE_HOST = AWS_RDS_SERVICE_JSON['host']
-    DATABASE_USERNAME = AWS_RDS_SERVICE_JSON['username']
+        # Set Database connection info
+        AWS_RDS_SERVICE_JSON = json.loads(OS_ENV['VCAP_SERVICES'])['aws-rds'][0]['credentials']
+        sys_values['DATABASE_PORT'] = AWS_RDS_SERVICE_JSON['port']
+        sys_values['DATABASE_PASSWORD'] = AWS_RDS_SERVICE_JSON['password']
+        sys_values['DATABASE_DB_NAME'] = AWS_RDS_SERVICE_JSON['db_name']
+        sys_values['DATABASE_HOST'] = AWS_RDS_SERVICE_JSON['host']
+        sys_values['DATABASE_USERNAME'] = AWS_RDS_SERVICE_JSON['username']
 
-    # write .pgpass
-    with open('/home/vcap/.pgpass', 'w') as f:
-        f.write(DATABASE_HOST+":"+DATABASE_PORT+":"+DATABASE_DB_NAME+":"+DATABASE_USERNAME+":"+DATABASE_PASSWORD)
-    os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
-    os.system('chmod 0600 ~/.pgpass')
+        # write .pgpass
+        with open('/home/vcap/.pgpass', 'w') as f:
+            f.write(sys_values['DATABASE_HOST'] + ":"\
+                    + sys_values['DATABASE_PORT'] + ":"\
+                    + sys_values['DATABASE_DB_NAME'] + ":"\
+                    + sys_values['DATABASE_USERNAME'] + ":"\
+                    + sys_values['DATABASE_PASSWORD'])
+        os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
+        os.system('chmod 0600 ~/.pgpass')
+        return sys_values
 
-except Exception as e:
-    print(e)
-    sys.exit(1)
-
+    except Exception as e:
+        print(e)
+        sys.exit(1)
 
 def backup_database(file_name,
                     postgres_client,
@@ -82,7 +93,7 @@ def backup_database(file_name,
         return False
 
 
-def restore_database(file_name, postgres_client, database_uri=DATABASE_URI):
+def restore_database(file_name, postgres_client, database_uri):
     """Restore the database from filename."""
     """
     :param file_name: database backup filename
@@ -185,10 +196,10 @@ def get_database_credentials(database_uri):
     return [username, password, host, port, database_name]
 
 
-def handle_args(argv):
+def main(argv, sys_values):
     """Handle commandline args."""
     arg_file = "/tmp/backup.pg"
-    arg_database = DATABASE_URI
+    arg_database = sys_values['DATABASE_URI']
     arg_to_restore = False
     arg_to_backup = False
 
@@ -210,13 +221,13 @@ def handle_args(argv):
     if arg_to_backup:
         # back up database
         backup_database(file_name=arg_file,
-                        postgres_client=POSTGRES_CLIENT,
+                        postgres_client=sys_values['POSTGRES_CLIENT'],
                         database_uri=arg_database)
 
         # upload backup file
         upload_file(file_name=arg_file,
-                    bucket=S3_BUCKET,
-                    region=S3_REGION,
+                    bucket=sys_values['S3_BUCKET'],
+                    region=sys_values['S3_REGION'],
                     object_name="/backup"+arg_file)
 
         os.system('rm ' + arg_file)
@@ -224,24 +235,25 @@ def handle_args(argv):
 
     elif arg_to_restore:
         # download file from s3
-        download_file(bucket=S3_BUCKET,
+        download_file(bucket=sys_values['S3_BUCKET'],
                       file_name=arg_file,
-                      region=S3_REGION,
+                      region=sys_values['S3_REGION'],
                       object_name="/backup"+arg_file)
 
         # restore database
         restore_database(file_name=arg_file,
-                         postgres_client=POSTGRES_CLIENT,
+                         postgres_client=sys_values['POSTGRES_CLIENT'],
                          database_uri=arg_database)
 
         os.system('rm ' + arg_file)
         sys.exit(0)  # successful
 
 
-def main(argv):
-    """Perform main task."""
-    handle_args(argv=argv)
-
+#@shared_task
+def run_backup(arg): #name=celery
+    """    No params, setup for actual backup call. """
+    logger.debug("my arg was" + arg)
+    #main([arg], sys_values=get_system_values()) 
 
 if __name__ == '__main__':
     main(sys.argv[1:])
