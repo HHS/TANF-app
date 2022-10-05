@@ -122,6 +122,8 @@ commands:
           command: |
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
               CURRENT_FLAG=main-<<parameters.component>>
+            elif [ "$CIRCLE_BRANCH" == "master" ] ; then
+              CURRENT_FLAG=master-<<parameters.component>>
             else
               CURRENT_FLAG=dev-<<parameters.component>>
             fi
