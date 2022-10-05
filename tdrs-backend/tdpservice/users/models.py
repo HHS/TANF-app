@@ -201,6 +201,7 @@ class User(AbstractUser):
     @classmethod
     def from_db(cls, db, field_names, values):
         """Override the django Model from_db method.
+
         Populates instances of User with a `_loaded_values` member,
         useful for accessing current values for the object before updates
         https://docs.djangoproject.com/en/4.1/ref/models/instances/#customizing-model-loading
@@ -212,6 +213,7 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         """Override the django Model save method.
+
         The existing values can be accessed using `self._loaded_values`
         which are set by `from_db`
         """
