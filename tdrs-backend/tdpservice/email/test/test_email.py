@@ -54,7 +54,7 @@ class EmailTest(TestCase):
         with self.assertRaises(ValidationError):
             filter_valid_emails(emails)
 
-    def construct_email_fails_with_no_template(self):
+    def test_construct_email_fails_with_no_template(self):
         """Test get email template failure. Expect a failure because the template does not exist."""
         email_type = "test"
         context = {}
