@@ -55,7 +55,8 @@ class Common(Configuration):
         "tdpservice.stts",
         "tdpservice.data_files",
         "tdpservice.security",
-        "tdpservice.scheduling"
+        "tdpservice.scheduling",
+        "tdpservice.email",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -86,7 +87,9 @@ class Common(Configuration):
 
     # Email Server
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
+    EMAIL_HOST = "smtp.ees.hhs.gov"
+    EMAIL_HOST_USER = "no-reply@tanfdata.acf.hhs.gov"
+    
     # Whether to use localstack in place of a live AWS S3 environment
     USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "no")))
 
