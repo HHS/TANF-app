@@ -1,5 +1,7 @@
 """Wrapper to send emails with Django."""
 
+from tdpservice.email.email_enums import EmailType
+
 from celery import shared_task
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -12,16 +14,65 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def send_approval_status_update_email(
+    new_approval_status,
+    recipient_email,
+    context
+):
+    """Send an email to a user when their account approval status is updated."""
+    from tdpservice.users.models import AccountApprovalStatusChoices
+
+    template_path = None
+    subject = None
+    text_message = None
+
+    match new_approval_status:
+        case AccountApprovalStatusChoices.INITIAL:
+            print("initial")
+            return
+
+        case AccountApprovalStatusChoices.ACCESS_REQUEST:
+            template_path = EmailType.ACCESS_REQUEST_SUBMITTED.value
+            subject = 'Account requested'
+            text_message = 'Your account has been requested.'
+
+        case AccountApprovalStatusChoices.PENDING:
+            print("pending")
+            return
+
+        case AccountApprovalStatusChoices.APPROVED:
+            template_path = EmailType.REQUEST_APPROVED.value
+            subject = 'Access request approved'
+            text_message = 'Your account request has been approved.'
+
+        case AccountApprovalStatusChoices.DENIED:
+            template_path = EmailType.REQUEST_DENIED.value
+            subject = 'Access request denied'
+            text_message = 'Your account request has been denied.'
+
+        case AccountApprovalStatusChoices.DEACTIVATED:
+            template_path = EmailType.ACCOUNT_DEACTIVATED.value
+            subject = 'Account deactivated'
+            text_message = 'Your account has been deactivated.'
+
+    mail.delay(
+        email_path=template_path,
+        recipient_email=recipient_email,
+        subject=subject,
+        email_context=context,
+        text_message=text_message
+    )
+
+
 @shared_task
-def mail(email_path, recipient_email, email_context):
-    """Send an automated email to a user. Use mail.delay() to send asynchronously."""
-    subject = email_context["subject"]
+def mail(email_path, recipient_email, subject, email_context, text_message):
+    """Send email to user."""
+    subject = email_context['subject']
     html_message = construct_email(email_path, email_context)
 
-    if email_context["text_message"]:
-        text_message = email_context["text_message"]
-    else:
-        text_message = "An email was sent with HTML content. Please view in an HTML capable email client."
+    if not text_message:
+        text_message = 'An email was sent with HTML content. Please view in an HTML capable email client.'
+
     send_email(subject, text_message, html_message, [recipient_email])
 
 
