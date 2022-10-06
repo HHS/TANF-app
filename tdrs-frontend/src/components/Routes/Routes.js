@@ -19,6 +19,8 @@ import Home from '../Home'
  * does not matter.
  */
 const AppRoutes = () => {
+  const user = useSelector((state) => state.auth.user)
+
   const userAccountInReview = useSelector(accountIsInReview)
   const homeTitle = userAccountInReview ? 'Request Submitted' : 'Welcome to TDP'
 

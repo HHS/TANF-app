@@ -4,18 +4,6 @@ import SiteMap from './SiteMap'
 import { mount } from 'enzyme'
 
 describe('SiteMap', () => {
-  const initialState = {
-    router: { location: { pathname: '/home' } },
-    auth: {
-      user: {
-        email: 'test@test.com',
-        roles: [{ id: 1, name: 'Developer', permissions: [] }],
-        access_request: true,
-      },
-      authenticated: true,
-    },
-  }
-
   it('When an authenticated Developer visits the sitemap', () => {
     const user = {
       email: 'hi@bye.com',

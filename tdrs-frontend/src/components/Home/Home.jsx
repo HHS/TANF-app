@@ -22,7 +22,6 @@ function Home() {
 
   const user = useSelector((state) => state.auth.user)
   const role = user?.roles
-  const hasRole = Boolean(role?.length > 0)
   const [errors, setErrors] = useState({})
   const [profileInfo, setProfileInfo] = useState({
     firstName: '',

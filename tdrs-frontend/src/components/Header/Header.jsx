@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+import { canViewAdmin } from '../../utils/canViewAdmin'
 import {
   accountStatusIsApproved,
   accountIsInReview,
@@ -26,9 +27,6 @@ function Header() {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const userAccessRequestPending = useSelector(accountIsInReview)
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
-
-  const isMemberOfOne = (...groupNames) =>
-    user?.roles?.some((role) => groupNames.includes(role.name))
 
   const hasPermission = (permissionName) =>
     user?.roles?.[0]?.permissions?.some(
