@@ -46,13 +46,12 @@ def send_approval_status_update_email(
             text_message = 'Your account request has been approved.'
 
         case AccountApprovalStatusChoices.DENIED:
-            print("=========================================DENIED=========================================")
+
             template_path = EmailType.REQUEST_DENIED.value
             subject = 'Access Request Denied'
             text_message = 'Your account request has been denied.'
 
         case AccountApprovalStatusChoices.DEACTIVATED:
-            print("=========================================DEACTIVATED=========================================")
             template_path = EmailType.ACCOUNT_DEACTIVATED.value
             subject = 'Account is Deactivated'
             text_message = 'Your account has been deactivated.'
@@ -71,6 +70,7 @@ def send_approval_status_update_email(
 @shared_task
 def automated_email(email_path, recipient_email, subject, email_context, text_message):
     """Send email to user."""
+    logger.info(f"Starting celery task to send email to {recipient_email}")
     html_message = construct_email(email_path, email_context)
 
     send_email(subject, text_message, html_message, [recipient_email])
@@ -78,12 +78,16 @@ def automated_email(email_path, recipient_email, subject, email_context, text_me
 
 def construct_email(email_path, context):
     """Get email template."""
+    logger.info(f"Constructing email from template {email_path}")
     template = get_template(email_path)
+    logger.info(f"Email template rendered from the path {email_path}")
+
     return template.render(context)
 
 
 def send_email(subject, message, html_message, recipient_list):
     """Send an email to a list of recipients."""
+    logger.info(f"Envoked send_email with subject {subject}")
     valid_emails = filter_valid_emails(recipient_list)
     email = EmailMultiAlternatives(
         subject=subject,
@@ -98,6 +102,8 @@ def send_email(subject, message, html_message, recipient_list):
             f"Emails were attempted to the following email list: {valid_emails}. \
         But none were sent. They may be invalid."
         )
+
+    logger.info(f"{num_emails_sent} email(s) sent to {valid_emails}.")
 
 
 def filter_valid_emails(emails):
