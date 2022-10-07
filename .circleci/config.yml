@@ -683,12 +683,11 @@ workflows:
             - secrets-check
 
   dev-deployment:
-    when: << pipeline.parameters.run_dev_deployment >>
     jobs:
       - deploy-infrastructure-dev:
-          target_env: << pipeline.parameters.target_env >>
+          target_env: sandbox
       - deploy-dev:
-          target_env: << pipeline.parameters.target_env >>
+          target_env: sandbox
           requires:
             - deploy-infrastructure-dev
 

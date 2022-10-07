@@ -25,7 +25,7 @@ def send_approval_status_update_email(
     template_path = None
     subject = None
     text_message = None
-
+    logger.info(f"Preparing email to {recipient_email} with status {new_approval_status}")
     match new_approval_status:
         case AccountApprovalStatusChoices.INITIAL:
             print("initial")
