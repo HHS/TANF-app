@@ -33,7 +33,7 @@ def send_approval_status_update_email(
 
         case AccountApprovalStatusChoices.ACCESS_REQUEST:
             template_path = EmailType.ACCESS_REQUEST_SUBMITTED.value
-            subject = 'Account requested'
+            subject = 'Access Request Submitted'
             text_message = 'Your account has been requested.'
 
         case AccountApprovalStatusChoices.PENDING:
@@ -42,19 +42,19 @@ def send_approval_status_update_email(
 
         case AccountApprovalStatusChoices.APPROVED:
             template_path = EmailType.REQUEST_APPROVED.value
-            subject = 'Access request approved'
+            subject = 'Access Request Approved'
             text_message = 'Your account request has been approved.'
 
         case AccountApprovalStatusChoices.DENIED:
             template_path = EmailType.REQUEST_DENIED.value
-            subject = 'Access request denied'
+            subject = 'Access Request Denied'
             text_message = 'Your account request has been denied.'
 
         case AccountApprovalStatusChoices.DEACTIVATED:
             template_path = EmailType.ACCOUNT_DEACTIVATED.value
-            subject = 'Account deactivated'
+            subject = 'Account is Deactivated'
             text_message = 'Your account has been deactivated.'
-
+    context.update({'subject': subject})
     automated_email.delay(
         email_path=template_path,
         recipient_email=recipient_email,
