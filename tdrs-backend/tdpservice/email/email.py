@@ -55,7 +55,7 @@ def send_approval_status_update_email(
             subject = 'Account deactivated'
             text_message = 'Your account has been deactivated.'
 
-    mail.delay(
+    automated_email.delay(
         email_path=template_path,
         recipient_email=recipient_email,
         subject=subject,
@@ -65,13 +65,9 @@ def send_approval_status_update_email(
 
 
 @shared_task
-def mail(email_path, recipient_email, subject, email_context, text_message):
+def automated_email(email_path, recipient_email, subject, email_context, text_message):
     """Send email to user."""
-    subject = email_context['subject']
     html_message = construct_email(email_path, email_context)
-
-    if not text_message:
-        text_message = 'An email was sent with HTML content. Please view in an HTML capable email client.'
 
     send_email(subject, text_message, html_message, [recipient_email])
 
@@ -98,7 +94,6 @@ def send_email(subject, message, html_message, recipient_list):
             f"Emails were attempted to the following email list: {valid_emails}. \
         But none were sent. They may be invalid."
         )
-    return False
 
 
 def filter_valid_emails(emails):

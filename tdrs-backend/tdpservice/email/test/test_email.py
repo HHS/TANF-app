@@ -6,13 +6,28 @@ from django.core.exceptions import ValidationError
 from django.template import TemplateDoesNotExist
 
 from tdpservice.email.email import (
+    automated_email,
     send_email,
     filter_valid_emails,
     construct_email
 )
 
+
 class EmailTest(TestCase):
     """Email test class."""
+
+    def test_automated_email(self):
+        """Test automated_email."""
+        email_path = "access-request-submitted.html"
+        recipient_email = "test@email.com"
+        subject = "Test email"
+        email_context = {}
+        text_message = "This is a test email."
+
+        automated_email(email_path, recipient_email, subject, email_context, text_message)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, subject)
 
     def test_send_email(self):
         """Test email."""
@@ -20,8 +35,6 @@ class EmailTest(TestCase):
         message = "This is a test email."
         html_message = "<DOCTYPE html><html><body><h1>This is a test email.</h1></body></html>"
         recipient_list = ["test_user@hhs.gov"]
-
-        mail.outbox.clear()
 
         send_email(subject=subject, message=message, html_message=html_message, recipient_list=recipient_list)
 
