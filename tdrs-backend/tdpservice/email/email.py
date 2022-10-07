@@ -46,15 +46,19 @@ def send_approval_status_update_email(
             text_message = 'Your account request has been approved.'
 
         case AccountApprovalStatusChoices.DENIED:
+            print("=========================================DENIED=========================================")
             template_path = EmailType.REQUEST_DENIED.value
             subject = 'Access Request Denied'
             text_message = 'Your account request has been denied.'
 
         case AccountApprovalStatusChoices.DEACTIVATED:
+            print("=========================================DEACTIVATED=========================================")
             template_path = EmailType.ACCOUNT_DEACTIVATED.value
             subject = 'Account is Deactivated'
             text_message = 'Your account has been deactivated.'
+
     context.update({'subject': subject})
+
     automated_email.delay(
         email_path=template_path,
         recipient_email=recipient_email,
