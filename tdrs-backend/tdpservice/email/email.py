@@ -28,7 +28,7 @@ def send_approval_status_update_email(
     logger.info(f"Preparing email to {recipient_email} with status {new_approval_status}")
     match new_approval_status:
         case AccountApprovalStatusChoices.INITIAL:
-            print("initial")
+            # Stubbed for future use
             return
 
         case AccountApprovalStatusChoices.ACCESS_REQUEST:
@@ -37,7 +37,7 @@ def send_approval_status_update_email(
             text_message = 'Your account has been requested.'
 
         case AccountApprovalStatusChoices.PENDING:
-            print("pending")
+            # Stubbed for future use
             return
 
         case AccountApprovalStatusChoices.APPROVED:
@@ -46,7 +46,6 @@ def send_approval_status_update_email(
             text_message = 'Your account request has been approved.'
 
         case AccountApprovalStatusChoices.DENIED:
-
             template_path = EmailType.REQUEST_DENIED.value
             subject = 'Access Request Denied'
             text_message = 'Your account request has been denied.'
