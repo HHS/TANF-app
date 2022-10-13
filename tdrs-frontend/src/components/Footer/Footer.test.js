@@ -5,20 +5,12 @@ import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
 
 import Footer from './Footer'
-import { permissions } from '../Header/developer_permissions'
 
 describe('Footer', () => {
   const unauthenticatedInitialState = {
     router: { location: { pathname: '/profile' } },
     auth: {
       authenticated: false,
-    },
-  }
-  const adminInitialState = {
-    router: { location: { pathname: '/profile' } },
-    auth: {
-      authenticated: true,
-      roles: [{ id: 1, name: 'Developer', permissions }],
     },
   }
 
