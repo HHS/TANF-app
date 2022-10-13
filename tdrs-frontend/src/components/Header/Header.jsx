@@ -3,7 +3,10 @@ import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
-import { canViewAdmin } from '../../utils/canViewAdmin'
+import {
+  accountStatusIsApproved,
+  accountIsInReview,
+} from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
 
@@ -21,7 +24,8 @@ function Header() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
-  const userAccessRequestPending = Boolean(user?.['access_request'])
+  const userAccessRequestPending = useSelector(accountIsInReview)
+  const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
   const hasPermission = (permissionName) =>
     user?.roles?.[0]?.permissions?.some(
@@ -120,7 +124,7 @@ function Header() {
                       href="/data-files"
                     />
                   )}
-                  {userAccessRequestPending && (
+                  {(userAccessRequestPending || userAccessRequestApproved) && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Profile"

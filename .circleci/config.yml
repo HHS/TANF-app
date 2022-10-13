@@ -122,6 +122,8 @@ commands:
           command: |
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
               CURRENT_FLAG=main-<<parameters.component>>
+            elif [ "$CIRCLE_BRANCH" == "master" ] ; then
+              CURRENT_FLAG=master-<<parameters.component>>
             else
               CURRENT_FLAG=dev-<<parameters.component>>
             fi
@@ -473,7 +475,7 @@ jobs:
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
                pip install wait-for-it &&
-               wait-for-it --service http://web:3000 \
+               wait-for-it --service http://tdp-frontend/ \
                            --timeout 60 \
                            -- echo \"Frontend is ready\""
       - run-owasp-scan:

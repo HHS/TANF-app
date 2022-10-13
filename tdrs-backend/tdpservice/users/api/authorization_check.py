@@ -26,7 +26,7 @@ class AuthorizationCheck(APIView):
 
         if user.is_authenticated:
             # Check if the user is deactivated in our system before passing auth params.
-            if user.deactivated:
+            if user.is_deactivated:
                 logout(request)
                 response = Response({"authenticated": False, "inactive": True})
                 response.delete_cookie("id_token")

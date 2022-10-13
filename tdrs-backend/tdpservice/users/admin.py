@@ -33,17 +33,23 @@ class UserForm(forms.ModelForm):
             'Developer': 'stt'
         }
 
-        correct_location_type = role_location_type_map.get(group.name)
-        location_based_role = group.name in ('OFA Regional Staff', 'Data Analyst', 'Developer')
+        # allow saving the user without a group type
+        # updating a user's account approval status without assigning a group used to throw an error
+        # a group assignment can give the user access to some frontend features regardless of `account_approval_status`
+        # users in `Pending` status should not have a group assigned
+        if group is not None:
+            correct_location_type = role_location_type_map.get(group.name)
+            location_based_role = group.name in ('OFA Regional Staff', 'Data Analyst', 'Developer')
 
-        if (location_based_role and (location_type and location_type.name != correct_location_type)):
+            if (location_based_role and (location_type and location_type.name != correct_location_type)):
 
-            raise ValidationError("Incorrect location type for role")
+                raise ValidationError("Incorrect location type for role")
 
-        if not location_based_role and cleaned_data['location_type']:
+            if not location_based_role and cleaned_data['location_type']:
 
-            raise ValidationError(
-                "Users other than Regional Staff and data analysts do not get assigned a location")
+                raise ValidationError(
+                    "Users other than Regional Staff and data analysts do not get assigned a location")
+
         return cleaned_data
 
 
@@ -51,9 +57,9 @@ class UserAdmin(admin.ModelAdmin):
     """Customize the user admin functions."""
 
     exclude = ['password', 'user_permissions', 'is_active']
-    readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request']
+    readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request', 'deactivated']
     form = UserForm
-    list_filter = ('access_request',)
+    list_filter = ('account_approval_status',)
 
     def has_add_permission(self, request):
         """Disable User object creation through Django Admin."""
