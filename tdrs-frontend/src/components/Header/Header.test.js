@@ -17,6 +17,7 @@ describe('Header', () => {
         email: 'test@test.com',
         roles: [{ id: 1, name: 'Developer', permissions }],
         access_request: true,
+        account_approval_status: 'Approved',
       },
       authenticated: true,
     },

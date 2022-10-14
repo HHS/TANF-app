@@ -158,7 +158,7 @@ describe('UploadReport', () => {
       expect(headings.length).toBeTruthy()
 
       done()
-    }, 10)
+    }, 100)
   })
 
   it('should render a div with class "usa-form-group--error" if there is an error', () => {

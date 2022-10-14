@@ -7,6 +7,11 @@ import signOut from '../../utils/signOut'
 import FormGroup from '../FormGroup'
 import STTComboBox from '../STTComboBox'
 import { requestAccess } from '../../actions/requestAccess'
+import {
+  accountStatusIsApproved,
+  accountIsInReview,
+  selectPrimaryUserRole,
+} from '../../selectors/auth'
 
 /**
  * Home renders the Request Access form for creating a profile, and displays
@@ -17,8 +22,8 @@ function Home() {
   const errorRef = useRef(null)
 
   const user = useSelector((state) => state.auth.user)
-  const role = user?.roles
-  const hasRole = Boolean(role?.length > 0)
+  const role = useSelector(selectPrimaryUserRole)
+
   const [errors, setErrors] = useState({})
   const [profileInfo, setProfileInfo] = useState({
     firstName: '',
@@ -30,7 +35,8 @@ function Home() {
 
   const sttList = useSelector((state) => state?.stts?.sttList)
 
-  const userAccessRequestApproved = Boolean(user?.['access_request'])
+  const userAccessInReview = useSelector(accountIsInReview)
+  const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
   const shouldShowSttComboBox = !user?.email?.includes('@acf.hhs.gov')
 
@@ -113,7 +119,22 @@ function Home() {
     return setTimeout(() => errorRef.current.focus(), 0)
   }
 
-  if (!userAccessRequestApproved) {
+  if (userAccessInReview) {
+    return (
+      <div className="margin-top-5">
+        <div className="margin-top-5">
+          <p className="margin-top-1 margin-bottom-4" id="page-alert">
+            Your request for access is currently being reviewed by an OFA Admin.
+            We'll send you an email when it's been approved.
+          </p>
+        </div>
+        <Button type="button" onClick={signOut}>
+          <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
+          Sign Out
+        </Button>
+      </div>
+    )
+  } else if (!userAccessRequestApproved) {
     return (
       <div className="margin-top-5">
         <p className="margin-top-1 margin-bottom-4">
@@ -172,31 +193,14 @@ function Home() {
     )
   }
 
-  if (userAccessRequestApproved && !hasRole) {
-    return (
-      <div className="margin-top-5">
-        <div className="margin-top-5">
-          <p className="margin-top-1 margin-bottom-4" id="page-alert">
-            Your request for access is currently being reviewed by an OFA Admin.
-            We'll send you an email when it's been approved.
-          </p>
-        </div>
-        <Button type="button" onClick={signOut}>
-          <FontAwesomeIcon className="margin-right-1" icon={faSignOutAlt} />
-          Sign Out
-        </Button>
-      </div>
-    )
-  }
-
   return (
     <div className="margin-top-5">
       <p className="margin-top-1 margin-bottom-4">
-        You've been approved as a(n) {role?.[0].name}. You'll be able to do the
+        You've been approved as a(n) {role.name}. You'll be able to do the
         following in TDP:
       </p>
       <ul>
-        {role?.[0]?.permissions?.map((permission) => (
+        {role.permissions?.map((permission) => (
           <li key={permission.id} id={permission.id}>
             {permission.name}
           </li>

@@ -67,7 +67,7 @@ _Alternatively_
 ### User Edit
 
 - When you click on a user from the User List, you can edit that user's information, including
-first name, last name, and username, as well as the user's Active Status, Superuser Status, Staff Status, assigned Groups, location ID and type (STT or region). You can also view the user's login.gov UUID (external users only), HHS ID (ACF users only), as well as the date and time the user joined and when they last logged in. Finally, the access_request field indicates if the user has submitted a request for access to TDP.
+first name, last name, and username, as well as the user's Account Status, Superuser Status, Staff Status, assigned Groups, location ID and type (STT or region). You can also view the user's login.gov UUID (external users only), HHS ID (ACF users only), as well as the date and time the user joined and when they last logged in. Finally, the access_request field indicates if the user has submitted a request for access to TDP (the `access_request` field is now deprecated in favor of the `account_approval_status` field).
 
 ![](images/admin_users.png)
 
