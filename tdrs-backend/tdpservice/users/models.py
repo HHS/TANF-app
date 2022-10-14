@@ -14,6 +14,17 @@ from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger()
 
+class AccountApprovalStatusChoices(models.TextChoices):
+    """Enum of options for `account_approval_status`."""
+
+    INITIAL = 'Initial'
+    ACCESS_REQUEST = 'Access request'
+    PENDING = 'Pending'
+    APPROVED = 'Approved'
+    DENIED = 'Denied'
+    DEACTIVATED = 'Deactivated'
+
+    # is "pending", "approved", and "denied" enough to cover functionality?
 
 class AccountApprovalStatusChoices(models.TextChoices):
     """Enum of options for `account_approval_status`."""
@@ -68,9 +79,9 @@ class User(AbstractUser):
         _("deactivated"),
         default=False,
         help_text=_(
-            "Deprecated: use Account Approval Status instead - "
-            "Designates whether this user should be treated as active. "
-            "Unselect this instead of deleting accounts."
+            'Deprecated: use Account Approval Status instead - '
+            'Designates whether this user should be treated as active. '
+            'Unselect this instead of deleting accounts.'
         ),
     )
 
@@ -80,9 +91,9 @@ class User(AbstractUser):
     access_request = models.BooleanField(
         default=False,
         help_text=_(
-            "Deprecated: use Account Approval Status instead - "
-            "Designates whether this user account has requested access to TDP. "
-            "Users with this checked must have groups assigned for the application to work correctly."
+            'Deprecated: use Account Approval Status instead - '
+            'Designates whether this user account has requested access to TDP. '
+            'Users with this checked must have groups assigned for the application to work correctly.'
         ),
     )
 
