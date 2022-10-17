@@ -14,17 +14,6 @@ from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger()
 
-class AccountApprovalStatusChoices(models.TextChoices):
-    """Enum of options for `account_approval_status`."""
-
-    INITIAL = 'Initial'
-    ACCESS_REQUEST = 'Access request'
-    PENDING = 'Pending'
-    APPROVED = 'Approved'
-    DENIED = 'Denied'
-    DEACTIVATED = 'Deactivated'
-
-    # is "pending", "approved", and "denied" enough to cover functionality?
 
 class AccountApprovalStatusChoices(models.TextChoices):
     """Enum of options for `account_approval_status`."""
