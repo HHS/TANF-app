@@ -14,65 +14,18 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def send_approval_status_update_email(
-    new_approval_status,
-    recipient_email,
-    context
-):
-    """Send an email to a user when their account approval status is updated."""
-    from tdpservice.users.models import AccountApprovalStatusChoices
-
-    template_path = None
-    subject = None
-    text_message = None
-    logger.info(f"Preparing email to {recipient_email} with status {new_approval_status}")
-    match new_approval_status:
-        case AccountApprovalStatusChoices.INITIAL:
-            # Stubbed for future use
-            return
-
-        case AccountApprovalStatusChoices.ACCESS_REQUEST:
-            template_path = EmailType.ACCESS_REQUEST_SUBMITTED.value
-            subject = 'Access Request Submitted'
-            text_message = 'Your account has been requested.'
-
-        case AccountApprovalStatusChoices.PENDING:
-            # Stubbed for future use
-            return
-
-        case AccountApprovalStatusChoices.APPROVED:
-            template_path = EmailType.REQUEST_APPROVED.value
-            subject = 'Access Request Approved'
-            text_message = 'Your account request has been approved.'
-
-        case AccountApprovalStatusChoices.DENIED:
-            template_path = EmailType.REQUEST_DENIED.value
-            subject = 'Access Request Denied'
-            text_message = 'Your account request has been denied.'
-
-        case AccountApprovalStatusChoices.DEACTIVATED:
-            template_path = EmailType.ACCOUNT_DEACTIVATED.value
-            subject = 'Account is Deactivated'
-            text_message = 'Your account has been deactivated.'
-
-    context.update({'subject': subject})
-
-    automated_email.delay(
-        email_path=template_path,
-        recipient_email=recipient_email,
-        subject=subject,
-        email_context=context,
-        text_message=text_message
-    )
-
-
 @shared_task
 def automated_email(email_path, recipient_email, subject, email_context, text_message):
-    """Send email to user."""
-    logger.info(f"Starting celery task to send email to {recipient_email}")
+    """
+    Send email to user.
+    recipient_email can be either a string (single recipient) or a array of strings.
+    """
+
+    recipients = [recipient_email] if type(recipient_email) == str else recipient_email
+    logger.info(f"Starting celery task to send email to {recipients}")
     html_message = construct_email(email_path, email_context)
 
-    send_email(subject, text_message, html_message, [recipient_email])
+    send_email(subject, text_message, html_message, recipients)
 
 
 def construct_email(email_path, context):

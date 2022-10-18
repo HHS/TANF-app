@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- Body copy -->
+<p style="color: #000000;">
+<p>Hello,</p>
+
+<p><b>{{ stt_name }}</b> has attempted to submitte data files but something went wrong.</p>
+
+The submission was attempted on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> for the following
+sections:</p>
+
+{SectionNumber} - Active Case Data<br>
+{SectionNumber} - Closed Case Data<br>
+{SectionNumber} - Aggregate Data<br>
+{SectionNumber} - Stratum Data<br>
+
+<p>Please contact TDP Admin team at <a href="mailto:TANFData@acf.hhs.gov" target="_blank">TANFData@acf.hhs.gov</a> for
+  further assistance.</p>
+
+<p>Thank you,</p>
+TDP Team
+</p>
+{% endblock %}

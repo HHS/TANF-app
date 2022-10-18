@@ -9,7 +9,7 @@ from tdpservice.email.email import (
     automated_email,
     send_email,
     filter_valid_emails,
-    construct_email
+    construct_email,
 )
 
 
