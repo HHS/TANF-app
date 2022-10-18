@@ -158,6 +158,7 @@ class DataFile(FileRecord):
 
     @property
     def fiscal_year(self):
+        """Returns a string representation of the data file's fiscal year."""
         quarter_month_str = ""
 
         match self.quarter:

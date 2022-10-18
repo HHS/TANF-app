@@ -1,7 +1,5 @@
 """Wrapper to send emails with Django."""
 
-from tdpservice.email.email_enums import EmailType
-
 from celery import shared_task
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -18,9 +16,9 @@ logger = logging.getLogger(__name__)
 def automated_email(email_path, recipient_email, subject, email_context, text_message):
     """
     Send email to user.
+
     recipient_email can be either a string (single recipient) or a array of strings.
     """
-
     recipients = [recipient_email] if type(recipient_email) == str else recipient_email
     logger.info(f"Starting celery task to send email to {recipients}")
     html_message = construct_email(email_path, email_context)
