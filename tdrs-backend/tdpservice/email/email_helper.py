@@ -66,8 +66,6 @@ def send_data_submitted_email(recipients, context):
     subject = 'Data Submitted'
     text_message = 'Your data has been submitted.'
 
-    print(recipients)
-
     automated_email.delay(
         email_path=template_path,
         recipient_email=recipients,
