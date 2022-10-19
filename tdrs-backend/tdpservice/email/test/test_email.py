@@ -3,7 +3,6 @@
 from django.core import mail
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from django.template import TemplateDoesNotExist
 
 from tdpservice.email.email import (
     automated_email,
