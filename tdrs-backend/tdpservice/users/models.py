@@ -228,7 +228,7 @@ class User(AbstractUser):
 
                 send_approval_status_update_email(
                     new_status,
-                    self.email,
+                    self,
                     {
                         "first_name": self.first_name,
                         "stt_name": str(self.stt),
