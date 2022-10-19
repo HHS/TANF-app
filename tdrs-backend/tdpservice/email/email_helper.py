@@ -1,3 +1,4 @@
+"""Helper functions for sending emails."""
 from tdpservice.email.email_enums import EmailType
 from .email import automated_email, log
 
