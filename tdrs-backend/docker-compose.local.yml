@@ -22,6 +22,8 @@ services:
       - DATA_DIR=/tmp/localstack/data
       - AWS_BUCKET=tdp-datafiles-localstack
       - AWS_REGION_NAME=us-gov-west-1
+      - HOSTNAME=localstack
+      - HOSTNAME_EXTERNAL=localstack
     ports:
       - "4566:4566"
     volumes:
@@ -53,6 +55,12 @@ services:
       - AMS_CLIENT_ID
       - AMS_CLIENT_SECRET
       - AMS_CONFIGURATION_ENDPOINT
+      - ACFTITAN_HOST
+      - ACFTITAN_KEY
+      - ACFTITAN_USERNAME
+      - REDIS_URI
+      - REDIS_SERVER_LOCAL=TRUE
+      - ACFTITAN_SFTP_PYTEST
     volumes:
       - .:/tdpapp
     image: tdp
@@ -65,6 +73,15 @@ services:
     depends_on:
       - localstack
       - postgres
+      - redis-server
+
+  redis-server:
+    image: "redis:alpine"
+    command: redis-server /tdpapp/redis.conf
+    ports:
+      - "6379:6379"
+    volumes:
+      - .:/tdpapp
 
 volumes:
   localstack_data:
