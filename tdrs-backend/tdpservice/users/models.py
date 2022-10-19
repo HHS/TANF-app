@@ -3,7 +3,7 @@
 import logging
 import uuid
 
-from tdpservice.email.email import send_approval_status_update_email
+from tdpservice.email.email_helper import send_approval_status_update_email
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
