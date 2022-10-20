@@ -6,8 +6,12 @@ import Profile from '../Profile'
 import PrivateRoute from '../PrivateRoute'
 import LoginCallback from '../LoginCallback'
 import Reports from '../Reports'
-import Home from '../Home'
 import { useSelector } from 'react-redux'
+import { accountIsInReview } from '../../selectors/auth'
+
+import SiteMap from '../SiteMap'
+
+import Home from '../Home'
 
 /**
  * This component renders the routes for the app.
@@ -16,14 +20,9 @@ import { useSelector } from 'react-redux'
  */
 const AppRoutes = () => {
   const user = useSelector((state) => state.auth.user)
-  const role = user?.roles
-  const hasRole = Boolean(role?.length > 0)
-  const userAccessRequestApproved = Boolean(user?.['access_request'])
 
-  const homeTitle =
-    userAccessRequestApproved && !hasRole
-      ? 'Request Submitted'
-      : 'Welcome to TDP'
+  const userAccountInReview = useSelector(accountIsInReview)
+  const homeTitle = userAccountInReview ? 'Request Submitted' : 'Welcome to TDP'
 
   return (
     <Routes>
@@ -44,6 +43,16 @@ const AppRoutes = () => {
         element={
           <PrivateRoute title="TANF Data Files">
             <Reports />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        exact
+        path="/site-map"
+        element={
+          <PrivateRoute title="Site Map">
+            <SiteMap user={user} />
           </PrivateRoute>
         }
       />

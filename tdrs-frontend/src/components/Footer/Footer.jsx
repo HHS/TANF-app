@@ -1,8 +1,10 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 
 import ACFLogo from '../../assets/ACFLogo.svg'
 
 function Footer() {
+  const authenticated = useSelector((state) => state.auth.authenticated)
   return (
     <footer className="usa-footer usa-footer--slim">
       <div className="usa-footer__primary-section">
@@ -15,9 +17,33 @@ function Footer() {
                     className="usa-footer__primary-link"
                     href="https://www.acf.hhs.gov/privacy-policy"
                     target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Privacy Policy
+                  </a>
+                </li>
+                {authenticated ? (
+                  <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                    <a
+                      className="usa-footer__primary-link"
+                      href="/site-map"
+                      target="_self"
+                      rel="noopener noreferrer"
+                    >
+                      Site Map
+                    </a>
+                  </li>
+                ) : null}
+              </ul>
+              <ul className="grid-row">
+                <li className="mobile-lg:grid-col-6 desktop:grid-col-auto usa-footer__primary-content">
+                  <a
+                    className="usa-footer__primary-link"
+                    href="https://www.hhs.gov/vulnerability-disclosure-policy/index.html"
+                    target="_blank"
                     rel="noreferrer"
                   >
-                    Privacy policy
+                    Vulnerability Disclosure Policy
                   </a>
                 </li>
               </ul>

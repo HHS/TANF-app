@@ -3,6 +3,11 @@ import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+import { canViewAdmin } from '../../utils/canViewAdmin'
+import {
+  accountStatusIsApproved,
+  accountIsInReview,
+} from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
 
@@ -20,21 +25,14 @@ function Header() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
-  const userAccessRequestPending = Boolean(user?.['access_request'])
-  const userAccessRequestApproved =
-    Boolean(user?.['access_request']) && user.roles.length > 0
-
-  const isMemberOfOne = (...groupNames) =>
-    user?.roles?.some((role) => groupNames.includes(role.name))
+  const userAccessRequestPending = useSelector(accountIsInReview)
+  const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
   const hasPermission = (permissionName) =>
     user?.roles?.[0]?.permissions?.some(
       (perm) => perm.codename === permissionName
     )
 
-  const canViewAdmin =
-    userAccessRequestApproved &&
-    isMemberOfOne('Developer', 'OFA System Admin', 'ACF OCIO')
   const canViewDataFiles = hasPermission('view_datafile')
 
   const menuRef = useRef()
@@ -127,14 +125,14 @@ function Header() {
                       href="/data-files"
                     />
                   )}
-                  {userAccessRequestPending && (
+                  {(userAccessRequestPending || userAccessRequestApproved) && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Profile"
                       href="/profile"
                     />
                   )}
-                  {canViewAdmin && (
+                  {canViewAdmin(user) && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Admin"

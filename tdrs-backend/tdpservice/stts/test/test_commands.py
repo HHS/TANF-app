@@ -2,7 +2,7 @@
 
 from django.core.management import call_command
 import pytest
-from ..models import Region, STT
+from tdpservice.stts.models import Region, STT
 
 
 @pytest.mark.django_db

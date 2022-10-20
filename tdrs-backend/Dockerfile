@@ -1,4 +1,4 @@
-FROM python:3.10.1-slim-buster
+FROM python:3.10.4-slim-buster
 ENV PYTHONUNBUFFERED 1
 
 ARG user=tdpuser
