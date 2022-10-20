@@ -11,6 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 logger = logging.getLogger()
 
@@ -233,6 +234,7 @@ class User(AbstractUser):
                         "first_name": self.first_name,
                         "stt_name": str(self.stt),
                         "group_permission": str(self.groups.first()),
+                        "url": settings.FRONTEND_BASE_URL
                     }
                 )
 

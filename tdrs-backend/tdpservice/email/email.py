@@ -49,8 +49,6 @@ def automated_email(email_path, recipient_email, subject, email_context, text_me
     """Send email to user."""
     logger.info(f"Starting celery task to send email to {recipient_email}")
 
-    email_context.update({'url': settings.FRONTEND_BASE_URL})
-
     html_message = get_template(email_path).render(email_context)
     valid_emails = filter_valid_emails([recipient_email], logger_context)
 
