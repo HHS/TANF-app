@@ -39,8 +39,8 @@ def log(msg, logger_context=None, level='info'):
             change_message=msg,
             action_flag=CHANGE,
             content_type_id=ContentType.objects.get_for_model(User).pk,
-            object_id=logger_context['user_id'],
-            object_repr=logger_context['user_email']
+            object_id=logger_context['object_id'],
+            object_repr=logger_context['object_repr']
         )
 
 

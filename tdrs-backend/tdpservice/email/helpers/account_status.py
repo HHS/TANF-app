@@ -1,6 +1,6 @@
-"""Helper functions for sending emails."""
+"""Helper functions for sending approval status update emails."""
 from tdpservice.email.email_enums import EmailType
-from .email import automated_email, log
+from tdpservice.email.email import automated_email, log
 
 
 def send_approval_status_update_email(
@@ -14,7 +14,8 @@ def send_approval_status_update_email(
     recipient_email = user.email
     logger_context = {
         'user_id': user.id,
-        'user_email': user.email
+        'object_id': user.id,
+        'object_repr': user.email
     }
 
     template_path = None
@@ -61,21 +62,4 @@ def send_approval_status_update_email(
         email_context=context,
         text_message=text_message,
         logger_context=logger_context
-    )
-
-
-def send_data_submitted_email(recipients, context):
-    """Send an email to a user when their data has been submitted."""
-    template_path = EmailType.DATA_SUBMITTED.value
-    subject = 'Data Submitted'
-    text_message = 'Your data has been submitted.'
-
-    log(f'emailing {recipients}')
-
-    automated_email.delay(
-        email_path=template_path,
-        recipient_email=recipients,
-        subject=subject,
-        email_context=context,
-        text_message=text_message
     )
