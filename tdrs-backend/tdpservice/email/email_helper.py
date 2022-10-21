@@ -1,27 +1,31 @@
-"""Helper methods for email.py."""
+"""Helper functions for sending emails."""
 from tdpservice.email.email_enums import EmailType
-from tdpservice.email.email import automated_email
-
-import logging
-
-logger = logging.getLogger(__name__)
+from .email import automated_email, log
 
 
 def send_approval_status_update_email(
     new_approval_status,
-    recipient_email,
-    context
+    user,
+    context,
 ):
     """Send an email to a user when their account approval status is updated."""
     from tdpservice.users.models import AccountApprovalStatusChoices
 
+    recipient_email = user.email
+    logger_context = {
+        'user_id': user.id,
+        'user_email': user.email
+    }
+
     template_path = None
     subject = None
     text_message = None
-    logger.info(f"Preparing email to {recipient_email} with status {new_approval_status}")
+
+    log(f"Preparing email to {recipient_email} with status {new_approval_status}", logger_context=logger_context)
+
     match new_approval_status:
         case AccountApprovalStatusChoices.INITIAL:
-            print("initial")
+            # Stubbed for future use
             return
 
         case AccountApprovalStatusChoices.ACCESS_REQUEST:
@@ -30,7 +34,7 @@ def send_approval_status_update_email(
             text_message = 'Your account has been requested.'
 
         case AccountApprovalStatusChoices.PENDING:
-            print("pending")
+            # Stubbed for future use
             return
 
         case AccountApprovalStatusChoices.APPROVED:
@@ -39,7 +43,6 @@ def send_approval_status_update_email(
             text_message = 'Your account request has been approved.'
 
         case AccountApprovalStatusChoices.DENIED:
-
             template_path = EmailType.REQUEST_DENIED.value
             subject = 'Access Request Denied'
             text_message = 'Your account request has been denied.'
@@ -56,7 +59,8 @@ def send_approval_status_update_email(
         recipient_email=recipient_email,
         subject=subject,
         email_context=context,
-        text_message=text_message
+        text_message=text_message,
+        logger_context=logger_context
     )
 
 
