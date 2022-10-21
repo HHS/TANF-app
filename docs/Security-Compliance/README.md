@@ -9,4 +9,5 @@ This subdirectory contains documentation that describes our practices as it rela
 * **[Records Management](./records-management.md)** - describes the security and compliance standards for TDP
 * **[Secret Key Management](./Incidence-Response/Secret-Key-Mgmt.md)** - lays out TDP's standards for minimizing the risk of leaking secret keys (i.e. sensitive information that--if exposed--opens the door for unauthorized access to the system and/or data therein).
 * **[Incidence Response](./Incidence-Response/)** - is a repository for all incident response (IR) protocols to be followed for TDP. 
+* **[TDP-to-TDRS File Fransfer](./File-Transfer-TDRS/)** - includes a visual and description of how files will be _temporarily_ transferred from TDP to TDRS. 
 
