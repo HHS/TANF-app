@@ -56,7 +56,7 @@ def automated_email(email_path, recipient_email, subject, email_context, text_me
 
 
     html_message = get_template(email_path).render(email_context)
-    valid_emails = filter_valid_emails([recipient_email], logger_context)
+    valid_emails = filter_valid_emails(recipients, logger_context)
 
     try:
         send_email(subject, text_message, html_message, valid_emails)
