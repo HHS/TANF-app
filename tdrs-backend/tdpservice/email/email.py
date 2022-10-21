@@ -54,7 +54,6 @@ def automated_email(email_path, recipient_email, subject, email_context, text_me
     recipients = [recipient_email] if type(recipient_email) == str else recipient_email
     logger.info(f"Starting celery task to send email to {recipients}")
 
-
     html_message = get_template(email_path).render(email_context)
     valid_emails = filter_valid_emails(recipients, logger_context)
 
