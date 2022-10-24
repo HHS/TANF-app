@@ -86,7 +86,7 @@ class DataFileViewSet(ModelViewSet):
             ).values_list('username', flat=True).distinct()
 
             if len(recipients) > 0:
-                send_data_submitted_email(list(recipients), email_context)
+                send_data_submitted_email(list(recipients), data_file, email_context)
 
         return response
 
