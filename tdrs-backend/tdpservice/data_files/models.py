@@ -149,9 +149,14 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
+        # This logic is temporary until the section choices for tribe and SSP are available
         if str(self.stt.type).lower() == 'tribe':
             return self.stt.filenames.get(
-                ('Tribal ' if 'Tribal' not in self.section else '') + self.section,
+                ('Tribal ' if 'Tribal' not in self.section else '') + self.section, # This is temporary logic
+                None)
+        elif self.stt.ssp: # Currently, this doesn't exists and has to be added
+            return self.stt.filenames.get(
+                ('SSP ' if 'SSP' not in self.section else '') + self.section, # This is temporary logic
                 None)
         else:
             return self.stt.filenames.get(self.section, None)
