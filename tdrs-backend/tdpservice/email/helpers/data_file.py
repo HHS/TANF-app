@@ -12,7 +12,7 @@ def send_data_submitted_email(recipients, data_file, context):
     logger_context = {
         'user_id': data_file.user.id,
         'object_id': data_file.id,
-        'object_repr': f"{data_file.filename}; {data_file.fiscal_year}"
+        'object_repr': f"Uploaded data file for quarter: {data_file.fiscal_year}"
     }
 
     log(f'Data file submitted; emailing Data Analysts {recipients}', logger_context=logger_context)
