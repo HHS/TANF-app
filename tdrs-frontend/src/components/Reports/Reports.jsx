@@ -314,51 +314,54 @@ function Reports() {
           handleCancel={() => setIsToggled(false)}
         />
       )}
-      <div
-        id="errorModal"
-        className={`modal ${
-          errorModalVisible ? 'display-block' : 'display-none'
-        }`}
-      >
-        <div className="modal-content">
-          <h1
-            className="font-serif-xl margin-4 margin-bottom-0 text-normal"
-            tabIndex="-1"
-          >
-            Files have not been submitted.
-          </h1>
-          <p className="margin-4 margin-top-1">
-            Files have not been submitted. Searching without submitting will
-            discard your changes and remove any uploaded files.
-          </p>
-          <div className="margin-x-4 margin-bottom-4">
-            <Button
-              type="button"
-              className="renew-session mobile:margin-bottom-1 mobile-lg:margin-bottom-0"
-              onClick={() => {
-                setErrorModalVisible(false)
-                dispatch(setYear(previouslySelectedYear || selectedYear))
-                dispatch(
-                  setQuarter(previouslySelectedQuarter || selectedQuarter)
-                )
-                dispatch(setStt(previouslySelectedStt || selectStt))
-              }}
+      {errorModalVisible && (
+        <div
+          id="errorModal"
+          className="modal display-block"
+          // className={`modal ${
+          //   errorModalVisible ? 'display-block' : 'display-none'
+          // }`}
+        >
+          <div className="modal-content">
+            <h1
+              className="font-serif-xl margin-4 margin-bottom-0 text-normal"
+              tabIndex="-1"
             >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              className="sign-out"
-              onClick={() => {
-                setErrorModalVisible(false)
-                handleSearch()
-              }}
-            >
-              Discard and search
-            </Button>
+              Files have not been submitted.
+            </h1>
+            <p className="margin-4 margin-top-1">
+              Files have not been submitted. Searching without submitting will
+              discard your changes and remove any uploaded files.
+            </p>
+            <div className="margin-x-4 margin-bottom-4">
+              <Button
+                type="button"
+                className="renew-session mobile:margin-bottom-1 mobile-lg:margin-bottom-0"
+                onClick={() => {
+                  setErrorModalVisible(false)
+                  dispatch(setYear(previouslySelectedYear || selectedYear))
+                  dispatch(
+                    setQuarter(previouslySelectedQuarter || selectedQuarter)
+                  )
+                  dispatch(setStt(previouslySelectedStt || selectStt))
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className="sign-out"
+                onClick={() => {
+                  setErrorModalVisible(false)
+                  handleSearch()
+                }}
+              >
+                Discard and search
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   )
 }
