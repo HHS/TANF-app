@@ -3,10 +3,9 @@ from tdpservice.email.email_enums import EmailType
 from tdpservice.email.email import automated_email, log
 
 
-def send_data_submitted_email(recipients, data_file, context):
+def send_data_submitted_email(recipients, data_file, context, subject):
     """Send an email to a user when their data has been submitted."""
     template_path = EmailType.DATA_SUBMITTED.value
-    subject = 'Data Submitted'
     text_message = 'Your data has been submitted.'
 
     logger_context = {

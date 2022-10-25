@@ -1,19 +1,34 @@
 {% extends 'base.html' %}
 {% block content %}
-    <!-- Body copy -->
-    <p style="color: #000000;">
-        <p>Hello,</p>
+<!-- Body copy -->
+<p style="color: #000000;">
+<p>Hello,</p>
 
-        <p><b>{{ stt_name }}</b> has successfully submitted data files on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> for the following sections:</p>
+<p>
+    <b>{{ stt_name }}</b> has successfully submitted data files on <b>{{ submission_date }}</b> in Fiscal Year
+    <b>{{ fiscal_year }}</b> for the following sections:
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>Section</th>
+            <th>Submitted By</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ section_name }}</td>
+            <td>{{ submitted_by }}</td>
 
-        {SectionNumber} - Active Case Data<br>
-        {SectionNumber} - Closed Case Data<br>
-        {SectionNumber} - Aggregate Data<br>
-        {SectionNumber} - Stratum Data<br>
+        </tr>
 
-        <p>Please contact TDP Admin team at <a href="mailto:TANFData@acf.hhs.gov" target="_blank">TANFData@acf.hhs.gov</a> for further assistance.</p>
+    </tbody>
+</table>
 
-        <p>Thank you,</p>
-        TDP Team
-    </p>
+<p>Please contact TDP Admin team at <a href="mailto:TANFData@acf.hhs.gov" target="_blank">TANFData@acf.hhs.gov</a>
+    for further assistance.</p>
+
+<p>Thank you,</p>
+TDP Team
+</p>
 {% endblock %}

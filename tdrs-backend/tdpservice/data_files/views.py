@@ -72,11 +72,13 @@ class DataFileViewSet(ModelViewSet):
             data_file = DataFile.objects.get(id=response.data.get('id'))
 
             # Send email to user to notify them of the file upload status
+            subject = f"Data Submitted for {data_file.section}"
             email_context = {
                 'stt_name': str(data_file.stt),
                 'submission_date': data_file.created_at,
                 'submitted_by': user.get_full_name(),
-                'fiscal_year': data_file.fiscal_year
+                'fiscal_year': data_file.fiscal_year,
+                'section_name': data_file.section
             }
 
             recipients = User.objects.filter(
@@ -86,7 +88,7 @@ class DataFileViewSet(ModelViewSet):
             ).values_list('username', flat=True).distinct()
 
             if len(recipients) > 0:
-                send_data_submitted_email(list(recipients), data_file, email_context)
+                send_data_submitted_email(list(recipients), data_file, email_context, subject)
 
         return response
 

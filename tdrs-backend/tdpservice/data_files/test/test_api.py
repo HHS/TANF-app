@@ -219,7 +219,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
             mock_automated_email.assert_called_once_with(
                 email_path=EmailType.DATA_SUBMITTED.value,
                 recipient_email=[user.username],
-                subject='Data Submitted',
+                subject='Data Submitted for Active Case Data',
                 email_context=ANY,
                 text_message=ANY
             )
