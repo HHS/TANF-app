@@ -315,7 +315,7 @@ function Reports() {
         />
       )}
       <div
-        id="timeoutModal"
+        id="errorModal"
         className={`modal ${
           errorModalVisible ? 'display-block' : 'display-none'
         }`}
