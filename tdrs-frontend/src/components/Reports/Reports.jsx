@@ -59,7 +59,6 @@ function Reports() {
   const currentStt = isOFAAdmin ? selectedStt : userProfileStt
 
   const stt = sttList?.find((stt) => stt?.name === currentStt)
-  const [submittedHeader, setSubmittedHeader] = useState('')
 
   const errorsCount = formValidation.errors
 
@@ -73,7 +72,6 @@ function Reports() {
 
     // Filter out non-truthy values
     const form = [selectedYear, currentStt, selectedQuarter].filter(Boolean)
-    const reportHeader = `${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
 
     if (form.length === 3) {
       // Hide upload sections while submitting search
@@ -92,9 +90,6 @@ function Reports() {
           stt,
         })
       )
-
-      // Update the section header to reflect selections
-      setSubmittedHeader(reportHeader)
 
       // Restore upload sections to the page
       setTimeout(() => setIsToggled(true), 0)
@@ -315,7 +310,7 @@ function Reports() {
       {isUploadReportToggled && (
         <UploadReport
           stt={stt?.id}
-          header={submittedHeader}
+          header={`${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`}
           handleCancel={() => setIsToggled(false)}
         />
       )}
