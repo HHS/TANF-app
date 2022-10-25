@@ -23,15 +23,23 @@ import { fetchSttList } from '../../actions/sttList'
 function Reports() {
   // The selected year in the dropdown tied to our redux `reports` state
   const selectedYear = useSelector((state) => state.reports.year)
+  const [previouslySelectedYear, setPreviouslySelectedYear] = useState(null)
   // The selected stt in the dropdown tied to our redux `reports` state
   const selectedStt = useSelector((state) => state.reports.stt)
+  const [previouslySelectedStt, setPreviouslySelectedStt] = useState(null)
   // The selected quarter in the dropdown tied to our redux `reports` state
   const selectedQuarter = useSelector((state) => state.reports.quarter)
+  const [previouslySelectedQuarter, setPreviouslySelectedQuarter] =
+    useState(null)
   // The logged in user saved in our redux `auth` state object
   const user = useSelector((state) => state.auth.user)
   const isOFAAdmin =
     user && user.roles.some((role) => role.name === 'OFA Admin')
   const sttList = useSelector((state) => state?.stts?.sttList)
+
+  const [errorModalVisible, setErrorModalVisible] = useState(false)
+  const files = useSelector((state) => state.reports.files)
+  const uploadedFiles = files.filter((file) => file.fileName && !file.id)
 
   const userProfileStt = user?.stt?.name
 
@@ -109,11 +117,17 @@ function Reports() {
   }
 
   const selectYear = ({ target: { value } }) => {
+    if (selectedYear !== '') {
+      setPreviouslySelectedYear(selectedYear)
+    }
     dispatch(setYear(value))
     setTouched((currentForm) => ({ ...currentForm, year: true }))
   }
 
   const selectQuarter = ({ target: { value } }) => {
+    if (selectedQuarter !== '') {
+      setPreviouslySelectedQuarter(selectedQuarter)
+    }
     dispatch(setQuarter(value))
     setTouched((currentForm) => ({ ...currentForm, quarter: true }))
   }
@@ -121,6 +135,9 @@ function Reports() {
   // prefer => `auth.user.stt`
 
   const selectStt = (value) => {
+    if (selectedStt !== '') {
+      setPreviouslySelectedStt(selectedStt)
+    }
     dispatch(setStt(value))
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
   }
@@ -280,7 +297,17 @@ function Reports() {
               </select>
             </label>
           </div>
-          <Button className="margin-y-4" type="button" onClick={handleSearch}>
+          <Button
+            className="margin-y-4"
+            type="button"
+            onClick={() => {
+              if (uploadedFiles.length > 0) {
+                setErrorModalVisible(true)
+              } else {
+                handleSearch()
+              }
+            }}
+          >
             Search
           </Button>
         </form>
@@ -292,6 +319,51 @@ function Reports() {
           handleCancel={() => setIsToggled(false)}
         />
       )}
+      <div
+        id="timeoutModal"
+        className={`modal ${
+          errorModalVisible ? 'display-block' : 'display-none'
+        }`}
+      >
+        <div className="modal-content">
+          <h1
+            className="font-serif-xl margin-4 margin-bottom-0 text-normal"
+            tabIndex="-1"
+          >
+            Files have not been submitted.
+          </h1>
+          <p className="margin-4 margin-top-1">
+            Files have not been submitted. Searching without submitting will
+            discard your changes and remove any uploaded files.
+          </p>
+          <div className="margin-x-4 margin-bottom-4">
+            <Button
+              type="button"
+              className="renew-session mobile:margin-bottom-1 mobile-lg:margin-bottom-0"
+              onClick={() => {
+                setErrorModalVisible(false)
+                dispatch(setYear(previouslySelectedYear || selectedYear))
+                dispatch(
+                  setQuarter(previouslySelectedQuarter || selectedQuarter)
+                )
+                dispatch(setStt(previouslySelectedStt || selectStt))
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className="sign-out"
+              onClick={() => {
+                setErrorModalVisible(false)
+                handleSearch()
+              }}
+            >
+              Discard and search
+            </Button>
+          </div>
+        </div>
+      </div>
     </>
   )
 }
