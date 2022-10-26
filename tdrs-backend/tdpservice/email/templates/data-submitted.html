@@ -1,4 +1,41 @@
 {% extends 'base.html' %}
+
+{% block style %}
+<style type="text/css">
+    table {
+        width: 100%;
+        background-color: #ffffff;
+        border-width: 1px;
+        border-color: #000000;
+        border-style: solid;
+        color: #000000;
+        text-align: left;
+        margin-bottom: 8px;
+    }
+
+    thead {
+        border-style: solid;
+        border-color: #000000;
+        border-width: 1px;
+        background-color: #e6e6e6;
+    }
+
+    th {
+        padding: 8px;
+        border-style: solid;
+        border-color: #000000;
+        border-width: 1px;
+    }
+
+    td {
+        padding: 8px;
+        border-style: solid;
+        border-color: #000000;
+        border-width: 1px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Body copy -->
 <p style="color: #000000;">
