@@ -78,7 +78,8 @@ class DataFileViewSet(ModelViewSet):
                 'submission_date': data_file.created_at,
                 'submitted_by': user.get_full_name(),
                 'fiscal_year': data_file.fiscal_year,
-                'section_name': data_file.section
+                'section_name': data_file.section,
+                'subject': subject,
             }
 
             recipients = User.objects.filter(
