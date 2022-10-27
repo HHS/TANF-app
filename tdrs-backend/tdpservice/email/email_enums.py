@@ -7,6 +7,7 @@ class EmailType(Enum):
 
     ACCESS_REQUEST_SUBMITTED = 'access-request-submitted.html'
     DATA_SUBMITTED = 'data-submitted.html'
+    DATA_SUBMISSION_FAILED = 'data-submitted-failed.html'
     REQUEST_APPROVED = 'request-approved.html'
     REQUEST_DENIED = 'request-denied.html'
     INACTIVE_ACCOUNT_10_DAYS = 'inactive-account-10-days.html'

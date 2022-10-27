@@ -1,6 +1,6 @@
-"""Helper functions for sending emails."""
+"""Helper functions for sending approval status update emails."""
 from tdpservice.email.email_enums import EmailType
-from .email import automated_email, log
+from tdpservice.email.email import automated_email, log
 
 
 def send_approval_status_update_email(
@@ -14,7 +14,8 @@ def send_approval_status_update_email(
     recipient_email = user.email
     logger_context = {
         'user_id': user.id,
-        'user_email': user.email
+        'object_id': user.id,
+        'object_repr': user.email
     }
 
     template_path = None

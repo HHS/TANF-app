@@ -3,6 +3,7 @@
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 from django.conf import settings
+from django.contrib.auth.models import Group
 from drf_yasg.openapi import Parameter
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser
@@ -14,10 +15,12 @@ from rest_framework.decorators import action
 from wsgiref.util import FileWrapper
 from rest_framework import status
 
+from tdpservice.users.models import AccountApprovalStatusChoices, User
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import sftp_task
+from tdpservice.email.helpers.data_file import send_data_submitted_email
 
 
 class DataFileFilter(filters.FilterSet):
@@ -64,6 +67,30 @@ class DataFileViewSet(ModelViewSet):
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
+
+            user = request.user
+            data_file = DataFile.objects.get(id=response.data.get('id'))
+
+            # Send email to user to notify them of the file upload status
+            subject = f"Data Submitted for {data_file.section}"
+            email_context = {
+                'stt_name': str(data_file.stt),
+                'submission_date': data_file.created_at,
+                'submitted_by': user.get_full_name(),
+                'fiscal_year': data_file.fiscal_year,
+                'section_name': data_file.section,
+                'subject': subject,
+            }
+
+            recipients = User.objects.filter(
+                location_id=data_file.stt.id,
+                account_approval_status=AccountApprovalStatusChoices.APPROVED,
+                groups=Group.objects.get(name='Data Analyst')
+            ).values_list('username', flat=True).distinct()
+
+            if len(recipients) > 0:
+                send_data_submitted_email(list(recipients), data_file, email_context, subject)
+
         return response
 
     def filter_queryset(self, queryset):

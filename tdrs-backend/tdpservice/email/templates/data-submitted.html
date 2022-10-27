@@ -1,19 +1,39 @@
 {% extends 'base.html' %}
+
 {% block content %}
-    <!-- Body copy -->
-    <p style="color: #000000;">
-        <p>Hello,</p>
+<!-- Body copy -->
+<p style="color: #000000;">
+<p>Hello,</p>
 
-        <p><b>{{ stt_name }}</b> has successfully submitted data files on <b>{{ submission_date }}</b> in Fiscal Year <b>{{ fiscal_year }}</b> for the following sections:</p>
+<p>
+    <b>{{ stt_name }}</b> has successfully submitted data files on <b>{{ submission_date }}</b> in Fiscal Year
+    <b>{{ fiscal_year }}</b> for the following sections:
+</p>
 
-        {SectionNumber} - Active Case Data<br>
-        {SectionNumber} - Closed Case Data<br>
-        {SectionNumber} - Aggregate Data<br>
-        {SectionNumber} - Stratum Data<br>
+<table
+    style="width: 100%; background-color: #ffffff; border-width: 1px; border-color: #000000; border-style: solid; color: #000000; text-align: left; margin-bottom: 8px;">
+    <thead style="border-style: solid; border-color: #000000; border-width: 1px; background-color: #e6e6e6;">
+        <tr>
+            <th style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">Section</th>
+            <th style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">Submitted By</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">{{ section_name }}
+            </td>
+            <td style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">{{ submitted_by }}
+            </td>
 
-        <p>Please contact TDP Admin team at <a href="mailto:TANFData@acf.hhs.gov" target="_blank">TANFData@acf.hhs.gov</a> for further assistance.</p>
+        </tr>
 
-        <p>Thank you,</p>
-        TDP Team
-    </p>
+    </tbody>
+</table>
+
+<p>Please contact TDP Admin team at <a href="mailto:TANFData@acf.hhs.gov" target="_blank">TANFData@acf.hhs.gov</a>
+    for further assistance.</p>
+
+<p>Thank you,</p>
+TDP Team
+</p>
 {% endblock %}

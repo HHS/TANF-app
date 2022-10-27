@@ -39,18 +39,23 @@ def log(msg, logger_context=None, level='info'):
             change_message=msg,
             action_flag=CHANGE,
             content_type_id=ContentType.objects.get_for_model(User).pk,
-            object_id=logger_context['user_id'],
-            object_repr=logger_context['user_email']
+            object_id=logger_context['object_id'],
+            object_repr=logger_context['object_repr']
         )
 
 
 @shared_task
 def automated_email(email_path, recipient_email, subject, email_context, text_message, logger_context=None):
-    """Send email to user."""
-    logger.info(f"Starting celery task to send email to {recipient_email}")
+    """
+    Send email to user.
+
+    recipient_email can be either a string (single recipient) or a array of strings.
+    """
+    recipients = [recipient_email] if type(recipient_email) == str else recipient_email
+    logger.info(f"Starting celery task to send email to {recipients}")
 
     html_message = get_template(email_path).render(email_context)
-    valid_emails = filter_valid_emails([recipient_email], logger_context)
+    valid_emails = filter_valid_emails(recipients, logger_context)
 
     try:
         send_email(subject, text_message, html_message, valid_emails)
