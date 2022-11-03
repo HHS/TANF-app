@@ -149,21 +149,29 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
-        # TODO: This is interim logic, it has to be changed when all sections are available to requester
         if str(self.stt.type).lower() == 'tribe':
-            return self.stt.filenames.get(('Tribal ' if 'Tribal' not in self.section else '') + self.section,
-                                          self.create_filename())
+            return self.stt.filenames.get(
+                ('Tribal ' if 'Tribal' not in self.section else '') + self.section,
+                None)
         else:
-            return self.stt.filenames.get(self.section, self.create_filename())
+            return self.stt.filenames.get(self.section, None)
 
-    def create_filename(self, prefix='ADS.E2J'):
-        """Return a valid file name for sftp transfer."""
-        """TODO: This method has to be removed"""
-        # STT_TYPES = ["state", "territory", "tribe"]
-        SECTION = [i.value for i in list(self.Section)]
+    @property
+    def fiscal_year(self):
+        """Return a string representation of the data file's fiscal year."""
+        quarter_month_str = ""
 
-        # str(STT_TYPES.index(self.stt.type)+1)
-        return ''.join(prefix+'.FTP'+str(SECTION.index(self.section))+'.TS' + str(self.stt.stt_code))
+        match self.quarter:
+            case DataFile.Quarter.Q1:
+                quarter_month_str = "(Oct - Dec)"
+            case DataFile.Quarter.Q2:
+                quarter_month_str = "(Jul - Sep)"
+            case DataFile.Quarter.Q3:
+                quarter_month_str = "(Apr - Jun)"
+            case DataFile.Quarter.Q4:
+                quarter_month_str = "(Jan - Mar)"
+
+        return f"{self.year} - {self.quarter} {quarter_month_str}"
 
     @classmethod
     def create_new_version(self, data):

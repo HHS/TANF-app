@@ -17,6 +17,7 @@ function Button({
   disabled,
   target,
   href,
+  buttonKey,
 }) {
   const isBig = size ? size === 'big' : false
   const isSmall = size ? size === 'small' : false
@@ -43,6 +44,8 @@ function Button({
         onClick={onClick}
         data-testid="button"
         disabled={disabled}
+        aria-disabled={disabled}
+        buttonkey={buttonKey}
       >
         {children}
       </button>
@@ -61,7 +64,9 @@ function Button({
           className={classes}
           onClick={onClick}
           data-testid="button"
+          aria-disabled={disabled}
           disabled={disabled}
+          buttonkey={buttonKey}
         >
           {children}
         </button>
@@ -85,6 +90,7 @@ Button.propTypes = {
   disabled: PropTypes.bool,
   target: PropTypes.string,
   href: PropTypes.string,
+  buttonkey: PropTypes.string,
 }
 Button.defaultProps = {
   secondary: false,
@@ -98,6 +104,7 @@ Button.defaultProps = {
   className: null,
   disabled: false,
   target: '_blank',
+  buttonkey: null,
 }
 
 export default Button

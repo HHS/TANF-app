@@ -10,7 +10,7 @@ import { submit } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 import { fileUploadSections } from '../../reducers/reports'
 
-function UploadReport({ handleCancel, header, stt }) {
+function UploadReport({ handleCancel, header, stt, submitEnabled }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
   // The selected quarter in the dropdown tied to our redux `reports` state
@@ -27,6 +27,7 @@ function UploadReport({ handleCancel, header, stt }) {
     type: null,
     message: null,
   })
+  const alertRef = useRef(null)
 
   // Ensure newly rendered header is focused,
   // else it won't be read be screen readers.
@@ -84,6 +85,12 @@ function UploadReport({ handleCancel, header, stt }) {
     fileInput.init()
   }, [])
 
+  useEffect(() => {
+    if (localAlert.active && alertRef && alertRef.current) {
+      alertRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [localAlert, alertRef])
+
   return (
     <>
       <h2
@@ -95,6 +102,7 @@ function UploadReport({ handleCancel, header, stt }) {
       </h2>
       {localAlert.active && (
         <div
+          ref={alertRef}
           className={classNames('usa-alert usa-alert--slim', {
             [`usa-alert--${localAlert.type}`]: true,
           })}
@@ -117,6 +125,7 @@ function UploadReport({ handleCancel, header, stt }) {
           <Button className="card:margin-y-1" type="submit">
             Submit Data Files
           </Button>
+
           <Button className="cancel" type="button" onClick={handleCancel}>
             Cancel
           </Button>

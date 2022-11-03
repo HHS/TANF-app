@@ -30,7 +30,8 @@ def test_set_profile_data(api_client, user):
         "stt": None,
         "region": None,
         "roles": [],
-        "access_request": False
+        "access_request": False,
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Joe"
@@ -38,29 +39,9 @@ def test_set_profile_data(api_client, user):
 
 
 @pytest.mark.django_db
-def test_set_profile_data_access_request(api_client, user, stt):
-    """Test access_request field can be toggled."""
+def test_user_can_request_access(api_client, user, stt):
+    """Test `access_request` endpoint updates the `account_approval_status` field to `Access Request`."""
     api_client.login(username=user.username, password="test_password")
-    response = api_client.patch(
-        "/v1/users/set_profile/",
-        {"first_name": "Joe", "last_name": "Bloggs", "stt": stt.id, },
-        format="json",
-    )
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data == {
-        "id": user.id,
-        "email": user.username,
-        "first_name": "Joe",
-        "last_name": "Bloggs",
-        "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, "region": stt.region.id},
-        "region": None,
-        "roles": [],
-        "access_request": False
-    }
-    user.refresh_from_db()
-    assert user.first_name == "Joe"
-    assert user.last_name == "Bloggs"
-    assert user.stt.name == stt.name
 
     response = api_client.patch(
             "/v1/users/request_access/",
@@ -72,13 +53,30 @@ def test_set_profile_data_access_request(api_client, user, stt):
             "email": user.username,
             "first_name": "Joe",
             "last_name": "Bloggs",
-            "access_request": True,
+            "access_request": False,  # old value no longer touched
+            "account_approval_status": "Access request",  # new value updated
             "stt": {"id": stt.id, "type": stt.type, "code": stt.code, "name": stt.name, "region": stt.region.id},
             "region": None,
             "roles": [],
         }
 
     # TODO: In the future, we would like to test that users can be activated and their roles are correctly assigned.
+
+@pytest.mark.django_db
+def test_cannot_set_account_approval_status_through_api(api_client, user):
+    """Test that the `account_approval_status` field cannot be updated through an api call to `set_profile`."""
+    api_client.login(username=user.username, password="test_password")
+    response = api_client.patch(
+        "/v1/users/set_profile/",
+        {
+            "first_name": "Mike",  # required field
+            "last_name": "O'Hare",  # required field
+            "account_approval_status": "Approved"
+        },
+        impformat="json"
+    )
+    assert response.data['account_approval_status'] == "Initial"  # value doesn't update
+    assert response.status_code == status.HTTP_200_OK  # even though the request succeeds
 
 @pytest.mark.django_db
 def test_set_profile_data_last_name_apostrophe(api_client, user):
@@ -98,7 +96,8 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
         "stt": None,
         "region": None,
         "roles": [],
-        "access_request": False
+        "access_request": False,
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Mike"
@@ -123,7 +122,8 @@ def test_set_profile_data_first_name_apostrophe(api_client, user):
         "stt": None,
         "region": None,
         "roles": [],
-        "access_request": False
+        "access_request": False,
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Pat'Jack"
@@ -178,7 +178,8 @@ def test_set_profile_data_special_last_name(api_client, user):
         "stt": None,
         "region": None,
         "roles": [],
-        "access_request": False
+        "access_request": False,
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "John"
@@ -203,7 +204,8 @@ def test_set_profile_data_special_first_name(api_client, user):
         "stt": None,
         "region": None,
         "roles": [],
-        "access_request": False
+        "access_request": False,
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "John-Tom'"
@@ -228,7 +230,8 @@ def test_set_profile_data_spaced_last_name(api_client, user):
         "stt": None,
         "region": None,
         "roles": [],
-        "access_request": False
+        "access_request": False,
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Joan"
@@ -253,7 +256,8 @@ def test_set_profile_data_spaced_first_name(api_client, user):
         "stt": None,
         "region": None,
         "roles": [],
-        "access_request": False
+        "access_request": False,
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "John Jim"
@@ -278,7 +282,8 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
         "stt": None,
         "region": None,
         "roles": [],
-        "access_request": False
+        "access_request": False,
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Max"
@@ -303,7 +308,8 @@ def test_set_profile_data_last_name_with_tilde(api_client, user):
         "stt": None,
         "region": None,
         "roles": [],
-        "access_request": False
+        "access_request": False,
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Max"
@@ -335,7 +341,8 @@ def test_set_profile_data_extra_field_include_required(api_client, user):
             "stt": None,
             "region": None,
             "roles": [],
-            "access_request": False
+            "access_request": False,
+            "account_approval_status": 'Initial'
         }
         user.refresh_from_db()
         assert user.first_name == "Heather"

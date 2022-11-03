@@ -8,12 +8,12 @@ orbs:
 executors:
   docker-executor:
     docker:
-      - image: cimg/python:3.10.1
+      - image: cimg/python:3.10.4
         user: root
   machine-executor:
     machine:
       docker_layer_caching: false
-      image: ubuntu-2004:202104-01
+      image: ubuntu-2204:2022.10.1
 
 commands:
   ###
@@ -122,6 +122,8 @@ commands:
           command: |
             if [ "$CIRCLE_BRANCH" == "main" ] ; then
               CURRENT_FLAG=main-<<parameters.component>>
+            elif [ "$CIRCLE_BRANCH" == "master" ] ; then
+              CURRENT_FLAG=master-<<parameters.component>>
             else
               CURRENT_FLAG=dev-<<parameters.component>>
             fi
@@ -473,7 +475,7 @@ jobs:
             docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
                pip install wait-for-it &&
-               wait-for-it --service http://web:3000 \
+               wait-for-it --service http://tdp-frontend/ \
                            --timeout 60 \
                            -- echo \"Frontend is ready\""
       - run-owasp-scan:
@@ -516,6 +518,9 @@ jobs:
       - run:
           name: Run post-processing task to record OWASP ZAP results
           command: |
+            # Construct the project slug from the current branch name and user
+            PROJECT_SLUG=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+
             # These environment variables are exported to Circle CI's BASH_ENV
             # by the zap-scanner.sh script for each respective app target.
             CMD_ARGS=(
@@ -526,6 +531,7 @@ jobs:
               --frontend-pass-count ${ZAP_FRONTEND_PASS_COUNT:-0}
               --frontend-warn-count ${ZAP_FRONTEND_WARN_COUNT:-0}
               --frontend-fail-count ${ZAP_FRONTEND_FAIL_COUNT:-0}
+              --project-slug $PROJECT_SLUG
             )
             # Evaluate the full command before passing it in so it doesn't
             # get improperly interpolated by Cloud.gov.
@@ -677,7 +683,8 @@ workflows:
             - secrets-check
 
   dev-deployment:
-    when: << pipeline.parameters.run_dev_deployment >>
+    when:
+      << pipeline.parameters.run_dev_deployment >>
     jobs:
       - deploy-infrastructure-dev:
           target_env: << pipeline.parameters.target_env >>

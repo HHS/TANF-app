@@ -98,7 +98,7 @@ user = User.objects.get(username='alexandra.pennington@acf.hhs.gov')
 user.groups.set(Group.objects.filter(name='OFA System Admin'))
 user.is_staff = True
 user.is_superuser = True
-user.deactivated = False
+user.is_deactivated = False
 user.save()
 ```
 **4. Login to TDP frontend via ACF AMS and confirm access to TDP DAC restored.**
