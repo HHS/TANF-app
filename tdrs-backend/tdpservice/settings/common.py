@@ -7,6 +7,7 @@ from os.path import join
 from typing import Any, Optional
 
 from django.core.exceptions import ImproperlyConfigured
+from celery.schedules import crontab
 
 from configurations import Configuration
 
@@ -424,3 +425,13 @@ class Common(Configuration):
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_RESULT_SERIALIZER = 'json'
     CELERY_TIMEZONE = 'UTC'
+
+    CELERY_BEAT_SCHEDULE = {
+        'name': {
+            'task': 'tdpservice.scheduling.tasks.check_for_accounts_needing_deactivation_warning',
+            'schedule': crontab(day_of_week='*', hour='13', minute='*'), # Every day at 1pm UTC (9am EST)
+            'options': {
+                'expires': 15.0,
+            },
+        },     
+    }
