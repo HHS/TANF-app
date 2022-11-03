@@ -4,6 +4,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import configureStore from 'redux-mock-store'
+import appConfigureStore from '../../configureStore'
 import Reports from './Reports'
 import { SET_FILE, upload } from '../../actions/reports'
 
@@ -70,6 +71,12 @@ describe('Reports', () => {
       authenticated: true,
       user: {
         email: 'hi@bye.com',
+        stt: {
+          id: 2,
+          type: 'state',
+          code: 'AK',
+          name: 'Alaska',
+        },
         roles: [{ id: 1, name: 'OFA Admin', permission: [] }],
       },
     },
@@ -267,7 +274,7 @@ describe('Reports', () => {
   })
 
   it('should make a request with the selections and upload payloads after clicking Submit Data Files', async () => {
-    const store = mockStore({
+    const store = appConfigureStore({
       ...initialState,
       reports: {
         ...initialState.reports,
@@ -314,14 +321,16 @@ describe('Reports', () => {
         },
       })
     })
-    expect(store.dispatch).toHaveBeenCalledTimes(10)
+    expect(store.dispatch).toHaveBeenCalledTimes(13)
 
     // There should be 4 more dispatches upon making the submission,
     // one request to /reports for each file
+    await waitFor(() =>
+      expect(getByText('Submit Data Files')).toBeInTheDocument()
+    )
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(14)
-    expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledTimes(1)
+    expect(store.dispatch).toHaveBeenCalledTimes(18)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {
@@ -378,7 +387,7 @@ describe('Reports', () => {
     })
   })
 
-  it('should display error labels when user tries to search without making selections', () => {
+  it('should display error labels when user tries to search without making selections', async () => {
     const store = mockStore(initialState)
 
     const { getByText } = render(
@@ -389,11 +398,254 @@ describe('Reports', () => {
 
     fireEvent.click(getByText(/Search/, { selector: 'button' }))
 
-    expect(getByText('A fiscal year is required')).toBeInTheDocument()
-    expect(getByText('A quarter is required')).toBeInTheDocument()
-    expect(
-      getByText('A state, tribe, or territory is required')
-    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(getByText('A fiscal year is required')).toBeInTheDocument()
+      expect(getByText('A quarter is required')).toBeInTheDocument()
+      expect(
+        getByText('A state, tribe, or territory is required')
+      ).toBeInTheDocument()
+    })
+  })
+
+  describe('search form behaviors', () => {
+    const setUpSearchFormBehaviors = async () => {
+      // set initial search parameters in initialState
+      // using a live redux store here to capture state changes
+      // see: https://stackoverflow.com/a/65918951
+      const store = appConfigureStore({
+        ...initialState,
+        auth: {
+          authenticated: true,
+          user: {
+            email: 'hi@bye.com',
+            stt: {
+              id: 2,
+              type: 'state',
+              code: 'AK',
+              name: 'Alaska',
+            },
+            roles: [{ id: 1, name: 'Developer', permission: [] }],
+          },
+        },
+        reports: {
+          ...initialState.reports,
+          year: '2021',
+          stt: 'Alaska',
+          quarter: 'Q3',
+        },
+      })
+
+      const { getByText, queryByText, getByLabelText } = render(
+        <Provider store={store}>
+          <Reports />
+        </Provider>
+      )
+
+      await waitFor(() => {
+        expect(
+          queryByText('Section 1 - Active Case Data')
+        ).not.toBeInTheDocument()
+        expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
+        expect(
+          getByText('Quarter 3 (April - June)', { selector: 'option' }).selected
+        ).toBe(true)
+      })
+
+      return { getByText, queryByText, getByLabelText }
+    }
+
+    it('should only update the report header when search selections are changed after clicking search', async () => {
+      const { getByText, getByLabelText, queryByText } =
+        await setUpSearchFormBehaviors()
+
+      // search
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      await waitFor(() => {
+        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(
+          getByText('Alaska - Fiscal Year 2021 - Quarter 3 (April - June)')
+        ).toBeInTheDocument()
+      })
+
+      // make a change to the search selections, but don't click search
+      console.log('change year')
+
+      fireEvent.change(getByLabelText(/Fiscal Year/), {
+        target: { value: '2022' },
+      })
+      fireEvent.select(getByLabelText(/Fiscal Year/), {
+        target: { value: '2022' },
+      })
+      fireEvent.change(getByLabelText(/Quarter/), {
+        target: { value: 'Q2' },
+      })
+      fireEvent.select(getByLabelText(/Quarter/), {
+        target: { value: 'Q2' },
+      })
+
+      // the header should not update
+      await waitFor(() =>
+        expect(
+          queryByText('Alaska - Fiscal Year 2022 - Quarter 2 (January - March)')
+        ).not.toBeInTheDocument()
+      )
+
+      // click search and assert the header updates
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      await waitFor(() =>
+        expect(
+          getByText('Alaska - Fiscal Year 2022 - Quarter 2 (January - March)')
+        ).toBeInTheDocument()
+      )
+    })
+
+    it('should present a message when searching without first submitting uploaded files', async () => {
+      const { getByText, queryByText, getByLabelText } =
+        await setUpSearchFormBehaviors()
+
+      // search
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      await waitFor(() => {
+        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
+        expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
+        expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+      })
+
+      // add a file to be uploaded, but don't submit
+      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+        target: {
+          files: [makeTestFile('section1.txt')],
+        },
+      })
+
+      await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+
+      // make a change to the search selections and click search
+      fireEvent.change(getByLabelText(/Fiscal Year/), {
+        target: { value: '2022' },
+      })
+      fireEvent.select(getByLabelText(/Fiscal Year/), {
+        target: { value: '2022' },
+      })
+      await waitFor(() =>
+        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
+      )
+
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      // the modal should display
+      await waitFor(() =>
+        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+      )
+    })
+
+    it('should allow the user to cancel the error modal and retain previous search selections', async () => {
+      const { getByText, queryByText, getByLabelText } =
+        await setUpSearchFormBehaviors()
+
+      // search
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      await waitFor(() => {
+        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
+        expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
+        expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+      })
+
+      // add a file to be uploaded, but don't submit
+      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+        target: {
+          files: [makeTestFile('section1.txt')],
+        },
+      })
+
+      await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+
+      // make a change to the search selections and click search
+      fireEvent.change(getByLabelText(/Fiscal Year/), {
+        target: { value: '2022' },
+      })
+      fireEvent.select(getByLabelText(/Fiscal Year/), {
+        target: { value: '2022' },
+      })
+      await waitFor(() =>
+        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
+      )
+
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      // the modal should display
+      await waitFor(() =>
+        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+      )
+
+      // click cancel
+      fireEvent.click(getByText(/Cancel/, { selector: '#modal button' }))
+
+      // assert file still exists, search params are the same as initial
+      await waitFor(() => {
+        expect(getByText('section1.txt')).toBeInTheDocument()
+        expect(getByText('2021', { selector: 'option' }).selected).toBe(true)
+      })
+    })
+
+    it('should allow the user to discard un-submitted files and continue with the new search', async () => {
+      const { getByText, queryByText, getByLabelText } =
+        await setUpSearchFormBehaviors()
+
+      // search
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      await waitFor(() => {
+        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(getByText('Section 2 - Closed Case Data')).toBeInTheDocument()
+        expect(getByText('Section 3 - Aggregate Data')).toBeInTheDocument()
+        expect(getByText('Section 4 - Stratum Data')).toBeInTheDocument()
+      })
+
+      // add a file to be uploaded, but don't submit
+      fireEvent.change(getByLabelText('Section 1 - Active Case Data'), {
+        target: {
+          files: [makeTestFile('section1.txt')],
+        },
+      })
+
+      await waitFor(() => expect(getByText('section1.txt')).toBeInTheDocument())
+
+      // make a change to the search selections and click search
+      fireEvent.change(getByLabelText(/Fiscal Year/), {
+        target: { value: '2022' },
+      })
+      fireEvent.select(getByLabelText(/Fiscal Year/), {
+        target: { value: '2022' },
+      })
+      await waitFor(() =>
+        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
+      )
+
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      // the modal should display
+      await waitFor(() =>
+        expect(queryByText('Files Not Submitted')).toBeInTheDocument()
+      )
+
+      // click cancel
+      fireEvent.click(
+        getByText(/Discard and Search/, { selector: '#modal button' })
+      )
+
+      // assert file is cleared, search params are updated
+      await waitFor(() => {
+        expect(queryByText('section1.txt')).not.toBeInTheDocument()
+        expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
+      })
+    })
   })
 
   it('should show next calander year in fiscal year dropdown in October', () => {
