@@ -279,6 +279,8 @@ describe('Reports', () => {
     const origDispatch = store.dispatch
     store.dispatch = jest.fn(origDispatch)
 
+    window.HTMLElement.prototype.scrollIntoView = jest.fn(() => null)
+
     const { getByText, getByLabelText, getByRole } = render(
       <Provider store={store}>
         <Reports />
@@ -319,6 +321,7 @@ describe('Reports', () => {
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
     expect(store.dispatch).toHaveBeenCalledTimes(14)
+    expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalledTimes(1)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {
