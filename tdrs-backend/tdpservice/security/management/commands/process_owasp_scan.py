@@ -65,6 +65,14 @@ class Command(BaseCommand):
             f'{circle_build_num}/artifacts'
         )
         response = requests.get(circle_api_url)
+
+        if response.status_code == 500:
+            raise Exception("CircleCI API returned 500 error. The 'circle_build_num' number may be incorrect.")
+        elif response.status_code == 404:
+            raise Exception("CircleCI API returned 404 error. The 'circle_project_slug' number may be incorrect.")
+        elif response.status_code != 200:
+            raise Exception("CircleCI API returned an unexpected error.")
+
         artifacts = response.json().get('items', [])
         for artifact in artifacts:
             report_path = artifact.get('path')

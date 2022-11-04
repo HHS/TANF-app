@@ -62,7 +62,7 @@ a64c18db30ed        localstack/localstack:0.12.9 "docker-entrypoint.sh"   2 hour
 $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 ```
 
-7.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
+7.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](../docs/user_role_management.md) guide. 
 
 8.) Backend project tear down: 
 
