@@ -10,7 +10,5 @@ class EmailType(Enum):
     DATA_SUBMISSION_FAILED = 'data-submitted-failed.html'
     REQUEST_APPROVED = 'request-approved.html'
     REQUEST_DENIED = 'request-denied.html'
-    INACTIVE_ACCOUNT_10_DAYS = 'inactive-account-10-days.html'
-    INACTIVE_ACCOUNT_3_DAYS = 'inactive-account-3-days.html'
-    INACTIVE_ACCOUNT_1_DAYS = 'inactive-account-1-days.html'
+    DEACTIVATION_WARNING = 'account-deactivation-warning.html'
     ACCOUNT_DEACTIVATED = 'account-deactivated.html'
