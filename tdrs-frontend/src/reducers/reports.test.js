@@ -46,6 +46,7 @@ const initialState = {
   year: '',
   stt: '',
   quarter: '',
+  fileType: 'tanf',
 }
 
 describe('reducers/reports', () => {
@@ -108,6 +109,7 @@ describe('reducers/reports', () => {
       quarter: '',
       stt: '',
       year: '',
+      fileType: 'tanf',
     })
   })
 
@@ -160,6 +162,7 @@ describe('reducers/reports', () => {
       stt: '',
       year: '',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 
@@ -216,6 +219,7 @@ describe('reducers/reports', () => {
       stt: '',
       year: '',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 
@@ -263,6 +267,7 @@ describe('reducers/reports', () => {
       stt: '',
       year: '',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 
@@ -312,6 +317,7 @@ describe('reducers/reports', () => {
       stt: '',
       year: '',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 
@@ -413,6 +419,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: 'florida',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 
@@ -429,6 +436,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: '',
       quarter: 'Q1',
+      fileType: 'tanf',
     })
 
     expect(
@@ -443,6 +451,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: '',
       quarter: 'Q2',
+      fileType: 'tanf',
     })
 
     expect(
@@ -457,6 +466,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: '',
       quarter: 'Q3',
+      fileType: 'tanf',
     })
     expect(
       reducer(undefined, {
@@ -470,6 +480,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: '',
       quarter: 'Q4',
+      fileType: 'tanf',
     })
   })
 
@@ -486,6 +497,7 @@ describe('reducers/reports', () => {
       year: '2021',
       stt: '',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 

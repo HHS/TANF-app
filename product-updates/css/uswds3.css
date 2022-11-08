@@ -3281,6 +3281,7 @@ dfn{
   font-size:1.06rem;
   line-height:1.5;
   overflow:hidden;
+  margin-top: 4rem;
 }
 .usa-footer > .grid-container{
   margin-left:auto;
@@ -3356,7 +3357,7 @@ dfn{
 }
 
 .usa-footer__primary-section{
-  background-color:#f0f0f0;
+  background-color:#e2eff7;
 }
 .usa-footer__primary-section > .grid-container{
   margin-left:auto;
@@ -3410,7 +3411,7 @@ dfn{
   padding-right:1rem;
   padding-bottom:1rem;
   padding-top:1rem;
-  color:#1b1b1b;
+  color:#264a64;
   text-decoration:none;
   font-weight:700;
   display:block;
@@ -3504,7 +3505,7 @@ dfn{
   padding-bottom:1.25rem;
   padding-top:1.25rem;
   color:#1b1b1b;
-  background-color:#dfe1e2;
+  background-color:#e2eff7;
 }
 .usa-footer__secondary-section > .grid-container{
   margin-left:auto;
@@ -7810,12 +7811,12 @@ input[type=search]{
 }
 
 .usa-section{
-  padding-bottom:2rem;
+
   padding-top:2rem;
 }
 @media all and (min-width: 40em){
   .usa-section{
-    padding-bottom:4rem;
+
     padding-top:4rem;
   }
 }

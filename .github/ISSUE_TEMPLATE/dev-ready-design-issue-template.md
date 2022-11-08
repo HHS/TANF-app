@@ -1,7 +1,7 @@
 ---
 name: Dev-ready design issue template
 about: Template for dev-ready design issues
-title: "[Dev-ready Design] "
+title: "[Design Deliverable] "
 labels: "Research & Design"
 assignees: ''
 
