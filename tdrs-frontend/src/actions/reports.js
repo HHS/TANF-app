@@ -43,14 +43,14 @@ export const clearError =
    if the download button should be present.
 */
 export const getAvailableFileList =
-  ({ quarter = 'Q1', stt, year }) =>
+  ({ quarter = 'Q1', stt, year, file_type }) =>
   async (dispatch) => {
     dispatch({
       type: FETCH_FILE_LIST,
     })
     try {
       const response = await axios.get(
-        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${stt.id}`,
+        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${stt.id}&file_type=${file_type}`,
         {
           responseType: 'json',
         }
@@ -68,6 +68,7 @@ export const getAvailableFileList =
           error,
           year,
           quarter,
+          file_type,
         },
       })
     }
@@ -148,6 +149,7 @@ export const submit =
     uploadedFiles,
     user,
     year,
+    ssp,
   }) =>
   async (dispatch) => {
     const submissionRequests = uploadedFiles.map((file) => {
@@ -161,6 +163,7 @@ export const submit =
         year,
         stt,
         quarter,
+        ssp,
       }
       for (const [key, value] of Object.entries(dataFile)) {
         formData.append(key, value)
@@ -219,6 +222,7 @@ export const submit =
 export const SET_SELECTED_STT = 'SET_SELECTED_STT'
 export const SET_SELECTED_YEAR = 'SET_SELECTED_YEAR'
 export const SET_SELECTED_QUARTER = 'SET_SELECTED_QUARTER'
+export const SET_FILE_TYPE = 'SET_FILE_TYPE'
 
 export const setStt = (stt) => (dispatch) => {
   dispatch({ type: SET_SELECTED_STT, payload: { stt } })
@@ -229,4 +233,8 @@ export const setYear = (year) => (dispatch) => {
 
 export const setQuarter = (quarter) => (dispatch) => {
   dispatch({ type: SET_SELECTED_QUARTER, payload: { quarter } })
+}
+
+export const setFileType = (fileType) => (dispatch) => {
+  dispatch({ type: SET_FILE_TYPE, payload: { fileType } })
 }

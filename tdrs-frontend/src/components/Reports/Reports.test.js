@@ -49,6 +49,7 @@ describe('Reports', () => {
       year: '',
       stt: '',
       quarter: '',
+      fileType: 'tanf',
     },
     stts: {
       sttList: [
@@ -57,12 +58,14 @@ describe('Reports', () => {
           type: 'state',
           code: 'AL',
           name: 'Alabama',
+          ssp: true,
         },
         {
           id: 2,
           type: 'state',
           code: 'AK',
           name: 'Alaska',
+          ssp: false,
         },
       ],
       loading: false,
@@ -321,7 +324,7 @@ describe('Reports', () => {
         },
       })
     })
-    expect(store.dispatch).toHaveBeenCalledTimes(13)
+    expect(store.dispatch).toHaveBeenCalledTimes(14)
 
     // There should be 4 more dispatches upon making the submission,
     // one request to /reports for each file
@@ -330,7 +333,7 @@ describe('Reports', () => {
     )
     fireEvent.click(getByText('Submit Data Files'))
     await waitFor(() => getByRole('alert'))
-    expect(store.dispatch).toHaveBeenCalledTimes(18)
+    expect(store.dispatch).toHaveBeenCalledTimes(19)
   })
 
   it('should add files to the redux state when dispatching uploads', async () => {
@@ -464,7 +467,9 @@ describe('Reports', () => {
       await waitFor(() => {
         expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
         expect(
-          getByText('Alaska - Fiscal Year 2021 - Quarter 3 (April - June)')
+          getByText(
+            'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
+          )
         ).toBeInTheDocument()
       })
 
@@ -487,7 +492,9 @@ describe('Reports', () => {
       // the header should not update
       await waitFor(() =>
         expect(
-          queryByText('Alaska - Fiscal Year 2022 - Quarter 2 (January - March)')
+          queryByText(
+            'Alaska -  - Fiscal Year 2022 - Quarter 2 (January - March)'
+          )
         ).not.toBeInTheDocument()
       )
 
@@ -496,7 +503,9 @@ describe('Reports', () => {
 
       await waitFor(() =>
         expect(
-          getByText('Alaska - Fiscal Year 2022 - Quarter 2 (January - March)')
+          getByText(
+            'Alaska - TANF - Fiscal Year 2022 - Quarter 2 (January - March)'
+          )
         ).toBeInTheDocument()
       )
     })
@@ -700,5 +709,90 @@ describe('Reports', () => {
     const expected = options.item(1).value
 
     expect(expected).toEqual(currentYear.toString())
+  })
+
+  it('Non OFA Admin should show the data files section when the user has an stt with ssp set to true', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        ...initialState.auth,
+        user: {
+          ...initialState.auth.user,
+          roles: [],
+          stt: {
+            name: 'Alabama',
+          },
+        },
+      },
+    })
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    expect(getByText('File Type')).toBeInTheDocument()
+  })
+
+  // should not render the File Type section if the user is not an OFA Admin and the stt has ssp set to false
+  it('Non OFA Admin should not show the data files section when the user has an stt with ssp set to false', () => {
+    const store = mockStore({
+      ...initialState,
+      auth: {
+        ...initialState.auth,
+        user: {
+          ...initialState.auth.user,
+          roles: [],
+          stt: {
+            name: 'Alaska',
+          },
+        },
+      },
+    })
+
+    const { queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    expect(queryByText('File Type')).not.toBeInTheDocument()
+  })
+
+  it('OFA Admin should see the data files section when they select a stt with ssp set to true', () => {
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'Alabama',
+      },
+    })
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    expect(getByText('File Type')).toBeInTheDocument()
+  })
+
+  it('OFA Admin should not see the data files section when they select a stt with ssp set to false', () => {
+    const store = mockStore({
+      ...initialState,
+      reports: {
+        ...initialState.reports,
+        stt: 'Alaska',
+      },
+    })
+
+    const { queryByText } = render(
+      <Provider store={store}>
+        <Reports />
+      </Provider>
+    )
+
+    expect(queryByText('File Type')).not.toBeInTheDocument()
   })
 })

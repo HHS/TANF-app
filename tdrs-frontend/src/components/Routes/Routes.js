@@ -41,7 +41,7 @@ const AppRoutes = () => {
         exact
         path="/data-files"
         element={
-          <PrivateRoute title="TANF Data Files">
+          <PrivateRoute title="Data Files">
             <Reports />
           </PrivateRoute>
         }

@@ -14,7 +14,7 @@ class STTSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = STT
-        fields = ["id", "type", "code", "name", "region"]
+        fields = ["id", "type", "code", "name", "region", "ssp"]
 
     def get_code(self, obj):
         """Return the state code."""

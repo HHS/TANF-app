@@ -218,7 +218,8 @@ def base_data_file_data(fake_file_name, data_analyst):
         "user": str(data_analyst.id),
         "quarter": "Q1",
         "year": 2020,
-        "stt": int(data_analyst.stt.id)
+        "stt": int(data_analyst.stt.id),
+        "ssp": False,
     }
 
 
