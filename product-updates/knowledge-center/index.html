@@ -11,6 +11,17 @@
     <script src="../js/uswds.min.js"></script>
 
   </head>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8V03JLZHK0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8V03JLZHK0');
+</script>
+
   <body>
     <a class="usa-skipnav" href="#main-content">Skip to main content</a>
 
@@ -172,7 +183,7 @@
 <!-- Here begins desktop web menu -->
 
   <div class="usa-section">
-  <div class="grid-container">
+  <div class="grid-container" style="min-height: 74vh;">
     <div class="grid-row grid-gap">
       <div class="usa-layout-docs__sidenav desktop:grid-col-3">
         <nav aria-label="Secondary navigation">
@@ -259,9 +270,180 @@
           </li>
 
         </ul>
+        <hr style="margin-bottom: 30px;">
+        <h2>What's new in TDP</h2>
 
+        <h3 style="margin-top: 16px;">November 8th 2022 (v 2.1 & 2.2)</h3>
+        <!-- <p style="margin-top: 16px;">Version 2.1 and 2.2 are aimed at making it possible to expand our pilot program to more TANF programs across the country by improving TDP's support for data submission and making the system itself more communicative.</p> -->
+
+        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
+      <ul class="usa-icon-list">
+
+  <li class="usa-icon-list__item" style="margin-top: 16px;">
+    <div class="usa-icon-list__icon text-ink">
+      <img src="../img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+    </div>
+    <div class="usa-icon-list__content">
+      <h5 class="usa-icon-list__title">
+        Support for SSP Submission & Resubmission
+      </h5>
+      <p>
+        Users from TANF programs that submit SSP-MOE data now have access to a new field on the Data Files page allowing for quarterly SSP data to be submitted as well as TANF data.
+      </p>
+    </div>
+  </li>
+  <li class="usa-icon-list__item" style="margin-top: 16px;">
+    <div class="usa-icon-list__icon text-ink">
+      <img src="../img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+    </div>
+    <div class="usa-icon-list__content">
+      <h5 class="usa-icon-list__title">
+        Email notifications
+      </h5>
+      <p>
+        TDP now sends out email notifications for key events to keep you informed about the status of your account during the account creation process and the status of your submitted data files.
+      </p>
+    </div>
+  </li>
+
+
+</ul>
+        <h4 style="margin-top: 16px; color: #595959;">Changed / Fixed:</h4>
+        <ul class="usa-icon-list">
+
+    <li class="usa-icon-list__item" style="margin-top: 16px;">
+      <div class="usa-icon-list__icon text-ink">
+          <img src="../img/changed.svg" aria-hidden="true" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+      </div>
+      <div class="usa-icon-list__content">
+        <h5 class="usa-icon-list__title">
+          Improved visibility of success & error messages
+        </h5>
+        <p>
+          In v 2.0 the banner highlighting whether data files were submitted successfully or failed to submit often appeared off-screen. This change ensures that the message gets highlighted more prominently when it appears.
+        </p>
+      </div>
+    </li>
+
+  </ul>
+        <!-- <h4 style="margin-top: 16px;">Removed</h4>
+        <ul class="usa-icon-list">
+
+    <li class="usa-icon-list__item" style="margin-top: 16px;">
+      <div class="usa-icon-list__icon text-ink">
+        <img src="../img/removed.svg" aria-hidden="true" style="background-color: #ffbbb3; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+      </div>
+      <div class="usa-icon-list__content">
+        <h5 class="usa-icon-list__title">
+          Talk to trusted organizations about volunteering.
+        </h5>
+        <p>
+          Financial contributions to recognized disaster relief organizations are
+          the fastest, most flexible and most effective method of donating.
+        </p>
+      </div>
+    </li>
+
+  </ul> -->
+<hr style="border: none;
+  height: 1px;
+  background: #000;
+  margin-top: 32px;
+  background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+
+        <h3 style="margin-top: 32px;">August 8th 2022 (v 2.0)</h3>
+                <p style="margin-top: 16px;">Version 2.0 is our first public-facing launch of TDP and contains foundational functionality to allow the first pilot group of users to create accounts, gain access, and submit their quarterly TANF data to ACF.</p>
+        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
+      <ul class="usa-icon-list">
+
+  <li class="usa-icon-list__item" style="margin-top: 16px;">
+    <div class="usa-icon-list__icon text-ink">
+      <img src="../img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+    </div>
+    <div class="usa-icon-list__content">
+      <h5 class="usa-icon-list__title">
+        Account creation
+      </h5>
+      <p>
+        Users can now <a href="existing-login.html">link</a> or <a href="create-new-login.html">create</a> a login.gov account and request access to TDP.
+      </p>
+    </div>
+  </li>
+  <li class="usa-icon-list__item" style="margin-top: 16px;">
+    <div class="usa-icon-list__icon text-ink">
+      <img src="../img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+    </div>
+    <div class="usa-icon-list__content">
+      <h5 class="usa-icon-list__title">
+        TANF submission & resubmission
+      </h5>
+      <p>
+        Data files for all four sections of TANF data can be <a href="uploading-data.html">submitted</a> to a given quarter and fiscal year. Previously submitted files can also be resubmitted to enable corrections & updates to be made.
+      </p>
+    </div>
+  </li>
+  <li class="usa-icon-list__item" style="margin-top: 16px;">
+    <div class="usa-icon-list__icon text-ink">
+      <img src="../img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+    </div>
+    <div class="usa-icon-list__content">
+      <h5 class="usa-icon-list__title">
+        Production environment
+      </h5>
+      <p>
+        Prior to 2.0 TDP existed in a number of internal development environments aimed at making it easy to test new and in-progress functionality. The production environment is all about ensuring a secure, and highly stable place for TDP to be accessed by users.
+      </p>
+    </div>
+  </li>
+
+</ul>
 
       </main>
+
+
+
+
+    </div>
+
+
+
+  </div>
+
+  <footer class="usa-footer usa-footer--slim">
+  <div class="grid-container usa-footer__return-to-top">
+    <a href="#">Return to top</a>
+  </div>
+  <div class="usa-footer__primary-section">
+    <div class="usa-footer__primary-container grid-row">
+      <div class="mobile-lg:grid-col-8">
+        <nav class="usa-footer__nav" aria-label="Footer navigation,">
+          <ul class="grid-row grid-gap">
+            <li
+              class="
+                mobile-lg:grid-col-6
+                desktop:grid-col-auto
+                usa-footer__primary-content
+              "
+            >
+              <a class="usa-footer__primary-link" href="https://www.acf.hhs.gov/privacy-policy"
+                >Privacy Policy</a
+              >
+            </li>
+
+          </ul>
+        </nav>
+      </div>
+
     </div>
   </div>
+  <div class="usa-footer__secondary-section">
+    <div class="grid-container" style="padding-left: 0rem !important;">
+      <div class="usa-footer__logo grid-row grid-gap-2">
+        <div class="grid-col-auto">
+          <img class="mobile-lg:maxw-mobile mobile:width-mobile" src="../img/acfofa.svg" alt="Administration for Children and Families: OFfice of Family Assistance" />
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
 </div>

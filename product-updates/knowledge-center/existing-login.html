@@ -13,6 +13,17 @@
     <script src="dist/lity.js"></script>
 
   </head>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8V03JLZHK0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8V03JLZHK0');
+</script>
+
   <body>
 
     <a class="usa-skipnav" href="#main-content">Skip to main content</a>
@@ -272,7 +283,7 @@
             <ul>
               <li>Enter First Name</li>
               <li>Enter Last Name</li>
-              <li>Select your Associated State, Tribe or Territory</li>
+              <li>In alphabetical order, locate and select your Associated State, Tribe or Territory</li>
               </ul><br>
               <a href="../img/getting-started/existing-login-request-access.png" data-lity data-lity-desc="Fill in the required fields below in order to Request Access to the TANF Data Portal">
               <img src="../img/getting-started/existing-login-request-access.png" alt="Fill in the required fields below in order to Request Access to the TANF Data Portal">
@@ -283,9 +294,13 @@
           <li class="usa-process-list__item">
             <h2 class="usa-process-list__heading">Request Submitted</h2>
             <p>
-             Your request for access is being reviewed by an OFA admin. You will receive an email when access has been granted. Please allow up to 1 business day for a response.<div style="min-height: 22px;"></div>
+              Your request for access is being reviewed by an OFA admin.<div style="min-height: 22px;"></div>
               <a href="../img/getting-started/existing-login-request-submitted.png" data-lity data-lity-desc="Request submitted for review by an OFA admin">
                 <img src="../img/getting-started/existing-login-request-submitted.png" alt="Request submitted for review by an OFA admin">
+             </a><div style="min-height: 22px;"></div>
+              You will receive a notification email from <em>no-reply@tanfdata.acf.hhs.gov<em> when your access request has been submitted. Please allow up to 1 business day for OFA admins to review your request.<div style="min-height: 22px;"></div>
+              <a href="../img/getting-started/access-request-submitted.png" data-lity data-lity-desc="Example of the email for Access Request Submitted">
+                <img src="../img/getting-started/access-request-submitted.png" alt="Example of the email for Access Request Submitted">
               </a>
             </p>
           </li>
@@ -295,19 +310,58 @@
           <li class="usa-process-list__item">
             <h2 class="usa-process-list__heading">Approved for the TANF Data Portal</h2>
             <p>
-            You are approved to begin working in the TANF Data Portal.<div style="min-height: 22px;"></div>
-            <a href="../img/getting-started/existing-login-approved-tdp-home.png" data-lity data-lity-desc="TDP Home">
-            <img src="../img/getting-started/existing-login-approved-tdp-home.png" alt="TDP Home">
-            </a>
-            <div style="min-height: 22px;"></div>
-
+              Once your request for access has been reviewed and approved, you will receive another notification from <em>no-reply@tanfdata.acf.hhs.gov<em> and will be able to begin working in the TANF Data Portal. <div style="min-height: 22px;"></div> <em>Note: We'll also notify you if your request is denied. Should this happen and you believe it to be in error please let us know by reaching out to TDP support at <a href="mailto:tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov.</a>.
+              <a href="../img/getting-started/request-approved.png" data-lity data-lity-desc="Example of the email for Request Approved">
+              <img src="../img/getting-started/request-approved.png" alt="Example of the email for Request Approved">
+              </a>
+              Sign in to TDP to begin working in the TANF Data Portal.
+              <div style="min-height: 22px;"></div>
+              <a href="../img/getting-started/existing-login-approved-tdp-home.png" data-lity data-lity-desc="TDP Home">
+              <img src="../img/getting-started/existing-login-approved-tdp-home.png" alt="TDP Home">
+              </a>
             </p>
           </li>
         </ol>
 
-        <a href="#main-top">Jump to top</a>
 
       </main>
     </div>
   </div>
+  <footer class="usa-footer usa-footer--slim">
+  <div class="grid-container usa-footer__return-to-top">
+    <a href="#">Return to top</a>
+  </div>
+  <div class="usa-footer__primary-section">
+    <div class="usa-footer__primary-container grid-row">
+      <div class="mobile-lg:grid-col-8">
+        <nav class="usa-footer__nav" aria-label="Footer navigation,">
+          <ul class="grid-row grid-gap">
+            <li
+              class="
+                mobile-lg:grid-col-6
+                desktop:grid-col-auto
+                usa-footer__primary-content
+              "
+            >
+              <a class="usa-footer__primary-link" href="https://www.acf.hhs.gov/privacy-policy"
+                >Privacy Policy</a
+              >
+            </li>
+
+          </ul>
+        </nav>
+      </div>
+
+    </div>
+  </div>
+  <div class="usa-footer__secondary-section">
+    <div class="grid-container" style="padding-left: 0rem !important;">
+      <div class="usa-footer__logo grid-row grid-gap-2">
+        <div class="grid-col-auto">
+          <img class="mobile-lg:maxw-mobile mobile:width-mobile" src="../img/acfofa.svg" alt="Administration for Children and Families: OFfice of Family Assistance" />
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
 </div>
