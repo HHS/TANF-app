@@ -28,10 +28,10 @@ function FileUpload({ section, setLocalAlertState }) {
   const [sectionNumber, sectionName] = section.split(' - ')
 
   const hasFile = files?.some(
-    (file) => file.section === sectionName && file.uuid
+    (file) => file.section.includes(sectionName) && file.uuid
   )
 
-  const selectedFile = files.find((file) => sectionName === file.section)
+  const selectedFile = files.find((file) => file.section.includes(sectionName))
 
   const formattedSectionName = selectedFile.section
     .split(' ')

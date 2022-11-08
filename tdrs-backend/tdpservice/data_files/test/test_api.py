@@ -1,5 +1,6 @@
 """Tests for DataFiles Application."""
 from unittest.mock import ANY, patch
+
 from rest_framework import status
 import pytest
 
@@ -205,6 +206,35 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         response = self.download_file(api_client, data_file_id)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_data_files_data_upload_ssp(
+        self, api_client, data_file_data,
+    ):
+        """Test that when Data Analysts upload file with ssp true the section name is updated."""
+        data_file_data['ssp'] = True
+
+        response = self.post_data_file_file(api_client, data_file_data)
+        assert response.data['section'] == 'SSP Active Case Data'
+
+    def test_data_file_data_upload_tribe(
+        self, api_client, data_file_data, stt
+    ):
+        """Test that when we upload a file for Tribe the section name is updated."""
+        stt.type = 'tribe'
+        stt.save()
+        response = self.post_data_file_file(api_client, data_file_data)
+        assert 'Tribal Active Case Data' == response.data['section']
+        stt.type = ''
+        stt.save()
+
+    def test_data_files_data_upload_tanf(
+        self, api_client, data_file_data,
+    ):
+        """Test that when Data Analysts upload file with ssp true the section name is updated."""
+        data_file_data['ssp'] = False
+
+        response = self.post_data_file_file(api_client, data_file_data)
+        assert response.data['section'] == 'Active Case Data'
 
     def test_data_analyst_gets_email_when_user_uploads_report_for_their_stt(
         self, api_client, data_file_data, user

@@ -22,6 +22,9 @@ tdrs-backend/coverage.xml
 tdrs-backend/htmlcov/*
 tdrs-backend/.env
 tdrs-backend/.env.production
+tdrs-backend/ADS*
+tdrs-backend/temp_key_file
+tdrs-backend/test
 *.pyc
 /backend/db.sqlite3
 .DS_Store

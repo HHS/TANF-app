@@ -9,6 +9,7 @@ import {
   setStt,
   setQuarter,
   getAvailableFileList,
+  setFileType,
 } from '../../actions/reports'
 import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
@@ -60,6 +61,9 @@ function Reports() {
 
   const stt = sttList?.find((stt) => stt?.name === currentStt)
 
+  const selectedFileType = useSelector((state) => state.reports.fileType)
+  const [fileTypeInputValue, setFileTypeInputValue] = useState(selectedFileType)
+
   const errorsCount = formValidation.errors
 
   const missingStt = !isOFAAdmin && !currentStt
@@ -70,6 +74,7 @@ function Reports() {
     setQuarterInputValue(selectedQuarter || '')
     setYearInputValue(selectedYear || '')
     setSttInputValue(selectedStt || '')
+    setFileTypeInputValue(selectedFileType || 'tanf')
   }
 
   const handleSearch = () => {
@@ -96,13 +101,15 @@ function Reports() {
       dispatch(setYear(yearInputValue))
       dispatch(setQuarter(quarterInputValue))
       dispatch(setStt(sttInputValue))
+      dispatch(setFileType(fileTypeInputValue))
 
-      // Retrieve the files matching the selected year and quarter.
+      // Retrieve the files matching the selected year, quarter, and ssp.
       dispatch(
         getAvailableFileList({
-          quarter: selectedQuarter,
-          year: selectedYear,
+          quarter: quarterInputValue,
+          year: yearInputValue,
           stt,
+          file_type: fileTypeInputValue,
         })
       )
 
@@ -227,7 +234,40 @@ function Reports() {
               />
             </div>
           )}
-
+          {(stt?.ssp ? stt.ssp : false) && (
+            <div className="usa-form-group margin-top-4">
+              <fieldset className="usa-fieldset">
+                <legend className="usa-label text-bold">File Type</legend>
+                <div className="usa-radio">
+                  <input
+                    className="usa-radio__input"
+                    id="tanf"
+                    type="radio"
+                    name="reportType"
+                    value="tanf"
+                    defaultChecked
+                    onChange={() => setFileTypeInputValue('tanf')}
+                  />
+                  <label className="usa-radio__label" htmlFor="tanf">
+                    TANF
+                  </label>
+                </div>
+                <div className="usa-radio">
+                  <input
+                    className="usa-radio__input"
+                    id="ssp-moe"
+                    type="radio"
+                    name="reportType"
+                    value="ssp-moe"
+                    onChange={() => setFileTypeInputValue('ssp-moe')}
+                  />
+                  <label className="usa-radio__label" htmlFor="ssp-moe">
+                    SSP-MOE
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+          )}
           <div
             className={classNames('usa-form-group maxw-mobile margin-top-4', {
               'usa-form-group--error': formValidation.year,
@@ -318,7 +358,9 @@ function Reports() {
       {isUploadReportToggled && (
         <UploadReport
           stt={stt?.id}
-          header={`${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`}
+          header={`${currentStt} - ${selectedFileType.toUpperCase()} - Fiscal Year ${selectedYear} - ${
+            quarters[selectedQuarter]
+          }`}
           handleCancel={() => {
             setIsToggled(false)
             resetPreviousValues()

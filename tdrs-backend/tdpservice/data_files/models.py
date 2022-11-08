@@ -149,12 +149,7 @@ class DataFile(FileRecord):
     @property
     def filename(self):
         """Return the correct filename for this data file."""
-        if str(self.stt.type).lower() == 'tribe':
-            return self.stt.filenames.get(
-                ('Tribal ' if 'Tribal' not in self.section else '') + self.section,
-                None)
-        else:
-            return self.stt.filenames.get(self.section, None)
+        return self.stt.filenames.get(self.section, None)
 
     @property
     def fiscal_year(self):
@@ -165,11 +160,11 @@ class DataFile(FileRecord):
             case DataFile.Quarter.Q1:
                 quarter_month_str = "(Oct - Dec)"
             case DataFile.Quarter.Q2:
-                quarter_month_str = "(Jul - Sep)"
+                quarter_month_str = "(Jan - Mar)"
             case DataFile.Quarter.Q3:
                 quarter_month_str = "(Apr - Jun)"
             case DataFile.Quarter.Q4:
-                quarter_month_str = "(Jan - Mar)"
+                quarter_month_str = "(Jul - Sep)"
 
         return f"{self.year} - {self.quarter} {quarter_month_str}"
 

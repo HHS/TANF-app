@@ -9,12 +9,13 @@ import {
   SET_FILE_LIST,
   CLEAR_FILE_LIST,
   SET_FILE_SUBMITTED,
+  SET_FILE_TYPE,
 } from '../actions/reports'
 
 const getFileIndex = (files, section) =>
-  files.findIndex((currentFile) => currentFile.section === section)
+  files.findIndex((currentFile) => currentFile.section.includes(section))
 const getFile = (files, section) =>
-  files.find((currentFile) => currentFile.section === section)
+  files.find((currentFile) => currentFile.section.includes(section))
 
 export const fileUploadSections = [
   'Active Case Data',
@@ -69,6 +70,7 @@ const initialState = {
   year: '',
   stt: '',
   quarter: '',
+  fileType: 'tanf',
 }
 
 const reports = (state = initialState, action) => {
@@ -101,7 +103,7 @@ const reports = (state = initialState, action) => {
       return {
         ...state,
         files: state.files.map((file) =>
-          file.section === submittedFile?.section
+          submittedFile?.section.includes(file.section)
             ? serializeApiDataFile(submittedFile)
             : file
         ),
@@ -143,6 +145,10 @@ const reports = (state = initialState, action) => {
     case SET_SELECTED_QUARTER: {
       const { quarter } = payload
       return { ...state, quarter }
+    }
+    case SET_FILE_TYPE: {
+      const { fileType } = payload
+      return { ...state, fileType }
     }
     default:
       return state
