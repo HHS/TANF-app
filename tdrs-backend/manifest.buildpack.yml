@@ -8,5 +8,5 @@ applications:
     REDIS_URI: redis://localhost:6379
   buildpacks:
   - https://github.com/cloudfoundry/apt-buildpack
-  - https://github.com/cloudfoundry/python-buildpack.git#v1.7.55
+  - https://github.com/cloudfoundry/python-buildpack.git#v1.8.3
   command: "./gunicorn_start.sh"
