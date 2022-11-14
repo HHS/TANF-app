@@ -1,0 +1,29 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@4.7.0
+  terraform: circleci/terraform@2.1.0
+  jq: circleci/jq@2.2.0
+
+executors:
+  docker-executor:
+    docker:
+      - image: cimg/python:3.10.4
+        user: root
+  machine-executor:
+    machine:
+      docker_layer_caching: false
+      image: ubuntu-2204:2022.10.1
+
+parameters:
+  run_dev_deployment:
+    type: boolean
+    default: false
+
+  run_owasp_scan:
+    type: boolean
+    default: false
+
+  target_env:
+    type: string
+    default: ''
