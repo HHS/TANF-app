@@ -20,11 +20,15 @@ export default function PrivateTemplate({ title, children }) {
   }, [title])
 
   return (
-    <div className="grid-container margin-top-3">
+    <div
+      id="private-template-container"
+      className="grid-container-widescreen margin-top-3"
+    >
       <h1
         className="font-serif-2xl margin-bottom-0 text-normal"
         ref={headerRef}
         tabIndex={-1}
+        aria-describedby="page-alert"
       >
         {title}
       </h1>

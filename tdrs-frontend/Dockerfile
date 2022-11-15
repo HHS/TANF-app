@@ -1,20 +1,21 @@
 
 # Stage 0: Create the app directory, install dependencies, and copy in the source code
-FROM node:12.18-alpine3.12 AS localdev
+FROM node:16.13-alpine3.14 AS localdev
 
 USER node
 
 RUN mkdir /home/node/app/ && chown -R node:node /home/node/app
 WORKDIR /home/node/app
 
-# Copy package.json and run yarn install before copying the rest of the app in
-# to allow Docker to cache the yarn layer to prevent unnecessary installations
+# Copy package.json and run npm install before copying the rest of the app in
+# to allow Docker to cache the npm layer to prevent unnecessary installations
 # when code changes occur
-COPY --chown=node:node package.json yarn.lock ./
+COPY --chown=node:node package.json package-lock.json ./
 
-# Install yarn packages, using local cache if available and skip creating a
-# new lock file to speed up the build
-RUN yarn install --prefer-offline --frozen-lockfile
+# Disable npm audit
+RUN npm set audit false
+# Install npm packages directly from package-lock.json <https://docs.npmjs.com/cli/v8/commands/npm-ci>
+RUN npm ci
 
 
 COPY --chown=node:node . .
@@ -26,7 +27,7 @@ EXPOSE 80
 # ---
 # Stage 1: Create a production build
 FROM localdev AS build
-RUN yarn build
+RUN npm run build:development
 
 # ---
 # Stage 2: Serve over nginx

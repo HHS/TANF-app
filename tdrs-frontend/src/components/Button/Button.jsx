@@ -15,6 +15,9 @@ function Button({
   onClick,
   className,
   disabled,
+  target,
+  href,
+  buttonKey,
 }) {
   const isBig = size ? size === 'big' : false
   const isSmall = size ? size === 'small' : false
@@ -33,18 +36,43 @@ function Button({
     },
     className
   )
-
-  return (
-    <button
-      type={type} // eslint-disable-line
-      className={classes}
-      onClick={onClick}
-      data-testid="button"
-      disabled={disabled}
-    >
-      {children}
-    </button>
-  )
+  if (href === undefined) {
+    return (
+      <button
+        type={type} // eslint-disable-line
+        className={classes}
+        onClick={onClick}
+        data-testid="button"
+        disabled={disabled}
+        aria-disabled={disabled}
+        buttonkey={buttonKey}
+      >
+        {children}
+      </button>
+    )
+  } else {
+    return (
+      <a
+        className="button-anchor"
+        href={href}
+        target={target}
+        rel="noopener noreferrer"
+        tabIndex="-1"
+      >
+        <button
+          type={type} // eslint-disable-line
+          className={classes}
+          onClick={onClick}
+          data-testid="button"
+          aria-disabled={disabled}
+          disabled={disabled}
+          buttonkey={buttonKey}
+        >
+          {children}
+        </button>
+      </a>
+    )
+  }
 }
 
 Button.propTypes = {
@@ -60,6 +88,9 @@ Button.propTypes = {
   onClick: PropTypes.func,
   className: PropTypes.string,
   disabled: PropTypes.bool,
+  target: PropTypes.string,
+  href: PropTypes.string,
+  buttonkey: PropTypes.string,
 }
 Button.defaultProps = {
   secondary: false,
@@ -72,6 +103,8 @@ Button.defaultProps = {
   onClick: null,
   className: null,
   disabled: false,
+  target: '_blank',
+  buttonkey: null,
 }
 
 export default Button

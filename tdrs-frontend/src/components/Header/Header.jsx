@@ -1,8 +1,13 @@
-import React from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
+import { canViewAdmin } from '../../utils/canViewAdmin'
+import {
+  accountStatusIsApproved,
+  accountIsInReview,
+} from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
 
@@ -16,20 +21,76 @@ import NavItem from '../NavItem/NavItem'
  * @param {object} authenticated - whether the user is authenticated or not
  * @param {object} user - the current user's information
  */
-function HeaderComp() {
+function Header() {
   const pathname = useSelector((state) => state.router.location.pathname)
   const user = useSelector((state) => state.auth.user)
   const authenticated = useSelector((state) => state.auth.authenticated)
+  const userAccessRequestPending = useSelector(accountIsInReview)
+  const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
-  const isOFASystemAdmin = () => {
-    return user?.roles?.some((role) => role.name === 'OFA System Admin')
-  }
+  const hasPermission = (permissionName) =>
+    user?.roles?.[0]?.permissions?.some(
+      (perm) => perm.codename === permissionName
+    )
+
+  const canViewDataFiles = hasPermission('view_datafile')
+
+  const menuRef = useRef()
+
+  const keyListenersMap = useMemo(() => {
+    let tabIndex = 0
+    /* istanbul ignore next  */
+    const handleTabKey = (e) => {
+      /* istanbul ignore if */
+      if (menuRef.current.classList.contains('is-visible')) {
+        e.preventDefault()
+        const focusableMenuElements = [
+          ...menuRef.current.querySelectorAll('button'),
+          ...menuRef.current.querySelectorAll('a'),
+        ]
+
+        const lastIndex = focusableMenuElements.length - 1
+
+        if (focusableMenuElements.includes(document.activeElement)) {
+          if (!e.shiftKey && tabIndex >= lastIndex) {
+            tabIndex = 0
+          } else if (e.shiftKey && tabIndex === 0) {
+            tabIndex = lastIndex
+          } else if (e.shiftKey) {
+            tabIndex -= 1
+          } else {
+            tabIndex += 1
+          }
+        } else {
+          tabIndex = 0
+        }
+
+        focusableMenuElements[tabIndex].focus()
+      }
+
+      return false
+    }
+
+    return new Map([[9, handleTabKey]])
+  }, [menuRef])
+
+  /* istanbul ignore next  */
+  useEffect(() => {
+    function keyListener(e) {
+      const listener = keyListenersMap.get(e.keyCode)
+      return listener && listener(e)
+    }
+
+    document.addEventListener('keydown', keyListener)
+
+    return () => document.removeEventListener('keydown', keyListener)
+  }, [keyListenersMap])
 
   return (
     <>
       <div className="usa-overlay" />
       <header className="usa-header usa-header--extended">
-        <div className="usa-navbar">
+        <div className="grid-container-widescreen usa-nav__wide desktop:padding-left-4 desktop:border-bottom-0 mobile:border-bottom-1px mobile:padding-left-0  mobile:padding-right-0">
           <div className="usa-logo" id="extended-logo">
             <em className="usa-logo__text">
               <a href="/" title="Home" aria-label="Home">
@@ -37,34 +98,41 @@ function HeaderComp() {
               </a>
             </em>
           </div>
-          <button type="button" className="usa-menu-btn">
-            Menu
-          </button>
+          {authenticated && (
+            <button type="button" className="usa-menu-btn">
+              Menu
+            </button>
+          )}
         </div>
-        <nav aria-label="Primary navigation" className="usa-nav">
-          <div className="usa-nav__inner">
+        <nav
+          ref={menuRef}
+          role="navigation"
+          aria-label="Primary navigation"
+          className="usa-nav"
+        >
+          <div className="grid-container-widescreen">
             <button type="button" className="usa-nav__close">
               <img src={closeIcon} alt="close" />
             </button>
             <ul className="usa-nav__primary usa-accordion">
               {authenticated && (
                 <>
-                  <NavItem
-                    pathname={pathname}
-                    tabTitle="Welcome"
-                    href="/welcome"
-                  />
-                  <NavItem
-                    pathname={pathname}
-                    tabTitle="Data Files"
-                    href="/data-files"
-                  />
-                  <NavItem
-                    pathname={pathname}
-                    tabTitle="Profile"
-                    href="/edit-profile"
-                  />
-                  {isOFASystemAdmin() && (
+                  <NavItem pathname={pathname} tabTitle="Home" href="/home" />
+                  {canViewDataFiles && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Data Files"
+                      href="/data-files"
+                    />
+                  )}
+                  {(userAccessRequestPending || userAccessRequestApproved) && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Profile"
+                      href="/profile"
+                    />
+                  )}
+                  {canViewAdmin(user) && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Admin"
@@ -114,4 +182,4 @@ function HeaderComp() {
   )
 }
 
-export default HeaderComp
+export default Header

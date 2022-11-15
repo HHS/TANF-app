@@ -8,6 +8,8 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_FRONTEND=${2}
 CGHOSTNAME_BACKEND=${3}
+CF_SPACE=${4}
+ENVIRONMENT=${5}
 
 update_frontend()
 {
@@ -16,9 +18,23 @@ update_frontend()
     echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
     cd tdrs-frontend || exit
 
-    echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.production
-    echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.production
-    yarn build
+    if [ "$CF_SPACE" = "tanf-prod" ]; then
+        echo "REACT_APP_BACKEND_URL=https://api-tanfdata.acf.hhs.gov/v1" >> .env.production
+        echo "REACT_APP_BACKEND_HOST=https://api-tanfdata.acf.hhs.gov" >> .env.production
+        echo "REACT_APP_LOGIN_GOV_URL=https://secure.login.gov/" >> .env.production
+        echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
+    else
+        echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.development
+        echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.development
+        echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
+
+        cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.app.cloud.gov"
+        cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.app.cloud.gov'
+    fi
+
+    
+    
+    npm run build:$ENVIRONMENT
     unlink .env.production
     mkdir deployment
 
@@ -38,7 +54,12 @@ update_frontend()
         cf push "$CGHOSTNAME_FRONTEND" --no-route -f manifest.buildpack.yml
     fi
 
-    cf map-route "$CGHOSTNAME_FRONTEND" app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
+    if [ "$CF_SPACE" = "tanf-prod" ]; then
+        cf map-route "$CGHOSTNAME_FRONTEND" tanfdata.acf.hhs.gov
+    else
+        cf map-route "$CGHOSTNAME_FRONTEND" app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
+    fi
+    
     cd ../..
     rm -r tdrs-frontend/deployment
 }

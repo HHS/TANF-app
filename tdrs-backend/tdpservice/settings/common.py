@@ -6,11 +6,12 @@ from distutils.util import strtobool
 from os.path import join
 from typing import Any, Optional
 
-from configurations import Configuration
 from django.core.exceptions import ImproperlyConfigured
+from celery.schedules import crontab
+
+from configurations import Configuration
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 def get_required_env_var_setting(
     env_var_name: str,
@@ -47,6 +48,7 @@ class Common(Configuration):
         "corsheaders",
         "django_extensions",
         "drf_yasg",
+        "django_celery_beat",
         "storages",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
@@ -54,6 +56,8 @@ class Common(Configuration):
         "tdpservice.stts",
         "tdpservice.data_files",
         "tdpservice.security",
+        "tdpservice.scheduling",
+        "tdpservice.email",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -67,9 +71,11 @@ class Common(Configuration):
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "corsheaders.middleware.CorsMiddleware",
         "tdpservice.users.api.middleware.AuthUpdateMiddleware",
-        "csp.middleware.CSPMiddleware"
+        "csp.middleware.CSPMiddleware",
+        "tdpservice.middleware.NoCacheMiddleware"
     )
 
+    APP_NAME = "dev"
     ALLOWED_HOSTS = ["*"]
     ROOT_URLCONF = "tdpservice.urls"
     SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
@@ -82,7 +88,9 @@ class Common(Configuration):
 
     # Email Server
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
+    EMAIL_HOST = "smtp.ees.hhs.gov"
+    EMAIL_HOST_USER = "no-reply@tanfdata.acf.hhs.gov"
+    
     # Whether to use localstack in place of a live AWS S3 environment
     USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "no")))
 
@@ -109,7 +117,7 @@ class Common(Configuration):
     USE_I18N = False
     USE_L10N = True
     USE_TZ = True
-    LOGIN_URL = "/v1/login/oidc"
+    LOGIN_URL = FRONTEND_BASE_URL
     LOGIN_REDIRECT_URL = "/"
 
     # Static files (CSS, JavaScript, Images)
@@ -179,6 +187,8 @@ class Common(Configuration):
     ]
 
     # Logging
+    # set level as 'INFO' if env var is not set
+    LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -189,8 +199,7 @@ class Common(Configuration):
             },
             "verbose": {
                 "format": (
-                    "%(levelname)s %(asctime)s %(module)s "
-                    "%(process)d %(thread)d %(message)s"
+                    "[%(asctime)s %(levelname)s %(filename)s::%(funcName)s:L%(lineno)d :  %(message)s"
                 )
             },
             "simple": {"format": "%(levelname)s %(message)s"},
@@ -198,31 +207,36 @@ class Common(Configuration):
         "filters": {"require_debug_true": {"()": "django.utils.log.RequireDebugTrue"}},
         "handlers": {
             "django.server": {
-                "level": "INFO",
+                "level": LOGGING_LEVEL,
                 "class": "logging.StreamHandler",
                 "formatter": "django.server",
             },
             "console": {
-                "level": "DEBUG",
+                "level": LOGGING_LEVEL,
                 "class": "logging.StreamHandler",
                 "formatter": "simple",
             },
-            "mail_admins": {
-                "level": "ERROR",
-                "class": "django.utils.log.AdminEmailHandler",
+            "application": {
+                "class": "logging.StreamHandler",
+                "formatter": "verbose",
             },
         },
         "loggers": {
+            "tdpservice": {
+               "handlers": ["application"],
+               "propagate": True,
+               "level": LOGGING_LEVEL
+            },
             "django": {"handlers": ["console"], "propagate": True},
             "django.server": {
                 "handlers": ["django.server"],
-                "level": "INFO",
                 "propagate": False,
+                "level": LOGGING_LEVEL
             },
             "django.request": {
-                "handlers": ["mail_admins", "console"],
-                "level": "ERROR",
+                "handlers": ["console"],
                 "propagate": False,
+                "level": LOGGING_LEVEL
             },
             "django.db.backends": {"handlers": ["console"], "level": "INFO"},
         },
@@ -242,7 +256,6 @@ class Common(Configuration):
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
     SESSION_TIMEOUT = 30
-
     # The CSRF token Cookie holds no security benefits when confined to HttpOnly.
     # Setting this to false to allow the frontend to include it in the header
     # of API POST calls to prevent false negative authorization errors.
@@ -250,12 +263,11 @@ class Common(Configuration):
     CSRF_COOKIE_HTTPONLY = False
     CSRF_TRUSTED_ORIGINS = ['.app.cloud.gov', '.acf.hhs.gov']
 
-    SESSION_COOKIE_PATH = "/;HttpOnly"
 
     # Django Rest Framework
     REST_FRAMEWORK = {
         "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-        "PAGE_SIZE": int(os.getenv("DJANGO_PAGINATION_LIMIT", 10)),
+        "PAGE_SIZE": int(os.getenv("DJANGO_PAGINATION_LIMIT", 32)),
         "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S%z",
         "DEFAULT_RENDERER_CLASSES": (
             "rest_framework.renderers.JSONRenderer",
@@ -292,6 +304,12 @@ class Common(Configuration):
     ###
     # AV Scanning Settings
     #
+    ###
+
+    # Flag for local testing to enable AV Scans
+    RAW_CLAMAV = os.getenv('CLAMAV_NEEDED', "True").strip("\"")
+    logger.debug("RAW_CLAMAV: " + str(RAW_CLAMAV))
+    CLAMAV_NEEDED = bool(strtobool(RAW_CLAMAV))
 
     # The URL endpoint to send AV scan requests to (clamav-rest)
     AV_SCAN_URL = os.getenv('AV_SCAN_URL')
@@ -320,9 +338,12 @@ class Common(Configuration):
     CSP_FORM_ACTION = ("'self'")
     CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
 
-    ###
-    # Authentication Provider Settings
-    #
+
+    ####################################
+    # Authentication Provider Settings #
+    ####################################
+
+    # Login.gov #
     LOGIN_GOV_ACR_VALUES = os.getenv(
         'ACR_VALUES',
         'http://idmanagement.gov/ns/assurance/ial/1'
@@ -362,3 +383,55 @@ class Common(Configuration):
     )
 
     ENABLE_DEVELOPER_GROUP = True
+
+    # AMS OpenID #
+    AMS_CONFIGURATION_ENDPOINT = os.getenv(
+        'AMS_CONFIGURATION_ENDPOINT',
+        'https://sso-stage.acf.hhs.gov/auth/realms/ACF-SSO/.well-known/openid-configuration'
+    )
+
+    # The CLIENT_ID and SECRET must be set for the AMS authentication flow to work.
+    # In dev and testing environments, these can be dummy values.
+    AMS_CLIENT_ID = os.getenv(
+        'AMS_CLIENT_ID',
+        ''
+    )
+
+    AMS_CLIENT_SECRET = os.getenv(
+        'AMS_CLIENT_SECRET',
+        ''
+    )
+
+    # ------- SFTP CONFIG
+    ACFTITAN_SERVER_ADDRESS = os.getenv('ACFTITAN_HOST', '')
+    """
+    To be able to fit the PRIVATE KEY in one line as environment variable, we replace the EOL 
+    with an underscore char.
+    The next line replaces the _ with EOL before using the PRIVATE KEY
+    """
+    ACFTITAN_LOCAL_KEY = os.getenv('ACFTITAN_KEY', '').replace('_', '\n')
+    ACFTITAN_USERNAME = os.getenv('ACFTITAN_USERNAME', '')
+    ACFTITAN_DIRECTORY = os.getenv('ACFTITAN_DIRECTORY', '')
+
+    # -------- CELERY CONFIG
+    REDIS_URI = os.getenv(
+        'REDIS_URI',
+        'redis://redis-server:6379'
+    )
+
+    CELERY_BROKER_URL = REDIS_URI
+    CELERY_RESULT_BACKEND = REDIS_URI
+    CELERY_ACCEPT_CONTENT = ['application/json']
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
+    CELERY_TIMEZONE = 'UTC'
+
+    CELERY_BEAT_SCHEDULE = {
+        'name': {
+            'task': 'tdpservice.scheduling.tasks.check_for_accounts_needing_deactivation_warning',
+            'schedule': crontab(day_of_week='*', hour='13', minute='*'), # Every day at 1pm UTC (9am EST)
+            'options': {
+                'expires': 15.0,
+            },
+        },     
+    }

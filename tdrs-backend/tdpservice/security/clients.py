@@ -1,7 +1,7 @@
 """External client services related to security auditing."""
 from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 from requests.sessions import Session
 import logging
 
@@ -12,7 +12,6 @@ from tdpservice.security.models import ClamAVFileScan
 from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 class ClamAVClient:
@@ -35,6 +34,7 @@ class ClamAVClient:
             endpoint_url = settings.AV_SCAN_URL
 
         self.endpoint_url = endpoint_url
+        logger.debug("Set clamav endpoint_url as '{}'".format(endpoint_url))
         self.session = self.init_session()
 
     def init_session(self):

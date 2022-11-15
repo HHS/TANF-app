@@ -15,6 +15,9 @@ function UploadReport({ handleCancel, header, stt }) {
   const selectedYear = useSelector((state) => state.reports.year)
   // The selected quarter in the dropdown tied to our redux `reports` state
   const selectedQuarter = useSelector((state) => state.reports.quarter)
+  // The selected File Type value from redux
+  const selectedFileType = useSelector((state) => state.reports.fileType)
+
   // The set of uploaded files in our Redux state
   const files = useSelector((state) => state.reports.files)
   // The logged in user in our Redux state
@@ -27,6 +30,7 @@ function UploadReport({ handleCancel, header, stt }) {
     type: null,
     message: null,
   })
+  const alertRef = useRef(null)
 
   // Ensure newly rendered header is focused,
   // else it won't be read be screen readers.
@@ -74,6 +78,7 @@ function UploadReport({ handleCancel, header, stt }) {
         stt,
         uploadedFiles,
         user,
+        ssp: selectedFileType === 'ssp-moe',
       })
     )
   }
@@ -83,6 +88,12 @@ function UploadReport({ handleCancel, header, stt }) {
     // initial render for it to load properly
     fileInput.init()
   }, [])
+
+  useEffect(() => {
+    if (localAlert.active && alertRef && alertRef.current) {
+      alertRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [localAlert, alertRef])
 
   return (
     <>
@@ -95,6 +106,7 @@ function UploadReport({ handleCancel, header, stt }) {
       </h2>
       {localAlert.active && (
         <div
+          ref={alertRef}
           className={classNames('usa-alert usa-alert--slim', {
             [`usa-alert--${localAlert.type}`]: true,
           })}
@@ -117,6 +129,7 @@ function UploadReport({ handleCancel, header, stt }) {
           <Button className="card:margin-y-1" type="submit">
             Submit Data Files
           </Button>
+
           <Button className="cancel" type="button" onClick={handleCancel}>
             Cancel
           </Button>

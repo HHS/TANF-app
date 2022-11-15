@@ -9,7 +9,7 @@ import comboBox from 'uswds/src/js/components/combo-box'
  * of the selected option.
  * @param {string} selected - The value of the selected option.
  * @param {function} handleBlur - Runs on blur of combo box element.
- * @param {string} error - If validation in EditProfile component throws
+ * @param {string} error - If validation in Profile component throws
  * an error then it is passed to combo box to render the error information.
  * @param {string} name - A string used for the name and id values of
  * the combo box.
@@ -43,6 +43,7 @@ const ComboBox = ({
       if (!error) {
         input.classList.remove('usa-combo-box__input--error')
       }
+      input.setAttribute('aria-required', 'true')
     }
   })
 

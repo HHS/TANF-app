@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>TDP — Give Feedback</title>
+    <link rel="stylesheet" href="../css/uswds3.css" />
+    <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="../js/uswds.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://unpkg.com/survey-jquery@1.9.54/defaultV2.css" type="text/css" rel="stylesheet"/>
+    <style>
+        .sd-root-modern {background-color: #fff !important;}
+        .sd-question {box-shadow: 0px 0px 0px rgb(0 0 0 / 100%) !important;}
+        .sd-item--checked .sd-item__decorator {background: #005ea2;}
+        .sd-rating__item--selected {background-color: #e2eff7; border-color: #005ea2;}
+        .sv-string-viewer {color: black;}
+        .sd-boolean--checked .sd-boolean__thumb {background-color: #e2eff7; border-style: solid; border-width: 1px; border-color: #005ea2;}
+        .sd-btn--action {margin-left: 35px; background-color: #005ea2;}
+        .sd-btn--action:not(:disabled):hover, .sd-btn--action:not(:disabled):focus {color: white; background-color: #1a4480;}
+        .sd-element__num {color: black;}
+        .sd-radio__decorator {border-color: #1a4480; border-style: solid; border-width: 1px;}
+        .sd-boolean__thumb {background-color: #e2eff7; border-style: solid; border-width: 1px; border-color: #005ea2;}
+        p {margin-left: -24px;}
+    </style>
+  </head>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8V03JLZHK0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8V03JLZHK0');
+</script>
+
+  <body>
+
+    <a class="usa-skipnav" href="#main-content">Skip to main content</a>
+
+
+
+    <section class="usa-banner" aria-label="Official government website">
+      <div class="usa-accordion">
+        <header class="usa-banner__header">
+          <div class="usa-banner__inner">
+            <div class="grid-col-auto">
+              <img class="usa-banner__header-flag" src="../img/us_flag_small.png" alt="U.S. flag"/>
+            </div>
+            <div class="grid-col-fill tablet:grid-col-auto">
+              <p class="usa-banner__header-text" style="margin-left: 0px;">
+                An official website of the United States government
+              </p>
+              <p class="usa-banner__header-action" aria-hidden="true">
+                Here’s how you know
+              </p>
+            </div>
+            <button
+              class="usa-accordion__button usa-banner__button"
+              aria-expanded="false"
+              aria-controls="gov-banner-default-default">
+              <span class="usa-banner__button-text">Here’s how you know</span>
+
+            </button>
+          </div>
+        </header>
+        <div
+          class="usa-banner__content usa-accordion__content"
+          id="gov-banner-default-default"
+        >
+          <div class="grid-row grid-gap-lg">
+            <div class="usa-banner__guidance tablet:grid-col-6">
+              <img
+                class="usa-banner__icon usa-media-block__img"
+                src="../img/icon-dot-gov.svg"
+                role="img"
+                alt=""
+                aria-hidden="true"
+              />
+              <div class="usa-media-block__body">
+                <p>
+                  <strong>Official websites use .gov</strong><br>A
+                  <strong>.gov</strong> website belongs to an official government
+                  organization in the United States.
+                </p>
+              </div>
+            </div>
+            <div class="usa-banner__guidance tablet:grid-col-6">
+              <img
+                class="usa-banner__icon usa-media-block__img"
+                src="../img/icon-https.svg"
+                role="img"
+                alt=""
+                aria-hidden="true"
+              />
+              <div class="usa-media-block__body">
+                <p>
+                  <strong>Secure .gov websites use HTTPS</strong><br>A
+                  <strong>lock</strong> (
+                  <span class="icon-lock"
+                    ><svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="52"
+                      height="64"
+                      viewBox="0 0 52 64"
+                      class="usa-banner__lock-image"
+                      role="img"
+                      aria-labelledby="banner-lock-title-default banner-lock-description-default"
+                      focusable="false"
+                    >
+                      <title id="banner-lock-title-default">Lock</title>
+                      <desc id="banner-lock-description-default">A locked padlock</desc>
+                      <path
+                        fill="#000000"
+                        fill-rule="evenodd"
+                        d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"
+                      />
+                    </svg> </span
+                  >) or <strong>https://</strong> means you’ve safely connected to
+                  the .gov website. Share sensitive information only on official,
+                  secure websites.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Here ends banner -->
+
+
+
+
+
+
+  </div>
+  </div>
+    </nav>
+  </header>
+
+
+
+
+  <main id="main-top">
+
+<!-- Here begins mobile menu -->
+
+  <div class="usa-overlay"></div>
+<header class="usa-header usa-header--basic">
+  <div class="usa-nav-container">
+    <div class="usa-navbar">
+      <div class="usa-logo" id="basic-logo">
+        <em class="usa-logo__text">
+          <a href="./index.html" title="TDP Project Updates">
+            TANF Data Portal  Knowledge Center
+          </a>
+        </em>
+      </div>
+      <button class="usa-menu-btn">Menu</button>
+    </div>
+    <nav aria-label="Primary navigation" class="usa-nav">
+      <button class="usa-nav__close">
+        <img src="../img/close.svg" role="img" alt="Close" />
+      </button>
+      <a href="https://tanfdata.acf.hhs.gov/" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">Go to TDP</a>
+
+      <ul class="usa-nav__primary usa-accordion">
+        <li class="usa-nav__primary-item">
+          <a href="./index.html"><span>Getting Started</span></a>
+        </li>
+        <li>
+        <ul class="usa-sidenav__sublist">
+        <li class="usa-sidenav__item">
+        <a href="./create-new-login.html">Create a New Login.gov Account</a>
+        </li>
+
+        <li class="usa-sidenav__item">
+        <a href="./existing-login.html">Use an Existing Login.gov Account</a>
+        </li>
+        </ul>
+</li>
+
+        <li class="usa-sidenav__item">
+        <a href="uploading-data.html">Submitting Data to TDP</a>
+        </li>
+
+    <li class="usa-sidenav__item">
+        <a href="complete-resubmissions.html">Resubmitting Complete Data Files</a>
+        </li>
+
+        <li class="usa-sidenav__item">
+        <a href="managing-your-account.html">Managing Your Account</a>
+        </li>
+        <li class="usa-sidenav__item">
+        <a href="./give-feedback.html" class="usa-current" aria-current="page">Give Feedback</a>
+        </li>
+      </ul>
+      <!-- Here ends mobile menu -->
+
+
+    </nav>
+  </div>
+</header>
+
+<!-- Here begins desktop web menu -->
+
+  <div class="usa-section">
+  <div class="grid-container" style="min-height: 74vh;">
+    <div class="grid-row grid-gap">
+      <div class="usa-layout-docs__sidenav desktop:grid-col-3">
+        <nav aria-label="Secondary navigation">
+          <ul class="usa-sidenav">
+            <li class="usa-sidenav__item">
+              <a href="./index.html">Getting Started</a>
+            </li>
+            <li>
+            <ul class="usa-sidenav__sublist">
+              <li class="usa-sidenav__item">
+                <a href="./create-new-login.html">Create a New Login.gov Account</a>
+              </li>
+
+              <li class="usa-sidenav__item">
+                <a href="./existing-login.html">Use an Existing Login.gov Account</a>
+              </li>
+            </ul>
+          </li>
+
+
+              <li class="usa-sidenav__item">
+                <a href="uploading-data.html">Submitting Data to TDP</a>
+              </li>
+
+              <li class="usa-sidenav__item">
+                  <a href="complete-resubmissions.html">Resubmitting Complete Data Files</a>
+              </li>
+
+
+            <li class="usa-sidenav__item">
+              <a href="managing-your-account.html">Managing Your Account</a>
+            </li>
+
+             <li class="usa-sidenav__item">
+              <a href="./give-feedback.html"class="usa-current" aria-current="page">Give Feedback</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Here ends desktop web menu -->
+
+
+      <main
+        class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
+        id="main-content">
+        <h1>Give Feedback</h1>
+        <div id="surveyContainer"></div>
+        <script src="https://code.jquery.com/jquery-3.6.1.min.js" crossorigin="anonymous"></script>
+      	<script src="https://unpkg.com/survey-jquery@1.9.54/survey.jquery.min.js"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+      	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+      	<script>
+          Survey.StylesManager.applyTheme("defaultV2");
+
+          var surveyJSON = {"description":"Your feedback is important to us! We use it to ensure that the TANF Data Portal is meeting your needs and better serve you and your team. All feedback is anonymous unless you provide your contact information.","logoPosition":"right","completedHtml":"<h3>Thank you for your feedback!</h3>","pages":[{"name":"page1","elements":[{"type":"html","name":"Description","html":"<p>Your feedback is important to us! We use it to ensure that the TANF Data Portal is meeting your needs and better serve you and your team. All feedback is anonymous unless you provide your contact information.</p>"},{"type":"radiogroup","name":"type","title":"Tell us about:","isRequired":true,"choices":[{"value":"Feedback","text":"Your feedback on TDP"},{"value":"Bug","text":"A bug you encountered"},{"value":"Improvement","text":"An idea for improving TDP"}]},{"type":"rating","name":"rating","visibleIf":"{type} = 'Feedback'","title":"Please rate your experience with the TANF Data Portal. (Higher is better)","minRateDescription":"Terrible","maxRateDescription":"Fantastic"},{"type":"comment","name":"likes","visibleIf":"{type} = 'Feedback'","title":"What do you like about the TANF Data Portal?"},{"type":"comment","name":"dislikes","visibleIf":"{type} = 'Feedback'","title":"What do you dislike about the TANF Data Portal?"},{"type":"comment","name":"other-comments","visibleIf":"{type} = 'Feedback'","title":"Is there anything else you'd like us to know?"},{"type":"comment","name":"bug-summary","visibleIf":"{type} = 'Bug'","title":"What went wrong?","description":"In what way were you interacting with the application when you discovered the issue? Please be specific. This information really helps us get to the bottom of an issue more quickly","isRequired":true},{"type":"text","name":"page","visibleIf":"{type} = 'Bug'","title":"What page of TDP were you on when it happened?"},{"type":"comment","name":"expectation","visibleIf":"{type} = 'Bug'","title":"What did you expect to happen instead?"},{"type":"comment","name":"setup-details","visibleIf":"{type} = 'Bug'","title":"Other helpful information:","description":"Your internet browser & operating system, whether you're able to reproduce the issue when you try again, etc..."},{"type":"comment","name":"improvement-idea","visibleIf":"{type} = 'Improvement'","title":"Tell us about your idea for improving TDP","isRequired":true},{"type":"boolean","name":"followup","visibleIf":"{type} anyof ['Feedback', 'Bug', 'Improvement']","title":"Would you like to provide your email address so we can follow up with you about your feedback?","defaultValue":"No","isRequired":true,"valueTrue":"Yes","valueFalse":"No"},{"type":"text","name":"email","visibleIf":"{followup} = 'Yes'","title":"What's your email address?","isRequired":true,"autoComplete":"email"}]}],"showTitle":false};
+
+      function sendDataToServer(survey, options) {
+      	options.showDataSaving();
+      	$.ajax({
+      		url: 'https://script.google.com/macros/s/AKfycbxuRcrC83jWBmED-gXeaSmGal3kYwYYrTGOToFTOOGBtQ5gL5Lu-zrHThyWhir-r9WINw/exec',
+      		type: 'post',
+      		data: JSON.stringify(survey.data),
+      		headers: {
+      			"Content-Type": "text/plain"
+      		},
+      		processData: false,
+      		complete: function(res, status) {
+      			if (status == 'success') {
+      				options.showDataSavingSuccess();
+      			}else {
+      				options.showDataSavingError();
+      			}
+      		},
+      	});
+      }
+
+      var survey = new Survey.Model(surveyJSON);
+      $("#surveyContainer").Survey({
+          model: survey,
+      	onComplete: sendDataToServer
+      });
+      	</script>
+
+
+      </main>
+    </div>
+  </div>
+  <footer class="usa-footer usa-footer--slim">
+  <div class="grid-container usa-footer__return-to-top">
+    <a href="#">Return to top</a>
+  </div>
+  <div class="usa-footer__primary-section">
+    <div class="usa-footer__primary-container grid-row">
+      <div class="mobile-lg:grid-col-8">
+        <nav class="usa-footer__nav" aria-label="Footer navigation,">
+          <ul class="grid-row grid-gap">
+            <li
+              class="
+                mobile-lg:grid-col-6
+                desktop:grid-col-auto
+                usa-footer__primary-content
+              "
+            >
+              <a class="usa-footer__primary-link" href="https://www.acf.hhs.gov/privacy-policy"
+                >Privacy Policy</a
+              >
+            </li>
+
+          </ul>
+        </nav>
+      </div>
+
+    </div>
+  </div>
+  <div class="usa-footer__secondary-section">
+    <div class="grid-container" style="padding-left: 0rem !important;">
+      <div class="usa-footer__logo grid-row grid-gap-2">
+        <div class="grid-col-auto">
+          <img class="mobile-lg:maxw-mobile mobile:width-mobile" src="../img/acfofa.svg" alt="Administration for Children and Families: OFfice of Family Assistance" />
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+</div>

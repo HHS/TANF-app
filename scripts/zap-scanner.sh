@@ -5,23 +5,22 @@ set -o pipefail
 
 TARGET=$1
 ENVIRONMENT=$2
+TARGET_ENV=$3
 
 TARGET_DIR="$(pwd)/tdrs-$TARGET"
 CONFIG_FILE="zap.conf"
 REPORT_NAME=owasp_report.html
 
+
 if [ "$ENVIRONMENT" = "nightly" ]; then
-    APP_URL="https://tdp-$TARGET-staging.app.cloud.gov/"
-elif [ "$ENVIRONMENT" = "circle" ]; then
-    if [ "$TARGET" = "frontend" ]; then
-        APP_URL="http://tdp-frontend/"
-    elif [ "$TARGET" = "backend" ]; then
-        APP_URL="http://web:8080/"
-    else
-        echo "Invalid target $TARGET"
-        exit 1
+    APP_URL="https://tdp-$TARGET-$TARGET_ENV.app.cloud.gov/"
+    if [ "$TARGET_ENV" = "prod" ]; then
+        APP_URL="https://api-tanfdata.acf.hhs.gov/"
+        if [ "$TARGET" = "frontend" ]; then
+            APP_URL="https://tanfdata.acf.hhs.gov/"
+        fi
     fi
-elif [ "$ENVIRONMENT" = "local" ]; then
+elif [ "$ENVIRONMENT" = "circle" ] || [ "$ENVIRONMENT" = "local" ]; then
     if [ "$TARGET" = "frontend" ]; then
         APP_URL="http://tdp-frontend/"
     elif [ "$TARGET" = "backend" ]; then
@@ -33,6 +32,11 @@ elif [ "$ENVIRONMENT" = "local" ]; then
 else
     echo "Invalid environment $ENVIRONMENT"
     exit 1
+fi
+
+# The backend also needs to include the path of the OpenAPI specification
+if [ "$TARGET" = "backend" ]; then
+  APP_URL+="swagger.json"
 fi
 
 cd "$TARGET_DIR" || exit 2
@@ -53,6 +57,12 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(0\).regex='.*/robots\.txt.*' \
   -config globalexcludeurl.url_list.url\(0\).description='Exclude robots.txt' \
   -config globalexcludeurl.url_list.url\(0\).enabled=true \
+  -config globalexcludeurl.url_list.url\(1\).regex='^https?://.*\.cdn\.mozilla\.(?:com|org|net)/.*$' \
+  -config globalexcludeurl.url_list.url\(1\).description='Site - Mozilla CDN (requests such as getpocket)' \
+  -config globalexcludeurl.url_list.url\(1\).enabled=true \
+  -config globalexcludeurl.url_list.url\(2\).regex='^https?://.*\.amazonaws\.(?:com|org|net)/.*$' \
+  -config globalexcludeurl.url_list.url\(2\).description='TDP S3 buckets' \
+  -config globalexcludeurl.url_list.url\(2\).enabled=true \
   -config spider.postform=true"
 
 # How long ZAP will crawl the app with the spider process
@@ -75,8 +85,22 @@ ZAP_ARGS+=(-I)
 # setting them to IGNORE in the config file, unlike active rules.
 ZAP_ARGS+=(--hook=/zap/scripts/zap-hook.py)
 
+# Alter the script used and options passed to it based on target
+if [ "$TARGET" = "backend" ]; then
+  # Use the API scan for the backend, in order to allow crawling the API based
+  # on the Swagger/OpenAPI spec provided by drf-yasg2.
+  ZAP_SCRIPT="zap-api-scan.py"
+  # The API scan needs to know the format of the API specification provided.
+  ZAP_ARGS+=(-f openapi)
+else
+  # Otherwise, use the full scan as we have been.
+  ZAP_SCRIPT="zap-full-scan.py"
+  # Allow use of the optional AJAX spider to effectively crawl the React webapp.
+  ZAP_ARGS+=(-j)
+fi
+
 # Run the ZAP full scan and store output for further processing if needed.
-ZAP_OUTPUT=$(docker-compose run --rm zaproxy zap-full-scan.py "${ZAP_ARGS[@]}" | tee /dev/tty)
+ZAP_OUTPUT=$(docker-compose run --rm zaproxy "$ZAP_SCRIPT" "${ZAP_ARGS[@]}" | tee /dev/tty)
 ZAP_EXIT=$?
 
 if [ "$ZAP_EXIT" -eq 0 ]; then

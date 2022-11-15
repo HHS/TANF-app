@@ -13,7 +13,7 @@ import ComboBox from '../ComboBox'
  * @param {function} error - Reference to stt errors object.
  */
 function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
-  const sttList = useSelector((state) => state.stts.sttList)
+  const sttList = useSelector((state) => state?.stts?.sttList)
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -25,12 +25,13 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
   return (
     <ComboBox
       name="stt"
-      label="Associated State, Tribe, or Territory"
+      label="Associated State, Tribe, or Territory*"
       error={error ? 'A state, tribe, or territory is required' : undefined}
       handleSelect={selectStt}
       selected={selectedStt}
       handleBlur={handleBlur}
       placeholder="- Select or Search -"
+      aria-required="true"
     >
       <option value="" disabled hidden>
         - Select or Search -

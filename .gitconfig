@@ -9,7 +9,7 @@
 	allowed = ./tdrs-backend/docker-compose.yml:57:.*
 	allowed = regexes.json:.*
 	allowed = ./scripts/copy-login-gov-keypair.sh:14:JWT_KEY=.*
-	allowed = ./scripts/set-backend-env-vars.sh:24:DJANGO_SECRET_KEY=.*
+	allowed = scripts/deploy-backend.sh:.+:DJANGO_SECRET_KEY=..python -c .from secrets import token_urlsafe. print.token_urlsafe..*
 	allowed = .git/config:.*
 	allowed = .gitconfig:.*
-	allowed = .*DJANGO_SECRET_KEY=.*tdp-dev-insecure
+	allowed = .*DJANGO_SECRET_KEY=.*

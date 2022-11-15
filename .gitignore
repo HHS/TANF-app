@@ -22,6 +22,9 @@ tdrs-backend/coverage.xml
 tdrs-backend/htmlcov/*
 tdrs-backend/.env
 tdrs-backend/.env.production
+tdrs-backend/ADS*
+tdrs-backend/temp_key_file
+tdrs-backend/test
 *.pyc
 /backend/db.sqlite3
 .DS_Store
@@ -40,6 +43,7 @@ tmp
 compliance/opencontrols/
 compliance/exports/
 tdrs-backend/tdpservice/static/*
+*gunicorn.log
 
 # don't ignore requirements.txt
 !requirements.txt
@@ -99,3 +103,5 @@ tfapply
 *.tfvars
 *.lock.hcl
 *.tfstate
+
+*.~undo-tree~

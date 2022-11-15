@@ -9,10 +9,12 @@ import {
   setStt,
   setQuarter,
   getAvailableFileList,
+  setFileType,
 } from '../../actions/reports'
 import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
 import { fetchSttList } from '../../actions/sttList'
+import Modal from '../Modal'
 
 /**
  * Reports is the home page for users to file a report.
@@ -23,15 +25,22 @@ import { fetchSttList } from '../../actions/sttList'
 function Reports() {
   // The selected year in the dropdown tied to our redux `reports` state
   const selectedYear = useSelector((state) => state.reports.year)
+  const [yearInputValue, setYearInputValue] = useState(selectedYear)
   // The selected stt in the dropdown tied to our redux `reports` state
   const selectedStt = useSelector((state) => state.reports.stt)
+  const [sttInputValue, setSttInputValue] = useState(selectedStt)
   // The selected quarter in the dropdown tied to our redux `reports` state
   const selectedQuarter = useSelector((state) => state.reports.quarter)
+  const [quarterInputValue, setQuarterInputValue] = useState(selectedQuarter)
   // The logged in user saved in our redux `auth` state object
   const user = useSelector((state) => state.auth.user)
   const isOFAAdmin =
     user && user.roles.some((role) => role.name === 'OFA Admin')
-  const sttList = useSelector((state) => state.stts.sttList)
+  const sttList = useSelector((state) => state?.stts?.sttList)
+
+  const [errorModalVisible, setErrorModalVisible] = useState(false)
+  const files = useSelector((state) => state.reports.files)
+  const uploadedFiles = files.filter((file) => file.fileName && !file.id)
 
   const userProfileStt = user?.stt?.name
 
@@ -51,7 +60,9 @@ function Reports() {
   const currentStt = isOFAAdmin ? selectedStt : userProfileStt
 
   const stt = sttList?.find((stt) => stt?.name === currentStt)
-  const [submittedHeader, setSubmittedHeader] = useState('')
+
+  const selectedFileType = useSelector((state) => state.reports.fileType)
+  const [fileTypeInputValue, setFileTypeInputValue] = useState(selectedFileType)
 
   const errorsCount = formValidation.errors
 
@@ -59,13 +70,23 @@ function Reports() {
 
   const errorsRef = useRef(null)
 
+  const resetPreviousValues = () => {
+    setQuarterInputValue(selectedQuarter || '')
+    setYearInputValue(selectedYear || '')
+    setSttInputValue(selectedStt || '')
+    setFileTypeInputValue(selectedFileType || 'tanf')
+  }
+
   const handleSearch = () => {
     // Clear previous errors
     setFormValidationState({})
 
-    // Filter out non-truthy values
-    const form = [selectedYear, currentStt, selectedQuarter].filter(Boolean)
-    const reportHeader = `${currentStt} - Fiscal Year ${selectedYear} - ${quarters[selectedQuarter]}`
+    // Filter out non-truthy values]
+    const form = [
+      yearInputValue,
+      sttInputValue || currentStt,
+      quarterInputValue,
+    ].filter(Boolean)
 
     if (form.length === 3) {
       // Hide upload sections while submitting search
@@ -76,17 +97,21 @@ function Reports() {
       // Clear existing file list from state to ensure fresh results
       dispatch(clearFileList())
 
-      // Retrieve the files matching the selected year and quarter.
+      // update state to the new search values
+      dispatch(setYear(yearInputValue))
+      dispatch(setQuarter(quarterInputValue))
+      dispatch(setStt(sttInputValue))
+      dispatch(setFileType(fileTypeInputValue))
+
+      // Retrieve the files matching the selected year, quarter, and ssp.
       dispatch(
         getAvailableFileList({
-          quarter: selectedQuarter,
-          year: selectedYear,
+          quarter: quarterInputValue,
+          year: yearInputValue,
           stt,
+          file_type: fileTypeInputValue,
         })
       )
-
-      // Update the section header to reflect selections
-      setSubmittedHeader(reportHeader)
 
       // Restore upload sections to the page
       setTimeout(() => setIsToggled(true), 0)
@@ -94,7 +119,7 @@ function Reports() {
       // create error state
       setFormValidationState({
         year: !selectedYear,
-        stt: !currentStt,
+        stt: !(sttInputValue || currentStt),
         quarter: !selectedQuarter,
         errors: 3 - form.length,
       })
@@ -109,20 +134,38 @@ function Reports() {
   }
 
   const selectYear = ({ target: { value } }) => {
-    dispatch(setYear(value))
+    setYearInputValue(value)
     setTouched((currentForm) => ({ ...currentForm, year: true }))
   }
 
   const selectQuarter = ({ target: { value } }) => {
-    dispatch(setQuarter(value))
+    setQuarterInputValue(value)
     setTouched((currentForm) => ({ ...currentForm, quarter: true }))
   }
   // Non-OFA Admin users will be unable to select an STT
   // prefer => `auth.user.stt`
 
   const selectStt = (value) => {
-    dispatch(setStt(value))
+    setSttInputValue(value)
     setTouched((currentForm) => ({ ...currentForm, stt: true }))
+  }
+
+  const constructYearOptions = () => {
+    const years = []
+    const today = new Date(Date.now())
+
+    const fiscalYear =
+      today.getMonth() > 8 ? today.getFullYear() + 1 : today.getFullYear()
+
+    for (let i = fiscalYear; i >= 2021; i--) {
+      const option = (
+        <option key={i} data-testid={i} value={i}>
+          {i}
+        </option>
+      )
+      years.push(option)
+    }
+    return years
   }
 
   useEffect(() => {
@@ -133,25 +176,27 @@ function Reports() {
 
   useEffect(() => {
     if (!isUploadReportToggled) {
-      const form = [selectedYear, currentStt, selectedQuarter].filter(Boolean)
+      const form = [yearInputValue, sttInputValue, quarterInputValue].filter(
+        Boolean
+      )
       const touchedFields = Object.keys(touched).length
 
       const errors = touchedFields === 3 ? 3 - form.length : 0
 
       setFormValidationState((currentState) => ({
         ...currentState,
-        year: touched.year && !selectedYear,
-        stt: touched.stt && !currentStt,
-        quarter: touched.quarter && !selectedQuarter,
+        year: touched.year && !yearInputValue,
+        stt: touched.stt && !sttInputValue,
+        quarter: touched.quarter && !quarterInputValue,
         errors,
       }))
     }
   }, [
-    currentStt,
+    sttInputValue,
     isUploadReportToggled,
-    selectedYear,
+    yearInputValue,
     selectedStt,
-    selectedQuarter,
+    quarterInputValue,
     setFormValidationState,
     touched,
   ])
@@ -183,13 +228,46 @@ function Reports() {
               })}
             >
               <STTComboBox
-                selectedStt={selectedStt}
+                selectedStt={sttInputValue}
                 selectStt={selectStt}
                 error={formValidation.stt}
               />
             </div>
           )}
-
+          {(stt?.ssp ? stt.ssp : false) && (
+            <div className="usa-form-group margin-top-4">
+              <fieldset className="usa-fieldset">
+                <legend className="usa-label text-bold">File Type</legend>
+                <div className="usa-radio">
+                  <input
+                    className="usa-radio__input"
+                    id="tanf"
+                    type="radio"
+                    name="reportType"
+                    value="tanf"
+                    defaultChecked
+                    onChange={() => setFileTypeInputValue('tanf')}
+                  />
+                  <label className="usa-radio__label" htmlFor="tanf">
+                    TANF
+                  </label>
+                </div>
+                <div className="usa-radio">
+                  <input
+                    className="usa-radio__input"
+                    id="ssp-moe"
+                    type="radio"
+                    name="reportType"
+                    value="ssp-moe"
+                    onChange={() => setFileTypeInputValue('ssp-moe')}
+                  />
+                  <label className="usa-radio__label" htmlFor="ssp-moe">
+                    SSP-MOE
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+          )}
           <div
             className={classNames('usa-form-group maxw-mobile margin-top-4', {
               'usa-form-group--error': formValidation.year,
@@ -213,16 +291,13 @@ function Reports() {
                 name="reportingYears"
                 id="reportingYears"
                 onChange={selectYear}
-                value={selectedYear}
+                value={yearInputValue}
                 aria-describedby="years-error-alert"
               >
                 <option value="" disabled hidden>
                   - Select Fiscal Year -
                 </option>
-                <option value="2020">2020</option>
-                <option data-testid="2021" value="2021">
-                  2021
-                </option>
+                {constructYearOptions()}
               </select>
             </label>
           </div>
@@ -249,7 +324,7 @@ function Reports() {
                 name="quarter"
                 id="quarter"
                 onChange={selectQuarter}
-                value={selectedQuarter}
+                value={quarterInputValue}
                 aria-describedby="quarter-error-alert"
               >
                 <option value="" disabled hidden>
@@ -265,7 +340,17 @@ function Reports() {
               </select>
             </label>
           </div>
-          <Button className="margin-y-4" type="button" onClick={handleSearch}>
+          <Button
+            className="margin-y-4"
+            type="button"
+            onClick={() => {
+              if (uploadedFiles.length > 0) {
+                setErrorModalVisible(true)
+              } else {
+                handleSearch()
+              }
+            }}
+          >
             Search
           </Button>
         </form>
@@ -273,10 +358,39 @@ function Reports() {
       {isUploadReportToggled && (
         <UploadReport
           stt={stt?.id}
-          header={submittedHeader}
-          handleCancel={() => setIsToggled(false)}
+          header={`${currentStt} - ${selectedFileType.toUpperCase()} - Fiscal Year ${selectedYear} - ${
+            quarters[selectedQuarter]
+          }`}
+          handleCancel={() => {
+            setIsToggled(false)
+            resetPreviousValues()
+            dispatch(clearFileList())
+          }}
         />
       )}
+      <Modal
+        title="Files Not Submitted"
+        message="Your uploaded files have not been submitted. Searching without submitting will discard your changes and remove any uploaded files."
+        isVisible={errorModalVisible}
+        buttons={[
+          {
+            key: '1',
+            text: 'Cancel',
+            onClick: () => {
+              setErrorModalVisible(false)
+              resetPreviousValues()
+            },
+          },
+          {
+            key: '2',
+            text: 'Discard and Search',
+            onClick: () => {
+              setErrorModalVisible(false)
+              handleSearch()
+            },
+          },
+        ]}
+      />
     </>
   )
 }

@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from tdpservice.stts.models import Region, STT
+from tdpservice.stts.models import STT, Region
 
 
 class STTSerializer(serializers.ModelSerializer):
@@ -14,7 +14,7 @@ class STTSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = STT
-        fields = ["id", "type", "code", "name"]
+        fields = ["id", "type", "code", "name", "region", "ssp"]
 
     def get_code(self, obj):
         """Return the state code."""
@@ -23,19 +23,26 @@ class STTSerializer(serializers.ModelSerializer):
         return obj.code
 
 
-class STTUpdateSerializer(serializers.ModelSerializer):
-    """STT serializer."""
+class STTPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    """Accept STT ID only for updates but return full STT in response."""
 
-    class Meta:
-        """Metadata."""
+    queryset = STT.objects.all()
 
-        model = STT
-        fields = ["id"]
-        extra_kwargs = {"id": {"read_only": False}}
-
-    def to_representation(self, instance):
-        """Allow update with only the ID field."""
+    def to_representation(self, value):
+        """Return full STT object on outgoing serialization."""
+        instance = self.queryset.get(pk=value.pk)
         return STTSerializer(instance).data
+
+
+class RegionPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    """Accept Region ID only for updates but return full Region in response."""
+
+    queryset = Region.objects.all()
+
+    def to_representation(self, value):
+        """Return full Region object on outgoing serialization."""
+        instance = self.queryset.get(pk=value.pk)
+        return RegionSerializer(instance).data
 
 
 class RegionSerializer(serializers.ModelSerializer):

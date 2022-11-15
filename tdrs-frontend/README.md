@@ -8,7 +8,6 @@ Frontend API Service for TDP. Deployed to Cloud.gov at https://tdp-frontend.app.
 - [Login.gov Sandbox Account](https://idp.int.identitysandbox.gov/sign_up/enter_email)
 - [Cloud.gov Account](https://cloud.gov/)
 - [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
-- [Yarn JavaScript Package Manager](https://classic.yarnpkg.com/en/docs/install/#mac-stable) 
 
 # Contents
 
@@ -56,7 +55,7 @@ When running this app with Docker on localhost React will assign `NODE_ENV=devel
 * .env.development
 * .env
 
-#### `npm start` / `yarn start`
+#### `npm start`
 When running this app directly on localhost React will assign `NODE_ENV=development` and use this inheritance order:
 * Any variables set directly on host machine (ie. export MY_VAR=...)
 * .env.development.local
@@ -64,14 +63,14 @@ When running this app directly on localhost React will assign `NODE_ENV=developm
 * .env.development
 * .env
 
-#### `npm test` / `yarn test`
+#### `npm test`
 During tests, the env files are loaded in this order:
 * .env.test.local
 * .env.test
 * .env
 
 #### CircleCI
-The current CircleCI config utilizes yarn to build and test the frontend application. As such it follows this order of inheritance for environment variables:
+The current CircleCI config utilizes npm to build and test the frontend application. As such it follows this order of inheritance for environment variables:
 * Any variables set directly in CircleCI Project Settings
 * .env.test.local
 * .env.test
@@ -86,16 +85,16 @@ The app is set up with [ESLint](https://eslint.org/) and [Prettier](https://pret
 
 To run eslint locally:
 ```bash
-$ yarn lint
+$ npm run lint
 ```
 
 If you use [VSCode](https://code.visualstudio.com/) as an [IDE](https://en.wikipedia.org/wiki/Integrated_development_environment), it will be helpful to add the extensions, [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode). These make it possible to catch lint errors as they occur, and even auto-fix style errors (with Prettier).
 
 ----
 
-### Unit and Integration Testing
+### Unit and Accessibility Testing
 
-This project uses [Jest](https://jestjs.io/) for unit tests and [Cypress](https://www.cypress.io/) for end-to-end (e2e) tests.
+This project uses [Jest](https://jestjs.io/) for unit tests and [pa11y](https://pa11y.org/) for automated accessibility tests.
 
 **Unit Tests with Jest**
 
@@ -104,15 +103,15 @@ Jest provides an interactive test console that's helpful for development. After 
 
 1.) To run unit tests locally:
   ```bash
-  $ yarn test
+  $ npm run test
   ```
 2.) To run unit tests with code coverage report:
   ```bash
-  $ yarn test:cov
+  $ npm run test:cov
   ```
 3.) To run unit tests as a continuous integration environment would, which runs the tests once (without the interactive console):
   ```bash
-  $ yarn test:ci
+  $ npm run test:ci
   ```
 
 After running either `test:cov` or `test:ci`, coverage details can be seen as HTML in the browser by running:
@@ -122,28 +121,11 @@ $ open coverage/lcov-report/index.html
 
 In addition to [Jest's matchers](https://jestjs.io/docs/en/expect), this project uses [enzyme-matchers](https://github.com/FormidableLabs/enzyme-matchers) to simplify tests and make them more readable. Enzyme matchers is integrated with Jest using the [`jest-enzyme` package](https://github.com/FormidableLabs/enzyme-matchers/blob/master/packages/jest-enzyme/README.md#assertions) which provides many useful assertions for testing React components.
 
-**End-to-End Tests with Cypress**
-
-It is required to run the application locally for Cypress to run, since it actually navigates to the URL and performs tests on the rendered UI.
-Cypress requires that the application is running locally in order to perform its tests, since it navigates to the URL and performs tests on the rendered UI.
-- Run the app (see docs [to run locally](#to-run-locally))
-- Open the Cypress app:
-  ```bash
-  $ yarn cy:open
-  ```
-- The Cypress Test Runner immediately displays a list of Integration Tests. Click on one to run it, or run all tests.
-- Alternatively the tests can all be run from the command line without the interactive browser window:
-  ```bash
-  $ yarn cy:run
-  ```
-
-The [Cypress guides](https://docs.cypress.io/guides/getting-started/writing-your-first-test.html#Add-a-test-file) are helpful.
-
 ----
 
 ### Cloud.gov Deployments:
 
-Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
+Although CircleCi is [set up to auto deploy](../.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
 
 1.) Log into your cloud.gov account and set your space and organization:
 

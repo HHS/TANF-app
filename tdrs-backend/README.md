@@ -1,4 +1,4 @@
-# raft-tdp-main
+# TANF Data Portal
 
 Backend API Service for TDP. Deployed to Cloud.gov at https://tdp-backend.app.cloud.gov/ .
 
@@ -62,7 +62,7 @@ a64c18db30ed        localstack/localstack:0.12.9 "docker-entrypoint.sh"   2 hour
 $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 ```
 
-7.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](docs/user_role_management.md) guide. 
+7.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](../docs/user_role_management.md) guide. 
 
 8.) Backend project tear down: 
 
@@ -125,7 +125,7 @@ $ docker-compose run --rm web bash -c "./wait_for_services.sh && pytest"
 $ docker-compose run --rm web bash -c "flake8 ."
 ```
 
-The [flake8](https://flake8.pycqa.org/en/latest/) linter is configured to check the formatting of the source against this [setup.cfg](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/tdrs-backend/setup.cfg#L20-L34) file. 
+The [flake8](https://flake8.pycqa.org/en/latest/) linter is configured to check the formatting of the source against this [setup.cfg](./setup.cfg#L20-L34) file. 
 
 3. Run local penetration tests by executing the following shell script:
 
@@ -139,7 +139,7 @@ This will spin up a local instance of the backend service and execute a penetrat
 
 ### Cloud.gov Deployments:
 
-Although CircleCi is [set up to auto deploy](https://github.com/raft-tech/TANF-app/blob/raft-tdp-main/.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
+Although CircleCi is [set up to auto deploy](../.circleci/config.yml#L131) frontend and backend to Cloud.gov, if there is a need to do a manual deployment, the instructions below can be followed:
 
 1.) Log into your cloud.gov account and set your space and organization:
 
@@ -191,3 +191,8 @@ $ cf bind-service tdp-backend tdp-db
 ```bash
 $ cf restage tdp-backend
 ```
+
+
+### Useful Links
+
+[Remote Development Guide](../docs/Technical-Documentation/remote-development.md)

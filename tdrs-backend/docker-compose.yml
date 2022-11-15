@@ -1,9 +1,9 @@
 # Base Docker compose for all environments
-version: "3"
+version: "3.4"
 
 services:
   zaproxy:
-    image: owasp/zap2docker-weekly
+    image: owasp/zap2docker-stable:2.11.0
     command: sleep 3600
     depends_on:
       - web
@@ -32,7 +32,7 @@ services:
       - "9000:9000"
 
   localstack:
-    image: localstack/localstack:0.12.9
+    image: localstack/localstack:0.13.3
     environment:
       - SERVICES=s3
       - DATA_DIR=/tmp/localstack/data
@@ -48,6 +48,7 @@ services:
   web:
     restart: always
     environment:
+      - CLAMAV_NEEDED
       - AV_SCAN_URL=http://clamav-rest:9000/scan
       - DB_HOST=postgres
       - DB_NAME=tdrs_test
@@ -62,19 +63,39 @@ services:
       - JWT_CERT_TEST
       - JWT_KEY
       - USE_LOCALSTACK
+      - LOGGING_LEVEL
+      - AMS_CLIENT_ID
+      - AMS_CLIENT_SECRET
+      - AMS_CONFIGURATION_ENDPOINT
+      - ACFTITAN_HOST
+      - ACFTITAN_KEY
+      - ACFTITAN_USERNAME
+      - REDIS_URI=redis://redis-server:6379
+      - REDIS_SERVER_LOCAL=TRUE
+      - ACFTITAN_SFTP_PYTEST
     volumes:
       - .:/tdpapp
     image: tdp
     build: .
     command: >
       bash -c "./wait_for_services.sh &&
-               ./gunicorn_start.sh"
+               ./gunicorn_start.sh && celery -A tdpservice.settings worker -l info"
     ports:
       - "8080:8080"
+      - "5555:5555"
     depends_on:
       - clamav-rest
       - localstack
       - postgres
+      - redis-server
+
+  redis-server:
+    image: "redis:alpine"
+    command: redis-server /tdpapp/redis.conf
+    ports:
+      - "6379:6379"
+    volumes:
+      - .:/tdpapp
 
 volumes:
   localstack_data:

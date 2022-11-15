@@ -1,16 +1,15 @@
 """Check if user is authorized."""
-import logging
 
+import logging
 from django.contrib.auth import logout
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 from django.middleware import csrf
 from django.utils import timezone
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from ..serializers import UserProfileSerializer
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class AuthorizationCheck(APIView):
@@ -27,7 +26,7 @@ class AuthorizationCheck(APIView):
 
         if user.is_authenticated:
             # Check if the user is deactivated in our system before passing auth params.
-            if user.deactivated:
+            if user.is_deactivated:
                 logout(request)
                 response = Response({"authenticated": False, "inactive": True})
                 response.delete_cookie("id_token")
@@ -43,7 +42,7 @@ class AuthorizationCheck(APIView):
                 "Auth check PASS for user: %s on %s", user.username, timezone.now()
             )
             res = Response(auth_params)
-            res["Access-Control-Allow-Headers"] = "X-CSRFToken"
+            res["Access-Control-Allow-Headers"] = "X-CSRFToken, Cookie, Set-Cookie"
             return res
         else:
             logger.info("Auth check FAIL for user on %s", timezone.now())

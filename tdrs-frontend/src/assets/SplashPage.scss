@@ -5,13 +5,20 @@
   color: $primary-graphite;
 }
 
-.usa-hero__callout {
-  background-color: $primary-light-pale-blue;
+.usa-hero1 {
+  background-image: url("./hero1.jpg");
 }
 
-.usa-card__heading {
-  font-size: 16px;
-  font-weight: 400;
+.usa-hero2 {
+  background-image: url("./hero2.jpg");
+}
+
+.usa-hero3 {
+  background-image: url("./hero3.jpg");
+}
+
+.usa-hero__callout {
+  background-color: $primary-light-pale-blue;
 }
 
 .usa-hero__heading--alt {
@@ -26,10 +33,6 @@
   justify-content: center;
 }
 
-.resource-card {
-  height: 182px;
-}
-
 .visually-hidden:not(:focus):not(:active) {
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
@@ -38,6 +41,11 @@
   position: absolute;
   white-space: nowrap;
   width: 1px;
+}
+
+.usa-hero__callout {
+  box-shadow: 0 0 29px 0 rgb(0, 0, 0.5);
+  border-radius: 0.25rem;
 }
 
 @media screen and (max-width: 640px) {

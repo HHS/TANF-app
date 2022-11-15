@@ -53,7 +53,8 @@ export const fetchAuth = () => async (dispatch) => {
       const { user, csrf } = data
 
       // Work around for csrf cookie issue we encountered in production.
-      axiosInstance.defaults.headers['X-CSRFToken'] = csrf
+      axiosInstance.defaults.headers.common['X-CSRFToken'] = csrf
+
       dispatch({ type: SET_AUTH, payload: { user } })
     } else {
       dispatch({ type: CLEAR_AUTH })
@@ -72,6 +73,6 @@ export const setMockLoginState = () => async (dispatch) => {
   // localStorage converts all values to strings, so to get a falsy value
   // we pass in a blank string
   window.localStorage.setItem('loggedIn', loginState ? '' : true)
+  dispatch({ type: SET_MOCK_LOGIN_STATE })
   window.location.reload()
-  dispatch(SET_MOCK_LOGIN_STATE)
 }

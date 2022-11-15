@@ -9,6 +9,7 @@ import {
   SET_SELECTED_STT,
   SET_FILE_LIST,
   SET_SELECTED_QUARTER,
+  SET_FILE_SUBMITTED,
 } from '../actions/reports'
 
 const initialState = {
@@ -45,6 +46,7 @@ const initialState = {
   year: '',
   stt: '',
   quarter: '',
+  fileType: 'tanf',
 }
 
 describe('reducers/reports', () => {
@@ -107,6 +109,7 @@ describe('reducers/reports', () => {
       quarter: '',
       stt: '',
       year: '',
+      fileType: 'tanf',
     })
   })
 
@@ -159,6 +162,64 @@ describe('reducers/reports', () => {
       stt: '',
       year: '',
       quarter: '',
+      fileType: 'tanf',
+    })
+  })
+
+  it('should handle SET_FILE_SUBMITTED', () => {
+    const uuid = uuidv4()
+    expect(
+      reducer(undefined, {
+        type: SET_FILE_SUBMITTED,
+        payload: {
+          submittedFile: {
+            extension: 'txt',
+            id: 1,
+            original_filename: 'Test.txt',
+            quarter: 'Q1',
+            section: 'Stratum Data',
+            slug: uuid,
+            year: 2021,
+          },
+        },
+      })
+    ).toEqual({
+      files: [
+        {
+          section: 'Active Case Data',
+          fileName: null,
+          fileType: null,
+          error: null,
+          uuid: null,
+        },
+        {
+          section: 'Closed Case Data',
+          fileName: null,
+          fileType: null,
+          error: null,
+          uuid: null,
+        },
+        {
+          section: 'Aggregate Data',
+          fileName: null,
+          fileType: null,
+          error: null,
+          uuid: null,
+        },
+        {
+          section: 'Stratum Data',
+          fileName: 'Test.txt',
+          fileType: 'txt',
+          id: 1,
+          quarter: 'Q1',
+          year: 2021,
+          uuid,
+        },
+      ],
+      stt: '',
+      year: '',
+      quarter: '',
+      fileType: 'tanf',
     })
   })
 
@@ -206,6 +267,7 @@ describe('reducers/reports', () => {
       stt: '',
       year: '',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 
@@ -255,6 +317,7 @@ describe('reducers/reports', () => {
       stt: '',
       year: '',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 
@@ -356,6 +419,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: 'florida',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 
@@ -372,6 +436,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: '',
       quarter: 'Q1',
+      fileType: 'tanf',
     })
 
     expect(
@@ -386,6 +451,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: '',
       quarter: 'Q2',
+      fileType: 'tanf',
     })
 
     expect(
@@ -400,6 +466,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: '',
       quarter: 'Q3',
+      fileType: 'tanf',
     })
     expect(
       reducer(undefined, {
@@ -413,6 +480,7 @@ describe('reducers/reports', () => {
       year: '',
       stt: '',
       quarter: 'Q4',
+      fileType: 'tanf',
     })
   })
 
@@ -429,6 +497,7 @@ describe('reducers/reports', () => {
       year: '2021',
       stt: '',
       quarter: '',
+      fileType: 'tanf',
     })
   })
 

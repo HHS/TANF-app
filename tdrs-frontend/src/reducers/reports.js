@@ -8,12 +8,14 @@ import {
   SET_SELECTED_QUARTER,
   SET_FILE_LIST,
   CLEAR_FILE_LIST,
+  SET_FILE_SUBMITTED,
+  SET_FILE_TYPE,
 } from '../actions/reports'
 
 const getFileIndex = (files, section) =>
-  files.findIndex((currentFile) => currentFile.section === section)
+  files.findIndex((currentFile) => currentFile.section.includes(section))
 const getFile = (files, section) =>
-  files.find((currentFile) => currentFile.section === section)
+  files.find((currentFile) => currentFile.section.includes(section))
 
 export const fileUploadSections = [
   'Active Case Data',
@@ -47,6 +49,16 @@ export const getUpdatedFiles = ({
   return updatedFiles
 }
 
+export const serializeApiDataFile = (dataFile) => ({
+  id: dataFile.id,
+  fileName: dataFile.original_filename,
+  fileType: dataFile.extension,
+  quarter: dataFile.quarter,
+  section: dataFile.section,
+  uuid: dataFile.slug,
+  year: dataFile.year,
+})
+
 const initialState = {
   files: fileUploadSections.map((section) => ({
     section,
@@ -58,6 +70,7 @@ const initialState = {
   year: '',
   stt: '',
   quarter: '',
+  fileType: 'tanf',
 }
 
 const reports = (state = initialState, action) => {
@@ -81,18 +94,19 @@ const reports = (state = initialState, action) => {
         ...state,
         files: state.files.map((file) => {
           const dataFile = getFile(data, file.section)
-          return dataFile
-            ? {
-                id: dataFile.id,
-                fileName: dataFile.original_filename,
-                fileType: dataFile.extension,
-                quarter: dataFile.quarter,
-                section: dataFile.section,
-                uuid: dataFile.slug,
-                year: dataFile.year,
-              }
-            : file
+          return dataFile ? serializeApiDataFile(dataFile) : file
         }),
+      }
+    }
+    case SET_FILE_SUBMITTED: {
+      const { submittedFile } = payload
+      return {
+        ...state,
+        files: state.files.map((file) =>
+          submittedFile?.section.includes(file.section)
+            ? serializeApiDataFile(submittedFile)
+            : file
+        ),
       }
     }
     case CLEAR_FILE: {
@@ -131,6 +145,10 @@ const reports = (state = initialState, action) => {
     case SET_SELECTED_QUARTER: {
       const { quarter } = payload
       return { ...state, quarter }
+    }
+    case SET_FILE_TYPE: {
+      const { fileType } = payload
+      return { ...state, fileType }
     }
     default:
       return state

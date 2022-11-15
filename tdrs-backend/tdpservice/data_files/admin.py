@@ -1,11 +1,13 @@
 """Admin class for DataFile objects."""
 from django.contrib import admin
-from .models import DataFile
+
+from ..core.utils import ReadOnlyAdminMixin
+from .models import DataFile, LegacyFileTransfer
 
 
 @admin.register(DataFile)
-class DataFileAdmin(admin.ModelAdmin):
-    """Enforce read-only on the Data File admin form."""
+class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Admin class for DataFile models."""
 
     list_display = [
         'id',
@@ -23,4 +25,25 @@ class DataFileAdmin(admin.ModelAdmin):
         'user',
         'year',
         'version',
+    ]
+
+@admin.register(LegacyFileTransfer)
+class LegacyFileTransferAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
+    """Admin class for LegacyFileTransfer models."""
+
+    list_display = [
+        'id',
+        'sent_at',
+        'result',
+        'uploaded_by',
+        'file_name',
+        'file_shasum',
+    ]
+
+    list_filter = [
+        'sent_at',
+        'result',
+        'uploaded_by',
+        'file_name',
+        'file_shasum',
     ]

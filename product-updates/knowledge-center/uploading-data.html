@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>TDP — Submitting Data to TDP</title>
+    <link rel="stylesheet" href="../css/uswds3.css" />
+    <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="../js/uswds.min.js"></script>
+    <link href="dist/lity.css" rel="stylesheet">
+    <script src="dist/lity.js"></script>
+
+  </head>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8V03JLZHK0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8V03JLZHK0');
+</script>
+
+  <body>
+    <a class="usa-skipnav" href="#main-content">Skip to main content</a>
+
+    <!-- Here begins banner -->
+
+  <section class="usa-banner" aria-label="Official government website">
+    <div class="usa-accordion">
+      <header class="usa-banner__header">
+        <div class="usa-banner__inner">
+          <div class="grid-col-auto">
+            <img class="usa-banner__header-flag" src="../img/us_flag_small.png" alt="U.S. flag"/>
+          </div>
+          <div class="grid-col-fill tablet:grid-col-auto">
+            <p class="usa-banner__header-text">
+              An official website of the United States government
+            </p>
+            <p class="usa-banner__header-action" aria-hidden="true">
+              Here’s how you know
+            </p>
+          </div>
+          <button
+            class="usa-accordion__button usa-banner__button"
+            aria-expanded="false"
+            aria-controls="gov-banner-default-default">
+            <span class="usa-banner__button-text">Here’s how you know</span>
+
+          </button>
+        </div>
+      </header>
+      <div
+        class="usa-banner__content usa-accordion__content"
+        id="gov-banner-default-default"
+      >
+        <div class="grid-row grid-gap-lg">
+          <div class="usa-banner__guidance tablet:grid-col-6">
+            <img
+              class="usa-banner__icon usa-media-block__img"
+              src="../img/icon-dot-gov.svg"
+              role="img"
+              alt=""
+              aria-hidden="true"
+            />
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Official websites use .gov</strong><br>A
+                <strong>.gov</strong> website belongs to an official government
+                organization in the United States.
+              </p>
+            </div>
+          </div>
+          <div class="usa-banner__guidance tablet:grid-col-6">
+            <img
+              class="usa-banner__icon usa-media-block__img"
+              src="../img/icon-https.svg"
+              role="img"
+              alt=""
+              aria-hidden="true"
+            />
+            <div class="usa-media-block__body">
+              <p>
+                <strong>Secure .gov websites use HTTPS</strong><br>A
+                <strong>lock</strong> (
+                <span class="icon-lock"
+                  ><svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="52"
+                    height="64"
+                    viewBox="0 0 52 64"
+                    class="usa-banner__lock-image"
+                    role="img"
+                    aria-labelledby="banner-lock-title-default banner-lock-description-default"
+                    focusable="false"
+                  >
+                    <title id="banner-lock-title-default">Lock</title>
+                    <desc id="banner-lock-description-default">A locked padlock</desc>
+                    <path
+                      fill="#000000"
+                      fill-rule="evenodd"
+                      d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"
+                    />
+                  </svg> </span
+                >) or <strong>https://</strong> means you’ve safely connected to
+                the .gov website. Share sensitive information only on official,
+                secure websites.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Here ends banner -->
+
+
+
+<!-- Here begins mobile menu -->
+
+  <div class="usa-overlay"></div>
+<header class="usa-header usa-header--basic">
+  <div class="usa-nav-container">
+    <div class="usa-navbar">
+      <div class="usa-logo" id="basic-logo">
+        <em class="usa-logo__text">
+          <a href="./index.html" title="TDP Project Updates">
+            TANF Data Portal  Knowledge Center
+          </a>
+        </em>
+      </div>
+      <button class="usa-menu-btn">Menu</button>
+    </div>
+    <nav aria-label="Primary navigation" class="usa-nav">
+      <button class="usa-nav__close">
+        <img src="../img/close.svg" role="img" alt="Close" />
+      </button>
+      <a href="https://tanfdata.acf.hhs.gov/" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">Go to TDP</a>
+
+      <ul class="usa-nav__primary usa-accordion">
+        <li class="usa-nav__primary-item">
+          <a href="./index.html">
+            <span>Getting Started</span>
+          </a>
+        </li>
+        <li>
+        <ul class="usa-sidenav__sublist">
+        <li class="usa-sidenav__item">
+        <a href="./create-new-login.html">Create a New Login.gov Account</a>
+        </li>
+
+        <li class="usa-sidenav__item">
+        <a href="./existing-login.html">Use an Existing Login.gov Account</a>
+        </li>
+      </ul>
+      </li>
+
+        <li class="usa-sidenav__item">
+        <a href="uploading-data.html" class="usa-current" aria-current="page">Submitting Data to TDP</a>
+        </li>
+
+
+        <li class="usa-sidenav__item">
+        <a href="complete-resubmissions.html">Resubmitting Complete Data Files</a>
+        </li>
+            <li class="usa-sidenav__item">
+        <a href="managing-your-account.html">Managing Your Account</a>
+        </li>
+        <li class="usa-sidenav__item">
+        <a href="./give-feedback.html">Give Feedback</a>
+        </li>
+      </ul>
+      <!-- Here ends mobile menu -->
+
+
+    </nav>
+  </div>
+</header>
+
+<!-- Here begins desktop web menu -->
+
+  <div class="usa-section">
+  <div class="grid-container">
+    <div class="grid-row grid-gap">
+      <div class="usa-layout-docs__sidenav desktop:grid-col-3">
+        <nav aria-label="Secondary navigation">
+          <ul class="usa-sidenav">
+            <li class="usa-sidenav__item">
+              <a href="./index.html">Getting Started</a>
+            </li>
+            <li>
+            <ul class="usa-sidenav__sublist">
+              <li class="usa-sidenav__item">
+                <a href="./create-new-login.html">Create a New Login.gov Account</a>
+              </li>
+
+
+              <li class="usa-sidenav__item">
+                <a href="./existing-login.html">Use an Existing Login.gov Account</a>
+              </li>
+            </ul>
+          </li>
+
+              <li class="usa-sidenav__item">
+                <a href="uploading-data.html" class="usa-current" aria-current="page">Submitting Data to TDP</a>
+              </li>
+
+              <li class="usa-sidenav__item">
+                  <a href="complete-resubmissions.html">Resubmitting Complete Data Files</a>
+              </li>
+
+
+            <li class="usa-sidenav__item">
+              <a href="managing-your-account.html">Managing Your Account</a>
+            </li>
+
+             <li class="usa-sidenav__item">
+              <a href="./give-feedback.html">Give Feedback</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Here ends desktop web menu -->
+
+
+      <main
+        class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
+        id="main-content">
+        <h1>Submitting Data to TDP</h1>
+        <div style="min-height: 22px;"></div>
+
+
+
+        <p class="usa-intro">
+          Once your request for access is approved by an OFA admin, your account will have access to the ‘Data Files’ page where you’ll be able to submit your quarterly transmission files.
+        </p>
+        <div style="min-height: 22px;"></div>
+        <a href="../img/data-files/1-tab-emphasis.png" data-lity data-lity-desc="TDP Data Files page with annotation emphasizing its location in the main navigation bar">
+        <img src="../img/data-files/1-tab-emphasis.png" alt="TDP Data Files page with annotation emphasizing its location in the main navigation bar">
+</a>
+<div style="min-height: 22px;"></div>
+
+  <h2>How to submit data</h2>
+  <div style="min-height: 22px;"></div>
+
+  <ol class="usa-process-list">
+    <li class="usa-process-list__item">
+      <h3 class="usa-process-list__heading">Choose which reporting period you’ll be submitting for</h3>
+<br>
+      <p class="margin-top-05">
+        On the Data Files page you’ll be able to fill out the search fields for ‘Fiscal Year’ and ‘Quarter’ to identify which data you’ll be uploading. After searching for the appropriate reporting period, a new area of the page will appear below the search button.</p><div style="min-height: 22px;"></div>
+      <a href="../img/data-files/2-search-component.png" data-lity data-lity-desc="Data Files search with emphasis on Fiscal Year and Quarter fields as well as the Search button">
+      <img src="../img/data-files/2-search-component.png" alt="Data Files search with emphasis on Fiscal Year and Quarter fields as well as the Search button">
+        </a>
+
+    </li>
+
+    <li class="usa-process-list__item">
+      <h3 class="usa-process-list__heading">Upload your files</h3>
+<br>
+      <p>You can either drag each file into their appropriate sections (Active, Closed, Aggregate, and Stratum) or click ‘Choose from folder’ on a section to browse your computer for the file.</p>
+      <a href="../img/data-files/3-upload-buckets.png" data-lity data-lity-desc="Data Files upload components for Fiscal Year 2021 — Quarter 1 (October-December) including 'buckets' for Active, Closed, Aggregate, and Stratum sections">
+      <img src="../img/data-files/3-upload-buckets.png" alt="Data Files upload components for Fiscal Year 2021 — Quarter 1 (October-December) including 'buckets' for Active, Closed, Aggregate, and Stratum sections">
+        </a>
+        <p>Note: Section 4 is only required for grantees who have elected to submit a stratified sample of families served in their jurisdiction rather than data for all families.</p><br>
+
+    </li>
+
+    <li class="usa-process-list__item">
+      <h3 class="usa-process-list__heading">Submit your files</h3>
+<br>
+      <p>After uploading the files you want to submit, click the ‘Submit Data Files’ button. You should see a confirmation that your sections were submitted!</p>
+      <a href="../img/data-files/4-success-message.png" data-lity data-lity-desc="Upload components showing success message above upload components reading 'Successfully submitted section(s): 1 on Wed Jun 15 2022'">
+      <img src="../img/data-files/4-success-message.png" alt="Upload components showing success message above upload components reading 'Successfully submitted section(s): 1 on Wed Jun 15 2022'">
+      </a>
+      <p>Upon successful submission of your data files you will also receive an email confirmation from <em>no-reply@tanfdata.acf.hhs.gov</em> (example below).<p>
+      <a href="../img/getting-started/data-submitted.png" data-lity data-lity-desc="Email example of the successfully submitted data files by section">
+      <img src="../img/getting-started/data-submitted.png" alt="Email example of the successfully submitted data files by section">
+      </a>
+      <p>In the future, TDP will provide more immediate reports about your transmitted data. For now, please expect to receive the transmission reports you’re used to receiving via email within 48 hours of data submission. Note that Tribal TANF grantees do not receive transmission reports by email.</p>
+</ol>
+
+<h2>How to retrieve your submitted data</h2>
+<div style="min-height: 22px;"></div>
+<p>To access a file you’ve uploaded to TDP, you can click the ‘Download Section <#>’ button below any submitted file. For now, this will provide you with the most recent version of that file (if you’ve submitted more than one). Note: TDP will auto-rename files to specify the fiscal period and section (e.g. 2021.Q1.Active Case Data), so depending on your original file-naming conventions, the files you download may have a different name.</p>
+<div style="min-height: 22px;"></div>
+<a href="../img/data-files/5-download-function.png" data-lity data-lity-desc="Upload component with file attached, emphasis on the 'Download Section 1' button below which downloads the most recent version of the file attached to it">
+<img src="../img/data-files/5-download-function.png" alt="Upload component with file attached, emphasis on the 'Download Section 1' button below which downloads the most recent version of the file attached to it">
+  </a>
+  <p>Future versions of TDP will include a ‘Submission History’ page where you’ll be able to access all of your past submitted files directly. Until then, if you need to access an older version of the file for the specified fiscal period, please reach out to directly to <a href = "mailto: tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov.</a></p>
+
+
+  <div style="min-height: 22px;"></div>
+
+  <h2>How to resubmit your data</h2>
+  <div style="min-height: 22px;"></div>
+  <p>If you need to replace or revise any file submitted to TDP, you can do so either by dragging a new file into the section(s) you’d like to resubmit or by clicking ‘Change File’. Once the new file(s) are selected, make sure to click the ‘Submit Data Files’ button again to save your changes.</p>
+  <div style="min-height: 22px;"></div>
+
+  <a href="../img/data-files/6-change-file.png" data-lity data-lity-desc="Upload component with emphasis on the 'Change File' button within it">
+  <img src="../img/data-files/6-change-file.png" alt="Upload component with emphasis on the 'Change File' button within it">
+    </a>
+
+
+
+      </main>
+    </div>
+  </div>
+  <footer class="usa-footer usa-footer--slim">
+  <div class="grid-container usa-footer__return-to-top">
+    <a href="#">Return to top</a>
+  </div>
+  <div class="usa-footer__primary-section">
+    <div class="usa-footer__primary-container grid-row">
+      <div class="mobile-lg:grid-col-8">
+        <nav class="usa-footer__nav" aria-label="Footer navigation,">
+          <ul class="grid-row grid-gap">
+            <li
+              class="
+                mobile-lg:grid-col-6
+                desktop:grid-col-auto
+                usa-footer__primary-content
+              "
+            >
+              <a class="usa-footer__primary-link" href="https://www.acf.hhs.gov/privacy-policy"
+                >Privacy Policy</a
+              >
+            </li>
+
+          </ul>
+        </nav>
+      </div>
+
+    </div>
+  </div>
+  <div class="usa-footer__secondary-section">
+    <div class="grid-container" style="padding-left: 0rem !important;">
+      <div class="usa-footer__logo grid-row grid-gap-2">
+        <div class="grid-col-auto">
+          <img class="mobile-lg:maxw-mobile mobile:width-mobile" src="../img/acfofa.svg" alt="Administration for Children and Families: OFfice of Family Assistance" />
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+</div>
