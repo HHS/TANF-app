@@ -1,4 +1,8 @@
 ## Buildpacks Changelog
+- 11/09/2022 [python-buildpack v1.8.3](https://github.com/cloudfoundry/python-buildpack/releases/tag/v1.8.3)
+
+- 11/09/2022 [nginx-buildpack v1.1.45](https://github.com/cloudfoundry/nginx-buildpack/releases/tag/v1.1.45)
+
 - 09/06/2022 [python-buildpack v1.7.55](https://github.com/cloudfoundry/python-buildpack/releases/tag/v1.7.55)
 
 - 09/06/2022 [nginx-buildpack v1.1.39](https://github.com/cloudfoundry/nginx-buildpack/releases/tag/v1.1.39)
