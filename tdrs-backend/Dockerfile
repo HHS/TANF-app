@@ -1,4 +1,4 @@
-FROM python:3.10.4-slim-buster
+FROM python:3.10.8-slim-buster
 ENV PYTHONUNBUFFERED 1
 
 ARG user=tdpuser
@@ -8,7 +8,7 @@ ARG gid=1000
 ENV DJANGO_SETTINGS_MODULE=tdpservice.settings.local
 ENV DJANGO_CONFIGURATION=Local
 # Allows docker to cache installed dependencies between builds
-COPY Pipfile Pipfile.lock /tdpapp/
+COPY Pipfile /tdpapp/
 WORKDIR /tdpapp/
 # Download latest listing of available packages:
 RUN apt-get -y update
@@ -17,7 +17,7 @@ RUN apt-get -y upgrade
 # Install a new package:
 RUN apt-get install -y gcc && apt-get install -y graphviz && apt-get install -y graphviz-dev
 # Install pipenv
-RUN pip install --upgrade pip pipenv && pipenv install --dev --system --deploy
+RUN pip install --upgrade pip pipenv && pipenv install --dev --system --deploy --skip-lock
 
 # Adds our application code to the image
 COPY . /tdpapp
