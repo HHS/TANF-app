@@ -13,7 +13,7 @@ executors:
   machine-executor:
     machine:
       docker_layer_caching: false
-      image: ubuntu-2204:2022.10.1
+      image: ubuntu-2204:2022.10.2
 
 commands:
   ###
@@ -64,6 +64,7 @@ commands:
       - run:
           name: Install Node.JS
           command: |
+            sudo rm -rf /etc/apt/sources.list.d/heroku.list
             sudo apt-get update
             sudo apt-get install -y libgbm-dev
             source /opt/circleci/.nvm/nvm.sh
