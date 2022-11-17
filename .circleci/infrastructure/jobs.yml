@@ -1,0 +1,69 @@
+# jobs:
+  deploy-infrastructure-dev:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    parameters:
+      target_env:
+        type: string
+    steps:
+      - deploy-infrastructure:
+          cf-app: << parameters.target_env >>
+
+  deploy-infrastructure-staging:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          tf-path: ./terraform/staging
+
+  deploy-infrastructure-develop:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          tf-path: ./terraform/staging
+
+  deploy-infrastructure-production:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_PROD
+          cf-username: CF_USERNAME_PROD
+          cf-space: tanf-prod
+          tf-path: ./terraform/production
+
+  deploy-project-updates-site:
+    parameters:
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - run:
+          name: Deploy TDP Project Updates Site
+          command: ./scripts/deploy-tdp-product-update-site.sh rolling tdp-project-updates

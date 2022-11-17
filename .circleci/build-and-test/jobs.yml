@@ -1,0 +1,53 @@
+# jobs:
+  test-backend:
+    executor: machine-executor
+    steps:
+      - checkout
+      - docker-compose-check
+      - docker-compose-up-backend
+      - run:
+          name: Execute Python Linting Test
+          command: cd tdrs-backend; docker-compose run --rm web bash -c "flake8 ."
+      - run:
+          name: Run Unit Tests And Create Code Coverage Report
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
+      - upload-codecov:
+          component: backend
+          coverage-report: ./tdrs-backend/coverage.xml
+
+  test-frontend:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - install-nodejs-machine
+      - disable-npm-audit
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+      - run:
+          name: Run ESLint
+          command: cd tdrs-frontend; npm run lint
+      - run:
+          name: Run Pa11y Accessibility Tests
+          command: cd tdrs-frontend; mkdir pa11y-screenshots/; npm run test:accessibility
+      - run:
+          name: Run Jest Unit Tests
+          command: cd tdrs-frontend; npm run test:ci
+      - upload-codecov:
+          component: frontend
+          coverage-report: ./tdrs-frontend/coverage/lcov.info
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/
+
+  secrets-check:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: "git-secrets: Scan repository for committed secrets"
+          command: ./scripts/git-secrets-check.sh
+      - run:
+          name: "trufflehog: Scan repository for committed secrets"
+          command: ./scripts/trufflehog-check.sh $CIRCLE_BRANCH

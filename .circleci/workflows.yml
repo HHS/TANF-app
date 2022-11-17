@@ -24,53 +24,6 @@ workflows:
           requires:
             - deploy-infrastructure-dev
 
-  nightly:
-    jobs:
-      - nightly-owasp-scan:
-          target_env: develop
-          filters:
-            branches:
-              only:
-                - develop
-      - nightly-owasp-scan:
-          target_env: staging
-          filters:
-            branches:
-              only:
-                - main
-      - nightly-owasp-scan:
-          target_env: prod
-          cf_password: CF_PASSWORD_PROD
-          cf_username: CF_USERNAME_PROD
-          cf_space: tanf-prod
-          filters:
-            branches:
-              only:
-                - master
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - develop
-                - main
-                - master
-
-  erd:
-    jobs:
-      - make_erd:
-          filters:
-            branches:
-              only:
-                develop
-
-  owasp-scan:
-    when: << pipeline.parameters.run_owasp_scan >>
-    jobs:
-      - backend-owasp-scan
-      - frontend-owasp-scan
-
   staging-deployment:
     unless: << pipeline.parameters.run_dev_deployment >>
     jobs:
@@ -119,3 +72,51 @@ workflows:
             branches:
               only:
                 - master
+
+  owasp-scan:
+    when: << pipeline.parameters.run_owasp_scan >>
+    jobs:
+      - backend-owasp-scan
+      - frontend-owasp-scan
+  
+  nightly:
+    jobs:
+      - nightly-owasp-scan:
+          target_env: develop
+          filters:
+            branches:
+              only:
+                - develop
+      - nightly-owasp-scan:
+          target_env: staging
+          filters:
+            branches:
+              only:
+                - main
+      - nightly-owasp-scan:
+          target_env: prod
+          cf_password: CF_PASSWORD_PROD
+          cf_username: CF_USERNAME_PROD
+          cf_space: tanf-prod
+          filters:
+            branches:
+              only:
+                - master
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - develop
+                - main
+                - master
+
+  erd:
+    jobs:
+      - make_erd:
+          filters:
+            branches:
+              only:
+                develop
+

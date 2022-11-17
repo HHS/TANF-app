@@ -1,0 +1,45 @@
+# jobs:
+  deploy-dev:
+    executor: docker-executor
+    parameters:
+      target_env:
+        type: string
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-<< parameters.target_env >>
+          frontend-appname: tdp-frontend-<< parameters.target_env >>
+
+  deploy-staging:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-staging
+          frontend-appname: tdp-frontend-staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+  
+  deploy-develop:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-develop
+          frontend-appname: tdp-frontend-develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+
+  deploy-production:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          environment: production
+          backend-appname: tdp-backend-prod
+          frontend-appname: tdp-frontend-prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
