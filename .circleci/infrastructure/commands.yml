@@ -1,0 +1,95 @@
+# commands:
+  deploy-infrastructure:
+    parameters:
+      tf-path:
+        type: string
+        default: ./terraform/dev
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
+      cf-app:
+        type: string
+        default: CF_APP
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk update
+            apk add jq
+            apk add curl
+            # TODO: Add Signature check
+            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
+            mv cf7 /usr/local/bin/cf
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-username: <<parameters.cf-username>>
+          cf-space: <<parameters.cf-space>>
+      - run:
+          name: Export S3 Credentials for TFState
+          command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
+            {
+              echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)\""
+              echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
+              echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
+              echo "bucket = \"$(echo "${S3_CREDENTIALS}" | jq -r '.bucket')\""
+            } >> ./backend_config.tfvars
+      - run:
+          name: Prepare Terraform Variables
+          command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
+            {
+              echo "cf_password = \"$<<parameters.cf-password>>\""
+              echo "cf_user = \"$<<parameters.cf-username>>\""
+              echo "cf_space_name = \"<<parameters.cf-space>>\""
+              echo "cf_app_name = \"<<parameters.cf-app>>\""
+            } >> ./variables.tfvars
+      - terraform/init:
+          path: <<parameters.tf-path>>
+          backend_config_file: ./backend_config.tfvars
+      - terraform/validate:
+          path: <<parameters.tf-path>>
+      - terraform/fmt:
+          path: <<parameters.tf-path>>
+      - terraform/plan:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+      - terraform/apply:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+
+  login-cloud-dot-gov:
+    description: Authenticates with Cloud.gov and sets org and space targets
+    parameters:
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+    steps:
+      - run:
+          name: Login to Cloud.gov and set application targets
+          command: |
+            cf login -a https://api.fr.cloud.gov \
+              -u ${<<parameters.cf-username>>} \
+              -p ${<<parameters.cf-password>>} \
+              -o ${<<parameters.cf-org>>} \
+              -s <<parameters.cf-space>>
+  

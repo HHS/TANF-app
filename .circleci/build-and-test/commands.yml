@@ -1,0 +1,66 @@
+# commands:
+  docker-compose-check:
+    steps:
+      - run:
+          name: Ensure docker-compose exists, otherwise install it.
+          command: ./scripts/docker-compose-check.sh
+
+  docker-compose-up-backend:
+    steps:
+      - run:
+          name: Build and spin-up Django API service
+          command: cd tdrs-backend; docker-compose up -d --build
+
+  upload-codecov:
+    description: Uploads testing code coverage results to Codecov
+    parameters:
+      component:
+        description: The component of the application being tested, either backend or frontend.
+        type: enum
+        enum: [ "backend", "frontend" ]
+      coverage-report:
+        description: The path to the coverage report being uploaded.
+        type: string
+    steps:
+      - run:
+          name: Ensure Codecov uploader is installed, otherwise install it.
+          command: ./scripts/codecov-check.sh
+      - run:
+          name: Determine Codecov metric flag
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              CURRENT_FLAG=main-<<parameters.component>>
+            elif [ "$CIRCLE_BRANCH" == "master" ] ; then
+              CURRENT_FLAG=master-<<parameters.component>>
+            else
+              CURRENT_FLAG=dev-<<parameters.component>>
+            fi
+            echo "export CURRENT_FLAG=$CURRENT_FLAG" >> $BASH_ENV
+      - run:
+          name: Upload code coverage report if target branch
+          command: codecov -t "$CODECOV_TOKEN" -f <<parameters.coverage-report>> -F "$CURRENT_FLAG"
+
+  install-nodejs-machine:
+    description: |
+      Installs our target version of Node.JS using NVM (Node Version Manager)
+      from the install location provided by machine executor images.
+    steps:
+      - run:
+          name: Install Node.JS
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libgbm-dev
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install v16.13
+            nvm alias default v16.13
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+
+  disable-npm-audit:
+    steps:
+      - run:
+          name: Disable npm audit warnings in CI
+          command: npm set audit false
+          
+  # This allows us to use the node orb to install packages within other commands
+  install-nodejs-packages: node/install-packages

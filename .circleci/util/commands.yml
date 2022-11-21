@@ -1,0 +1,16 @@
+# commands:
+  cf-check:
+    steps:
+      - run:
+          name: Ensure cf cli is installed, otherwise install it.
+          command: sudo ./scripts/cf-check.sh
+
+  # This allows us to use the orb stanza for node/install within other commands
+  # NOTE: This doesn't work correctly on machine executors
+  install-nodejs: node/install
+
+  sudo-check:
+    steps:
+      - run:
+          name: Ensure sudo is installed, otherwise install it.
+          command: ./scripts/sudo-check.sh
