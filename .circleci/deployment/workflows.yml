@@ -1,18 +1,4 @@
-workflows:
-  build-and-test:
-    unless:
-      or:
-        - << pipeline.parameters.run_dev_deployment >>
-        - << pipeline.parameters.run_owasp_scan >>
-    jobs:
-      - secrets-check
-      - test-frontend:
-          requires:
-            - secrets-check
-      - test-backend:
-          requires:
-            - secrets-check
-
+# workflows:
   dev-deployment:
     when:
       << pipeline.parameters.run_dev_deployment >>
@@ -72,51 +58,3 @@ workflows:
             branches:
               only:
                 - master
-
-  owasp-scan:
-    when: << pipeline.parameters.run_owasp_scan >>
-    jobs:
-      - backend-owasp-scan
-      - frontend-owasp-scan
-  
-  nightly:
-    jobs:
-      - nightly-owasp-scan:
-          target_env: develop
-          filters:
-            branches:
-              only:
-                - develop
-      - nightly-owasp-scan:
-          target_env: staging
-          filters:
-            branches:
-              only:
-                - main
-      - nightly-owasp-scan:
-          target_env: prod
-          cf_password: CF_PASSWORD_PROD
-          cf_username: CF_USERNAME_PROD
-          cf_space: tanf-prod
-          filters:
-            branches:
-              only:
-                - master
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - develop
-                - main
-                - master
-
-  erd:
-    jobs:
-      - make_erd:
-          filters:
-            branches:
-              only:
-                develop
-
