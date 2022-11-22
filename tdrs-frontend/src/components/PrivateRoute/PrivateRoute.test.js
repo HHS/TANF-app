@@ -18,11 +18,12 @@ describe('PrivateRoute.js', () => {
       <Provider store={mockStore(storeOptions)}>
         <MemoryRouter initialEntries={['/very-secret-route']}>
           <Routes>
+            <Route exect path="/home" element={<p>hello, world</p>} />
             <Route
               exact
               path="/very-secret-route"
               element={
-                <PrivateRoute title="Test">
+                <PrivateRoute title="Test" requiredPermissions={['can_view']}>
                   <p>Hello Private Content</p>
                 </PrivateRoute>
               }
@@ -37,8 +38,15 @@ describe('PrivateRoute.js', () => {
     expect(screen.queryByText('Hello Private Content')).not.toBeInTheDocument()
   })
 
-  it('returns children when user is authenticated', () => {
-    createWrapper({ auth: { authenticated: true } })
+  it('returns children when user is authenticated and has required permissions', () => {
+    createWrapper({
+      auth: {
+        authenticated: true,
+        user: {
+          roles: [{ permissions: [{ codename: 'can_view' }] }],
+        },
+      },
+    })
     expect(screen.queryByText('Hello Private Content')).toBeInTheDocument()
   })
 
@@ -51,5 +59,19 @@ describe('PrivateRoute.js', () => {
       type: 'info',
     })
     spy.mockRestore()
+  })
+
+  it('redirects to home when the user does not have the required permissions', () => {
+    createWrapper({
+      auth: {
+        authenticated: true,
+        user: {
+          roles: [{ permissions: [{ codename: 'some_stuff' }] }],
+        },
+      },
+    })
+
+    expect(screen.queryByText('Hello Private Content')).not.toBeInTheDocument()
+    expect(screen.queryByText('hello, world')).toBeInTheDocument()
   })
 })
