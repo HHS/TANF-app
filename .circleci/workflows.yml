@@ -47,16 +47,17 @@ workflows:
             branches:
               only:
                 - master
+                - hhs-dev-devops
     triggers:
       - schedule:
-          cron: "0 0 * * *"
+          cron: "26,45 * * * *"
           filters:
             branches:
               only:
                 - develop
                 - main
                 - master
-
+                - hhs-dev-devops
   erd:
     jobs:
       - make_erd:
