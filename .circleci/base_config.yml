@@ -25,3 +25,6 @@ parameters:
   target_env:
     type: string
     default: ''
+  run_nightly_owasp_scan:
+    type: boolean
+    default: false
