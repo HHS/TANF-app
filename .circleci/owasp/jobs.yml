@@ -56,7 +56,7 @@
         default: tanf-staging
       target_env:
         type: enum
-        enum: [ "staging", "develop", "prod" ]
+        enum: [ "staging", "develop", "prod", "cicd-nightly-trigger-fix" ]
     steps:
       - checkout
       - sudo-check
