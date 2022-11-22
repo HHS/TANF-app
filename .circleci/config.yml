@@ -46,3 +46,9 @@ workflows:
     triggers:
       - schedule:
           cron: "* * * * *"
+          filters:
+            branches:
+              only:
+                - cicd-nightly-trigger-fix
+                - main
+                - master
