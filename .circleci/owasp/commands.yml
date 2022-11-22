@@ -14,7 +14,7 @@
         description: The target environment to be scanned.
         type: enum
         default: "develop"
-        enum: ["staging", "develop", "prod", "cicd-nightly-trigger-fix"]
+        enum: ["staging", "develop", "prod"]
     steps:
       - run:
           name: Execute OWASP ZAP vulnerability scan
