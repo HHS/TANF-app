@@ -4,10 +4,10 @@ on:
     - cron: '* * * * *'
 jobs:
   nightly_owasp_scan:
-    name: Initiate OWASP scan in Circle CI
+    name: Initiate Nightly OWASP scan in Circle CI
     runs-on: ubuntu-latest
     steps:
-    - name: Trigger Circle CI OWASP scan
+    - name: Trigger Circle CI Nightly OWASP scan
       id: curl-circle-ci
       uses: promiseofcake/circleci-trigger-action@v1
       with:
