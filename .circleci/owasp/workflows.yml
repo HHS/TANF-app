@@ -9,11 +9,11 @@
     when: << pipeline.parameters.run_nightly_owasp_scan >>
     jobs:
       - nightly-owasp-scan:
-          target_env: develop
+          target_env: cicd-nightly-trigger-fix
           filters:
             branches:
               only:
-                - develop
+                - cicd-nightly-trigger-fix
       - nightly-owasp-scan:
           target_env: staging
           filters:
