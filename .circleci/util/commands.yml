@@ -1,4 +1,16 @@
 # commands:
+  docker-compose-check:
+    steps:
+      - run:
+          name: Ensure docker-compose exists, otherwise install it.
+          command: ./scripts/docker-compose-check.sh
+
+  docker-compose-up-backend:
+    steps:
+      - run:
+          name: Build and spin-up Django API service
+          command: cd tdrs-backend; docker-compose up -d --build
+
   cf-check:
     steps:
       - run:
