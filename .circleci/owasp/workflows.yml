@@ -6,6 +6,7 @@
       - frontend-owasp-scan
   
   nightly:
+    when: << pipeline.parameters.run_nightly_owasp_scan >>
     jobs:
       - nightly-owasp-scan:
           target_env: develop
