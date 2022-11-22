@@ -28,12 +28,3 @@
             branches:
               only:
                 - master
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - develop
-                - main
-                - master

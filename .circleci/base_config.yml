@@ -19,11 +19,9 @@ parameters:
   run_dev_deployment:
     type: boolean
     default: false
-
   run_owasp_scan:
     type: boolean
     default: false
-
   target_env:
     type: string
     default: ''
