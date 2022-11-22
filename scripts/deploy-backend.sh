@@ -57,6 +57,7 @@ set_cf_envs()
   "PROD_OIDC_OP_JWKS_ENDPOINT"
   "PROD_OIDC_OP_LOGOUT_ENDPOINT"
   "PROD_OIDC_OP_TOKEN_ENDPOINT"
+  "REDIS_URI"
   )
 
   for var_name in ${var_list[@]}; do
