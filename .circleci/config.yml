@@ -43,3 +43,6 @@ workflows:
   setup:
     jobs:
       - setup
+    triggers:
+      - schedule:
+          cron: "* * * * *"
