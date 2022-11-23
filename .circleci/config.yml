@@ -38,8 +38,8 @@ jobs:
                 name: Generate Nightly OWASP
                 command: |
                   cd .circleci
-                  chmod +x generate_nightly_owasp_scan.sh
-                  ./generate_nightly_owasp_config.sh.sh
+                  chmod +x generate_nightly_owasp_config.sh
+                  ./generate_nightly_owasp_config.sh
             - continuation/continue:
                 configuration_path: .circleci/generated_config.yml # use newly generated config to continue
       - when:
