@@ -1,5 +1,9 @@
 version: 2.1
 
+# To help debugging circleci config changes you may want
+# to run the generate_config.sh script locally and
+# then copy the contents from generated_config.yml into the config.yml file.
+
 # this allows you to use CircleCI's dynamic configuration feature
 setup: true
 
@@ -22,9 +26,6 @@ parameters:
     type: boolean
     default: false
 
-# To help debugging circleci config changes you may want
-# to run the generate_config.sh script locally and
-# then copy the contents from generated_config.yml into the config.yml file.
 jobs:
   setup:
     executor: continuation/default
