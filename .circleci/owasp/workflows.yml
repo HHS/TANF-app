@@ -13,7 +13,7 @@
           filters:
             branches:
               only:
-                - cicd-nightly-trigger-fix
+                - develop
       - nightly-owasp-scan:
           target_env: staging
           filters:
