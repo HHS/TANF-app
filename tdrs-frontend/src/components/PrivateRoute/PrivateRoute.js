@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setAlert, clearAlert } from '../../actions/alert'
 import { ALERT_INFO } from '../Alert'
 import PrivateTemplate from '../PrivateTemplate'
 import IdleTimer from '../IdleTimer/IdleTimer'
+import PermissionGuard from '../PermissionGuard'
 
 /**
  * @param {React.ReactNode} children - One or more React components to be
@@ -12,9 +13,15 @@ import IdleTimer from '../IdleTimer/IdleTimer'
  * @param {string} title Page title passed in to PrivateTemplate
  * which is automatically passed via withRouter
  */
-function PrivateRoute({ children, title }) {
+function PrivateRoute({
+  children,
+  title,
+  requiredPermissions,
+  requiresApproval,
+}) {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const authLoading = useSelector((state) => state.auth.loading)
+
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
@@ -33,12 +40,22 @@ function PrivateRoute({ children, title }) {
     }
   }, [authenticated, authLoading, dispatch, navigate])
 
-  return authenticated ? (
-    <PrivateTemplate title={title}>
-      {children}
-      <IdleTimer />
-    </PrivateTemplate>
-  ) : null
+  if (authenticated) {
+    return (
+      <PermissionGuard
+        requiresApproval={requiresApproval}
+        requiredPermissions={requiredPermissions}
+        notAllowedComponent={<Navigate to="/home" />}
+      >
+        <PrivateTemplate title={title}>
+          {children}
+          <IdleTimer />
+        </PrivateTemplate>
+      </PermissionGuard>
+    )
+  }
+
+  return null
 }
 
 export default PrivateRoute

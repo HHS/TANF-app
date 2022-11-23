@@ -10,6 +10,7 @@ from django.core.exceptions import ImproperlyConfigured
 from celery.schedules import crontab
 
 from configurations import Configuration
+from celery.schedules import crontab
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -418,6 +419,7 @@ class Common(Configuration):
         'REDIS_URI',
         'redis://redis-server:6379'
     )
+    logger.debug("REDIS_URI: " + REDIS_URI)
 
     CELERY_BROKER_URL = REDIS_URI
     CELERY_RESULT_BACKEND = REDIS_URI
@@ -428,8 +430,17 @@ class Common(Configuration):
 
     CELERY_BEAT_SCHEDULE = {
         'name': {
+            'task': 'tdpservice.scheduling.tasks.postgres_backup',
+            'schedule': crontab(minute='*', hour='4'), # Runs at midnight EST
+            'args': "-b",
+            'options': {
+                'expires': 15.0,
+            },
+        },     
+        'name': {
             'task': 'tdpservice.scheduling.tasks.check_for_accounts_needing_deactivation_warning',
             'schedule': crontab(day_of_week='*', hour='13', minute='*'), # Every day at 1pm UTC (9am EST)
+
             'options': {
                 'expires': 15.0,
             },
