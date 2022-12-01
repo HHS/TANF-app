@@ -32,7 +32,7 @@ Contains workflows, jobs, and commands for deploying the application on Cloud go
 Contains workflows, jobs, and commands for running OWASP scans on the application in during the pipelien and on Cloud gov environments.
 
 #### util
-Contains workflows that pertain to specific tasks, like `erd`, and jobs and comands that are used by multiple sections of the pipeline, like `cf-check`. This is important to allow different versions of the generated_config.yml to have access to all the needed jobs and commands.
+Contains utility workflows like `cf-check` that are reused in different versions of the generated_config.yml as to have access to these common functions. It also has one-offs like `erd`.
 
 ### Navigation examples
 What if you want to look at the jobs that we used to build and test the application?
@@ -51,7 +51,7 @@ Terraform is used to set up infrastruture so we would start in the `infrastructu
 
 <hr />
 
-What if you want to know when the how deployments are triggered?
+What if you want to know how the deployments are triggered?
 
 We know we want the `deployments` directory. To see how a pipeline is started we look at workflow.yml. Then we find the desired workflow.
 
