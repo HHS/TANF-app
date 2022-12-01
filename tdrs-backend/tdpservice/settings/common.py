@@ -51,6 +51,8 @@ class Common(Configuration):
         "drf_yasg",
         "django_celery_beat",
         "storages",
+        "django_elasticsearch_dsl",
+        "django_elasticsearch_dsl_drf",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -59,6 +61,7 @@ class Common(Configuration):
         "tdpservice.security",
         "tdpservice.scheduling",
         "tdpservice.email",
+        "tdpservice.search_indexes",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -445,4 +448,10 @@ class Common(Configuration):
                 'expires': 15.0,
             },
         },     
+    }
+    # Elastic
+    ELASTICSEARCH_DSL = {
+        'default': {
+            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200')
+        },
     }

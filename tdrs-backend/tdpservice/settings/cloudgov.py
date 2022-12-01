@@ -2,6 +2,8 @@
 
 import json
 import os
+from requests_aws4auth import AWS4Auth
+from elasticsearch import RequestsHttpConnection
 
 from tdpservice.settings.common import Common
 
@@ -118,6 +120,26 @@ class CloudGov(Common):
     # TODO: Determine if this is still necessary
     AWS_HEADERS = {
         "Cache-Control": "max-age=86400, s-maxage=86400, must-revalidate",
+    }
+
+    AWS_ELASTIC_ACCESS_KEY = os.getenv('AWS_ELASTIC_ACCESS_KEY', '')
+    AWS_ELASTIC_SECRET = os.getenv('AWS_ELASTIC_SECRET', '')
+
+    awsauth = AWS4Auth(
+        AWS_ELASTIC_ACCESS_KEY,
+        AWS_ELASTIC_SECRET,
+        'us-gov-west-1',
+        'es'
+    )
+
+    # Elastic
+    ELASTICSEARCH_DSL = {
+        'default': {
+            'hosts': os.getenv('ELASTIC_HOST', ''),
+            'http_auth': awsauth,
+            'use_ssl': True,
+            'connection_class': RequestsHttpConnection,
+        },
     }
 
 
