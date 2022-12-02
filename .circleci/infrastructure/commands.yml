@@ -67,29 +67,3 @@
       - terraform/apply:
           path: <<parameters.tf-path>>
           var_file: ./variables.tfvars
-
-  login-cloud-dot-gov:
-    description: Authenticates with Cloud.gov and sets org and space targets
-    parameters:
-      cf-password:
-        type: env_var_name
-        default: CF_PASSWORD_DEV
-      cf-org:
-        type: env_var_name
-        default: CF_ORG
-      cf-space:
-        type: string
-        default: tanf-dev
-      cf-username:
-        type: env_var_name
-        default: CF_USERNAME_DEV
-    steps:
-      - run:
-          name: Login to Cloud.gov and set application targets
-          command: |
-            cf login -a https://api.fr.cloud.gov \
-              -u ${<<parameters.cf-username>>} \
-              -p ${<<parameters.cf-password>>} \
-              -o ${<<parameters.cf-org>>} \
-              -s <<parameters.cf-space>>
-  

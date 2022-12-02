@@ -6,6 +6,7 @@
       - frontend-owasp-scan
   
   nightly:
+    when: << pipeline.parameters.run_nightly_owasp_scan >>
     jobs:
       - nightly-owasp-scan:
           target_env: develop
@@ -27,13 +28,4 @@
           filters:
             branches:
               only:
-                - master
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - develop
-                - main
                 - master
