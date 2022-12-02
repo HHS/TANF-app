@@ -45,6 +45,18 @@ services:
       # Copy in the Localstack setup script to configure any buckets needed
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
+  elastic:
+    image: elasticsearch:7.17.6
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - logger.discovery.level=debug
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+
   web:
     restart: always
     environment:
@@ -100,3 +112,4 @@ services:
 volumes:
   localstack_data:
   postgres_data:
+  elastic_data:
