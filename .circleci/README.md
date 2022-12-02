@@ -29,7 +29,7 @@ Contains workflows, jobs, and commands for setting up the infrastructure on Clou
 Contains workflows, jobs, and commands for deploying the application on Cloud gov.
 
 #### owasp
-Contains workflows, jobs, and commands for running OWASP scans on the application in during the pipelien and on Cloud gov environments.
+Contains workflows, jobs, and commands for running OWASP scans on the application in during the pipeline against Cloud.gov environments.
 
 #### util
 Contains utility workflows like `cf-check` that are reused in different versions of the generated_config.yml as to have access to these common functions. It also has one-offs like `erd`.
