@@ -7,8 +7,7 @@ This app mainly uses CircleCi for cicd. GitHub actions is used to trigger some C
 To make the config yaml easier to read we are using CircleCi's [Dynamic Configuration](https://circleci.com/docs/dynamic-config/) feature.
 
 ### Continuation orb
-CicleCi has an orb that allows for another config file to be specified. Using a script this new config is generated based on the info passed via the pipeline parameters. Currently, we have two different scripts to generate separate configs: `generate_config.sh` and `generate_nightly_owasp_config.sh`. These scripts work by concacting the separate yaml files.
-
+CicleCi has an orb that allows for another config file to be specified. Using a script this new config is generated based on the info passed via the pipeline parameters. This can later be used in conjuction with the path filtering orb to make our build time shorter. It could also be used to build different configuration files for different pipelines.
 #### generate_config.sh
 This script is used in most cases. It will generate a complete config for building, testing, and deploying.
 
