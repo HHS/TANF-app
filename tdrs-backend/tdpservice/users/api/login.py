@@ -386,3 +386,31 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
                 logging.error("user_info: {}".format(user_info))
 
             return auth_options
+
+
+class CypressLoginDotGovAuthenticationOverride(TokenAuthorizationOIDC):
+    """Override Login.dov authentication for Cypress users."""
+
+    def post(self, request):
+        username = request.data.get('username', None)
+        token = request.data.get('token', None)
+
+        if not username or not (token and token == settings.CYPRESS_TOKEN):
+            return Response({'error': 'Required parameters not provided'}, status=400)
+
+        User = get_user_model()
+        u = None
+
+        try:
+            u = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response({'error': 'User does not exist'}, status=400)
+
+        login(
+            request,
+            u,
+            backend="tdpservice.users.authentication.CustomAuthentication",
+        )
+        logger.info("cypress user %s logged in on %s", u.username, timezone.now())
+
+        return Response({'authenticated': True})

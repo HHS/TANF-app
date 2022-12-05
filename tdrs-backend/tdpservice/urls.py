@@ -10,8 +10,9 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
 
+
 from .users.api.authorization_check import AuthorizationCheck
-from .users.api.login import TokenAuthorizationLoginDotGov, TokenAuthorizationAMS
+from .users.api.login import TokenAuthorizationLoginDotGov, TokenAuthorizationAMS, CypressLoginDotGovAuthenticationOverride
 from .users.api.login_redirect_oidc import LoginRedirectAMS, LoginRedirectLoginDotGov
 from .users.api.logout import LogoutUser
 from .users.api.logout_redirect_oidc import LogoutRedirectOIDC
@@ -37,6 +38,12 @@ urlpatterns = [
     path("data_files/", include("tdpservice.data_files.urls")),
     path("logs/", write_logs),
 ]
+
+if settings.DEBUG:
+    urlpatterns.append(
+        path("login/cypress", CypressLoginDotGovAuthenticationOverride.as_view(), name="login-cypress")
+    )
+
 
 # Add 'prefix' to all urlpatterns to make it easier to version/group endpoints
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

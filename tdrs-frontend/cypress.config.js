@@ -7,6 +7,11 @@ module.exports = defineConfig({
     baseUrl: 'http://localhost:3000',
     specPattern: '**/*.feature',
 
+    env: {
+      apiUrl: 'http://localhost:8080/v1',
+      cypressToken: 'anything-will-do',
+    },
+
     async setupNodeEvents(on, config) {
       // implement node event listeners here
       await preprocessor.addCucumberPreprocessorPlugin(on, config)

@@ -73,6 +73,7 @@ services:
       - REDIS_URI=redis://redis-server:6379
       - REDIS_SERVER_LOCAL=TRUE
       - ACFTITAN_SFTP_PYTEST
+      - CYPRESS_TOKEN
     volumes:
       - .:/tdpapp
     image: tdp

@@ -105,3 +105,5 @@ tfapply
 *.tfstate
 
 *.~undo-tree~
+
+cypress.env.json
