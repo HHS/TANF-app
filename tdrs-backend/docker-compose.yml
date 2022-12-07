@@ -74,6 +74,7 @@ services:
       - REDIS_SERVER_LOCAL=TRUE
       - ACFTITAN_SFTP_PYTEST
       - CYPRESS_TOKEN
+      - DJANGO_DEBUG
     volumes:
       - .:/tdpapp
     image: tdp
