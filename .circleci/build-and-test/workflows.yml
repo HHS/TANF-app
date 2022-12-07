@@ -12,3 +12,6 @@
       - test-backend:
           requires:
             - secrets-check
+      - test-e2e:
+          requires:
+            - secrets-check
