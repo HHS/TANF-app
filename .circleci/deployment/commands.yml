@@ -1,0 +1,146 @@
+# commands:
+  deploy-cloud-dot-gov:
+    parameters:
+      environment:
+        description: The environment to deploy to.
+        type: enum
+        enum: [ "development", "production" ]
+        default: development
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-password:
+        default: CF_PASSWORD_DEV
+        type: env_var_name
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-username:
+        default: CF_USERNAME_DEV
+        type: env_var_name
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - deploy-backend:
+          backend-appname: <<parameters.backend-appname>>
+          cf-space: <<parameters.cf-space>>
+      - deploy-clamav:
+          backend-appname: <<parameters.backend-appname>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+      - deploy-frontend:
+          environment: <<parameters.environment>>
+          backend-appname: <<parameters.backend-appname>>
+          frontend-appname: <<parameters.frontend-appname>>
+          cf-space: <<parameters.cf-space>>
+
+  deploy-backend:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-space:
+        default: tanf-dev
+        type: string
+    steps:
+      - get-app-deploy-strategy:
+          appname: <<parameters.backend-appname>>
+      - run:
+          name: Deploy backend application
+          command: |
+            bash ./scripts/deploy-backend.sh \
+              $DEPLOY_STRATEGY \
+              <<parameters.backend-appname>> \
+              <<parameters.cf-space>>
+
+  deploy-clamav:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+    steps:
+      - run:
+          name: Deploy ClamAV REST application
+          command: |
+            cf push clamav-rest -f tdrs-backend/manifest.clamav.yml \
+              --var cf-space=<<parameters.cf-space>> \
+      - run:
+          name: Enable internal route between backend and clamav-rest app
+          command: |
+            cf add-network-policy <<parameters.backend-appname>> clamav-rest \
+              -s <<parameters.cf-space>> \
+              -o ${<<parameters.cf-org>>} \
+              --protocol tcp \
+              --port 9000
+
+  deploy-frontend:
+    parameters:
+      environment:
+        description: The environment to deploy to.
+        type: enum
+        enum: [ "development", "production" ]
+        default: development
+      backend-appname:
+        default: tdp-backend
+        type: string
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+# So the frontend knows what space its in for the banner.
+# I am unclear if the domain is a reliable metric to make this function 
+# It seems like it might not be working
+      cf-space:
+        default: dev 
+        type: string
+    steps:
+      - install-nodejs:
+          node-version: "16.13"
+      - disable-npm-audit
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+      - get-app-deploy-strategy:
+          appname: <<parameters.frontend-appname>>
+      - run:
+          name: Deploy frontend application
+          command: |
+            bash ./scripts/deploy-frontend.sh \
+              $DEPLOY_STRATEGY \
+              <<parameters.frontend-appname>> \
+              <<parameters.backend-appname>> \
+              <<parameters.cf-space>> \
+              <<parameters.environment>>
+
+  get-app-deploy-strategy:
+    parameters:
+      appname:
+        type: string
+    steps:
+      - run:
+          name: Determine deploy strategy
+          command: |
+            # NOTE: The || true is a no-op included to suppress exit codes which
+            #       would cause the step to exit early due to use of pipefail
+            APP_GUID=$(cf app <<parameters.appname>> --guid || true)
+            if [ "$APP_GUID" == "FAILED" ]; then
+              echo "export DEPLOY_STRATEGY=initial" >> $BASH_ENV
+            else
+              echo "export DEPLOY_STRATEGY=rolling" >> $BASH_ENV
+            fi

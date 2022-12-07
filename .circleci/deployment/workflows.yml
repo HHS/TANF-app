@@ -1,0 +1,60 @@
+# workflows:
+  dev-deployment:
+    when:
+      << pipeline.parameters.run_dev_deployment >>
+    jobs:
+      - deploy-infrastructure-dev:
+          target_env: << pipeline.parameters.target_env >>
+      - deploy-dev:
+          target_env: << pipeline.parameters.target_env >>
+          requires:
+            - deploy-infrastructure-dev
+
+  staging-deployment:
+    unless: << pipeline.parameters.run_dev_deployment >>
+    jobs:
+      - deploy-project-updates-site:
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-infrastructure-staging:
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-staging:
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-infrastructure-develop:
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-develop:
+          requires:
+            - deploy-infrastructure-develop
+          filters:
+            branches:
+              only:
+                - develop
+
+  production-deployment:
+    unless: << pipeline.parameters.run_dev_deployment >>
+    jobs:
+      - deploy-infrastructure-production:
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-production:
+          requires:
+            - deploy-infrastructure-production
+          filters:
+            branches:
+              only:
+                - master

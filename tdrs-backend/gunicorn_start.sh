@@ -3,7 +3,7 @@
 set -e
 
 echo "REDIS_SERVER"
-echo $REDIS_SERVER_LOCAL
+echo "redis local: $REDIS_SERVER_LOCAL"
 if [[ "$REDIS_SERVER_LOCAL" = "TRUE" || "$CIRCLE_JOB" = "backend-owasp-scan" ]]; then
     echo "Run redis server on docker"
 else
@@ -24,6 +24,9 @@ sleep 5
 # TODO: Uncomment the following line to add flower service when memory limitation is resolved
 # celery -A tdpservice.settings --broker=$REDIS_URI flower &
 celery -A tdpservice.settings beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler &
+
+# rebuild and repopulate elastic search indexes
+python manage.py search_index --rebuild -f
 
 echo "Starting Gunicorn"
 if [[ "$DJANGO_CONFIGURATION" = "Development" || "$DJANGO_CONFIGURATION" = "Local" ]]; then

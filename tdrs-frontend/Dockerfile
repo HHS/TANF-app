@@ -2,7 +2,14 @@
 # Stage 0: Create the app directory, install dependencies, and copy in the source code
 FROM node:16.13-alpine3.14 AS localdev
 
+# Due to M1 issues found here, adding solution: 
+# https://stackoverflow.com/questions/69983063/
+RUN apk add chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 USER node
+
 
 RUN mkdir /home/node/app/ && chown -R node:node /home/node/app
 WORKDIR /home/node/app

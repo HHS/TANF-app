@@ -40,3 +40,6 @@ flags:
     paths:
       - ./tdrs-backend/tdpservice
     carryforward: true
+
+ignore:
+  - "tdrs-backend/tdpservice/scheduling/db_backup.py"

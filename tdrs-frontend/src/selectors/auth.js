@@ -20,9 +20,9 @@ export const selectUserPermissions = (state) => {
   const roles = selectUserRoles(state)
   let permissions = []
   roles.forEach((role) => {
-    permissions = [...permissions, role['permissions']]
+    permissions = [...permissions, ...role['permissions']]
   })
-  return permissions
+  return permissions.map((p) => p.codename)
 }
 
 export const accountStatusIsInitial = (state) =>
