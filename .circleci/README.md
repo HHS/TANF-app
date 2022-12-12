@@ -11,10 +11,6 @@ CicleCi has an orb that allows for another config file to be specified. Using a 
 #### generate_config.sh
 This script is used in most cases. It will generate a complete config for building, testing, and deploying.
 
-#### generate_nightly_owasp_config.sh
-This is used to run nightly scans. It is used when the pipeline parameter `run_nightly_owasp_scan` is set to true. This is done via a pipeline schedule that needs to be [created in Circle Ci manually](https://circleci.com/docs/scheduled-pipelines/#project-settings). This is because the syntaxt for scheduled workflows is [not compatable](https://circleci.com/docs/scheduled-pipelines/#migrate-scheduled-workflows) with Dynamic Configurations. Instructions for creating this schedule can be found at the end of this README.
-
-The config is split based on pipeline tasks. There are separate directories for `build-and-test`, `infrastructure`, `deployment`, `owasp`, and `util`. These are described below.
 
 ### Directory structure
 
