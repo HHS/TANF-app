@@ -31,14 +31,7 @@ function FileUpload({ section, setLocalAlertState }) {
     (file) => file.section.includes(sectionName) && file.uuid
   )
 
-  const selectedFile = getFileWithHighestId(files)
-
-  const getFileWithHighestId = (files) => {
-    const fileIds = files.map((file) => file.id)
-    const highestId = Math.max(...fileIds)
-    return files.find((file) => file.id === highestId)
-  }
-  
+  const selectedFile = files.find((file) => file.section.includes(sectionName))
 
   const formattedSectionName = selectedFile.section
     .split(' ')

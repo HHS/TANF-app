@@ -15,7 +15,9 @@ import {
 const getFileIndex = (files, section) =>
   files.findIndex((currentFile) => currentFile.section.includes(section))
 const getFile = (files, section) =>
-  files.find((currentFile) => currentFile.section.includes(section))
+  files
+    .sort((a, b) => b.id - a.id)
+    .find((currentFile) => currentFile.section.includes(section))
 
 export const fileUploadSections = [
   'Active Case Data',
