@@ -71,6 +71,9 @@ The application is continuously deployed to the dev, staging, or prod environmen
 
 See [Architecture Decision Record 008 - Deployment Flow](docs/Technical-Documentation/Architecture-Decision-Record/008-deployment-flow.md) - for more details.
 
+## Accessibility 
+TDP is developed to be (at minimum) compliant with Section 508 of the Rehabilitation Act which mandates a WCAG 2.0 AA standard. To enable a left-shifted approach to accessibility and aid the team in implementing accessible solutions, Raft maintains an [Accessibility Guide](https://hackmd.io/@mreiter/ByVulbdQd) to help enable those less familiar with a11y testing up and running. For additional documentation & resources regarding project accessibility, see [QASP Accessibility Expectations](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/our-priorities-values-expectations.md#deliverable-4-accessibility).
+
 ## Points of Contact
 | Position |Name | GitHub Username | E-mail |
 |--|--|--|--|
