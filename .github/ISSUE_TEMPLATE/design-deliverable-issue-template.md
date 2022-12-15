@@ -1,5 +1,5 @@
 ---
-name: Dev-ready design issue template
+name: Design Deliverable issue template
 about: Template for dev-ready design issues
 title: "[Design Deliverable] "
 labels: "Research & Design"
