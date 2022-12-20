@@ -17,12 +17,13 @@ strip() {
 }
 # The cloud.gov space defined via environment variable (e.g., "tanf-dev", "tanf-staging")
 env=$(strip $CF_SPACE "tanf-")
-
+backend_app_name=$(echo $CGAPPNAME_BACKEND | cut -d"-" -f3)
 
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGAPPNAME_BACKEND"
 echo CF_SPACE: "$CF_SPACE"
 echo env: "$env"
+echo backend_app_name: "$backend_app_name"
 
 
 ##############################
@@ -59,6 +60,8 @@ set_cf_envs()
   "PROD_OIDC_OP_TOKEN_ENDPOINT"
   "REDIS_URI"
   )
+
+  echo "Setting environment variables for $CGAPPNAME_BACKEND"
 
   for var_name in ${var_list[@]}; do
     # Intentionally not setting variable if empty
@@ -123,10 +126,17 @@ update_backend()
 }
 
 bind_backend_to_services() {
+    echo "Binding services to app: $CGAPPNAME_BACKEND"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-db-${env}"
+    
+    # The below command is different because they cannot be shared like the 3 above services
+    cf bind-service "$CGAPPNAME_BACKEND" "es-${backend_app_name}"
+    
     set_cf_envs
+
+    echo "Restarting app: $CGAPPNAME_BACKEND"
     cf restage "$CGAPPNAME_BACKEND"
 }
 
@@ -160,7 +170,7 @@ else
 fi
 
 # Dynamically generate a new DJANGO_SECRET_KEY
-DJANGO_SECRET_KEY=$(python -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
+DJANGO_SECRET_KEY=$(python3 -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
 
 # Dynamically set DJANGO_CONFIGURATION based on Cloud.gov Space
 DJANGO_SETTINGS_MODULE="tdpservice.settings.cloudgov"
