@@ -66,9 +66,6 @@ class DataFileViewSet(ModelViewSet):
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
-            print('====================================')
-            print(response.data)
-            print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
             user = request.user
             data_file = DataFile.objects.get(id=response.data.get('id'))
 
@@ -122,7 +119,11 @@ class DataFileViewSet(ModelViewSet):
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
-
+        record = self.get_object()
+        print('===========================')
+        print(type(record))
+        print(record.version)
+        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
         response = FileResponse(
             FileWrapper(record.file),
             filename=record.original_filename
