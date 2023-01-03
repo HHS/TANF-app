@@ -6,7 +6,9 @@ from requests_aws4auth import AWS4Auth
 from elasticsearch import RequestsHttpConnection
 
 from tdpservice.settings.common import Common
+import logging
 
+logger = logging.getLogger(__name__)
 
 def get_json_env_var(variable_name):
     """Retrieve and serialize a JSON environment variable."""
@@ -59,6 +61,7 @@ class CloudGov(Common):
         cloudgov_services['s3'],
         f'tdp-staticfiles-{services_basename}'
     )
+
     ############################################################################
 
     INSTALLED_APPS = (*Common.INSTALLED_APPS, 'gunicorn')
@@ -121,13 +124,14 @@ class CloudGov(Common):
     AWS_HEADERS = {
         "Cache-Control": "max-age=86400, s-maxage=86400, must-revalidate",
     }
-
-    AWS_ELASTIC_ACCESS_KEY = os.getenv('AWS_ELASTIC_ACCESS_KEY', '')
-    AWS_ELASTIC_SECRET = os.getenv('AWS_ELASTIC_SECRET', '')
+    # The following variables are used to configure the Django Elasticsearch
+    es_access_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['access_key']
+    es_secret_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['secret_key']
+    es_host = cloudgov_services['aws-elasticsearch'][0]['credentials']['uri']
 
     awsauth = AWS4Auth(
-        AWS_ELASTIC_ACCESS_KEY,
-        AWS_ELASTIC_SECRET,
+        es_access_key,
+        es_secret_key,
         'us-gov-west-1',
         'es'
     )
@@ -135,7 +139,7 @@ class CloudGov(Common):
     # Elastic
     ELASTICSEARCH_DSL = {
         'default': {
-            'hosts': os.getenv('ELASTIC_HOST', ''),
+            'hosts': es_host,
             'http_auth': awsauth,
             'use_ssl': True,
             'connection_class': RequestsHttpConnection,
