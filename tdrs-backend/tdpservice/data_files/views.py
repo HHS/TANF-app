@@ -81,7 +81,7 @@ class DataFileViewSet(ModelViewSet):
             version_id = versions['Versions'][0]['VersionId']
             file_key = versions['Versions'][0]['Key']
 
-            response = s3.get_object(
+            response = s3.client.get_object(
                 Bucket=bucket_name,
                 Key=file_key,
                 VersionId=version_id,
