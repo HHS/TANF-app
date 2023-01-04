@@ -146,6 +146,10 @@ class DataFile(FileRecord):
         blank=True
     )
 
+    s3_versioning_id = models.CharField(blank=False,
+                               null=True
+                               )
+
     @property
     def filename(self):
         """Return the correct filename for this data file."""

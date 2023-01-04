@@ -71,17 +71,15 @@ class DataFileViewSet(ModelViewSet):
         """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
         
-        print('=======================================')
         s3 = S3Client()
         bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
         versions = s3.client.list_object_versions(Bucket=bucket_name)
-        print(versions)
-        print('=======================================')
+        version_id = None
         for version in versions['Versions']:
             file_path = version['Key']
             if response.data.get('original_filename') in file_path:
-                print(version['VersionId'])
-        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+                if version['IsLatest']:
+                    version_id = (version['VersionId'])
 
         # Upload to ACF-TITAN only if file is passed the virus scan and created
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
@@ -94,6 +92,8 @@ class DataFileViewSet(ModelViewSet):
             )
             user = request.user
             data_file = DataFile.objects.get(id=response.data.get('id'))
+            data_file.version_id = version_id
+            data_file.save(update_fields=['version_id'])
 
             # Send email to user to notify them of the file upload status
             subject = f"Data Submitted for {data_file.section}"
