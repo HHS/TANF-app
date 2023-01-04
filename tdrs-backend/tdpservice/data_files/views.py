@@ -1,5 +1,9 @@
 """Check if user is authorized."""
 
+import boto3
+import json
+import os
+
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 from django.conf import settings
@@ -57,6 +61,16 @@ class DataFileViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
+
+        print('=======================================')
+        OS_ENV = os.environ
+        sys_values = {}
+        sys_values['S3_ENV_VARS'] = json.loads(OS_ENV['VCAP_SERVICES'])['s3']
+        s3_client = boto3.client('s3', region_name=sys_values['S3_REGION'])
+        versions = s3_client.list_object_versions(Bucket=sys_values['S3_CREDENTIALS']['bucket'])
+        print(versions)
+        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+
         # Upload to ACF-TITAN only if file is passed the virus scan and created
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
             sftp_task.upload.delay(
@@ -119,11 +133,6 @@ class DataFileViewSet(ModelViewSet):
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
-        record = self.get_object()
-        print('===========================')
-        print(type(record))
-        print(record.version)
-        print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
         response = FileResponse(
             FileWrapper(record.file),
             filename=record.original_filename
