@@ -73,7 +73,7 @@ class DataFileViewSet(ModelViewSet):
         
         print('=======================================')
         s3_client = S3Client()
-        versions = s3_client.client(Bucket=settings.AWS_S3_DATAFILES_BUCKET_NAME).object_versions.filter(Prefix=response.data.get('original_filename'))
+        versions = s3_client.client.Bucket(settings.AWS_S3_DATAFILES_BUCKET_NAME).object_versions.filter(Prefix=response.data.get('original_filename'))
         print(versions)
         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
