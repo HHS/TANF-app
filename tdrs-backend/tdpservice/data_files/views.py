@@ -39,6 +39,15 @@ class DataFileFilter(filters.FilterSet):
         model = DataFile
         fields = ['stt', 'quarter', 'year']
 
+class S3Client():
+    def __init__(self):
+        self.client = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_S3_DATAFILES_ACCESS_KEY,
+            aws_secret_access_key=settings.AWS_S3_DATAFILES_SECRET_ACCESS_KEY,
+            endpoint_url=settings.AWS_S3_DATAFILES_ENDPOINT_URL,
+            region_name=settings.AWS_S3_DATAFILES_REGION_NAME
+        )
 
 class DataFileViewSet(ModelViewSet):
     """Data file views."""
@@ -61,13 +70,10 @@ class DataFileViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
-
+        
         print('=======================================')
-        OS_ENV = os.environ
-        sys_values = {}
-        sys_values['S3_ENV_VARS'] = json.loads(OS_ENV['VCAP_SERVICES'])['s3']
-        s3_client = boto3.client('s3', region_name=sys_values['S3_REGION'])
-        versions = s3_client.list_object_versions(Bucket=sys_values['S3_CREDENTIALS']['bucket'])
+        s3_client = S3Client()
+        versions = s3_client.list_object_versions(Bucket=settings.AWS_S3_DATAFILES_BUCKET_NAME)
         print(versions)
         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
