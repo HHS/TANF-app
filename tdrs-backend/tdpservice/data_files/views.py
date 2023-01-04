@@ -77,17 +77,10 @@ class DataFileViewSet(ModelViewSet):
         versions = s3.client.list_object_versions(Bucket=bucket_name)
         print(versions)
         print('=======================================')
-        for version in versions:
-            version_id = versions['Versions'][0]['VersionId']
-            file_key = versions['Versions'][0]['Key']
-
-            response = s3.client.get_object(
-                Bucket=bucket_name,
-                Key=file_key,
-                VersionId=version_id,
-            )
-            data = response['Body'].read()
-            print(data)
+        for version in versions['Versions']:
+            file_path = version['Key']
+            if response.data.get('original_filename') in file_path:
+                print(version['VersionId'])
         print('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
 
         # Upload to ACF-TITAN only if file is passed the virus scan and created
