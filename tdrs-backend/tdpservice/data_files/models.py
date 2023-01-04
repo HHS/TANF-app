@@ -146,7 +146,8 @@ class DataFile(FileRecord):
         blank=True
     )
 
-    s3_versioning_id = models.CharField(blank=False,
+    s3_versioning_id = models.CharField(max_length=1024,
+                               blank=False,
                                null=True
                                )
 
