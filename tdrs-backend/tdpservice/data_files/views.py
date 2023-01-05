@@ -25,7 +25,7 @@ from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import sftp_task
 from tdpservice.email.helpers.data_file import send_data_submitted_email
-
+from tdpservice.data_files.s3_client import S3Client
 
 class DataFileFilter(filters.FilterSet):
     """Filters that can be applied to GET requests as query parameters."""
@@ -38,16 +38,6 @@ class DataFileFilter(filters.FilterSet):
 
         model = DataFile
         fields = ['stt', 'quarter', 'year']
-
-class S3Client():
-    def __init__(self):
-        self.client = boto3.client(
-            's3',
-            aws_access_key_id=settings.AWS_S3_DATAFILES_ACCESS_KEY,
-            aws_secret_access_key=settings.AWS_S3_DATAFILES_SECRET_KEY,
-            endpoint_url=settings.AWS_S3_DATAFILES_ENDPOINT,
-            region_name=settings.AWS_S3_DATAFILES_REGION_NAME
-        )
 
 class DataFileViewSet(ModelViewSet):
     """Data file views."""
