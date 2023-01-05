@@ -92,8 +92,8 @@ class DataFileViewSet(ModelViewSet):
             )
             user = request.user
             data_file = DataFile.objects.get(id=response.data.get('id'))
-            data_file.version_id = version_id
-            data_file.save(update_fields=['version_id'])
+            data_file.s3_versioning_id = version_id
+            data_file.save(update_fields=['s3_versioning_id'])
 
             # Send email to user to notify them of the file upload status
             subject = f"Data Submitted for {data_file.section}"
