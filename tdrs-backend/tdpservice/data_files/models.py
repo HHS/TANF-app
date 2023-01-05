@@ -148,7 +148,7 @@ class DataFile(FileRecord):
 
     s3_versioning_id = models.CharField(max_length=1024,
                                blank=False,
-                               null=True
+                               null=False
                                )
 
     @property
