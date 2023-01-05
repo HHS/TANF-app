@@ -152,16 +152,6 @@ class DataFile(FileRecord):
                                blank=False,
                                null=True
                                )
-    
-    @property
-    def download_file(self):
-        """download the file associated with version."""
-        s3_client=S3Client().client
-        # get object with version id that is associated with this field
-        bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
-        obj = s3_client.get_object(Bucket=bucket_name, Key=self.file.name, VersionId=self.s3_versioning_id)
-        print(obj)
-
 
     @property
     def filename(self):
