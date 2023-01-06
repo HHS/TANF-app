@@ -17,6 +17,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'quarter',
         'section',
         'version',
+        'file_download',
     ]
 
     list_filter = [
