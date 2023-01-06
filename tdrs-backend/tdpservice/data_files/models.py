@@ -153,6 +153,16 @@ class DataFile(FileRecord):
                                null=True
                                )
 
+    def file_download(self):
+        self.client.download_file(
+            settings.AWS_S3_DATAFILES_BUCKET_NAME,
+            get_s3_upload_path(self, self.original_filename),
+            self.original_filename,
+            ExtraArgs={'VersionId': self.s3_versioning_id}
+        )
+    file_download.short_description = 'Download File'
+
+
     @property
     def filename(self):
         """Return the correct filename for this data file."""

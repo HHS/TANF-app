@@ -8,6 +8,7 @@ from .models import DataFile, LegacyFileTransfer
 @admin.register(DataFile)
 class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Admin class for DataFile models."""
+    readonly_fields = ['file_download']
 
     list_display = [
         'id',
