@@ -153,7 +153,12 @@ class DataFile(FileRecord):
                                null=True
                                )
     s3_client = S3Client().client
+
+
     def file_download(self):
+        print(get_s3_upload_path(self, self.original_filename))
+        print(settings.AWS_S3_DATAFILES_BUCKET_NAME)
+        print('-----------------------------------------------------------------------------------')
         self.s3_client.download_file(
             settings.AWS_S3_DATAFILES_BUCKET_NAME,
             get_s3_upload_path(self, self.original_filename),
