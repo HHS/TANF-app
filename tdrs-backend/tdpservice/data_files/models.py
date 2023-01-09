@@ -156,15 +156,8 @@ class DataFile(FileRecord):
 
 
     def file_download(self):
-        print(get_s3_upload_path(self, self.original_filename))
-        print(settings.AWS_S3_DATAFILES_BUCKET_NAME)
-        print('-----------------------------------------------------------------------------------')
-        self.s3_client.download_file(
-            settings.AWS_S3_DATAFILES_BUCKET_NAME,
-            get_s3_upload_path(self, self.original_filename),
-            self.original_filename,
-            ExtraArgs={'VersionId': self.s3_versioning_id}
-        )
+        print('----------------------------------------------')
+
     file_download.short_description = 'Download File'
 
 

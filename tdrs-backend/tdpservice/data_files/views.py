@@ -141,6 +141,23 @@ class DataFileViewSet(ModelViewSet):
         )
         return response
 
+    @action(methods=["get"], detail=True)
+    def download_version(self, request, pk=None):
+        """Use boto3 s3 client to download a file with a specific version."""
+        record = self.get_object()
+        s3 = S3Client()
+        bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
+        file_path = record.file.name
+        version_id = record.s3_versioning_id
+        print(file_path)
+        file = s3.download_file(bucket_name, file_path, version_id)
+
+        response = FileResponse(
+            FileWrapper(file),
+            filename=record.original_filename
+        )
+        return response
+
 
 class GetYearList(APIView):
     """Get list of years for which there are data_files."""

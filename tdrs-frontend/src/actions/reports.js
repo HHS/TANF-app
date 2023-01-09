@@ -75,19 +75,30 @@ export const getAvailableFileList =
   }
 
 export const download =
-  ({ id, quarter = 'Q1', section, year }) =>
+  ({ id, quarter = 'Q1', section, year, s3_version_id }) =>
   async (dispatch) => {
     try {
+      let data = null
+
       if (!id) throw new Error('No id was provided to download action.')
       dispatch({ type: START_FILE_DOWNLOAD })
-
-      const response = await axios.get(
-        `${BACKEND_URL}/data_files/${id}/download/`,
-        {
-          responseType: 'blob',
-        }
-      )
-      const data = response.data
+      if (s3_version_id != null) {
+        const response = await axios.get(
+          `${BACKEND_URL}/data_files/${id}/download_version/`,
+          {
+            responseType: 'blob',
+          }
+        )
+        data = response.data
+      } else {
+        const response = await axios.get(
+          `${BACKEND_URL}/data_files/${id}/download/`,
+          {
+            responseType: 'blob',
+          }
+        )
+        data = response.data
+      }
 
       // Create a link and associate it with the blob returned from the file
       // download - this allows us to trigger the file download dialog without
