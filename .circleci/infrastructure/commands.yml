@@ -79,14 +79,35 @@
       cf-space:
         type: string
         default: tanf-dev
-      cf-org:
-        type: env_var_name
-        default: CF_ORG
-      cf-app:
-        type: string
-        default: CF_APP
     steps:
       - checkout
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-username: <<parameters.cf-username>>
+          cf-space: <<parameters.cf-space>>
+      -run:
+        # use cf to check if a service key exists for tdp-datafiles-dev 
+        # if it does not exist, create it
+        # then set the credentials for the service key as environment variables
+        command: |
+          if cf service-key tdp-datafiles-dev tdp-datafiles-key; then
+            echo "Service key exists"
+          else
+            echo "Service key does not exist"
+            cf create-service-key tdp-datafiles-dev tdp-datafiles-key
+            echo "key named tdp-datafiles-key created for service tdp-datafiles-dev"
+          fi
+
+          S3_CREDENTIALS=$(cf service-key tdp-datafiles-dev tdp-datafiles-key | tail -n +2)
+          {
+            AWS_ACCESS_KEY_ID=$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
+            AWS_SECRET_ACCESS_KEY=$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
+            AWS_DEFAULT_REGION=$(echo "${S3_CREDENTIALS}" | jq -r '.region')
+          }
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-region: AWS_DEFAULT_REGION
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
       - run:
           command: |
             S3_BUCKET_ID=cg-$(cf service tdp-datafiles-dev --guid)

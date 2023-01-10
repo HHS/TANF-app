@@ -1,0 +1,4 @@
+#workflows:
+   enable-versioning:
+    jobs:
+      - enable-versioning

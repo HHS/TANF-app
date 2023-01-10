@@ -4,6 +4,7 @@ orbs:
   node: circleci/node@4.7.0
   terraform: circleci/terraform@2.1.0
   jq: circleci/jq@2.2.0
+  aws-cli: circleci/aws-cli@3.1
 
 executors:
   docker-executor:
