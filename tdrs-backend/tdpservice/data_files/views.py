@@ -135,21 +135,20 @@ class DataFileViewSet(ModelViewSet):
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
-        response = FileResponse(
-            FileWrapper(record.file),
-            filename=record.original_filename
-        )
-        return response
 
-    @action(methods=["get"], detail=True)
-    def download_version(self, request, pk=None):
-        """Use boto3 s3 client to download a file with a specific version."""
-        record = self.get_object()
+        # If no versioning id, then download from django storage
+        if record.s3_versioning_id is None:
+            response = FileResponse(
+                FileWrapper(record.file),
+                filename=record.original_filename
+            )
+            return response
+
+        # If versioning id, then download from s3
         s3 = S3Client()
         bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
         file_path = record.file.name
         version_id = record.s3_versioning_id
-        print(file_path)
         file = s3.download_file(bucket_name, file_path, version_id)
 
         response = FileResponse(
