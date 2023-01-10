@@ -85,7 +85,8 @@
           cf-password: <<parameters.cf-password>>
           cf-username: <<parameters.cf-username>>
           cf-space: <<parameters.cf-space>>
-      -run:
+      - run:
+        name: Enable S3 Versioning
         # use cf to check if a service key exists for tdp-datafiles-dev 
         # if it does not exist, create it
         # then set the credentials for the service key as environment variables
