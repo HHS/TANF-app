@@ -86,7 +86,7 @@
           cf-username: <<parameters.cf-username>>
           cf-space: <<parameters.cf-space>>
       - run:
-        name: Enable S3 Versioning
+        name: Ensure s3 service key exists
         # use cf to check if a service key exists for tdp-datafiles-dev 
         # if it does not exist, create it
         # then set the credentials for the service key as environment variables
@@ -98,7 +98,9 @@
             cf create-service-key tdp-datafiles-dev tdp-datafiles-key
             echo "key named tdp-datafiles-key created for service tdp-datafiles-dev"
           fi
-
+      - run:
+          name: Export S3 Credentials for aws-cli orb
+          command: |
           S3_CREDENTIALS=$(cf service-key tdp-datafiles-dev tdp-datafiles-key | tail -n +2)
           {
             AWS_ACCESS_KEY_ID=$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
