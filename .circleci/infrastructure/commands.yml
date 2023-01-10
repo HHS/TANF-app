@@ -67,3 +67,27 @@
       - terraform/apply:
           path: <<parameters.tf-path>>
           var_file: ./variables.tfvars
+
+  enable-s3-versioning:
+    parameters:
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
+      cf-app:
+        type: string
+        default: CF_APP
+    steps:
+      - checkout
+      - run:
+          command: |
+            S3_BUCKET_ID=cg-$(cf service tdp-datafiles-dev --guid)
+            aws s3api put-bucket-versioning --bucket ${S3_BUCKET_ID}  --versioning-configuration Status=Enabled
