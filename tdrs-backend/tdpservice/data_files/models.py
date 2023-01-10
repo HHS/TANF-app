@@ -154,13 +154,6 @@ class DataFile(FileRecord):
                                )
     s3_client = S3Client().client
 
-
-    def file_download(self):
-        print('----------------------------------------------')
-
-    file_download.short_description = 'Download File'
-
-
     @property
     def filename(self):
         """Return the correct filename for this data file."""
