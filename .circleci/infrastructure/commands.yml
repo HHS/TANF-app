@@ -84,9 +84,9 @@
       - run:
           name: Install dependencies
           command: |
-            apt update
-            apt install jq
-            apt install curl
+            sudo apt update
+            sudo apt install jq
+            sudo apt install curl
             # TODO: Add Signature check
             curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
             mv cf7 /usr/local/bin/cf
