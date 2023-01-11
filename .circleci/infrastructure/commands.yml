@@ -90,9 +90,9 @@
             curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
             sudo mv cf7 /usr/local/bin/cf
             sudo chmod +x /usr/local/bin/cf
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
+            # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            # unzip awscliv2.zip
+            # sudo ./aws/install
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-username: <<parameters.cf-username>>
@@ -102,19 +102,19 @@
           # use cf to check if a service key exists for tdp-datafiles-dev(or prod) 
           # if it does not exist, create it
           command: |
-            cf service-key tdp-datafiles-<<parameters.target_env>> tdp-datafiles-key > /tmp/cf_aws_creds.json
+            cf service-key tdp-datafiles-<<parameters.target_env>> s3-versioning-key > /tmp/cf_aws_creds.json
             if sed -n '2p' /tmp/cf_aws_creds.json | grep -q "FAILED"; then
               echo "Service key does not exist"
-              cf create-service-key tdp-datafiles-<<parameters.target_env>> tdp-datafiles-key
-              cf service-key tdp-datafiles-<<parameters.target_env>> tdp-datafiles-key > /tmp/cf_aws_creds.json
-              echo "key named tdp-datafiles-key created for service tdp-datafiles-<<parameters.target_env>>"
+              cf create-service-key tdp-datafiles-<<parameters.target_env>> s3-versioning-key
+              cf service-key tdp-datafiles-<<parameters.target_env>> s3-versioning-key > /tmp/cf_aws_creds.json
+              echo "key named s3-versioning-key created for service tdp-datafiles-<<parameters.target_env>>"
             else
               echo "Service key exists"
             fi
       - run:
           name: set up aws credentials
           command: |
-            S3_CREDENTIALS=$(cf service-key tdp-datafiles-<<parameters.target_env>> tdp-datafiles-key | tail -n +2)
+            S3_CREDENTIALS=$(cf service-key tdp-datafiles-<<parameters.target_env>> s3-versioning-key | tail -n +2)
             aws configure set aws_access_key_id $(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
             aws configure set aws_secret_access_key $(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
             aws configure set default.region $(echo "${S3_CREDENTIALS}" | jq -r '.region')
