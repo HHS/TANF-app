@@ -69,6 +69,7 @@
           command: ./scripts/deploy-tdp-product-update-site.sh rolling tdp-project-updates
 
   enable-versioning:
+    executor: aws-cli/default
     parameters:
       cf-password:
         type: env_var_name
@@ -79,7 +80,6 @@
       cf-space:
         type: string
         default: tanf-dev
-    executor: aws-cli/default
     steps:
       - enable-s3-versioning:
           cf-password: <<parameters.cf-password>>

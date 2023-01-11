@@ -84,9 +84,9 @@
       - run:
           name: Install dependencies
           command: |
-            apk update
-            apk add jq
-            apk add curl
+            apt update
+            apt install jq
+            apt install curl
             # TODO: Add Signature check
             curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
             mv cf7 /usr/local/bin/cf
