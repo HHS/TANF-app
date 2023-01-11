@@ -102,6 +102,7 @@
           # use cf to check if a service key exists for tdp-datafiles-dev(or prod) 
           # if it does not exist, create it
           command: |
+            chmod +x ./scripts/create_s3_versioning_key.sh
             ./scripts/create_s3_versioning_key.sh tdp-datafiles-<<parameters.target_env>> s3-versioning-key
             retn_code=$?
             echo "Return code: $retn_code"
