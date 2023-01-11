@@ -102,15 +102,9 @@
           # use cf to check if a service key exists for tdp-datafiles-dev(or prod) 
           # if it does not exist, create it
           command: |
-            cf service-key tdp-datafiles-<<parameters.target_env>> s3-versioning-key > /tmp/cf_aws_creds.json
-            if sed -n '2p' /tmp/cf_aws_creds.json | grep -q "FAILED"; then
-              echo "Service key does not exist"
-              cf create-service-key tdp-datafiles-<<parameters.target_env>> s3-versioning-key
-              cf service-key tdp-datafiles-<<parameters.target_env>> s3-versioning-key > /tmp/cf_aws_creds.json
-              echo "key named s3-versioning-key created for service tdp-datafiles-<<parameters.target_env>>"
-            else
-              echo "Service key exists"
-            fi
+            ./scripts/create_s3_versioning_key.sh tdp-datafiles-<<parameters.target_env>> s3-versioning-key
+            retn_code=$?
+            echo "Return code: $retn_code"
       - run:
           name: set up aws credentials
           command: |
