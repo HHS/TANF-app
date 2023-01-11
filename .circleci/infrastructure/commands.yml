@@ -110,15 +110,14 @@
             else
               echo "Service key exists"
             fi
-           
-      - run:
-          name: Export S3 Credentials for aws-cli orb
-          command: |
-            export S3_CREDENTIALS=$(cf service-key tdp-datafiles-dev tdp-datafiles-key | tail -n +2)
-            export AWS_ACCESS_KEY_ID=$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
-            export AWS_SECRET_ACCESS_KEY=$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
-            export AWS_DEFAULT_REGION=$(echo "${S3_CREDENTIALS}" | jq -r '.region')
-            aws --version
+          environment:
+            AWS_ACCESS_KEY_ID: $(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
+            AWS_SECRET_ACCESS_KEY: $(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
+            AWS_DEFAULT_REGION: $(echo "${S3_CREDENTIALS}" | jq -r '.region')
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_DEFAULT_REGION
       - run:
           command: |
             S3_BUCKET_ID=cg-$(cf service tdp-datafiles-dev --guid)
