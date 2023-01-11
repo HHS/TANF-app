@@ -101,10 +101,6 @@
           command: |
             chmod +x ./scripts/create_s3_versioning_key.sh
             ./scripts/create_s3_versioning_key.sh tdp-datafiles-<<parameters.target_env>> s3-versioning-key
-            retn_code=$?
-            if [ $retn_code -eq 42 ]; then
-              circleci-agent step halt
-            fi
 
       - run:
           name: set up aws credentials

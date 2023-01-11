@@ -12,5 +12,5 @@ if sed -n '2p' /tmp/cf_aws_creds.json | grep -q "FAILED"; then
     cf service-key $SERVICE $KEY_NAME > /tmp/cf_aws_creds.json
     echo "key named $KEY_NAME created for service $SERVICE"
 else
-    exit 42
+    circleci-agent step halt
 fi
