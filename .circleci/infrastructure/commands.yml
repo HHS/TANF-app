@@ -114,6 +114,10 @@
             AWS_ACCESS_KEY_ID: $(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
             AWS_SECRET_ACCESS_KEY: $(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
             AWS_DEFAULT_REGION: $(echo "${S3_CREDENTIALS}" | jq -r '.region')
+      - run:
+          name: Print env
+          command: |
+            printenv
       - aws-cli/setup:
           aws-access-key-id: AWS_ACCESS_KEY
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
