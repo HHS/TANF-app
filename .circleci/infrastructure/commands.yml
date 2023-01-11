@@ -102,9 +102,10 @@
           # then set the credentials for the service key as environment variables
           command: |
             cf service-key tdp-datafiles-dev tdp-datafiles-key > /tmp/cf_aws_creds.json
-            if head -n 1 /tmp/cf_aws_creds.json | grep -q "FAILED"; then
+            if sed -n '2p' /tmp/cf_aws_creds.json | grep -q "FAILED"; then
               echo "Service key does not exist"
-              cf create-service-key tdp-datafiles-dev tdp-datafiles-key > /tmp/cf_aws_creds.json
+              cf create-service-key tdp-datafiles-dev tdp-datafiles-key
+              cf service-key tdp-datafiles-dev tdp-datafiles-key > /tmp/cf_aws_creds.json
               echo "key named tdp-datafiles-key created for service tdp-datafiles-dev"
             else
               echo "Service key exists"
@@ -113,7 +114,7 @@
       - run:
           name: Export S3 Credentials for aws-cli orb
           command: |
-            S3_CREDENTIALS=${cat /tmp/cf_aws_creds.json}
+            S3_CREDENTIALS=$(cf service-key tdp-datafiles-dev tdp-datafiles-key | tail -n +2)
             {
               AWS_ACCESS_KEY_ID=$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
               AWS_SECRET_ACCESS_KEY=$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
