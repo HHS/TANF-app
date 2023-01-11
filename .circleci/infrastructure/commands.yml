@@ -116,7 +116,7 @@
       - run:
           name: set up aws credentials
           command: |
-            S3_CREDENTIALS=$(cat /tmp/cf_aws_creds.json)
+            S3_CREDENTIALS=$(cf service-key tdp-datafiles-dev tdp-datafiles-key | tail -n +2)
             aws configure set aws_access_key_id $(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
             aws configure set aws_secret_access_key $(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
             aws configure set default.region $(echo "${S3_CREDENTIALS}" | jq -r '.region')
