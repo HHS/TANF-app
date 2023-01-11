@@ -55,6 +55,16 @@ export const getAvailableFileList =
           responseType: 'json',
         }
       )
+      console.log(response)
+      // while response data next is not null fetch again and concat to a results array
+      while (response?.data?.next) {
+        const nextResponse = await axios.get(response?.data?.next, {
+          responseType: 'json',
+        })
+        response.data.results = response.data.results.concat(
+          nextResponse.data.results
+        )
+      }
       dispatch({
         type: SET_FILE_LIST,
         payload: {
