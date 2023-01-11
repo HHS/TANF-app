@@ -21,6 +21,7 @@ cat util/jobs.yml >> generated_config.yml
 # Workflows
 echo 'workflows:' >> generated_config.yml
 cat build-and-test/workflows.yml >> generated_config.yml
+cat infrastructure/workflows.yml >> generated_config.yml
 cat deployment/workflows.yml >> generated_config.yml
 cat owasp/workflows.yml >> generated_config.yml
 cat util/workflows.yml >> generated_config.yml
