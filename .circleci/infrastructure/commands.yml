@@ -118,8 +118,7 @@
             export AWS_ACCESS_KEY_ID=$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
             export AWS_SECRET_ACCESS_KEY=$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
             export AWS_DEFAULT_REGION=$(echo "${S3_CREDENTIALS}" | jq -r '.region')
-      - aws-cli/setup:
-        profile-name: example
+            aws --version
       - run:
           command: |
             S3_BUCKET_ID=cg-$(cf service tdp-datafiles-dev --guid)
