@@ -78,7 +78,6 @@ export const download =
   ({ id, quarter = 'Q1', section, year, s3_version_id }) =>
   async (dispatch) => {
     try {
-
       if (!id) throw new Error('No id was provided to download action.')
       dispatch({ type: START_FILE_DOWNLOAD })
       const response = await axios.get(
