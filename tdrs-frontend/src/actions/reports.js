@@ -57,7 +57,7 @@ export const getAvailableFileList =
       )
       console.log(response)
       // while response data next is not null fetch again and concat to a results array
-      while (response?.data?.next) {
+      while (response?.data?.next !== null) {
         const nextResponse = await axios.get(response?.data?.next, {
           responseType: 'json',
         })
