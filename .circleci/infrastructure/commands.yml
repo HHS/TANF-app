@@ -91,6 +91,9 @@
             curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
             sudo mv cf7 /usr/local/bin/cf
             sudo chmod +x /usr/local/bin/cf
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-username: <<parameters.cf-username>>
@@ -110,18 +113,13 @@
             else
               echo "Service key exists"
             fi
-          environment:
-            AWS_ACCESS_KEY_ID: $(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
-            AWS_SECRET_ACCESS_KEY: $(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
-            AWS_DEFAULT_REGION: $(echo "${S3_CREDENTIALS}" | jq -r '.region')
       - run:
-          name: Print env
+          name: set up aws credentials
           command: |
-            printenv
-      - aws-cli/setup:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: AWS_DEFAULT_REGION
+            aws --version
+            aws configure set aws_access_key_id $(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
+            aws configure set aws_secret_access_key $(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
+            aws configure set default.region $(echo "${S3_CREDENTIALS}" | jq -r '.region')
       - run:
           command: |
             S3_BUCKET_ID=cg-$(cf service tdp-datafiles-dev --guid)
