@@ -132,6 +132,16 @@ class DataFileViewSet(ModelViewSet):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
 
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print(record)
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+
         # If no versioning id, then download from django storage
         if record.s3_versioning_id is None:
             response = FileResponse(
