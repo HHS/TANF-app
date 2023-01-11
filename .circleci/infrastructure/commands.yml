@@ -70,15 +70,14 @@
 
   enable-s3-versioning:
     parameters:
+      target_env:
+        type: string
       cf-password:
         type: env_var_name
-        default: CF_PASSWORD_DEV
       cf-username:
         type: env_var_name
-        default: CF_USERNAME_DEV
       cf-space:
         type: string
-        default: tanf-dev
     steps:
       - checkout
       - run:
@@ -100,29 +99,27 @@
           cf-space: <<parameters.cf-space>>
       - run:
           name: Ensure s3 service key exists
-          # use cf to check if a service key exists for tdp-datafiles-dev 
+          # use cf to check if a service key exists for tdp-datafiles-dev(or prod) 
           # if it does not exist, create it
-          # then set the credentials for the service key as environment variables
           command: |
-            cf service-key tdp-datafiles-dev tdp-datafiles-key > /tmp/cf_aws_creds.json
+            cf service-key tdp-datafiles-<<parameters.target_env>> tdp-datafiles-key > /tmp/cf_aws_creds.json
             if sed -n '2p' /tmp/cf_aws_creds.json | grep -q "FAILED"; then
               echo "Service key does not exist"
-              cf create-service-key tdp-datafiles-dev tdp-datafiles-key
-              cf service-key tdp-datafiles-dev tdp-datafiles-key > /tmp/cf_aws_creds.json
-              echo "key named tdp-datafiles-key created for service tdp-datafiles-dev"
+              cf create-service-key tdp-datafiles-<<parameters.target_env>> tdp-datafiles-key
+              cf service-key tdp-datafiles-<<parameters.target_env>> tdp-datafiles-key > /tmp/cf_aws_creds.json
+              echo "key named tdp-datafiles-key created for service tdp-datafiles-<<parameters.target_env>>"
             else
               echo "Service key exists"
             fi
       - run:
           name: set up aws credentials
           command: |
-            S3_CREDENTIALS=$(cf service-key tdp-datafiles-dev tdp-datafiles-key | tail -n +2)
+            S3_CREDENTIALS=$(cf service-key tdp-datafiles-<<parameters.target_env>> tdp-datafiles-key | tail -n +2)
             aws configure set aws_access_key_id $(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
             aws configure set aws_secret_access_key $(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
             aws configure set default.region $(echo "${S3_CREDENTIALS}" | jq -r '.region')
       - run:
+          name: Enable S3 Versioning
           command: |
-            S3_BUCKET_ID=cg-$(cf service tdp-datafiles-dev --guid)
-            aws s3api put-bucket-versioning --bucket ${S3_BUCKET_ID}  --versioning-configuration Status=Enabled
-
-            
+            S3_BUCKET_ID=cg-$(cf service tdp-datafiles-<<parameters.target_env>> --guid)
+            aws s3api put-bucket-versioning --bucket ${S3_BUCKET_ID} --versioning-configuration Status=Enabled
