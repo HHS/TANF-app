@@ -78,18 +78,16 @@ export const download =
   ({ id, quarter = 'Q1', section, year, s3_version_id }) =>
   async (dispatch) => {
     try {
-      let data = null
 
       if (!id) throw new Error('No id was provided to download action.')
       dispatch({ type: START_FILE_DOWNLOAD })
-
       const response = await axios.get(
         `${BACKEND_URL}/data_files/${id}/download/`,
         {
           responseType: 'blob',
         }
       )
-      data = response.data
+      const data = response.data
 
       // Create a link and associate it with the blob returned from the file
       // download - this allows us to trigger the file download dialog without
@@ -111,7 +109,7 @@ export const download =
     } catch (error) {
       dispatch({
         type: FILE_DOWNLOAD_ERROR,
-        payload: { error, year, quarter, section },
+        payload: { error, year, quarter, section, s3_version_id },
       })
       return false
     }

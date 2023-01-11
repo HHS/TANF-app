@@ -24,7 +24,6 @@ class OverriddenCredentialsS3Storage(S3Boto3Storage):
             'region_name': self.region_name,
             'secret_key': self.secret_key,
             'location': self.location,
-            'signature_version': 's3v4',
         }
 
 

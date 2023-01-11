@@ -141,11 +141,11 @@ class DataFileViewSet(ModelViewSet):
             return response
 
         # If versioning id, then download from s3
-        s3 = S3Client()
+        s3_client = S3Client().client
         bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
         file_path = record.file.name
         version_id = record.s3_versioning_id
-        file = s3.download_file(bucket_name, file_path, version_id)
+        file = s3_client.download_file(bucket_name, file_path, version_id)
 
         response = FileResponse(
             FileWrapper(file),
