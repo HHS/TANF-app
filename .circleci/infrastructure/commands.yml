@@ -90,9 +90,6 @@
             curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
             sudo mv cf7 /usr/local/bin/cf
             sudo chmod +x /usr/local/bin/cf
-            # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            # unzip awscliv2.zip
-            # sudo ./aws/install
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-username: <<parameters.cf-username>>
@@ -105,7 +102,10 @@
             chmod +x ./scripts/create_s3_versioning_key.sh
             ./scripts/create_s3_versioning_key.sh tdp-datafiles-<<parameters.target_env>> s3-versioning-key
             retn_code=$?
-            echo "Return code: $retn_code"
+            if [ $retn_code -eq 42 ]; then
+              circleci-agent step halt
+            fi
+
       - run:
           name: set up aws credentials
           command: |
