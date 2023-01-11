@@ -14,7 +14,6 @@ from tdpservice.backends import DataFilesS3Storage
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
 from tdpservice.data_files.s3_client import S3Client
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -149,9 +148,9 @@ class DataFile(FileRecord):
     )
 
     s3_versioning_id = models.CharField(max_length=1024,
-                               blank=False,
-                               null=True
-                               )
+                                        blank=False,
+                                        null=True
+                                        )
     s3_client = S3Client().client
 
     @property

@@ -1,7 +1,10 @@
+"""S3 client."""
 import boto3
 from django.conf import settings
 
 class S3Client():
+    """A client for downloading files from s3 with boto3."""
+
     def __init__(self):
         self.client = boto3.client(
             's3',
@@ -12,6 +15,7 @@ class S3Client():
         )
 
     def file_download(self, path, file_name, version_id):
+        """Download a file from s3. Specify the path, file name, and version id."""
         return self.s3_client.download_file(
             settings.AWS_S3_DATAFILES_BUCKET_NAME,
             path,

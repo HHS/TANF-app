@@ -90,7 +90,6 @@ export const download =
         }
       )
       data = response.data
-      
 
       // Create a link and associate it with the blob returned from the file
       // download - this allows us to trigger the file download dialog without

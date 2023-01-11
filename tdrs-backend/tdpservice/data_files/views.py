@@ -1,9 +1,5 @@
 """Check if user is authorized."""
 
-import boto3
-import json
-import os
-
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 from django.conf import settings
@@ -60,7 +56,7 @@ class DataFileViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
-        
+
         s3 = S3Client()
         bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
         versions = s3.client.list_object_versions(Bucket=bucket_name)

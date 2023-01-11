@@ -95,15 +95,14 @@
           cf-username: <<parameters.cf-username>>
           cf-space: <<parameters.cf-space>>
       - run:
-          name: Ensure s3 service key exists
+          name: Ensure s3 versioning key exists
           # use cf to check if a service key exists for tdp-datafiles-dev(or prod) 
-          # if it does not exist, create it
+          # exit 0 if it does, create it if it doesn't
           command: |
             chmod +x ./scripts/create_s3_versioning_key.sh
             ./scripts/create_s3_versioning_key.sh tdp-datafiles-<<parameters.target_env>> s3-versioning-key
-
       - run:
-          name: set up aws credentials
+          name: Set up aws credentials
           command: |
             S3_CREDENTIALS=$(cf service-key tdp-datafiles-<<parameters.target_env>> s3-versioning-key | tail -n +2)
             aws configure set aws_access_key_id $(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
