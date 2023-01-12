@@ -47,24 +47,14 @@ set_cf_envs()
   "DJANGO_SETTINGS_MODULE"
   "DJANGO_SU_NAME"
   "FRONTEND_BASE_URL"
-  "PROD_JWT_CERT"
-  "PROD_JWT_KEY"
   "LOGGING_LEVEL"
-  "PROD_ACR_VALUES"
-  "PROD_OIDC_OP_AUTHORIZATION_ENDPOINT"
-  "PROD_CLIENT_ASSERTION_TYPE"
-  "PROD_OIDC_RP_CLIENT_ID"
-  "PROD_OIDC_OP_ISSUER"
-  "PROD_OIDC_OP_JWKS_ENDPOINT"
-  "PROD_OIDC_OP_LOGOUT_ENDPOINT"
-  "PROD_OIDC_OP_TOKEN_ENDPOINT"
   "REDIS_URI"
   )
 
   echo "Setting environment variables for $CGAPPNAME_BACKEND"
 
   for var_name in ${var_list[@]}; do
-    # Intentionally not setting variable if empty
+    # Intentionally unsetting variable if empty
     if [[ -z "${!var_name}" ]]; then
         echo "WARNING: Empty value for $var_name. It will now be unset."
         cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
@@ -72,14 +62,7 @@ set_cf_envs()
         continue
     fi
 
-    if [[ "$var_name" =~ "PROD_" ]] && [[ "$CF_SPACE" = "tanf-prod" ]]; then
-        prod_var_name=$(echo $var_name | sed -e 's/PROD_//g')
-        cf_cmd="cf set-env $CGAPPNAME_BACKEND $prod_var_name ${!var_name}"
-    else
-    
-        cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
-    fi
-    
+    cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
     echo "Setting var : $var_name"
     $cf_cmd
   done
