@@ -68,15 +68,13 @@ const Paginator = ({ pages, selected, onChange }) => (
         onClick={() => onChange(selected - 1)}
       />
 
-      {Array(pages)
-        .keys()
-        .map((i) => {
-          ;<PaginatorPageNumberButton
-            label="1"
-            isSelected={selected === 1}
-            onClick={() => onChange(1)}
-          />
-        })}
+      {[...Array(pages).keys()].map((i) => (
+        <PaginatorPageNumberButton
+          label="1"
+          isSelected={selected === 1}
+          onClick={() => onChange(1)}
+        />
+      ))}
 
       <PaginatorArrowButton
         label="Next"
