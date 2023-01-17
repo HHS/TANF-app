@@ -140,17 +140,6 @@ class DataFileViewSet(ModelViewSet):
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
-
-        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
-        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
-        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
-        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
-        print(record)
-        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
-        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
-        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
-        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
-
         # If no versioning id, then download from django storage
         if record.s3_versioning_id is None:
             response = FileResponse(
@@ -175,11 +164,11 @@ class DataFileViewSet(ModelViewSet):
     @action(methods=["get"], detail=False)
     def latest_submission(self, request):
         """Get the latest submission for each section for a provided quarter, year, stt"""
-        stt = request.data.get('stt', None)
-        quarter = request.data.get('quarter', None)
-        year = request.data.get('year', None)
+        stt = request.query_params.get('stt', None)
+        quarter = request.query_params.get('quarter', None)
+        year = request.query_params.get('year', None)
 
-        latest_submissions = {}
+        latest_submissions = {'stt': stt, 'quarter': quarter, 'year': year, 'sections': ''}
 
         sections = []  # get sections available to stt
 

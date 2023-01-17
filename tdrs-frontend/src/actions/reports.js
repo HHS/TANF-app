@@ -50,23 +50,11 @@ export const getAvailableFileList =
     })
     try {
       const response = await axios.get(
-        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${
-          stt.id
-        }&file_type=${file_type}${section ? `&section=${section}` : ''}&page=1`,
+        `${BACKEND_URL}/data_files/latest_submission/?year=${year}&quarter=${quarter}&stt=${stt.id}&file_type=${file_type}`,
         {
           responseType: 'json',
         }
       )
-      console.log(response)
-      // while response data next is not null fetch again and concat to a results array
-      while (response?.data?.next !== null) {
-        const nextResponse = await axios.get(response?.data?.next, {
-          responseType: 'json',
-        })
-        response.data.results = response.data.results.concat(
-          nextResponse.data.results
-        )
-      }
       dispatch({
         type: SET_FILE_LIST,
         payload: {
