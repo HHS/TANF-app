@@ -12,6 +12,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from wsgiref.util import FileWrapper
 from rest_framework import status
 
@@ -21,6 +22,10 @@ from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import sftp_task
 from tdpservice.email.helpers.data_file import send_data_submitted_email
+
+
+class DataFilePagination(PageNumberPagination):
+    page_size = 5
 
 
 class DataFileFilter(filters.FilterSet):
@@ -33,7 +38,14 @@ class DataFileFilter(filters.FilterSet):
         """Class metadata linking to the DataFile and fields accepted."""
 
         model = DataFile
-        fields = ['stt', 'quarter', 'year']
+        fields = ['stt', 'quarter', 'year', 'section']
+
+class DataFileSubmissionHistoryViewSet(ModelViewSet):
+    """Data File submission history views"""
+
+    pagination_class = DataFilePagination
+    permission_classes = [DataFilePermissions]
+    serializer_class = DataFileSerializer
 
 
 class DataFileViewSet(ModelViewSet):
@@ -101,6 +113,9 @@ class DataFileViewSet(ModelViewSet):
             queryset = queryset.filter(section__contains='SSP')
         else:
             queryset = queryset.exclude(section__contains='SSP')
+
+        if self.request.query_params.get('section', None) is None:
+            self.pagination_class = None
 
         return queryset
 
