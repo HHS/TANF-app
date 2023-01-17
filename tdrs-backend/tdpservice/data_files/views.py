@@ -40,13 +40,6 @@ class DataFileFilter(filters.FilterSet):
         model = DataFile
         fields = ['stt', 'quarter', 'year', 'section']
 
-class DataFileSubmissionHistoryViewSet(ModelViewSet):
-    """Data File submission history views"""
-
-    pagination_class = DataFilePagination
-    permission_classes = [DataFilePermissions]
-    serializer_class = DataFileSerializer
-
 
 class DataFileViewSet(ModelViewSet):
     """Data file views."""
@@ -56,6 +49,7 @@ class DataFileViewSet(ModelViewSet):
     parser_classes = [MultiPartParser]
     permission_classes = [DataFilePermissions]
     serializer_class = DataFileSerializer
+    pagination_class = DataFilePagination
 
     # TODO: Handle versioning in queryset
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
@@ -142,6 +136,29 @@ class DataFileViewSet(ModelViewSet):
             filename=record.original_filename
         )
         return response
+
+    @action(methods=["get"], detail=False)
+    def latest_submission(self, request):
+        """Get the latest submission for each section for a provided quarter, year, stt"""
+        stt = request.data.get('stt', None)
+        quarter = request.data.get('quarter', None)
+        year = request.data.get('year', None)
+
+        latest_submissions = {}
+
+        sections = []  # get sections available to stt
+
+        for section in sections:
+            try:
+                latest_submissions[section] = DataFile.objects.get(
+                    stt=stt, quarter=quarter, year=year, section=section)
+            except DataFile.DoesNotExist:
+                latest_submissions[section] = None
+
+        return Response(
+            latest_submissions,
+            200
+        )
 
 
 class GetYearList(APIView):
