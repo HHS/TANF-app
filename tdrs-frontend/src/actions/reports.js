@@ -57,6 +57,16 @@ export const getAvailableFileList =
           responseType: 'json',
         }
       )
+      console.log(response)
+      // while response data next is not null fetch again and concat to a results array
+      while (response?.data?.next !== null) {
+        const nextResponse = await axios.get(response?.data?.next, {
+          responseType: 'json',
+        })
+        response.data.results = response.data.results.concat(
+          nextResponse.data.results
+        )
+      }
       dispatch({
         type: SET_FILE_LIST,
         payload: {
@@ -78,12 +88,11 @@ export const getAvailableFileList =
   }
 
 export const download =
-  ({ id, quarter = 'Q1', section, year }) =>
+  ({ id, quarter = 'Q1', section, year, s3_version_id }) =>
   async (dispatch) => {
     try {
       if (!id) throw new Error('No id was provided to download action.')
       dispatch({ type: START_FILE_DOWNLOAD })
-
       const response = await axios.get(
         `${BACKEND_URL}/data_files/${id}/download/`,
         {
@@ -112,7 +121,7 @@ export const download =
     } catch (error) {
       dispatch({
         type: FILE_DOWNLOAD_ERROR,
-        payload: { error, year, quarter, section },
+        payload: { error, year, quarter, section, s3_version_id },
       })
       return false
     }

@@ -22,7 +22,7 @@ from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import sftp_task
 from tdpservice.email.helpers.data_file import send_data_submitted_email
-
+from tdpservice.data_files.s3_client import S3Client
 
 class DataFilePagination(PageNumberPagination):
     page_size = 5
@@ -39,7 +39,6 @@ class DataFileFilter(filters.FilterSet):
 
         model = DataFile
         fields = ['stt', 'quarter', 'year', 'section']
-
 
 class DataFileViewSet(ModelViewSet):
     """Data file views."""
@@ -64,6 +63,16 @@ class DataFileViewSet(ModelViewSet):
         """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
 
+        s3 = S3Client()
+        bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
+        versions = s3.client.list_object_versions(Bucket=bucket_name)
+        version_id = None
+        for version in versions['Versions']:
+            file_path = version['Key']
+            if response.data.get('original_filename') in file_path:
+                if version['IsLatest']:
+                    version_id = (version['VersionId'])
+
         # Upload to ACF-TITAN only if file is passed the virus scan and created
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
             sftp_task.upload.delay(
@@ -73,9 +82,10 @@ class DataFileViewSet(ModelViewSet):
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
-
             user = request.user
             data_file = DataFile.objects.get(id=response.data.get('id'))
+            data_file.s3_versioning_id = version_id
+            data_file.save(update_fields=['s3_versioning_id'])
 
             # Send email to user to notify them of the file upload status
             subject = f"Data Submitted for {data_file.section}"
@@ -131,8 +141,33 @@ class DataFileViewSet(ModelViewSet):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
 
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print(record)
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+        print('=!=!=!=!=!=!=!=!=!=!=!=!=!=!')
+
+        # If no versioning id, then download from django storage
+        if record.s3_versioning_id is None:
+            response = FileResponse(
+                FileWrapper(record.file),
+                filename=record.original_filename
+            )
+            return response
+
+        # If versioning id, then download from s3
+        s3_client = S3Client().client
+        bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
+        file_path = record.file.name
+        version_id = record.s3_versioning_id
+        file = s3_client.download_file(bucket_name, file_path, version_id)
+
         response = FileResponse(
-            FileWrapper(record.file),
+            FileWrapper(file),
             filename=record.original_filename
         )
         return response
