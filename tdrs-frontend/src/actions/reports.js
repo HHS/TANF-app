@@ -43,14 +43,16 @@ export const clearError =
    if the download button should be present.
 */
 export const getAvailableFileList =
-  ({ quarter = 'Q1', stt, year, file_type }) =>
+  ({ quarter = 'Q1', stt, year, file_type, section }) =>
   async (dispatch) => {
     dispatch({
       type: FETCH_FILE_LIST,
     })
     try {
       const response = await axios.get(
-        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${stt.id}&file_type=${file_type}`,
+        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${
+          stt.id
+        }&file_type=${file_type}${section ? `&section=${section}` : ''}&page=1`,
         {
           responseType: 'json',
         }
@@ -69,6 +71,7 @@ export const getAvailableFileList =
           year,
           quarter,
           file_type,
+          section,
         },
       })
     }

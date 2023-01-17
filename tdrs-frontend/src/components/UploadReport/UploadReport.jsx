@@ -10,7 +10,7 @@ import { submit } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 import { fileUploadSections } from '../../reducers/reports'
 
-function UploadReport({ handleCancel, header, stt }) {
+function UploadReport({ handleCancel, stt }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
   // The selected quarter in the dropdown tied to our redux `reports` state
@@ -32,16 +32,9 @@ function UploadReport({ handleCancel, header, stt }) {
   })
   const alertRef = useRef(null)
 
-  // Ensure newly rendered header is focused,
-  // else it won't be read be screen readers.
-  const headerRef = useRef(null)
   const dispatch = useDispatch()
 
   const logger = useEventLogger()
-
-  useEffect(() => {
-    headerRef.current.focus()
-  }, [])
 
   const uploadedFiles = files.filter((file) => file.fileName && !file.id)
   const uploadedSections = uploadedFiles
@@ -97,13 +90,6 @@ function UploadReport({ handleCancel, header, stt }) {
 
   return (
     <>
-      <h2
-        ref={headerRef}
-        className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
-        tabIndex="-1"
-      >
-        {header}
-      </h2>
       {localAlert.active && (
         <div
           ref={alertRef}
@@ -141,7 +127,6 @@ function UploadReport({ handleCancel, header, stt }) {
 
 UploadReport.propTypes = {
   handleCancel: PropTypes.func.isRequired,
-  header: PropTypes.string.isRequired,
   stt: PropTypes.number,
 }
 
