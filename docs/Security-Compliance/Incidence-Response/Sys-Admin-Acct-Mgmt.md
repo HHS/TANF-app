@@ -71,7 +71,7 @@ cf ssh-code
 ```
 * Use ssh to connect to your app container. Insert the value for your PROCESS_GUID obtained above. 
 ```
-ssh -p 22 cf:<PROCESS_GUID>/0@ssh.fr.cloud.gov
+ssh -p 2222 cf:<PROCESS_GUID>/0@ssh.fr.cloud.gov
 ```
 * You will be prompted to enter a password. Use the one-time ssh passcode  generated from `cf ssh-code` above (Note: pasting the value will be invisible). If this is successful, the command line will appear like this:
     
@@ -96,6 +96,7 @@ You will know you are in an interactive session if the command line appears like
 ```
 user = User.objects.get(username='alexandra.pennington@acf.hhs.gov')
 user.groups.set(Group.objects.filter(name='OFA System Admin'))
+user.account_approval_status = 'Approved'
 user.is_staff = True
 user.is_superuser = True
 user.is_deactivated = False
