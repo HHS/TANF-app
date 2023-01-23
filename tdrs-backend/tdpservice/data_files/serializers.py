@@ -18,7 +18,7 @@ class DataFileSerializer(serializers.ModelSerializer):
 
     file = serializers.FileField(write_only=True)
     stt = serializers.PrimaryKeyRelatedField(queryset=STT.objects.all())
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user = serializers.StringRelatedField()
     ssp = serializers.BooleanField(write_only=True)
 
     class Meta:

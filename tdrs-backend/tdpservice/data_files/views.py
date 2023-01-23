@@ -23,9 +23,7 @@ from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import sftp_task
 from tdpservice.email.helpers.data_file import send_data_submitted_email
 from tdpservice.data_files.s3_client import S3Client
-
-class DataFilePagination(PageNumberPagination):
-    page_size = 5
+from tdpservice.stts.models import STT
 
 
 class DataFileFilter(filters.FilterSet):
@@ -38,7 +36,8 @@ class DataFileFilter(filters.FilterSet):
         """Class metadata linking to the DataFile and fields accepted."""
 
         model = DataFile
-        fields = ['stt', 'quarter', 'year', 'section']
+        fields = ['stt', 'quarter', 'year']
+
 
 class DataFileViewSet(ModelViewSet):
     """Data file views."""
@@ -48,7 +47,6 @@ class DataFileViewSet(ModelViewSet):
     parser_classes = [MultiPartParser]
     permission_classes = [DataFilePermissions]
     serializer_class = DataFileSerializer
-    pagination_class = DataFilePagination
 
     # TODO: Handle versioning in queryset
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
@@ -118,9 +116,6 @@ class DataFileViewSet(ModelViewSet):
         else:
             queryset = queryset.exclude(section__contains='SSP')
 
-        if self.request.query_params.get('section', None) is None:
-            self.pagination_class = None
-
         return queryset
 
     def filter_queryset(self, queryset):
@@ -168,21 +163,36 @@ class DataFileViewSet(ModelViewSet):
         quarter = request.query_params.get('quarter', None)
         year = request.query_params.get('year', None)
 
-        latest_submissions = {'stt': stt, 'quarter': quarter, 'year': year, 'sections': ''}
+        if not (stt or quarter or year):
+            return Response({'error': 'Bad request'}, 400)
 
-        sections = []  # get sections available to stt
+        try:
+            stt = STT.objects.get(id=stt)
+        except STT.DoesNotExist:
+            return Response({'error': 'Stt does not exist'}, 400)
 
-        for section in sections:
-            try:
-                latest_submissions[section] = DataFile.objects.get(
-                    stt=stt, quarter=quarter, year=year, section=section)
-            except DataFile.DoesNotExist:
-                latest_submissions[section] = None
+        sections = stt.filenames.keys()
+
+        latest_submissions = dict([[s, None] for s in sections])
+
+        results = DataFile.objects.order_by('section', '-version').distinct('section')
+
+        for result in results:
+            # try:
+            #     data_file = DataFile.objects.get(
+            #         stt=stt, quarter=quarter, year=year, section=section)
+
+            # except DataFile.DoesNotExist:
+            #     latest_submissions[section] = None
+
+            latest_submissions[result.section] = self.serializer_class(result).data
 
         return Response(
-            latest_submissions,
+            {'results': latest_submissions},
             200
         )
+
+        # return self.list(self, request)
 
 
 class GetYearList(APIView):

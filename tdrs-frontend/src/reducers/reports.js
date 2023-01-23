@@ -60,6 +60,8 @@ export const serializeApiDataFile = (dataFile) => ({
   uuid: dataFile.slug,
   year: dataFile.year,
   s3_version_id: dataFile.s3_version_id,
+  createdAt: dataFile.created_at,
+  submittedBy: dataFile.user,
 })
 
 const initialState = {
@@ -93,12 +95,16 @@ const reports = (state = initialState, action) => {
     }
     case SET_FILE_LIST: {
       const { data } = payload
+      // const files = {}
+
+      // Object.keys(data, (k) => {
+      //   files[k] = data[k] ? serializeApiDataFile(data[k]) : null
+      // })
+
       return {
         ...state,
-        files: state.files.map((file) => {
-          const dataFile = getFile(data, file.section)
-          return dataFile ? serializeApiDataFile(dataFile) : file
-        }),
+        // files,
+        files: data.map((f) => serializeApiDataFile(f)),
       }
     }
     case SET_FILE_SUBMITTED: {

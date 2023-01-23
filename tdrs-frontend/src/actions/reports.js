@@ -50,7 +50,7 @@ export const getAvailableFileList =
     })
     try {
       const response = await axios.get(
-        `${BACKEND_URL}/data_files/latest_submission/?year=${year}&quarter=${quarter}&stt=${stt.id}&file_type=${file_type}`,
+        `${BACKEND_URL}/data_files/?year=${year}&quarter=${quarter}&stt=${stt.id}&file_type=${file_type}`,
         {
           responseType: 'json',
         }
