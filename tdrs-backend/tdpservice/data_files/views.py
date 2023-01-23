@@ -148,56 +148,6 @@ class DataFileViewSet(ModelViewSet):
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
-        # If no versioning id, then download from django storage
-        if record.s3_versioning_id is None:
-            response = FileResponse(
-                FileWrapper(record.file),
-                filename=record.original_filename
-            )
-            return response
-
-        # If versioning id, then download from s3
-        s3_client = S3Client().client
-        bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
-        file_path = record.file.name
-        version_id = record.s3_versioning_id
-        file = s3_client.download_file(bucket_name, file_path, version_id)
-
-        # response = FileResponse(
-        #     FileWrapper(record.file),
-        #     filename=record.original_filename
-        # )
-        # return response
-        # If no versioning id, then download from django storage
-        if not hasattr(record, 's3_versioning_id') or record.s3_versioning_id is None:
-            response = FileResponse(
-                FileWrapper(record.file),
-                filename=record.original_filename
-            )
-            return response
-
-        # If versioning id, then download from s3
-        s3 = S3Client()
-        file_path = record.file.name
-        version_id = record.s3_versioning_id
-
-        # response = FileResponse(
-        #     FileWrapper(record.file),
-        #     filename=record.original_filename
-        # )
-        # return response
-        # If no versioning id, then download from django storage
-        if not hasattr(record, 's3_versioning_id') or record.s3_versioning_id is None:
-            response = FileResponse(
-                FileWrapper(record.file),
-                filename=record.original_filename
-            )
-            return response
-
-        # If versioning id, then download from s3
-        s3 = S3Client()
-        file_path = record.file.name
-        version_id = record.s3_versioning_id
 
         # response = FileResponse(
         #     FileWrapper(record.file),
