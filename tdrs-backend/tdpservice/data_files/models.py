@@ -151,7 +151,6 @@ class DataFile(FileRecord):
                                         blank=False,
                                         null=True
                                         )
-    s3_client = S3Client().client
 
     @property
     def filename(self):

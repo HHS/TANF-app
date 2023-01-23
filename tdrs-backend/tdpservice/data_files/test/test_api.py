@@ -105,9 +105,7 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
     def test_get_data_file_file_meta_data(self, api_client, data_file_data, user):
         """Assert the meta data the api provides is as expected."""
-        print(data_file_data)
         response = self.post_data_file_file(api_client, data_file_data)
-        print(response.data)
         data_file_id = response.data['id']
         assert DataFile.objects.get(id=data_file_id)
         response = self.get_data_file_file(api_client, data_file_id)
@@ -151,6 +149,11 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
 
         self.assert_data_file_exists(data_file_data, 1, user)
         self.assert_data_file_exists(other_data_file_data, 2, user)
+
+        file_1 = DataFile.objects.get(id=response1.data['id'])
+        file_2 = DataFile.objects.get(id=response2.data['id'])
+
+        assert file_1.s3_versioning_id != file_2.s3_versioning_id
 
 
 class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):

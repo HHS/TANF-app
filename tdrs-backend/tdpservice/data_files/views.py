@@ -23,7 +23,6 @@ from tdpservice.users.permissions import DataFilePermissions
 from tdpservice.scheduling import sftp_task
 from tdpservice.email.helpers.data_file import send_data_submitted_email
 from tdpservice.data_files.s3_client import S3Client
-from tdpservice.stts.models import STT
 
 
 class DataFileFilter(filters.FilterSet):
@@ -60,6 +59,8 @@ class DataFileViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
+        # Get the version id of the file uploaded to S3 if there is one
+        version_id = self.get_s3_versioning_id(response.data.get('original_filename'))
 
         s3 = S3Client()
         bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
@@ -107,6 +108,18 @@ class DataFileViewSet(ModelViewSet):
 
         return response
 
+    def get_s3_versioning_id(self, file_name):
+        """Get the version id of the file uploaded to S3."""
+        s3 = S3Client()
+        bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
+        versions = s3.client.list_object_versions(Bucket=bucket_name)
+        for version in versions['Versions']:
+            file_path = version['Key']
+            if file_name in file_path:
+                if version['IsLatest']:
+                    return (version['VersionId'])
+        return None
+
     def get_queryset(self):
         """Apply custom queryset filters."""
         queryset = super().get_queryset()
@@ -150,8 +163,62 @@ class DataFileViewSet(ModelViewSet):
         version_id = record.s3_versioning_id
         file = s3_client.download_file(bucket_name, file_path, version_id)
 
+        # response = FileResponse(
+        #     FileWrapper(record.file),
+        #     filename=record.original_filename
+        # )
+        # return response
+        # If no versioning id, then download from django storage
+        if not hasattr(record, 's3_versioning_id') or record.s3_versioning_id is None:
+            response = FileResponse(
+                FileWrapper(record.file),
+                filename=record.original_filename
+            )
+            return response
+
+        # If versioning id, then download from s3
+        s3 = S3Client()
+        file_path = record.file.name
+        version_id = record.s3_versioning_id
+
+        # response = FileResponse(
+        #     FileWrapper(record.file),
+        #     filename=record.original_filename
+        # )
+        # return response
+        # If no versioning id, then download from django storage
+        if not hasattr(record, 's3_versioning_id') or record.s3_versioning_id is None:
+            response = FileResponse(
+                FileWrapper(record.file),
+                filename=record.original_filename
+            )
+            return response
+
+        # If versioning id, then download from s3
+        s3 = S3Client()
+        file_path = record.file.name
+        version_id = record.s3_versioning_id
+
+        # response = FileResponse(
+        #     FileWrapper(record.file),
+        #     filename=record.original_filename
+        # )
+        # return response
+        # If no versioning id, then download from django storage
+        if not hasattr(record, 's3_versioning_id') or record.s3_versioning_id is None:
+            response = FileResponse(
+                FileWrapper(record.file),
+                filename=record.original_filename
+            )
+            return response
+
+        # If versioning id, then download from s3
+        s3 = S3Client()
+        file_path = record.file.name
+        version_id = record.s3_versioning_id
+
         response = FileResponse(
-            FileWrapper(file),
+            FileWrapper(s3.file_download(file_path, record.original_filename, version_id)),
             filename=record.original_filename
         )
         return response

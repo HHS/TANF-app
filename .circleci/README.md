@@ -9,7 +9,7 @@ To make the config yaml easier to read we are using CircleCi's [Dynamic Configur
 ### Continuation orb
 CicleCi has an orb that allows for another config file to be specified. Using a script this new config is generated based on the info passed via the pipeline parameters. This can later be used in conjuction with the path filtering orb to make our build time shorter. It could also be used to build different configuration files for different pipelines.
 #### generate_config.sh
-This script  will generate a complete config for building, testing, and deploying.
+This script will generate a complete config for building, testing, and deploying.
 
 ### Directory structure
 

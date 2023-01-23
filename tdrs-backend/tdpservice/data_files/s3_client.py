@@ -14,11 +14,15 @@ class S3Client():
             region_name=settings.AWS_S3_DATAFILES_REGION_NAME
         )
 
-    def file_download(self, path, file_name, version_id):
+    def file_download(self, key, path, version_id):
         """Download a file from s3. Specify the path, file name, and version id."""
-        return self.s3_client.download_file(
+        key = 'dev/' + key
+
+        self.client.download_file(
             settings.AWS_S3_DATAFILES_BUCKET_NAME,
+            key,
             path,
-            file_name,
             ExtraArgs={'VersionId': version_id}
         )
+        f = open(path, 'r')
+        return f
