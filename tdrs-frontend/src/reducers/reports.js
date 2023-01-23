@@ -61,7 +61,7 @@ export const serializeApiDataFile = (dataFile) => ({
   year: dataFile.year,
   s3_version_id: dataFile.s3_version_id,
   createdAt: dataFile.created_at,
-  submittedBy: dataFile.user,
+  submittedBy: dataFile.submitted_by,
 })
 
 const initialState = {

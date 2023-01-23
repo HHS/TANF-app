@@ -19,7 +19,6 @@ class DataFileSerializer(serializers.ModelSerializer):
     file = serializers.FileField(write_only=True)
     stt = serializers.PrimaryKeyRelatedField(queryset=STT.objects.all())
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    submitted_by = serializers.StringRelatedField(read_only=True)
     ssp = serializers.BooleanField(write_only=True)
 
     class Meta:
@@ -39,7 +38,6 @@ class DataFileSerializer(serializers.ModelSerializer):
             "section",
             "created_at",
             "ssp",
-            "submitted_by"
         ]
 
     def create(self, validated_data):
@@ -73,3 +71,9 @@ class DataFileSerializer(serializers.ModelSerializer):
         validate_file_extension(file.name)
         validate_file_infection(file, file.name, user)
         return file
+
+    def to_representation(self, instance):
+        """Include the user's email in the returned payload."""
+        repr = super().to_representation(instance)
+        repr['submitted_by'] = instance.user.username
+        return repr
