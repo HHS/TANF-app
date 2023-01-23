@@ -6,10 +6,11 @@ import {
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons'
 
-const PaginatorArrowButton = ({ label, arrowDirection, onClick }) => (
+const PaginatorArrowButton = ({ label, arrowDirection, onClick, disabled }) => (
   <li className="usa-pagination__item usa-pagination__arrow">
     <button
       onClick={onClick}
+      disabled={disabled}
       className="usa-pagination__link usa-pagination__previous-page"
       aria-label="Previous page"
     >
@@ -34,6 +35,7 @@ PaginatorArrowButton.propTypes = {
   label: PropTypes.string,
   arrowDirection: PropTypes.oneOf(['left', 'right']),
   onClick: PropTypes.func,
+  disabled: PropTypes.bool,
 }
 
 const PaginatorPageNumberButton = ({ label, isSelected, onClick }) => (
@@ -65,20 +67,23 @@ const Paginator = ({ pages, selected, onChange }) => (
       <PaginatorArrowButton
         label="Previous"
         arrowDirection="left"
+        disabled={selected === 1}
         onClick={() => onChange(selected - 1)}
       />
 
       {[...Array(pages).keys()].map((i) => (
         <PaginatorPageNumberButton
-          label="1"
-          isSelected={selected === 1}
-          onClick={() => onChange(1)}
+          key={`${i + 1}`}
+          label={`${i + 1}`}
+          isSelected={selected === i + 1}
+          onClick={() => onChange(i + 1)}
         />
       ))}
 
       <PaginatorArrowButton
         label="Next"
         arrowDirection="right"
+        disabled={selected === pages}
         onClick={() => onChange(selected + 1)}
       />
     </ul>
