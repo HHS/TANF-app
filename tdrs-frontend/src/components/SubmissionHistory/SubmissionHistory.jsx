@@ -10,20 +10,27 @@ import {
   setQuarter,
   getAvailableFileList,
   setFileType,
+  download,
 } from '../../actions/reports'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import Button from '../Button'
 
-const SubmissionHistoryRow = ({ file }) => (
-  <tr>
-    <td>{file.createdAt}</td>
-    <td>{file.submittedBy}</td>
-    <td>
-      <button onClick={() => null}>{file.fileName}</button>
-    </td>
-  </tr>
-)
+const SubmissionHistoryRow = ({ file }) => {
+  const dispatch = useDispatch()
+
+  const downloadFile = () => dispatch(download(file))
+
+  return (
+    <tr>
+      <td>{file.createdAt}</td>
+      <td>{file.submittedBy}</td>
+      <td>
+        <button onClick={downloadFile}>{file.fileName}</button>
+      </td>
+    </tr>
+  )
+}
 
 SubmissionHistoryRow.propTypes = {
   file: PropTypes.object,
@@ -87,8 +94,6 @@ const SubmissionHistory = ({ filterValues }) => {
   const dispatch = useDispatch()
   const [hasFetchedFiles, setHasFetchedFiles] = useState(false)
   const { files } = useSelector((state) => state.reports)
-
-  console.log(files)
 
   useEffect(() => {
     if (!hasFetchedFiles) {

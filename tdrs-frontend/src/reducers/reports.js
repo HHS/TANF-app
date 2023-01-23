@@ -36,8 +36,8 @@ export const getUpdatedFiles = ({
   error = null,
   file = null,
 }) => {
-  const oldFileIndex = getFileIndex(state?.files, section)
-  const updatedFiles = [...state.files]
+  const oldFileIndex = getFileIndex(state?.submittedFiles, section)
+  const updatedFiles = [...state.submittedFiles]
   updatedFiles[oldFileIndex] = {
     id,
     file,
@@ -72,6 +72,13 @@ const initialState = {
     uuid: null,
     fileType: null,
   })),
+  submittedFiles: fileUploadSections.map((section) => ({
+    section,
+    fileName: null,
+    error: null,
+    uuid: null,
+    fileType: null,
+  })),
   year: '',
   stt: '',
   quarter: '',
@@ -91,7 +98,7 @@ const reports = (state = initialState, action) => {
         fileType,
         file,
       })
-      return { ...state, files: updatedFiles }
+      return { ...state, submittedFiles: updatedFiles }
     }
     case SET_FILE_LIST: {
       const { data } = payload
@@ -111,7 +118,7 @@ const reports = (state = initialState, action) => {
       const { submittedFile } = payload
       return {
         ...state,
-        files: state.files.map((file) =>
+        submittedFiles: state.submittedFiles.map((file) =>
           submittedFile?.section.includes(file.section)
             ? serializeApiDataFile(submittedFile)
             : file
@@ -124,7 +131,11 @@ const reports = (state = initialState, action) => {
       return { ...state, files: updatedFiles }
     }
     case CLEAR_FILE_LIST: {
-      return { ...state, files: initialState.files }
+      return {
+        ...state,
+        files: initialState.files,
+        submittedFiles: initialState.submittedFiles,
+      }
     }
     case SET_FILE_ERROR: {
       const { error, section } = payload
@@ -133,7 +144,7 @@ const reports = (state = initialState, action) => {
     }
     case CLEAR_ERROR: {
       const { section } = payload
-      const file = getFile(state.files, section)
+      const file = getFile(state.submittedFiles, section)
       const updatedFiles = getUpdatedFiles({
         state,
         fileName: file.fileName,
@@ -141,7 +152,7 @@ const reports = (state = initialState, action) => {
         uuid: file.uuid,
         fileType: file.fileType,
       })
-      return { ...state, files: updatedFiles }
+      return { ...state, submittedFiles: updatedFiles }
     }
     case SET_SELECTED_YEAR: {
       const { year } = payload

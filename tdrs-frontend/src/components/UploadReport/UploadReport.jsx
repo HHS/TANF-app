@@ -19,7 +19,7 @@ function UploadReport({ handleCancel, stt }) {
   const selectedFileType = useSelector((state) => state.reports.fileType)
 
   // The set of uploaded files in our Redux state
-  const files = useSelector((state) => state.reports.files)
+  const files = useSelector((state) => state.reports.submittedFiles)
   // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
 

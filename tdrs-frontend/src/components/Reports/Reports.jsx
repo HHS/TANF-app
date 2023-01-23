@@ -41,7 +41,7 @@ function Reports() {
   const sttList = useSelector((state) => state?.stts?.sttList)
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
-  const files = useSelector((state) => state.reports.files)
+  const files = useSelector((state) => state.reports.submittedFiles)
   const uploadedFiles = files.filter((file) => file.fileName && !file.id)
 
   const userProfileStt = user?.stt?.name
