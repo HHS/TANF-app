@@ -33,7 +33,7 @@ function FileUpload({ section, setLocalAlertState }) {
 
   const selectedFile = files.find((file) => file.section.includes(sectionName))
 
-  const formattedSectionName = selectedFile.section
+  const formattedSectionName = selectedFile?.section
     .split(' ')
     .map((word) => word.toLowerCase())
     .join('-')
@@ -159,14 +159,14 @@ function FileUpload({ section, setLocalAlertState }) {
   return (
     <div
       className={`usa-form-group ${
-        selectedFile.error ? 'usa-form-group--error' : ''
+        selectedFile?.error ? 'usa-form-group--error' : ''
       }`}
     >
       <label className="usa-label text-bold" htmlFor={formattedSectionName}>
         Section {sectionNumber} - {sectionName}
       </label>
       <div>
-        {selectedFile.error && (
+        {selectedFile?.error && (
           <div
             className="usa-error-message"
             id={`${formattedSectionName}-error-alert`}
