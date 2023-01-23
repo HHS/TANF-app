@@ -412,7 +412,7 @@ function Reports() {
               filterValues={{
                 quarter: quarterInputValue,
                 year: yearInputValue,
-                stt: stt?.id,
+                stt: stt,
                 file_type: fileTypeInputValue,
               }}
             />
