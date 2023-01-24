@@ -16,6 +16,8 @@ import { useEffect } from 'react'
 import { useState } from 'react'
 import Button from '../Button'
 
+const formatDate = (dateStr) => new Date(dateStr).toLocaleString()
+
 const SubmissionHistoryRow = ({ file }) => {
   const dispatch = useDispatch()
 
@@ -23,10 +25,12 @@ const SubmissionHistoryRow = ({ file }) => {
 
   return (
     <tr>
-      <td>{file.createdAt}</td>
+      <td>{formatDate(file.createdAt)}</td>
       <td>{file.submittedBy}</td>
       <td>
-        <button onClick={downloadFile}>{file.fileName}</button>
+        <button className="section-download" onClick={downloadFile}>
+          {file.fileName}
+        </button>
       </td>
     </tr>
   )
@@ -40,11 +44,13 @@ const SectionSubmissionHistory = ({ section, label, files }) => {
   const pageSize = 5
   const [resultsPage, setResultsPage] = useState(1)
 
+  const pages =
+    files && files.length > pageSize ? Math.ceil(files.length / pageSize) : 1
   const pageStart = (resultsPage - 1) * pageSize
   const pageEnd = Math.min(files.length, pageStart + pageSize)
 
   return (
-    <div>
+    <div className="submission-history-section">
       <label className="usa-label text-bold">{`Section ${section} - ${label}`}</label>
       {files && files.length > 0 ? (
         <table className="usa-table usa-table--striped">
@@ -65,15 +71,13 @@ const SectionSubmissionHistory = ({ section, label, files }) => {
         <p>No data available.</p>
       )}
 
-      <Paginator
-        onChange={(page) => setResultsPage(page)}
-        selected={resultsPage}
-        pages={
-          files && files.length > pageSize
-            ? Math.ceil(files.length / pageSize)
-            : 1
-        }
-      />
+      {pages > 1 && (
+        <Paginator
+          onChange={(page) => setResultsPage(page)}
+          selected={resultsPage}
+          pages={pages}
+        />
+      )}
     </div>
   )
 }
