@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, fireEvent, waitFor, getByText } from '@testing-library/react'
 
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
@@ -438,7 +438,7 @@ describe('Reports', () => {
         },
       })
 
-      const { getByText, queryByText, getByLabelText } = render(
+      const { getByText, queryByText, getByLabelText, queryAllByText } = render(
         <Provider store={store}>
           <Reports />
         </Provider>
@@ -454,7 +454,7 @@ describe('Reports', () => {
         ).toBe(true)
       })
 
-      return { getByText, queryByText, getByLabelText }
+      return { getByText, queryByText, getByLabelText, queryAllByText }
     }
 
     it('should only update the report header when search selections are changed after clicking search', async () => {
@@ -653,6 +653,35 @@ describe('Reports', () => {
       await waitFor(() => {
         expect(queryByText('section1.txt')).not.toBeInTheDocument()
         expect(getByText('2022', { selector: 'option' }).selected).toBe(true)
+      })
+    })
+
+    it('Shows submission history when the Submission History tab is clicked', async () => {
+      const { getByText, queryAllByText, queryByText } =
+        await setUpSearchFormBehaviors()
+
+      // search
+      fireEvent.click(getByText(/Search/, { selector: 'button' }))
+
+      await waitFor(() => {
+        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(
+          getByText(
+            'Alaska - TANF - Fiscal Year 2021 - Quarter 3 (April - June)'
+          )
+        ).toBeInTheDocument()
+
+        expect(getByText('Current Submission')).toBeInTheDocument()
+        expect(getByText('Submission History')).toBeInTheDocument()
+        expect(queryByText('No data available.')).not.toBeInTheDocument()
+      })
+
+      fireEvent.click(getByText('Submission History'))
+
+      await waitFor(() => {
+        expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
+        expect(queryAllByText('Submitted On')).toHaveLength(4)
+        expect(queryAllByText('Submitted By')).toHaveLength(4)
       })
     })
   })
