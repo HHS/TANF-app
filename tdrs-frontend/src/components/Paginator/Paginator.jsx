@@ -11,7 +11,11 @@ const PaginatorArrowButton = ({ label, arrowDirection, onClick, disabled }) => (
     <button
       onClick={onClick}
       disabled={disabled}
-      className="usa-pagination__link usa-pagination__previous-page"
+      className={
+        arrowDirection === 'left'
+          ? 'usa-pagination__link usa-pagination__previous-page'
+          : 'usa-pagination__link usa-pagination__next-page'
+      }
       aria-label="Previous page"
     >
       {arrowDirection === 'left' ? (
