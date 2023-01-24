@@ -20,7 +20,7 @@ const INVALID_FILE_ERROR =
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
   // The set of uploaded files in our Redux state
-  const { files } = useSelector((state) => state.reports)
+  const files = useSelector((state) => state.reports.submittedFiles)
 
   const dispatch = useDispatch()
 
@@ -31,7 +31,7 @@ function FileUpload({ section, setLocalAlertState }) {
     (file) => file.section.includes(sectionName) && file.uuid
   )
 
-  const selectedFile = files.find((file) => file.section.includes(sectionName))
+  const selectedFile = files?.find((file) => file.section.includes(sectionName))
 
   const formattedSectionName = selectedFile?.section
     .split(' ')

@@ -43,6 +43,36 @@ const initialState = {
       uuid: null,
     },
   ],
+  submittedFiles: [
+    {
+      section: 'Active Case Data',
+      fileName: null,
+      fileType: null,
+      error: null,
+      uuid: null,
+    },
+    {
+      section: 'Closed Case Data',
+      fileName: null,
+      fileType: null,
+      error: null,
+      uuid: null,
+    },
+    {
+      section: 'Aggregate Data',
+      fileName: null,
+      fileType: null,
+      error: null,
+      uuid: null,
+    },
+    {
+      section: 'Stratum Data',
+      fileName: null,
+      fileType: null,
+      error: null,
+      uuid: null,
+    },
+  ],
   year: '',
   stt: '',
   quarter: '',
@@ -69,11 +99,13 @@ describe('reducers/reports', () => {
               quarter: 'Q1',
               slug: uuid,
               year: 2021,
+              submitted_by: 'test@test.com',
             },
           ],
         },
       })
     ).toEqual({
+      submittedFiles: initialState.submittedFiles,
       files: [
         {
           fileName: 'test.txt',
@@ -82,28 +114,8 @@ describe('reducers/reports', () => {
           section: 'Active Case Data',
           quarter: 'Q1',
           year: 2021,
+          submittedBy: 'test@test.com',
           uuid,
-        },
-        {
-          section: 'Closed Case Data',
-          uuid: null,
-          fileType: null,
-          fileName: null,
-          error: null,
-        },
-        {
-          section: 'Aggregate Data',
-          uuid: null,
-          fileType: null,
-          fileName: null,
-          error: null,
-        },
-        {
-          section: 'Stratum Data',
-          uuid: null,
-          fileType: null,
-          fileName: null,
-          error: null,
         },
       ],
       quarter: '',
@@ -127,7 +139,8 @@ describe('reducers/reports', () => {
         },
       })
     ).toEqual({
-      files: [
+      files: initialState.files,
+      submittedFiles: [
         {
           section: 'Active Case Data',
           fileName: null,
@@ -184,7 +197,8 @@ describe('reducers/reports', () => {
         },
       })
     ).toEqual({
-      files: [
+      files: initialState.files,
+      submittedFiles: [
         {
           section: 'Active Case Data',
           fileName: null,
@@ -232,7 +246,8 @@ describe('reducers/reports', () => {
         },
       })
     ).toEqual({
-      files: [
+      files: initialState.files,
+      submittedFiles: [
         {
           section: 'Active Case Data',
           fileName: null,
@@ -282,7 +297,8 @@ describe('reducers/reports', () => {
         },
       })
     ).toEqual({
-      files: [
+      files: initialState.files,
+      submittedFiles: [
         {
           section: 'Active Case Data',
           fileName: null,
@@ -326,7 +342,7 @@ describe('reducers/reports', () => {
     expect(
       reducer(
         {
-          files: [
+          submittedFiles: [
             {
               section: 'Active Case Data',
               fileName: null,
@@ -368,7 +384,7 @@ describe('reducers/reports', () => {
         }
       )
     ).toEqual({
-      files: [
+      submittedFiles: [
         {
           section: 'Active Case Data',
           fileName: null,
@@ -416,6 +432,7 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
+      submittedFiles: initialState.submittedFiles,
       year: '',
       stt: 'florida',
       quarter: '',
@@ -433,6 +450,7 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
+      submittedFiles: initialState.submittedFiles,
       year: '',
       stt: '',
       quarter: 'Q1',
@@ -448,6 +466,7 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
+      submittedFiles: initialState.submittedFiles,
       year: '',
       stt: '',
       quarter: 'Q2',
@@ -463,6 +482,7 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
+      submittedFiles: initialState.submittedFiles,
       year: '',
       stt: '',
       quarter: 'Q3',
@@ -477,6 +497,7 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
+      submittedFiles: initialState.submittedFiles,
       year: '',
       stt: '',
       quarter: 'Q4',
@@ -494,6 +515,7 @@ describe('reducers/reports', () => {
       })
     ).toEqual({
       files: initialState.files,
+      submittedFiles: initialState.submittedFiles,
       year: '2021',
       stt: '',
       quarter: '',

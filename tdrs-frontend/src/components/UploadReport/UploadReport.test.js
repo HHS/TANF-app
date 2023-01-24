@@ -15,7 +15,7 @@ describe('UploadReport', () => {
   const initialState = {
     auth: { user: { email: 'test@test.com' }, authenticated: true },
     reports: {
-      files: [
+      submittedFiles: [
         {
           fileName: 'test.txt',
           id: 1,
@@ -167,7 +167,7 @@ describe('UploadReport', () => {
     const store = mockStore({
       ...initialState,
       reports: {
-        files: [
+        submittedFiles: [
           {
             section: 'Active Case Data',
             fileName: null,

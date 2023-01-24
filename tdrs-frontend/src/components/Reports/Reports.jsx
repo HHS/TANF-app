@@ -42,7 +42,7 @@ function Reports() {
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const files = useSelector((state) => state.reports.submittedFiles)
-  const uploadedFiles = files.filter((file) => file.fileName && !file.id)
+  const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
 
   const userProfileStt = user?.stt?.name
 
@@ -357,7 +357,7 @@ function Reports() {
             className="margin-y-4"
             type="button"
             onClick={() => {
-              if (uploadedFiles.length > 0) {
+              if (uploadedFiles && uploadedFiles.length > 0) {
                 setErrorModalVisible(true)
               } else {
                 handleSearch()

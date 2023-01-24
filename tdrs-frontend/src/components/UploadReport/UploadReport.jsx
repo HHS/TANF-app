@@ -36,11 +36,13 @@ function UploadReport({ handleCancel, stt }) {
 
   const logger = useEventLogger()
 
-  const uploadedFiles = files.filter((file) => file.fileName && !file.id)
+  const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
   const uploadedSections = uploadedFiles
-    .map((file) => fileUploadSections.indexOf(file.section) + 1)
-    .join(', ')
-    .split(' ')
+    ? uploadedFiles
+        .map((file) => fileUploadSections.indexOf(file.section) + 1)
+        .join(', ')
+        .split(' ')
+    : []
 
   if (uploadedSections.length > 1) {
     // This is to ensure the trailing 'and': '1, 2, 3' => '1, 2, and 3'

@@ -102,15 +102,8 @@ const reports = (state = initialState, action) => {
     }
     case SET_FILE_LIST: {
       const { data } = payload
-      // const files = {}
-
-      // Object.keys(data, (k) => {
-      //   files[k] = data[k] ? serializeApiDataFile(data[k]) : null
-      // })
-
       return {
         ...state,
-        // files,
         files: data.map((f) => serializeApiDataFile(f)),
       }
     }
@@ -128,7 +121,7 @@ const reports = (state = initialState, action) => {
     case CLEAR_FILE: {
       const { section } = payload
       const updatedFiles = getUpdatedFiles({ state, section })
-      return { ...state, files: updatedFiles }
+      return { ...state, submittedFiles: updatedFiles }
     }
     case CLEAR_FILE_LIST: {
       return {
@@ -140,7 +133,7 @@ const reports = (state = initialState, action) => {
     case SET_FILE_ERROR: {
       const { error, section } = payload
       const updatedFiles = getUpdatedFiles({ state, section, error })
-      return { ...state, files: updatedFiles }
+      return { ...state, submittedFiles: updatedFiles }
     }
     case CLEAR_ERROR: {
       const { section } = payload
