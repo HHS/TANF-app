@@ -105,8 +105,8 @@ def test_can_get_by_region_stts(api_client, stt_user, stts):
     state_type = response.data[0]["stts"][0]["type"]
     assert STT.objects.filter(type=state_type).exists()
 
-    state_code = response.data[0]["stts"][0]["code"]
-    assert STT.objects.filter(code=state_code).exists()
+    state_code = response.data[0]["stts"][0]["postal_code"]
+    assert STT.objects.filter(postal_code=state_code).exists()
 
     region_id = response.data[0]["id"]
     assert Region.objects.filter(id=region_id).exists()
