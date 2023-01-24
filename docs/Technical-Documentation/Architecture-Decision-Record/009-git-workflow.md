@@ -1,6 +1,6 @@
 # 9. Git Workflow
 
-Date: 2021-02-23 (_updated 2022-05-12_)
+Date: 2021-02-23 (_updated 2023-01-18_)
 
 ## Status
 
@@ -20,7 +20,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
 
 **A contributor to the TDP project would always use the following steps to propose changes to the repository. No merges directly into `HHS:main`.**
 
-**<details><summary> Git Workflow Steps </summary>**
+**<summary> Git Workflow Steps </summary>**
 
 1. If working locally from [CLI](https://en.wikipedia.org/wiki/Command-line_interface), check out `develop` branch (or another branch if this work is dependent on a branch that hasn't been merged yet) in `raft-tech/TANF-app`: `git checkout <develop OR unmerged branch>`.
     * run `git pull`
@@ -45,14 +45,15 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * Update the title to remove `WIP` and change the PR to [Ready for Review](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/changing-the-stage-of-a-pull-request), assign label `raft review`.
 
 4. Assign Raft reviewer(s): 
-    * For research and design work, assign **at least two** of the following: `reitermb`, `sreedevip` or `valeriecollignon`. 
-    * For development work, including security controls, assign **at least two** Raft developers with one of them being `abottoms-coder`. If issue tasks includes `a11y review`, also assign `reitermb`.
-    * For project management work, assign `abottoms_coder` and `reitermb`.
+    * For research and design work, assign **at least two** of the following: `reitermb`, `lilybl1` or `smitth-co`. 
+    * For development work, including security controls, assign **at least two** Raft developers with one of them being `andrew-jameson`. If issue tasks includes `a11y review`, also assign `reitermb`.
+    * For project management work, assign `andrew-jameson` and `reitermb`.
 
 5. Assigned Raft reviewer(s) perform the review and/or requests changes.
     * For project management, research, and design work, review is conducted async.
-    * For development work, author is expected to schedule a [tabletop meeting](https://github.com/raft-tech/TANF-app/docs/How-We-Work/Developer-Tabletops.md) at least 48 hours after `raft review` label added. 
-    * When changes are requested, the changes are made by the author.
+    * For development work, author is expected to schedule a kick-off meeting using "Driver-Navigator" methodology to overview and exercise with the code.
+    * After the kick-off meeting, please schedule a [tabletop meeting](https://github.com/raft-tech/TANF-app/docs/How-We-Work/Developer-Tabletops.md) at least 48 hours after `raft review` label added. 
+    * When changes are requested, the changes are made only by the author.
     * When satisfied, the reviewer(s) confirm that ACs are met,  `approve` the PR, remove `raft review` and add `QASP review` labels.
         * See exceptions in [Notes](https://github.com/raft-tech/TANF-app/blob/dffd79adf7a5ae87cf1a93c8adf655c76cf45089/docs/Architecture%20Decision%20Record/009-git-workflow.md#notes) section
     * For project management, research, and design work, tag `lfrohlich` for government review.
@@ -65,7 +66,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * For development work that requires `gov a11y` review, `adpennington` will complete code review and tag `ttran-hub` + `iamjolly` via comment, and add `gov a11y` label to PR. Gov a11y review team will conduct this portion of the review as described [here.](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/how-government-will-test-a11y.md) 
     * When satisfied, the Government reviewer `approves` the PR and tags with the  `ready-to-merge` and removes the `QASP review` label.
 
-7. `abottoms-coder` (or his back-up) merges changes into `develop`. This includes:
+7. `andrew-jameson` (or his back-up) merges changes into `develop`. This includes:
     * This will trigger a deployment to tanf-staging:develop 
     * opening a PR from `develop` to `HHS:main`
     * updating the PR template to change `addresses` to `closes` so that issue [can be automatically closed when the Government merges](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
@@ -73,11 +74,6 @@ The proposed workflow below provides a remedy to these issues, as well as many o
     * assigning `lfrohlich` or `adpennington`as Government as reviewers. They will approve and merge to `HHS:main` which will trigger the CI/CD process to deploy code to the staging environment. 
    
 8. `adpennington` (or her back-up) will open a PR from `HHS:main` to `HHS:master` and assign a government reviewer for PR approval. Merging this PR will trigger the CI/CD process to deploy code to the production environment. 
-   
-</details>
-
-
-[Figma link to TDP git workflow diagram](https://www.figma.com/file/irgQPLTrajxCXNiYBTEnMV/TDP-Mockups-For-Feedback?node-id=6249%3A49390)
 
 ## Consequences
 
