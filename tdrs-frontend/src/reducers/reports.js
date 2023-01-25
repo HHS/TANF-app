@@ -10,6 +10,9 @@ import {
   CLEAR_FILE_LIST,
   SET_FILE_SUBMITTED,
   SET_FILE_TYPE,
+  SET_CURRENT_SUBMISSION,
+  SET_LOADING_CURRENT_SUBMISSION,
+  SET_CURRENT_SUBMISSION_ERROR,
 } from '../actions/reports'
 
 const getFileIndex = (files, section) =>
@@ -65,13 +68,7 @@ export const serializeApiDataFile = (dataFile) => ({
 })
 
 const initialState = {
-  files: fileUploadSections.map((section) => ({
-    section,
-    fileName: null,
-    error: null,
-    uuid: null,
-    fileType: null,
-  })),
+  files: [],
   submittedFiles: fileUploadSections.map((section) => ({
     section,
     fileName: null,
@@ -79,6 +76,8 @@ const initialState = {
     uuid: null,
     fileType: null,
   })),
+  isLoadingCurrentSubmission: false,
+  currentSubmissionError: null,
   year: '',
   stt: '',
   quarter: '',
@@ -105,6 +104,45 @@ const reports = (state = initialState, action) => {
       return {
         ...state,
         files: data.map((f) => serializeApiDataFile(f)),
+      }
+    }
+    case SET_CURRENT_SUBMISSION: {
+      const { data } = payload
+      return {
+        ...state,
+        isLoadingCurrentSubmission: false,
+        currentSubmissionError: null,
+        submittedFiles: fileUploadSections.map((section) => {
+          const file = getFile(data, section)
+          if (file) {
+            return serializeApiDataFile(file)
+          }
+
+          return serializeApiDataFile({
+            id: null,
+            original_filename: null,
+            extension: null,
+            quarter: null,
+            section: section,
+            slug: null,
+            year: null,
+            s3_version_id: null,
+            created_at: null,
+            submitted_by: null,
+          })
+        }),
+      }
+    }
+    case SET_LOADING_CURRENT_SUBMISSION: {
+      const { isLoadingCurrentSubmission } = payload
+      return { ...state, isLoadingCurrentSubmission }
+    }
+    case SET_CURRENT_SUBMISSION_ERROR: {
+      const { error } = payload
+      return {
+        ...state,
+        isLoadingCurrentSubmission: false,
+        currentSubmissionError: error,
       }
     }
     case SET_FILE_SUBMITTED: {

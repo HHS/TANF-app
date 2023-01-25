@@ -680,8 +680,7 @@ describe('Reports', () => {
 
       await waitFor(() => {
         expect(getByText('Section 1 - Active Case Data')).toBeInTheDocument()
-        expect(queryAllByText('Submitted On')).toHaveLength(4)
-        expect(queryAllByText('Submitted By')).toHaveLength(4)
+        expect(queryAllByText('No data available.')).toHaveLength(4)
       })
     })
   })

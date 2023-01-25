@@ -30,7 +30,7 @@ describe('SubmissionHistory', () => {
           filterValues={{
             quarter: 'Q1',
             year: '2023',
-            stt: 4,
+            stt: { id: 4 },
             file_type: 'TANF',
           }}
         />

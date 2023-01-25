@@ -10,6 +10,7 @@ import {
   setQuarter,
   getAvailableFileList,
   setFileType,
+  getCurrentSubmission,
 } from '../../actions/reports'
 import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
@@ -118,7 +119,7 @@ function Reports() {
 
       // Retrieve the files matching the selected year, quarter, and ssp.
       dispatch(
-        getAvailableFileList({
+        getCurrentSubmission({
           quarter: quarterInputValue,
           year: yearInputValue,
           stt,
