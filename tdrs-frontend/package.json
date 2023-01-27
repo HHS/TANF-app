@@ -37,6 +37,8 @@
     "test:cov": "react-scripts test --coverage --watchAll",
     "test:ci": "CI=1 react-scripts test --coverage",
     "test:accessibility": "concurrently -k -s first 'REACT_APP_PA11Y_TEST=true npm run start:ci' 'wait-on http://localhost:3000/ && npm run pa11y-ci'",
+    "test:e2e": "cypress open",
+    "test:e2e-ci": "cypress run --headless -b chrome --env cypressToken=${CYPRESS_TOKEN}",
     "eject": "react-scripts eject",
     "lint": "eslint src/ && echo 'Lint complete.'",
     "pa11y-ci": "pa11y-ci --config .pa11yci.json"
@@ -57,9 +59,12 @@
     ]
   },
   "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^14.0.0",
+    "@cypress/webpack-preprocessor": "^5.15.5",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.5",
     "concurrently": "^7.2.0",
+    "cypress": "^11.1.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^8.16.0",
@@ -95,5 +100,10 @@
         "lines": 90
       }
     }
+  },
+  "cypress-cucumber-preprocessor": {
+    "stepDefinitions": [
+      "cypress/**/*.js"
+    ]
   }
 }

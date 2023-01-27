@@ -439,7 +439,7 @@ class Common(Configuration):
             'options': {
                 'expires': 15.0,
             },
-        },     
+        },
         'name': {
             'task': 'tdpservice.scheduling.tasks.check_for_accounts_needing_deactivation_warning',
             'schedule': crontab(day_of_week='*', hour='13', minute='*'), # Every day at 1pm UTC (9am EST)
@@ -447,11 +447,14 @@ class Common(Configuration):
             'options': {
                 'expires': 15.0,
             },
-        },     
+        },
     }
+
     # Elastic
     ELASTICSEARCH_DSL = {
         'default': {
             'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200')
         },
     }
+
+    CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
