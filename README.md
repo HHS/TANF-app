@@ -79,4 +79,4 @@ TDP is developed to be (at minimum) compliant with Section 508 of the Rehabilita
 |--|--|--|--|
 | Product Owner |Lauren Frohlich |@lfrohlich |Lauren.Frohlich@acf.hhs.gov|
 | Government Technical Monitor |Alex Pennington |@adpennington |Alexandra.Pennington@acf.hhs.gov|
-| Vendor Product Manager |Steve Nino |@stevenino |snino@goraft.tech |
+| Vendor Product Manager |Connor Smith |@Smithh-Co |csmith@teamraft.com |
