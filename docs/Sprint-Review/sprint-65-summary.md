@@ -3,7 +3,8 @@
 1/18/23-1/31/23
 
 Velocity: 21
-## Sprint Goal
+## George Hudson, devops engineer, joined the TDP team on 1/23/23.  
+Sprint Goal
 * Work on TANF Section 1 data parsing, complete submission history MVP functionality while addressing the system memory limitations for the first V3 release. Additionally, complete preparations for TDP user expansion in time for the FY23 Q1 data submission.
  
 
