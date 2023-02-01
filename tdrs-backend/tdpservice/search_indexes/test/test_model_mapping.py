@@ -16,61 +16,60 @@ def test_can_create_and_index_t1_submission():
     record_num = fake.uuid4()
 
     submission = T1.objects.create(
-        record=record_num,
-        rpt_month_year=1,
-        case_number='1',
-        disposition=1,
-        fips_code='1',
-
-        county_fips_code='1',
-        stratum=1,
-        zip_code='1',
-        funding_stream=1,
-        new_applicant=1,
-        nbr_of_family_members=1,
-        family_type=1,
-        receives_sub_housing=1,
-        receives_medical_assistance=1,
-        receives_food_stamps=1,
-        amt_food_stamp_assistance=1,
-        receives_sub_cc=1,
-        amt_sub_cc=1,
-        child_support_amount=1,
-        family_cash_recources=1,
-        cash_amount=1,
-        nbr_months=1,
-        cc_amount=1,
-        children_covered=1,
-        cc_nbr_of_months=1,
-        transp_amount=1,
-        transp_nbr_months=1,
-        transition_services_amount=1,
-        transition_nbr_months=1,
-        other_amount=1,
-        other_nbr_of_months=1,
-        sanc_reduction_amount=1,
-        work_req_sanction=1,
-        family_sanct_adult=1,
-        sanct_teen_parent=1,
-        non_cooperation_cse=1,
-        failure_to_comply=1,
-        other_sanction=1,
-        recoupment_prior_ovrpmt=1,
-        other_total_reductions=1,
-        family_cap=1,
-        reductions_on_receipts=1,
-        other_non_sanction=1,
-        waiver_evalu_control_grps=1,
-        family_exempt_time_limits=1,
-        family_new_child=1,
-        blank='1'
+        RecordType=record_num,
+        RPT_MONTH_YEAR=1,
+        CASE_NUMBER=1,
+        COUNTY_FIPS_CODE=1,
+        STRATUM=1,
+        ZIP_CODE=1,
+        FUNDING_STREAM=1,
+        DISPOSITION=1,
+        NEW_APPLICANT=1,
+        NBR_FAMILY_MEMBERS=1,
+        FAMILY_TYPE=1,
+        RECEIVES_SUB_HOUSING=1,
+        RECEIVES_MED_ASSISTANCE=1,
+        RECEIVES_FOOD_STAMPS=1,
+        AMT_FOOD_STAMP_ASSISTANCE=1,
+        RECEIVES_SUB_CC=1,
+        AMT_SUB_CC=1,
+        CHILD_SUPPORT_AMT=1,
+        FAMILY_CASH_RESOURCES=1,
+        CASH_AMOUNT=1,
+        NBR_MONTHS=1,
+        CC_AMOUNT=1,
+        CHILDREN_COVERED=1,
+        CC_NBR_MONTHS=1,
+        TRANSP_AMOUNT=1,
+        TRANSP_NBR_MONTHS=1,
+        TRANSITION_SERVICES_AMOUNT=1,
+        TRANSITION_NBR_MONTHS=1,
+        OTHER_AMOUNT=1,
+        OTHER_NBR_MONTHS=1,
+        SANC_REDUCTION_AMT=1,
+        WORK_REQ_SANCTION=1,
+        FAMILY_SANC_ADULT=1,
+        SANC_TEEN_PARENT=1,
+        NON_COOPERATION_CSE=1,
+        FAILURE_TO_COMPLY=1,
+        OTHER_SANCTION=1,
+        RECOUPMENT_PRIOR_OVRPMT=1,
+        OTHER_TOTAL_REDUCTIONS=1,
+        FAMILY_CAP=1,
+        REDUCTIONS_ON_RECEIPTS=1,
+        OTHER_NON_SANCTION=1,
+        WAIVER_EVAL_CONTROL_GRPS=1,
+        FAMILY_EXEMPT_TIME_LIMITS=1,
+        FAMILY_NEW_CHILD=1,
     )
+
+    # submission.full_clean()
 
     assert submission.id is not None
 
     search = documents.T1DataSubmissionDocument.search().query(
         'match',
-        record=record_num
+        RecordType=record_num
     )
     response = search.execute()
 
@@ -229,7 +228,6 @@ def test_can_create_and_index_t4_submission():
         rec_med_assist=1,
         rec_food_stamps=1,
         rec_sub_cc=1,
-        blank='1'
     )
 
     assert submission.id is not None

@@ -29,8 +29,6 @@ def _load_csv(filename, entity):
             stt, stt_created = STT.objects.get_or_create(name=row["Name"])
             if stt_created:  # These lines are spammy, should remove before merge
                 logger.debug("Created new entry for " + row["Name"])
-            else:
-                logger.debug("Found STT " + row["Name"] + ", will sync with data csv.")
 
             stt.postal_code = row["Code"]
             stt.region_id = row["Region"]

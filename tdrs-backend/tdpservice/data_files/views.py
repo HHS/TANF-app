@@ -1,5 +1,6 @@
 """Check if user is authorized."""
 
+import logging
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 from django.conf import settings
@@ -19,9 +20,10 @@ from tdpservice.users.models import AccountApprovalStatusChoices, User
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile
 from tdpservice.users.permissions import DataFilePermissions
-from tdpservice.scheduling import sftp_task
+from tdpservice.scheduling import sftp_task, parser_task
 from tdpservice.email.helpers.data_file import send_data_submitted_email
 
+logger = logging.getLogger(__name__)
 
 class DataFileFilter(filters.FilterSet):
     """Filters that can be applied to GET requests as query parameters."""
@@ -58,18 +60,27 @@ class DataFileViewSet(ModelViewSet):
         """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
 
-        # Upload to ACF-TITAN only if file is passed the virus scan and created
+        # only if file is passed the virus scan and created successfully will we perform side-effects:
+        # * Send to parsing
+        # * Upload to ACF-TITAN
+        # * Send email to user
+
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
+            user = request.user
+            data_file_id = response.data.get('id')
+            data_file = DataFile.objects.get(id=data_file_id)
+
+            parser_task.parse.delay(data_file_id)
+            logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
+
             sftp_task.upload.delay(
-                data_file_pk=response.data.get('id'),
+                data_file_pk=data_file_id,
                 server_address=settings.ACFTITAN_SERVER_ADDRESS,
                 local_key=settings.ACFTITAN_LOCAL_KEY,
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
-
-            user = request.user
-            data_file = DataFile.objects.get(id=response.data.get('id'))
+            logger.info("Submitted upload task to redis for datafile %s.", data_file_id)
 
             # Send email to user to notify them of the file upload status
             subject = f"Data Submitted for {data_file.section}"
