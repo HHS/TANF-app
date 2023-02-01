@@ -9,11 +9,10 @@ Sprint Goal
  
 
 ## Tickets
-### Closed/Merged/Completed (Done/Demo, Closed)
+### Closed/Merged
 * [#2335 SPIKE: Evaluate parser validation methods](https://github.com/raft-tech/TANF-app/issues/2335)
 * [#2141 As technical lead, I want an authenticated-user integration test](https://github.com/raft-tech/TANF-app/issues/2141)
 * [#217 As a system admin, I want the STT object models to be revised](https://github.com/raft-tech/TANF-app/issues/217)
-* [#1354 Implement storage of parsed data in Elasticsearch](https://github.com/raft-tech/TANF-app/issues/1354)
 * [#2298 [Design Deliverable] Update Project Updates site with Oct-2.2 content](https://github.com/raft-tech/TANF-app/issues/2298)
 * [#2360 [WIP] test staging and production deployment before v3.0 release](https://github.com/raft-tech/TANF-app/issues/2360)
 
@@ -24,6 +23,10 @@ Sprint Goal
 
 * [#2350 Increase memory limit for deployed instances and celery workers](https://github.com/raft-tech/TANF-app/issues/2350)
 * [#132 TANF Active Data (01) File Parsing - As a data analyst, I want my data files to be parsed so that my submission can be validated/accepted by TDP.](https://github.com/raft-tech/TANF-app/issues/132)
+
+## Closed (not merged)
+* [#1354 Implement storage of parsed data in Elasticsearch](https://github.com/raft-tech/TANF-app/issues/1354)
+* Covered in scope of #1351 and #132, aligned to close in BR across OFA/Raft
 
 ## Moved to Next Sprint (Blocked, Raft Review, In Progress, Current Sprint Backlog)
 
