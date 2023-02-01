@@ -2,9 +2,6 @@
 
 from django.db import models
 
-# Create your models here.
-
-
 class T1(models.Model):
     """
     Parsed record representing a T1 data submission.
@@ -12,58 +9,59 @@ class T1(models.Model):
     Mapped to an elastic search index.
     """
 
-    record = models.CharField(max_length=156, null=False, blank=False)
-    rpt_month_year = models.IntegerField(null=False, blank=False)
-    case_number = models.CharField(max_length=11, null=False, blank=False)
-    disposition = models.IntegerField(null=False, blank=False)
-    fips_code = models.CharField(max_length=100, null=False, blank=False)
+    # def __is_valid__():
+    # TODO: might need a correlating validator to check across fields
 
-    county_fips_code = models.CharField(
+    RecordType = models.CharField(max_length=156, null=False, blank=False)
+    RPT_MONTH_YEAR = models.IntegerField(null=False, blank=False)
+    CASE_NUMBER = models.CharField(max_length=11, null=False, blank=False)
+    FIPS_CODE = models.CharField(max_length=2, null=False, blank=False)
+    COUNTY_FIPS_CODE = models.CharField(
         max_length=3,
         null=False,
         blank=False
     )
-    stratum = models.IntegerField(null=False, blank=False)
-    zip_code = models.CharField(max_length=5, null=False, blank=False)
-    funding_stream = models.IntegerField(null=False, blank=False)
-    new_applicant = models.IntegerField(null=False, blank=False)
-    nbr_of_family_members = models.IntegerField(null=False, blank=False)
-    family_type = models.IntegerField(null=False, blank=False)
-    receives_sub_housing = models.IntegerField(null=False, blank=False)
-    receives_medical_assistance = models.IntegerField(null=False, blank=False)
-    receives_food_stamps = models.IntegerField(null=False, blank=False)
-    amt_food_stamp_assistance = models.IntegerField(null=False, blank=False)
-    receives_sub_cc = models.IntegerField(null=False, blank=False)
-    amt_sub_cc = models.IntegerField(null=False, blank=False)
-    child_support_amount = models.IntegerField(null=False, blank=False)
-    family_cash_recources = models.IntegerField(null=False, blank=False)
-    cash_amount = models.IntegerField(null=False, blank=False)
-    nbr_months = models.IntegerField(null=False, blank=False)
-    cc_amount = models.IntegerField(null=False, blank=False)
-    children_covered = models.IntegerField(null=False, blank=False)
-    cc_nbr_of_months = models.IntegerField(null=False, blank=False)
-    transp_amount = models.IntegerField(null=False, blank=False)
-    transp_nbr_months = models.IntegerField(null=False, blank=False)
-    transition_services_amount = models.IntegerField(null=False, blank=False)
-    transition_nbr_months = models.IntegerField(null=False, blank=False)
-    other_amount = models.IntegerField(null=False, blank=False)
-    other_nbr_of_months = models.IntegerField(null=False, blank=False)
-    sanc_reduction_amount = models.IntegerField(null=False, blank=False)
-    work_req_sanction = models.IntegerField(null=False, blank=False)
-    family_sanct_adult = models.IntegerField(null=False, blank=False)
-    sanct_teen_parent = models.IntegerField(null=False, blank=False)
-    non_cooperation_cse = models.IntegerField(null=False, blank=False)
-    failure_to_comply = models.IntegerField(null=False, blank=False)
-    other_sanction = models.IntegerField(null=False, blank=False)
-    recoupment_prior_ovrpmt = models.IntegerField(null=False, blank=False)
-    other_total_reductions = models.IntegerField(null=False, blank=False)
-    family_cap = models.IntegerField(null=False, blank=False)
-    reductions_on_receipts = models.IntegerField(null=False, blank=False)
-    other_non_sanction = models.IntegerField(null=False, blank=False)
-    waiver_evalu_control_grps = models.IntegerField(null=False, blank=False)
-    family_exempt_time_limits = models.IntegerField(null=False, blank=False)
-    family_new_child = models.IntegerField(null=False, blank=False)
-    blank = models.CharField(max_length=39, null=False, blank=False)
+    STRATUM = models.IntegerField(null=False, blank=False)
+    ZIP_CODE = models.CharField(max_length=5, null=False, blank=False)
+    FUNDING_STREAM = models.IntegerField(null=False, blank=False)
+    DISPOSITION = models.IntegerField(null=False, blank=False)
+    NEW_APPLICANT = models.IntegerField(null=False, blank=False)
+    NBR_FAMILY_MEMBERS = models.IntegerField(null=False, blank=False)
+    FAMILY_TYPE = models.IntegerField(null=False, blank=False)
+    RECEIVES_SUB_HOUSING = models.IntegerField(null=False, blank=False)
+    RECEIVES_MED_ASSISTANCE = models.IntegerField(null=False, blank=False)
+    RECEIVES_FOOD_STAMPS = models.IntegerField(null=False, blank=False)
+    AMT_FOOD_STAMP_ASSISTANCE = models.IntegerField(null=False, blank=False)
+    RECEIVES_SUB_CC = models.IntegerField(null=False, blank=False)
+    AMT_SUB_CC = models.IntegerField(null=False, blank=False)
+    CHILD_SUPPORT_AMT = models.IntegerField(null=False, blank=False)
+    FAMILY_CASH_RESOURCES = models.IntegerField(null=False, blank=False)
+    CASH_AMOUNT = models.IntegerField(null=False, blank=False)
+    NBR_MONTHS = models.IntegerField(null=False, blank=False)
+    CC_AMOUNT = models.IntegerField(null=False, blank=False)
+    CHILDREN_COVERED = models.IntegerField(null=False, blank=False)
+    CC_NBR_MONTHS = models.IntegerField(null=False, blank=False)
+    TRANSP_AMOUNT = models.IntegerField(null=False, blank=False)
+    TRANSP_NBR_MONTHS = models.IntegerField(null=False, blank=False)
+    TRANSITION_SERVICES_AMOUNT = models.IntegerField(null=False, blank=False)
+    TRANSITION_NBR_MONTHS = models.IntegerField(null=False, blank=False)
+    OTHER_AMOUNT = models.IntegerField(null=False, blank=False)
+    OTHER_NBR_MONTHS = models.IntegerField(null=False, blank=False)
+    SANC_REDUCTION_AMT = models.IntegerField(null=False, blank=False)
+    WORK_REQ_SANCTION = models.IntegerField(null=False, blank=False)
+    FAMILY_SANC_ADULT = models.IntegerField(null=False, blank=False)
+    SANC_TEEN_PARENT = models.IntegerField(null=False, blank=False)
+    NON_COOPERATION_CSE = models.IntegerField(null=False, blank=False)
+    FAILURE_TO_COMPLY = models.IntegerField(null=False, blank=False)
+    OTHER_SANCTION = models.IntegerField(null=False, blank=False)
+    RECOUPMENT_PRIOR_OVRPMT = models.IntegerField(null=False, blank=False)
+    OTHER_TOTAL_REDUCTIONS = models.IntegerField(null=False, blank=False)
+    FAMILY_CAP = models.IntegerField(null=False, blank=False)
+    REDUCTIONS_ON_RECEIPTS = models.IntegerField(null=False, blank=False)
+    OTHER_NON_SANCTION = models.IntegerField(null=False, blank=False)
+    WAIVER_EVAL_CONTROL_GRPS = models.IntegerField(null=False, blank=False)
+    FAMILY_EXEMPT_TIME_LIMITS = models.IntegerField(null=False, blank=False)
+    FAMILY_NEW_CHILD = models.IntegerField(null=False, blank=False)
 
 
 class T2(models.Model):
@@ -176,7 +174,6 @@ class T3(models.Model):
     citizenship_status = models.IntegerField(null=False, blank=False)
     unearned_ssi = models.IntegerField(null=False, blank=False)
     other_unearned_income = models.IntegerField(null=False, blank=False)
-    blank = models.CharField(max_length=55, null=False, blank=False)
 
 
 class T4(models.Model):
@@ -204,7 +201,6 @@ class T4(models.Model):
     rec_med_assist = models.IntegerField(null=False, blank=False)
     rec_food_stamps = models.IntegerField(null=False, blank=False)
     rec_sub_cc = models.IntegerField(null=False, blank=False)
-    blank = models.CharField(max_length=100, null=False, blank=False)
 
 
 class T5(models.Model):
