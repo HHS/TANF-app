@@ -26,7 +26,7 @@ Velocity: 21
 
 ## Closed (not merged)
 * [#1354 Implement storage of parsed data in Elasticsearch](https://github.com/raft-tech/TANF-app/issues/1354)
-* Covered in scope of #1351 and #132, aligned to close in BR across OFA/Raft
+* Covered in scope of #1351 and #132, agreed to close in backlog refinement across OFA/Raft
 
 ## Moved to Next Sprint (Blocked, Raft Review, In Progress, Current Sprint Backlog)
 
