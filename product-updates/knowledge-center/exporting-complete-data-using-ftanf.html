@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>TDP — Resubmitting Complete Data Files with fTANF.exe</title>
+    <title>TDP — Exporting Complete Data Using fTANF</title>
     <link rel="stylesheet" href="../css/uswds3.css" />
     <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -190,22 +190,22 @@
         </li>
 
         <li class="usa-sidenav__item">
-        <a href="complete-resubmissions.html" class="usa-current" aria-current="page">Resubmitting Complete Data Files</a>
+        <a href="./complete-resubmissions.html">Resubmitting Complete Data Files</a>
         </li>
 
         <li class="usa-sidenav__item">
-        <a href="./exporting-complete-data-using-ftanf.html">Exporting Complete Data Using fTANF</a>
+        <a href="./exporting-complete-data-using-ftanf.html"class="usa-current" aria-current="page">Exporting Complete Data Using fTANF</a>
         </li>
-      </ul>
-    </li>
 
+        </ul>
+</li>
         <li class="usa-sidenav__item">
         <a href="managing-your-account.html">Managing Your Account</a>
         </li>
         <li class="usa-sidenav__item">
         <a href="./give-feedback.html">Give Feedback</a>
         </li>
-</ul>
+      </ul>
       <!-- Here ends mobile menu -->
 
 
@@ -254,15 +254,15 @@
               </li>
 
               <li class="usa-sidenav__item">
-              <a href="complete-resubmissions.html" class="usa-current" aria-current="page">Resubmitting Complete Data Files</a>
+              <a href="complete-resubmissions.html">Resubmitting Complete Data Files</a>
               </li>
 
               <li class="usa-sidenav__item">
-              <a href="./exporting-complete-data-using-ftanf.html">Exporting Complete Data Using fTANF</a>
+              <a href="./exporting-complete-data-using-ftanf.html" class="usa-current" aria-current="page">Exporting Complete Data Using fTANF</a>
               </li>
-
              </ul>
-</li>
+           </li>
+
             <li class="usa-sidenav__item">
               <a href="managing-your-account.html">Managing Your Account</a>
             </li>
@@ -281,53 +281,72 @@
         class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
         id="main-content"
       >
-        <h1>Resubmitting Complete Data Files</h1>
+        <h1>Exporting Complete Data Using fTANF</h1>
 <br>
-        <p class="usa-intro">After data files are submitted, ACF checks the data for accuracy and completeness. If any errors are found in the data files submitted, ACF will notify you via email, with an error report containing a summary view of the issues. The following provides guidance on how to resubmit data files after the errors have been corrected.
+        <p class="usa-intro">
+        This guide aims to provide tips for those currently using fTANF.exe to aid in the process of transitioning from resubmitting partial data files to resubmitting complete ones.
         </p>
 <br>
-        <p>The new TANF Data Portal will not change reporting requirements related to which data needs to be reported. However, it will require a process adjustment to how some grantees currently submit revisions of their data—specifically that revisions to data already submitted to TDP for a given quarter will need to be submitted in full (i.e. complete data) rather than as partial data only containing cases that had been added or updated.</p>
+      <h2>What is fTANF.exe?</h2>
 <br>
-        <p><strong>Transmitting complete data for Sections 1 and 2 (Active and Closed Cases, respectively) is as simple as making sure that each file submitted (or resubmitted at a later date) contains all of the cases you intend to submit for the quarter. Sections 3 and 4 (Aggregate and Stratum Data, respectively) contain population counts, so transmitting complete data for those sections means ensuring that all the counts are present for each month in the quarter.</p></strong>
+      <p>fTANF.exe—sometimes known just as ‘fTANF’, ‘pTANF’, or ‘the executables’—is a legacy desktop application tool that helps TANF grantees prepare transmission files for all sections of their quarterly data report. Data can be imported from other systems or entered manually and – once in the tool – could be exported into the transmission-ready flatfile (.txt) format. Though fTANF is no longer supported, it’s still used by some grantees.</p>
 <br>
-        <p><strong>Example:</strong> A State, Tribe and Territory (STT) submitted Active Case Data for Quarter 2 of FY 2022 to meet reporting deadlines but some cases in the month 3 data weren’t ready. In the past those outstanding cases could be submitted at a later date on their own and combined with the previously submitted data. Going forward, TDP will not merge data from multiple submissions together, rather it will only process the most recently submitted file. So if partial data were to be submitted, it would overwrite past data rather than adding to it.</p>
+      <h2>How to export complete data in fTANF.exe</h2>
 <br>
-        <h2>Why we're making this change</h2>
-<br>
-        <p>Two core goals are behind this change:<p>
-        <ol>
-          <li>Each file having complete data rather than partial data will allow us to serve up richer analytics and reports in order to provide better guidance for correcting errors or data quality issues.</li>
-          <li>Each file containing complete data will help avoid confusion regarding which file is the “source of truth” for the most up to date data.</li>
-       </ol>
-       <br>
-       <h2>What to change in the Header Record</h2>
-<br>
-       <p>To ensure that your data remains consistent between systems as we’re working to fully replace TDRS with TDP, we ask that you use the Delete value of the Update Indicator in all resubmissions. If you need to confirm that the Delete value has been set correctly, you can look for the “D” value at the end of the Header Record of the file you’re submitting (emphasized below).</p>
+      <p>Exporting that complete data via fTANF shouldn’t require any big changes to your resubmission workflow; the key change is to take a couple of additional steps to include both uncorrected and corrected records from the previously-transmitted file in the updated file. The steps to follow (and supporting screenshots) are included below:</p>
 
-<blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-weight: 900;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>HEADER20221A01000TAN1 D<span style="font-size: 40px; position: relative; top: 30px; left: 10px; color: #005ea2">”</span></blockquote>
+
+
+        <ol class="usa-process-list">
+          <li class="usa-process-list__item">
+            <h3 class="usa-process-list__heading">Navigate to the “TANF Cases” tab, and complete your typical process for correcting data to records.</h3>
+<br>
+            <p class="margin-top-05">
+              This will typically involve selecting the appropriate year, month, and case number to retrieve and making edits to fields that are associated with the edit code in your transmission email report.<div style="min-height: 22px;"></div>
+            <a href="../img/complete-data/step1.jpg" data-lity data-lity-desc="fTANF.exe opened to TANF Cases > Active with a chosen year, month, and case number.">
+            <img src="../img/complete-data/step1.jpg" alt="fTANF.exe opened to TANF Cases > Active with a chosen year, month, and case number.">
+              </a>
+            </p>
+          </li>
+
+          <li class="usa-process-list__item">
+            <h3 class="usa-process-list__heading">Navigate to the “Utilities” tab, and select the Case Management option to go through the process of checking all corrected + uncorrected records for the specified section and months have passed all checks for fatal and warning edits.</h3>
+<br>
+            <p>This process includes:</p>
+            <ul>
+              <li>Click “Reset transmission flag” button to get any cases that had previously been checked and transmitted into the “Passed all edits” status.</li>
+              <li>Click the “Global Fatal Edits” button to check all records for fatal errors.</li>
+              <li>Click the “Global Warning Edits” button to check all records for fatal errors. At the end of this step, all cases for the specified month should have an Edit Status of “Passed all edits”.</li>
+              </ul>
+              <p>These steps should be repeated for each month in the quarterly Section 1 or Section 2 file.</p><br>
+              <a href="../img/complete-data/Step2.jpg" data-lity data-lity-desc="fTANF.exe opened to Utilities > Case Management with Global Fatal Edits, Global Warning Edits, and Reset Transmission Flag annotated as steps 1, 2, and 3.">
+              <img src="../img/complete-data/Step2.jpg" alt="fTANF.exe opened to Utilities > Case Management with Global Fatal Edits, Global Warning Edits, and Reset Transmission Flag annotated as steps 1, 2, and 3.">
+                </a>
+
+              <a href="../img/complete-data/Step2-2.jpg"  data-lity data-lity-desc="Cases in fTANF Case Management with the Edit Status of 'Not Edited' or 'Transmitted' will not be included when a new transmission file is created. All Cases that have the Edit Status of 'Passed All Edits' will be included when a new transmission file is created.">
+              <img src="../img/complete-data/Step2-2.jpg" alt="Cases in fTANF Case Management with the Edit Status of 'Not Edited' or 'Transmitted' will not be included when a new transmission file is created. All Cases that have the Edit Status of 'Passed All Edits' will be included when a new transmission file is created.">
+              </a>
+            </p>
+          </li>
+
+          <li class="usa-process-list__item">
+            <h3 class="usa-process-list__heading">Navigate to the “Utilities” tab, and select the Transmission File Creation option to go through the process of generating an updated transmission file for the section, year, and quarter, for which corrections to data were made.</h3>
+<br>
+            <p>One of the key attributes in this newly-generated file is the <strong>Update indicator</strong> which is part of the header record. This Indicator tells the legacy TANF system, TDRS (TANF Data Reporting System) whether a data file includes new (N-New) records, updated records that should be merged with existing data (U-Update), or records that should completely replace all previously-transmitted records for the section, year, and quarter (D-Delete).</p>
+            <a href="../img/complete-data/Step3.jpg"  data-lity data-lity-desc="fTANF.exe opened to the transmission file creation screen with emphasis on the Update Indicator being set to 'Delete'.">
+            <img src="../img/complete-data/Step3.jpg" alt="fTANF.exe opened to the transmission file creation screen with emphasis on the Update Indicator being set to 'Delete'.">
+          </a>
+            <p>To ensure that your data remains consistent between systems as we’re working to fully replace TDRS with TDP, we ask that you use the Delete value of the Update Indicator in all resubmissions. If you need to confirm that the Delete value has been set correctly, you can look for the “D” value at the end of the Header Record of the file you’re submitting (emphasized below).</p>
+
+            <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-weight: 900;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>HEADER20221A01000TAN1 D<span style="font-size: 40px; position: relative; top: 30px; left: 10px; color: #005ea2">”</span></blockquote>
 </ol>
-<br>
-
 <h2>How to get support or help exporting complete data from other systems</h2>
 <br>
 <p>If you could use assistance making these changes to your data workflow—whether you use fTANF or any other data tool—we’d be more than happy to work with you directly.</p>
 
 <p>Please reach out with any questions or concerns to <a href = "mailto: tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov.</a></p>
-<br>
-<ul class="usa-card-group">
-  <li class="usa-card usa-card--flag desktop:grid-col-6 usa-card--media-right">
-    <div class="usa-card__container" style="height: fit-content;">
-      <div class="usa-card__header" style="width: 100%;">
-        <h2 class="usa-card__heading">Exporting Complete Data Using fTANF</h2>
-      </div>
 
-      <div class="usa-card__footer" style="width: 100%;">
-        <a href="./exporting-complete-data-using-ftanf.html" class="usa-button">View Guide</a>
-      </div>
-    </div>
-  </li>
 
-</ul>
 
       </main>
     </div>
