@@ -9,12 +9,7 @@ To make the config yaml easier to read we are using CircleCi's [Dynamic Configur
 ### Continuation orb
 CicleCi has an orb that allows for another config file to be specified. Using a script this new config is generated based on the info passed via the pipeline parameters. This can later be used in conjuction with the path filtering orb to make our build time shorter. It could also be used to build different configuration files for different pipelines.
 #### generate_config.sh
-This script is used in most cases. It will generate a complete config for building, testing, and deploying.
-
-#### generate_nightly_owasp_config.sh
-This is used to run nightly scans. It is used when the pipeline parameter `run_nightly_owasp_scan` is set to true. This is done via a pipeline schedule that needs to be [created in Circle Ci manually](https://circleci.com/docs/scheduled-pipelines/#project-settings). This is because the syntaxt for scheduled workflows is [not compatable](https://circleci.com/docs/scheduled-pipelines/#migrate-scheduled-workflows) with Dynamic Configurations. Instructions for creating this schedule can be found at the end of this README.
-
-The config is split based on pipeline tasks. There are separate directories for `build-and-test`, `infrastructure`, `deployment`, `owasp`, and `util`. These are described below.
+This script will generate a complete config for building, testing, and deploying.
 
 ### Directory structure
 

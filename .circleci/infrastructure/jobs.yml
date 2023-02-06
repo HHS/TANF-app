@@ -67,3 +67,25 @@
       - run:
           name: Deploy TDP Project Updates Site
           command: ./scripts/deploy-tdp-product-update-site.sh rolling tdp-project-updates
+
+  enable-versioning:
+    executor: machine-executor
+    parameters:
+      target_env:
+        type: string
+        default: dev
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+      cf-space:
+        type: string
+        default: tanf-dev
+    steps:
+      - enable-s3-versioning:
+          target_env: <<parameters.target_env>>
+          cf-password: <<parameters.cf-password>>
+          cf-username: <<parameters.cf-username>>
+          cf-space: <<parameters.cf-space>>

@@ -10,7 +10,7 @@ import { submit } from '../../actions/reports'
 import { useEventLogger } from '../../utils/eventLogger'
 import { fileUploadSections } from '../../reducers/reports'
 
-function UploadReport({ handleCancel, header, stt }) {
+function UploadReport({ handleCancel, stt }) {
   // The currently selected year from the reportingYears dropdown
   const selectedYear = useSelector((state) => state.reports.year)
   // The selected quarter in the dropdown tied to our redux `reports` state
@@ -19,7 +19,7 @@ function UploadReport({ handleCancel, header, stt }) {
   const selectedFileType = useSelector((state) => state.reports.fileType)
 
   // The set of uploaded files in our Redux state
-  const files = useSelector((state) => state.reports.files)
+  const files = useSelector((state) => state.reports.submittedFiles)
   // The logged in user in our Redux state
   const user = useSelector((state) => state.auth.user)
 
@@ -32,22 +32,17 @@ function UploadReport({ handleCancel, header, stt }) {
   })
   const alertRef = useRef(null)
 
-  // Ensure newly rendered header is focused,
-  // else it won't be read be screen readers.
-  const headerRef = useRef(null)
   const dispatch = useDispatch()
 
   const logger = useEventLogger()
 
-  useEffect(() => {
-    headerRef.current.focus()
-  }, [])
-
-  const uploadedFiles = files.filter((file) => file.fileName && !file.id)
+  const uploadedFiles = files?.filter((file) => file.fileName && !file.id)
   const uploadedSections = uploadedFiles
-    .map((file) => fileUploadSections.indexOf(file.section) + 1)
-    .join(', ')
-    .split(' ')
+    ? uploadedFiles
+        .map((file) => fileUploadSections.indexOf(file.section) + 1)
+        .join(', ')
+        .split(' ')
+    : []
 
   if (uploadedSections.length > 1) {
     // This is to ensure the trailing 'and': '1, 2, 3' => '1, 2, and 3'
@@ -97,13 +92,6 @@ function UploadReport({ handleCancel, header, stt }) {
 
   return (
     <>
-      <h2
-        ref={headerRef}
-        className="font-serif-xl margin-top-5 margin-bottom-0 text-normal"
-        tabIndex="-1"
-      >
-        {header}
-      </h2>
       {localAlert.active && (
         <div
           ref={alertRef}
@@ -141,7 +129,6 @@ function UploadReport({ handleCancel, header, stt }) {
 
 UploadReport.propTypes = {
   handleCancel: PropTypes.func.isRequired,
-  header: PropTypes.string.isRequired,
   stt: PropTypes.number,
 }
 

@@ -23,7 +23,7 @@ class OverriddenCredentialsS3Storage(S3Boto3Storage):
             'endpoint_url': self.endpoint_url,
             'region_name': self.region_name,
             'secret_key': self.secret_key,
-            'location': self.location
+            'location': self.location,
         }
 
 
