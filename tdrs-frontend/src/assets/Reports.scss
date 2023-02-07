@@ -2,3 +2,45 @@
   // Override the default placeholder color to match the mockups
   color: #1b1b1b;
 }
+
+.usa-pagination {
+  justify-content: left;
+}
+
+.usa-pagination__link {
+  border: none;
+  color: #264A64;
+  background-color: white;
+}
+
+.usa-pagination__link:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.usa-pagination__button {
+  background-color: white;
+}
+
+.usa-pagination__button:hover {
+  cursor: pointer;
+}
+
+.usa-pagination .usa-current {
+  background-color: #264A64;
+}
+
+.section-download {
+  background-color: transparent;
+  border: none;
+  text-decoration: underline;
+  color: #264A64;
+}
+
+.section-download:hover {
+  cursor: pointer;
+}
+
+.usa-table caption {
+  width: 100%;
+}

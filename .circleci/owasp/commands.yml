@@ -1,0 +1,31 @@
+# commands:
+  run-owasp-scan:
+    description: Runs OWASP ZAP scanner and stores resulting artifacts.
+    parameters:
+      environment:
+        description: The environment this script is being run for.
+        type: enum
+        enum: ["circle", "nightly"] 
+      target:
+        description: The target application to be scanned.
+        type: enum
+        enum: ["backend", "frontend"]
+      target_env:
+        description: The target environment to be scanned.
+        type: enum
+        default: "develop"
+        enum: ["staging", "develop", "prod"]
+    steps:
+      - run:
+          name: Execute OWASP ZAP vulnerability scan
+          #wait up to 60min for scan
+          no_output_timeout: 60m
+          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>> <<parameters.target_env>>
+      - store_artifacts:
+          path: tdrs-<<parameters.target>>/reports/owasp_report.html
+
+  docker-compose-up-frontend:
+    steps:
+      - run:
+          name: Build and spin-up React application
+          command: cd tdrs-frontend; docker-compose up -d --build

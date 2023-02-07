@@ -16,6 +16,7 @@ from tdpservice.users.models import User
 
 logger = logging.getLogger(__name__)
 
+
 def get_file_shasum(file: Union[File, StringIO]) -> str:
     """Derive the SHA256 checksum of a file."""
     _hash = sha256()
@@ -49,7 +50,7 @@ def get_file_shasum(file: Union[File, StringIO]) -> str:
 def get_s3_upload_path(instance, filename):
     """Produce a unique upload path for S3 files for a given STT and Quarter."""
     return os.path.join(
-        f'data_files/{instance.stt.id}/{instance.quarter}',
+        f'data_files/{instance.year}/{instance.quarter}/{instance.stt.id}/{instance.section}/',
         filename
     )
 
@@ -146,6 +147,11 @@ class DataFile(FileRecord):
         blank=True
     )
 
+    s3_versioning_id = models.CharField(max_length=1024,
+                                        blank=False,
+                                        null=True
+                                        )
+
     @property
     def filename(self):
         """Return the correct filename for this data file."""
@@ -167,6 +173,11 @@ class DataFile(FileRecord):
                 quarter_month_str = "(Jul - Sep)"
 
         return f"{self.year} - {self.quarter} {quarter_month_str}"
+
+    @property
+    def submitted_by(self):
+        """Return the author as a string for this data file."""
+        return self.user.get_full_name()
 
     @classmethod
     def create_new_version(self, data):

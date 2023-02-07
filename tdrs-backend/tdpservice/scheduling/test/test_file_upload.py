@@ -21,7 +21,7 @@ def stt_instance(region):
     stt, _ = STT.objects.get_or_create(
         name="first",
         region=region,
-        code="AR",
+        postal_code="AR",
         stt_code=1234,
         filenames={
             'Aggregate Data': 'ADS.E2J.NDM3.TS22',

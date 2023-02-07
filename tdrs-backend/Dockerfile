@@ -1,4 +1,4 @@
-FROM python:3.10.4-slim-buster
+FROM python:3.10.8-slim-buster
 ENV PYTHONUNBUFFERED 1
 
 ARG user=tdpuser
@@ -17,7 +17,8 @@ RUN apt-get -y upgrade
 # Install a new package:
 RUN apt-get install -y gcc && apt-get install -y graphviz && apt-get install -y graphviz-dev
 # Install pipenv
-RUN pip install --upgrade pip pipenv && pipenv install --dev --system --deploy
+RUN pip install --upgrade pip pipenv
+RUN pipenv install --dev --system --deploy
 
 # Adds our application code to the image
 COPY . /tdpapp
@@ -29,3 +30,7 @@ RUN chown -R tdpuser /tdpapp && chmod u+x gunicorn_start.sh wait_for_services.sh
 
 
 CMD ["./gunicorn_start.sh"]
+# if the container crashes/loops, we can shell into it by doing the following:
+# docker ps -a # to get the container id
+# docker commit <container id> debug/<new image name>
+# docker run -it --rm --entrypoint /bin/bash debug/<new image name>

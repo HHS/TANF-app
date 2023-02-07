@@ -15,7 +15,7 @@ from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 logger = logging.getLogger(__name__)
 
 
-@shared_task
+@shared_task(acks_late=True, worker_prefetch_multiplier=1)
 def upload(data_file_pk,
            server_address=settings.ACFTITAN_SERVER_ADDRESS,
            local_key=settings.ACFTITAN_LOCAL_KEY,
@@ -33,7 +33,7 @@ def upload(data_file_pk,
     file_transfer_record = LegacyFileTransfer(
         data_file=data_file,
         uploaded_by=data_file.user,
-        file_name=data_file.filename,
+        file_name=data_file.filename if data_file.filename is not None else 'None',
     )
 
     def write_key_to_file(private_key):

@@ -1,0 +1,15 @@
+# jobs:
+  make_erd:
+    executor: machine-executor
+    working_directory: ~/tdp_apps
+    steps:
+      - checkout
+      - docker-compose-check
+      - run:
+          name: Run graph_models
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c \
+            "./manage.py graph_models -a -g -o tdp_erd.png"
+      - store_artifacts:
+          path: tdrs-backend/tdp_erd.png

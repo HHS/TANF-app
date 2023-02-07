@@ -10,7 +10,7 @@ def test_populating_regions_stts():
     """Test the command for populating regions and STTs."""
     call_command("populate_stts")
     assert Region.objects.filter(id=10).exists()
-    assert STT.objects.filter(code="WA", type=STT.EntityType.STATE).exists()
+    assert STT.objects.filter(postal_code="WA", type=STT.EntityType.STATE).exists()
     assert STT.objects.filter(
         name="Puerto Rico", type=STT.EntityType.TERRITORY
     ).exists()

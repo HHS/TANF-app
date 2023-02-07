@@ -8,19 +8,19 @@ from tdpservice.stts.models import STT, Region
 class STTSerializer(serializers.ModelSerializer):
     """STT serializer."""
 
-    code = serializers.SerializerMethodField()
+    postal_code = serializers.SerializerMethodField()
 
     class Meta:
         """Metadata."""
 
         model = STT
-        fields = ["id", "type", "code", "name", "region", "ssp"]
+        fields = ["id", "type", "postal_code", "name", "region", "ssp"]
 
-    def get_code(self, obj):
-        """Return the state code."""
+    def get_postal_code(self, obj):
+        """Return the state postal_code."""
         if obj.type == STT.EntityType.TRIBE:
-            return obj.state.code
-        return obj.code
+            return obj.state.postal_code
+        return obj.postal_code
 
 
 class STTPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):

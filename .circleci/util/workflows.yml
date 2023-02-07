@@ -1,0 +1,8 @@
+# workflows:
+  erd:
+    jobs:
+      - make_erd:
+          filters:
+            branches:
+              only:
+                develop

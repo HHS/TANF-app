@@ -17,12 +17,13 @@ strip() {
 }
 # The cloud.gov space defined via environment variable (e.g., "tanf-dev", "tanf-staging")
 env=$(strip $CF_SPACE "tanf-")
-
+backend_app_name=$(echo $CGAPPNAME_BACKEND | cut -d"-" -f3)
 
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGAPPNAME_BACKEND"
 echo CF_SPACE: "$CF_SPACE"
 echo env: "$env"
+echo backend_app_name: "$backend_app_name"
 
 
 ##############################
@@ -46,21 +47,14 @@ set_cf_envs()
   "DJANGO_SETTINGS_MODULE"
   "DJANGO_SU_NAME"
   "FRONTEND_BASE_URL"
-  "PROD_JWT_CERT"
-  "PROD_JWT_KEY"
   "LOGGING_LEVEL"
-  "PROD_ACR_VALUES"
-  "PROD_OIDC_OP_AUTHORIZATION_ENDPOINT"
-  "PROD_CLIENT_ASSERTION_TYPE"
-  "PROD_OIDC_RP_CLIENT_ID"
-  "PROD_OIDC_OP_ISSUER"
-  "PROD_OIDC_OP_JWKS_ENDPOINT"
-  "PROD_OIDC_OP_LOGOUT_ENDPOINT"
-  "PROD_OIDC_OP_TOKEN_ENDPOINT"
+  "REDIS_URI"
   )
 
+  echo "Setting environment variables for $CGAPPNAME_BACKEND"
+
   for var_name in ${var_list[@]}; do
-    # Intentionally not setting variable if empty
+    # Intentionally unsetting variable if empty
     if [[ -z "${!var_name}" ]]; then
         echo "WARNING: Empty value for $var_name. It will now be unset."
         cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
@@ -68,14 +62,7 @@ set_cf_envs()
         continue
     fi
 
-    if [[ "$var_name" =~ "PROD_" ]] && [[ "$CF_SPACE" = "tanf-prod" ]]; then
-        prod_var_name=$(echo $var_name | sed -e 's/PROD_//g')
-        cf_cmd="cf set-env $CGAPPNAME_BACKEND $prod_var_name ${!var_name}"
-    else
-    
-        cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
-    fi
-    
+    cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
     echo "Setting var : $var_name"
     $cf_cmd
   done
@@ -122,10 +109,25 @@ update_backend()
 }
 
 bind_backend_to_services() {
+    echo "Binding services to app: $CGAPPNAME_BACKEND"
+
+    if [ "$CFAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
+      # TODO: this is technical debt, we should either make staging mimic tanf-dev 
+      #       or make unique services for all apps but we have a services limit
+      #       Introducing technical debt for release 3.0.0 specifically.
+      env="develop"
+    fi
+
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-db-${env}"
+    
+    # The below command is different because they cannot be shared like the 3 above services
+    cf bind-service "$CGAPPNAME_BACKEND" "es-${backend_app_name}"
+    
     set_cf_envs
+
+    echo "Restarting app: $CGAPPNAME_BACKEND"
     cf restage "$CGAPPNAME_BACKEND"
 }
 
@@ -159,7 +161,7 @@ else
 fi
 
 # Dynamically generate a new DJANGO_SECRET_KEY
-DJANGO_SECRET_KEY=$(python -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
+DJANGO_SECRET_KEY=$(python3 -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
 
 # Dynamically set DJANGO_CONFIGURATION based on Cloud.gov Space
 DJANGO_SETTINGS_MODULE="tdpservice.settings.cloudgov"

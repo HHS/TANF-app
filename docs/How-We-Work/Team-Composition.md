@@ -8,13 +8,14 @@ Please refer to the [Team Members doc](https://hhsgov.sharepoint.com/:w:/r/sites
 * Alexandra Pennington, OFA, tech lead
 
 **Raft**
-* Steve Nino, Raft, facilitator/product manager
+* Connor Smith, Raft, facilitator/product manager
 * Miles Reiter, Raft, design lead + senior ux/ui researcher and designer
-* Sreedevi Purayannur, Raft, senior ux/ui researcher and designer
+* Diana Liang, Raft, ux/ui researcher and designer
 * Andrew Jameson, Raft, tech lead
-* Aaron Beavers, Raft, full stack engineer
-* Jorge Gonzalez, Raft, full stack engineer
+* Cameron Smart, Raft, full stack engineer
+* Jan Timpe, Raft, full stack engineer
 * Mo Sohani, Raft, full stack engineer
+* George Hudson, Raft, devops engineer
 
 ## Subject Matter Experts
 **OFA Data Team**
@@ -22,27 +23,31 @@ Please refer to the [Team Members doc](https://hhsgov.sharepoint.com/:w:/r/sites
 * Thomas Tran, OFA, data analysis subject matter expert
 
 **Other Teams**
-* Rebekah Horsechief, OFA, tribal TANF subject matter expert
 * Stan Koutstaal, OFA, regional offices and tribal TANF liaison
 * Kathleen Moore, OPRE, data analysis subject matter expert
 
 ## Executive Support
-* Susan Golonka, OFA, project executive sponsor
+* Ann Flagg, OFA, project executive sponsor
 * Deborah List, OFA, project sponsor
 
 ## ACF OCIO
-* Penyin Asare, Information System Security Officer (ISSO)
+* Ann Omoma, Information System Security Officer (ISSO)
 * Tijan Drammeh, Information System Security Manager (ISSM)
 * Audrey Story, Director Portfolio Management and Governance Division
 * Patrick Vogel, Information System Security Engineer (ISSE)
 
 ## Contract Support
-* Brian Burns, GSA/18F, contracting officer
+* Jenn Gherardini, GSA/18F, contracting officer
 * Robert Jolly, 18F, COR
 * Christine So, Raft, contract support
 ---
 **<Details><Summary>Past Product Team Members</Summary>**
 (most recent first)
+* Steve Nino, Raft, facilitator/product manager
+* Timothy Whitlock, Raft, DevOps engineer
+* Aaron Beavers, Raft, full stack engineer
+* Jorge Gonzales, Raft, full stack engineer
+* Sreedevi Purayannur, Raft, senior ux/ui researcher and designer
 * Valerie Collignon, Raft, facilitator/project manager
 * John Willis, Raft, technical oversight support
 * Dvora Wilensky, OFA, project COR

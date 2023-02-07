@@ -1,0 +1,17 @@
+# workflows:
+  build-and-test:
+    unless:
+      or:
+        - << pipeline.parameters.run_dev_deployment >>
+        - << pipeline.parameters.run_owasp_scan >>
+    jobs:
+      - secrets-check
+      - test-frontend:
+          requires:
+            - secrets-check
+      - test-backend:
+          requires:
+            - secrets-check
+      - test-e2e:
+          requires:
+            - secrets-check

@@ -27,8 +27,7 @@ class STT(models.Model):
     type = models.CharField(
         max_length=200, blank=True, null=True, choices=EntityType.choices
     )
-    code = models.CharField(max_length=2, blank=True, null=True)
-    code_number = models.PositiveIntegerField(blank=True, null=True)
+    postal_code = models.CharField(max_length=2, blank=True, null=True)
     name = models.CharField(max_length=1000)
     region = models.ForeignKey(
         Region, on_delete=models.CASCADE, related_name="stts", null=True
@@ -38,6 +37,7 @@ class STT(models.Model):
     # Tribes have a state, which we need to store.
     state = models.ForeignKey("self", on_delete=models.CASCADE, blank=True, null=True)
     ssp = models.BooleanField(default=False, null=True)
+    sample = models.BooleanField(default=False, null=True)
 
     class Meta:
         """Metadata."""

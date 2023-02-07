@@ -1,15 +1,23 @@
-"""Tasks that are triggered by the scheduler."""
+"""Shared celery tasks file for beat."""
+
 from __future__ import absolute_import
 from tdpservice.users.models import User, AccountApprovalStatusChoices
-
 from django.utils import timezone
 from celery import shared_task
 from datetime import datetime, timedelta
 import logging
 from tdpservice.email.helpers.account_deactivation_warning import send_deactivation_warning_email
-
+from .db_backup import run_backup
 
 logger = logging.getLogger(__name__)
+
+@shared_task
+def postgres_backup(*args):
+    """Run nightly postgres backup."""
+    arg = ''.join(args)
+    logger.debug("postgres_backup::run_backup() run with arg: " + arg)
+    run_backup(arg)
+    return True
 
 @shared_task
 def check_for_accounts_needing_deactivation_warning():
