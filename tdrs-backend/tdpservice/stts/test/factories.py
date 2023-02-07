@@ -29,7 +29,7 @@ class STTFactory(factory.django.DjangoModelFactory):
 
     id = factory.Sequence(int)
     name = factory.Sequence(lambda n: "teststt%d" % n)
-    code = "TT"
+    postal_code = "TT"
     type = "STATE"
     filenames = "{'Active Case Data': 'ADS.E2J.FTP1.TS72', 'Closed Case Data': 'ADS.E2J.FTP2.TS72', " \
                 "'Aggregate Data': 'ADS.E2J.FTP3.TS72', 'Stratum Data': 'ADS.E2J.FTP4.TS72'}"

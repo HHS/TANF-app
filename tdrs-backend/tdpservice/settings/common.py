@@ -10,6 +10,7 @@ from django.core.exceptions import ImproperlyConfigured
 from celery.schedules import crontab
 
 from configurations import Configuration
+from celery.schedules import crontab
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -50,6 +51,8 @@ class Common(Configuration):
         "drf_yasg",
         "django_celery_beat",
         "storages",
+        "django_elasticsearch_dsl",
+        "django_elasticsearch_dsl_drf",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -58,6 +61,7 @@ class Common(Configuration):
         "tdpservice.security",
         "tdpservice.scheduling",
         "tdpservice.email",
+        "tdpservice.search_indexes",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -418,6 +422,7 @@ class Common(Configuration):
         'REDIS_URI',
         'redis://redis-server:6379'
     )
+    logger.debug("REDIS_URI: " + REDIS_URI)
 
     CELERY_BROKER_URL = REDIS_URI
     CELERY_RESULT_BACKEND = REDIS_URI
@@ -428,10 +433,28 @@ class Common(Configuration):
 
     CELERY_BEAT_SCHEDULE = {
         'name': {
-            'task': 'tdpservice.scheduling.tasks.check_for_accounts_needing_deactivation_warning',
-            'schedule': crontab(day_of_week='*', hour='13', minute='*'), # Every day at 1pm UTC (9am EST)
+            'task': 'tdpservice.scheduling.tasks.postgres_backup',
+            'schedule': crontab(minute='*', hour='4'), # Runs at midnight EST
+            'args': "-b",
             'options': {
                 'expires': 15.0,
             },
-        },     
+        },
+        'name': {
+            'task': 'tdpservice.scheduling.tasks.check_for_accounts_needing_deactivation_warning',
+            'schedule': crontab(day_of_week='*', hour='13', minute='*'), # Every day at 1pm UTC (9am EST)
+
+            'options': {
+                'expires': 15.0,
+            },
+        },
     }
+
+    # Elastic
+    ELASTICSEARCH_DSL = {
+        'default': {
+            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200')
+        },
+    }
+
+    CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)

@@ -3,12 +3,112 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>TANF Data Portal Project Updates - April 2022</title>
-    <link rel="stylesheet" href="css/uswds.css" />
+    <title>TANF Data Portal Project Updates - Janaury 2023</title>
+    <link rel="stylesheet" href="css/uswds3.css" />
     <link rel="icon" type="image/x-icon" href="img/favicons/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.2/jquery.min.js"></script>
     <script src="js/uswds.min.js"></script>
+    <link href="dist/lity.css" rel="stylesheet">
+    <script src="dist/lity.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/sankey.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
+  <script src="https://code.highcharts.com/modules/export-data.js"></script>
+  <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+const chart = Highcharts.chart('container', {
+
+
+  title: {
+    text: 'Pilot Participants'
+  },
+  accessibility: {
+    point: {
+      valueDescriptionFormat: '{index}. {point.from} to {point.to}, {point.weight}.'
+    }
+  },
+
+chart: {
+
+
+},
+
+  series: [{
+    keys: ['from', 'to', 'weight'],
+    data: [
+      ['6 States', '2.0 Pilot', 6],
+      ['5 Tribes', '2.0 Pilot', 5],
+      ['2.0 Pilot', '2.2 Expansion', 11],
+      ['Contacted States', 'Contacted for 2.2 Expansion', 4],
+      ['Contacted Tribes', 'Contacted for 2.2 Expansion', 4],
+      ['Contacted Territories', 'Contacted for 2.2 Expansion', 2],
+            ['Contacted for 2.2 Expansion', '2.2 Expansion', 5],
+            ['"Walk-in" Grantees', '2.2 Expansion', 2],
+
+
+    ],
+    clip: false,
+    type: 'sankey',
+    name: '2.0-2.2 Participants'
+  }]
+
+});})
+</script>
+
+<style>
+#csv {
+  display: none;
+}
+
+.highcharts-figure,
+.highcharts-data-table table {
+  min-width: 310px;
+  max-width: 800px;
+  margin: 1em auto;
+}
+
+.highcharts-data-table table {
+  font-family: Verdana, sans-serif;
+  border-collapse: collapse;
+  border: 1px solid #ebebeb;
+  margin: 10px auto;
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+}
+
+.highcharts-data-table caption {
+  padding: 1em 0;
+  font-size: 1.2em;
+  color: #555;
+}
+
+.highcharts-data-table th {
+  font-weight: 600;
+  padding: 0.5em;
+}
+
+.highcharts-data-table td,
+.highcharts-data-table th,
+.highcharts-data-table caption {
+  padding: 0.5em;
+}
+
+.highcharts-data-table thead tr,
+.highcharts-data-table tr:nth-child(even) {
+  background: #f8f8f8;
+}
+
+.highcharts-data-table tr:hover {
+  background: #f1f7ff;
+}
+</style>
+
+</script>
 
   </head>
   <body>
@@ -69,8 +169,14 @@
       <ul class="usa-nav__primary usa-accordion">
         <li class="usa-nav__primary-item">
           <a href="index.html" class="usa-current" aria-current="page">
+            <span>January 2023</span>
+          </a>
+        </li>
+        <li class="usa-nav__primary-item">
+          <a href="August-2022-Update.html" class="usa-nav__link">
             <span>August 2022</span>
           </a>
+        </li>
         <li class="usa-nav__primary-item">
           <a href="april-2022-update.html" class="usa-nav__link">
             <span>April 2022</span>
@@ -96,7 +202,7 @@
 
     </nav>
   </div>
-</header>
+  </header>
 
   <div class="usa-section">
   <div class="grid-container">
@@ -105,7 +211,10 @@
         <nav aria-label="Secondary navigation">
           <ul class="usa-sidenav">
             <li class="usa-sidenav__item">
-              <a href="./index.html" class="usa-current" aria-current="page">August 2022</a>
+              <a href="./index.html" class="usa-current" aria-current="page">January 2023</a>
+            </li>
+            <li class="usa-sidenav__item">
+              <a href="./August-2022-Update.html">August 2022</a>
             </li>
             <li class="usa-sidenav__item">
               <a href="april-2022-update.html">April 2022</a>
@@ -128,78 +237,366 @@
         id="main-content"
       >
 
-      <h1 id="tdp-update-month">TDP Project Update - August 2022</h1>
-
-      <p class="usa-intro">The TANF Data Portal Pilot kicked off earlier this month in time to handle the Fiscal Year 2022 Quarter 3 data submission for eleven  TANF grantees!</p>
-
-      <h2 id="the-pilot-program">The Pilot Program</h2>
-
-      <p>The purpose of the pilot program was centered around core TDP functionality, the ability to:
-
-      - Create an account,
-      - Request and receive access to TDP, and
-      - Submit quarterly TANF transmission files inside the portal.
-
-      Testing these core functions with a small sample of grantees was aimed not only at ensuring these worked properly—with real data on a wide variety of computer setups—but to validate that <em>how</em> those functions work in TDP are intuitive and a strong foundation to build all future functionality on top of.</p>
+      <h1 id="tdp-update-month">TDP Project Update - January 2023</h1>
+      <div style="min-height: 22px;"></div>
 
 
-      <h3 id="who">Who participated in the Pilot</h3>
+      <p class="usa-intro">Overall, the pilot expansion program was a success in which data was successfully transmitted for each grantee that participated. In addition, TDP has been utilized to help solve for instances where data file transfers have been a challenge due to existing file transfer protocols.</p>
+      <div style="min-height: 22px;"></div>
+      <div style="min-height: 22px;"></div>
+      <div style="min-height: 22px;"></div>
+
+      <h2 id="the-pilot-expansion">The Pilot Expansion</h2>
+      <div style="min-height: 22px;"></div>
+
+      <h3 id="who">Who participated in the expansion</h3>
+      <div style="min-height: 22px;"></div>
+
       <p>We recruited grantees based primarily on the following criteria:</p>
       <ul>
       <li>Interest in participating in the pilot</li>
       <li>Current reliance on email transmission (Tribes)</li>
       <li>Recent submission of partial data</li>
-      <li>Not submitting SSP data</li>
+      <li>Submits SSP data</li>
       </ul>
 
+<figure class="highcharts-figure">
+  <div id="container"></div>
+</figure>
 
-      <p>Aligned to those criteria we spoke to participants representing:</p>
+<p>TDP's userbase is now made up of:</p>
+<ul>
+<li>10 states</li>
+<li>7 Tribes</li>
+<li>One territory</li>
+</ul>
 
-      <ul>
-      <li>5 Tribes (3 in moderated sessions)</li>
-      <li>6 States (3 in moderated sessions)</li>
-      </ul>
-
-
-      <h3 id="how-it-went">Insights from the Pilot</h3>
-      <p>By all our measures the pilot was a success. Participants were able to access TDP and navigate the process of submitting their data—not to mention able to provide us with insights and feedback that will be instrumental in enhancing this and all future versions of TDP. While our top level findings focus on areas where we can improve TDP it's also worth mentioning that we received enthusiasticly positive feedback from participating grantees as well, a great sentiment to hear even in these early versions of TDP.</p>
-
-      <p>Below are some highlights from the full synthesis which can be found in the project repo.</p>
-
-      <h4 id="login-and-auth">Areas of the login and authentication experience may introduce friction for some grantees</h4>
-      <p>The TANF Data Portal utilizes Login.gov for account access. While our ability to change how it functions is limited, it does represent an important part of the TDP experience and should be considered as we expand access to TDP and continue to enhance the Knowledge Center. Identified areas where documentation might be enhanced include:</p>
-      <ul>
-          <li>Direction to check spam folders if confirmation emails don't show up</li>
-          <li>Direction to resend authentication codes if text messages don't promptly appear</li>
-          <li>Additional detail on how to configure various methods of 2 Factor Authentication</li>
-      </ul>
-
-
-      <h4 id="terminology">Some terminology used to identify sections and certain UI elements lead to friction among some participants</h4>
-      <p>Moderated testing re-emphasized past findings that certain terms have different meanings to different grantees informed both by past experiences with the TANF program and software tools used to prepare TANF data. These differing meanings proved a surmountable obstacle during the pilot but was associated with some degree of friction or decreased confidence in what TDP was asking of them. These areas included:</p>
-      <ul>
-          <li>"Closed Cases" vs "Negative Cases" (an older term many grantees are familiar with from past documentation and TANF data tools</li>
-          <li>The option to upload statrum data was confusing for grantees who provide universe data</li>
-      </ul>
-
-      <h4 id="resolution">Most participants used TDP at resolutions that obscured submission status from view</h4>
-      <p>
-          The majority of moderated participants weren't immediately able to see the status of their submission appear after submitting their files. This was a useful reminder of the resolutions most commonly used by grantees and the importance of affordances we should make sure to build in such as one that would scroll the interface to ensure any alerts that pop up are visible on-screen.
-      </p>
-
-      <a href="https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Summer%20-%20TDP%202.0%20Pilot%20Program.md" class="usa-button">
-<span style="color: white;">View Full Synthesis</span>      </a>
+<p>All together these STTs represent the following regions:</p>
+<ul>
+<li>Region 1 (2 STTs)</li>
+<li>Region 2 (1 STT)</li>
+<li>Region 3 (1 STT)</li>
+<li>Region 4 (3 STTs)</li>
+<li>Region 5 (1 STT)</li>
+<li>Region 6 (1 STT)</li>
+<li>Region 7 (1 STT)</li>
+<li>Region 8 (1 STT)</li>
+<li>Region 9 (5 STTs)</li>
+<li>Region 10 (3 STTs)</li>
 
 
-      <h2 id="knowledge-center">The TDP Knowledge Center</h2>
 
-      <p>In addition to TDP itself, we also launched a Knowledge Center in paralell to the pilot program—a resource documenting all things How-To-TDP; from creating an account to resubmitting data. You can access it right now at <a href="https://tdp-project-updates.app.cloud.gov/knowledge-center/">https://tdp-project-updates.app.cloud.gov/knowledge-center/</a>. As we move forward to build additional value into TDP we'll be keeping the Knowledge Center updated with release notes detailing all the new features being added and associated how-to articles.</p>
+</ul>
 
-      <h2 id="whats-next">What's Next</h2>
 
-      <p>The way we've engineered TDP means that now we've launched it with its first users it's going to continue to be available to our current pilot group from here on out (excepting short instances of downtime now and then so that we can conduct system maintenance). We're also eager to begin expanding the size of that pilot group to allow more TANF programs to benefit from it and —as always—to line up opportunities for us to hear directly from them to continue channeling feedback into making TDP the best tool it can be!</p>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
 
-      <p>If you're interested in gaining access to TDP in time to use it for the next quarterly data submission deadline this November we'd love to hear from you! Please reach out to <a href="mailto:mreiter@goraft.tech">mreiter@goraft.tech</a> to learn more or if the available slots fit your schedule you can book office hours below!</p>
+
+
+
+
+
+
+
+
+
+      <h3 id="what">What we tested</h3>
+      <div style="min-height: 22px;"></div>
+
+      <p>Based on the task scenarios defined for v2.2 the pilot expansion program was a success. Grantees that participated were able to complete all task scenarios measured in v2.0 in addition to new released features for inline email notifications and being able to submit TANF and/or SSP-MOE data files. In addition, for those in our moderated sessions we were able to observe and record the efficiencies and perceived shortcomings of the current platform to help inform future iterations. While our top level findings focus on observed gaps to improve TDP, we continue to receive positive feedback on TDP’s impact from participating grantees.</p>
+      <div style="min-height: 22px;"></div>
+      <div style="min-height: 22px;"></div>
+      <h3 style="margin-top: 16px;">Continually tested functionality (v 2.0)</h3>
+
+      <h4 style="margin-top: 16px; color: #595959;">TDP's launch functionality:</h4>
+    <ul class="usa-icon-list">
+
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+  <div class="usa-icon-list__icon text-ink">
+    <img src="./img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+  </div>
+  <div class="usa-icon-list__content">
+    <h5 class="usa-icon-list__title">
+      Secure Login & Account Management
+    </h5>
+    <p>
+    </p>
+  </div>
+</li>
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+  <div class="usa-icon-list__icon text-ink">
+    <img src="./img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+  </div>
+  <div class="usa-icon-list__content">
+    <h5 class="usa-icon-list__title">
+      Support for TANF Submission & Resubmission
+    </h5>
+    <p>
+    </p>
+  </div>
+</li>
+
+
+
+</ul>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+
+      <h3 style="margin-top: 16px;">Newly tested functionality (v 2.1 & 2.2)</h3>
+      <!-- <p style="margin-top: 16px;">Version 2.1 and 2.2 are aimed at making it possible to expand our pilot program to more TANF programs across the country by improving TDP's support for data submission and making the system itself more communicative.</p> -->
+
+      <h4 style="margin-top: 16px; color: #595959;">Added since 2.0:</h4>
+    <ul class="usa-icon-list">
+
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+  <div class="usa-icon-list__icon text-ink">
+    <img src="./img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+  </div>
+  <div class="usa-icon-list__content">
+    <h5 class="usa-icon-list__title">
+      Support for SSP Submission & Resubmission
+    </h5>
+    <p>
+      Users from TANF programs that submit SSP-MOE data now have access to a new field on the Data Files page allowing for quarterly SSP data to be submitted as well as TANF data.
+    </p>
+  </div>
+</li>
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+  <div class="usa-icon-list__icon text-ink">
+    <img src="./img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+  </div>
+  <div class="usa-icon-list__content">
+    <h5 class="usa-icon-list__title">
+      Email Notifications
+    </h5>
+    <p>
+      TDP now sends out email notifications for key events to keep you informed about the status of your account during the account creation process and the status of your submitted data files.
+    </p>
+  </div>
+</li>
+
+
+</ul>
+
+<h4 style="margin-top: 16px; color: #595959;">Changed / Fixed since 2.0:</h4>
+<ul class="usa-icon-list">
+
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+<div class="usa-icon-list__icon text-ink">
+  <img src="./img/changed.svg" aria-hidden="true" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+</div>
+<div class="usa-icon-list__content">
+<h5 class="usa-icon-list__title">
+  Improved visibility of success & error messages
+</h5>
+<p>
+  In v 2.0 the banner highlighting whether data files were submitted successfully or failed to submit often appeared off-screen. This change ensures that the message gets highlighted more prominently when it appears.
+</p>
+</div>
+</li>
+
+</ul>
+
+
+
+
+
+
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+
+
+
+      <h3 id="findings">Our findings</h3>
+
+      <div class="grid-row grid-gap margin-top-0">
+
+        <div class="tablet:grid-col-12">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="tribe-discoverability-update" class="usa-anchor"></a>
+             Participants expressed a variety of positive feedback about TDP
+          </h4>
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>There is nothing really I dislike, I think it is a needed changed for ease and modernization
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <div style="min-height: 22px;"></div>
+
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>This process is much simpler and less clunky in comparison to "insert vendor" on the mainframe
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <div style="min-height: 22px;"></div>
+
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>[I really like] the ease of uploading the reports and the email notifications that the reports were received
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <div style="min-height: 22px;"></div>
+
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>[Discovering an easier way to attach files] Oh, I could just drop my files into these boxes!
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <div style="min-height: 22px;"></div>
+        </div>
+
+
+
+
+
+            </div>
+
+      <div class="grid-row grid-gap margin-top-0">
+
+        <div class="tablet:grid-col-6">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="tribe-discoverability-update" class="usa-anchor"></a>
+             Some Tribes still selected their state during the Request Access flow
+          </h4>
+          <p>A follow-up finding from our initial 2.0 Pilot, we've encountered additional instances of Tribal grantees selecting their State during the Request Access flow as opposed to the name of their Tribal program. This continues to support an enhancement we have in the backlog to make selection of State vs Tribe more explicit in that flow.</p>
+          <a href="img/jan-update-2023/request-access-form.png" data-lity data-lity-desc="TANF Data Portal Request Access Form containing inputs for First Name, Last Name, and a combobox for Associated State, Tribe, or Territory">
+          <img src="img/jan-update-2023/request-access-form.png" alt="TANF Data Portal Request Access Form containing inputs for First Name, Last Name, and a combobox for Associated State, Tribe, or Territory">
+            </a>
+        </div>
+
+        <div class="tablet:grid-col-6">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="tailored-data-file-submission" class="usa-anchor"></a>
+             We further validated the case for more tailored data file submission screens
+          </h4>
+          <p>Also a continuation of a finding from the 2.0 Pilot we've encountered additional Universe data submitting grantees expressing some confusion over the presence of Section 4 (Stratum) as an option during the data submission process.</p>
+          <a href="img/jan-update-2023/section-optional.png" data-lity data-lity-desc="TANF Data Portal Request Access Form containing inputs for First Name, Last Name, and a combobox for Associated State, Tribe, or Territory">
+          <img src="img/jan-update-2023/section-optional.png" alt="TANF Data Portal Request Access Form containing inputs for First Name, Last Name, and a combobox for Associated State, Tribe, or Territory">
+            </a>
+        </div>
+
+      </div>
+
+      <div class="grid-row grid-gap margin-top-0">
+
+        <div class="tablet:grid-col-6">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="bugs" class="usa-anchor"></a>
+             We observed some new bugs concerning search results and data submission
+          </h4>
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 15px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>It was odd that the last quarter's reports were in the spaces for [Q4]
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <p>The 2.2 Expansion brought to light some errors that seem to result from certain file or network conditions—and possibly from users repeatedly clicking the submit button if/when there's lag due to those network conditions. While all the actual data submissions were successful we've drafted a number of tickets to smooth out the cause of the issues here so that grantees won't run into network errors when their data did successfully make it into our database.</p>
+          <a href="img/jan-update-2023/bug.png" data-lity data-lity-desc="Screenshot of the GitHub issue tracking one of the errors we observed during the 2.2 expansion">
+          <img src="img/jan-update-2023/bug.png" alt="Screenshot of the GitHub issue tracking one of the errors we observed during the 2.2 expansion">
+            </a>
+
+        </div>
+
+        <div class="tablet:grid-col-6">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="search-flow-friction" class="usa-anchor"></a>
+             One participant encountered some friction with TDP's search flow itself
+          </h4>
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 15px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Other than the one dislike about the search function, I like this new system.
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <p>One grantee told us about some friction they encountered due to expecting the Data Files search component to not actually require search to be pressed to update the results on the page. This new 2.2 finding is an area we'll continue to observe as we expand TDP to others. In the interim we've updated the Knowledge Center with new imagery that better conveys the need to click 'Search'.</p>
+          <a href="img/data-files/2-search-component.png" data-lity data-lity-desc="Data Files search with emphasis on File Type, Fiscal Year, and Quarter fields as well as the Search button">
+          <img src="img/data-files/2-search-component.png" alt="Data Files search with emphasis on File Type, Fiscal Year, and Quarter fields as well as the Search button">
+            </a>
+        </div>
+
+      </div>
+
+      <div style="min-height: 22px;"></div>
+
+
+            <a href="https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Fall%20-%20TDP%202.2%20Pilot%20Expansion.md" class="usa-button">
+      <span style="color: white;">View Full Synthesis</span>      </a>
+
+
+
+
+
+
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+
+<h2 id="whats-next">What's Next</h2>
+<div style="min-height: 22px;"></div>
+
+
+<div class="margin-top-2 border-05 border-primary-light bg-primary-lighter padding-2 tablet:padding-3">
+
+  <h3 id="scaling-research" class="margin-y-0"><a id="section_6" class="usa-anchor"></a>Scaling our error-related research and our userbase</h3>
+
+  <p class="margin-top-1">
+    As the development team is beginning to dig into building TDP's parsing engine we want to ensure that our research efforts are meeting the mark to ensure that the error reports grantees will ultimately receive from the new engine are the best they can be.
+  </p>
+
+  <ul class="usa-icon-list usa-icon-list--size-lg margin-top-3">
+    <li class="usa-icon-list__item">
+      <div class="usa-icon-list__icon text-blue">
+        <img src="./img/checkbox-check-print.svg" aria-hidden="true" style="background-color: #83b6f7; border-radius: 5px; width: 30px; height: 30px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+
+      </div>
+      <div class="usa-icon-list__content">
+        <p><b>Making it real.</b> One ultimate test of TDP will be its ability to help guide grantees to higher quality data. We're integrating more and more real data into our research to directly measure how easily grantees are able to correct errors in a context directly relevant to them.</p>
+      </div>
+    </li>
+    <li class="usa-icon-list__item">
+      <div class="usa-icon-list__icon text-blue">
+        <img src="./img/checkbox-check-print.svg" aria-hidden="true" style="background-color: #83b6f7; border-radius: 5px; width: 30px; height: 30px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+      </div>
+      <div class="usa-icon-list__content">
+        <p><b>Research as an onboarding aide.</b> Moving from our current user base to readiness to onboard every grantee is no small task and will require a number of strategies to facilitate. One has proven to be using research sessions as an opportunity to get new grantees up and running in TDP.</p>
+      </div>
+    </li>
+    <li class="usa-icon-list__item">
+      <div class="usa-icon-list__icon text-blue">
+        <img src="./img/checkbox-check-print.svg" aria-hidden="true" style="background-color: #83b6f7; border-radius: 5px; width: 30px; height: 30px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+      </div>
+      <div class="usa-icon-list__content">
+        <p><b>Onboarding another cohort of STTs by February 7th.</b> Quarterly data submission deadlines represent prime opportunities for getting new users not only approved for access in TDP but logged in and fully engaging with it. As with past quarterly expansions, this one will be run in parallel to new features and enhancements going-live in TDP.</p>
+      </div>
+    </li>
+  </ul>
+
+</div>
+
+
+
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<h3 id="initial-findings">Initial error-related research findings</h3>
+
+<div class="grid-row grid-gap margin-top-0">
+
+  <div class="tablet:grid-col-6">
+    <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="notification-excitement" class="usa-anchor"></a>
+       Tribes are excited about the prospect of immediate notifications in TDP
+    </h4>
+    <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 15px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Sometimes it was like a shot in the dark because I'd submit and then not hear anything back for [...] a month
+    <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+    <p>While Tribes tend to have a far lower rate of errors in their transmissions, the Tribes we've spoken to so far have expressed enthusiasm about the instant nature of data-related confirmations in TDP. e.g, Confirmation of successfully transmitted data.</p>
+  </div>
+
+  <div class="tablet:grid-col-6">
+    <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="familiar-structure" class="usa-anchor"></a>
+       The way we're presenting data in error report prototypes is providing grantees with the information they're after
+    </h4>
+    <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 15px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Everything seems to be where I can understand it. It seems straightforward
+    <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+    <p>Our prototype error reports have been successfully understood by grantees in each session we've tested them so far; ensuring that participants are taking away key information both about the nature of the error and where it's occurring in their data.</p>
+  </div>
+
+</div>
+
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+
+
+
+
+
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
 
 
       </main>

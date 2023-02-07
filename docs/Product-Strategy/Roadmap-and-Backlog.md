@@ -29,7 +29,7 @@ This is the first release to the production environment including the ATO and re
 
 
 ## Release 2: Pilot Release
-This release will allow users to securely upload data into our system in production, replacing a less secure way of doing so, while increasing communication with the users and not increasing burden for OFA Admin staff. This release will allow approximately 15 STTs to pilot the use of login, upload, and download of files, while maintaining TDRS on the backend. While this type of workflow isn't our long term workflow, including it at this point delivers value to the users more quickly and provides the team valuable user feedback to validate and improve the application features. 
+This release will allow users to securely upload data into our system in production, replacing a less secure way of doing so, while increasing communication with the users and not increasing burden for OFA Admin staff. This release will allow approximately 20 STTs to pilot the use of login, upload, and download of files, while maintaining TDRS on the backend. While this type of workflow isn't our long term workflow, including it at this point delivers value to the users more quickly and provides the team valuable user feedback to validate and improve the application features. 
 
 
 | Outcome |
@@ -40,12 +40,11 @@ This release will allow users to securely upload data into our system in product
 | Users can resubmit files with error fixes. |
 | Users will receive email notifications on the status of their account and data. |
 | Users can differentiate TANF and SSP files upon submission. |
-| A research oriented TDP environment is created. |
 
 
 
 ## Release 3: Parity, Data Parsing, Automated Status, Notifications
-This release will parse and validate submitted data and store accepted data in a database. This workflow will include additional automated email notifications and user-friendly in-app error messages to help users better understand their data errors and submission history. This release will also include Django admin enhancements and onboard all users as it will meet parity with the legacy TANF Data Reporting System.
+This major release will parse and validate submitted data and store accepted data in a database. This workflow will include additional automated email notifications and user-friendly in-app error messages to help users better understand their data errors and submission history. This release will also include Django admin enhancements and onboard all users as it will meet parity with the legacy TANF Data Reporting System.
 
 | Outcome |
 | -------- | 
@@ -54,7 +53,9 @@ This release will parse and validate submitted data and store accepted data in a
 | Users receive easy to understand error messages. |
 | Users can view their submission history. |
 | All users will submit all of their data through TDP . |
+| Users will receive email notifications on the state of their submitted data. |
 | TDP enhancements for System administrator users. |
+| A research oriented TDP environment is created. |
 
 
 ## Release 4 and Beyond

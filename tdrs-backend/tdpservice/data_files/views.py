@@ -1,5 +1,6 @@
 """Check if user is authorized."""
 
+import logging
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 from django.conf import settings
@@ -17,11 +18,13 @@ from rest_framework import status
 
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 from tdpservice.data_files.serializers import DataFileSerializer
-from tdpservice.data_files.models import DataFile
+from tdpservice.data_files.models import DataFile, get_s3_upload_path
 from tdpservice.users.permissions import DataFilePermissions
-from tdpservice.scheduling import sftp_task
+from tdpservice.scheduling import sftp_task, parser_task
 from tdpservice.email.helpers.data_file import send_data_submitted_email
+from tdpservice.data_files.s3_client import S3Client
 
+logger = logging.getLogger(__name__)
 
 class DataFileFilter(filters.FilterSet):
     """Filters that can be applied to GET requests as query parameters."""
@@ -44,32 +47,44 @@ class DataFileViewSet(ModelViewSet):
     parser_classes = [MultiPartParser]
     permission_classes = [DataFilePermissions]
     serializer_class = DataFileSerializer
+    pagination_class = None
 
     # TODO: Handle versioning in queryset
     # Ref: https://github.com/raft-tech/TANF-app/issues/1007
     queryset = DataFile.objects.all()
 
-    # NOTE: This is a temporary hack to make sure the latest version of the file
-    # is the one presented in the UI. Once we implement the above linked issue
-    # we will be able to appropriately refer to the latest versions only.
-    ordering = ['-version']
-
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
         response = super().create(request, *args, **kwargs)
 
-        # Upload to ACF-TITAN only if file is passed the virus scan and created
+        # only if file is passed the virus scan and created successfully will we perform side-effects:
+        # * Send to parsing
+        # * Upload to ACF-TITAN
+        # * Send email to user
+
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
+            user = request.user
+            data_file_id = response.data.get('id')
+            data_file = DataFile.objects.get(id=data_file_id)
+
+            parser_task.parse.delay(data_file_id)
+            logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
+
             sftp_task.upload.delay(
-                data_file_pk=response.data.get('id'),
+                data_file_pk=data_file_id,
                 server_address=settings.ACFTITAN_SERVER_ADDRESS,
                 local_key=settings.ACFTITAN_LOCAL_KEY,
                 username=settings.ACFTITAN_USERNAME,
                 port=22
             )
+            logger.info("Submitted upload task to redis for datafile %s.", data_file_id)
 
-            user = request.user
-            data_file = DataFile.objects.get(id=response.data.get('id'))
+            app_name = settings.APP_NAME + '/'
+            key = app_name + get_s3_upload_path(data_file, '')
+            version_id = self.get_s3_versioning_id(response.data.get('original_filename'), key)
+
+            data_file.s3_versioning_id = version_id
+            data_file.save(update_fields=['s3_versioning_id'])
 
             # Send email to user to notify them of the file upload status
             subject = f"Data Submitted for {data_file.section}"
@@ -93,9 +108,21 @@ class DataFileViewSet(ModelViewSet):
 
         return response
 
+    def get_s3_versioning_id(self, file_name, prefix):
+        """Get the version id of the file uploaded to S3."""
+        s3 = S3Client()
+        bucket_name = settings.AWS_S3_DATAFILES_BUCKET_NAME
+        versions = s3.client.list_object_versions(Bucket=bucket_name, Prefix=prefix)
+        for version in versions['Versions']:
+            file_path = version['Key']
+            if file_name in file_path:
+                if version['IsLatest'] and version['VersionId'] != 'null':
+                    return (version['VersionId'])
+        return None
+
     def get_queryset(self):
         """Apply custom queryset filters."""
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().order_by('-created_at')
 
         if self.request.query_params.get('file_type') == 'ssp-moe':
             queryset = queryset.filter(section__contains='SSP')
@@ -121,11 +148,24 @@ class DataFileViewSet(ModelViewSet):
     def download(self, request, pk=None):
         """Retrieve a file from s3 then stream it to the client."""
         record = self.get_object()
+        response = None
 
-        response = FileResponse(
-            FileWrapper(record.file),
-            filename=record.original_filename
-        )
+        # If no versioning id, then download from django storage
+        if not hasattr(record, 's3_versioning_id') or record.s3_versioning_id is None:
+            response = FileResponse(
+                FileWrapper(record.file),
+                filename=record.original_filename
+            )
+        else:
+            # If versioning id, then download from s3
+            s3 = S3Client()
+            file_path = record.file.name
+            version_id = record.s3_versioning_id
+
+            response = FileResponse(
+                FileWrapper(s3.file_download(file_path, record.original_filename, version_id)),
+                filename=record.original_filename
+            )
         return response
 
 

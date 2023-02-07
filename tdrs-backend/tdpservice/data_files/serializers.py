@@ -38,6 +38,7 @@ class DataFileSerializer(serializers.ModelSerializer):
             "section",
             "created_at",
             "ssp",
+            "submitted_by"
         ]
 
     def create(self, validated_data):

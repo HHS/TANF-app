@@ -3,7 +3,7 @@
 set -e
 
 echo "REDIS_SERVER"
-echo $REDIS_SERVER_LOCAL
+echo "redis local: $REDIS_SERVER_LOCAL"
 if [[ "$REDIS_SERVER_LOCAL" = "TRUE" || "$CIRCLE_JOB" = "backend-owasp-scan" ]]; then
     echo "Run redis server on docker"
 else
@@ -19,10 +19,10 @@ python manage.py migrate
 python manage.py populate_stts
 python manage.py collectstatic --noinput
 
-celery -A tdpservice.settings worker -c 1 --max-memory-per-child 5000 &
+celery -A tdpservice.settings worker -c 1 &
 sleep 5
 # TODO: Uncomment the following line to add flower service when memory limitation is resolved
-# celery -A tdpservice.settings --broker=$REDIS_URI flower &
+celery -A tdpservice.settings --broker=$REDIS_URI flower &
 celery -A tdpservice.settings beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler &
 
 echo "Starting Gunicorn"
