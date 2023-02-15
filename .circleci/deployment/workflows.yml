@@ -42,6 +42,13 @@
             branches:
               only:
                 - develop
+      - test-deployment-e2e:
+          requires:
+            - deploy-develop
+          filters:
+            branches:
+              only:
+                - develop
 
   production-deployment:
     unless: << pipeline.parameters.run_dev_deployment >>

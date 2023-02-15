@@ -42,7 +42,9 @@ set_cf_envs()
   "AV_SCAN_URL"
   "BASE_URL"
   "CLAMAV_NEEDED"
+  "CYPRESS_TOKEN"
   "DJANGO_CONFIGURATION"
+  "DJANGO_DEBUG"
   "DJANGO_SECRET_KEY"
   "DJANGO_SETTINGS_MODULE"
   "DJANGO_SU_NAME"
@@ -171,6 +173,8 @@ elif [ "$CF_SPACE" = "tanf-staging" ]; then
   DJANGO_CONFIGURATION="Staging"
 else
   DJANGO_CONFIGURATION="Development"
+  DJANGO_DEBUG="Yes"
+  CYPRESS_TOKEN=$CYPRESS_TOKEN
 fi
 
 if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then

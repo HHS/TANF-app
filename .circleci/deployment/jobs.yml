@@ -32,6 +32,23 @@
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
 
+  test-deployment-e2e:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - install-nodejs-machine
+      - disable-npm-audit
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+      - run:
+          name: Run Cypress e2e tests
+          command: cd tdrs-frontend; npm run test:e2e-develop
+      - store_artifacts:
+          path: tdrs-frontend/cypress/screenshots/
+      - store_artifacts:
+          path: tdrs-frontend/cypress/videos/
+
   deploy-production:
     executor: docker-executor
     working_directory: ~/tdp-deploy

@@ -12,6 +12,7 @@ This directory contains system and architecture documentation including diagrams
 - [buildpack-changelog.md](./buildpack-changelog.md) : A running log of updates to our Cloud.gov buildpacks in use.
 - [circle-ci-audit-template.md](./circle-ci-audit-template.md) : This is a checklist document used during audits of our continuous intergration pipeline tool.
 - [circle-ci.md](./circle-ci.md) : Overview of our CI/CD platform jobs.
+- [cypress-integration-tests.md](./cypress-integration-tests.md) : Shows how we use Cypress to manage our end to end integration testing.
 - [data-file-downloads.md](./data-file-downloads.md) : Provides an architecture-level view of data file storage and downloading.
 - [django-admin-logging.md](./django-admin-logging.md) : Outlines sections of the Django Administrator Console and details what should be logged.
 - [jwt-key-rotation.md](./jwt-key-rotation.md) : Describes the process for rotating JWT keys in Login.gov.
