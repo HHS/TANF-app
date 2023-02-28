@@ -4,6 +4,10 @@
 
 [Cypress](https://cypress.io) is a browser-automation testing suite that we use for end-to-end tests. See [ADR019 - Integration Tests](./Architecture-Decision-Record/019-integration-tests.md) for some additional background on testing goals and decisions.
 
+## CI/CD Pipeline
+
+All tests added into the `tdrs-frontend/cypress/e2e/` folder will be run against the newly deployed develop environment as part of our pipeline to help ensure site reliability and that no bugs have been introduced. These are run against the actual deployed environment and so might catch issues connecting with real backend services instead of having everything local.
+
 ## Running tests
 
 1. Have both the backend and frontend running in separate terminal processes, the app needs to be reachable and usable at `localhost:3000` when testing locally

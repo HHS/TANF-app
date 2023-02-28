@@ -11,7 +11,10 @@
             - deploy-infrastructure-dev
 
   staging-deployment:
-    unless: << pipeline.parameters.run_dev_deployment >>
+    unless: 
+      or:
+        - << pipeline.parameters.run_dev_deployment >>
+        - << pipeline.parameters.run_nightly_owasp_scan >>
     jobs:
       - deploy-project-updates-site:
           filters:
@@ -42,9 +45,19 @@
             branches:
               only:
                 - develop
+      - test-deployment-e2e:
+          requires:
+            - deploy-develop
+          filters:
+            branches:
+              only:
+                - develop
 
   production-deployment:
-    unless: << pipeline.parameters.run_dev_deployment >>
+    unless:
+      or:
+        - << pipeline.parameters.run_dev_deployment >>
+        - << pipeline.parameters.run_nightly_owasp_scan >>
     jobs:
       - deploy-infrastructure-production:
           filters:

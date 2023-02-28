@@ -13,7 +13,13 @@ orbs:
 
 # parameters from github actions
 parameters:
+  develop_branch_deploy:
+    type: boolean
+    default: false
   run_dev_deployment:
+    type: boolean
+    default: false
+  run_nightly_owasp_scan:
     type: boolean
     default: false
   run_owasp_scan:
@@ -22,9 +28,6 @@ parameters:
   target_env:
     type: string
     default: ''
-  run_nightly_owasp_scan:
-    type: boolean
-    default: false
 
 jobs:
   setup:

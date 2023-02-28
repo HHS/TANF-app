@@ -1,6 +1,7 @@
 #workflows:
 
   enable-versioning-for-s3-buckets:
+    unless: << pipeline.parameters.run_nightly_owasp_scan >>
     jobs:
       - enable-versioning:
           filters:
