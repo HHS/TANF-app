@@ -32,7 +32,7 @@ NH,New Hampshire,1,33,0,1,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS33', 'Closed C
 NJ,New Jersey,2,34,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS34', 'Closed Case Data': 'ADS.E2J.NDM2.TS34', 'Aggregate Data': 'ADS.E2J.NDM3.TS34'}"
 NM,New Mexico,6,35,1,0,1,"{'Active Case Data': 'ADS.E2J.FTP1.TS35', 'Closed Case Data': 'ADS.E2J.FTP2.TS35', 'Aggregate Data': 'ADS.E2J.FTP3.TS35', 'Stratum Data': 'ADS.E2J.FTP4.TS35'}"
 NY,New York,2,36,1,1,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS36', 'Closed Case Data': 'ADS.E2J.FTP2.TS36', 'Aggregate Data': 'ADS.E2J.FTP3.TS36', 'Stratum Data': 'ADS.E2J.FTP4.TS36', 'SSP Active Case Data': 'ADS.E2J.FTP1.MS36', 'SSP Closed Case Data': 'ADS.E2J.FTP2.MS36', 'SSP Aggregate Data': 'ADS.E2J.FTP3.MS36', 'SSP Stratum Data': 'ADS.E2J.FTP4.MS36'}"
-NC,North Carolina,4,37,1,0,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS37', 'Closed Case Data': 'ADS.E2J.FTP2.TS37', 'Aggregate Data': 'ADS.E2J.FTP3.TS37', 'Stratum Data': 'ADS.E2J.FTP4.TS37'}"
+NC,North Carolina,4,37,0,0,0,"{'Active Case Data': 'ADS.E2J.FTP1.TS37', 'Closed Case Data': 'ADS.E2J.FTP2.TS37', 'Aggregate Data': 'ADS.E2J.FTP3.TS37'}"
 ND,North Dakota,8,38,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS38', 'Closed Case Data': 'ADS.E2J.NDM2.TS38', 'Aggregate Data': 'ADS.E2J.NDM3.TS38'}"
 OH,Ohio,5,39,1,0,1,"{'Active Case Data': 'ADS.E2J.NDM1.TS39', 'Closed Case Data': 'ADS.E2J.NDM2.TS39', 'Aggregate Data': 'ADS.E2J.NDM3.TS39', 'Stratum Data': 'ADS.E2J.NDM4.TS39'}"
 OK,Oklahoma,6,40,0,0,0,"{'Active Case Data': 'ADS.E2J.NDM1.TS40', 'Closed Case Data': 'ADS.E2J.NDM2.TS40', 'Aggregate Data': 'ADS.E2J.NDM3.TS40'}"

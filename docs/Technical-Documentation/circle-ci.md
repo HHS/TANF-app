@@ -101,3 +101,18 @@ These all have defaults set in their respective settings modules, but may be ove
         * Bind the backend application to the S3 and RDS services in Cloud.gov
         * Run `/scripts/set-backend-env-vars.sh` (detailed above)
         * Restage the application to make environment variable and bound services live.
+
+## CI/CD Pipeline
+
+The Frontend and Backend deploy Workflows are triggered automatically on pushes to the `develop` branch and on labeled PRs.
+* GitHub Actions are used to notify CircleCI to run if criteria are met and pass along variables to the workflows as needed.
+    * Documentation for what each Action does can be found in each actions workflow action-name.yml file.
+    * These files are located in [.github/workflows](../../.github/workflows/).
+* merges to the `develop` branch will deploy to the develop environment.
+    * on successful develop deploys, end to end integration tests will then be run against that environment.
+    * for details, refer to the [Cypress Integration Tests](./cypress-integration-tests.md) documentation.
+* PRs given the explicit label `Deploy with CircleCI` will deploy to the tanf-dev environment selected
+    * `Deploy with CircleCI` is the prefix part of the label which triggers the build. It needs the environment added as a suffix
+    * To select the environment, add the name after a hyphen following the `Deploy with CircleCI` prefix
+    * e.g. `Deploy with CircleCI-raft` will deploy your branch build to the tanf-dev Cloud Foundry space, tdp-raft environment
+        * tdp-frontend-raft & tdp-backend-raft

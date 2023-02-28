@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>TDP — Resubmitting Complete Data Files with fTANF.exe</title>
+    <title>TDP — Viewing Submission History</title>
     <link rel="stylesheet" href="../css/uswds3.css" />
     <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="../js/uswds.min.js"></script>
     <link href="dist/lity.css" rel="stylesheet">
     <script src="dist/lity.js"></script>
@@ -181,31 +181,34 @@
 
 
         <li class="usa-sidenav__item">
-          <a href="uploading-data.html">Submitting Data to TDP</a>
+        <a href="uploading-data.html">Submitting Data to TDP</a>
         </li>
-<li>
+        <li>
         <ul class="usa-sidenav__sublist">
-        <li class="usa-sidenav__item">
-        <a href="view-submission-history.html">Viewing Submission History</a>
-        </li>
+          <li class="usa-sidenav__item">
+          <a href="./view-submission-history.html" class="usa-current" aria-current="page">Viewing Submission History</a>
+          </li>
+
+          <li class="usa-sidenav__item">
+          <a href="./complete-resubmissions.html">Resubmitting Complete Data Files</a>
+          </li>
+
+          <li class="usa-sidenav__item">
+          <a href="./exporting-complete-data-using-ftanf.html">Exporting Complete Data Using fTANF</a>
+          </li>
+
+        </ul>
+      </li>
 
         <li class="usa-sidenav__item">
-        <a href="complete-resubmissions.html" class="usa-current" aria-current="page">Resubmitting Complete Data Files</a>
+        <a href="./managing-your-account.html">Managing Your Account</a>
         </li>
 
-        <li class="usa-sidenav__item">
-        <a href="./exporting-complete-data-using-ftanf.html">Exporting Complete Data Using fTANF</a>
-        </li>
-      </ul>
-    </li>
-
-        <li class="usa-sidenav__item">
-        <a href="managing-your-account.html">Managing Your Account</a>
-        </li>
         <li class="usa-sidenav__item">
         <a href="./give-feedback.html">Give Feedback</a>
         </li>
-</ul>
+
+      </ul>
       <!-- Here ends mobile menu -->
 
 
@@ -244,27 +247,28 @@
             </ul>
           </li>
 
-              <li class="usa-sidenav__item">
-                <a href="uploading-data.html">Submitting Data to TDP</a>
+            <li class="usa-sidenav__item">
+              <a href="uploading-data.html">Submitting Data to TDP</a>
               </li>
-<li>
+              <li>
               <ul class="usa-sidenav__sublist">
-              <li class="usa-sidenav__item">
-              <a href="view-submission-history.html">Viewing Submission History</a>
-              </li>
+                <li class="usa-sidenav__item">
+                <a href="./view-submission-history.html" class="usa-current" aria-current="page">Viewing Submission History</a>
+                </li>
 
               <li class="usa-sidenav__item">
-              <a href="complete-resubmissions.html" class="usa-current" aria-current="page">Resubmitting Complete Data Files</a>
+                <a href="./complete-resubmissions.html">Resubmitting Complete Data Files</a>
               </li>
 
               <li class="usa-sidenav__item">
               <a href="./exporting-complete-data-using-ftanf.html">Exporting Complete Data Using fTANF</a>
               </li>
 
-             </ul>
-</li>
+              </ul>
+            </li>
+
             <li class="usa-sidenav__item">
-              <a href="managing-your-account.html">Managing Your Account</a>
+              <a href="./managing-your-account.html">Managing Your Account</a>
             </li>
 
              <li class="usa-sidenav__item">
@@ -279,55 +283,54 @@
 
       <main
         class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
-        id="main-content"
-      >
-        <h1>Resubmitting Complete Data Files</h1>
-<br>
-        <p class="usa-intro">After data files are submitted, ACF checks the data for accuracy and completeness. If any errors are found in the data files submitted, ACF will notify you via email, with an error report containing a summary view of the issues. The following provides guidance on how to resubmit data files after the errors have been corrected.
+        id="main-content">
+        <h1>Viewing Submission History</h1>
+        <div style="min-height: 22px;"></div>
+
+        <p class="usa-intro">
+        The Submission History tab will allow access to all data files previously submitted via the TANF Data Portal (TDP) .
         </p>
-<br>
-        <p>The new TANF Data Portal will not change reporting requirements related to which data needs to be reported. However, it will require a process adjustment to how some grantees currently submit revisions of their data—specifically that revisions to data already submitted to TDP for a given quarter will need to be submitted in full (i.e. complete data) rather than as partial data only containing cases that had been added or updated.</p>
-<br>
-        <p><strong>Transmitting complete data for Sections 1 and 2 (Active and Closed Cases, respectively) is as simple as making sure that each file submitted (or resubmitted at a later date) contains all of the cases you intend to submit for the quarter. Sections 3 and 4 (Aggregate and Stratum Data, respectively) contain population counts, so transmitting complete data for those sections means ensuring that all the counts are present for each month in the quarter.</p></strong>
-<br>
-        <p><strong>Example:</strong> A State, Tribe and Territory (STT) submitted Active Case Data for Quarter 2 of FY 2022 to meet reporting deadlines but some cases in the month 3 data weren’t ready. In the past those outstanding cases could be submitted at a later date on their own and combined with the previously submitted data. Going forward, TDP will not merge data from multiple submissions together, rather it will only process the most recently submitted file. So if partial data were to be submitted, it would overwrite past data rather than adding to it.</p>
-<br>
-        <h2>Why we're making this change</h2>
-<br>
-        <p>Two core goals are behind this change:<p>
-        <ol>
-          <li>Each file having complete data rather than partial data will allow us to serve up richer analytics and reports in order to provide better guidance for correcting errors or data quality issues.</li>
-          <li>Each file containing complete data will help avoid confusion regarding which file is the “source of truth” for the most up to date data.</li>
-       </ol>
-       <br>
-       <h2>What to change in the Header Record</h2>
-<br>
-       <p>To ensure that your data remains consistent between systems as we’re working to fully replace TDRS with TDP, we ask that you use the Delete value of the Update Indicator in all resubmissions. If you need to confirm that the Delete value has been set correctly, you can look for the “D” value at the end of the Header Record of the file you’re submitting (emphasized below).</p>
+        <div style="min-height: 22px;"></div>
 
-<blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-weight: 900;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>HEADER20221A01000TAN1 D<span style="font-size: 40px; position: relative; top: 30px; left: 10px; color: #005ea2">”</span></blockquote>
-</ol>
-<br>
+  <h2>How to View Submission History</h2>
+  <div style="min-height: 22px;"></div>
 
-<h2>How to get support or help exporting complete data from other systems</h2>
-<br>
-<p>If you could use assistance making these changes to your data workflow—whether you use fTANF or any other data tool—we’d be more than happy to work with you directly.</p>
+  <ol class="usa-process-list">
+    <li class="usa-process-list__item">
+      <h3 class="usa-process-list__heading">Search for the reporting period to view</h3>
+  <br>
+      <p class="margin-top-05">
+        On the Data Files page, you can complete the search fields for ‘File Type’ (if your program submits both TANF & SSP data), ‘Fiscal Year’, and ‘Quarter’ to identify which data you’ll be viewing.</p><div style="min-height: 22px;"></div>
+      <a href="../img/getting-started/file-type-differences.png" data-lity data-lity-desc="Data Files search with emphasis on File Type, Fiscal Year, and Quarter fields as well as the Search button">
+      <img src="../img/getting-started/file-type-differences.png" alt="Data Files search with emphasis on File Type, Fiscal Year, and Quarter fields as well as the Search button">
+        </a>
 
-<p>Please reach out with any questions or concerns to <a href = "mailto: tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov.</a></p>
-<br>
-<ul class="usa-card-group">
-  <li class="usa-card usa-card--flag desktop:grid-col-6 usa-card--media-right">
-    <div class="usa-card__container" style="height: fit-content;">
-      <div class="usa-card__header" style="width: 100%;">
-        <h2 class="usa-card__heading">Exporting Complete Data Using fTANF</h2>
-      </div>
+    </li>
 
-      <div class="usa-card__footer" style="width: 100%;">
-        <a href="./exporting-complete-data-using-ftanf.html" class="usa-button">View Guide</a>
-      </div>
-    </div>
-  </li>
+    <li class="usa-process-list__item">
+      <h3 class="usa-process-list__heading">How to view Submission History</h3>
+  <br>
+      <p>After searching for the reporting period, a new button group labelled 'Current Submission' and 'Submission History’ will appear below the 'Search' button.</p>
+      <p>The button ‘Current Submission’ is default selected. Navigate to the ‘Submission History’ button to view the data files previously submitted through TDP.</p>
+      <a href="../img/getting-started/submission-history.png" data-lity data-lity-desc="Submission history page listing five visible previous submissions with more accessible via a pagination control below the current page of the table">
+      <img src="../img/getting-started/submission-history.png" alt="Submission history page listing five visible previous submissions with more accessible via a pagination control below the current page of the table">
+        </a>
+      The 'Submission History' table includes the following fields:
+      <ul>
+        <li>Submitted On: The date and time the data file(s) were submitted</li>
+        <li>Submitted By: The user who submitted the data file(s)</li>
+        <li>File Name: The name of the data file(s) are clickable and downloads the file</li>
+      </ul>
+    </li>
 
-</ul>
+    <li class="usa-process-list__item">
+      <h3 class="usa-process-list__heading">How to retrieve your submitted data</h3>
+      <br>
+      <p>To access a file previously uploaded to TDP from 'Submission History', you can click the link in the ‘File Name’ column. Note: TDP will auto-rename files to specify the fiscal period and section (e.g. 2021.Q1.Active Case Data), so depending on your original file-naming conventions, the files you download may have a different name.</p>
+      <a href="../img/getting-started/click-file-name-download.png" data-lity data-lity-desc="Submission history page emphasizing the ability to click on the file name of a previously submitted file to download it">
+      <img src="../img/getting-started/click-file-name-download.png" alt="Submission history page emphasizing the ability to click on the file name of a previously submitted file to download it">
+      </a>
+  </ol>
 
       </main>
     </div>

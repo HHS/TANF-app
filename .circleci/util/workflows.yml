@@ -1,5 +1,6 @@
 # workflows:
   erd:
+    unless: << pipeline.parameters.run_nightly_owasp_scan >>
     jobs:
       - make_erd:
           filters:
