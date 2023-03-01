@@ -112,6 +112,9 @@ class User(AbstractUser):
 
     def validate_location(self):
         """Throw a validation error if a user has a location type incompatable with their role."""
+        if self.groups.count() == 0 and self.location:
+            return
+
         if (
             not (self.is_regional_staff or self.is_data_analyst or self.is_developer)
         ) and self.location:

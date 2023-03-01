@@ -35,9 +35,11 @@ def _load_csv(filename, entity):
             if filename == "tribes.csv":
                 stt.state = STT.objects.get(postal_code=row["Code"], type=STT.EntityType.STATE)
 
+            chars = 3 if entity == STT.EntityType.TRIBE else 2
+            stt.stt_code = str(row["STT_CODE"]).zfill(chars)
+
             stt.type = entity
             stt.filenames = json.loads(row["filenames"].replace('\'', '"'))
-            stt.stt_code = row["STT_CODE"]
             stt.ssp = row["SSP"]
             stt.sample = row["Sample"]
             # TODO: Was seeing lots of references to STT.objects.filter(pk=...
