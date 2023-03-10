@@ -8,7 +8,6 @@ import {
   setYear,
   setStt,
   setQuarter,
-  getAvailableFileList,
   setFileType,
   getCurrentSubmission,
 } from '../../actions/reports'

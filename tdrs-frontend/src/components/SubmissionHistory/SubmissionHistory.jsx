@@ -3,18 +3,9 @@ import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import { fileUploadSections } from '../../reducers/reports'
 import Paginator from '../Paginator'
-import {
-  clearFileList,
-  setYear,
-  setStt,
-  setQuarter,
-  getAvailableFileList,
-  setFileType,
-  download,
-} from '../../actions/reports'
+import { getAvailableFileList, download } from '../../actions/reports'
 import { useEffect } from 'react'
 import { useState } from 'react'
-import Button from '../Button'
 
 const formatDate = (dateStr) => new Date(dateStr).toLocaleString()
 
