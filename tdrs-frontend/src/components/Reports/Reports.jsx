@@ -17,6 +17,7 @@ import { fetchSttList } from '../../actions/sttList'
 import Modal from '../Modal'
 import SegmentedControl from '../SegmentedControl'
 import SubmissionHistory from '../SubmissionHistory'
+import { selectPrimaryUserRole } from '../../selectors/auth'
 
 /**
  * Reports is the home page for users to file a report.
@@ -36,8 +37,7 @@ function Reports() {
   const [quarterInputValue, setQuarterInputValue] = useState(selectedQuarter)
   // The logged in user saved in our redux `auth` state object
   const user = useSelector((state) => state.auth.user)
-  const isOFAAdmin =
-    user && user.roles.some((role) => role.name === 'OFA Admin')
+  const isOFAAdmin = useSelector(selectPrimaryUserRole)?.name === 'OFA Admin'
   const sttList = useSelector((state) => state?.stts?.sttList)
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
@@ -194,7 +194,9 @@ function Reports() {
       )
       const touchedFields = Object.keys(touched).length
 
-      const errors = touchedFields === 3 ? 3 - form.length : 0
+      const expected_fields = isOFAAdmin ? 3 : 2
+
+      const errors = touchedFields === 3 ? expected_fields - form.length : 0
 
       setFormValidationState((currentState) => ({
         ...currentState,
@@ -212,6 +214,7 @@ function Reports() {
     quarterInputValue,
     setFormValidationState,
     touched,
+    isOFAAdmin,
   ])
 
   return (
