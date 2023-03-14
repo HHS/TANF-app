@@ -38,6 +38,7 @@ urlpatterns = [
     path("stts/", include("tdpservice.stts.urls")),
     path("data_files/", include("tdpservice.data_files.urls")),
     path("logs/", write_logs),
+    path("parsing/", include("tdpservice.search_indexes.parsers.urls")),
 ]
 
 if settings.DEBUG:
