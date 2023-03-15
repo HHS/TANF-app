@@ -1,11 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import GovBanner from './components/GovBanner'
 import Routes from './components/Routes'
 import { Alert } from './components/Alert'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import { getParseErrors } from './actions/createXLSReport'
-import configureStore, { history } from './configureStore'
 
 /**
  * The root component
@@ -17,12 +15,6 @@ import configureStore, { history } from './configureStore'
  * Renders Routes and all its children
  */
 function App() {
-  useEffect(() => {
-    console.log('in use effect')
-    const store = configureStore()
-    store.dispatch(getParseErrors())
-    console.log('after getParseErrors()')
-  }, [])
   return (
     <>
       <a
