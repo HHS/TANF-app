@@ -685,7 +685,7 @@ describe('Reports', () => {
     })
   })
 
-  it('should show next calander year in fiscal year dropdown in October', () => {
+  it('should show next calendar year in fiscal year dropdown in October', () => {
     const currentYear = new Date().getFullYear()
 
     const getNow = () => new Date(Date.now())
@@ -712,7 +712,7 @@ describe('Reports', () => {
     expect(expected).toEqual((currentYear + 1).toString())
   })
 
-  it('should show current calander year in fiscal year dropdown in January', () => {
+  it('should show current calendar year in fiscal year dropdown in January', () => {
     const currentYear = new Date().getFullYear()
 
     const getNow = () => new Date(Date.now())

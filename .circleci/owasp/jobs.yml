@@ -1,6 +1,6 @@
 # jobs:
   backend-owasp-scan:
-    executor: machine-executor
+    executor: zap-machine
     working_directory: ~/tdp-apps
     steps:
       - checkout
@@ -21,7 +21,7 @@
           target: backend
 
   frontend-owasp-scan:
-    executor: machine-executor
+    executor: zap-machine
     working_directory: ~/tdp-apps
     steps:
       - checkout
@@ -42,7 +42,7 @@
           target: frontend
 
   nightly-owasp-scan:
-    executor: machine-executor
+    executor: zap-machine
     working_directory: ~/tdp-apps
     parameters:
       cf_password:

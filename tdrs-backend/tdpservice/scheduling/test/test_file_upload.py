@@ -22,7 +22,7 @@ def stt_instance(region):
         name="first",
         region=region,
         postal_code="AR",
-        stt_code=1234,
+        stt_code='234',
         filenames={
             'Aggregate Data': 'ADS.E2J.NDM3.TS22',
             'Active Case Data': 'test',
