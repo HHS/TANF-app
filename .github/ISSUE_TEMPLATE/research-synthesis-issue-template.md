@@ -15,6 +15,17 @@ assignees: ''
 
 - [ ] A hack.md with the drafted synthesis has been reviewed.
 - [ ] PR has been opened containing the final draft of the synthesis.
+- [ ] Internal Raft Review has occurred to ensure DoD standards and QA
+- [ ] The content is usable and accessible, meaning it adheres to definition of done standards for design work.
+> <details>
+>      <summary>Expand Definition of Done Standards</summary>
+> 
+> - It uses [USWDS components and follows it’s UX guidance](https://designsystem.digital.gov/components/), or a deviation is clearly documented
+> 
+> - Language is intentional and [plain](https://plainlanguage.gov/guidelines/); placeholders are clearly documented
+> - It follows [accessibility guidelines](https://accessibility.digital.gov/) and accessibility implementation notes are documented (e.g. clear information hierarchy, color is not the only way meaning is communicated, etc.)
+> - If feedback identifies bigger questions or unknowns, create additional issues to investigate
+> </details>
 
 **Tasks:**
 

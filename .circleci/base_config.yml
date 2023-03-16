@@ -18,7 +18,7 @@ executors:
     machine:
       docker_layer_caching: false
       image: ubuntu-2204:2022.10.1
-    resource_class: xlarge
+    resource_class: large
 
 parameters:
   develop_branch_deploy:

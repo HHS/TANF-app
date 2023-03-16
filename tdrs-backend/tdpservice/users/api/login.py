@@ -137,15 +137,17 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
             # user's `sub` UUID from the decoded payload, with which we will
             # authenticate later.
             initial_user = CustomAuthentication.authenticate(username=email)
+            logging.debug("initial_user obj:{}".format(initial_user))
 
-            if initial_user.login_gov_uuid is None:
-                # Save the `sub` to the superuser.
-                initial_user.login_gov_uuid = sub
-                initial_user.save()
+            if initial_user is not None:
+                if initial_user.login_gov_uuid is None:
+                    # Save the `sub` to the superuser.
+                    initial_user.login_gov_uuid = sub
+                    initial_user.save()
 
-                # Login with the new superuser.
-                self.login_user(request, initial_user, login_msg)
-                return initial_user
+                    # Login with the new superuser.
+                    self.login_user(request, initial_user, login_msg)
+                    return initial_user
 
         auth_options = self.get_auth_options(access_token=access_token, sub=sub)
         logging.debug("auth_options: {}".format(auth_options))
