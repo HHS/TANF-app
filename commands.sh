@@ -89,6 +89,10 @@ alias tdrs-fix-django-populate='tdrs-backend-exec && sed -i "s/raise Runtime..po
 # A recurring pattern I was doing to get a fresh setup
 alias tdrs-fresh-start='tdrs-stop && docker system prune --volumes && tdrs-start'
 
+# Deploy current branch to the given environment
+# See comments in main function for to set up Circle CI token
+alias tdrs-deploy='tdrs-run-deploy'
+
 # run flake8 against backend source from inside of web container
 tdrs-lint-backend() {
     tdrs-compose-backend run --rm web bash -c "flake8 . && if [ $? -eq 0 ]; then echo 'Flake8 linter found no issues'; fi"
@@ -181,6 +185,22 @@ tdrs-run-frontend-owasp() {
     docker-compose up -d --build
     cd ..
     ./scripts/zap-scanner.sh frontend circle
+}
+
+tdrs-run-deploy() {
+    # Circle CI token can be generated here: https://app.circleci.com/settings/user/tokens
+    # Once generated add it to your shell profile as CIRCLE_CI_TOKEN
+    # Use like: tdrs-deploy sandbox
+    TARGET_ENV=$1
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+    echo "Deploying branch $BRANCH to $TARGET_ENV"
+
+    curl --request POST \
+    --url https://circleci.com/api/v2/project/github/raft-tech/TANF-app/pipeline \
+    --header 'Circle-Token: '$CIRCLE_CI_TOKEN \
+    --header 'content-type: application/json' \
+    --data '{"parameters":{"run_dev_deployment": true, "target_env":"'$TARGET_ENV'"}, "branch":"'$BRANCH'"}'
 }
 
 # List all aliases and functions associated with tdrs

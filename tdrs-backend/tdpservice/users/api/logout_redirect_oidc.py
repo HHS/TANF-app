@@ -49,7 +49,7 @@ class LogoutRedirectOIDC(RedirectView):
 
         # params needed by the logout endpoint
         logout_params = {
-            "id_token_hint": token_hint,
+            "client_id": settings.LOGIN_GOV_CLIENT_ID,
             "redirect_uri": settings.BASE_URL + "/logout",
             "state": state,
         }

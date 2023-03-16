@@ -93,7 +93,7 @@ describe('Home', () => {
     )
 
     const header = getByText(
-      "You've been approved as a(n) OFA Admin. You'll be able to do the following in TDP:"
+      `You have been approved for access to TDP. For guidance on submitting data, managing your account, and utilizing other functionality please refer to the TDP Knowledge Center.`
     )
     expect(header).toBeInTheDocument()
   })
@@ -119,7 +119,7 @@ describe('Home', () => {
     )
 
     const header = getByText(
-      `You've been approved as a(n) Data Analyst. You'll be able to do the following in TDP:`
+      `You have been approved for access to TDP. For guidance on submitting data, managing your account, and utilizing other functionality please refer to the TDP Knowledge Center.`
     )
     expect(header).toBeInTheDocument()
   })
@@ -137,38 +137,6 @@ describe('Home', () => {
             {
               id: 1,
               name: 'Data Analyst',
-              permissions: [
-                {
-                  id: 8,
-                  codename: 'view_logentry',
-                  name: 'Can view log entry',
-                },
-                {
-                  id: 49,
-                  codename: 'add_datafile',
-                  name: 'Can add data file',
-                },
-                {
-                  id: 52,
-                  codename: 'view_datafile',
-                  name: 'Can view data file',
-                },
-                {
-                  id: 37,
-                  codename: 'add_user',
-                  name: 'Can add user',
-                },
-                {
-                  id: 38,
-                  codename: 'change_user',
-                  name: 'Can change user',
-                },
-                {
-                  id: 40,
-                  codename: 'view_user',
-                  name: 'Can view user',
-                },
-              ],
             },
           ],
         },
@@ -183,14 +151,9 @@ describe('Home', () => {
 
     expect(
       getByText(
-        `You've been approved as a(n) Data Analyst. You'll be able to do the following in TDP:`
+        `You have been approved for access to TDP. For guidance on submitting data, managing your account, and utilizing other functionality please refer to the TDP Knowledge Center.`
       )
     ).toBeInTheDocument()
-    expect(getByText('Can view log entry')).toBeInTheDocument()
-    expect(getByText('Can change user')).toBeInTheDocument()
-    expect(getByText('Can add user')).toBeInTheDocument()
-    expect(getByText('Can view log entry')).toBeInTheDocument()
-    expect(getByText('Can add data file')).toBeInTheDocument()
   })
 })
 

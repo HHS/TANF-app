@@ -1,6 +1,8 @@
 """Models representing parsed data file records submitted to TDP."""
 
 from django.db import models
+from django.contrib.contenttypes.fields import GenericRelation
+from .parsers.models import ParserError
 
 class T1(models.Model):
     """
@@ -12,6 +14,7 @@ class T1(models.Model):
     # def __is_valid__():
     # TODO: might need a correlating validator to check across fields
 
+    error = GenericRelation(ParserError)
     RecordType = models.CharField(max_length=156, null=False, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=False, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=False, blank=False)

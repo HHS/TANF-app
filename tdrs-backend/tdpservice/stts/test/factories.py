@@ -33,7 +33,7 @@ class STTFactory(factory.django.DjangoModelFactory):
     type = "STATE"
     filenames = "{'Active Case Data': 'ADS.E2J.FTP1.TS72', 'Closed Case Data': 'ADS.E2J.FTP2.TS72', " \
                 "'Aggregate Data': 'ADS.E2J.FTP3.TS72', 'Stratum Data': 'ADS.E2J.FTP4.TS72'}"
-    stt_code = 42
+    stt_code = '42'
     region = factory.SubFactory(RegionFactory)
 
     @classmethod
