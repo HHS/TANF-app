@@ -244,7 +244,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
     ):
         """Test that an STT Data Analyst gets emails after uploads for their location."""
         user.account_approval_status = AccountApprovalStatusChoices.APPROVED
-        user.location_id = data_file_data['stt']
+        user.stt_id = data_file_data['stt']
         user.save()
 
         with patch('tdpservice.email.email.automated_email.delay') as mock_automated_email:

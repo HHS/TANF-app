@@ -6,12 +6,12 @@ import uuid
 from tdpservice.email.helpers.account_status import send_approval_status_update_email
 
 from django.contrib.auth.models import AbstractUser
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+
+from tdpservice.stts.models import STT, Region
 
 logger = logging.getLogger()
 
@@ -34,19 +34,21 @@ class User(AbstractUser):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    limit = models.Q(app_label="stts", model="stt") | models.Q(
-        app_label="stts", model="region"
+    stt = models.ForeignKey(
+        STT,
+        on_delete=models.deletion.SET_NULL,
+        related_name='users',
+        null=True,
+        blank=True
     )
 
-    location_id = models.PositiveIntegerField(null=True, blank=True)
-    location_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
+    region = models.ForeignKey(
+        Region,
+        on_delete=models.deletion.SET_NULL,
+        related_name='users',
         null=True,
-        blank=True,
-        limit_choices_to=limit,
+        blank=True
     )
-    location = GenericForeignKey("location_type", "location_id")
 
     # The unique `sub` UUID from decoded login.gov payloads for login.gov users.
     login_gov_uuid = models.UUIDField(
@@ -112,12 +114,17 @@ class User(AbstractUser):
 
     def validate_location(self):
         """Throw a validation error if a user has a location type incompatable with their role."""
-        if self.groups.count() == 0 and self.location:
+        if self.region and self.stt:
+            raise ValidationError(
+                _("A user may only have a Region or STT assigned, not both.")
+            )
+
+        if self.groups.count() == 0 and (self.stt or self.region):
             return
 
         if (
             not (self.is_regional_staff or self.is_data_analyst or self.is_developer)
-        ) and self.location:
+        ) and (self.stt or self.region):
             raise ValidationError(
                 _(
                     "Users other than Regional Staff, Developers, Data Analysts do not get assigned a location"
@@ -125,16 +132,14 @@ class User(AbstractUser):
             )
         elif (
             self.is_regional_staff
-            and self.location_type
-            and self.location_type.model != "region"
+            and self.stt
         ):
             raise ValidationError(
                 _("Regional staff cannot have a location type other than region")
             )
         elif (
             self.is_data_analyst
-            and self.location_type
-            and self.location_type.model != "stt"
+            and self.region
         ):
             raise ValidationError(
                 _("Data Analyst cannot have a location type other than stt")
@@ -164,38 +169,6 @@ class User(AbstractUser):
     def is_ocio_staff(self) -> bool:
         """Return whether or not the user is in the ACF OCIO Group."""
         return self.is_in_group("ACF OCIO")
-
-    @property
-    def stt(self):
-        """Return the location if the location is an STT."""
-        if self.location and self.location_type.model == "stt":
-            return self.location
-        else:
-            return None
-
-    @stt.setter
-    def stt(self, value):
-        if self.is_regional_staff:
-            raise ValidationError(
-                _("Regional staff cannot have an sst assigned to them")
-            )
-        self.location = value
-
-    @property
-    def region(self):
-        """Return the location if the location is a Region."""
-        if self.location and self.location_type.model == "region":
-            return self.location
-        else:
-            return None
-
-    @region.setter
-    def region(self, value):
-        if self.is_data_analyst:
-            raise ValidationError(
-                _("Data Analyst cannot have a region assigned to them")
-            )
-        self.location = value
 
     @property
     def is_deactivated(self):
