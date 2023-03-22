@@ -4,7 +4,7 @@
 import pytest
 from pathlib import Path
 from .. import parse
-from ...data_files.models import DataFile
+from tdpservice.data_files.models import DataFile
 
 
 def create_test_datafile(filename, stt_user, stt):
@@ -44,7 +44,7 @@ def test_parse_section_mismatch(test_datafile):
     test_datafile.save()
     errors = parse.parse_datafile(test_datafile)
     assert errors == {
-        'document': ['Section does not match']
+        'document': ['Section does not match.']
     }
 
 

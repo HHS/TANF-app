@@ -61,7 +61,7 @@ def parse_datafile(datafile):
 
     section = header['type']
 
-    if not datafile.section.find(section_names[section]) == -1:
+    if datafile.section.find(section_names[section]) == -1:
         errors['document'] = ['Section does not match.']
         return errors
 
