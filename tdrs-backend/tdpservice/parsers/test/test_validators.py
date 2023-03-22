@@ -89,8 +89,8 @@ def test_between_returns_invalid_for_string_value():
     validator = validators.between(100, 400)
     is_valid, error = validator(value)
 
-    assert is_valid is True
-    assert error is None
+    assert is_valid is False
+    assert error == '047 is not between 100 and 400.'
 
 
 def test_hasLength_returns_valid():

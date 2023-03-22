@@ -210,11 +210,15 @@ def test_field_validators_blank_and_required_returns_error():
     """Test required field returns error if value not provided (blank)."""
     instance = {
         'first': ' ',
+        'second': '  ',
     }
     schema = RowSchema(
         model=dict,
         fields=[
-            Field(name='first', type='string', startIndex=0, endIndex=3, required=True, validators=[
+            Field(name='first', type='string', startIndex=0, endIndex=1, required=True, validators=[
+                passing_validator(),
+            ]),
+            Field(name='second', type='string', startIndex=1, endIndex=3, required=True, validators=[
                 passing_validator(),
             ]),
         ]
@@ -222,7 +226,10 @@ def test_field_validators_blank_and_required_returns_error():
 
     is_valid, errors = schema.run_field_validators(instance)
     assert is_valid is False
-    assert errors == ['first is required but a value was not provided.']
+    assert errors == [
+        'first is required but a value was not provided.',
+        'second is required but a value was not provided.'
+    ]
 
 
 def test_field_validators_blank_and_not_required_returns_valid():

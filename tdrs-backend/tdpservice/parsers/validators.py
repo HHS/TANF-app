@@ -72,30 +72,8 @@ def contains(substring):
 
 # custom validators
 
-def validate_line_matches_section(line, section):
-    """Not sure i want this anymore."""
-    section_allowed_lines = {
-        'Active Case Data': ['T1', 'T2', 'T3'],
-        'Closed Case Data': ['T3'],
-        'Aggregate Data': [],
-        'Stratum Data': [],
-    }
 
-    allowed_lines = section_allowed_lines[section]
-
-    line_is_allowed = False
-    for line_prefix in allowed_lines:
-        if line.startswith(line_prefix):
-            line_is_allowed = True
-            break
-
-    if not line_is_allowed:
-        return (False, 'Line type not allowed.')
-
-    return (True, None)
-
-
-def validate_document(file, section):
+def validate_document(file):
     """Validate that a raw datafile has one trailer and one footer."""
     headers = 0
     trailers = 0
@@ -107,10 +85,6 @@ def validate_document(file, section):
             headers += 1
         elif line.startswith('TRAILER'):
             trailers += 1
-        # else:
-        #     lines_valid, lines_error = validate_line_matches_section(line, section)
-        #     if not lines_valid:
-        #         return (False, lines_error)
 
         if headers > 1:
             return (False, 'Multiple headers found.')

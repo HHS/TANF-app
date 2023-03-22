@@ -11,7 +11,7 @@ def parse_datafile(datafile):
     rawfile = datafile.file
     errors = {}
 
-    document_is_valid, document_error = validators.validate_document(rawfile, datafile.section)
+    document_is_valid, document_error = validators.validate_document(rawfile)
     if not document_is_valid:
         errors['document'] = [document_error]
         return errors
@@ -59,8 +59,10 @@ def parse_datafile(datafile):
         'S': 'Stratum Data',
     }
 
-    if not section_names[header['type']] == datafile.section:
-        errors['document'] = ['Section does not match']
+    section = header['type']
+
+    if not datafile.section.find(section_names[section]) == -1:
+        errors['document'] = ['Section does not match.']
         return errors
 
     # parse line with appropriate schema
@@ -70,7 +72,7 @@ def parse_datafile(datafile):
     for rawline in rawfile:
         line_number += 1
         line = rawline.decode().strip('\r\n')
-        schema = get_schema(line, schema_options)
+        schema = get_schema(line, section, schema_options)
 
         if schema:
             record, record_is_valid, record_errors = schema.parse_and_validate(line)
@@ -83,31 +85,31 @@ def parse_datafile(datafile):
     return errors
 
 
-def get_schema(line, schema_options):
+def get_schema(line, section, schema_options):
     """Return the appropriate schema for the line."""
     if line.startswith('HEADER'):
         return None
     elif line.startswith('TRAILER'):
         return None
-    elif line.startswith('T1'):
+    elif section == 'A' and line.startswith('T1'):
         return None
         # return schema_options.t1
-    elif line.startswith('T2'):
+    elif section == 'A' and line.startswith('T2'):
         return None
         # return schema_options.t2
-    elif line.startswith('T3'):
+    elif section == 'A' and line.startswith('T3'):
         return None
         # return schema_options.t3
-    elif line.startswith('T4'):
+    elif section == 'C' and line.startswith('T4'):
         return None
         # return schema_options.t4
-    elif line.startswith('T5'):
+    elif section == 'C' and line.startswith('T5'):
         return None
         # return schema_options.t5
-    elif line.startswith('T6'):
+    elif section == 'G' and line.startswith('T6'):
         return None
         # return schema_options.t6
-    elif line.startswith('T7'):
+    elif section == 'S' and line.startswith('T7'):
         return None
         # return schema_options.t7
     else:
