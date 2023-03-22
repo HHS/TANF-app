@@ -4,6 +4,7 @@ from .. import validators
 
 
 def test_matches_returns_valid():
+    """Test `matches` gives a valid result."""
     value = 'TEST'
 
     validator = validators.matches('TEST')
@@ -14,6 +15,7 @@ def test_matches_returns_valid():
 
 
 def test_matches_returns_invalid():
+    """Test `matches` gives an invalid result."""
     value = 'TEST'
 
     validator = validators.matches('test')
@@ -24,6 +26,7 @@ def test_matches_returns_invalid():
 
 
 def test_oneOf_returns_valid():
+    """Test `oneOf` gives a valid result."""
     value = 17
     options = [17, 24, 36]
 
@@ -35,6 +38,7 @@ def test_oneOf_returns_valid():
 
 
 def test_oneOf_returns_invalid():
+    """Test `oneOf` gives an invalid result."""
     value = 64
     options = [17, 24, 36]
 
@@ -46,6 +50,7 @@ def test_oneOf_returns_invalid():
 
 
 def test_between_returns_valid():
+    """Test `between` gives a valid result for integers."""
     value = 47
 
     validator = validators.between(3, 400)
@@ -56,6 +61,7 @@ def test_between_returns_valid():
 
 
 def test_between_returns_valid_for_string_value():
+    """Test `between` gives a valid result for strings."""
     value = '047'
 
     validator = validators.between(3, 400)
@@ -66,6 +72,7 @@ def test_between_returns_valid_for_string_value():
 
 
 def test_between_returns_invalid():
+    """Test `between` gives an invalid result for integers."""
     value = 47
 
     validator = validators.between(48, 400)
@@ -75,7 +82,19 @@ def test_between_returns_invalid():
     assert error == '47 is not between 48 and 400.'
 
 
+def test_between_returns_invalid_for_string_value():
+    """Test `between` gives an invalid result for strings."""
+    value = '047'
+
+    validator = validators.between(100, 400)
+    is_valid, error = validator(value)
+
+    assert is_valid is True
+    assert error is None
+
+
 def test_hasLength_returns_valid():
+    """Test `hasLength` gives a valid result."""
     value = 'abcd123'
 
     validator = validators.hasLength(7)
@@ -86,6 +105,7 @@ def test_hasLength_returns_valid():
 
 
 def test_hasLength_returns_invalid():
+    """Test `hasLength` gives an invalid result."""
     value = 'abcd123'
 
     validator = validators.hasLength(22)
@@ -96,6 +116,7 @@ def test_hasLength_returns_invalid():
 
 
 def test_contains_returns_valid():
+    """Test `contains` gives a valid result."""
     value = '12345abcde'
 
     validator = validators.contains('2345')
@@ -106,6 +127,7 @@ def test_contains_returns_valid():
 
 
 def test_contains_returns_invalid():
+    """Test `contains` gives an invalid result."""
     value = '12345abcde'
 
     validator = validators.contains('6789')
