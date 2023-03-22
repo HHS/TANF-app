@@ -2,6 +2,7 @@
 
 
 # higher order validator func
+
 def make_validator(validator_func, error_func):
     """Return a function accepting a value input and returning (bool, string) to represent validation state."""
     return lambda value: (True, None) if validator_func(value) else (False, error_func(value))
@@ -15,7 +16,6 @@ def matches(option):
         lambda value: value == option,
         lambda value: f'{value} does not match {option}.'
     )
-    # return lambda value: (True, None) if value == option else (False, f'{value} does not match {option}.')
 
 
 def oneOf(options=[]):
@@ -24,7 +24,6 @@ def oneOf(options=[]):
         lambda value: value in options,
         lambda value: f'{value} is not in {options}.'
     )
-    # return lambda value: (True, None) if value in options else (False, f'{value} is not in {options}.')
 
 
 def between(min, max):
@@ -33,12 +32,6 @@ def between(min, max):
         lambda value: int(value) > min and int(value) < max,
         lambda value: f'{value} is not between {min} and {max}.'
     )
-    # def validator(value):
-    #     if int(value) > min and int(value) < max:
-    #         return (True, None)
-    #     else:
-    #         return (False, f'{value} is not between {min} and {max}.')
-    # return validator
 
 
 def hasLength(length):
@@ -47,13 +40,6 @@ def hasLength(length):
         lambda value: len(value) == length,
         lambda value: f'Value length {len(value)} does not match {length}.'
     )
-    # def validator(value):
-    #     value_length = len(value)
-    #     if value_length == length:
-    #         return (True, None)
-    #     else:
-    #         return (False, f'Value length {value_length} does not match {length}.')
-    # return validator
 
 
 def contains(substring):
@@ -62,16 +48,9 @@ def contains(substring):
         lambda value: value.find(substring) != -1,
         lambda value: f'{value} does not contain {substring}.'
     )
-    # def validator(value):
-    #     if value.find(substring) != -1:
-    #         return (True, None)
-    #     else:
-    #         return (False, f'{value} does not contain {substring}.')
-    # return validator
 
 
 # custom validators
-
 
 def validate_document(file):
     """Validate that a raw datafile has one trailer and one footer."""
