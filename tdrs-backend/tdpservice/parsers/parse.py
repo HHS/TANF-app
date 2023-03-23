@@ -41,14 +41,7 @@ def parse_datafile(datafile):
         return errors
 
     # determine the file type
-    schema_options = None
-    match header['program_type']:
-        case 'TAN':
-            schema_options = schema_defs.tanf
-        case 'SSP':
-            # schema_options = schema_defs.ssp
-            schema_options = None
-        # case tribal?
+    schema_options = get_schema_options(header['program_type'])
 
     # ensure section matches given
     section_names = {
@@ -71,18 +64,48 @@ def parse_datafile(datafile):
     for rawline in rawfile:
         line_number += 1
         line = rawline.decode().strip('\r\n')
-        schema = get_schema(line, section, schema_options)
 
-        if schema:
-            record, record_is_valid, record_errors = schema.parse_and_validate(line)
-            if not record_is_valid:
-                errors[line_number] = record_errors
+        if line.startswith('HEADER') or line.startswith('TRAILER'):
+            continue
+
+        schema = get_schema(line, section, schema_options)
+        record_is_valid, record_errors = parse_datafile_line(line, schema)
+
+        if not record_is_valid:
+            errors[line_number] = record_errors
 
             if record:
                 record.errors = errors
                 record.save()
 
     return errors
+
+
+def parse_datafile_line(line, schema):
+    """Parse and validate a datafile line and save any errors to the model."""
+    if schema:
+        record, record_is_valid, record_errors = schema.parse_and_validate(line)
+
+        if record:
+            record.errors = record_errors
+            record.save()
+
+        return record_is_valid, record_errors
+
+    return (False, ['No schema selected.'])
+
+
+def get_schema_options(program_type):
+    """Return the allowed schema options."""
+    match program_type:
+        case 'TAN':
+            # schema_options = schema_defs.tanf
+            return None
+        case 'SSP':
+            # schema_options = schema_defs.ssp
+            return None
+        # case tribal?
+    return None
 
 
 def get_schema(line, section, schema_options):
@@ -92,7 +115,6 @@ def get_schema(line, section, schema_options):
     elif line.startswith('TRAILER'):
         return None
     elif section == 'A' and line.startswith('T1'):
-        # return None
         return schema_options.t1
     elif section == 'A' and line.startswith('T2'):
         return None
