@@ -79,8 +79,9 @@ def parse_datafile(datafile):
             if not record_is_valid:
                 errors[line_number] = record_errors
 
-            record.errors = errors
-            record.save()
+            if record:
+                record.errors = errors
+                record.save()
 
     return errors
 
