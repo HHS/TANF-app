@@ -15,5 +15,7 @@ def parse(data_file_id):
     # to avoid those. I suppose good practice to not store/serializer large file contents in memory when stored in redis
     # for undetermined amount of time.
     data_file = DataFile.objects.get(id=data_file_id)
-    errors = parse_datafile(data_file, "TANF", data_file.section)  # data_file.type_ssp_something, data_file.section)
-    logger.info(f"DataFile parsing finished with {len(errors)} errors {errors}")
+
+    logger.info(f"DataFile parsing started for file {data_file.filename}")
+    errors = parse_datafile(data_file)
+    logger.info(f"DataFile parsing finished with {len(errors)} errors: {errors}")
