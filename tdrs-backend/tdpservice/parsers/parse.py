@@ -41,15 +41,7 @@ def parse_datafile(datafile):
         return errors
 
     # determine the file type
-    schema_options = None
-    match header['program_type']:
-        case 'TAN':
-            # schema_options = schema_defs.tanf
-            schema_options = None
-        case 'SSP':
-            # schema_options = schema_defs.ssp
-            schema_options = None
-        # case tribal?
+    schema_options = get_schema_options(header['program_type'])
 
     # ensure section matches given
     section_names = {
@@ -74,16 +66,38 @@ def parse_datafile(datafile):
         line = rawline.decode().strip('\r\n')
         schema = get_schema(line, section, schema_options)
 
-        if schema:
-            record, record_is_valid, record_errors = schema.parse_and_validate(line)
-            if not record_is_valid:
-                errors[line_number] = record_errors
+        record_is_valid, record_errors = parse_datafile_line(line, schema)
 
-            if record:
-                record.errors = errors
-                record.save()
+        if not record_is_valid:
+            errors[line_number] = record_errors
 
     return errors
+
+
+def parse_datafile_line(line, schema):
+    """Parse and validate a datafile line and save any errors to the model."""
+    if schema:
+        record, record_is_valid, record_errors = schema.parse_and_validate(line)
+
+        if record:
+            record.errors = record_errors
+            record.save()
+
+        return record_is_valid, record_errors
+
+    # return (False, 'No schema selected.')
+
+
+def get_schema_options(program_type):
+    """Return the allowed schema options."""
+    match program_type:
+        case 'TAN':
+            # schema_options = schema_defs.tanf
+            return None
+        case 'SSP':
+            # schema_options = schema_defs.ssp
+            return None
+        # case tribal?
 
 
 def get_schema(line, section, schema_options):
