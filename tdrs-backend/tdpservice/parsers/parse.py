@@ -74,10 +74,6 @@ def parse_datafile(datafile):
         if not record_is_valid:
             errors[line_number] = record_errors
 
-            if record:
-                record.errors = errors
-                record.save()
-
     return errors
 
 
@@ -99,10 +95,9 @@ def get_schema_options(program_type):
     """Return the allowed schema options."""
     match program_type:
         case 'TAN':
-            # schema_options = schema_defs.tanf
-            return None
+            return schema_defs.tanf
         case 'SSP':
-            # schema_options = schema_defs.ssp
+            # return schema_defs.ssp
             return None
         # case tribal?
     return None

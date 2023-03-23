@@ -62,12 +62,10 @@ def test_big_file(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_big_file(test_big_file):
     """Test parsing of ADS.E2J.FTP1.TS06."""
-    expected_errors = {}
-    for i in range(2, 2645):
-        expected_errors[i] = ['No schema selected.']
-
+    expected_errors_count = 1828
     errors = parse.parse_datafile(test_big_file)
-    assert errors == expected_errors
+
+    assert len(errors.keys()) == expected_errors_count
 
 
 @pytest.fixture
