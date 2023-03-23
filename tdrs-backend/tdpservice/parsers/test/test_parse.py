@@ -34,7 +34,9 @@ def test_datafile(stt_user, stt):
 def test_parse_small_correct_file(test_datafile):
     """Test parsing of small_correct_file."""
     errors = parse.parse_datafile(test_datafile)
-    assert errors == {}
+    assert errors == {
+        2: ['No schema selected.']
+    }
 
 
 @pytest.mark.django_db
@@ -57,8 +59,12 @@ def test_big_file(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_big_file(test_big_file):
     """Test parsing of ADS.E2J.FTP1.TS06."""
+    expected_errors = {}
+    for i in range(2, 2645):
+        expected_errors[i] = ['No schema selected.']
+
     errors = parse.parse_datafile(test_big_file)
-    assert errors == {}
+    assert errors == expected_errors
 
 
 @pytest.fixture

@@ -64,8 +64,11 @@ def parse_datafile(datafile):
     for rawline in rawfile:
         line_number += 1
         line = rawline.decode().strip('\r\n')
-        schema = get_schema(line, section, schema_options)
 
+        if line.startswith('HEADER') or line.startswith('TRAILER'):
+            continue
+
+        schema = get_schema(line, section, schema_options)
         record_is_valid, record_errors = parse_datafile_line(line, schema)
 
         if not record_is_valid:
@@ -85,7 +88,7 @@ def parse_datafile_line(line, schema):
 
         return record_is_valid, record_errors
 
-    # return (False, 'No schema selected.')
+    return (False, ['No schema selected.'])
 
 
 def get_schema_options(program_type):
@@ -98,15 +101,12 @@ def get_schema_options(program_type):
             # schema_options = schema_defs.ssp
             return None
         # case tribal?
+    return None
 
 
 def get_schema(line, section, schema_options):
     """Return the appropriate schema for the line."""
-    if line.startswith('HEADER'):
-        return None
-    elif line.startswith('TRAILER'):
-        return None
-    elif section == 'A' and line.startswith('T1'):
+    if section == 'A' and line.startswith('T1'):
         return None
         # return schema_options.t1
     elif section == 'A' and line.startswith('T2'):
