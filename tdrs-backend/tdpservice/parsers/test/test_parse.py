@@ -5,6 +5,7 @@ import pytest
 from pathlib import Path
 from .. import parse
 from tdpservice.data_files.models import DataFile
+from tdpservice.search_indexes.models import T1
 
 
 def create_test_datafile(filename, stt_user, stt):
@@ -33,8 +34,12 @@ def test_datafile(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile):
     """Test parsing of small_correct_file."""
+    t1_count_before = T1.objects.count()
     errors = parse.parse_datafile(test_datafile)
+    t1_count_after = T1.objects.count()
+
     assert errors == {}
+    assert t1_count_after == (t1_count_before + 1)
 
 
 @pytest.mark.django_db

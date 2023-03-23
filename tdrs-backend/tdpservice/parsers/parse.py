@@ -44,8 +44,7 @@ def parse_datafile(datafile):
     schema_options = None
     match header['program_type']:
         case 'TAN':
-            # schema_options = schema_defs.tanf
-            schema_options = None
+            schema_options = schema_defs.tanf
         case 'SSP':
             # schema_options = schema_defs.ssp
             schema_options = None
@@ -79,8 +78,9 @@ def parse_datafile(datafile):
             if not record_is_valid:
                 errors[line_number] = record_errors
 
-            record.errors = errors
-            record.save()
+            if record:
+                record.errors = errors
+                record.save()
 
     return errors
 
@@ -92,8 +92,8 @@ def get_schema(line, section, schema_options):
     elif line.startswith('TRAILER'):
         return None
     elif section == 'A' and line.startswith('T1'):
-        return None
-        # return schema_options.t1
+        # return None
+        return schema_options.t1
     elif section == 'A' and line.startswith('T2'):
         return None
         # return schema_options.t2
