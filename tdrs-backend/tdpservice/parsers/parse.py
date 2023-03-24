@@ -105,11 +105,7 @@ def get_schema_options(program_type):
 
 def get_schema(line, section, schema_options):
     """Return the appropriate schema for the line."""
-    if line.startswith('HEADER'):
-        return None
-    elif line.startswith('TRAILER'):
-        return None
-    elif section == 'A' and line.startswith('T1'):
+    if section == 'A' and line.startswith('T1'):
         return schema_options.t1
     elif section == 'A' and line.startswith('T2'):
         return None
