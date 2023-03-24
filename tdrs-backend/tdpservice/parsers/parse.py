@@ -43,7 +43,7 @@ def parse_datafile(datafile):
     # determine the file type
     schema_options = get_schema_options(header['program_type'])
 
-    # ensure section matches given
+    # ensure file section matches upload section
     section_names = {
         'A': 'Active Case Data',
         'C': 'Closed Case Data',

@@ -74,8 +74,9 @@ class RowSchema:
         if not preparsing_is_valid:
             return None, False, preparsing_errors
 
-        # parse line to model -- if preparsing valid
+        # parse line to model
         record = self.parse_line(line)
+
         # run field validators
         fields_are_valid, field_errors = self.run_field_validators(record)
 
@@ -111,8 +112,6 @@ class RowSchema:
                 record[field.name] = value
             else:
                 setattr(record, field.name, value)
-
-        # record.save()
 
         return record
 
