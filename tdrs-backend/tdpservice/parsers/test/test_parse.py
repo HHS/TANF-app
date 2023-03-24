@@ -63,9 +63,13 @@ def test_big_file(stt_user, stt):
 def test_parse_big_file(test_big_file):
     """Test parsing of ADS.E2J.FTP1.TS06."""
     expected_errors_count = 1828
+    t1_count_before = T1.objects.count()
+
     errors = parse.parse_datafile(test_big_file)
+    t1_count_after = T1.objects.count()
 
     assert len(errors.keys()) == expected_errors_count
+    assert t1_count_after == (t1_count_before + 815)
 
 
 @pytest.fixture
