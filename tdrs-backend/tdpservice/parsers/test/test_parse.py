@@ -34,12 +34,23 @@ def test_datafile(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile):
     """Test parsing of small_correct_file."""
-    t1_count_before = T1.objects.count()
     errors = parse.parse_datafile(test_datafile)
-    t1_count_after = T1.objects.count()
 
     assert errors == {}
-    assert t1_count_after == (t1_count_before + 1)
+    assert T1.objects.count() == 1
+
+    # spot check
+    t1 = T1.objects.all().first()
+    assert t1.RPT_MONTH_YEAR == 202010
+    assert t1.CASE_NUMBER == '11111111112'
+    assert t1.COUNTY_FIPS_CODE == '230'
+    assert t1.ZIP_CODE == '40336'
+    assert t1.FUNDING_STREAM == 1
+    assert t1.NBR_FAMILY_MEMBERS == 2
+    assert t1.RECEIVES_SUB_CC == 3
+    assert t1.CASH_AMOUNT == 873
+    assert t1.SANC_REDUCTION_AMT == 0
+    assert t1.FAMILY_NEW_CHILD == 2
 
 
 @pytest.mark.django_db
@@ -63,13 +74,11 @@ def test_big_file(stt_user, stt):
 def test_parse_big_file(test_big_file):
     """Test parsing of ADS.E2J.FTP1.TS06."""
     expected_errors_count = 1828
-    t1_count_before = T1.objects.count()
-
+    expected_t1_record_count = 815
     errors = parse.parse_datafile(test_big_file)
-    t1_count_after = T1.objects.count()
 
     assert len(errors.keys()) == expected_errors_count
-    assert t1_count_after == (t1_count_before + 815)
+    assert T1.objects.count() == expected_t1_record_count
 
 
 @pytest.fixture
