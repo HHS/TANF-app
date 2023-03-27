@@ -53,3 +53,9 @@ export const accountIsMissingAccessRequest = (state) =>
   valueIsEmpty(selectUserAccountApprovalStatus(state)) ||
   accountStatusIsInitial(state) ||
   accountStatusIsDenied(state)
+
+export const accountCanViewAdmin = (state) =>
+  accountStatusIsApproved(state) &&
+  ['Developer', 'OFA System Admin', 'ACF OCIO', 'OFA Admin'].includes(
+    selectPrimaryUserRole(state)?.name
+  )
