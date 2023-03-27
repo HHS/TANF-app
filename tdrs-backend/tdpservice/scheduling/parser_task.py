@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from celery import shared_task
 import logging
 from tdpservice.data_files.models import DataFile
-from tdpservice.search_indexes.parsers.preparser import preparse
+from tdpservice.parsers.preparser import preparse
 
 logger = logging.getLogger(__name__)
 
