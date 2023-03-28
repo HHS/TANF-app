@@ -40,9 +40,6 @@ def parse_datafile(datafile):
     if not header_is_valid or not trailer_is_valid:
         return errors
 
-    # determine the file type
-    schema_options = get_schema_options(header['program_type'])
-
     # ensure file section matches upload section
     section_names = {
         'A': 'Active Case Data',
@@ -60,6 +57,7 @@ def parse_datafile(datafile):
     # parse line with appropriate schema
     rawfile.seek(0)
     line_number = 0
+    schema_options = get_schema_options(header['program_type'])
 
     for rawline in rawfile:
         line_number += 1
