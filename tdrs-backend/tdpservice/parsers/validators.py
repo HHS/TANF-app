@@ -50,6 +50,14 @@ def contains(substring):
     )
 
 
+def startsWith(substring):
+    """Validate that string value starts with the given substring param."""
+    return make_validator(
+        lambda value: value.startswith(substring),
+        lambda value: f'{value} does not start with {substring}.'
+    )
+
+
 # custom validators
 
 def validate_single_header_trailer(file):

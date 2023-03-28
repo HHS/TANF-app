@@ -135,3 +135,25 @@ def test_contains_returns_invalid():
 
     assert is_valid is False
     assert error == '12345abcde does not contain 6789.'
+
+
+def test_startsWith_returns_valid():
+    """Test `startsWith` gives a valid result."""
+    value = '12345abcde'
+
+    validator = validators.startsWith('1234')
+    is_valid, error = validator(value)
+
+    assert is_valid is True
+    assert error is None
+
+
+def test_startsWith_returns_invalid():
+    """Test `startsWith` gives an invalid result."""
+    value = '12345abcde'
+
+    validator = validators.startsWith('abc')
+    is_valid, error = validator(value)
+
+    assert is_valid is False
+    assert error == '12345abcde does not start with abc.'
