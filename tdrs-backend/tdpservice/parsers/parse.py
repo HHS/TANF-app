@@ -11,7 +11,7 @@ def parse_datafile(datafile):
     rawfile = datafile.file
     errors = {}
 
-    document_is_valid, document_error = validators.validate_document(rawfile)
+    document_is_valid, document_error = validators.validate_single_header_trailer(rawfile)
     if not document_is_valid:
         errors['document'] = [document_error]
         return errors

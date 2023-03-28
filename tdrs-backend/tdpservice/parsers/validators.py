@@ -52,7 +52,7 @@ def contains(substring):
 
 # custom validators
 
-def validate_document(file):
+def validate_single_header_trailer(file):
     """Validate that a raw datafile has one trailer and one footer."""
     headers = 0
     trailers = 0
