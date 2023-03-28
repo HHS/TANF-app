@@ -9,7 +9,7 @@ trailer = RowSchema(
     model=dict,
     preparsing_validators=[
         validators.hasLength(23),
-        validators.contains('TRAILER')
+        validators.startsWith('TRAILER')
     ],
     postparsing_validators=[],
     fields=[
