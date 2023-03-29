@@ -139,8 +139,8 @@ def test_parse_bad_trailer_file(bad_trailer_file):
     """Test parsing bad_trailer_1."""
     errors = parse.parse_datafile(bad_trailer_file)
     assert errors == {
+        'trailer': ['Value length 11 does not match 23.'],
         2: ['No schema selected.'],
-        3: ['Value length 11 does not match 23.'],
     }
 
 
@@ -155,6 +155,10 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     """Test parsing bad_trailer_2."""
     errors = parse.parse_datafile(bad_trailer_file_2)
     assert errors == {
+        'trailer': [
+            'Value length 7 does not match 23.',
+            'T1trash does not start with TRAILER.'
+        ],
         2: ['No schema selected.'],
         3: ['No schema selected.'],
     }

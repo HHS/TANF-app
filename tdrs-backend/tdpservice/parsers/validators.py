@@ -60,20 +60,29 @@ def startsWith(substring):
 
 # custom validators
 
-def validate_single_header(file):
+def validate_single_header_trailer(file):
     """Validate that a raw datafile has one trailer and one footer."""
     headers = 0
+    # trailers = 0
 
     for rawline in file:
         line = rawline.decode()
 
         if line.startswith('HEADER'):
             headers += 1
+        # elif line.startswith('TRAILER'):
+        #     trailers += 1
 
         if headers > 1:
             return (False, 'Multiple headers found.')
 
+        # if trailers > 1:
+        #     return (False, 'Multiple trailers found.')
+
     if headers == 0:
         return (False, 'No headers found.')
+
+    # if trailers == 0:
+    #     return (False, 'No trailers found.')
 
     return (True, None)
