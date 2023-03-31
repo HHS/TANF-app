@@ -79,7 +79,6 @@ def test_parse_bad_test_file(bad_test_file):
     errors = parse.parse_datafile(bad_test_file)
     assert errors == {
         'header': ['Value length 24 does not match 23.'],
-        # 'trailer': ['Value length 14 does not match 23.'],
     }
 
 
@@ -124,7 +123,7 @@ def test_parse_big_bad_test_file(big_bad_test_file):
     """Test parsing of bad_TANF_S1."""
     errors = parse.parse_datafile(big_bad_test_file)
     assert errors == {
-        'document': ['Multiple headers found.'],
+        'document': ['Multiple trailers found.'],
     }
 
 
@@ -160,7 +159,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
             'T1trash does not start with TRAILER.'
         ],
         2: ['No schema selected.'],
-        3: ['No schema selected.'],
+        3: ['No schema selected.']
     }
 
 
