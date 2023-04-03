@@ -54,11 +54,11 @@ def test_is_deactivated_user_property(user, deactivated_user):
 
 
 @pytest.mark.django_db
-def test_region_or_stt_user_property(stt_user, regional_user, stt):
-    """Test `region_or_stt` property returns non-null models.Model representing Region or STT."""
+def test_location_user_property(stt_user, regional_user, stt):
+    """Test `location` property returns non-null models.Model representing Region or STT."""
     stt_user.stt = stt
-    assert isinstance(stt_user.region_or_stt, STT)
-    assert isinstance(regional_user.region_or_stt, Region)
+    assert isinstance(stt_user.location, STT)
+    assert isinstance(regional_user.location, Region)
 
 
 @pytest.mark.django_db

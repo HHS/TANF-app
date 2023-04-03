@@ -38,7 +38,7 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ('account_approval_status', 'stt', 'region')
     list_display = [
         "username",
-        'region_or_stt',
+        'location',
         "account_approval_status"
     ]
     autocomplete_fields = ['stt']

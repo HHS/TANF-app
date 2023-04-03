@@ -176,7 +176,7 @@ class User(AbstractUser):
         return self.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED
 
     @property
-    def region_or_stt(self) -> models.Model:
+    def location(self):
         """Return the STT or Region based on which is not null."""
         return self.stt if self.stt else self.region
 
