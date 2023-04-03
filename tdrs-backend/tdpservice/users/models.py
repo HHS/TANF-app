@@ -174,6 +174,10 @@ class User(AbstractUser):
     def is_deactivated(self):
         """Check if the user's account status has been set to 'Deactivated'."""
         return self.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED
+    
+    @property
+    def region_or_stt(self) -> models.Model:
+        return self.stt if self.stt else self.region
 
     @classmethod
     def from_db(cls, db, field_names, values):
