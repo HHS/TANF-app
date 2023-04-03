@@ -36,6 +36,11 @@ class UserAdmin(admin.ModelAdmin):
     readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request', 'deactivated']
     form = UserForm
     list_filter = ('account_approval_status', 'stt')
+    list_display = [
+        "username",
+        "stt",
+        "account_approval_status"
+    ]
     autocomplete_fields = ['stt']
 
     def has_add_permission(self, request):
