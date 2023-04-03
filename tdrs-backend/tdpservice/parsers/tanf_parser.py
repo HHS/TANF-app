@@ -1,7 +1,7 @@
 """Transforms a TANF datafile into an search_index model."""
 
 import logging
-from tdpservice.search_indexes.models import T1  # , T2, T3, T4, T5, T6, T7, ParserLog
+from tdpservice.search_indexes.models import TANF_T1  # , T2, T3, T4, T5, T6, T7, ParserLog
 # from django.core.exceptions import ValidationError
 from .util import get_record_type
 from .schema_defs.tanf import t1_schema
@@ -13,7 +13,7 @@ def active_t1_parser(line, line_number):
     """Parse line in datafile as active case data, T1 only."""
     family_case_schema = t1_schema()
     # create search_index model
-    t1 = T1()
+    t1 = TANF_T1()
     content_is_valid = True
 
     min_line_length = 118  # we will need to adjust for other types

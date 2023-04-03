@@ -4,7 +4,8 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
 from tdpservice.parsers.models import ParserError
 
-class T1(models.Model):
+
+class TANF_T1(models.Model):
     """
     Parsed record representing a T1 data submission.
 
@@ -67,7 +68,7 @@ class T1(models.Model):
     FAMILY_NEW_CHILD = models.IntegerField(null=False, blank=False)
 
 
-class T2(models.Model):
+class TANF_T2(models.Model):
     """
     Parsed record representing a T2 data submission.
 
@@ -147,7 +148,7 @@ class T2(models.Model):
     other_unearned_income = models.IntegerField(null=False, blank=False)
 
 
-class T3(models.Model):
+class TANF_T3(models.Model):
     """
     Parsed record representing a T3 data submission.
 
@@ -179,7 +180,7 @@ class T3(models.Model):
     other_unearned_income = models.IntegerField(null=False, blank=False)
 
 
-class T4(models.Model):
+class TANF_T4(models.Model):
     """
     Parsed record representing a T4 data submission.
 
@@ -206,7 +207,7 @@ class T4(models.Model):
     rec_sub_cc = models.IntegerField(null=False, blank=False)
 
 
-class T5(models.Model):
+class TANF_T5(models.Model):
     """
     Parsed record representing a T5 data submission.
 
@@ -246,7 +247,7 @@ class T5(models.Model):
     amount_unearned_income = models.IntegerField(null=False, blank=False)
 
 
-class T6(models.Model):
+class TANF_T6(models.Model):
     """
     Parsed record representing a T6 data submission.
 
@@ -275,7 +276,7 @@ class T6(models.Model):
     closed_cases = models.IntegerField(null=False, blank=False)
 
 
-class T7(models.Model):
+class TANF_T7(models.Model):
     """
     Parsed record representing a T7 data submission.
 

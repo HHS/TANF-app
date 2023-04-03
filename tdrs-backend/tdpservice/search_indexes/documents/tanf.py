@@ -2,11 +2,11 @@
 
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from .models import T1, T2, T3, T4, T5, T6, T7
+from ..models import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 
 
 @registry.register_document
-class T1DataSubmissionDocument(Document):
+class TANF_T1DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed T1 data file."""
 
     class Index:
@@ -21,7 +21,7 @@ class T1DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T1
+        model = TANF_T1
         fields = [
             'RecordType',
             'RPT_MONTH_YEAR',
@@ -72,7 +72,7 @@ class T1DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T2DataSubmissionDocument(Document):
+class TANF_T2DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed T2 data file."""
 
     class Index:
@@ -87,7 +87,7 @@ class T2DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T2
+        model = TANF_T2
         fields = [
             'record',
             'rpt_month_year',
@@ -164,7 +164,7 @@ class T2DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T3DataSubmissionDocument(Document):
+class TANF_T3DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed T3 data file."""
 
     class Index:
@@ -179,7 +179,7 @@ class T3DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T3
+        model = TANF_T3
         fields = [
             'record',
             'rpt_month_year',
@@ -208,7 +208,7 @@ class T3DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T4DataSubmissionDocument(Document):
+class TANF_T4DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed T4 data file."""
 
     class Index:
@@ -223,7 +223,7 @@ class T4DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T4
+        model = TANF_T4
         fields = [
             'record',
             'rpt_month_year',
@@ -243,7 +243,7 @@ class T4DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T5DataSubmissionDocument(Document):
+class TANF_T5DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed T5 data file."""
 
     class Index:
@@ -258,7 +258,7 @@ class T5DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T5
+        model = TANF_T5
         fields = [
             'record',
             'rpt_month_year',
@@ -295,7 +295,7 @@ class T5DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T6DataSubmissionDocument(Document):
+class TANF_T6DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed T6 data file."""
 
     class Index:
@@ -310,7 +310,7 @@ class T6DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T6
+        model = TANF_T6
         fields = [
             'record',
             'rpt_month_year',
@@ -336,7 +336,7 @@ class T6DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T7DataSubmissionDocument(Document):
+class TANF_T7DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed T7 data file."""
 
     class Index:
@@ -351,7 +351,7 @@ class T7DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T7
+        model = TANF_T7
         fields = [
             'record',
             'rpt_month_year',
