@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 
 import pytest
 
+from tdpservice.stts.models import STT, Region
+
 
 @pytest.mark.django_db
 def test_user_string_representation(user):
@@ -49,6 +51,13 @@ def test_is_deactivated_user_property(user, deactivated_user):
     """Test `is_deactivated` property returns `True` when `account_approval_status` is 'Deactivated'."""
     assert user.is_deactivated is False
     assert deactivated_user.is_deactivated is True
+
+
+@pytest.mark.django_db
+def test_region_or_stt_user_property(user_stt, user_region):
+    """Test `region_or_stt` property returns non-null models.Model representing Region or STT."""
+    assert isInsance(user_stt.region_or_stt, STT)
+    assert isInsance(user_region.region_or_stt, Region)
 
 
 @pytest.mark.django_db
