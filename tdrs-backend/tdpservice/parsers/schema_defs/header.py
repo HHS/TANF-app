@@ -9,7 +9,7 @@ header = RowSchema(
     model=dict,
     preparsing_validators=[
         validators.hasLength(23),
-        validators.contains('HEADER'),
+        validators.startsWith('HEADER'),
     ],
     postparsing_validators=[],
     fields=[

@@ -2,16 +2,31 @@ import React from 'react'
 import { render } from '@testing-library/react'
 import SiteMap from './SiteMap'
 import { mount } from 'enzyme'
+import thunk from 'redux-thunk'
+import { Provider } from 'react-redux'
+import configureStore from 'redux-mock-store'
 
 describe('SiteMap', () => {
+  const mockStore = configureStore([thunk])
+
   it('When an authenticated Developer visits the sitemap', () => {
     const user = {
       email: 'hi@bye.com',
       roles: [{ id: 1, name: 'Developer', permissions: [] }],
-      access_request: true,
+      account_approval_status: 'Approved',
     }
 
-    const { getByText } = render(<SiteMap user={user}></SiteMap>)
+    const initialState = {
+      auth: { user },
+    }
+
+    const store = mockStore(initialState)
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <SiteMap user={user}></SiteMap>
+      </Provider>
+    )
 
     const locations = [
       'Home',
@@ -29,10 +44,20 @@ describe('SiteMap', () => {
     const user = {
       email: 'hi@bye.com',
       roles: [{ id: 1, name: 'OFA System Admin', permissions: [] }],
-      access_request: true,
+      account_approval_status: 'Approved',
     }
 
-    const { getByText } = render(<SiteMap user={user}></SiteMap>)
+    const initialState = {
+      auth: { user },
+    }
+
+    const store = mockStore(initialState)
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <SiteMap user={user}></SiteMap>
+      </Provider>
+    )
 
     const locations = [
       'Home',
@@ -50,10 +75,20 @@ describe('SiteMap', () => {
     const user = {
       email: 'hi@bye.com',
       roles: [{ id: 1, name: 'ACF OCIO', permissions: [] }],
-      access_request: true,
+      account_approval_status: 'Approved',
     }
 
-    const { getByText } = render(<SiteMap user={user}></SiteMap>)
+    const initialState = {
+      auth: { user },
+    }
+
+    const store = mockStore(initialState)
+
+    const { getByText } = render(
+      <Provider store={store}>
+        <SiteMap user={user}></SiteMap>
+      </Provider>
+    )
 
     const locations = [
       'Home',
@@ -66,32 +101,52 @@ describe('SiteMap', () => {
       expect(getByText(location)).toBeInTheDocument()
     }
   })
+
   it('When an authenticated Data Analyst visits the sitemap', () => {
     const user = {
       email: 'hi@bye.com',
       roles: [{ id: 1, name: 'Data Analyst', permissions: [] }],
-      access_request: true,
+      account_approval_status: 'Approved',
     }
 
-    const { getByText } = render(<SiteMap user={user}></SiteMap>)
+    const initialState = {
+      auth: { user },
+    }
+
+    const store = mockStore(initialState)
+
+    const { getByText, queryByText } = render(
+      <Provider store={store}>
+        <SiteMap user={user}></SiteMap>
+      </Provider>
+    )
 
     const locations = ['Home', 'Privacy Policy', 'Data Files', 'Profile']
     for (let location of locations) {
       expect(getByText(location)).toBeInTheDocument()
     }
-    const wrapper = mount(<SiteMap user={user}></SiteMap>)
-    expect(wrapper.html()).not.toContain('Admin')
-    expect(wrapper.html()).toContain('Home')
+
+    expect(queryByText('Admin')).not.toBeInTheDocument()
   })
 
   it('When an authenticated user that does not yet have access visits the sitemap', () => {
     const user = {
       email: 'hi@bye.com',
       roles: [],
-      access_request: false,
+      account_approval_status: 'Pending',
     }
 
-    const { getByText } = render(<SiteMap user={user}></SiteMap>)
+    const initialState = {
+      auth: { user },
+    }
+
+    const store = mockStore(initialState)
+
+    const { getByText, queryByText } = render(
+      <Provider store={store}>
+        <SiteMap user={user}></SiteMap>
+      </Provider>
+    )
 
     const locations = [
       'Home',
@@ -102,8 +157,7 @@ describe('SiteMap', () => {
     for (let location of locations) {
       expect(getByText(location)).toBeInTheDocument()
     }
-    const wrapper = mount(<SiteMap user={user}></SiteMap>)
-    expect(wrapper.html()).not.toContain('Admin')
-    expect(wrapper.html()).toContain('Home')
+
+    expect(queryByText('Admin')).not.toBeInTheDocument()
   })
 })

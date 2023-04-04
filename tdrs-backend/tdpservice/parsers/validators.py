@@ -50,9 +50,17 @@ def contains(substring):
     )
 
 
+def startsWith(substring):
+    """Validate that string value starts with the given substring param."""
+    return make_validator(
+        lambda value: value.startswith(substring),
+        lambda value: f'{value} does not start with {substring}.'
+    )
+
+
 # custom validators
 
-def validate_document(file):
+def validate_single_header_trailer(file):
     """Validate that a raw datafile has one trailer and one footer."""
     headers = 0
     trailers = 0
@@ -73,8 +81,5 @@ def validate_document(file):
 
     if headers == 0:
         return (False, 'No headers found.')
-
-    if trailers == 0:
-        return (False, 'No trailers found.')
 
     return (True, None)

@@ -209,7 +209,6 @@ describe('Header', () => {
               permissions: ['add_datafile', 'view_datafile'],
             },
           ],
-          access_request: true,
           account_approval_status: 'Pending',
         },
         authenticated: true,
@@ -226,7 +225,7 @@ describe('Header', () => {
 
     expect(queryByText('Data Files')).not.toBeInTheDocument()
     expect(queryByText('Profile')).toBeInTheDocument()
-    expect(queryByText('Admin')).toBeInTheDocument()
+    expect(queryByText('Admin')).not.toBeInTheDocument()
   })
 
   it('should show data-files nav item when the user has view_datafile and add_datafile permissions and is approved', () => {
