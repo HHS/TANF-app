@@ -175,11 +175,6 @@ class User(AbstractUser):
         """Check if the user's account status has been set to 'Deactivated'."""
         return self.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED
 
-    @property
-    def location(self):
-        """Return the STT or Region based on which is not null."""
-        return self.stt if self.stt else self.region
-
     @classmethod
     def from_db(cls, db, field_names, values):
         """Override the django Model from_db method.
