@@ -62,6 +62,7 @@ class Common(Configuration):
         "tdpservice.scheduling",
         "tdpservice.email",
         "tdpservice.search_indexes",
+        "tdpservice.parsers",
     )
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/

@@ -98,7 +98,7 @@ class DataFileViewSet(ModelViewSet):
             }
 
             recipients = User.objects.filter(
-                location_id=data_file.stt.id,
+                stt=data_file.stt,
                 account_approval_status=AccountApprovalStatusChoices.APPROVED,
                 groups=Group.objects.get(name='Data Analyst')
             ).values_list('username', flat=True).distinct()

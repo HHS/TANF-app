@@ -1,7 +1,7 @@
 """Transforms a TANF datafile into an search_index model."""
 
 import logging
-from ..models import T1  # , T2, T3, T4, T5, T6, T7, ParserLog
+from tdpservice.search_indexes.models import T1  # , T2, T3, T4, T5, T6, T7, ParserLog
 # from django.core.exceptions import ValidationError
 from .util import get_record_type
 from .schema_defs.tanf import t1_schema

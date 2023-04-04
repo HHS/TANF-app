@@ -1,8 +1,8 @@
 """Module testing for data file model."""
 import pytest
 
-from tdpservice.search_indexes.parsers.models import ParserError
-from tdpservice.search_indexes.parsers.test.factories import ParserErrorFactory
+from tdpservice.parsers.models import ParserError
+from tdpservice.parsers.test.factories import ParserErrorFactory
 
 @pytest.fixture
 def parser_error_instance():

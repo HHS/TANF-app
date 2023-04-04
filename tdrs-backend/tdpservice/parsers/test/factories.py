@@ -8,7 +8,7 @@ class ParserErrorFactory(factory.django.DjangoModelFactory):
     class Meta:
         """Hardcoded meta data for parser errors."""
 
-        model = "search_indexes.ParserError"
+        model = "parsers.ParserError"
 
     file = factory.SubFactory(DataFileFactory)
     row_number = 1

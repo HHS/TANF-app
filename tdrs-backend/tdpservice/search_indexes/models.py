@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
-from .parsers.models import ParserError
+from tdpservice.parsers.models import ParserError
 
 class T1(models.Model):
     """

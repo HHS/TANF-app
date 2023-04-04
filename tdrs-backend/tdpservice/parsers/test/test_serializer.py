@@ -1,7 +1,7 @@
 """Tests for the ParsingErrorSerializer."""
 import pytest
-from tdpservice.search_indexes.parsers.serializers import ParsingErrorSerializer
-from tdpservice.search_indexes.parsers.test.factories import ParserErrorFactory
+from tdpservice.parsers.serializers import ParsingErrorSerializer
+from tdpservice.parsers.test.factories import ParserErrorFactory
 from rest_framework.request import HttpRequest
 
 @pytest.fixture

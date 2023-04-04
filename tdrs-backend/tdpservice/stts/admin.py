@@ -9,6 +9,8 @@ from ..core.utils import ReadOnlyAdminMixin
 class STTAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
     """Read-only Admin class for STT models."""
 
+    search_fields = ['name', 'stt_code']
+
     list_display = [
         "id",
         "type",

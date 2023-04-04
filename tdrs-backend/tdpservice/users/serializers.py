@@ -2,6 +2,7 @@
 
 import logging
 from django.contrib.auth.models import Group, Permission
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from tdpservice.stts.serializers import STTPrimaryKeyRelatedField, RegionPrimaryKeyRelatedField
@@ -94,3 +95,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'stt': {'allow_blank': True, 'required': False},
             'region': {'allow_blank': True, 'required': False},
         }
+
+    def update(self, instance, validated_data):
+        """Perform model validation before saving."""
+        instance = super(UserProfileSerializer, self).update(instance, validated_data)
+
+        try:
+            instance.validate_location()
+        except ValidationError as e:
+            raise serializers.ValidationError(e.message)
+
+        return instance
