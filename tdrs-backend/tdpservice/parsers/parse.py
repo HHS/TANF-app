@@ -11,7 +11,7 @@ def parse_datafile(datafile):
     rawfile = datafile.file
     errors = {}
 
-    document_is_valid, document_error = validators.validate_document(rawfile)
+    document_is_valid, document_error = validators.validate_single_header_trailer(rawfile)
     if not document_is_valid:
         errors['document'] = [document_error]
         return errors
@@ -32,16 +32,11 @@ def parse_datafile(datafile):
     header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(header_line)
     if not header_is_valid:
         errors['header'] = header_errors
+        return errors
 
     trailer, trailer_is_valid, trailer_errors = schema_defs.trailer.parse_and_validate(trailer_line)
     if not trailer_is_valid:
         errors['trailer'] = trailer_errors
-
-    if not header_is_valid or not trailer_is_valid:
-        return errors
-
-    # determine the file type
-    schema_options = get_schema_options(header['program_type'])
 
     # ensure file section matches upload section
     section_names = {
@@ -60,6 +55,7 @@ def parse_datafile(datafile):
     # parse line with appropriate schema
     rawfile.seek(0)
     line_number = 0
+    schema_options = get_schema_options(header['program_type'])
 
     for rawline in rawfile:
         line_number += 1

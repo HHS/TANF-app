@@ -41,7 +41,7 @@ class RowSchema:
         self.fields = fields
         # self.section = section # intended for future use with multiple section objects
 
-    def add_field(self, name, length, start, end, type):
+    def _add_field(self, name, length, start, end, type):
         """Add a field to the schema."""
         self.fields.append(
             Field(name, type, start, end)
@@ -50,15 +50,7 @@ class RowSchema:
     def add_fields(self, fields: list):
         """Add multiple fields to the schema."""
         for field, length, start, end, type in fields:
-            self.add_field(field, length, start, end, type)
-
-    def get_field(self, name):
-        """Get a field from the schema."""
-        return self.fields[name]
-
-    def get_field_names(self):
-        """Get all field names from the schema."""
-        return self.fields.keys()
+            self._add_field(field, length, start, end, type)
 
     def get_all_fields(self):
         """Get all fields from the schema."""
