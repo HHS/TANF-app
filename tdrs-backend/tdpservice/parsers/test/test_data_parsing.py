@@ -3,7 +3,7 @@ import pytest
 from functools import reduce
 from pathlib import Path
 
-from tdpservice.search_indexes.parsers import tanf_parser, preparser, util
+from tdpservice.parsers import tanf_parser, preparser, util
 from tdpservice.search_indexes.models import T1
 
 import logging

@@ -15,4 +15,4 @@ def test_region_string_representation(stts):
 def test_stt_string_representation(stts):
     """Test STT string representation."""
     first_stt = STT.objects.filter(type=STT.EntityType.STATE).first()
-    assert str(first_stt) == first_stt.name
+    assert str(first_stt) == f"{first_stt.name} ({first_stt.stt_code})"

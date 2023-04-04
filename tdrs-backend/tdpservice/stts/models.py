@@ -48,4 +48,4 @@ class STT(models.Model):
 
     def __str__(self):
         """Return the STT's name."""
-        return self.name
+        return f"{self.name} ({self.stt_code})"

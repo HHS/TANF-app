@@ -3,10 +3,10 @@ import { useSelector } from 'react-redux'
 import closeIcon from 'uswds/dist/img/close.svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUserCircle } from '@fortawesome/free-solid-svg-icons'
-import { canViewAdmin } from '../../utils/canViewAdmin'
 import {
   accountStatusIsApproved,
   accountIsInReview,
+  accountCanViewAdmin,
 } from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
@@ -28,6 +28,7 @@ function Header() {
   const authenticated = useSelector((state) => state.auth.authenticated)
   const userAccessRequestPending = useSelector(accountIsInReview)
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
+  const userIsAdmin = useSelector(accountCanViewAdmin)
 
   const menuRef = useRef()
 
@@ -129,7 +130,7 @@ function Header() {
                       href="/profile"
                     />
                   )}
-                  {canViewAdmin(user) && (
+                  {userIsAdmin && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Admin"

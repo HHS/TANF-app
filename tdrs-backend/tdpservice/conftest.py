@@ -49,7 +49,7 @@ def regional_user(region, stt):
     user = STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
     )
-    user.location = region
+    user.region = region
     user.save()
     return user
 
@@ -61,7 +61,7 @@ def user_in_region(stt, region):
     user = STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
     )
-    user.location = stt
+    user.stt = stt
     user.save()
     return user
 
@@ -72,7 +72,7 @@ def user_in_other_region(other_stt, other_region):
     user = STTUserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
     )
-    user.location = other_stt
+    user.stt = other_stt
     user.save()
     return user
 
@@ -111,7 +111,7 @@ def data_analyst(stt):
     user = UserFactory.create(
         groups=(Group.objects.get(name="Data Analyst"),),
     )
-    user.location = stt
+    user.stt = stt
     user.save()
     return user
 
