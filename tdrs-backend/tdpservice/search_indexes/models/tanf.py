@@ -1,4 +1,4 @@
-"""Models representing parsed data file records submitted to TDP."""
+"""Models representing parsed TANF data file records submitted to TDP."""
 
 from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation

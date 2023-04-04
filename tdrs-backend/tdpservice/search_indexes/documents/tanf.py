@@ -1,4 +1,4 @@
-"""Elasticsearch document mappings for Django models."""
+"""Elasticsearch document mappings for TANF submission models."""
 
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
