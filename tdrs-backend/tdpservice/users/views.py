@@ -8,6 +8,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
 
 from tdpservice.users.models import User, AccountApprovalStatusChoices
 from tdpservice.users.permissions import DjangoModelCRUDPermissions, UserPermissions
@@ -21,11 +22,11 @@ logger = logging.getLogger(__name__)
 
 
 class UserViewSet(
-    mixins.RetrieveModelMixin,
+    ListAPIView,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    """User accounts viewset."""
+    """User accounts viewset. missing the following needed fields: groups, superuser status, staff status, STT, login UUID, HHS id, last login, date joined"""
 
     permission_classes = [IsAuthenticated, UserPermissions]
     queryset = User.objects\

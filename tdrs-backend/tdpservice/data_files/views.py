@@ -43,7 +43,7 @@ class DataFileViewSet(ModelViewSet):
     """Data file views."""
 
     http_method_names = ['get', 'post', 'head']
-    filterset_class = DataFileFilter
+    # filterset_class = DataFileFilter
     parser_classes = [MultiPartParser]
     permission_classes = [DataFilePermissions]
     serializer_class = DataFileSerializer
@@ -55,6 +55,7 @@ class DataFileViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
+        print("\n\nINSIDE CREATE")
         response = super().create(request, *args, **kwargs)
 
         # only if file is passed the virus scan and created successfully will we perform side-effects:
@@ -62,7 +63,9 @@ class DataFileViewSet(ModelViewSet):
         # * Upload to ACF-TITAN
         # * Send email to user
 
+        print(f"\n\nResponse code: {response.status_code}")
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
+            print("\n\nINSIDE IF")
             user = request.user
             data_file_id = response.data.get('id')
             data_file = DataFile.objects.get(id=data_file_id)

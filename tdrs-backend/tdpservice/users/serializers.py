@@ -54,7 +54,15 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "access_request",
-            "account_approval_status"
+            "account_approval_status",
+            # Added fields
+            'groups',
+            'is_superuser',
+            'is_staff',
+            'login_gov_uuid',
+            'hhs_id',
+            'last_login',
+            'date_joined'
         )
         read_only_fields = ("username", "account_approval_status",)
 
@@ -75,6 +83,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = User
+        #groups, superuser status, staff status, STT, login UUID, HHS id, last login, date joined"""
         fields = [
             'id',
             'first_name',
@@ -84,7 +93,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'region',
             'roles',
             'access_request',
-            'account_approval_status'
+            'account_approval_status',
+            # Added fields
+            'groups',
+            'is_superuser',
+            'is_staff',
+            'login_gov_uuid',
+            'hhs_id',
+            'last_login',
+            'date_joined'
         ]
         read_only_fields = ("account_approval_status",)
 

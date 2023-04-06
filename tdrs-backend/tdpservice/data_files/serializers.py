@@ -38,7 +38,10 @@ class DataFileSerializer(serializers.ModelSerializer):
             "section",
             "created_at",
             "ssp",
-            "submitted_by"
+            "submitted_by",
+            # Added fields
+            'version',
+            's3_versioning_id',
         ]
 
     def create(self, validated_data):
