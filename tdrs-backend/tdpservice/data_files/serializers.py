@@ -39,8 +39,8 @@ class DataFileSerializer(serializers.ModelSerializer):
             "created_at",
             "ssp",
             "submitted_by",
-            # Added fields
             'version',
+            's3_location',
             's3_versioning_id',
         ]
 

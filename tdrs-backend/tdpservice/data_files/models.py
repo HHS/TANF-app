@@ -158,6 +158,13 @@ class DataFile(FileRecord):
         return self.stt.filenames.get(self.section, None)
 
     @property
+    def s3_location(self):
+        location = ""
+        if self.file:
+            location = self.file.name
+        return location
+
+    @property
     def fiscal_year(self):
         """Return a string representation of the data file's fiscal year."""
         quarter_month_str = ""

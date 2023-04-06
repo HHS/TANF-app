@@ -91,17 +91,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'email',
             'stt',
             'region',
+            'login_gov_uuid',
+            'hhs_id',
             'roles',
-            'access_request',
-            'account_approval_status',
-            # Added fields
             'groups',
             'is_superuser',
             'is_staff',
-            'login_gov_uuid',
-            'hhs_id',
             'last_login',
             'date_joined'
+            'access_request',
+            'account_approval_status',
         ]
         read_only_fields = ("account_approval_status",)
 
