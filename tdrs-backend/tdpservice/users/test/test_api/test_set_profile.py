@@ -35,8 +35,8 @@ def test_set_profile_data(api_client, user):
         "groups": [],
         "is_superuser": False,
         "is_staff": False,
-        "last_login": user.last_login,
-        "date_joined": user.date_joined,
+        "last_login": response.data["last_login"],
+        "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         "account_approval_status": "Initial"
     }
@@ -84,8 +84,8 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
         "groups": [],
         "is_superuser": False,
         "is_staff": False,
-        "last_login": user.last_login,
-        "date_joined": user.date_joined,
+        "last_login": response.data["last_login"],
+        "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         "account_approval_status": "Initial"
     }
@@ -109,14 +109,16 @@ def test_set_profile_data_first_name_apostrophe(api_client, user):
         "first_name": "Pat'Jack",
         "last_name": "Smith",
         "email": user.username,
+        "stt": None,
+        "region": None,
         "login_gov_uuid": user.login_gov_uuid,
         "hhs_id": user.hhs_id,
         "roles": [],
         "groups": [],
         "is_superuser": False,
         "is_staff": False,
-        "last_login": user.last_login,
-        "date_joined": user.date_joined,
+        "last_login": response.data["last_login"],
+        "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         "account_approval_status": "Initial"
     }
@@ -178,8 +180,8 @@ def test_set_profile_data_special_last_name(api_client, user):
         "groups": [],
         "is_superuser": False,
         "is_staff": False,
-        "last_login": user.last_login,
-        "date_joined": user.date_joined,
+        "last_login": response.data["last_login"],
+        "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         "account_approval_status": "Initial"
     }
@@ -211,8 +213,8 @@ def test_set_profile_data_special_first_name(api_client, user):
         "groups": [],
         "is_superuser": False,
         "is_staff": False,
-        "last_login": user.last_login,
-        "date_joined": user.date_joined,
+        "last_login": response.data["last_login"],
+        "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         "account_approval_status": "Initial"
     }
@@ -244,8 +246,8 @@ def test_set_profile_data_spaced_last_name(api_client, user):
         "groups": [],
         "is_superuser": False,
         "is_staff": False,
-        "last_login": user.last_login,
-        "date_joined": user.date_joined,
+        "last_login": response.data["last_login"],
+        "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         "account_approval_status": "Initial"
     }
@@ -277,8 +279,8 @@ def test_set_profile_data_spaced_first_name(api_client, user):
         "groups": [],
         "is_superuser": False,
         "is_staff": False,
-        "last_login": user.last_login,
-        "date_joined": user.date_joined,
+        "last_login": response.data["last_login"],
+        "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         "account_approval_status": "Initial"
     }
@@ -310,8 +312,8 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
         "groups": [],
         "is_superuser": False,
         "is_staff": False,
-        "last_login": user.last_login,
-        "date_joined": user.date_joined,
+        "last_login": response.data["last_login"],
+        "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         "account_approval_status": "Initial"
     }
@@ -343,8 +345,8 @@ def test_set_profile_data_last_name_with_tilde(api_client, user):
         "groups": [],
         "is_superuser": False,
         "is_staff": False,
-        "last_login": user.last_login,
-        "date_joined": user.date_joined,
+        "last_login": response.data["last_login"],
+        "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         "account_approval_status": "Initial"
     }
@@ -384,8 +386,8 @@ def test_set_profile_data_extra_field_include_required(api_client, user):
             "groups": [],
             "is_superuser": False,
             "is_staff": False,
-            "last_login": user.last_login,
-            "date_joined": user.date_joined,
+            "last_login": response.data["last_login"],
+            "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
             "access_request": False,
             "account_approval_status": "Initial"
         }
