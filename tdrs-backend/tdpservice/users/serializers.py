@@ -98,7 +98,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'is_superuser',
             'is_staff',
             'last_login',
-            'date_joined'
+            'date_joined',
             'access_request',
             'account_approval_status',
         ]

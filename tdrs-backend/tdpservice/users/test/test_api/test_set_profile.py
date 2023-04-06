@@ -24,14 +24,21 @@ def test_set_profile_data(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
         "id": user.id,
-        "email": user.username,
         "first_name": "Joe",
         "last_name": "Bloggs",
+        "email": user.username,
         "stt": None,
         "region": None,
+        "login_gov_uuid": user.login_gov_uuid,
+        "hhs_id": user.hhs_id,
         "roles": [],
+        "groups": [],
+        "is_superuser": False,
+        "is_staff": False,
+        "last_login": user.last_login,
+        "date_joined": user.date_joined,
         "access_request": False,
-        "account_approval_status": 'Initial'
+        "account_approval_status": "Initial"
     }
     user.refresh_from_db()
     assert user.first_name == "Joe"
@@ -66,14 +73,21 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
         "id": user.id,
-        "email": user.username,
         "first_name": "Mike",
         "last_name": "O'Hare",
+        "email": user.username,
         "stt": None,
         "region": None,
+        "login_gov_uuid": user.login_gov_uuid,
+        "hhs_id": user.hhs_id,
         "roles": [],
+        "groups": [],
+        "is_superuser": False,
+        "is_staff": False,
+        "last_login": user.last_login,
+        "date_joined": user.date_joined,
         "access_request": False,
-        "account_approval_status": 'Initial'
+        "account_approval_status": "Initial"
     }
     user.refresh_from_db()
     assert user.first_name == "Mike"
@@ -92,14 +106,19 @@ def test_set_profile_data_first_name_apostrophe(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
         "id": user.id,
-        "email": user.username,
         "first_name": "Pat'Jack",
         "last_name": "Smith",
-        "stt": None,
-        "region": None,
+        "email": user.username,
+        "login_gov_uuid": user.login_gov_uuid,
+        "hhs_id": user.hhs_id,
         "roles": [],
+        "groups": [],
+        "is_superuser": False,
+        "is_staff": False,
+        "last_login": user.last_login,
+        "date_joined": user.date_joined,
         "access_request": False,
-        "account_approval_status": 'Initial'
+        "account_approval_status": "Initial"
     }
     user.refresh_from_db()
     assert user.first_name == "Pat'Jack"
@@ -148,14 +167,21 @@ def test_set_profile_data_special_last_name(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
         "id": user.id,
-        "email": user.username,
         "first_name": "John",
         "last_name": "Smith-O'Hare",
+        "email": user.username,
         "stt": None,
         "region": None,
+        "login_gov_uuid": user.login_gov_uuid,
+        "hhs_id": user.hhs_id,
         "roles": [],
+        "groups": [],
+        "is_superuser": False,
+        "is_staff": False,
+        "last_login": user.last_login,
+        "date_joined": user.date_joined,
         "access_request": False,
-        "account_approval_status": 'Initial'
+        "account_approval_status": "Initial"
     }
     user.refresh_from_db()
     assert user.first_name == "John"
@@ -174,14 +200,21 @@ def test_set_profile_data_special_first_name(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
         "id": user.id,
-        "email": user.username,
         "first_name": "John-Tom'",
         "last_name": "Jacobs",
+        "email": user.username,
         "stt": None,
         "region": None,
+        "login_gov_uuid": user.login_gov_uuid,
+        "hhs_id": user.hhs_id,
         "roles": [],
+        "groups": [],
+        "is_superuser": False,
+        "is_staff": False,
+        "last_login": user.last_login,
+        "date_joined": user.date_joined,
         "access_request": False,
-        "account_approval_status": 'Initial'
+        "account_approval_status": "Initial"
     }
     user.refresh_from_db()
     assert user.first_name == "John-Tom'"
@@ -200,14 +233,21 @@ def test_set_profile_data_spaced_last_name(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
         "id": user.id,
-        "email": user.username,
         "first_name": "Joan",
         "last_name": "Mary Ann",
+        "email": user.username,
         "stt": None,
         "region": None,
+        "login_gov_uuid": user.login_gov_uuid,
+        "hhs_id": user.hhs_id,
         "roles": [],
+        "groups": [],
+        "is_superuser": False,
+        "is_staff": False,
+        "last_login": user.last_login,
+        "date_joined": user.date_joined,
         "access_request": False,
-        "account_approval_status": 'Initial'
+        "account_approval_status": "Initial"
     }
     user.refresh_from_db()
     assert user.first_name == "Joan"
@@ -226,14 +266,21 @@ def test_set_profile_data_spaced_first_name(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
         "id": user.id,
-        "email": user.username,
         "first_name": "John Jim",
         "last_name": "Smith",
+        "email": user.username,
         "stt": None,
         "region": None,
+        "login_gov_uuid": user.login_gov_uuid,
+        "hhs_id": user.hhs_id,
         "roles": [],
+        "groups": [],
+        "is_superuser": False,
+        "is_staff": False,
+        "last_login": user.last_login,
+        "date_joined": user.date_joined,
         "access_request": False,
-        "account_approval_status": 'Initial'
+        "account_approval_status": "Initial"
     }
     user.refresh_from_db()
     assert user.first_name == "John Jim"
@@ -252,14 +299,21 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
         "id": user.id,
-        "email": user.username,
         "first_name": "Max",
         "last_name": "Grecheñ",
+        "email": user.username,
         "stt": None,
         "region": None,
+        "login_gov_uuid": user.login_gov_uuid,
+        "hhs_id": user.hhs_id,
         "roles": [],
+        "groups": [],
+        "is_superuser": False,
+        "is_staff": False,
+        "last_login": user.last_login,
+        "date_joined": user.date_joined,
         "access_request": False,
-        "account_approval_status": 'Initial'
+        "account_approval_status": "Initial"
     }
     user.refresh_from_db()
     assert user.first_name == "Max"
@@ -278,15 +332,23 @@ def test_set_profile_data_last_name_with_tilde(api_client, user):
     assert response.status_code == status.HTTP_200_OK
     assert response.data == {
         "id": user.id,
-        "email": user.username,
         "first_name": "Max",
         "last_name": "Glen~",
+        "email": user.username,
         "stt": None,
         "region": None,
+        "login_gov_uuid": user.login_gov_uuid,
+        "hhs_id": user.hhs_id,
         "roles": [],
+        "groups": [],
+        "is_superuser": False,
+        "is_staff": False,
+        "last_login": user.last_login,
+        "date_joined": user.date_joined,
         "access_request": False,
-        "account_approval_status": 'Initial'
+        "account_approval_status": "Initial"
     }
+
     user.refresh_from_db()
     assert user.first_name == "Max"
     assert user.last_name == "Glen~"
@@ -311,19 +373,26 @@ def test_set_profile_data_extra_field_include_required(api_client, user):
         """Test to ensure response data does not include unknown field"""
         assert response.data == {
             "id": user.id,
-            "email": user.username,
             "first_name": "Heather",
             "last_name": "Class",
+            "email": user.username,
             "stt": None,
             "region": None,
+            "login_gov_uuid": user.login_gov_uuid,
+            "hhs_id": user.hhs_id,
             "roles": [],
+            "groups": [],
+            "is_superuser": False,
+            "is_staff": False,
+            "last_login": user.last_login,
+            "date_joined": user.date_joined,
             "access_request": False,
-            "account_approval_status": 'Initial'
+            "account_approval_status": "Initial"
         }
         user.refresh_from_db()
         assert user.first_name == "Heather"
         assert user.last_name == "Class"
-        """Test fails if AttributeError exception isn't thrown"""
+        """Test fails if AttributeError exception isn"t thrown"""
         assert user.middle_name == "Unknown"
 
 
