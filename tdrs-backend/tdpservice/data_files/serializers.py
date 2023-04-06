@@ -44,6 +44,8 @@ class DataFileSerializer(serializers.ModelSerializer):
             's3_versioning_id',
         ]
 
+        read_only_fields = ("version",)
+
     def create(self, validated_data):
         """Create a new entry with a new version number."""
         ssp = validated_data.pop('ssp')
