@@ -28,7 +28,7 @@ class UserViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    """User accounts viewset. missing the following needed fields: groups, superuser status, staff status, STT, login UUID, HHS id, last login, date joined"""
+    """User accounts viewset."""
 
     permission_classes = [IsAuthenticated, UserPermissions]
     queryset = User.objects\
@@ -43,12 +43,13 @@ class UserViewSet(
             "request_access": UserProfileSerializer,
         }.get(self.action, UserSerializer)
 
-
     def list(self, request):
+        """Return the users."""
         serializer = self.get_serializer_class()(self.queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
+        """Return a specific user."""
         item = get_object_or_404(self.queryset, pk=pk)
         serializer = self.get_serializer_class()(item)
         return Response(serializer.data)

@@ -83,7 +83,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         """Metadata."""
 
         model = User
-        #groups, superuser status, staff status, STT, login UUID, HHS id, last login, date joined"""
         fields = [
             'id',
             'first_name',
