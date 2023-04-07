@@ -2,6 +2,7 @@
 import logging
 
 from django.contrib.auth.models import Group
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from rest_framework import mixins, viewsets
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 class UserViewSet(
     ListAPIView,
+    mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
@@ -40,6 +42,16 @@ class UserViewSet(
             "set_profile": UserProfileSerializer,
             "request_access": UserProfileSerializer,
         }.get(self.action, UserSerializer)
+
+
+    def list(self, request):
+        serializer = self.get_serializer_class()(self.queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        item = get_object_or_404(self.queryset, pk=pk)
+        serializer = self.get_serializer_class()(item)
+        return Response(serializer.data)
 
     @action(methods=["PATCH"], detail=False)
     def set_profile(self, request, pk=None):
