@@ -75,17 +75,6 @@ def test_parse_wrong_program_type(test_datafile):
     }
 
 
-@pytest.mark.django_db
-def test_parse_wrong_program_type(test_datafile):
-    """Test parsing of small_correct_file where the DataFile program type doesn't match the rawfile."""
-    test_datafile.section = 'SSP Active Case Data'
-    test_datafile.save()
-    errors = parse.parse_datafile(test_datafile)
-    assert errors == {
-        'document': ['Section does not match.']
-    }
-
-
 @pytest.fixture
 def test_big_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP1.TS06."""
