@@ -3,7 +3,7 @@
 
 from ...util import RowSchema, Field
 from ... import validators
-from tdpservice.search_indexes.models import TANF_T1
+from tdpservice.search_indexes.models.tanf import TANF_T1
 
 
 t1 = RowSchema(

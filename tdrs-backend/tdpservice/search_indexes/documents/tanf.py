@@ -2,7 +2,7 @@
 
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from ..models import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
+from ..models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 
 
 @registry.register_document

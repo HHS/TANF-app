@@ -5,7 +5,7 @@ import pytest
 from pathlib import Path
 from .. import parse
 from tdpservice.data_files.models import DataFile
-from tdpservice.search_indexes.models import TANF_T1
+from tdpservice.search_indexes.models.tanf import TANF_T1
 
 
 def create_test_datafile(filename, stt_user, stt):
