@@ -5,6 +5,7 @@ import pytest
 from pathlib import Path
 from .. import parse
 from tdpservice.data_files.models import DataFile
+from tdpservice.search_indexes.models import T1
 
 
 def create_test_datafile(filename, stt_user, stt):
@@ -34,15 +35,39 @@ def test_datafile(stt_user, stt):
 def test_parse_small_correct_file(test_datafile):
     """Test parsing of small_correct_file."""
     errors = parse.parse_datafile(test_datafile)
-    assert errors == {
-        2: ['No schema selected.']
-    }
+
+    assert errors == {}
+    assert T1.objects.count() == 1
+
+    # spot check
+    t1 = T1.objects.all().first()
+    assert t1.RPT_MONTH_YEAR == 202010
+    assert t1.CASE_NUMBER == '11111111112'
+    assert t1.COUNTY_FIPS_CODE == '230'
+    assert t1.ZIP_CODE == '40336'
+    assert t1.FUNDING_STREAM == 1
+    assert t1.NBR_FAMILY_MEMBERS == 2
+    assert t1.RECEIVES_SUB_CC == 3
+    assert t1.CASH_AMOUNT == 873
+    assert t1.SANC_REDUCTION_AMT == 0
+    assert t1.FAMILY_NEW_CHILD == 2
 
 
 @pytest.mark.django_db
 def test_parse_section_mismatch(test_datafile):
     """Test parsing of small_correct_file where the DataFile section doesn't match the rawfile section."""
     test_datafile.section = 'Closed Case Data'
+    test_datafile.save()
+    errors = parse.parse_datafile(test_datafile)
+    assert errors == {
+        'document': ['Section does not match.']
+    }
+
+
+@pytest.mark.django_db
+def test_parse_wrong_program_type(test_datafile):
+    """Test parsing of small_correct_file where the DataFile program type doesn't match the rawfile."""
+    test_datafile.section = 'SSP Active Case Data'
     test_datafile.save()
     errors = parse.parse_datafile(test_datafile)
     assert errors == {
@@ -59,12 +84,12 @@ def test_big_file(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_big_file(test_big_file):
     """Test parsing of ADS.E2J.FTP1.TS06."""
-    expected_errors = {}
-    for i in range(2, 2645):
-        expected_errors[i] = ['No schema selected.']
-
+    expected_errors_count = 1828
+    expected_t1_record_count = 815
     errors = parse.parse_datafile(test_big_file)
-    assert errors == expected_errors
+
+    assert len(errors.keys()) == expected_errors_count
+    assert T1.objects.count() == expected_t1_record_count
 
 
 @pytest.fixture
@@ -139,7 +164,7 @@ def test_parse_bad_trailer_file(bad_trailer_file):
     errors = parse.parse_datafile(bad_trailer_file)
     assert errors == {
         'trailer': ['Value length 11 does not match 23.'],
-        2: ['No schema selected.'],
+        2: ['Value length 7 does not match 156.'],
     }
 
 
@@ -158,8 +183,8 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
             'Value length 7 does not match 23.',
             'T1trash does not start with TRAILER.'
         ],
-        2: ['No schema selected.'],
-        3: ['No schema selected.']
+        2: ['Value length 117 does not match 156.'],
+        3: ['Value length 7 does not match 156.']
     }
 
 

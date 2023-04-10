@@ -4,6 +4,7 @@
 import os
 from . import schema_defs
 from . import validators
+from tdpservice.data_files.models import DataFile
 
 
 def parse_datafile(datafile):
@@ -40,22 +41,31 @@ def parse_datafile(datafile):
 
     # ensure file section matches upload section
     section_names = {
-        'A': 'Active Case Data',
-        'C': 'Closed Case Data',
-        'G': 'Aggregate Data',
-        'S': 'Stratum Data',
+        'TAN': {
+            'A': DataFile.Section.ACTIVE_CASE_DATA,
+            'C': DataFile.Section.CLOSED_CASE_DATA,
+            'G': DataFile.Section.AGGREGATE_DATA,
+            'S': DataFile.Section.STRATUM_DATA,
+        },
+        'SSP': {
+            'A': DataFile.Section.SSP_ACTIVE_CASE_DATA,
+            'C': DataFile.Section.SSP_CLOSED_CASE_DATA,
+            'G': DataFile.Section.SSP_AGGREGATE_DATA,
+            'S': DataFile.Section.SSP_STRATUM_DATA,
+        },
     }
 
+    program_type = header['program_type']
     section = header['type']
 
-    if datafile.section.find(section_names[section]) == -1:
+    if datafile.section != section_names.get(program_type, {}).get(section):
         errors['document'] = ['Section does not match.']
         return errors
 
     # parse line with appropriate schema
     rawfile.seek(0)
     line_number = 0
-    schema_options = get_schema_options(header['program_type'])
+    schema_options = get_schema_options(program_type)
 
     for rawline in rawfile:
         line_number += 1
@@ -91,10 +101,9 @@ def get_schema_options(program_type):
     """Return the allowed schema options."""
     match program_type:
         case 'TAN':
-            # schema_options = schema_defs.tanf
-            return None
+            return schema_defs.tanf
         case 'SSP':
-            # schema_options = schema_defs.ssp
+            # return schema_defs.ssp
             return None
         # case tribal?
     return None
@@ -103,8 +112,7 @@ def get_schema_options(program_type):
 def get_schema(line, section, schema_options):
     """Return the appropriate schema for the line."""
     if section == 'A' and line.startswith('T1'):
-        return None
-        # return schema_options.t1
+        return schema_options.t1
     elif section == 'A' and line.startswith('T2'):
         return None
         # return schema_options.t2
