@@ -2,8 +2,7 @@
 
 
 import os
-from . import schema_defs
-from . import validators
+from . import schema_defs, validators, util
 from tdpservice.data_files.models import DataFile
 
 
@@ -75,12 +74,42 @@ def parse_datafile(datafile):
             continue
 
         schema = get_schema(line, section, schema_options)
-        record_is_valid, record_errors = parse_datafile_line(line, schema)
 
-        if not record_is_valid:
-            errors[line_number] = record_errors
+        if isinstance(schema, util.MultiRecordRowSchema):
+            records = parse_multi_record_line(line, schema)
+
+            n = 0
+            for r in records:
+                n += 1
+                record, record_is_valid, record_errors = r
+                if not record_is_valid:
+                    line_errors = errors.get(line_number, {})
+                    line_errors[n] = record_errors
+                    errors[line_number] = line_errors
+        else:
+            record_is_valid, record_errors = parse_datafile_line(line, schema)
+            if not record_is_valid:
+                errors[line_number] = record_errors
 
     return errors
+
+
+def parse_multi_record_line(line, schema):
+    if schema:
+        records = schema.parse_and_validate(line)
+
+        for r in records:
+            record, record_is_valid, record_errors = r
+
+            if record:
+                # for error in record_errors:
+                    # create ParserError  # retention policy?
+                    # record.error.set(record_errors)
+                record.save()
+
+        return records
+
+    return [(None, False, ['No schema selected.'])]
 
 
 def parse_datafile_line(line, schema):
@@ -89,7 +118,9 @@ def parse_datafile_line(line, schema):
         record, record_is_valid, record_errors = schema.parse_and_validate(line)
 
         if record:
-            record.errors = record_errors
+            # for error in record_errors:
+                # create ParserError
+                # record.error.set(record_errors)
             record.save()
 
         return record_is_valid, record_errors
@@ -103,8 +134,7 @@ def get_schema_options(program_type):
         case 'TAN':
             return schema_defs.tanf
         case 'SSP':
-            # return schema_defs.ssp
-            return None
+            return schema_defs.ssp
         # case tribal?
     return None
 
@@ -129,6 +159,24 @@ def get_schema(line, section, schema_options):
         return None
         # return schema_options.t6
     elif section == 'S' and line.startswith('T7'):
+        return None
+        # return schema_options.t7
+    elif section == 'A' and line.startswith('M1'):
+        return schema_options.m1
+    elif section == 'A' and line.startswith('M2'):
+        return schema_options.m2
+    elif section == 'A' and line.startswith('M3'):
+        return schema_options.m3
+    elif section == 'C' and line.startswith('M4'):
+        return None
+        # return schema_options.t4
+    elif section == 'C' and line.startswith('M5'):
+        return None
+        # return schema_options.t5
+    elif section == 'G' and line.startswith('M6'):
+        return None
+        # return schema_options.t6
+    elif section == 'S' and line.startswith('M7'):
         return None
         # return schema_options.t7
     else:

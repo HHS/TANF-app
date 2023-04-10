@@ -1,6 +1,17 @@
 """Utility file for functions shared between all parsers even preparser."""
 
 
+def value_is_empty(value, length):
+    """Handle 'empty' values as field inputs."""
+
+    empty_values = [
+        ' '*length,  # '     '
+        '#'*length,  # '#####'
+    ]
+
+    return value is None or value in empty_values
+
+
 class Field:
     """Provides a mapping between a field name and its position."""
 
@@ -24,9 +35,16 @@ class Field:
         """Parse the value for a field given a line, startIndex, endIndex, and field type."""
         value = line[self.startIndex:self.endIndex]
 
+        if value_is_empty(value, self.endIndex-self.startIndex):
+            return None
+
         match self.type:
             case 'number':
-                return int(value)
+                try:
+                    value = int(value)
+                    return value
+                except ValueError:
+                    return None
             case 'string':
                 return value
 
@@ -34,12 +52,19 @@ class Field:
 class RowSchema:
     """Maps the schema for data lines."""
 
-    def __init__(self, model=dict, preparsing_validators=[], postparsing_validators=[], fields=[]):
+    def __init__(
+            self,
+            model=dict,
+            preparsing_validators=[],
+            postparsing_validators=[],
+            fields=[],
+            quiet_preparser_errors=False
+            ):
         self.model = model
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = postparsing_validators
         self.fields = fields
-        # self.section = section # intended for future use with multiple section objects
+        self.quiet_preparser_errors = quiet_preparser_errors
 
     def _add_field(self, name, length, start, end, type):
         """Add a field to the schema."""
@@ -64,6 +89,8 @@ class RowSchema:
         preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(line)
 
         if not preparsing_is_valid:
+            if self.quiet_preparser_errors:
+                return None, True, []
             return None, False, preparsing_errors
 
         # parse line to model
@@ -100,10 +127,11 @@ class RowSchema:
         for field in self.fields:
             value = field.parse_value(line)
 
-            if isinstance(record, dict):
-                record[field.name] = value
-            else:
-                setattr(record, field.name, value)
+            if value is not None:
+                if isinstance(record, dict):
+                    record[field.name] = value
+                else:
+                    setattr(record, field.name, value)
 
         return record
 
@@ -116,11 +144,11 @@ class RowSchema:
             for validator in field.validators:
                 value = None
                 if isinstance(instance, dict):
-                    value = instance[field.name]
+                    value = instance.get(field.name, None)
                 else:
-                    value = getattr(instance, field.name)
+                    value = getattr(instance, field.name, None)
 
-                if field.required and value != (' '*(field.endIndex-field.startIndex)):
+                if field.required and not value_is_empty(value, field.endIndex-field.startIndex):
                     validator_is_valid, validator_error = validator(value)
                     is_valid = False if not validator_is_valid else is_valid
                     if validator_error:
@@ -143,3 +171,21 @@ class RowSchema:
                 errors.append(validator_error)
 
         return is_valid, errors
+
+
+class MultiRecordRowSchema:
+    """Maps a line to multiple `RowSchema`s and runs all parsers and validators."""
+
+    def __init__(self, schemas):
+        # self.common_fields = None
+        self.schemas = schemas
+
+    def parse_and_validate(self, line):
+        """Run `parse_and_validate` for each schema provided and bubble up errors."""
+        records = []
+
+        for schema in self.schemas:
+            r = schema.parse_and_validate(line)
+            records.append(r)
+
+        return records
