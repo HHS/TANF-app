@@ -30,7 +30,7 @@ class DataFileFilter(filters.FilterSet):
     """Filters that can be applied to GET requests as query parameters."""
 
     # Override the generated definition for the STT field so we can require it.
-    stt = filters.NumberFilter(field_name='stt_id', required=True)
+    # stt = filters.NumberFilter(field_name='stt_id', required=True)
 
     class Meta:
         """Class metadata linking to the DataFile and fields accepted."""
