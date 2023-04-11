@@ -160,7 +160,7 @@ class DataFile(FileRecord):
     @property
     def s3_location(self):
         """Return the S3 file location."""
-        location = ""
+        location = None
         if self.file:
             location = self.file.name
         return location
