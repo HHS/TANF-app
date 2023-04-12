@@ -1,5 +1,6 @@
 """Factories for generating test data for parsers."""
 import factory
+
 from tdpservice.search_indexes.parsers.models import DataFileSummary
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.users.test.factories import UserFactory
@@ -61,8 +62,7 @@ class ParserErrorFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         """Hardcoded meta data for parser errors."""
-
-        model = "search_indexes.ParserError"
+        model = "parsers.ParserError"
 
     file = factory.SubFactory(DataFileFactory)
     row_number = 1

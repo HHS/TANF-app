@@ -1,6 +1,6 @@
 # jobs:
   backend-owasp-scan:
-    executor: zap-machine
+    executor: large-machine-executor
     working_directory: ~/tdp-apps
     steps:
       - checkout
@@ -21,11 +21,12 @@
           target: backend
 
   frontend-owasp-scan:
-    executor: zap-machine
+    executor: large-machine-executor
     working_directory: ~/tdp-apps
     steps:
       - checkout
       - docker-compose-check
+      - docker-compose-up-backend
       - docker-compose-up-frontend
       - run:
           name: Wait for frontend to become available
@@ -42,7 +43,7 @@
           target: frontend
 
   nightly-owasp-scan:
-    executor: zap-machine
+    executor: large-machine-executor
     working_directory: ~/tdp-apps
     parameters:
       cf_password:
