@@ -43,7 +43,7 @@
           app-dir: tdrs-frontend
       - run:
           name: Run Cypress e2e tests
-          command: cd tdrs-frontend; npm run test:e2e-develop
+          command: cd tdrs-frontend; npm run test:e2e-ci -- --config baseUrl="https://tdp-frontend-develop.acf.hhs.gov" --env cypressToken=$CYPRESS_TOKEN,apiUrl="https://tdp-frontend-develop.acf.hhs.gov/v1"
       - store_artifacts:
           path: tdrs-frontend/cypress/screenshots/
       - store_artifacts:
