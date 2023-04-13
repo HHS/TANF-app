@@ -6,6 +6,7 @@ from django.utils import timezone
 from celery import shared_task
 from datetime import datetime, timedelta
 import logging
+from tdpservice.email.helpers.account_access_requests import send_num_access_requests_email
 from tdpservice.email.helpers.account_deactivation_warning import send_deactivation_warning_email
 from .db_backup import run_backup
 
@@ -41,3 +42,29 @@ def users_to_deactivate(days):
         last_login__gte=datetime.now(tz=timezone.utc) - timedelta(days=days+1),
         account_approval_status=AccountApprovalStatusChoices.APPROVED,
         )
+
+def get_ofa_admin_user_emails():
+    return [user.email for user in User.objects.filter(
+        group="OFA System Admin"
+    )]
+
+def get_num_access_requests():
+    return len(User.objects.filter(
+        account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
+    ))
+
+@shared_task
+def email_admin_num_access_requests():
+    recipient_email = get_ofa_admin_user_emails()
+    text_message = f''
+    subject = f'Number of Active Access Requests'
+    email_context = {
+        'date': datetime.today(),
+        'num_requests': get_num_access_requests(),
+    }
+
+    send_num_access_requests_email(recipient_email,
+                                   text_message,
+                                   subject,
+                                   email_context,
+                                   )

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- Body copy -->
+<p style="color: #000000;">
+
+
+</p>
+<p>Hello, <br> This report reflects the number of users in the "Access Request" state as of <b>{{ date }}</b>.</p>
+<table
+  style="width: 100%; background-color: #ffffff; border-width: 1px; border-color: #000000; border-style: solid; color: #000000; text-align: left; margin-bottom: 8px;">
+  <thead style="border-style: solid; border-color: #000000; border-width: 1px; background-color: #e6e6e6;">
+    <tr>
+      <th style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">Number of Access Requests
+      </th>
+      <th style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;">{{ num_requests }} access
+        requests</td>
+      <td style="padding: 8px; border-style: solid; border-color: #000000; border-width: 1px;"><a target="_blank">Django
+          Users Page</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Thank you,</p>
+TDP Team
+<p></p>
+{% endblock %}

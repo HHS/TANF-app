@@ -43,19 +43,33 @@ def log(msg, logger_context=None, level='info'):
             object_repr=logger_context['object_repr']
         )
 
-
-@shared_task
-def automated_email(email_path, recipient_email, subject, email_context, text_message, logger_context=None):
+def prepare_recipients(recipient_email):
     """
-    Send email to user.
+    Prepare a list of recipients to be emailed.
 
     recipient_email can be either a string (single recipient) or a array of strings.
     """
     recipients = [recipient_email] if type(recipient_email) == str else recipient_email
     logger.info(f"Starting celery task to send email to {recipients}")
+    return recipients
 
+def prepare_email(email_path, recipient_email, email_context, logger_context):
+    """Prepare a valid email message and valid recipients"""
+    recipients = prepare_recipients(recipient_email)
     html_message = get_template(email_path).render(email_context)
     valid_emails = filter_valid_emails(recipients, logger_context)
+
+    return html_message, valid_emails
+
+@shared_task
+def automated_email(email_path, recipient_email, subject, email_context, text_message, logger_context=None):
+    """
+    Send email to user.
+    """
+    recipients = [recipient_email] if type(recipient_email) == str else recipient_email
+    logger.info(f"Starting celery task to send email to {recipients}")
+
+    html_message, valid_emails = prepare_email(email_path, recipient_email, email_context, logger_context)
 
     try:
         send_email(subject, text_message, html_message, valid_emails)
