@@ -42,7 +42,7 @@
           path: tdrs-frontend/pa11y-screenshots/
 
   test-e2e:
-    executor: machine-executor
+    executor: large-machine-executor
     working_directory: ~/tdp-apps
     steps:
       - checkout
