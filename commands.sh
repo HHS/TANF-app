@@ -98,9 +98,16 @@ tdrs-lint-backend() {
     tdrs-compose-backend run --rm web bash -c "flake8 . && if [ $? -eq 0 ]; then echo 'Flake8 linter found no issues'; fi"
 }
 
+# create docker network for tdrs if it doesn't exist
+ tdrs-docker-net() {
+     docker network inspect external-net >/dev/null 2>&1 \
+     || docker network create external-net
+ }
+
 # short cut for running compose sub commands on backend
 tdrs-compose-backend() {
     cd-tdrs
+    tdrs-docker-net
     cd tdrs-backend && tdrs-compose-local $@
     cd ..
 }
