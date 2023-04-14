@@ -45,20 +45,23 @@ def users_to_deactivate(days):
         )
 
 def get_ofa_admin_user_emails():
+    """Return a list of OFA System Admin users."""
     return [user.email for user in User.objects.filter(
         groups='4'
     )]
 
 def get_num_access_requests():
+    """Return the number of users requesting access."""
     return len(User.objects.filter(
         account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
     ))
 
 @shared_task
 def email_admin_num_access_requests():
-    recipient_email = 'ericlipe17@gmail.com'# get_ofa_admin_user_emails()
-    text_message = f''
-    subject = f'Number of Active Access Requests'
+    """Send all OFA System Admins an email with how many users have requested access."""
+    recipient_email = 'elipe@teamraft.com'  # get_ofa_admin_user_emails()
+    text_message = ''
+    subject = 'Number of Active Access Requests'
     email_context = {
         'date': datetime.today(),
         'num_requests': get_num_access_requests(),

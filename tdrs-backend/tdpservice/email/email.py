@@ -54,7 +54,7 @@ def prepare_recipients(recipient_email):
     return recipients
 
 def prepare_email(email_path, recipient_email, email_context, logger_context):
-    """Prepare a valid email message and valid recipients"""
+    """Prepare a valid email message and valid recipients."""
     recipients = prepare_recipients(recipient_email)
     html_message = get_template(email_path).render(email_context)
     valid_emails = filter_valid_emails(recipients, logger_context)
@@ -63,9 +63,7 @@ def prepare_email(email_path, recipient_email, email_context, logger_context):
 
 @shared_task
 def automated_email(email_path, recipient_email, subject, email_context, text_message, logger_context=None):
-    """
-    Send email to user.
-    """
+    """Send email to user."""
     recipients = [recipient_email] if type(recipient_email) == str else recipient_email
     logger.info(f"Starting celery task to send email to {recipients}")
 
