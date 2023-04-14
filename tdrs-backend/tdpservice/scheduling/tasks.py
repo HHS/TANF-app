@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 from tdpservice.users.models import User, AccountApprovalStatusChoices
+from django.urls import reverse
 from django.utils import timezone
 from celery import shared_task
 from datetime import datetime, timedelta
@@ -45,7 +46,7 @@ def users_to_deactivate(days):
 
 def get_ofa_admin_user_emails():
     return [user.email for user in User.objects.filter(
-        group="OFA System Admin"
+        groups='4'
     )]
 
 def get_num_access_requests():
@@ -55,13 +56,17 @@ def get_num_access_requests():
 
 @shared_task
 def email_admin_num_access_requests():
-    recipient_email = get_ofa_admin_user_emails()
+    recipient_email = 'ericlipe17@gmail.com'# get_ofa_admin_user_emails()
     text_message = f''
     subject = f'Number of Active Access Requests'
     email_context = {
         'date': datetime.today(),
         'num_requests': get_num_access_requests(),
+        'admin_user_pg': reverse("admin:users_user_changelist"),
     }
+
+    print(f'\n\nEmails: {recipient_email}')
+    print(f'\n\nEmail context: {email_context}')
 
     send_num_access_requests_email(recipient_email,
                                    text_message,

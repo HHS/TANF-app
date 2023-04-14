@@ -451,7 +451,7 @@ class Common(Configuration):
         },
         'Email Admin Number of Access Requests' : {
             'task': 'tdpservice.scheduling.tasks.email_admin_num_access_requests',
-            'schedule': crontab(hour='1', minute='0'), # Every day at 1am UTC (9am EST)
+            'schedule': crontab(minute='*/1', hour='*', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9am EST)
         }
     }
 
