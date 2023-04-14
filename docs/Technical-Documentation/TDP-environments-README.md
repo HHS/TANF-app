@@ -29,8 +29,8 @@ The Staging environment contains two frontend and backend deployments.
 
 | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- |
-| https://tdp-frontend-staging.app.cloud.gov | https://tdp-backend-staging.app.cloud.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
-| https://tdp-frontend-develop.app.cloud.gov | https://tdp-backend-develop.app.cloud.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
+| https://tdp-frontend-staging.acf.hhs.gov | https://tdp-backend-staging.acf.hhs.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
+| https://tdp-frontend-develop.acf.hhs.gov | https://tdp-backend-develop.acf.hhs.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
 
 ### Dependencies
 

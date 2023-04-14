@@ -22,6 +22,9 @@ class Local(Common):
     # NOTE: Defaults to True when this settings module is in use
     USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "yes")))
 
+    # Overwrite CORS allowed origins to allow for local development
+    CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+
     if USE_LOCALSTACK:
         # To get s3 signed URLs to work with localstack we must pass in
         # dummy credentials of `test` per the docs

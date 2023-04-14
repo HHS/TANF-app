@@ -7,12 +7,12 @@ from ..models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, 
 
 @registry.register_document
 class TANF_T1DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T1 data file."""
+    """Elastic search model mapping for a parsed TANF T1 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't1_submissions'
+        name = 'tanf_t1_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -73,12 +73,12 @@ class TANF_T1DataSubmissionDocument(Document):
 
 @registry.register_document
 class TANF_T2DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T2 data file."""
+    """Elastic search model mapping for a parsed TANF T2 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't2_submissions'
+        name = 'tanf_t2_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -165,12 +165,12 @@ class TANF_T2DataSubmissionDocument(Document):
 
 @registry.register_document
 class TANF_T3DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T3 data file."""
+    """Elastic search model mapping for a parsed TANF T3 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't3_submissions'
+        name = 'tanf_t3_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -209,12 +209,12 @@ class TANF_T3DataSubmissionDocument(Document):
 
 @registry.register_document
 class TANF_T4DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T4 data file."""
+    """Elastic search model mapping for a parsed TANF T4 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't4_submissions'
+        name = 'tanf_t4_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -244,12 +244,12 @@ class TANF_T4DataSubmissionDocument(Document):
 
 @registry.register_document
 class TANF_T5DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T5 data file."""
+    """Elastic search model mapping for a parsed TANF T5 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't5_submissions'
+        name = 'tanf_t5_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -296,12 +296,12 @@ class TANF_T5DataSubmissionDocument(Document):
 
 @registry.register_document
 class TANF_T6DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T6 data file."""
+    """Elastic search model mapping for a parsed TANF T6 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't6_submissions'
+        name = 'tanf_t6_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -337,12 +337,12 @@ class TANF_T6DataSubmissionDocument(Document):
 
 @registry.register_document
 class TANF_T7DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T7 data file."""
+    """Elastic search model mapping for a parsed TANF T7 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't7_submissions'
+        name = 'tanf_t7_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
