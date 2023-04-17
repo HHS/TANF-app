@@ -35,10 +35,11 @@ class UserAdmin(admin.ModelAdmin):
     exclude = ['password', 'user_permissions', 'is_active']
     readonly_fields = ['last_login', 'date_joined', 'login_gov_uuid', 'hhs_id', 'access_request', 'deactivated']
     form = UserForm
-    list_filter = ('account_approval_status', 'stt', 'region')
+    list_filter = ('account_approval_status', 'region', 'stt')
     list_display = [
         "username",
         'location',
+        'access_requested',
         "account_approval_status",
     ]
     autocomplete_fields = ['stt']

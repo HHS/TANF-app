@@ -1,5 +1,6 @@
 """Define user model."""
 
+import datetime
 import logging
 import uuid
 
@@ -101,6 +102,9 @@ class User(AbstractUser):
             "Users in an approved state are allowed access."
         ),
     )
+
+    access_requested = models.DateTimeField(default=datetime.datetime(9999, 1, 1, 0, 0, 0))
+
     _loaded_values = None
     _adding = True
 

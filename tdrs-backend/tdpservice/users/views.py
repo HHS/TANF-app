@@ -1,4 +1,5 @@
 """Define API views for user class."""
+import datetime
 import logging
 
 from django.contrib.auth.models import Group
@@ -56,7 +57,8 @@ class UserViewSet(
         """Update request.user with provided data, set `account_approval_status` to 'Access Request'."""
         serializer = self.get_serializer(self.request.user, request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST)
+        serializer.save(account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
+                        access_requested=datetime.datetime.now())
         logger.info(
             "Access request for user: %s on %s", self.request.user, timezone.now()
         )
