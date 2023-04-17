@@ -60,7 +60,7 @@ def get_num_access_requests():
 @shared_task
 def email_admin_num_access_requests():
     """Send all OFA System Admins an email with how many users have requested access."""
-    recipient_email = 'elipe@teamraft.com'  # get_ofa_admin_user_emails()
+    recipient_email = get_ofa_admin_user_emails()
     text_message = ''
     subject = 'Number of Active Access Requests'
     url = settings.FRONTEND_BASE_URL + reverse("admin:users_user_changelist")
