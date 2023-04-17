@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 from tdpservice.users.models import User, AccountApprovalStatusChoices
+from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 from celery import shared_task
@@ -62,14 +63,12 @@ def email_admin_num_access_requests():
     recipient_email = 'elipe@teamraft.com'  # get_ofa_admin_user_emails()
     text_message = ''
     subject = 'Number of Active Access Requests'
+    url = settings.FRONTEND_BASE_URL + reverse("admin:users_user_changelist")
     email_context = {
         'date': datetime.today(),
         'num_requests': get_num_access_requests(),
-        'admin_user_pg': reverse("admin:users_user_changelist"),
+        'admin_user_pg': url,
     }
-
-    print(f'\n\nEmails: {recipient_email}')
-    print(f'\n\nEmail context: {email_context}')
 
     send_num_access_requests_email(recipient_email,
                                    text_message,
