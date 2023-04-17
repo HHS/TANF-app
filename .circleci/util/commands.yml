@@ -9,7 +9,7 @@
     steps:
       - run:
           name: Build and spin-up Django API service
-          command: cd tdrs-backend; docker-compose up -d --build
+          command: cd tdrs-backend; docker network create external-net; docker-compose up -d --build
 
   cf-check:
     steps:
