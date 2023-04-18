@@ -1,0 +1,144 @@
+# This Nginx instance is a light proxy/block server that serves the frontend app
+#
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include mime.types;
+
+    server {
+        listen 80;
+        root /usr/share/nginx/html;
+        include locations.conf;
+
+        # Only use HTTPS; disabled for local
+        add_header Strict-Transport-Security: max-age=31536000 ;
+
+        # Block all requests except ones listed in whitelist; disabled for local
+        #include ip_whitelist.conf;
+
+        # Enable caching
+        # Note: Since Nginx is serving frontend, technically it has all files cached in
+        # so with no request being forwarded to upstream, Nginx is automatically caching the files
+        # We need to control cache headers for non-static files
+        # this is not applicable for frontend when Nginx is serving built files
+        proxy_cache tdp_cache;
+
+        ### ADD HEADERS
+        # for clickjacking
+        add_header X-Frame-Options SAMEORIGIN always;
+
+        # Using Adobe products like PDF, Flash, etc.? You can implement this header to instruct the browser
+        # how to handle the requests over a cross-domain. By implementing this header, you restrict loading
+        # your site’s assets from other domains to avoid resource abuse.
+        add_header X-Permitted-Cross-Domain-Policies: none;
+
+        # Referrer-Policy: no-referrer
+        add_header Referrer-Policy: no-referrer;
+
+        # Cross-Origin-Embedder-Policy:This response header (also named COEP) prevents a document from loading
+        # any cross-origin resources that don’t explicitly grant the document permission
+        add_header Cross-Origin-Embedder-Policy: require-corp;
+
+        # Isolates the browsing context exclusively to same-origin documents. Cross-origin documents are not loaded
+        # in the same browsing context
+        add_header Cross-Origin-Opener-Policy: same-origin;
+
+        # This response header (also named CORP) allows to define a policy that lets web sites and applications opt
+        # in to protection against certain requests from other origins (such as those issued with elements like
+        # <script> and <img>), to mitigate speculative side-channel attacks, like Spectre, as well as Cross-Site
+        # Script Inclusion (XSSI) attacks
+        add_header Cross-Origin-Resource-Policy: same-origin;
+
+        # The must-revalidate response directive indicates that the response can be stored in caches and can be
+        # reused while fresh. If the response becomes stale, it must be validated with the origin server before reuse.
+        add_header Cache-Control: max-age=604800;
+
+        # prevent MIME sniffing
+        add_header X-Content-Type-Options: nosniff;
+
+        # CSP header options. All options are set either to none or self except
+
+        set $CSP "default-src 'none';";
+        set $CSP "${CSP}script-src 'self';";
+        set $CSP "${CSP}style-src 'self' 'unsafe-inline' http://localhost:3000;";
+        set $CSP "${CSP}img-src 'self' data:;";
+        set $CSP "${CSP}font-src 'self';";
+        set $CSP "${CSP}connect-src 'self' localhost:*;";
+        set $CSP "${CSP}frame-src 'None';";
+        set $CSP "${CSP}manifest-src 'self';";
+        set $CSP "${CSP}object-src 'none';";
+        set $CSP "${CSP}frame-ancestors 'none';";
+        set $CSP "${CSP}child-src 'none';";
+        set $CSP "${CSP}media-src 'none';";
+        set $CSP "${CSP}prefetch-src 'none';";
+        set $CSP "${CSP}form-action *;";
+        set $CSP "${CSP}script-src-elem 'self' http://localhost:* http://www.w3.org;";
+        set $CSP "${CSP}script-src-attr 'self';";
+        set $CSP "${CSP}style-src-elem 'self' 'unsafe-inline';";
+        set $CSP "${CSP}style-src-attr 'self';";
+        set $CSP "${CSP}worker-src 'none';";
+        add_header Content-Security-Policy $CSP;
+    }
+
+    # Logging format
+    log_format compression '[Cache:$upstream_cache_status] $remote_addr - $remote_user [$time_local] '
+                               '"$request" $status $body_bytes_sent '
+                               '"request_body": "$request_body",'
+                               '"http_x_forwarded_for": "$http_x_forwarded_for",'
+                               '"host": "$host",'
+                               '"$http_referer" "$http_user_agent" "cookies=$http_cookie;"  "server=$server_name" "http_host=$http_host"'
+                               '"HTTP_ORIGIN = $http_origin"';
+
+    access_log /dev/stdout compression;
+    #access_log stderr compression;
+    
+    # Content caching
+    # saves cached fies in /tmp
+    # cache zone name = tdp_cache
+    # after cached files reach 2g in size, then they get overwritten
+    # use_temp_path=off: means the server saves caches directly in /tmp
+    # this is not applicable for frontend when Nginx is serving built files
+    proxy_cache_path /tmp keys_zone=tdp_cache:10m max_size=2g use_temp_path=off;
+
+    server {
+        listen                  8080;
+        location / {
+
+
+            proxy_pass              http://${BACK_END}:8080;
+            proxy_set_header        Host $host;
+            #proxy_pass_header content-security-policy;
+            add_header Access-control-Allow-Headers 'x-csrftoken';
+
+            set $CSP "default-src 'none';";
+            set $CSP "${CSP}script-src 'self';";
+            set $CSP "${CSP}style-src 'self' 'unsafe-inline';";
+            set $CSP "${CSP}img-src 'self' data:;";
+            set $CSP "${CSP}font-src 'self';";
+            set $CSP "${CSP}connect-src 'self' localhost:*;";
+            set $CSP "${CSP}frame-src 'None';";
+            set $CSP "${CSP}manifest-src 'self';";
+            set $CSP "${CSP}object-src 'none';";
+            set $CSP "${CSP}frame-ancestors 'none';";
+            set $CSP "${CSP}child-src 'none';";
+            set $CSP "${CSP}media-src 'none';";
+            set $CSP "${CSP}prefetch-src 'none';";
+            set $CSP "${CSP}form-action *";
+            set $CSP "${CSP}script-src-elem 'self';";
+            set $CSP "${CSP}script-src-attr 'self';";
+            set $CSP "${CSP}style-src-elem 'self'";
+            set $CSP "${CSP}style-src-attr 'self';";
+            set $CSP "${CSP}worker-src 'none';";
+            add_header Content-Security-Policy $CSP;
+
+            proxy_connect_timeout 60;
+            proxy_send_timeout    60;
+            proxy_buffer_size     4k;
+            proxy_temp_file_write_size 64k;
+        }
+    }
+
+}

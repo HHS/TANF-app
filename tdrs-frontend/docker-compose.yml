@@ -19,10 +19,32 @@ services:
       target: nginx
     ports:
       - 3000:80
-    volumes:
-      - ./:/home/node/app
+      - 8080:8080
     networks:
       - local
+      - default
+    volumes:
+      - ./:/home/node/app
+    environment:
+      - NGINX_FRONTEND=tdp-frontend
+      - BACK_END=web
+      - LOCAL_DEV=true
+    command: >
+      /bin/sh -c
+      "echo 'starting nginx' &&
+        envsubst '$${BACK_END}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf && 
+        rm /etc/nginx/locations.conf &&
+        cp /etc/nginx/locations_.conf /etc/nginx/locations.conf &&
+       envsubst '
+      $${BACK_END} $${NGINX_FRONTEND} $${LOCAL_DEV}
+      '< /etc/nginx/default.conf.template
+      > /etc/nginx/nginx.conf
+      && nginx -g 'daemon off;'"
+
 networks:
   local:
     driver: bridge
+
+  default:
+    external:
+      name: external-net
