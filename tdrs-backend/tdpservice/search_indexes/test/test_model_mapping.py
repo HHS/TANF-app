@@ -3,7 +3,7 @@
 import pytest
 from faker import Faker
 from django.db.utils import IntegrityError
-from tdpservice.search_indexes.models import T1, T2, T3, T4, T5, T6, T7
+from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 from tdpservice.search_indexes import documents
 
 
@@ -15,7 +15,7 @@ def test_can_create_and_index_t1_submission():
     """T1 submissions can be created and mapped."""
     record_num = fake.uuid4()
 
-    submission = T1.objects.create(
+    submission = TANF_T1.objects.create(
         RecordType=record_num,
         RPT_MONTH_YEAR=1,
         CASE_NUMBER=1,
@@ -67,7 +67,7 @@ def test_can_create_and_index_t1_submission():
 
     assert submission.id is not None
 
-    search = documents.T1DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
         'match',
         RecordType=record_num
     )
@@ -81,7 +81,7 @@ def test_can_create_and_index_t2_submission():
     """T2 submissions can be created and mapped."""
     record_num = fake.uuid4()
 
-    submission = T2.objects.create(
+    submission = TANF_T2.objects.create(
         record=record_num,
         rpt_month_year=1,
         case_number='1',
@@ -157,7 +157,7 @@ def test_can_create_and_index_t2_submission():
 
     assert submission.id is not None
 
-    search = documents.T2DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -171,7 +171,7 @@ def test_can_create_and_index_t3_submission():
     """T3 submissions can be created and mapped."""
     record_num = fake.uuid4()
 
-    submission = T3.objects.create(
+    submission = TANF_T3.objects.create(
         record=record_num,
         rpt_month_year=1,
         case_number='1',
@@ -199,7 +199,7 @@ def test_can_create_and_index_t3_submission():
 
     assert submission.id is not None
 
-    search = documents.T3DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -213,7 +213,7 @@ def test_can_create_and_index_t4_submission():
     """T4 submissions can be created and mapped."""
     record_num = fake.uuid4()
 
-    submission = T4.objects.create(
+    submission = TANF_T4.objects.create(
         record=record_num,
         rpt_month_year=1,
         case_number='1',
@@ -232,7 +232,7 @@ def test_can_create_and_index_t4_submission():
 
     assert submission.id is not None
 
-    search = documents.T4DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T4DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -246,7 +246,7 @@ def test_can_create_and_index_t5_submission():
     """T5 submissions can be created and mapped."""
     record_num = fake.uuid4()
 
-    submission = T5.objects.create(
+    submission = TANF_T5.objects.create(
         record=record_num,
         rpt_month_year=1,
         case_number='1',
@@ -282,7 +282,7 @@ def test_can_create_and_index_t5_submission():
 
     assert submission.id is not None
 
-    search = documents.T5DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T5DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -296,7 +296,7 @@ def test_can_create_and_index_t6_submission():
     """T6 submissions can be created and mapped."""
     record_num = fake.uuid4()
 
-    submission = T6.objects.create(
+    submission = TANF_T6.objects.create(
         record=record_num,
         rpt_month_year=1,
         fips_code='1',
@@ -321,7 +321,7 @@ def test_can_create_and_index_t6_submission():
 
     assert submission.id is not None
 
-    search = documents.T6DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T6DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -335,7 +335,7 @@ def test_can_create_and_index_t7_submission():
     """T7 submissions can be created and mapped."""
     record_num = fake.uuid4()
 
-    submission = T7.objects.create(
+    submission = TANF_T7.objects.create(
         record=record_num,
         rpt_month_year=1,
         fips_code='2',
@@ -348,7 +348,7 @@ def test_can_create_and_index_t7_submission():
 
     assert submission.id is not None
 
-    search = documents.T7DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -363,14 +363,14 @@ def test_does_not_create_index_if_model_creation_fails():
     record_num = fake.uuid4()
 
     with pytest.raises(IntegrityError):
-        submission = T7.objects.create(
+        submission = TANF_T7.objects.create(
             record=record_num
             # leave out a bunch of required fields
         )
 
         assert submission.id is None
 
-    search = documents.T7DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )

@@ -1,18 +1,18 @@
-"""Elasticsearch document mappings for Django models."""
+"""Elasticsearch document mappings for TANF submission models."""
 
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from .models import T1, T2, T3, T4, T5, T6, T7
+from ..models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 
 
 @registry.register_document
-class T1DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T1 data file."""
+class TANF_T1DataSubmissionDocument(Document):
+    """Elastic search model mapping for a parsed TANF T1 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't1_submissions'
+        name = 'tanf_t1_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -21,7 +21,7 @@ class T1DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T1
+        model = TANF_T1
         fields = [
             'RecordType',
             'RPT_MONTH_YEAR',
@@ -72,13 +72,13 @@ class T1DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T2DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T2 data file."""
+class TANF_T2DataSubmissionDocument(Document):
+    """Elastic search model mapping for a parsed TANF T2 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't2_submissions'
+        name = 'tanf_t2_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -87,7 +87,7 @@ class T2DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T2
+        model = TANF_T2
         fields = [
             'record',
             'rpt_month_year',
@@ -164,13 +164,13 @@ class T2DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T3DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T3 data file."""
+class TANF_T3DataSubmissionDocument(Document):
+    """Elastic search model mapping for a parsed TANF T3 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't3_submissions'
+        name = 'tanf_t3_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -179,7 +179,7 @@ class T3DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T3
+        model = TANF_T3
         fields = [
             'record',
             'rpt_month_year',
@@ -208,13 +208,13 @@ class T3DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T4DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T4 data file."""
+class TANF_T4DataSubmissionDocument(Document):
+    """Elastic search model mapping for a parsed TANF T4 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't4_submissions'
+        name = 'tanf_t4_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -223,7 +223,7 @@ class T4DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T4
+        model = TANF_T4
         fields = [
             'record',
             'rpt_month_year',
@@ -243,13 +243,13 @@ class T4DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T5DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T5 data file."""
+class TANF_T5DataSubmissionDocument(Document):
+    """Elastic search model mapping for a parsed TANF T5 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't5_submissions'
+        name = 'tanf_t5_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -258,7 +258,7 @@ class T5DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T5
+        model = TANF_T5
         fields = [
             'record',
             'rpt_month_year',
@@ -295,13 +295,13 @@ class T5DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T6DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T6 data file."""
+class TANF_T6DataSubmissionDocument(Document):
+    """Elastic search model mapping for a parsed TANF T6 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't6_submissions'
+        name = 'tanf_t6_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -310,7 +310,7 @@ class T6DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T6
+        model = TANF_T6
         fields = [
             'record',
             'rpt_month_year',
@@ -336,13 +336,13 @@ class T6DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class T7DataSubmissionDocument(Document):
-    """Elastic search model mapping for a parsed T7 data file."""
+class TANF_T7DataSubmissionDocument(Document):
+    """Elastic search model mapping for a parsed TANF T7 data file."""
 
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 't7_submissions'
+        name = 'tanf_t7_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -351,7 +351,7 @@ class T7DataSubmissionDocument(Document):
     class Django:
         """Django model reference and field mapping."""
 
-        model = T7
+        model = TANF_T7
         fields = [
             'record',
             'rpt_month_year',
