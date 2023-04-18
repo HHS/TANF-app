@@ -68,6 +68,7 @@ def test_can_create_and_index_tanf_t1_submission():
     assert submission.id is not None
 
     search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
         'match',
         RecordType=record_num
     )
@@ -158,6 +159,7 @@ def test_can_create_and_index_tanf_t2_submission():
     assert submission.id is not None
 
     search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -200,6 +202,7 @@ def test_can_create_and_index_tanf_t3_submission():
     assert submission.id is not None
 
     search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -232,6 +235,7 @@ def test_can_create_and_index_tanf_t4_submission():
 
     assert submission.id is not None
 
+    search = documents.tanf.TANF_T4DataSubmissionDocument.search().query(
     search = documents.tanf.TANF_T4DataSubmissionDocument.search().query(
         'match',
         record=record_num
@@ -283,6 +287,7 @@ def test_can_create_and_index_tanf_t5_submission():
     assert submission.id is not None
 
     search = documents.tanf.TANF_T5DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T5DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -322,6 +327,7 @@ def test_can_create_and_index_tanf_t6_submission():
     assert submission.id is not None
 
     search = documents.tanf.TANF_T6DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T6DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -349,6 +355,7 @@ def test_can_create_and_index_tanf_t7_submission():
     assert submission.id is not None
 
     search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
+    search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
         'match',
         record=record_num
     )
@@ -370,6 +377,7 @@ def test_does_not_create_index_if_model_creation_fails():
 
         assert submission.id is None
 
+    search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
     search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
         'match',
         record=record_num
