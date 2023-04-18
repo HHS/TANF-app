@@ -383,7 +383,6 @@ def test_does_not_create_index_if_model_creation_fails():
 @pytest.mark.django_db
 def test_can_create_and_map_ssp_m1_submission():
     """SSP M1 Submissions can be created and mapped."""
-
     record_num = fake.uuid4()
 
     submission = models.ssp.SSP_M1.objects.create(
