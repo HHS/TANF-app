@@ -3,10 +3,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
-
 class Field:
     """Provides a mapping between a field name and its position."""
+
     def __init__(self, name, type, startIndex, endIndex, required=True, validators=[]):
         self.name = name
         self.type = type
@@ -58,7 +57,6 @@ class RowSchema:
     def get_all_fields(self):
         """Get all fields from the schema."""
         return self.fields
-
 
     def parse_and_validate(self, line):
         """Run all validation steps in order, and parse the given line into a record."""

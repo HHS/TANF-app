@@ -102,9 +102,16 @@ class DataFileSummary(models.Model):
         }
     """
 
-    def set_status(self, datafile):
+    def set_status(self, errors):
         """Set and return the status field based on errors and models associated with datafile."""
         # to set rejected, we would need to have raised an exception during (pre)parsing
-        # else if there are  errors, we can set to accepted with errors
+        # else if there are errors, we can set to accepted with errors
         # else we can set to accepted (default)
-        pass
+        if errors == {}:  # This feels better than running len() on `errors`
+            self.status = self.Status.ACCEPTED
+        elif errors:
+            self.status = self.Status.ACCEPTED_WITH_ERRORS
+        elif errors == {'document': ['No headers found.']}:  # we need a signal for unacceptable errors. Another func?
+            self.status = self.Status.REJECTED
+
+        return self.status

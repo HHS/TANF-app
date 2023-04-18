@@ -5,6 +5,7 @@ import os
 from . import schema_defs
 from . import validators
 from tdpservice.data_files.models import DataFile
+from .models import DataFileSummary
 
 
 def parse_datafile(datafile):
@@ -80,7 +81,11 @@ def parse_datafile(datafile):
         if not record_is_valid:
             errors[line_number] = record_errors
 
-    return errors
+    summary = DataFileSummary(datafile=datafile)
+    summary.set_status(errors)
+    summary.save()
+
+    return summary, errors
 
 
 def parse_datafile_line(line, schema):
