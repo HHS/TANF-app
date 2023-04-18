@@ -45,7 +45,10 @@ class UserViewSet(
 
     def list(self, request):
         """Return the users."""
-        serializer = self.get_serializer_class()(self.queryset, many=True)
+        queryset = self.queryset
+        if not request.user.groups.filter(name="OFA System Admin").exists():
+            queryset = self.queryset.filter(id=request.user.id)
+        serializer = self.get_serializer_class()(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):

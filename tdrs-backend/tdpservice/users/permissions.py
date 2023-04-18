@@ -212,6 +212,7 @@ class UserPermissions(DjangoModelCRUDPermissions):
         #       action only. In that case actions dealing with individual
         #       object permissions will need to be passed through this function
         #       by returning True.
+        print("\n\nINSIDE has_permission")
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -220,9 +221,10 @@ class UserPermissions(DjangoModelCRUDPermissions):
 
         Alternatively, check if the user has been granted Model Permissions.
         """
+        print("\n\nINSIDE has_object_permission")
+        is_admin = request.user.groups.filter(name="OFA System Admin").exists()
         # If the user has the relevant model permission that will also allow
         # access to individual objects
-        has_model_permission = super().has_permission(request, view)
 
         # Regional Staff can only see files uploaded for their designated Region
         if request.user.groups.filter(name="OFA Regional Staff").exists():
@@ -233,4 +235,7 @@ class UserPermissions(DjangoModelCRUDPermissions):
             )
             return user_region == obj.stt.region_id
 
-        return obj == request.user or has_model_permission
+        # print(f"HAS MODEL PERMISSION: {has_model_permission}")
+        print(f"OBJ IS USER: {obj == request.user}")
+        print(f"IS_ADMIN: {is_admin}")
+        return obj == request.user or is_admin
