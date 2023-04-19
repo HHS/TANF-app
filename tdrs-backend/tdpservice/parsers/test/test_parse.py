@@ -5,7 +5,7 @@ import pytest
 from pathlib import Path
 from .. import parse
 from tdpservice.data_files.models import DataFile
-from tdpservice.search_indexes.models import T1
+from tdpservice.search_indexes.models.tanf import TANF_T1
 
 
 def create_test_datafile(filename, stt_user, stt):
@@ -37,10 +37,10 @@ def test_parse_small_correct_file(test_datafile):
     errors = parse.parse_datafile(test_datafile)
 
     assert errors == {}
-    assert T1.objects.count() == 1
+    assert TANF_T1.objects.count() == 1
 
     # spot check
-    t1 = T1.objects.all().first()
+    t1 = TANF_T1.objects.all().first()
     assert t1.RPT_MONTH_YEAR == 202010
     assert t1.CASE_NUMBER == '11111111112'
     assert t1.COUNTY_FIPS_CODE == '230'
@@ -86,10 +86,12 @@ def test_parse_big_file(test_big_file):
     """Test parsing of ADS.E2J.FTP1.TS06."""
     expected_errors_count = 1828
     expected_t1_record_count = 815
+    expected_errors_count = 1828
+    expected_t1_record_count = 815
     errors = parse.parse_datafile(test_big_file)
 
     assert len(errors.keys()) == expected_errors_count
-    assert T1.objects.count() == expected_t1_record_count
+    assert TANF_T1.objects.count() == expected_t1_record_count
 
 
 @pytest.fixture

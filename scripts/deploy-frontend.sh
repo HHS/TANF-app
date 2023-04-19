@@ -19,29 +19,43 @@ update_frontend()
     cd tdrs-frontend || exit
 
     if [ "$CF_SPACE" = "tanf-prod" ]; then
-        echo "REACT_APP_BACKEND_URL=https://api-tanfdata.acf.hhs.gov/v1" >> .env.production
-        echo "REACT_APP_BACKEND_HOST=https://api-tanfdata.acf.hhs.gov" >> .env.production
+        echo "REACT_APP_BACKEND_URL=https://tanfdata.acf.hhs.gov/v1" >> .env.production
+        echo "REACT_APP_FRONTEND_URL=https://tanfdata.acf.hhs.gov" >> .env.production
+        echo "REACT_APP_BACKEND_HOST=https://tanfdata.acf.hhs.gov" >> .env.production
         echo "REACT_APP_LOGIN_GOV_URL=https://secure.login.gov/" >> .env.production
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.production
+        echo "BACK_END=" >> .env.production
+    elif [ "$CF_SPACE" = "tanf-staging" ]; then
+        echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov/v1" >> .env.development
+        echo "REACT_APP_FRONTEND_URL=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov" >> .env.development
+        echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.acf.hhs.gov" >> .env.development
+        echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
+
+        cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.acf.hhs.gov"
+        cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.acf.hhs.gov'
     else
-        echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_BACKEND.app.cloud.gov/v1" >> .env.development
-        echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_BACKEND.app.cloud.gov" >> .env.development
+        echo "REACT_APP_BACKEND_URL=https://$CGHOSTNAME_FRONTEND.app.cloud.gov/v1" >> .env.development
+        echo "REACT_APP_FRONTEND_URL=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
+        echo "REACT_APP_BACKEND_HOST=https://$CGHOSTNAME_FRONTEND.app.cloud.gov" >> .env.development
         echo "REACT_APP_CF_SPACE=$CF_SPACE" >> .env.development
 
         cf set-env "$CGHOSTNAME_FRONTEND" ALLOWED_ORIGIN "https://$CGHOSTNAME_FRONTEND.app.cloud.gov"
         cf set-env "$CGHOSTNAME_FRONTEND" CONNECT_SRC '*.app.cloud.gov'
     fi
 
-    
+    cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
     
     npm run build:$ENVIRONMENT
     unlink .env.production
     mkdir deployment
 
     cp -r build deployment/public
-    cp  nginx/buildpack.nginx.conf deployment/nginx.conf
-    cp nginx/locations.conf deployment/locations.conf
-    cp  nginx/mime.types deployment/mime.types
+    cp nginx/cloud.gov/buildpack.nginx.conf deployment/nginx.conf
+    cp nginx/cloud.gov/locations.conf deployment/locations.conf
+    cp nginx/cloud.gov/ip_whitelist.conf deployment/ip_whitelist.conf
+    cp nginx/cloud.gov/ip_whitelist_ipv4.conf deployment/ip_whitelist_ipv4.conf
+    cp nginx/cloud.gov/ip_whitelist_ipv6.conf deployment/ip_whitelist_ipv6.conf
+    cp nginx/mime.types deployment/mime.types
 
     cp manifest.buildpack.yml deployment/manifest.buildpack.yml
     cd deployment || exit
@@ -56,6 +70,8 @@ update_frontend()
 
     if [ "$CF_SPACE" = "tanf-prod" ]; then
         cf map-route "$CGHOSTNAME_FRONTEND" tanfdata.acf.hhs.gov
+    elif [ "$CF_SPACE" = "tanf-staging" ]; then
+        cf map-route "$CGHOSTNAME_FRONTEND" "$CGHOSTNAME_FRONTEND".acf.hhs.gov
     else
         cf map-route "$CGHOSTNAME_FRONTEND" app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
     fi

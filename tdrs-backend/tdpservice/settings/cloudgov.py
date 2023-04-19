@@ -157,8 +157,10 @@ class Development(CloudGov):
 class Staging(CloudGov):
     """Settings for applications deployed in the Cloud.gov staging space."""
 
-    # TODO: why not just 'appcloudgov'?
-    ALLOWED_HOSTS = ['tdp-backend-staging.app.cloud.gov', 'tdp-backend-develop.app.cloud.gov']
+    ALLOWED_HOSTS = [
+        'tdp-frontend-staging.acf.hhs.gov',
+        'tdp-frontend-develop.acf.hhs.gov'
+        ]
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
         'OIDC_RP_CLIENT_ID',
@@ -169,7 +171,7 @@ class Production(CloudGov):
     """Settings for applications deployed in the Cloud.gov production space."""
 
     # TODO: Add production ACF domain when known
-    ALLOWED_HOSTS = ['api-tanfdata.acf.hhs.gov', 'tdp-backend-prod.app.cloud.gov']
+    ALLOWED_HOSTS = ['tanfdata.acf.hhs.gov', 'tdp-frontend-prod.app.cloud.gov']
 
     LOGIN_GOV_CLIENT_ID = os.getenv(
         'OIDC_RP_CLIENT_ID',
@@ -181,3 +183,6 @@ class Production(CloudGov):
     SESSION_COOKIE_DOMAIN = '.acf.hhs.gov'
     SESSION_COOKIE_PATH = "/;HttpOnly"
     MIDDLEWARE = ('tdpservice.middleware.SessionMiddleware', *Common.MIDDLEWARE)
+
+    # CORS allowed origins
+    CORS_ALLOWED_ORIGINS = ['https://tanfdata.acf.hhs.gov']

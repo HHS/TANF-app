@@ -35,6 +35,7 @@
           cf-username: <<parameters.cf-username>>
       - deploy-backend:
           backend-appname: <<parameters.backend-appname>>
+          frontend-appname: <<parameters.frontend-appname>>
           cf-space: <<parameters.cf-space>>
       - deploy-clamav:
           backend-appname: <<parameters.backend-appname>>
@@ -51,6 +52,9 @@
       backend-appname:
         default: tdp-backend
         type: string
+      frontend-appname:
+        default: tdp-frontend
+        type: string
       cf-space:
         default: tanf-dev
         type: string
@@ -62,6 +66,7 @@
           command: |
             bash ./scripts/deploy-backend.sh \
               $DEPLOY_STRATEGY \
+              <<parameters.frontend-appname>> \
               <<parameters.backend-appname>> \
               <<parameters.cf-space>>
 
