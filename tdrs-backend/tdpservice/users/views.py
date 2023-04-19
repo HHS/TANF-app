@@ -44,6 +44,7 @@ class UserViewSet(
         }.get(self.action, UserSerializer)
 
     def get_queryset(self):
+        """Return the queryset based on user's group status."""
         queryset = self.queryset
         if not self.request.user.groups.filter(name="OFA System Admin").exists():
             queryset = self.queryset.filter(id=self.request.user.id)
