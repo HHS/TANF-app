@@ -53,6 +53,8 @@ update_frontend()
     cp nginx/cloud.gov/buildpack.nginx.conf deployment/nginx.conf
     cp nginx/cloud.gov/locations.conf deployment/locations.conf
     cp nginx/cloud.gov/ip_whitelist.conf deployment/ip_whitelist.conf
+    cp nginx/cloud.gov/ip_whitelist_ipv4.conf deployment/ip_whitelist_ipv4.conf
+    cp nginx/cloud.gov/ip_whitelist_ipv6.conf deployment/ip_whitelist_ipv6.conf
     cp nginx/mime.types deployment/mime.types
 
     cp manifest.buildpack.yml deployment/manifest.buildpack.yml

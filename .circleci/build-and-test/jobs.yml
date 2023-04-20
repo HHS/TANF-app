@@ -54,6 +54,12 @@
       - install-nodejs-packages:
           app-dir: tdrs-frontend
       - run:
+          name: Wait for backend to become available
+          command: cd tdrs-backend; docker-compose run --rm zaproxy bash -c \
+              "PATH=$PATH:/home/zap/.local/bin &&
+               pip install wait-for-it &&
+               wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
+      - run:
           name: Set up cypress test users
           command: cd tdrs-backend; docker-compose exec web python manage.py generate_cypress_users
       - run:

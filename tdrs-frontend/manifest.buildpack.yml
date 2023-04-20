@@ -4,7 +4,7 @@ applications:
 - name: tdp-frontend
   buildpacks:
     - https://github.com/cloudfoundry/nginx-buildpack.git#v1.1.45
-  memory: 32M
+  memory: 128M
   instances: 1
   disk_quota: 256M
   timeout: 180
