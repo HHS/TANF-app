@@ -5,6 +5,10 @@ With a few exceptions, we've tended to publish markdown research syntheses to su
 
 The syntheses included herein are organized reverse-chronologically from newest to oldest:
 
+### [2022, Fall - Understanding STT Error Message(s) Interpretations](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Fall%20-%20Understanding%20STT%20Error%20Message%20Interpretation.md)
+
+- Ran a series of research sessions with 5 grantees (1 state/4 tribal programs) to explore how the new error codes and descriptions were being interpreted for error report corrections
+
 ### [2022, Fall - TDP 2.2 Pilot Program](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Fall%20-%20TDP%202.2%20Pilot%20Expansion.md)
 
 - Invited 21 grantees (11 returning and 10 new) into a production version of TDP to use to submit their Q4 2022 data.
