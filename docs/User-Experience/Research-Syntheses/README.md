@@ -5,10 +5,10 @@ With a few exceptions, we've tended to publish markdown research syntheses to su
 
 The syntheses included herein are organized reverse-chronologically from newest to oldest:
 
-### [2022, Fall - TDP 2.2 Pilot Program](https://github.com/raft-tech/TANF-app/blob/docs/User-Experience/Research-Syntheses/2022%2C%20Fall%20-%20TDP%202.2%20Pilot%20Expansion.md)
+### [2022, Fall - TDP 2.2 Pilot Program](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Fall%20-%20TDP%202.2%20Pilot%20Expansion.md)
 
 - Invited 21 grantees (11 returning and 10 new) into a production version of TDP to use to submit their Q4 2022 data.
-- Ran a series of research sessions to usability test 2.2 TDP new email notification and SSP/TANF functionality, gather feedback, and measure grantee sentiment toward the TANF Data Portal. 
+- Ran a series of research sessions to usability test 2.2 TDP new email notification and SSP/TANF functionality, gather feedback, and measure grantee sentiment toward the TANF Data Portal.
 
 ### [2022, Summer - TDP 2.0 Pilot Program](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Summer%20-%20TDP%202.0%20Pilot%20Program.md)
 
@@ -18,16 +18,16 @@ The syntheses included herein are organized reverse-chronologically from newest 
 ### [2021, Fall - Investigating Partial Submission & Evaluating TDP Submission History](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2021%2C%20Fall%20-%20Investigating%20Partial%20Submission%20%26%20Evaluating%20TDP%20Submission%20History.md)
 
 - Ran a series of collaborative workshops with DIGIT and OFA regional staff to prioritize and sort which attributes should be displayed at the top level of submission history pages in TDP and capture preferences around the minimum viable attributes to be displayed.
-- Ran a series of research sessions with grantees to investigate the impact of partial resubmission no longer being accepted in TDP and capture grantee preferences around minimum viable attributes on the Submission History page. 
+- Ran a series of research sessions with grantees to investigate the impact of partial resubmission no longer being accepted in TDP and capture grantee preferences around minimum viable attributes on the Submission History page.
 - Evaluated whether grantees understood new submission status states (Accepted, Accepted with errors, and Rejected) and correctly predict what their next steps would be to act on those statuses.
- 
+
 
 ### [2021, Summer - Communicating Errors in TDP & Validations With Regional Staff](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2021%2C%20Summer%20-%20Communicating%20Errors%20in%20TDP%20%26%20Validations%20With%20Regional%20Staff.md)
 
 - Ran collaborative workshops with DIGIT to capture the full scope of pre-parsing errors that could prevent TDRS/TDP from being able to process grantee files.
   - Content tested three errors with grantees to identify do's and don'ts and generally investigate which factors determine whether an error is understandable and actionable for grantee data analysts who will receive them.
 - Ran collaborative workshops to capture insights from OFA regional staff regarding their roles and responsibilities
-  - Began investigating the grantee information regional staff would need to be able to administrate grantee user access in their region; how to make this process secure as well as operationally simple. 
+  - Began investigating the grantee information regional staff would need to be able to administrate grantee user access in their region; how to make this process secure as well as operationally simple.
 
 
 ### [2021, Spring - Evil User Journeys & TANF Data Errors](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2021%2C%20Spring%20-%20Evil%20User%20Journeys%20%26%20TANF%20Data%20Errors.md)
@@ -35,25 +35,25 @@ The syntheses included herein are organized reverse-chronologically from newest 
 - Ran collaborative project team workshops to identify bad-faith use cases of TDP and other system vulnerabilities.
   - Created "Evil User" personas to synthesize the above workshops.
 - Ran collaborative workshops to align the DIGIT (OFA Data Analysts) and design team on current TDRS errors.
-  - Ranked the severity of errors and brainstormed ways to "slice" them to scope research into them. 
+  - Ranked the severity of errors and brainstormed ways to "slice" them to scope research into them.
 
 ### [2021, Spring - Tribal MVP (Release 2) Design Sprint](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2021%2C%20Spring%20-%20Tribal%20MVP%20(Release%202)%20Design%20Sprint.md)
 
-- Captured generative insights from Tribes that were underrepresented in past research. 
+- Captured generative insights from Tribes that were underrepresented in past research.
 - Concept tested TDP features that would be needed to support an MVP release specifically for Tribes (to facilitate their move away from email transmission).
   - Identified gaps in functionality we'd identified for that Tribal MVP.
 
 ### [2020, Fall - STT Attribute Guide](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2020%2C%20Fall%20-%20STT%20Attribute%20Guide.md)
 
-- Defined terms and organizational principles useful for navigating STT Attribute excel documents compiled (and maintained) as tools to support research recruitment. 
+- Defined terms and organizational principles useful for navigating STT Attribute excel documents compiled (and maintained) as tools to support research recruitment.
 
 ### [2020, Fall - Understanding STT and OFA painpoints](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2020%2C%20Fall%20-%20Understanding%20STT%20and%20OFA%20painpoints.md)
 
-- Ran collaborative design workshops with grantee participants to validate personas and ensure that their highest priority pain points were captured accurately. 
+- Ran collaborative design workshops with grantee participants to validate personas and ensure that their highest priority pain points were captured accurately.
 
 ### [2020, Fall - Understanding STT Roles, Source of Truth, and Metadata](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2020%2C%20Fall%20-%20Understanding%20STT%20Roles%2C%20Source%20of%20Truth%2C%20and%20Metadata.md)
 
-- Concept tested early ideas for [mockup 1](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/TANF%20Uploading%20Tool_Mockup%20%231.pdf) and [mockup 2](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/TANF%20Uploading%20Tool_Mockup%20%232.pdf)]about how TDP might capture report metadata (e.g. associated Quarter, Fiscal Year, etc...) and present errors to users. 
+- Concept tested early ideas for [mockup 1](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/TANF%20Uploading%20Tool_Mockup%20%231.pdf) and [mockup 2](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/TANF%20Uploading%20Tool_Mockup%20%232.pdf)]about how TDP might capture report metadata (e.g. associated Quarter, Fiscal Year, etc...) and present errors to users.
 - Further investigated of grantee processes, tools, needs, and pain points.
   - Particular focus on case management systems and how data moves between systems.
 
@@ -80,7 +80,7 @@ The syntheses included herein are organized reverse-chronologically from newest 
 
 ## Research mural boards
 
-The below Mural links are organized reverse-chronologically from newest to oldest. More recent Murals may have "Topline Synthesis" sections present which overview major findings within them, however most research-oriented Murals will be best understood via their associated markdown documents. 
+The below Mural links are organized reverse-chronologically from newest to oldest. More recent Murals may have "Topline Synthesis" sections present which overview major findings within them, however most research-oriented Murals will be best understood via their associated markdown documents.
 
 **<details><summary>Mural Links</summary>**
 
