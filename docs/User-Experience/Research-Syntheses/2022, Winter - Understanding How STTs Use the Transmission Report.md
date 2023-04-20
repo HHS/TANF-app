@@ -1,4 +1,4 @@
-# 2020, Fall - Understanding How STTs Use the Transmission Report
+# 2020, Winter - Understanding How STTs Use the Transmission Report
 ===
 
 * [Who we talked to](#Who-we-talked-to)
