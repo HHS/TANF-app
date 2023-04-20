@@ -230,5 +230,5 @@ class UserPermissions(DjangoModelCRUDPermissions):
             return user_region == obj.stt.region_id
 
         # Check if user is an admin
-        is_admin = request.user.groups.filter(name="OFA System Admin").exists()
+        is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
         return obj == request.user or is_admin
