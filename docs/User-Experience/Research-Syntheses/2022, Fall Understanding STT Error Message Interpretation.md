@@ -1,7 +1,5 @@
-October Errors Research and Findings
+#2022, Fall - Understanding STT Error Message(s) Interpretations
 ===
-
-Last Updated for [#2208](https://github.com/raft-tech/TANF-app/issues/2208)
 ___
 
 **Table of Contents:**
