@@ -4,7 +4,7 @@ ___
 
 **Table of Contents:**
 ---
-October Errors Research and Findings
+
 * [Who we talked to](#Who-we-talked-to)
 * [What we did](#What-we-did)
 * [What we tested](#What-we-tested)
