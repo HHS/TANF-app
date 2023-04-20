@@ -8,7 +8,7 @@ The syntheses included herein are organized reverse-chronologically from newest 
 ### [2023, Winter - TDP 3.0 Pilot Program](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2023%2C%20Winter%20-%20TDP%203.0%20Pilot%20Program.md)
 
 - A total of 17 states, 17 tribes and two territories participated in the pilot expansion using the production version of TDP to submit their FY2023 Q1 data files.
-- Conducted a retrospective on the usability of Django (system admin) as the TDP user base continues to expand and what might the System Admins need to keep up with onboarding, and managing users and logs at scale. 
+- Conducted a retrospective on the usability of Django (system admin) as the TDP user base continues to expand and what might the System Admins need to keep up with onboarding, and managing users and logs at scale.
 
 ### [2022, Winter - Understanding How STTs Would Use the Transmission Report](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Winter%20-%20Understanding%20How%20STTs%20Would%20Use%20the%20Transmission%20Report.md)
 
@@ -16,7 +16,7 @@ The syntheses included herein are organized reverse-chronologically from newest 
 
 ### [2022, Fall - Understanding STT Error Message(s) Interpretations](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Fall%20-%20Understanding%20STT%20Error%20Message%20Interpretation.md)
 
-- Ran a series of research sessions with 5 grantees (1 state/4 tribal programs) to explore how the new error codes and descriptions were being interpreted for error report corrections
+- Ran a series of research sessions with 5 grantees (1 state/4 tribal programs) to explore how the new error codes and descriptions were being interpreted for error report corrections.
 
 ### [2022, Fall - TDP 2.2 Pilot Program](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Fall%20-%20TDP%202.2%20Pilot%20Expansion.md)
 
