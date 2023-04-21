@@ -4,10 +4,10 @@
 
 | Dev Site | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- | -------- |
-| Sandbox     | https://tdp-frontend-sandbox.app.cloud.gov | https://tdp-backend-sandbox.app.cloud.gov/admin/     | Space for devs to test in a deployed environment |
-| A11y | https://tdp-frontend-a11y.app.cloud.gov | https://tdp-backend-a11y.app.cloud.gov/admin/ | Space for accessibility testing |
-| QASP | https://tdp-frontend-qasp.app.cloud.gov | https://tdp-backend-qasp.app.cloud.gov/admin/ | Space for QASP review |
-| raft | https://tdp-frontend-raft.app.cloud.gov | https://tdp-backend-raft.app.cloud.gov/admin/ | Space for raft review |
+| Sandbox     | https://tdp-frontend-sandbox.app.cloud.gov | https://tdp-frontend-sandbox.app.cloud.gov/admin/     | Space for devs to test in a deployed environment |
+| A11y | https://tdp-frontend-a11y.app.cloud.gov | https://tdp-frontend-a11y.app.cloud.gov/admin/ | Space for accessibility testing |
+| QASP | https://tdp-frontend-qasp.app.cloud.gov | https://tdp-frontend-qasp.app.cloud.gov/admin/ | Space for QASP review |
+| raft | https://tdp-frontend-raft.app.cloud.gov | https://tdp-frontend-raft.app.cloud.gov/admin/ | Space for raft review |
 
 ### Dependencies
 
@@ -29,8 +29,8 @@ The Staging environment contains two frontend and backend deployments.
 
 | Frontend URL | Backend URL | Purpose |
 | -------- | -------- | -------- |
-| https://tdp-frontend-staging.acf.hhs.gov | https://tdp-backend-staging.acf.hhs.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
-| https://tdp-frontend-develop.acf.hhs.gov | https://tdp-backend-develop.acf.hhs.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
+| https://tdp-frontend-staging.acf.hhs.gov | https://tdp-frontend-staging.acf.hhs.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
+| https://tdp-frontend-develop.acf.hhs.gov | https://tdp-frontend-develop.acf.hhs.gov/admin/     | Space for government users to test in a deployed, production-like environment    |
 
 ### Dependencies
 
@@ -59,7 +59,7 @@ Like Staging, there is only one Production deployment. Note that developers do *
 
 | Frontend URL | Backend URL | Purpose |
 |--------------|-------------| -------- |
-| https://tanfdata.acf.hhs.gov | https://api-tanfdata.acf.hhs.gov | Production space for active users of the application.    |
+| https://tanfdata.acf.hhs.gov | https://tanfdata.acf.hhs.gov/admin/ | Production space for active users of the application.    |
 
 ### Dependencies
 

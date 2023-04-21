@@ -104,6 +104,9 @@ update_backend()
 
     cf map-route "$CGAPPNAME_BACKEND" apps.internal --hostname "$CGAPPNAME_BACKEND"
 
+    # Add network policy to allow frontend to access backend
+    cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
+
     cd ..
 }
 
@@ -128,6 +131,7 @@ bind_backend_to_services() {
 
     echo "Restarting app: $CGAPPNAME_BACKEND"
     cf restage "$CGAPPNAME_BACKEND"
+
 }
 
 ##############################
