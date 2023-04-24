@@ -15,19 +15,9 @@ def zap_started(zap, target):
     # Active scan rules are ignored properly through the configuration file.
     # To see a list of all alerts and whether they are active or passive:
     # https://www.zaproxy.org/docs/alerts/
-    ignored_passive_scan_ids = []
 
-    # The `target` argument will contain the URL passed to the ZAP scripts, we
-    # can use this to determine the appropriate rules to ignore.
-    if 'web' in target or 'backend' in target or 'https://api-tanfdata.acf.hhs.gov' in target:
-        ignored_passive_scan_ids = [
-            10036,  # Server Leaks Version Information
-            10055,  # CSP unsafe inline
-            10096,  # Informational: Timestamp Disclosure - Unix,
-        ]
 
-    if 'frontend' in target or 'https://tanfdata.acf.hhs.gov' in target:
-        ignored_passive_scan_ids = [
+    ignored_passive_scan_ids = [
             10020,  # X-Frame-Option Header Not Set
             10021,  # X-Content-Type-Options Header Missing
             10027,  # Informational: Suspicious Comments
@@ -37,6 +27,7 @@ def zap_started(zap, target):
             10109,  # Modern Web Application
             90022,  # Application Error Disclosure
         ]
+   
 
     for passive_scan_id in ignored_passive_scan_ids:
         # Use the ZAP Passive Scan API to disable ignored rules.

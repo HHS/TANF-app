@@ -27,11 +27,11 @@ celery -A tdpservice.settings beat -l info --scheduler django_celery_beat.schedu
 
 echo "Starting Gunicorn"
 if [[ "$DJANGO_CONFIGURATION" = "Development" || "$DJANGO_CONFIGURATION" = "Local" ]]; then
-    gunicorn_params="--bind 0.0.0.0:8080 --timeout 10 --workers 3 --reload --log-level $LOGGING_LEVEL"
+    gunicorn_params="-c gunicorn_dev_cfg.py"
 else
-    gunicorn_params="--bind 0.0.0.0:8080 --timeout 10 --workers 3 --log-level $LOGGING_LEVEL"
+    gunicorn_params="-c gunicorn_prod_cfg.py"
 fi
 
-gunicorn_cmd="gunicorn tdpservice.wsgi:application $gunicorn_params"
+gunicorn_cmd="gunicorn $gunicorn_params"
 
 exec $gunicorn_cmd
