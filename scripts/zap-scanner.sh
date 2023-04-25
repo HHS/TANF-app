@@ -38,6 +38,11 @@ fi
 
 cd "$TARGET_DIR" || exit 2
 
+
+if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then 
+    docker network create external-net
+fi
+
 # Ensure the APP_URL is reachable from the zaproxy container
 if ! docker-compose run --rm zaproxy curl -Is "$APP_URL" > /dev/null 2>&1; then
   echo "Target application at $APP_URL is unreachable by ZAP scanner"
