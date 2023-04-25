@@ -1,11 +1,9 @@
 # workflows:
   build-and-test:
-    unless:
-      or:
-        - << pipeline.parameters.run_dev_deployment >>
-        - << pipeline.parameters.develop_branch_deploy >>
-        - << pipeline.parameters.run_owasp_scan >>
-        - << pipeline.parameters.run_nightly_owasp_scan >>
+    when:
+      or: 
+        - << pipeline.parameters.build_and_test_backend >>
+        - << pipeline.parameters.build_and_test_frontend >>
     jobs:
       - secrets-check
       - test-frontend:
