@@ -3,6 +3,7 @@
 
 import os
 from . import schema_defs, validators, util
+# from .models import ParserError
 from tdpservice.data_files.models import DataFile
 
 
@@ -11,7 +12,10 @@ def parse_datafile(datafile):
     rawfile = datafile.file
     errors = {}
 
-    document_is_valid, document_error = validators.validate_single_header_trailer(rawfile)
+    document_is_valid, document_error = validators.validate_single_header_trailer(
+        rawfile,
+        util.make_generate_parser_error(datafile, 1)
+    )
     if not document_is_valid:
         errors['document'] = [document_error]
         return errors
@@ -29,12 +33,18 @@ def parse_datafile(datafile):
     trailer_line = rawfile.readline().decode().strip('\n')
 
     # parse header, trailer
-    header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(header_line)
+    header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
+        header_line,
+        util.make_generate_parser_error(datafile, 1)
+    )
     if not header_is_valid:
         errors['header'] = header_errors
         return errors
 
-    trailer, trailer_is_valid, trailer_errors = schema_defs.trailer.parse_and_validate(trailer_line)
+    trailer, trailer_is_valid, trailer_errors = schema_defs.trailer.parse_and_validate(
+        trailer_line,
+        util.make_generate_parser_error(datafile, -1)
+    )
     if not trailer_is_valid:
         errors['trailer'] = trailer_errors
 
@@ -58,6 +68,7 @@ def parse_datafile(datafile):
     section = header['type']
 
     if datafile.section != section_names.get(program_type, {}).get(section):
+        # error_func call
         errors['document'] = ['Section does not match.']
         return errors
 
@@ -76,7 +87,11 @@ def parse_datafile(datafile):
         schema = get_schema(line, section, schema_options)
 
         if isinstance(schema, util.MultiRecordRowSchema):
-            records = parse_multi_record_line(line, schema)
+            records = parse_multi_record_line(
+                line,
+                schema,
+                util.make_generate_parser_error(datafile, line_number)
+            )
 
             n = 0
             for r in records:
@@ -87,41 +102,71 @@ def parse_datafile(datafile):
                     line_errors[n] = record_errors
                     errors[line_number] = line_errors
         else:
-            record_is_valid, record_errors = parse_datafile_line(line, schema)
+            record_is_valid, record_errors = parse_datafile_line(
+                line,
+                schema,
+                util.make_generate_parser_error(datafile, line_number)
+            )
             if not record_is_valid:
                 errors[line_number] = record_errors
 
     return errors
 
-
-def parse_multi_record_line(line, schema):
+def parse_multi_record_line(line, schema, error_func):
     if schema:
-        records = schema.parse_and_validate(line)
+        records = schema.parse_and_validate(line, error_func)
 
         for r in records:
             record, record_is_valid, record_errors = r
 
             if record:
-                # for error in record_errors:
-                    # create ParserError  # retention policy?
-                    # record.error.set(record_errors)
                 record.save()
+
+                # for error_msg in record_errors:
+                #     error_obj = ParserError.objects.create(
+                #         file=None,
+                #         row_number=None,
+                #         column_number=None,
+                #         field_name=None,
+                #         category=None,
+                #         case_number=getattr(record, 'CASE_NUMBER', None),
+                #         error_message=error_msg,
+                #         error_type=None,
+                #         content_type=schema.model,
+                #         object_id=record.pk,
+                #         fields_json=None
+                #     )
 
         return records
 
     return [(None, False, ['No schema selected.'])]
 
 
-def parse_datafile_line(line, schema):
+def parse_datafile_line(line, schema, error_func):
     """Parse and validate a datafile line and save any errors to the model."""
     if schema:
-        record, record_is_valid, record_errors = schema.parse_and_validate(line)
+        record, record_is_valid, record_errors = schema.parse_and_validate(line, error_func)
 
         if record:
             # for error in record_errors:
                 # create ParserError
                 # record.error.set(record_errors)
             record.save()
+
+            # for error_msg in record_errors:
+            #         error_obj = ParserError.objects.create(
+            #             file=None,
+            #             row_number=None,
+            #             column_number=None,
+            #             field_name=None,
+            #             category=None,
+            #             case_number=None,
+            #             error_message=error_msg,
+            #             error_type=None,
+            #             content_type=schema.model,
+            #             object_id=record.pk,
+            #             fields_json=None
+            #         )
 
         return record_is_valid, record_errors
 

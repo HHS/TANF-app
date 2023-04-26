@@ -67,7 +67,7 @@ def notEmpty(start=0, end=None):
 
 # custom validators
 
-def validate_single_header_trailer(file):
+def validate_single_header_trailer(file, error_func):
     """Validate that a raw datafile has one trailer and one footer."""
     headers = 0
     trailers = 0
