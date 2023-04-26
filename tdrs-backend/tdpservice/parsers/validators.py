@@ -60,7 +60,7 @@ def startsWith(substring):
 
 # custom validators
 
-def validate_single_header_trailer(file, error_func):
+def validate_single_header_trailer(file):
     """Validate that a raw datafile has one trailer and one footer."""
     headers = 0
     trailers = 0
