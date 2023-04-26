@@ -107,11 +107,19 @@ class DataFileSummary(models.Model):
         # to set rejected, we would need to have raised an exception during (pre)parsing
         # else if there are errors, we can set to accepted with errors
         # else we can set to accepted (default)
-        if errors == {}:  # This feels better than running len() on `errors`
+        if errors == {}:  # This feels better than running len() on `errors`...but is it a dict vs list?
             self.status = self.Status.ACCEPTED
+        elif check_for_preparsing(errors):
+            self.status = self.Status.REJECTED
         elif errors:
             self.status = self.Status.ACCEPTED_WITH_ERRORS
-        elif errors == {'document': ['No headers found.']}:  # we need a signal for unacceptable errors. Another func?
-            self.status = self.Status.REJECTED
 
         return self.status
+
+def check_for_preparsing(errors):
+    """Check for pre-parsing errors."""
+    for error in errors['document']:
+        print(error)
+        if error.error_type == "pre-parsing":
+            return True
+    return False

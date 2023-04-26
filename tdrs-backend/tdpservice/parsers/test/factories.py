@@ -34,7 +34,7 @@ class DataFileSummaryFactory(factory.django.DjangoModelFactory):
 
         model = DataFileSummary
 
-    status = DataFileSummary.Status.ACCEPTED
+    status = DataFileSummary.Status.PENDING
 
     case_aggregates = {
         "Jan": {
