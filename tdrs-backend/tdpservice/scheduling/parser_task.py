@@ -17,5 +17,5 @@ def parse(data_file_id):
     data_file = DataFile.objects.get(id=data_file_id)
 
     logger.info(f"DataFile parsing started for file {data_file.filename}")
-    status, errors = parse_datafile(data_file)
+    errors = parse_datafile(data_file)
     logger.info(f"DataFile parsing finished with status {status} and {len(errors)} errors: {errors}")

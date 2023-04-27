@@ -195,12 +195,6 @@ class RowSchema:
                 else:
                     setattr(record, field.name, value)
 
-        # if not isinstance(record, dict):
-        #     record.save()
-
-        # if not isinstance(record, dict):
-        #     record.save()
-
         return record
 
     def run_field_validators(self, instance, error_func):

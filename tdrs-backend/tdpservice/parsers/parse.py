@@ -149,21 +149,6 @@ def parse_datafile_line(line, schema, error_func):
         if record:
             record.save()
 
-            # for error_msg in record_errors:
-            #         error_obj = ParserError.objects.create(
-            #             file=None,
-            #             row_number=None,
-            #             column_number=None,
-            #             field_name=None,
-            #             category=None,
-            #             case_number=None,
-            #             error_message=error_msg,
-            #             error_type=None,
-            #             content_type=schema.model,
-            #             object_id=record.pk,
-            #             fields_json=None
-            #         )
-
         return record_is_valid, record_errors
 
     return (False, [
