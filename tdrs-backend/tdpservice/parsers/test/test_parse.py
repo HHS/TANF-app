@@ -26,12 +26,10 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
 
     return datafile
 
-
 @pytest.fixture
 def test_datafile(stt_user, stt):
     """Fixture for small_correct_file."""
     return create_test_datafile('small_correct_file', stt_user, stt)
-
 
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile):

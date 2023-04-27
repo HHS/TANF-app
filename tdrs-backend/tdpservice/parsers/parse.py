@@ -109,8 +109,8 @@ def parse_datafile(datafile):
                 util.make_generate_parser_error(datafile, line_number)
             )
 
-        if not record_is_valid:
-                errors[line_number] = record_errors
+            if not record_is_valid:
+                    errors[line_number] = record_errors
 
     summary = DataFileSummary(datafile=datafile)
     summary.set_status(errors)
@@ -119,6 +119,7 @@ def parse_datafile(datafile):
     return errors
 
 def parse_multi_record_line(line, schema, error_func):
+    """Parse a line with a multi-record schema."""
     if schema:
         records = schema.parse_and_validate(line, error_func)
 
@@ -177,41 +178,41 @@ def get_schema(line, section, schema_options):
     """Return the appropriate schema for the line."""
     if section == 'A' and line.startswith('T1'):
         return schema_options.t1
-    elif section == 'A' and line.startswith('T2'):
-        return None
-        # return schema_options.t2
-    elif section == 'A' and line.startswith('T3'):
-        return None
-        # return schema_options.t3
-    elif section == 'C' and line.startswith('T4'):
-        return None
-        # return schema_options.t4
-    elif section == 'C' and line.startswith('T5'):
-        return None
-        # return schema_options.t5
-    elif section == 'G' and line.startswith('T6'):
-        return None
-        # return schema_options.t6
-    elif section == 'S' and line.startswith('T7'):
-        return None
-        # return schema_options.t7
-    elif section == 'A' and line.startswith('M1'):
-        return schema_options.m1
-    elif section == 'A' and line.startswith('M2'):
-        return schema_options.m2
-    elif section == 'A' and line.startswith('M3'):
-        return schema_options.m3
-    elif section == 'C' and line.startswith('M4'):
-        return None
-        # return schema_options.t4
-    elif section == 'C' and line.startswith('M5'):
-        return None
-        # return schema_options.t5
-    elif section == 'G' and line.startswith('M6'):
-        return None
-        # return schema_options.t6
-    elif section == 'S' and line.startswith('M7'):
-        return None
-        # return schema_options.t7
-    else:
+    # elif section == 'A' and line.startswith('T2'):
+    #     return None
+    #     # return schema_options.t2
+    # elif section == 'A' and line.startswith('T3'):
+    #     return None
+    #     # return schema_options.t3
+    # elif section == 'C' and line.startswith('T4'):
+    #     return None
+    #     # return schema_options.t4
+    # elif section == 'C' and line.startswith('T5'):
+    #     return None
+    #     # return schema_options.t5
+    # elif section == 'G' and line.startswith('T6'):
+    #     return None
+    #     # return schema_options.t6
+    # elif section == 'S' and line.startswith('T7'):
+    #     return None
+    #     # return schema_options.t7
+    # elif section == 'A' and line.startswith('M1'):
+    #     return schema_options.m1
+    # elif section == 'A' and line.startswith('M2'):
+    #     return schema_options.m2
+    # elif section == 'A' and line.startswith('M3'):
+    #     return schema_options.m3
+    # elif section == 'C' and line.startswith('M4'):
+    #     return None
+    #     # return schema_options.t4
+    # elif section == 'C' and line.startswith('M5'):
+    #     return None
+    #     # return schema_options.t5
+    # elif section == 'G' and line.startswith('M6'):
+    #     return None
+    #     # return schema_options.t6
+    # elif section == 'S' and line.startswith('M7'):
+    #     return None
+    #     # return schema_options.t7 
+    else:  # Just a place-holder for linting until we full implement this.
         return None

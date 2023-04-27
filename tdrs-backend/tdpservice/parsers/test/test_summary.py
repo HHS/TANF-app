@@ -4,7 +4,7 @@ import pytest
 from tdpservice.parsers import parse
 from tdpservice.parsers.models import DataFileSummary
 from .factories import DataFileSummaryFactory, ParserErrorFactory
-from .test_parse import test_datafile 
+from .test_parse import test_datafile
 
 import logging
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ def test_dfs_set_status(dfs):
 
     # this feels precarious for tests. the defaults in the factory could cause issues should logic change
     # resulting in failures if we stop keying off category and instead go to content or msg
-    for i in range(2, 4):  
+    for i in range(2, 4):
         parser_errors.append(ParserErrorFactory(row_number=i, category=str(i)))
 
     dfs.set_status(errors={'document': parser_errors})
