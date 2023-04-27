@@ -168,6 +168,9 @@ tdrs-run-pytest () {
 
 # Run owasp scan for backend assuming circle ci environment
 tdrs-run-backend-owasp() {
+    if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then 
+        docker network create external-net
+    fi
     cd-tdrs-backend
 
     # We don't need to use the local compose file
@@ -181,14 +184,31 @@ tdrs-run-backend-owasp() {
                            --timeout 60 \
                            -- echo \"Django is ready\""
     cd ..
+    cd-tdrs-frontend
+    docker-compose up -d --build
+    cd ..
     ./scripts/zap-scanner.sh backend circle
 }
 
 # Run owasp scan for frontend assuming circle ci environment
 tdrs-run-frontend-owasp() {
-    cd-tdrs-frontend
+    if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then 
+        docker network create external-net
+    fi
+    cd-tdrs-backend
+
     # We don't need to use the local compose file
     # because we are trying to simulate a production environment
+
+    docker-compose up -d --build
+    docker-compose run --rm zaproxy bash -c \
+                   "PATH=$PATH:/home/zap/.local/bin &&
+               pip install wait-for-it &&
+               wait-for-it --service http://web:8080 \
+                           --timeout 60 \
+                           -- echo \"Django is ready\""
+    cd ..
+    cd-tdrs-frontend
     docker-compose up -d --build
     cd ..
     ./scripts/zap-scanner.sh frontend circle
