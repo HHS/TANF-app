@@ -14,34 +14,10 @@ def value_is_empty(value, length):
     return value is None or value in empty_values
 
 
-error_types = {
-    1: 'File pre-check',
-    2: 'Record value invalid',
-    3: 'Record value consistency',
-    4: 'Case consistency',
-    5: 'Section consistency',
-    6: 'Historical consistency'
-}
-
-# def generate_parser_error(datafile, schema, record, line_number, field, error_category, error_msg):
-#     return ParserError.objects.create(
-#         file=datafile,
-#         row_number=line_number,
-#         column_number=field.item_number,
-#         field_name=field.name,
-#         category=error_category,
-#         case_number=getattr(record, 'CASE_NUMBER', None),
-#         error_message=error_msg,
-#         error_type=error_types.get(error_category, None),
-#         content_type=schema.model,
-#         object_id=record.pk,
-#         fields_json=None
-#     )
-
-
-def make_generate_parser_error(datafile, line_number):
-    def generate_parser_error(schema, error_category, error_message, record=None, field=None):
+def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
         model = schema.model if schema else None
+
+        # make fields optional
         return ParserError.objects.create(
             file=datafile,
             row_number=line_number,
@@ -51,7 +27,7 @@ def make_generate_parser_error(datafile, line_number):
             category=error_category,
             case_number=getattr(record, 'CASE_NUMBER', None),
             error_message=error_message,
-            error_type=error_types.get(error_category, None),
+            error_type=error_category,
             content_type=ContentType.objects.get(
                 model=model if record and not isinstance(record, dict) else 'ssp_m1'
             ),
@@ -59,7 +35,21 @@ def make_generate_parser_error(datafile, line_number):
             fields_json=None
         )
 
-    return generate_parser_error
+
+def make_generate_parser_error(datafile, line_number):
+    def generate(schema, error_category, error_message, record=None, field=None):
+        return generate_parser_error(
+            datafile=datafile,
+            line_number=line_number,
+            schema=schema,
+            error_category=error_category,
+            error_message=error_message,
+            record=record,
+            field=field
+        )
+
+    return generate
+
 
 class Field:
     """Provides a mapping between a field name and its position."""
@@ -165,11 +155,12 @@ class RowSchema:
         for validator in self.preparsing_validators:
             validator_is_valid, validator_error = validator(line)
             is_valid = False if not validator_is_valid else is_valid
-            if validator_error:
+
+            if validator_error and not self.quiet_preparser_errors:
                 errors.append(
                     error_func(
                         schema=self,
-                        error_category=1,
+                        error_category="1",
                         error_message=validator_error,
                         record=None,
                         field=None
@@ -216,7 +207,7 @@ class RowSchema:
                         errors.append(
                             error_func(
                                 schema=self,
-                                error_category=2,
+                                error_category="2",
                                 error_message=validator_error,
                                 record=instance,
                                 field=field
@@ -227,7 +218,7 @@ class RowSchema:
                     errors.append(
                         error_func(
                             schema=self,
-                            error_category=2,
+                            error_category="2",
                             error_message=f"{field.name} is required but a value was not provided.",
                             record=instance,
                             field=field
@@ -248,7 +239,7 @@ class RowSchema:
                 errors.append(
                     error_func(
                         schema=self,
-                        error_category=3,
+                        error_category="3",
                         error_message=validator_error,
                         record=instance,
                         field=None
