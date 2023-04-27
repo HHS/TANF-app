@@ -12,10 +12,7 @@ def parse_datafile(datafile):
     rawfile = datafile.file
     errors = {}
 
-    document_is_valid, document_error = validators.validate_single_header_trailer(
-        rawfile,
-        util.make_generate_parser_error(datafile, 1)
-    )
+    document_is_valid, document_error = validators.validate_single_header_trailer(datafile)
     if not document_is_valid:
         errors['document'] = [document_error]
         return errors
@@ -67,9 +64,14 @@ def parse_datafile(datafile):
     program_type = header['program_type']
     section = header['type']
 
-    if datafile.section != section_names.get(program_type, {}).get(section):
+    section_is_valid, section_error = validators.validate_header_section_matches_submission(
+        datafile,
+        section_names.get(program_type, {}).get(section)
+    )
+
+    if not section_is_valid:
         # error_func call
-        errors['document'] = ['Section does not match.']
+        errors['document'] = [section_error]
         return errors
 
     # parse line with appropriate schema
@@ -122,24 +124,17 @@ def parse_multi_record_line(line, schema, error_func):
             if record:
                 record.save()
 
-                # for error_msg in record_errors:
-                #     error_obj = ParserError.objects.create(
-                #         file=None,
-                #         row_number=None,
-                #         column_number=None,
-                #         field_name=None,
-                #         category=None,
-                #         case_number=getattr(record, 'CASE_NUMBER', None),
-                #         error_message=error_msg,
-                #         error_type=None,
-                #         content_type=schema.model,
-                #         object_id=record.pk,
-                #         fields_json=None
-                #     )
-
         return records
 
-    return [(None, False, ['No schema selected.'])]
+    return [(None, False, [
+        error_func(
+            schema=None,
+            error_category="2",  # 1?
+            error_message="No schema selected.",
+            record=None,
+            field=None
+        )
+    ])]
 
 
 def parse_datafile_line(line, schema, error_func):
@@ -148,29 +143,19 @@ def parse_datafile_line(line, schema, error_func):
         record, record_is_valid, record_errors = schema.parse_and_validate(line, error_func)
 
         if record:
-            # for error in record_errors:
-                # create ParserError
-                # record.error.set(record_errors)
             record.save()
-
-            # for error_msg in record_errors:
-            #         error_obj = ParserError.objects.create(
-            #             file=None,
-            #             row_number=None,
-            #             column_number=None,
-            #             field_name=None,
-            #             category=None,
-            #             case_number=None,
-            #             error_message=error_msg,
-            #             error_type=None,
-            #             content_type=schema.model,
-            #             object_id=record.pk,
-            #             fields_json=None
-            #         )
 
         return record_is_valid, record_errors
 
-    return (False, ['No schema selected.'])
+    return (False, [
+        error_func(
+            schema=None,
+            error_category="1",  # 1?
+            error_message="No schema selected.",
+            record=None,
+            field=None
+        )
+    ])
 
 
 def get_schema_options(program_type):

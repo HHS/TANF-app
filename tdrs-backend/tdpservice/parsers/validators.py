@@ -1,5 +1,7 @@
 """Generic parser validator functions for use in schema definitions."""
 
+from .util import generate_parser_error
+
 
 # higher order validator func
 
@@ -67,13 +69,17 @@ def notEmpty(start=0, end=None):
 
 # custom validators
 
-def validate_single_header_trailer(file, error_func):
+def validate_single_header_trailer(datafile):
     """Validate that a raw datafile has one trailer and one footer."""
+    line_number = 0
     headers = 0
     trailers = 0
+    is_valid = True
+    error_message = None
 
-    for rawline in file:
+    for rawline in datafile.file:
         line = rawline.decode()
+        line_number += 1
 
         if line.startswith('HEADER'):
             headers += 1
@@ -81,12 +87,48 @@ def validate_single_header_trailer(file, error_func):
             trailers += 1
 
         if headers > 1:
-            return (False, 'Multiple headers found.')
+            is_valid = False
+            error_message = 'Multiple headers found.'
+            break
 
         if trailers > 1:
-            return (False, 'Multiple trailers found.')
+            is_valid = False
+            error_message = 'Multiple trailers found.'
+            break
 
     if headers == 0:
-        return (False, 'No headers found.')
+        is_valid = False
+        error_message = 'No headers found.'
 
-    return (True, None)
+    error = None
+    if not is_valid:
+        error = generate_parser_error(
+            datafile=datafile,
+            line_number=line_number,
+            schema=None,
+            error_category="1",
+            error_message=error_message,
+            record=None,
+            field=None
+        )
+
+    return is_valid, error
+
+
+def validate_header_section_matches_submission(datafile, section):
+    is_valid = datafile.section == section
+
+    error = None
+    if not is_valid:
+        error = generate_parser_error(
+            datafile=datafile,
+            line_number=1,
+            schema=None,
+            error_category="1",
+            error_message="Section does not match.",
+            record=None,
+            field=None
+        )
+
+    return is_valid, error
+
