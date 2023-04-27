@@ -2,9 +2,21 @@
 
 import datetime
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
+
+
+class ParserErrorCategoryChoices(models.TextChoices):
+    """Enum of ParserError error_type."""
+    PRE_CHECK = "1", _("File pre-check")
+    FIELD_VALUE = "2", _("Record value invalid")
+    VALUE_CONSISTENCY = "3", _("Record value consistency")
+    CASE_CONSISTENCY = "4", _("Case consistency")
+    SECTION_CONSISTENCY = "5", _("Section consistency")
+    HISTORICAL_CONSISTENCY = "6", _("Historical consistency")
+
 
 class ParserError(models.Model):
     """Model representing a parser error."""
@@ -30,7 +42,7 @@ class ParserError(models.Model):
     rpt_month_year = models.IntegerField(null=True, blank=False)
 
     error_message = models.TextField(null=True, max_length=512)
-    error_type = models.TextField(max_length=128)         # out of range, pre-parsing, etc.
+    error_type = models.TextField(max_length=128, choices=ParserErrorCategoryChoices.choices)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
