@@ -1,11 +1,9 @@
 """Convert raw uploaded Datafile into a parsed model, and accumulate/return any errors."""
 
 import os
-from . import schema_defs
-from . import validators
 from . import schema_defs, validators, util
 from tdpservice.data_files.models import DataFile
-from .models import DataFileSummary, ParserError
+from .models import DataFileSummary
 
 
 def parse_datafile(datafile):
@@ -111,14 +109,14 @@ def parse_datafile(datafile):
                 util.make_generate_parser_error(datafile, line_number)
             )
 
-            if not record_is_valid:
-                    errors[line_number] = record_errors
+        if not record_is_valid:
+                errors[line_number] = record_errors
 
     summary = DataFileSummary(datafile=datafile)
     summary.set_status(errors)
     summary.save()
 
-    return summary, errors
+    return errors
 
 def parse_multi_record_line(line, schema, error_func):
     if schema:

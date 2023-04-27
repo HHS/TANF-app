@@ -1,8 +1,6 @@
 """Utility file for functions shared between all parsers even preparser."""
 from .models import ParserError
 from django.contrib.contenttypes.models import ContentType
-from tdpservice.search_indexes.models.ssp import SSP_M1
-import logging
 
 def value_is_empty(value, length):
     """Handle 'empty' values as field inputs."""
@@ -24,28 +22,29 @@ error_types = {
 }
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
-        model = schema.model if schema else None
+    model = schema.model if schema else None
 
-        # make fields optional
-        return ParserError.objects.create(
-            file=datafile,
-            row_number=line_number,
-            column_number=getattr(field, 'item', 0),
-            item_number=getattr(field, 'item', 0),
-            field_name=getattr(field, 'name', 'none'),
-            category=error_category,
-            case_number=getattr(record, 'CASE_NUMBER', None),
-            error_message=error_message,
-            error_type=error_category,
-            content_type=ContentType.objects.get(
-                model=model if record and not isinstance(record, dict) else 'ssp_m1'
-            ),
-            object_id=getattr(record, 'pk', 0) if record and not isinstance(record, dict) else 0,
-            fields_json=None
-        )
+    # make fields optional
+    return ParserError.objects.create(
+        file=datafile,
+        row_number=line_number,
+        column_number=getattr(field, 'item', 0),
+        item_number=getattr(field, 'item', 0),
+        field_name=getattr(field, 'name', 'none'),
+        category=error_category,
+        case_number=getattr(record, 'CASE_NUMBER', None),
+        error_message=error_message,
+        error_type=error_category,
+        content_type=ContentType.objects.get(
+            model=model if record and not isinstance(record, dict) else 'ssp_m1'
+        ),
+        object_id=getattr(record, 'pk', 0) if record and not isinstance(record, dict) else 0,
+        fields_json=None
+    )
 
 
 def make_generate_parser_error(datafile, line_number):
+    """Generate a parser error object for a given datafile and line number."""
     def generate(schema, error_category, error_message, record=None, field=None):
         return generate_parser_error(
             datafile=datafile,
@@ -128,13 +127,12 @@ class RowSchema:
     def get_all_fields(self):
         """Get all fields from the schema."""
         return self.fields
-    
+
     def get_field(self, name):
         """Get a field from the schema by name."""
         for field in self.fields:
             if field.name == name:
                 return field
-
 
     def parse_and_validate(self, line, error_func):
         """Run all validation steps in order, and parse the given line into a record."""

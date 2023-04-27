@@ -15,4 +15,13 @@ class Migration(migrations.Migration):
             name='error_type',
             field=models.TextField(choices=[('1', 'File pre-check'), ('2', 'Record value invalid'), ('3', 'Record value consistency'), ('4', 'Case consistency'), ('5', 'Section consistency'), ('6', 'Historical consistency')], max_length=128),
         ),
+        migrations.CreateModel(
+            name='DataFileSummary',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('status', models.CharField(choices=[('Pending', 'Pending'), ('Accepted', 'Accepted'), ('Accepted with Errors', 'Accepted With Errors'), ('Rejected', 'Rejected')], default='Pending', max_length=50)),
+                ('case_aggregates', models.JSONField(null=True)),
+                ('datafile', models.ForeignKey(on_delete=models.deletion.CASCADE, to='data_files.datafile')),
+            ],
+        ),
     ]

@@ -7,7 +7,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
 
-
 class ParserErrorCategoryChoices(models.TextChoices):
     """Enum of ParserError error_type."""
     PRE_CHECK = "1", _("File pre-check")
@@ -132,6 +131,7 @@ def check_for_preparsing(errors):
     """Check for pre-parsing errors."""
     for error in errors['document']:
         print(error)
-        if error.error_type == "pre-parsing":
+        print(error.category)
+        if error.category == "1":
             return True
     return False
