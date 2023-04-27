@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 @pytest.fixture
 def dfs():
     """Fixture for DataFileSummary."""
-    return DataFileSummaryFactory.create()
+    return DataFileSummaryFactory()
 
 @pytest.mark.django_db
 def test_dfs_model(dfs):
@@ -21,7 +21,7 @@ def test_dfs_model(dfs):
 
     assert dfs.case_aggregates['Jan']['accepted'] == 100
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_dfs_rejected(test_datafile, dfs):
     """Ensure that an invalid file generates a rejected status."""
     dfs = dfs
