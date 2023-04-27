@@ -129,9 +129,8 @@ class DataFileSummary(models.Model):
 
 def check_for_preparsing(errors):
     """Check for pre-parsing errors."""
-    for error in errors['document']:
-        print(error)
-        print(error.category)
-        if error.category == "1":
-            return True
+    for key in errors.keys():  # keys are 'header', 'trailer', 'document'
+        for error in errors[key]:
+            if error.category == "1":
+                return True
     return False
