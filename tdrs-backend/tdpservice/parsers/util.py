@@ -11,6 +11,7 @@ def value_is_empty(value, length):
 
     return value is None or value in empty_values
 
+
 error_types = {
     1: 'File pre-check',
     2: 'Record value invalid',

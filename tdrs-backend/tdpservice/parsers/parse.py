@@ -119,7 +119,7 @@ def parse_datafile_lines(datafile, program_type, section):
             )
 
             if not record_is_valid:
-                    errors[line_number] = record_errors
+                errors[line_number] = record_errors
 
     summary = DataFileSummary(datafile=datafile)
     summary.set_status(errors)

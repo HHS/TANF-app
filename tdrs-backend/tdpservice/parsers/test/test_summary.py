@@ -4,10 +4,15 @@ import pytest
 from tdpservice.parsers import parse
 from tdpservice.parsers.models import DataFileSummary
 from .factories import DataFileSummaryFactory, ParserErrorFactory
-from .test_parse import test_datafile
+from .test_parse import create_test_datafile
 
 import logging
 logger = logging.getLogger(__name__)
+
+@pytest.fixture
+def test_datafile(stt_user, stt):
+    """Fixture for small_correct_file."""
+    return create_test_datafile('small_correct_file', stt_user, stt)
 
 @pytest.fixture
 def dfs():
