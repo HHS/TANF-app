@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 
 class ParserErrorCategoryChoices(models.TextChoices):
     """Enum of ParserError error_type."""
+
     PRE_CHECK = "1", _("File pre-check")
     FIELD_VALUE = "2", _("Record value invalid")
     VALUE_CONSISTENCY = "3", _("Record value consistency")

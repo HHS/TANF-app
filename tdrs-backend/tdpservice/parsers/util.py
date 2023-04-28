@@ -1,11 +1,10 @@
 """Utility file for functions shared between all parsers even preparser."""
 from .models import ParserError
 from django.contrib.contenttypes.models import ContentType
-from tdpservice.search_indexes.models.ssp import SSP_M1
+
 
 def value_is_empty(value, length):
     """Handle 'empty' values as field inputs."""
-
     empty_values = [
         ' '*length,  # '     '
         '#'*length,  # '#####'
@@ -15,28 +14,30 @@ def value_is_empty(value, length):
 
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
-        model = schema.model if schema else None
+    """Create and return a ParserError using args."""
+    model = schema.model if schema else None
 
-        # make fields optional
-        return ParserError.objects.create(
-            file=datafile,
-            row_number=line_number,
-            column_number=getattr(field, 'item', 0),
-            item_number=getattr(field, 'item', 0),
-            field_name=getattr(field, 'name', 'none'),
-            category=error_category,
-            case_number=getattr(record, 'CASE_NUMBER', None),
-            error_message=error_message,
-            error_type=error_category,
-            content_type=ContentType.objects.get(
-                model=model if record and not isinstance(record, dict) else 'ssp_m1'
-            ),
-            object_id=getattr(record, 'pk', 0) if record and not isinstance(record, dict) else 0,
-            fields_json=None
-        )
+    # make fields optional
+    return ParserError.objects.create(
+        file=datafile,
+        row_number=line_number,
+        column_number=getattr(field, 'item', 0),
+        item_number=getattr(field, 'item', 0),
+        field_name=getattr(field, 'name', 'none'),
+        category=error_category,
+        case_number=getattr(record, 'CASE_NUMBER', None),
+        error_message=error_message,
+        error_type=error_category,
+        content_type=ContentType.objects.get(
+            model=model if record and not isinstance(record, dict) else 'ssp_m1'
+        ),
+        object_id=getattr(record, 'pk', 0) if record and not isinstance(record, dict) else 0,
+        fields_json=None
+    )
 
 
 def make_generate_parser_error(datafile, line_number):
+    """Configure generate_parser_error with a datafile and line number."""
     def generate(schema, error_category, error_message, record=None, field=None):
         return generate_parser_error(
             datafile=datafile,
@@ -121,12 +122,12 @@ class RowSchema:
         """Get all fields from the schema."""
         return self.fields
 
-    def parse_and_validate(self, line, error_func):
+    def parse_and_validate(self, line, generate_error):
         """Run all validation steps in order, and parse the given line into a record."""
         errors = []
 
         # run preparsing validators
-        preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(line, error_func)
+        preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(line, generate_error)
 
         if not preparsing_is_valid:
             if self.quiet_preparser_errors:
@@ -137,17 +138,17 @@ class RowSchema:
         record = self.parse_line(line)
 
         # run field validators
-        fields_are_valid, field_errors = self.run_field_validators(record, error_func)
+        fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
 
         # run postparsing validators
-        postparsing_is_valid, postparsing_errors = self.run_postparsing_validators(record, error_func)
+        postparsing_is_valid, postparsing_errors = self.run_postparsing_validators(record, generate_error)
 
         is_valid = fields_are_valid and postparsing_is_valid
         errors = field_errors + postparsing_errors
 
         return record, is_valid, errors
 
-    def run_preparsing_validators(self, line, error_func):
+    def run_preparsing_validators(self, line, generate_error):
         """Run each of the `preparsing_validator` functions in the schema against the un-parsed line."""
         is_valid = True
         errors = []
@@ -158,7 +159,7 @@ class RowSchema:
 
             if validator_error and not self.quiet_preparser_errors:
                 errors.append(
-                    error_func(
+                    generate_error(
                         schema=self,
                         error_category="1",
                         error_message=validator_error,
@@ -187,7 +188,7 @@ class RowSchema:
 
         return record
 
-    def run_field_validators(self, instance, error_func):
+    def run_field_validators(self, instance, generate_error):
         """Run all validators for each field in the parsed model."""
         is_valid = True
         errors = []
@@ -205,7 +206,7 @@ class RowSchema:
                     is_valid = False if not validator_is_valid else is_valid
                     if validator_error:
                         errors.append(
-                            error_func(
+                            generate_error(
                                 schema=self,
                                 error_category="2",
                                 error_message=validator_error,
@@ -216,7 +217,7 @@ class RowSchema:
                 elif field.required:
                     is_valid = False
                     errors.append(
-                        error_func(
+                        generate_error(
                             schema=self,
                             error_category="2",
                             error_message=f"{field.name} is required but a value was not provided.",
@@ -227,7 +228,7 @@ class RowSchema:
 
         return is_valid, errors
 
-    def run_postparsing_validators(self, instance, error_func):
+    def run_postparsing_validators(self, instance, generate_error):
         """Run each of the `postparsing_validator` functions against the parsed model."""
         is_valid = True
         errors = []
@@ -237,7 +238,7 @@ class RowSchema:
             is_valid = False if not validator_is_valid else is_valid
             if validator_error:
                 errors.append(
-                    error_func(
+                    generate_error(
                         schema=self,
                         error_category="3",
                         error_message=validator_error,
@@ -256,12 +257,12 @@ class MultiRecordRowSchema:
         # self.common_fields = None
         self.schemas = schemas
 
-    def parse_and_validate(self, line, error_func):
+    def parse_and_validate(self, line, generate_error):
         """Run `parse_and_validate` for each schema provided and bubble up errors."""
         records = []
 
         for schema in self.schemas:
-            r = schema.parse_and_validate(line, error_func)
+            r = schema.parse_and_validate(line, generate_error)
             records.append(r)
 
         return records
