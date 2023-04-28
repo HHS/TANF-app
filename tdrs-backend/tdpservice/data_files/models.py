@@ -179,7 +179,6 @@ class DataFile(FileRecord):
         """Return the author as a string for this data file."""
         return self.user.get_full_name()
 
-
     @classmethod
     def create_new_version(self, data):
         """Create a new version of a data file with an incremented version."""
