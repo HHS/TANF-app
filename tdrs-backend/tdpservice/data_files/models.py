@@ -13,7 +13,6 @@ from django.db.models import Max
 from tdpservice.backends import DataFilesS3Storage
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
-from tdpservice.parsers.models import ParserError, ParserErrorCategoryChoices
 
 logger = logging.getLogger(__name__)
 
@@ -179,6 +178,7 @@ class DataFile(FileRecord):
     def submitted_by(self):
         """Return the author as a string for this data file."""
         return self.user.get_full_name()
+
 
     @classmethod
     def create_new_version(self, data):
