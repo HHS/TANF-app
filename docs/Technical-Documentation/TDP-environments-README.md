@@ -7,7 +7,7 @@
 | Sandbox     | https://tdp-frontend-sandbox.app.cloud.gov | https://tdp-frontend-sandbox.app.cloud.gov/admin/     | Space for devs to test in a deployed environment |
 | A11y | https://tdp-frontend-a11y.app.cloud.gov | https://tdp-frontend-a11y.app.cloud.gov/admin/ | Space for accessibility testing |
 | QASP | https://tdp-frontend-qasp.app.cloud.gov | https://tdp-frontend-qasp.app.cloud.gov/admin/ | Space for QASP review |
-| raft | https://tdp-frontend-raft.app.cloud.gov | https://tdp-fronend-raft.app.cloud.gov/admin/ | Space for raft review |
+| raft | https://tdp-frontend-raft.app.cloud.gov | https://tdp-frontend-raft.app.cloud.gov/admin/ | Space for raft review |
 
 ### Dependencies
 
@@ -59,7 +59,7 @@ Like Staging, there is only one Production deployment. Note that developers do *
 
 | Frontend URL | Backend URL | Purpose |
 |--------------|-------------| -------- |
-| https://tanfdata.acf.hhs.gov | https://tanfdata.acf.hhs.gov/(v1|admin) | Production space for active users of the application.    |
+| https://tanfdata.acf.hhs.gov | https://tanfdata.acf.hhs.gov/admin/ | Production space for active users of the application.    |
 
 ### Dependencies
 
