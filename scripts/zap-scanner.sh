@@ -13,11 +13,9 @@ REPORT_NAME=owasp_report.html
 
 
 if [ "$ENVIRONMENT" = "nightly" ]; then
-    APP_URL="https://tdp-frontend-$TARGET_ENV.app.cloud.gov/"
+    APP_URL="https://tdp-frontend-$TARGET_ENV.acf.hhs.gov/"
     if [ "$TARGET_ENV" = "prod" ]; then
         APP_URL="https://tanfdata.acf.hhs.gov/"
-    elif [ "$TARGET_ENV" = "staging" ]; then
-        APP_URL="https://tdp-frontend-$TARGET_ENV.acf.hhs.gov/"
     fi
 elif [ "$ENVIRONMENT" = "circle" ] || [ "$ENVIRONMENT" = "local" ]; then
     if [ "$TARGET" = "frontend" ]; then
@@ -39,6 +37,11 @@ if [ "$TARGET" = "backend" ]; then
 fi
 
 cd "$TARGET_DIR" || exit 2
+
+
+if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then 
+    docker network create external-net
+fi
 
 # Ensure the APP_URL is reachable from the zaproxy container
 if ! docker-compose run --rm zaproxy curl -Is "$APP_URL" > /dev/null 2>&1; then

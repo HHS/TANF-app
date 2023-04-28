@@ -61,7 +61,7 @@ def startsWith(substring):
 
 
 def notEmpty(start=0, end=None):
-    """Validate that string value is not empty between start and end positions."""
+    """Validate that string value isn't only blanks."""
     return make_validator(
         lambda value: not value[start:end if end else len(value)].isspace(),
         lambda value: f'{value} contains blanks between positions {start} and {end if end else len(value)}.'
@@ -117,7 +117,7 @@ def validate_single_header_trailer(datafile):
 
 
 def validate_header_section_matches_submission(datafile, section):
-    """Validate that the header section matches the submission section."""
+    """Validate header section matches submission section."""
     is_valid = datafile.section == section
 
     error = None

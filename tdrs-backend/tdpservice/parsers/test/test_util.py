@@ -15,6 +15,7 @@ def failing_validator():
 
 
 def error_func(schema, error_category, error_message, record, field):
+    """Fake error func that returns an error_message."""
     return error_message
 
 
@@ -312,6 +313,7 @@ def test_run_postparsing_validators_returns_invalid_and_errors():
     ('###', 3)
 ])
 def test_value_is_empty_returns_true(value, length):
+    """Test value_is_empty returns valid."""
     result = value_is_empty(value, length)
     assert result is True
 
@@ -326,11 +328,13 @@ def test_value_is_empty_returns_true(value, length):
     ('##3', 3)
 ])
 def test_value_is_empty_returns_false(value, length):
+    """Test value_is_empty returns invalid."""
     result = value_is_empty(value, length)
     assert result is False
 
 
 def test_multi_record_schema_parses_and_validates():
+    """Test MultiRecordRowSchema parse_and_validate."""
     line = '12345'
     schema = MultiRecordRowSchema(
         schemas=[

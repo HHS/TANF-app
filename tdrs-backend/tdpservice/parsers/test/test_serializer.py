@@ -16,7 +16,8 @@ def test_serializer_with_valid_data(parser_error_instance):
     request_instance = HttpRequest()
     request_instance.query_params = {
         'fields': 'file, row_number, column_number, item_number, field_name,\
-        category, error_message, error_type, created_at, fields_json, object_id, content_type_id'
+        category, error_message, error_type, created_at, fields_json, object_id,\
+        case_number, rpt_month_year, content_type_id'
 
     }
     serializer = ParsingErrorSerializer(

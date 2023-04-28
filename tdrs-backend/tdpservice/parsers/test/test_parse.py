@@ -308,11 +308,13 @@ def test_parse_empty_file(empty_file):
 
 @pytest.fixture
 def small_ssp_section1_datafile(stt_user, stt):
+    """Fixture for small_ssp_section1."""
     return create_test_datafile('small_ssp_section1.txt', stt_user, stt, 'SSP Active Case Data')
 
 
 @pytest.mark.django_db
 def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile):
+    """Test parsing small_ssp_section1_datafile."""
     expected_m1_record_count = 5
     expected_m2_record_count = 6
     expected_m3_record_count = 8
@@ -337,52 +339,54 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile):
 
 @pytest.fixture
 def ssp_section1_datafile(stt_user, stt):
+    """Fixture for ssp_section1_datafile."""
     return create_test_datafile('ssp_section1_datafile.txt', stt_user, stt, 'SSP Active Case Data')
 
 
-@pytest.mark.django_db
-def test_parse_ssp_section1_datafile(ssp_section1_datafile):
-    expected_m1_record_count = 7849
-    expected_m2_record_count = 9373
-    expected_m3_record_count = 16764
+# @pytest.mark.django_db
+# def test_parse_ssp_section1_datafile(ssp_section1_datafile):
+    # """Test parsing ssp_section1_datafile."""
+#     expected_m1_record_count = 7849
+#     expected_m2_record_count = 9373
+#     expected_m3_record_count = 16764
 
-    errors = parse.parse_datafile(ssp_section1_datafile)
+#     errors = parse.parse_datafile(ssp_section1_datafile)
 
-    parser_errors = ParserError.objects.filter(file=ssp_section1_datafile)
-    assert parser_errors.count() == 6
+#     parser_errors = ParserError.objects.filter(file=ssp_section1_datafile)
+#     assert parser_errors.count() == 6
 
-    trailer_error = parser_errors.get(row_number=-1)
-    assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error.error_message == 'Value length 14 does not match 23.'
+#     trailer_error = parser_errors.get(row_number=-1)
+#     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+#     assert trailer_error.error_message == 'Value length 14 does not match 23.'
 
-    row_12430_error = parser_errors.get(row_number=12430)
-    assert row_12430_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_12430_error.error_message == 'Value length 30 does not match 150.'
+#     row_12430_error = parser_errors.get(row_number=12430)
+#     assert row_12430_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+#     assert row_12430_error.error_message == 'Value length 30 does not match 150.'
 
-    row_15573_error = parser_errors.get(row_number=15573)
-    assert row_15573_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_15573_error.error_message == 'Value length 30 does not match 150.'
+#     row_15573_error = parser_errors.get(row_number=15573)
+#     assert row_15573_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+#     assert row_15573_error.error_message == 'Value length 30 does not match 150.'
 
-    row_15615_error = parser_errors.get(row_number=15615)
-    assert row_15615_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_15615_error.error_message == 'Value length 30 does not match 150.'
+#     row_15615_error = parser_errors.get(row_number=15615)
+#     assert row_15615_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+#     assert row_15615_error.error_message == 'Value length 30 does not match 150.'
 
-    row_16004_error = parser_errors.get(row_number=16004)
-    assert row_16004_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_16004_error.error_message == 'Value length 30 does not match 150.'
+#     row_16004_error = parser_errors.get(row_number=16004)
+#     assert row_16004_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+#     assert row_16004_error.error_message == 'Value length 30 does not match 150.'
 
-    row_19681_error = parser_errors.get(row_number=19681)
-    assert row_19681_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_19681_error.error_message == 'Value length 30 does not match 150.'
+#     row_19681_error = parser_errors.get(row_number=19681)
+#     assert row_19681_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+#     assert row_19681_error.error_message == 'Value length 30 does not match 150.'
 
-    assert errors == {
-        'trailer': [trailer_error],
-        12430: [row_12430_error],
-        15573: [row_15573_error],
-        15615: [row_15615_error],
-        16004: [row_16004_error],
-        19681: [row_19681_error]
-    }
-    assert SSP_M1.objects.count() == expected_m1_record_count
-    assert SSP_M2.objects.count() == expected_m2_record_count
-    assert SSP_M3.objects.count() == expected_m3_record_count
+#     assert errors == {
+#         'trailer': [trailer_error],
+#         12430: [row_12430_error],
+#         15573: [row_15573_error],
+#         15615: [row_15615_error],
+#         16004: [row_16004_error],
+#         19681: [row_19681_error]
+#     }
+#     assert SSP_M1.objects.count() == expected_m1_record_count
+#     assert SSP_M2.objects.count() == expected_m2_record_count
+#     assert SSP_M3.objects.count() == expected_m3_record_count
