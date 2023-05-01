@@ -2,7 +2,8 @@
   test-backend:
     executor: machine-executor
     steps:
-      when: << pipeline.parameters.build_and_test_backend >>
+      when: 
+        condition: << pipeline.parameters.build_and_test_backend >>
         steps:
           - checkout
           - docker-compose-check
@@ -25,7 +26,8 @@
     executor: machine-executor
     working_directory: ~/tdp-apps
     steps:
-      when: << pipeline.parameters.build_and_test_frontend >>
+      when: 
+        condition: << pipeline.parameters.build_and_test_frontend >>
         steps:
           - checkout
           - install-nodejs-machine
