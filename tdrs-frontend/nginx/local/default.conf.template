@@ -10,6 +10,7 @@ http {
 
     server {
         listen 80;
+        client_max_body_size 50m;
         root /usr/share/nginx/html;
         include locations.conf;
 
@@ -83,6 +84,9 @@ http {
         add_header Content-Security-Policy $CSP;
     }
 
+    limit_req_zone $binary_remote_addr zone=limitreqsbyaddr:200m rate=100r/s;
+    limit_req_status 444;
+
     # Logging format
     log_format compression '[Cache:$upstream_cache_status] $remote_addr - $remote_user [$time_local] '
                                '"$request" $status $body_bytes_sent '
@@ -113,24 +117,23 @@ http {
             #proxy_pass_header content-security-policy;
             add_header Access-control-Allow-Headers 'x-csrftoken';
 
-            set $CSP "default-src 'none';";
+            set $CSP "default-src 'self';";
             set $CSP "${CSP}script-src 'self';";
-            set $CSP "${CSP}style-src 'self' 'unsafe-inline';";
+            set $CSP "${CSP}script-src-elem 'self';";
+            set $CSP "${CSP}script-src-attr 'self';";
             set $CSP "${CSP}img-src 'self' data:;";
             set $CSP "${CSP}font-src 'self';";
-            set $CSP "${CSP}connect-src 'self' localhost:*;";
-            set $CSP "${CSP}frame-src 'None';";
             set $CSP "${CSP}manifest-src 'self';";
             set $CSP "${CSP}object-src 'none';";
             set $CSP "${CSP}frame-ancestors 'none';";
+            set $CSP "${CSP}form-action 'self';";
+            set $CSP "${CSP}frame-src 'None';";
             set $CSP "${CSP}child-src 'none';";
             set $CSP "${CSP}media-src 'none';";
             set $CSP "${CSP}prefetch-src 'none';";
-            set $CSP "${CSP}form-action *";
-            set $CSP "${CSP}script-src-elem 'self';";
-            set $CSP "${CSP}script-src-attr 'self';";
-            set $CSP "${CSP}style-src-elem 'self'";
-            set $CSP "${CSP}style-src-attr 'self';";
+            set $CSP "${CSP}style-src 'self' 'unsafe-inline';";
+            set $CSP "${CSP}style-src-elem 'self' 'unsafe-inline';";
+            set $CSP "${CSP}style-src-attr 'self' 'unsafe-inline';";
             set $CSP "${CSP}worker-src 'none';";
             add_header Content-Security-Policy $CSP;
 
