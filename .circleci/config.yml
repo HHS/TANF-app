@@ -13,6 +13,12 @@ orbs:
 
 # parameters from github actions
 parameters:
+  build_and_test_backend:
+    type: boolean
+    default: false
+  build_and_test_frontend:
+    type: boolean
+    default: false
   develop_branch_deploy:
     type: boolean
     default: false
