@@ -3,4 +3,4 @@
     when:
       << pipeline.parameters.util_make_erd >>
     jobs:
-      - make_erd:
+      - make_erd
