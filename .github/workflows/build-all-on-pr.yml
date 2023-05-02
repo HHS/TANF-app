@@ -2,6 +2,7 @@
 # GitHub Action Workflow
 # On pull request or changes to scripts/commands to any branch, 
 # triggers the full build and test pipeline.
+# CLARIFY THIS
 #
 # Step 0: make PR from your branch into develop, or make changes on your 
 #         branch to non-documentation files in scripts or commands.sh and 

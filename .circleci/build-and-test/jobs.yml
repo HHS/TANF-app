@@ -2,52 +2,44 @@
   test-backend:
     executor: machine-executor
     steps:
-      when: 
-        condition: << pipeline.parameters.build_and_test_backend >>
-        steps:
-          - checkout
-          - docker-compose-check
-          - docker-compose-up-backend
-          - run:
-              name: Execute Python Linting Test
-              command: cd tdrs-backend; docker-compose run --rm web bash -c "flake8 ."
-          - run:
-              name: Run Unit Tests And Create Code Coverage Report
-              command: |
-                  cd tdrs-backend;
-                  docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
-          - upload-codecov:
-              component: backend
-              coverage-report: ./tdrs-backend/coverage.xml
-
-# merge these 2 together
+      - checkout
+      - docker-compose-check
+      - docker-compose-up-backend
+      - run:
+          name: Execute Python Linting Test
+          command: cd tdrs-backend; docker-compose run --rm web bash -c "flake8 ."
+      - run:
+          name: Run Unit Tests And Create Code Coverage Report
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
+      - upload-codecov:
+          component: backend
+          coverage-report: ./tdrs-backend/coverage.xml
 
   test-frontend:
     executor: machine-executor
     working_directory: ~/tdp-apps
     steps:
-      when: 
-        condition: << pipeline.parameters.build_and_test_frontend >>
-        steps:
-          - checkout
-          - install-nodejs-machine
-          - disable-npm-audit
-          - install-nodejs-packages:
-              app-dir: tdrs-frontend
-          - run:
-              name: Run ESLint
-              command: cd tdrs-frontend; npm run lint
-          - run:
-              name: Run Pa11y Accessibility Tests
-              command: cd tdrs-frontend; mkdir pa11y-screenshots/; npm run test:accessibility
-          - run:
-              name: Run Jest Unit Tests
-              command: cd tdrs-frontend; npm run test:ci
-          - upload-codecov:
-              component: frontend
-              coverage-report: ./tdrs-frontend/coverage/lcov.info
-          - store_artifacts:
-              path: tdrs-frontend/pa11y-screenshots/
+      - checkout
+      - install-nodejs-machine
+      - disable-npm-audit
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+      - run:
+          name: Run ESLint
+          command: cd tdrs-frontend; npm run lint
+      - run:
+          name: Run Pa11y Accessibility Tests
+          command: cd tdrs-frontend; mkdir pa11y-screenshots/; npm run test:accessibility
+      - run:
+          name: Run Jest Unit Tests
+          command: cd tdrs-frontend; npm run test:ci
+      - upload-codecov:
+          component: frontend
+          coverage-report: ./tdrs-frontend/coverage/lcov.info
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/
 
   test-e2e:
     executor: large-machine-executor
@@ -65,8 +57,8 @@
           name: Wait for backend to become available
           command: cd tdrs-backend; docker-compose run --rm zaproxy bash -c \
               "PATH=$PATH:/home/zap/.local/bin &&
-              pip install wait-for-it &&
-              wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
+               pip install wait-for-it &&
+               wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
       - run:
           name: Set up cypress test users
           command: cd tdrs-backend; docker-compose exec web python manage.py generate_cypress_users
