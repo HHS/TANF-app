@@ -17,25 +17,25 @@
 #           https://github.com/promiseofcake/circleci-trigger-action
 ###########################################################################
 name: Run Infrastructure Pipeline When Terraform or Infrastructure Files Change
-  on:
-    push:
-      paths:
-        - 'terraform/**'
-        - '.circleci/infrastructure/**'
-      paths_ignore:
-        - '**.md'
-        - '**.txt'
-  jobs:
-    run_infrastructure_deployment:
-      runs-on: ubuntu-latest
-      name: Deploy Infrastructure
-      steps:
-        - uses: actions/checkout@v2
-        - name: Circle CI Deployment Trigger
-          id: curl-circle-ci
-          uses: promiseofcake/circleci-trigger-action@v1
-          with:
-            user-token: ${{ secrets.CIRCLE_CI_V2_TOKEN }}
-            project-slug: raft-tech/TANF-app
-            branch: ${{ github.ref }}
-            payload: '{"deploy_infrastructure": true}'
+on:
+  push:
+    paths:
+      - 'terraform/**'
+      - '.circleci/infrastructure/**'
+    paths_ignore:
+      - '**.md'
+      - '**.txt'
+jobs:
+  run_infrastructure_deployment:
+    runs-on: ubuntu-latest
+    name: Deploy Infrastructure
+    steps:
+      - uses: actions/checkout@v2
+      - name: Circle CI Deployment Trigger
+        id: curl-circle-ci
+        uses: promiseofcake/circleci-trigger-action@v1
+        with:
+          user-token: ${{ secrets.CIRCLE_CI_V2_TOKEN }}
+          project-slug: raft-tech/TANF-app
+          branch: ${{ github.ref }}
+          payload: '{"deploy_infrastructure": true}'
