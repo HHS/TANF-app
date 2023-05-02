@@ -1,7 +1,7 @@
 """Generic parser validator functions for use in schema definitions."""
 
 from .util import generate_parser_error
-
+from .models import ParserErrorCategoryChoices
 
 # higher order validator func
 
@@ -107,7 +107,7 @@ def validate_single_header_trailer(datafile):
             datafile=datafile,
             line_number=line_number,
             schema=None,
-            error_category="1",
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
             error_message=error_message,
             record=None,
             field=None
@@ -126,7 +126,7 @@ def validate_header_section_matches_submission(datafile, section):
             datafile=datafile,
             line_number=1,
             schema=None,
-            error_category="1",
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
             error_message="Section does not match.",
             record=None,
             field=None

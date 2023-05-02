@@ -1,5 +1,5 @@
 """Utility file for functions shared between all parsers even preparser."""
-from .models import ParserError
+from .models import ParserError, ParserErrorCategoryChoices
 from django.contrib.contenttypes.models import ContentType
 
 
@@ -161,7 +161,7 @@ class RowSchema:
                 errors.append(
                     generate_error(
                         schema=self,
-                        error_category="1",
+                        error_category=ParserErrorCategoryChoices.PRE_CHECK,
                         error_message=validator_error,
                         record=None,
                         field=None
@@ -208,7 +208,7 @@ class RowSchema:
                         errors.append(
                             generate_error(
                                 schema=self,
-                                error_category="2",
+                                error_category=ParserErrorCategoryChoices.FIELD_VALUE,
                                 error_message=validator_error,
                                 record=instance,
                                 field=field
@@ -219,7 +219,7 @@ class RowSchema:
                     errors.append(
                         generate_error(
                             schema=self,
-                            error_category="2",
+                            error_category=ParserErrorCategoryChoices.FIELD_VALUE,
                             error_message=f"{field.name} is required but a value was not provided.",
                             record=instance,
                             field=field
@@ -240,7 +240,7 @@ class RowSchema:
                 errors.append(
                     generate_error(
                         schema=self,
-                        error_category="3",
+                        error_category=ParserErrorCategoryChoices.VALUE_CONSISTENCY,
                         error_message=validator_error,
                         record=instance,
                         field=None

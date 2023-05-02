@@ -3,7 +3,7 @@
 
 import os
 from . import schema_defs, validators, util
-# from .models import ParserError
+from .models import ParserErrorCategoryChoices
 from tdpservice.data_files.models import DataFile
 
 
@@ -141,7 +141,7 @@ def parse_multi_record_line(line, schema, generate_error):
     return [(None, False, [
         generate_error(
             schema=None,
-            error_category="1",
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
             error_message="No schema selected.",
             record=None,
             field=None
@@ -162,7 +162,7 @@ def parse_datafile_line(line, schema, generate_error):
     return (False, [
         generate_error(
             schema=None,
-            error_category="1",
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
             error_message="No schema selected.",
             record=None,
             field=None
