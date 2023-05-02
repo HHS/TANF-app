@@ -19,7 +19,9 @@
 ###########################################################################
 name: Build Only Frontend When tdrs-frontend Files Change
 branches-ignore:
- - develop
+  - develop
+  - main
+  - master
 on:
   push:
     paths: 'tdrs-frontend/**'

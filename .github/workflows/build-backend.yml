@@ -19,7 +19,9 @@
 ###########################################################################
 name: Build Only Backend When tdrs-backend/ Files Change
 branches-ignore:
- - develop
+  - develop
+  - main
+  - master
 on:
   push:
     paths: 'tdrs-backend/**'
