@@ -29,7 +29,7 @@ m1 = RowSchema(
               required=True, validators=[]),
         Field(item=8, name='NBR_FAMILY_MEMBERS', type='number', startIndex=30, endIndex=32,
               required=True, validators=[]),
-        Field(item=9, name='FAMILY_TYPE', type='number', startIndex=32, endIndex=33,
+        Field(name='NBR_FAMILY_MEMBERS', type='number', startIndex=30, endIndex=32,
               required=True, validators=[]),
         Field(item=10, name='TANF_ASST_IN_6MONTHS', type='number', startIndex=33, endIndex=34,
               required=True, validators=[]),
@@ -97,6 +97,7 @@ m1 = RowSchema(
               required=True, validators=[]),
         Field(item=42, name='WAIVER_EVAL_CONTROL_GRPS', type='number', startIndex=112, endIndex=113,
               required=True, validators=[]),
-        Field(item=43, name='BLANK', type='string', startIndex=113, endIndex=150, required=False, validators=[]),
-    ],
+        Field(name='BLANK', type='string', startIndex=113, endIndex=150,
+              required=False, validators=[]),
+    ]
 )

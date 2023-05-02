@@ -19,7 +19,7 @@ m2 = RowSchema(
               required=True, validators=[]),
         Field(item=3, name='CASE_NUMBER', type='string', startIndex=8, endIndex=19,
               required=True, validators=[]),
-        Field(item=4, name='FAMILY_AFFILIATION', type='number', startIndex=19, endIndex=20,
+        Field(name='FAMILY_AFFILIATION', type='number', startIndex=19, endIndex=20,
               required=True, validators=[]),
         Field(item=5, name='NONCUSTODIAL_PARENT', type='number', startIndex=20, endIndex=21,
               required=True, validators=[]),
