@@ -15,12 +15,12 @@
 #           https://github.com/promiseofcake/circleci-trigger-action
 ###########################################################################
 name: Run The Utility Make ERD Pipeline
-on:
-  push:
-    branches:
-      - develop
-      - master
-    jobs:
+  on:
+    push:
+      branches:
+        - develop
+        - master
+      jobs:
   make_erd:
     runs-on: ubuntu-latest
     name: Make ERD

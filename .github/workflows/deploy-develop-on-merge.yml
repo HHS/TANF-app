@@ -20,29 +20,29 @@
 #           https://github.com/promiseofcake/circleci-trigger-action
 ###########################################################################
 name: Deploy Develop on PR Merge
-on:
-  push:
-    branches:
-    - develop
-    paths_ignore:
-    - 'docs/**'
-    - '**.md'
-    - '**.txt'
-    - '.gitattributes'
-    - '.gitignore'
-    - 'LICENSE'
-jobs:
-  merge_deployment:
-    if: github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    name: Initiate deploy job in CircleCI
-    steps:
-    - uses: actions/checkout@v2
-    - name: Circle CI Deployment Trigger
-      id: curl-circle-ci
-      uses: promiseofcake/circleci-trigger-action@v1
-      with:
-        user-token: ${{ secrets.CIRCLE_CI_V2_TOKEN }}
-        project-slug: raft-tech/TANF-app
-        branch: ${{ github.ref }}
-        payload: '{"develop_branch_deploy": true, "target_env": "develop"}'
+  on:
+    push:
+      branches:
+      - develop
+      paths_ignore:
+      - 'docs/**'
+      - '**.md'
+      - '**.txt'
+      - '.gitattributes'
+      - '.gitignore'
+      - 'LICENSE'
+  jobs:
+    merge_deployment:
+      if: github.ref == 'refs/heads/develop'
+      runs-on: ubuntu-latest
+      name: Initiate deploy job in CircleCI
+      steps:
+      - uses: actions/checkout@v2
+      - name: Circle CI Deployment Trigger
+        id: curl-circle-ci
+        uses: promiseofcake/circleci-trigger-action@v1
+        with:
+          user-token: ${{ secrets.CIRCLE_CI_V2_TOKEN }}
+          project-slug: raft-tech/TANF-app
+          branch: ${{ github.ref }}
+          payload: '{"develop_branch_deploy": true, "target_env": "develop"}'
