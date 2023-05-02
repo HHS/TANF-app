@@ -19,8 +19,6 @@ m2 = RowSchema(
               required=True, validators=[]),
         Field(name='CASE_NUMBER', type='string', startIndex=8, endIndex=19,
               required=True, validators=[]),
-        # Field(name='FIPS_CODE', type='string', startIndex=8, endIndex=19, required=True, validators=[
-        # ]),
         Field(name='FAMILY_AFFILIATION', type='number', startIndex=19, endIndex=20,
               required=True, validators=[]),
         Field(name='NONCUSTODIAL_PARENT', type='number', startIndex=20, endIndex=21,
