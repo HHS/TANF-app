@@ -13,50 +13,50 @@ first_part_schema = RowSchema(
     ],
     postparsing_validators=[],
     fields=[
-        Field(name='RecordType', type='string', startIndex=0, endIndex=2, required=True, validators=[
-        ]),
-        Field(name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8, required=True, validators=[
-        ]),
-        Field(name='CASE_NUMBER', type='string', startIndex=8, endIndex=19, required=True, validators=[
-        ]),
+        Field(name='RecordType', type='string', startIndex=0, endIndex=2,
+              required=True, validators=[]),
+        Field(name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8,
+              required=True, validators=[]),
+        Field(name='CASE_NUMBER', type='string', startIndex=8, endIndex=19,
+              required=True, validators=[]),
         # Field(name='FIPS_CODE', type='string', startIndex=8, endIndex=19, required=True, validators=[
         # ]),
-        Field(name='FAMILY_AFFILIATION', type='number', startIndex=19, endIndex=20, required=True, validators=[
-        ]),
-        Field(name='DATE_OF_BIRTH', type='string', startIndex=20, endIndex=28, required=True, validators=[
-        ]),
-        Field(name='SSN', type='string', startIndex=28, endIndex=37, required=True, validators=[
-        ]),
-        Field(name='RACE_HISPANIC', type='number', startIndex=37, endIndex=38, required=True, validators=[
-        ]),
-        Field(name='RACE_AMER_INDIAN', type='number', startIndex=38, endIndex=39, required=True, validators=[
-        ]),
-        Field(name='RACE_ASIAN', type='number', startIndex=39, endIndex=40, required=True, validators=[
-        ]),
-        Field(name='RACE_BLACK', type='number', startIndex=40, endIndex=41, required=True, validators=[
-        ]),
-        Field(name='RACE_HAWAIIAN', type='number', startIndex=41, endIndex=42, required=True, validators=[
-        ]),
-        Field(name='RACE_WHITE', type='number', startIndex=42, endIndex=43, required=True, validators=[
-        ]),
-        Field(name='GENDER', type='number', startIndex=43, endIndex=44, required=True, validators=[
-        ]),
-        Field(name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=44, endIndex=45, required=True, validators=[
-        ]),
-        Field(name='RECEIVE_SSI', type='number', startIndex=45, endIndex=46, required=True, validators=[
-        ]),
-        Field(name='RELATIONSHIP_HOH', type='number', startIndex=46, endIndex=48, required=True, validators=[
-        ]),
-        Field(name='PARENT_MINOR_CHILD', type='number', startIndex=48, endIndex=49, required=True, validators=[
-        ]),
-        Field(name='EDUCATION_LEVEL', type='number', startIndex=49, endIndex=51, required=True, validators=[
-        ]),
-        Field(name='CITIZENSHIP_STATUS', type='number', startIndex=51, endIndex=52, required=True, validators=[
-        ]),
-        Field(name='UNEARNED_SSI', type='number', startIndex=52, endIndex=56, required=True, validators=[
-        ]),
-        Field(name='OTHER_UNEARNED_INCOME', type='number', startIndex=56, endIndex=60, required=True, validators=[
-        ])
+        Field(name='FAMILY_AFFILIATION', type='number', startIndex=19, endIndex=20,
+              required=True, validators=[]),
+        Field(name='DATE_OF_BIRTH', type='string', startIndex=20, endIndex=28,
+              required=True, validators=[]),
+        Field(name='SSN', type='string', startIndex=28, endIndex=37,
+              required=True, validators=[]),
+        Field(name='RACE_HISPANIC', type='number', startIndex=37, endIndex=38,
+              required=True, validators=[]),
+        Field(name='RACE_AMER_INDIAN', type='number', startIndex=38, endIndex=39,
+              required=True, validators=[]),
+        Field(name='RACE_ASIAN', type='number', startIndex=39, endIndex=40,
+              required=True, validators=[]),
+        Field(name='RACE_BLACK', type='number', startIndex=40, endIndex=41,
+              required=True, validators=[]),
+        Field(name='RACE_HAWAIIAN', type='number', startIndex=41, endIndex=42,
+              required=True, validators=[]),
+        Field(name='RACE_WHITE', type='number', startIndex=42, endIndex=43,
+              required=True, validators=[]),
+        Field(name='GENDER', type='number', startIndex=43, endIndex=44,
+              required=True, validators=[]),
+        Field(name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=44, endIndex=45,
+              required=True, validators=[]),
+        Field(name='RECEIVE_SSI', type='number', startIndex=45, endIndex=46,
+              required=True, validators=[]),
+        Field(name='RELATIONSHIP_HOH', type='number', startIndex=46, endIndex=48,
+              required=True, validators=[]),
+        Field(name='PARENT_MINOR_CHILD', type='number', startIndex=48, endIndex=49,
+              required=True, validators=[]),
+        Field(name='EDUCATION_LEVEL', type='number', startIndex=49, endIndex=51,
+              required=True, validators=[]),
+        Field(name='CITIZENSHIP_STATUS', type='number', startIndex=51, endIndex=52,
+              required=True, validators=[]),
+        Field(name='UNEARNED_SSI', type='number', startIndex=52, endIndex=56,
+              required=True, validators=[]),
+        Field(name='OTHER_UNEARNED_INCOME', type='number', startIndex=56, endIndex=60,
+              required=True, validators=[])
     ]
 )
 
@@ -69,50 +69,50 @@ second_part_schema = RowSchema(
     ],
     postparsing_validators=[],
     fields=[
-        Field(name='RecordType', type='string', startIndex=0, endIndex=2, required=True, validators=[
-        ]),
-        Field(name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8, required=True, validators=[
-        ]),
-        Field(name='CASE_NUMBER', type='string', startIndex=8, endIndex=19, required=True, validators=[
-        ]),
+        Field(name='RecordType', type='string', startIndex=0, endIndex=2,
+              required=True, validators=[]),
+        Field(name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8,
+              required=True, validators=[]),
+        Field(name='CASE_NUMBER', type='string', startIndex=8, endIndex=19,
+              required=True, validators=[]),
         # Field(name='FIPS_CODE', type='string', startIndex=8, endIndex=19, required=True, validators=[
         # ]),
-        Field(name='FAMILY_AFFILIATION', type='number', startIndex=60, endIndex=61, required=True, validators=[
-        ]),
-        Field(name='DATE_OF_BIRTH', type='string', startIndex=61, endIndex=69, required=True, validators=[
-        ]),
-        Field(name='SSN', type='string', startIndex=69, endIndex=78, required=True, validators=[
-        ]),
-        Field(name='RACE_HISPANIC', type='number', startIndex=78, endIndex=79, required=True, validators=[
-        ]),
-        Field(name='RACE_AMER_INDIAN', type='number', startIndex=79, endIndex=80, required=True, validators=[
-        ]),
-        Field(name='RACE_ASIAN', type='number', startIndex=80, endIndex=81, required=True, validators=[
-        ]),
-        Field(name='RACE_BLACK', type='number', startIndex=81, endIndex=82, required=True, validators=[
-        ]),
-        Field(name='RACE_HAWAIIAN', type='number', startIndex=82, endIndex=83, required=True, validators=[
-        ]),
-        Field(name='RACE_WHITE', type='number', startIndex=83, endIndex=84, required=True, validators=[
-        ]),
-        Field(name='GENDER', type='number', startIndex=84, endIndex=85, required=True, validators=[
-        ]),
-        Field(name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=85, endIndex=86, required=True, validators=[
-        ]),
-        Field(name='RECEIVE_SSI', type='number', startIndex=86, endIndex=87, required=True, validators=[
-        ]),
-        Field(name='RELATIONSHIP_HOH', type='number', startIndex=87, endIndex=89, required=True, validators=[
-        ]),
-        Field(name='PARENT_MINOR_CHILD', type='number', startIndex=89, endIndex=90, required=True, validators=[
-        ]),
-        Field(name='EDUCATION_LEVEL', type='number', startIndex=90, endIndex=92, required=True, validators=[
-        ]),
-        Field(name='CITIZENSHIP_STATUS', type='number', startIndex=92, endIndex=93, required=True, validators=[
-        ]),
-        Field(name='UNEARNED_SSI', type='number', startIndex=93, endIndex=97, required=True, validators=[
-        ]),
-        Field(name='OTHER_UNEARNED_INCOME', type='number', startIndex=97, endIndex=101, required=True, validators=[
-        ])
+        Field(name='FAMILY_AFFILIATION', type='number', startIndex=60, endIndex=61,
+              required=True, validators=[]),
+        Field(name='DATE_OF_BIRTH', type='string', startIndex=61, endIndex=69,
+              required=True, validators=[]),
+        Field(name='SSN', type='string', startIndex=69, endIndex=78,
+              required=True, validators=[]),
+        Field(name='RACE_HISPANIC', type='number', startIndex=78, endIndex=79,
+              required=True, validators=[]),
+        Field(name='RACE_AMER_INDIAN', type='number', startIndex=79, endIndex=80,
+              required=True, validators=[]),
+        Field(name='RACE_ASIAN', type='number', startIndex=80, endIndex=81,
+              required=True, validators=[]),
+        Field(name='RACE_BLACK', type='number', startIndex=81, endIndex=82,
+              required=True, validators=[]),
+        Field(name='RACE_HAWAIIAN', type='number', startIndex=82, endIndex=83,
+              required=True, validators=[]),
+        Field(name='RACE_WHITE', type='number', startIndex=83, endIndex=84,
+              required=True, validators=[]),
+        Field(name='GENDER', type='number', startIndex=84, endIndex=85,
+              required=True, validators=[]),
+        Field(name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=85, endIndex=86,
+              required=True, validators=[]),
+        Field(name='RECEIVE_SSI', type='number', startIndex=86, endIndex=87,
+              required=True, validators=[]),
+        Field(name='RELATIONSHIP_HOH', type='number', startIndex=87, endIndex=89,
+              required=True, validators=[]),
+        Field(name='PARENT_MINOR_CHILD', type='number', startIndex=89, endIndex=90,
+              required=True, validators=[]),
+        Field(name='EDUCATION_LEVEL', type='number', startIndex=90, endIndex=92,
+              required=True, validators=[]),
+        Field(name='CITIZENSHIP_STATUS', type='number', startIndex=92, endIndex=93,
+              required=True, validators=[]),
+        Field(name='UNEARNED_SSI', type='number', startIndex=93, endIndex=97,
+              required=True, validators=[]),
+        Field(name='OTHER_UNEARNED_INCOME', type='number', startIndex=97, endIndex=101,
+              required=True, validators=[])
     ]
 )
 
@@ -122,97 +122,3 @@ m3 = MultiRecordRowSchema(
         second_part_schema
     ]
 )
-
-
-# m3 = RowSchema(
-#     model=SSP_M3,
-#     preparsing_validators=[
-#         validators.hasLength(150),  # ?? the format document shows double fields/length?
-#     ],
-#     postparsing_validators=[],
-#     fields=[
-#         Field(name='RecordType', type='string', startIndex=0, endIndex=2, required=True, validators=[
-#         ]),
-#         Field(name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8, required=True, validators=[
-#         ]),
-#         Field(name='CASE_NUMBER', type='string', startIndex=8, endIndex=19, required=True, validators=[
-#         ]),
-#         # Field(name='FIPS_CODE', type='string', startIndex=8, endIndex=19, required=True, validators=[
-#         # ]),
-#         Field(name='FAMILY_AFFILIATION', type='number', startIndex=19, endIndex=20, required=True, validators=[
-#         ]),
-#         Field(name='DATE_OF_BIRTH', type='number', startIndex=20, endIndex=28, required=True, validators=[
-#         ]),
-#         Field(name='SSN', type='number', startIndex=28, endIndex=37, required=True, validators=[
-#         ]),
-#         Field(name='RACE_HISPANIC', type='number', startIndex=37, endIndex=38, required=True, validators=[
-#         ]),
-#         Field(name='RACE_AMER_INDIAN', type='number', startIndex=38, endIndex=39, required=True, validators=[
-#         ]),
-#         Field(name='RACE_ASIAN', type='number', startIndex=39, endIndex=40, required=True, validators=[
-#         ]),
-#         Field(name='RACE_BLACK', type='number', startIndex=40, endIndex=41, required=True, validators=[
-#         ]),
-#         Field(name='RACE_HAWAIIAN', type='number', startIndex=41, endIndex=42, required=True, validators=[
-#         ]),
-#         Field(name='RACE_WHITE', type='number', startIndex=42, endIndex=43, required=True, validators=[
-#         ]),
-#         Field(name='GENDER', type='number', startIndex=43, endIndex=44, required=True, validators=[
-#         ]),
-#         Field(name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=44, endIndex=45, required=True, validators=[
-#         ]),
-#         Field(name='RECEIVE_SSI', type='number', startIndex=45, endIndex=46, required=True, validators=[
-#         ]),
-#         Field(name='RELATIONSHIP_HOH', type='number', startIndex=46, endIndex=48, required=True, validators=[
-#         ]),
-#         Field(name='PARENT_MINOR_CHILD', type='number', startIndex=48, endIndex=49, required=True, validators=[
-#         ]),
-#         Field(name='EDUCATION_LEVEL', type='number', startIndex=49, endIndex=51, required=True, validators=[
-#         ]),
-#         Field(name='CITIZENSHIP_STATUS', type='number', startIndex=51, endIndex=52, required=True, validators=[
-#         ]),
-#         Field(name='UNEARNED_SSI', type='number', startIndex=52, endIndex=56, required=True, validators=[
-#         ]),
-#         Field(name='OTHER_UNEARNED_INCOME', type='number', startIndex=56, endIndex=60, required=True, validators=[
-#         ]),
-
-#         # ??
-#         Field(name='FAMILY_AFFILIATION', type='number', startIndex=60, endIndex=61, required=True, validators=[
-#         ]),
-#         Field(name='DATE_OF_BIRTH', type='number', startIndex=61, endIndex=69, required=True, validators=[
-#         ]),
-#         Field(name='SSN', type='number', startIndex=69, endIndex=78, required=True, validators=[
-#         ]),
-#         Field(name='RACE_HISPANIC', type='number', startIndex=78, endIndex=79, required=True, validators=[
-#         ]),
-#         Field(name='RACE_AMER_INDIAN', type='number', startIndex=79, endIndex=80, required=True, validators=[
-#         ]),
-#         Field(name='RACE_ASIAN', type='number', startIndex=80, endIndex=81, required=True, validators=[
-#         ]),
-#         Field(name='RACE_BLACK', type='number', startIndex=81, endIndex=82, required=True, validators=[
-#         ]),
-#         Field(name='RACE_HAWAIIAN', type='number', startIndex=82, endIndex=83, required=True, validators=[
-#         ]),
-#         Field(name='RACE_WHITE', type='number', startIndex=83, endIndex=84, required=True, validators=[
-#         ]),
-#         Field(name='GENDER', type='number', startIndex=84, endIndex=85, required=True, validators=[
-#         ]),
-#         Field(name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=85, endIndex=86, required=True, validators=[
-#         ]),
-#         Field(name='RECEIVE_SSI', type='number', startIndex=86, endIndex=87, required=True, validators=[
-#         ]),
-#         Field(name='RELATIONSHIP_HOH', type='number', startIndex=87, endIndex=89, required=True, validators=[
-#         ]),
-#         Field(name='PARENT_MINOR_CHILD', type='number', startIndex=89, endIndex=90, required=True, validators=[
-#         ]),
-#         Field(name='EDUCATION_LEVEL', type='number', startIndex=90, endIndex=92, required=True, validators=[
-#         ]),
-#         Field(name='CITIZENSHIP_STATUS', type='number', startIndex=92, endIndex=93, required=True, validators=[
-#         ]),
-#         Field(name='UNEARNED_SSI', type='number', startIndex=93, endIndex=97, required=True, validators=[
-#         ]),
-#         Field(name='OTHER_UNEARNED_INCOME', type='number', startIndex=97, endIndex=101, required=True, validators=[
-#         ]),
-#         # Field(name='BLANK', type='string', startIndex=101, endIndex=150, required=False, validators=[]),
-#     ],
-# )

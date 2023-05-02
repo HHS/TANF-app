@@ -207,11 +207,13 @@ def test_parse_empty_file(empty_file):
 
 @pytest.fixture
 def small_ssp_section1_datafile(stt_user, stt):
+    """Fixture for small_ssp_section1."""
     return create_test_datafile('small_ssp_section1.txt', stt_user, stt, 'SSP Active Case Data')
 
 
 @pytest.mark.django_db
 def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile):
+    """Test parsing small_ssp_section1_datafile."""
     expected_m1_record_count = 5
     expected_m2_record_count = 6
     expected_m3_record_count = 8
@@ -228,11 +230,13 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile):
 
 @pytest.fixture
 def ssp_section1_datafile(stt_user, stt):
+    """Fixture for ssp_section1_datafile."""
     return create_test_datafile('ssp_section1_datafile.txt', stt_user, stt, 'SSP Active Case Data')
 
 
 @pytest.mark.django_db
 def test_parse_ssp_section1_datafile(ssp_section1_datafile):
+    """Test parsing ssp_section1_datafile."""
     expected_m1_record_count = 7849
     expected_m2_record_count = 9373
     expected_m3_record_count = 16764

@@ -61,7 +61,18 @@ def parse_datafile(datafile):
         errors['document'] = ['Section does not match.']
         return errors
 
-    # parse line with appropriate schema
+    line_errors = parse_datafile_lines(datafile, program_type, section)
+
+    errors = errors | line_errors
+
+    return errors
+
+
+def parse_datafile_lines(datafile, program_type, section):
+    """Parse lines with appropriate schema and return errors."""
+    errors = {}
+    rawfile = datafile.file
+
     rawfile.seek(0)
     line_number = 0
     schema_options = get_schema_options(program_type)
@@ -95,6 +106,7 @@ def parse_datafile(datafile):
 
 
 def parse_multi_record_line(line, schema):
+    """Parse and validate a datafile line using MultiRecordRowSchema."""
     if schema:
         records = schema.parse_and_validate(line)
 
@@ -102,9 +114,6 @@ def parse_multi_record_line(line, schema):
             record, record_is_valid, record_errors = r
 
             if record:
-                # for error in record_errors:
-                    # create ParserError  # retention policy?
-                    # record.error.set(record_errors)
                 record.save()
 
         return records
@@ -118,9 +127,6 @@ def parse_datafile_line(line, schema):
         record, record_is_valid, record_errors = schema.parse_and_validate(line)
 
         if record:
-            # for error in record_errors:
-                # create ParserError
-                # record.error.set(record_errors)
             record.save()
 
         return record_is_valid, record_errors
@@ -132,52 +138,46 @@ def get_schema_options(program_type):
     """Return the allowed schema options."""
     match program_type:
         case 'TAN':
-            return schema_defs.tanf
+            return {
+                'A': {
+                    'T1': schema_defs.tanf.t1,
+                    # 'T2': schema_options.t2,
+                    # 'T3': schema_options.t3,
+                },
+                'C': {
+                    # 'T4': schema_options.t4,
+                    # 'T5': schema_options.t5,
+                },
+                'G': {
+                    # 'T6': schema_options.t6,
+                },
+                'S': {
+                    # 'T7': schema_options.t7,
+                },
+            }
         case 'SSP':
-            return schema_defs.ssp
+            return {
+                'A': {
+                    'M1': schema_defs.ssp.m1,
+                    'M2': schema_defs.ssp.m2,
+                    'M3': schema_defs.ssp.m3,
+                },
+                'C': {
+                    # 'M4': schema_options.m4,
+                    # 'M5': schema_options.m5,
+                },
+                'G': {
+                    # 'M6': schema_options.m6,
+                },
+                'S': {
+                    # 'M7': schema_options.m7,
+                },
+            }
         # case tribal?
     return None
 
 
 def get_schema(line, section, schema_options):
     """Return the appropriate schema for the line."""
-    if section == 'A' and line.startswith('T1'):
-        return schema_options.t1
-    elif section == 'A' and line.startswith('T2'):
-        return None
-        # return schema_options.t2
-    elif section == 'A' and line.startswith('T3'):
-        return None
-        # return schema_options.t3
-    elif section == 'C' and line.startswith('T4'):
-        return None
-        # return schema_options.t4
-    elif section == 'C' and line.startswith('T5'):
-        return None
-        # return schema_options.t5
-    elif section == 'G' and line.startswith('T6'):
-        return None
-        # return schema_options.t6
-    elif section == 'S' and line.startswith('T7'):
-        return None
-        # return schema_options.t7
-    elif section == 'A' and line.startswith('M1'):
-        return schema_options.m1
-    elif section == 'A' and line.startswith('M2'):
-        return schema_options.m2
-    elif section == 'A' and line.startswith('M3'):
-        return schema_options.m3
-    elif section == 'C' and line.startswith('M4'):
-        return None
-        # return schema_options.t4
-    elif section == 'C' and line.startswith('M5'):
-        return None
-        # return schema_options.t5
-    elif section == 'G' and line.startswith('M6'):
-        return None
-        # return schema_options.t6
-    elif section == 'S' and line.startswith('M7'):
-        return None
-        # return schema_options.t7
-    else:
-        return None
+    line_type = line[0:2]
+    return schema_options.get(section, {}).get(line_type, None)
