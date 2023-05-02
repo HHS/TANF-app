@@ -1,35 +1,29 @@
 ###########################################################################
 # GitHub Action Workflow
-# On push to any branch, triggers the back end build and test pipeline
-# if the tdrs-backend has changed.
+# On push to develop or master branches, triggers the make erd util pipeline.
 #
-# Step 0: make changes on your branch to non-documentation files in
-#         tdrs-backend and push changes to your remote branch
+# Step 0: merge to develop or master
 #
 # Step 1: Makes a request to the V2 CircleCI API to initiate the project,
-#         which will filter based upon build_and_test_backend
+#         which will filter based upon terraform: true flag 
 #         to run the workflow/jobs listed here:
 #           build-and-test:[
-#             test-backend,
-#             test-e2e
+#             enable-versioning-for-s3-buckets
 #           ]
 #
 #         Leverages the open source GitHub Action:
 #           https://github.com/promiseofcake/circleci-trigger-action
 ###########################################################################
-name: Build Only Backend When tdrs-backend/ Files Change
-branches-ignore:
- - develop
+name: Run The Utility Make ERD Pipeline
 on:
   push:
-    paths: 'tdrs-backend/**'
-    paths_ignore:
-      - '**.md'
-      - '**.txt'
-jobs:
-  build_and_test_backend:
+    branches:
+      - develop
+      - master
+    jobs:
+  make_erd:
     runs-on: ubuntu-latest
-    name: Build and Test Backend
+    name: Make ERD
     steps:
     - uses: actions/checkout@v2
     - name: Circle CI Deployment Trigger
@@ -39,4 +33,4 @@ jobs:
         user-token: ${{ secrets.CIRCLE_CI_V2_TOKEN }}
         project-slug: raft-tech/TANF-app
         branch: ${{ github.ref }}
-        payload: '{"build_and_test_backend": true}'
+        payload: '{"util_make_erd": true}'

@@ -1,35 +1,34 @@
 ###########################################################################
 # GitHub Action Workflow
-# On push to any branch, triggers the back end build and test pipeline
-# if the tdrs-backend has changed.
+# On push changing terraform files or infrastructure pipelines, triggers the 
+# terraform deploy pipeline for the appropriate cf space.
 #
-# Step 0: make changes on your branch to non-documentation files in
-#         tdrs-backend and push changes to your remote branch
+# Step 0: make changes to non-documentation files in terraform/ or
+#         .circleci/infrastructure/ and push/merge changes.
 #
 # Step 1: Makes a request to the V2 CircleCI API to initiate the project,
-#         which will filter based upon build_and_test_backend
+#         which will filter based upon terraform: true flag 
 #         to run the workflow/jobs listed here:
 #           build-and-test:[
-#             test-backend,
-#             test-e2e
+#             enable-versioning-for-s3-buckets
 #           ]
 #
 #         Leverages the open source GitHub Action:
 #           https://github.com/promiseofcake/circleci-trigger-action
 ###########################################################################
-name: Build Only Backend When tdrs-backend/ Files Change
-branches-ignore:
- - develop
+name: Run Infrastructure Pipeline When Terraform or Infrastructure Files Change
 on:
   push:
-    paths: 'tdrs-backend/**'
+    paths:
+      - 'terraform/**'
+      - '.circleci/infrastructure/**'
     paths_ignore:
       - '**.md'
       - '**.txt'
-jobs:
-  build_and_test_backend:
+    jobs:
+  deploy_infrastructure:
     runs-on: ubuntu-latest
-    name: Build and Test Backend
+    name: Deploy Infrastructure
     steps:
     - uses: actions/checkout@v2
     - name: Circle CI Deployment Trigger
@@ -39,4 +38,4 @@ jobs:
         user-token: ${{ secrets.CIRCLE_CI_V2_TOKEN }}
         project-slug: raft-tech/TANF-app
         branch: ${{ github.ref }}
-        payload: '{"build_and_test_backend": true}'
+        payload: '{"deploy_infrastructure": true}'

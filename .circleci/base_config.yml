@@ -27,6 +27,9 @@ parameters:
   build_and_test_frontend:
     type: boolean
     default: false
+  deploy_infrastructure:
+    type: boolean
+    default: false
   develop_branch_deploy:
     type: boolean
     default: false
@@ -42,3 +45,6 @@ parameters:
   target_env:
     type: string
     default: ''
+  util_make_erd:
+    type: boolean
+    default: false
