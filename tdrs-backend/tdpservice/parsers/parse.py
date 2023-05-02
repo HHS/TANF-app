@@ -84,6 +84,7 @@ def parse_datafile_lines(datafile, program_type, section):
     """Parse lines with appropriate schema and return errors."""
     errors = {}
     rawfile = datafile.file
+
     rawfile.seek(0)
     line_number = 0
     schema_options = get_schema_options(program_type)
@@ -124,7 +125,7 @@ def parse_datafile_lines(datafile, program_type, section):
     return errors
 
 
-def parse_multi_record_line(line, schema, generate_error):
+def parse_multi_record_line(line, schema):
     """Parse and validate a datafile line using MultiRecordRowSchema."""
     if schema:
         records = schema.parse_and_validate(line, generate_error)
