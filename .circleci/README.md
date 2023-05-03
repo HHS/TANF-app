@@ -14,10 +14,10 @@ This script will generate a complete config for building, testing, and deploying
 ### Directory structure
 
 #### build-and-test
-Contains workflows, jobs, and commands for building and testing the application.
+Contains workflows, jobs, and commands for building and testing the application. These are now triggered by GitHub Actions that serve as a filter so only the code that's changed is tested. See [build-all](../.github/workflows/build-all.yml), [build-backend](../.github/workflows/build-backend.yml), and [build-frontend](../.github/workflows/build-frontend.yml)
 
 #### infrastructure
-Contains workflows, jobs, and commands for setting up the infrastructure on Cloud gov.
+Contains workflows, jobs, and commands for setting up the infrastructure on Cloud gov. This is now triggered by GitHub Actions that serve as a filter so only runs when infrastructure code is changed. See [deploy-infrastructure](../.github/workflows/deploy-infrastructure.yml)
 
 #### deployment
 Contains workflows, jobs, and commands for deploying the application on Cloud gov.
