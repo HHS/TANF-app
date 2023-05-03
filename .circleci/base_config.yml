@@ -21,7 +21,7 @@ executors:
     resource_class: large
 
 parameters:
-  backend_only:
+  build_and_test_all:
     type: boolean
     default: false
   build_and_test_backend:
@@ -34,9 +34,6 @@ parameters:
     type: boolean
     default: false
   develop_branch_deploy:
-    type: boolean
-    default: false
-  frontend_only:
     type: boolean
     default: false
   run_dev_deployment:

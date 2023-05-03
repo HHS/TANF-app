@@ -1,9 +1,6 @@
 # workflows:
   build-and-test-all:
-    when:
-      and: 
-        - << pipeline.parameters.build_and_test_backend >>
-        - << pipeline.parameters.build_and_test_frontend >>
+    when: << pipeline.parameters.build_and_test_all >>
     jobs:
       - secrets-check
       - test-backend:
@@ -17,10 +14,7 @@
             - secrets-check
 
   build-and-test-backend:
-    when:
-      and: 
-        - << pipeline.parameters.build_and_test_backend >>
-        - << pipeline.parameters.backend_only >>
+    when: << pipeline.parameters.build_and_test_backend >>
     jobs:
       - secrets-check
       - test-backend:
@@ -31,10 +25,7 @@
             - secrets-check
 
   build-and-test-frontend:
-    when:
-      and: 
-        - << pipeline.parameters.build_and_test_frontend >>
-        - << pipeline.parameters.frontend_only >>
+    when: << pipeline.parameters.build_and_test_frontend >>
     jobs:
       - secrets-check
       - test-frontend:
