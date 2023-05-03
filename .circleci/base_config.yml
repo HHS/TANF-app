@@ -21,6 +21,9 @@ executors:
     resource_class: large
 
 parameters:
+  backend_only:
+    type: boolean
+    default: false
   build_and_test_backend:
     type: boolean
     default: false

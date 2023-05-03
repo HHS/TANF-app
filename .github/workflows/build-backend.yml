@@ -41,4 +41,4 @@ jobs:
         user-token: ${{ secrets.CIRCLE_CI_V2_TOKEN }}
         project-slug: raft-tech/TANF-app
         branch: ${{ github.ref }}
-        payload: '{"build_and_test_backend": true}'
+        payload: '{"build_and_test_backend": true, "backend_only": true}'
