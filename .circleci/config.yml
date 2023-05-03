@@ -28,6 +28,9 @@ parameters:
   develop_branch_deploy:
     type: boolean
     default: false
+  frontend_only:
+    type: boolean
+    default: false
   run_dev_deployment:
     type: boolean
     default: false

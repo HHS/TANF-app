@@ -34,7 +34,7 @@
     when:
       and: 
         - << pipeline.parameters.build_and_test_frontend >>
-        - not: << pipeline.parameters.build_and_test_backend >>
+        - << pipeline.parameters.frontend_only >>
     jobs:
       - secrets-check
       - test-frontend:
