@@ -76,5 +76,3 @@ resource "cloudfoundry_service_instance" "datafiles" {
   service_plan     = data.cloudfoundry_service.s3.service_plans["basic-sandbox"]
   recursive_delete = true
 }
-
-# DELETE THIS LINE
