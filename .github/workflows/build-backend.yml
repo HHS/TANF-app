@@ -18,16 +18,16 @@
 #           https://github.com/promiseofcake/circleci-trigger-action
 ###########################################################################
 name: Build Only Backend When tdrs-backend/ Files Change
-branches-ignore:
-  - develop
-  - main
-  - master
 on:
   push:
     paths: 'tdrs-backend/**'
     paths_ignore:
       - '**.md'
       - '**.txt'
+    branches-ignore:
+      - develop
+      - main
+      - master
 jobs:
   build_and_test_backend:
     runs-on: ubuntu-latest
