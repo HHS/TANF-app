@@ -45,3 +45,6 @@ ReactDOM.render(
 if (window.Cypress) {
   window.store = store
 }
+
+
+// delete this line
