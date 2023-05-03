@@ -34,4 +34,4 @@ CMD ["./gunicorn_start.sh"]
 # docker ps -a # to get the container id
 # docker commit <container id> debug/<new image name>
 # docker run -it --rm --entrypoint /bin/bash debug/<new image name>
-# delete this line
+# delete this
