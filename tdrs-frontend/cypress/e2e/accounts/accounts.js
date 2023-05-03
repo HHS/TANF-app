@@ -19,9 +19,13 @@ When('{string} is in begin state', (username) => {
       last_name: '',
       email: username,
       stt: '',
+      region: '',
       account_approval_status: 'Initial',
+      access_requested_date_0: '0001-01-01',
+      access_requested_date_1: '00:00:00',
       _save: 'Save',
     }
+
 
     cy.adminApiRequest(
       'POST',
