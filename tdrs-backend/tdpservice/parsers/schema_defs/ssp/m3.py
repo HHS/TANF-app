@@ -73,8 +73,6 @@ second_part_schema = RowSchema(
               required=True, validators=[]),
         Field(name='CASE_NUMBER', type='string', startIndex=8, endIndex=19,
               required=True, validators=[]),
-        # Field(name='FIPS_CODE', type='string', startIndex=8, endIndex=19, required=True, validators=[
-        # ]),
         Field(name='FAMILY_AFFILIATION', type='number', startIndex=60, endIndex=61,
               required=True, validators=[]),
         Field(name='DATE_OF_BIRTH', type='string', startIndex=61, endIndex=69,
