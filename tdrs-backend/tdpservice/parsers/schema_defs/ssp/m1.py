@@ -89,8 +89,8 @@ m1 = RowSchema(
               required=True, validators=[]),
         Field(name='OTHER_TOTAL_REDUCTIONS', type='number', startIndex=105, endIndex=109,
               required=True, validators=[]),
-        Field(name='FAMILY_CAP', type='number', startIndex=109, endIndex=110, required=True, validators=[
-        ]),
+        Field(name='FAMILY_CAP', type='number', startIndex=109, endIndex=110,
+              required=True, validators=[]),
         Field(name='REDUCTIONS_ON_RECEIPTS', type='number', startIndex=110, endIndex=111,
               required=True, validators=[]),
         Field(name='OTHER_NON_SANCTION', type='number', startIndex=111, endIndex=112,
