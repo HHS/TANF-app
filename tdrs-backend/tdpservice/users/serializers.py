@@ -55,10 +55,11 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "access_request",
             "account_approval_status",
-            # Added fields
             'groups',
             'is_superuser',
             'is_staff',
+            'stt',
+            'region',
             'login_gov_uuid',
             'hhs_id',
             'last_login',
