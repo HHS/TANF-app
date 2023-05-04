@@ -89,13 +89,13 @@ def parse_datafile_lines(datafile, program_type, section):
         if isinstance(schema, util.MultiRecordRowSchema):
             records = parse_multi_record_line(line, schema)
 
-            n = 0
+            record_number = 0
             for r in records:
-                n += 1
+                record_number += 1
                 record, record_is_valid, record_errors = r
                 if not record_is_valid:
                     line_errors = errors.get(line_number, {})
-                    line_errors[n] = record_errors
+                    line_errors[record_number] = record_errors
                     errors[line_number] = line_errors
         else:
             record_is_valid, record_errors = parse_datafile_line(line, schema)
