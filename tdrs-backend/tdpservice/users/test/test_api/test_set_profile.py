@@ -38,7 +38,8 @@ def test_set_profile_data(api_client, user):
         "last_login": response.data["last_login"],
         "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
-        "account_approval_status": "Initial"
+        'access_requested_date': '1-01-01T00:00:00+0000',
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Joe"
@@ -87,7 +88,8 @@ def test_set_profile_data_last_name_apostrophe(api_client, user):
         "last_login": response.data["last_login"],
         "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
-        "account_approval_status": "Initial"
+        'access_requested_date': '1-01-01T00:00:00+0000',
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Mike"
@@ -120,7 +122,8 @@ def test_set_profile_data_first_name_apostrophe(api_client, user):
         "last_login": response.data["last_login"],
         "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
-        "account_approval_status": "Initial"
+        'access_requested_date': '1-01-01T00:00:00+0000',
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Pat'Jack"
@@ -183,7 +186,8 @@ def test_set_profile_data_special_last_name(api_client, user):
         "last_login": response.data["last_login"],
         "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
-        "account_approval_status": "Initial"
+        'access_requested_date': '1-01-01T00:00:00+0000',
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "John"
@@ -216,7 +220,8 @@ def test_set_profile_data_special_first_name(api_client, user):
         "last_login": response.data["last_login"],
         "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
-        "account_approval_status": "Initial"
+        'access_requested_date': '1-01-01T00:00:00+0000',
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "John-Tom'"
@@ -249,7 +254,8 @@ def test_set_profile_data_spaced_last_name(api_client, user):
         "last_login": response.data["last_login"],
         "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
-        "account_approval_status": "Initial"
+        'access_requested_date': '1-01-01T00:00:00+0000',
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Joan"
@@ -282,7 +288,8 @@ def test_set_profile_data_spaced_first_name(api_client, user):
         "last_login": response.data["last_login"],
         "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
-        "account_approval_status": "Initial"
+        'access_requested_date': '1-01-01T00:00:00+0000',
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "John Jim"
@@ -315,7 +322,8 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, user):
         "last_login": response.data["last_login"],
         "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
-        "account_approval_status": "Initial"
+        'access_requested_date': '1-01-01T00:00:00+0000',
+        "account_approval_status": 'Initial'
     }
     user.refresh_from_db()
     assert user.first_name == "Max"
@@ -348,7 +356,8 @@ def test_set_profile_data_last_name_with_tilde(api_client, user):
         "last_login": response.data["last_login"],
         "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
-        "account_approval_status": "Initial"
+        'access_requested_date': '1-01-01T00:00:00+0000',
+        "account_approval_status": 'Initial'
     }
 
     user.refresh_from_db()
@@ -389,7 +398,8 @@ def test_set_profile_data_extra_field_include_required(api_client, user):
             "last_login": response.data["last_login"],
             "date_joined": user.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
             "access_request": False,
-            "account_approval_status": "Initial"
+            'access_requested_date': '1-01-01T00:00:00+0000',
+            "account_approval_status": 'Initial'
         }
         user.refresh_from_db()
         assert user.first_name == "Heather"

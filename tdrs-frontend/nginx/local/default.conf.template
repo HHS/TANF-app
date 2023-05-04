@@ -115,7 +115,7 @@ http {
             proxy_pass              http://${BACK_END}:8080;
             proxy_set_header        Host $host;
             #proxy_pass_header content-security-policy;
-            add_header Access-control-Allow-Headers 'x-csrftoken';
+            proxy_pass_header 'X-CSRFToken';
 
             set $CSP "default-src 'self';";
             set $CSP "${CSP}script-src 'self';";
