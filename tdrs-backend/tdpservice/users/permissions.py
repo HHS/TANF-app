@@ -120,7 +120,12 @@ def is_own_stt(user, requested_stt):
     )
 
 
-class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
+class HasRolePermission(permissions.DjangoModelPermissions):
+    def has_permission(self, request, view):
+        return request.user.groups.first() is not None
+
+
+class DjangoModelCRUDPermissions(HasRolePermission):
     """The request is authorized using `django.contrib.auth` permissions.
 
     See: https://docs.djangoproject.com/en/dev/topics/auth/#permissions
@@ -212,7 +217,8 @@ class UserPermissions(DjangoModelCRUDPermissions):
         #       action only. In that case actions dealing with individual
         #       object permissions will need to be passed through this function
         #       by returning True.
-        return True
+
+        return super().has_permission(request, view)
 
     def has_object_permission(self, request, view, obj):
         """
