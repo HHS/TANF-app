@@ -156,7 +156,11 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         Regional Manager will only have permission to files within their region.
         """
         # Checks for existence of `data_files.view_datafile` Permission
-        has_permission = super().has_permission(request, view)
+        is_own_user = True
+        if request.POST:
+            is_own_user = request.POST.get('user', '') == str(request.user.id)
+        has_permission = super().has_permission(request, view) and is_own_user
+        print(has_permission)
 
         # Data Analysts are limited to only data files for their designated STT
         # Regional Staff are limited to only files for their designated Region
