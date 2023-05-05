@@ -60,7 +60,10 @@
                pip install wait-for-it &&
                wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
       - run:
-          name: Set up cypress test users
+          name: Remove existing cypress test users
+          command: cd tdrs-backend; docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com
+      - run:
+          name: Setup cypress test users
           command: cd tdrs-backend; docker-compose exec web python manage.py generate_cypress_users
       - run:
           name: Run Cypress e2e tests
