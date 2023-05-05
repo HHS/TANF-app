@@ -1,4 +1,5 @@
 import React from 'react'
+import axios from 'axios'
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import { fileUploadSections } from '../../reducers/reports'
@@ -6,6 +7,7 @@ import Paginator from '../Paginator'
 import { getAvailableFileList, download } from '../../actions/reports'
 import { useEffect } from 'react'
 import { useState } from 'react'
+import { getParseErrors } from '../../actions/createXLSReport'
 
 const formatDate = (dateStr) => new Date(dateStr).toLocaleString()
 
@@ -13,6 +15,22 @@ const SubmissionHistoryRow = ({ file }) => {
   const dispatch = useDispatch()
 
   const downloadFile = () => dispatch(download(file))
+  const errorFileName = `${file.year}-${file.quarter}-${file.section}`
+
+  const returned_errors = async () => {
+    try {
+      const promise = axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/parsing/parsing_errors/?file=${file.id}`,
+        {
+          responseType: 'json',
+        }
+      )
+      const dataPromise = await promise.then((response) => response.data)
+      getParseErrors(dataPromise, errorFileName)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <tr>
@@ -22,6 +40,15 @@ const SubmissionHistoryRow = ({ file }) => {
         <button className="section-download" onClick={downloadFile}>
           {file.fileName}
         </button>
+      </td>
+      <td>
+        {file.hasError > 0 ? (
+          <button className="section-download" onClick={returned_errors}>
+            {file.year}-{file.quarter}-{file.section}
+          </button>
+        ) : (
+          'Currently Unavailable'
+        )}
       </td>
     </tr>
   )
@@ -51,6 +78,7 @@ const SectionSubmissionHistory = ({ section, label, files }) => {
                 <th>Submitted On</th>
                 <th>Submitted By</th>
                 <th>File Name</th>
+                <th>Error Reports</th>
               </tr>
             </thead>
             <tbody>
