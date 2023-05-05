@@ -95,7 +95,7 @@ m1 = RowSchema(
               required=True, validators=[]),
         Field(item=42, name='WAIVER_EVAL_CONTROL_GRPS', type='number', startIndex=112, endIndex=113,
               required=True, validators=[]),
-        Field(name='BLANK', type='string', startIndex=113, endIndex=150,
+        Field(item=43, name='BLANK', type='string', startIndex=113, endIndex=150,
               required=False, validators=[]),
     ]
 )
