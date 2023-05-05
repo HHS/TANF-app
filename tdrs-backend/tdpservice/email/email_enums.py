@@ -5,6 +5,7 @@ from enum import Enum
 class EmailType(Enum):
     """Email type enum."""
 
+    ACCESS_REQUEST_COUNT = 'access-request-count.html'
     ACCESS_REQUEST_SUBMITTED = 'access-request-submitted.html'
     DATA_SUBMITTED = 'data-submitted.html'
     DATA_SUBMISSION_FAILED = 'data-submitted-failed.html'

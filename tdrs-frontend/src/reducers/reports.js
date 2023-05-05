@@ -65,6 +65,7 @@ export const serializeApiDataFile = (dataFile) => ({
   s3_version_id: dataFile.s3_version_id,
   createdAt: dataFile.created_at,
   submittedBy: dataFile.submitted_by,
+  hasError: dataFile.has_error,
 })
 
 const initialState = {
@@ -129,6 +130,7 @@ const reports = (state = initialState, action) => {
             s3_version_id: null,
             created_at: null,
             submitted_by: null,
+            has_error: null,
           })
         }),
       }
