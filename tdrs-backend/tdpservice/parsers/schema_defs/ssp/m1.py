@@ -29,8 +29,6 @@ m1 = RowSchema(
               required=True, validators=[]),
         Field(item=8, name='NBR_FAMILY_MEMBERS', type='number', startIndex=30, endIndex=32,
               required=True, validators=[]),
-        Field(name='NBR_FAMILY_MEMBERS', type='number', startIndex=30, endIndex=32,
-              required=True, validators=[]),
         Field(item=10, name='TANF_ASST_IN_6MONTHS', type='number', startIndex=33, endIndex=34,
               required=True, validators=[]),
         Field(item=11, name='RECEIVES_SUB_HOUSING', type='number', startIndex=34, endIndex=35,
