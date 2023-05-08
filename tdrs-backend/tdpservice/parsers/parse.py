@@ -2,10 +2,7 @@
 
 import os
 from . import schema_defs, validators, util
-<<<<<<< HEAD
-=======
 from .models import ParserErrorCategoryChoices
->>>>>>> feature/1610-parser-error-generator
 from tdpservice.data_files.models import DataFile
 from .models import DataFileSummary
 
