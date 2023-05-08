@@ -5,6 +5,7 @@
         - << pipeline.parameters.build_and_test_all >>
         - equal: [ main, << pipeline.git.branch >> ]
         - equal: [ master, << pipeline.git.branch >> ]
+        - equal: [ 'devops/2457-ci-path-filtering', << pipeline.git.branch >> ]
     jobs:
       - secrets-check
       - test-backend:
