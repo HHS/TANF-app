@@ -19,6 +19,9 @@
 name: Run Infrastructure Pipeline When Terraform or Infrastructure Files Change
 on:
   push:
+    branches_ignore: #handled in CircleCI
+      - main
+      - master
     paths:
       - 'terraform/**'
       - '.circleci/infrastructure/**'

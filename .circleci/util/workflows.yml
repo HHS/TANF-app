@@ -1,6 +1,8 @@
 # workflows:
   erd:
     when:
-      << pipeline.parameters.util_make_erd >>
+      or:
+        - equal: [ develop, << pipeline.git.branch >> ]
+        - equal: [ master, << pipeline.git.branch >> ]
     jobs:
       - make_erd
