@@ -2,7 +2,7 @@
 
 import pytest
 from tdpservice.parsers import parse
-from tdpservice.parsers.models import DataFileSummary
+from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices
 from .factories import DataFileSummaryFactory, ParserErrorFactory
 from .test_parse import create_test_datafile
 
@@ -22,14 +22,11 @@ def dfs():
 @pytest.mark.django_db
 def test_dfs_model(dfs):
     """Test that the model is created and populated correctly."""
-    dfs = dfs
-
     assert dfs.case_aggregates['Jan']['accepted'] == 100
 
 @pytest.mark.django_db(transaction=True)
 def test_dfs_rejected(test_datafile, dfs):
     """Ensure that an invalid file generates a rejected status."""
-    dfs = dfs
     test_datafile.section = 'Closed Case Data'
     test_datafile.save()
 
@@ -39,7 +36,6 @@ def test_dfs_rejected(test_datafile, dfs):
 @pytest.mark.django_db
 def test_dfs_set_status(dfs):
     """Test that the status is set correctly."""
-    dfs = dfs
     assert dfs.status == DataFileSummary.Status.PENDING
     dfs.set_status(errors={})
     assert dfs.status == DataFileSummary.Status.ACCEPTED
@@ -56,8 +52,7 @@ def test_dfs_set_status(dfs):
 
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
-    print("about to add a category 1 error")
-    parser_errors.append(ParserErrorFactory(row_number=5, category="1"))
+    parser_errors.append(ParserErrorFactory(row_number=5, category=ParserErrorCategoryChoices.PRE_CHECK))
     dfs.set_status(errors={'document': parser_errors})
 
     assert dfs.status == DataFileSummary.Status.REJECTED

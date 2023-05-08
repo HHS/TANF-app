@@ -1,7 +1,7 @@
 """Factories for generating test data for parsers."""
 import factory
 
-from tdpservice.parsers.models import DataFileSummary
+from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.users.test.factories import UserFactory
 from tdpservice.stts.test.factories import STTFactory
@@ -70,7 +70,7 @@ class ParserErrorFactory(factory.django.DjangoModelFactory):
     column_number = 1
     item_number = 1
     field_name = "test field name"
-    category = "1"
+    category = ParserErrorCategoryChoices.PRE_CHECK
     case_number = '1'
     rpt_month_year = 202001
     error_message = "test error message"
