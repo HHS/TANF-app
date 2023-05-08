@@ -1,17 +1,39 @@
 # workflows:
-  build-and-test:
-    unless:
+  build-and-test-all:
+    when:
       or:
-        - << pipeline.parameters.run_dev_deployment >>
-        - << pipeline.parameters.develop_branch_deploy >>
-        - << pipeline.parameters.run_owasp_scan >>
-        - << pipeline.parameters.run_nightly_owasp_scan >>
+        - << pipeline.parameters.build_and_test_all >>
+        - equal: [ main, << pipeline.git.branch >> ]
+        - equal: [ master, << pipeline.git.branch >> ]
+        - equal: [ 'hhs-dev-devops', << pipeline.git.branch >> ]
     jobs:
       - secrets-check
+      - test-backend:
+          requires:
+            - secrets-check      
       - test-frontend:
           requires:
             - secrets-check
+      - test-e2e:
+          requires:
+            - secrets-check
+
+  build-and-test-backend:
+    when: << pipeline.parameters.build_and_test_backend >>
+    jobs:
+      - secrets-check
       - test-backend:
+          requires:
+            - secrets-check
+      - test-e2e:
+          requires:
+            - secrets-check
+
+  build-and-test-frontend:
+    when: << pipeline.parameters.build_and_test_frontend >>
+    jobs:
+      - secrets-check
+      - test-frontend:
           requires:
             - secrets-check
       - test-e2e:

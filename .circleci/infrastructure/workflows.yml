@@ -1,7 +1,10 @@
 #workflows:
-
   enable-versioning-for-s3-buckets:
-    unless: << pipeline.parameters.run_nightly_owasp_scan >>
+    when: 
+      or:
+        - << pipeline.parameters.deploy_infrastructure >>
+        - equal: [ main, << pipeline.git.branch >> ]
+        - equal: [ master, << pipeline.git.branch >> ]
     jobs:
       - enable-versioning:
           filters:

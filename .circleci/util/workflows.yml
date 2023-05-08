@@ -1,9 +1,8 @@
 # workflows:
   erd:
-    unless: << pipeline.parameters.run_nightly_owasp_scan >>
+    when:
+      or:
+        - equal: [ develop, << pipeline.git.branch >> ]
+        - equal: [ master, << pipeline.git.branch >> ]
     jobs:
-      - make_erd:
-          filters:
-            branches:
-              only:
-                develop
+      - make_erd
