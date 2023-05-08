@@ -131,7 +131,9 @@ class DataFileSummary(models.Model):
 def check_for_preparsing(errors):
     """Check for pre-parsing errors."""
     for key in errors.keys():  # keys are 'header', 'trailer', 'document'
+
         for error in errors[key]:
-            if error.category == ParserErrorCategoryChoices.PRE_CHECK:
+            if (error.category == ParserErrorCategoryChoices.PRE_CHECK) and \
+               (key != 'trailer'):
                 return True
     return False
