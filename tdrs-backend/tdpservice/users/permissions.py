@@ -121,7 +121,9 @@ def is_own_stt(user, requested_stt):
 
 
 class HasRolePermission(permissions.DjangoModelPermissions):
+    """Generic permission class ensuring a user has been assigned a group"""
     def has_permission(self, request, view):
+        """Return True if the user has been assigned a group."""
         return request.user.groups.first() is not None
 
 
