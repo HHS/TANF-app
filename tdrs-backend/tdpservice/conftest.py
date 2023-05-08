@@ -44,6 +44,12 @@ def user():
 
 
 @pytest.fixture
+def user_with_group():
+    """Return a basic, non-admin user."""
+    return UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
+
+
+@pytest.fixture
 def regional_user(region, stt):
     """Return a regional staff user."""
     user = STTUserFactory.create(
@@ -81,6 +87,12 @@ def user_in_other_region(other_stt, other_region):
 def stt_user():
     """Return a user without an STT for STT tests."""
     return STTUserFactory.create()
+
+
+@pytest.fixture
+def stt_user_with_group():
+    """Return a user without an STT but with a group for STT tests."""
+    return STTUserFactory.create(groups=(Group.objects.get(name="Data Analyst"),))
 
 
 @pytest.fixture

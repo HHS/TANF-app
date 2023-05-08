@@ -128,7 +128,7 @@ class HasRolePermission(permissions.DjangoModelPermissions):
         return request.user.groups.first() is not None
 
 
-class DjangoModelCRUDPermissions(HasRolePermission):
+class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
     """The request is authorized using `django.contrib.auth` permissions.
 
     See: https://docs.djangoproject.com/en/dev/topics/auth/#permissions
@@ -159,11 +159,7 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         Regional Manager will only have permission to files within their region.
         """
         # Checks for existence of `data_files.view_datafile` Permission
-        is_own_user = True
-        if request.POST:
-            is_own_user = request.POST.get('user', '') == str(request.user.id)
-        has_permission = super().has_permission(request, view) and is_own_user
-        print(has_permission)
+        has_permission = super().has_permission(request, view)
 
         # Data Analysts are limited to only data files for their designated STT
         # Regional Staff are limited to only files for their designated Region
@@ -225,7 +221,7 @@ class UserPermissions(DjangoModelCRUDPermissions):
         #       object permissions will need to be passed through this function
         #       by returning True.
 
-        return super().has_permission(request, view)
+        return True
 
     def has_object_permission(self, request, view, obj):
         """

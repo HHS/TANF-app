@@ -99,8 +99,10 @@ class TestDataFileAPIAsOfaAdmin(DataFileAPITestBase):
     """Test DataFileViewSet as an OFA Admin user."""
 
     @pytest.fixture
-    def user(self, ofa_admin):
+    def user(self, ofa_admin, stt):
         """Override the default user with ofa_admin for our tests."""
+        # ofa_admin.stt = stt
+        # ofa_admin.save()
         return ofa_admin
 
     def test_get_data_file_file_meta_data(self, api_client, data_file_data, user):

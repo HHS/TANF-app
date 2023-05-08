@@ -201,7 +201,7 @@ class TestUserAPIDataAnalystUser(UserAPITestsBase):
     def test_get_roles(self, api_client):
         """Get roles, expect 200."""
         response = self.get_roles(api_client)
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
 class TestUserAPIAdminUser(UserAPITestsBase):
     """Test class to test API endpoints with an admin user."""

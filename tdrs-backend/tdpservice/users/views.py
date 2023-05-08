@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 
 from tdpservice.users.models import User, AccountApprovalStatusChoices
-from tdpservice.users.permissions import DjangoModelCRUDPermissions, UserPermissions
+from tdpservice.users.permissions import DjangoModelCRUDPermissions, HasRolePermission, UserPermissions
 from tdpservice.users.serializers import (
     GroupSerializer,
     UserProfileSerializer,
@@ -31,7 +31,7 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
-    permission_classes = [IsAuthenticated, UserPermissions]
+    permission_classes = [IsAuthenticated, UserPermissions, HasRolePermission]
     queryset = User.objects\
         .select_related("stt")\
         .select_related("region")\
@@ -93,5 +93,5 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     pagination_class = None
     queryset = Group.objects.all()
-    permission_classes = [DjangoModelCRUDPermissions]
+    permission_classes = [DjangoModelCRUDPermissions, HasRolePermission]
     serializer_class = GroupSerializer
