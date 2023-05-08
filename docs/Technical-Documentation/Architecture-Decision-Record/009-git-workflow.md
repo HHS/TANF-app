@@ -52,7 +52,7 @@ The proposed workflow below provides a remedy to these issues, as well as many o
 5. Assigned Raft reviewer(s) perform the review and/or requests changes.
     * For project management, research, and design work, review is conducted async.
     * For development work, author is expected to schedule a kick-off meeting using "Driver-Navigator" methodology to overview and exercise with the code.
-    * After the kick-off meeting, please schedule a [tabletop meeting](https://github.com/raft-tech/TANF-app/docs/How-We-Work/Developer-Tabletops.md) at least 48 hours after `raft review` label added. 
+    * After the kick-off meeting, please schedule a [tabletop meeting](https://github.com/raft-tech/TANF-app/blob/develop/docs/How-We-Work/Developer-Tabletops.md) at least 48 hours after `raft review` label added. 
     * When changes are requested, the changes are made only by the author.
     * When satisfied, the reviewer(s) confirm that ACs are met,  `approve` the PR, remove `raft review` and add `QASP review` labels.
         * See exceptions in [Notes](https://github.com/raft-tech/TANF-app/blob/dffd79adf7a5ae87cf1a93c8adf655c76cf45089/docs/Architecture%20Decision%20Record/009-git-workflow.md#notes) section
@@ -68,12 +68,9 @@ The proposed workflow below provides a remedy to these issues, as well as many o
 
 7. `andrew-jameson` (or his back-up) merges changes into `develop`. This includes:
     * This will trigger a deployment to tanf-staging:develop 
-    * opening a PR from `develop` to `HHS:main`
     * updating the PR template to change `addresses` to `closes` so that issue [can be automatically closed when the Government merges](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
     * ensuring the CI/CD pipelines are green
-    * assigning `lfrohlich` or `adpennington`as Government as reviewers. They will approve and merge to `HHS:main` which will trigger the CI/CD process to deploy code to the staging environment. 
-   
-8. `adpennington` (or her back-up) will open a PR from `HHS:main` to `HHS:master` and assign a government reviewer for PR approval. Merging this PR will trigger the CI/CD process to deploy code to the production environment. 
+
 
 ## Consequences
 

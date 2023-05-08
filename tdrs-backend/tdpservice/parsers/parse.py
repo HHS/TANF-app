@@ -2,6 +2,10 @@
 
 import os
 from . import schema_defs, validators, util
+<<<<<<< HEAD
+=======
+from .models import ParserErrorCategoryChoices
+>>>>>>> feature/1610-parser-error-generator
 from tdpservice.data_files.models import DataFile
 from .models import DataFileSummary
 
@@ -83,6 +87,7 @@ def parse_datafile_lines(datafile, program_type, section):
     """Parse lines with appropriate schema and return errors."""
     errors = {}
     rawfile = datafile.file
+
     rawfile.seek(0)
     line_number = 0
     schema_options = get_schema_options(program_type)
@@ -103,13 +108,13 @@ def parse_datafile_lines(datafile, program_type, section):
                 util.make_generate_parser_error(datafile, line_number)
             )
 
-            n = 0
+            record_number = 0
             for r in records:
-                n += 1
+                record_number += 1
                 record, record_is_valid, record_errors = r
                 if not record_is_valid:
                     line_errors = errors.get(line_number, {})
-                    line_errors[n] = record_errors
+                    line_errors[record_number] = record_errors
                     errors[line_number] = line_errors
         else:
             record_is_valid, record_errors = parse_datafile_line(
@@ -144,7 +149,7 @@ def parse_multi_record_line(line, schema, generate_error):
     return [(None, False, [
         generate_error(
             schema=None,
-            error_category="1",
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
             error_message="No schema selected.",
             record=None,
             field=None
@@ -165,7 +170,7 @@ def parse_datafile_line(line, schema, generate_error):
     return (False, [
         generate_error(
             schema=None,
-            error_category="1",
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
             error_message="No schema selected.",
             record=None,
             field=None
