@@ -56,17 +56,12 @@ class UserViewSet(
         return queryset
 
     def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
+        """Determine the permissions to apply based on action."""
         if self.action in ['list', 'retrieve', 'set_profile']:
             permission_classes = [IsAuthenticated, HasRolePermission, UserPermissions]
         else:
             permission_classes = [IsAuthenticated, UserPermissions]
         return [permission() for permission in permission_classes]
-
-    def list(self, request):
-        return super().list(request)
 
     def retrieve(self, request, pk=None):
         """Return a specific user."""
