@@ -2,6 +2,7 @@
 
 import logging
 
+from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 from django.conf import settings
@@ -33,6 +34,7 @@ def get_or_create_superuser(username):
         logger.debug(f'found {username}')
     except User.DoesNotExist:
         super_user = User.objects.create_superuser(username=username, email=username)
+        super_user.groups.add(Group.objects.get(name="OFA System Admin"))
         logger.debug(f'created super user {username}')
 
     return super_user

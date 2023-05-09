@@ -31,7 +31,6 @@ class UserViewSet(
 ):
     """User accounts viewset."""
 
-    permission_classes = [IsAuthenticated, UserPermissions, HasRolePermission]
     queryset = User.objects\
         .select_related("stt")\
         .select_related("region")\
@@ -54,8 +53,20 @@ class UserViewSet(
             queryset = self.queryset
         else:
             queryset = self.queryset.filter(id=self.request.user.id)
-        print(queryset)
         return queryset
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action in ['list', 'retrieve', 'set_profile']:
+            permission_classes = [IsAuthenticated, HasRolePermission, UserPermissions]
+        else:
+            permission_classes = [IsAuthenticated, UserPermissions]
+        return [permission() for permission in permission_classes]
+
+    def list(self, request):
+        return super().list(request)
 
     def retrieve(self, request, pk=None):
         """Return a specific user."""

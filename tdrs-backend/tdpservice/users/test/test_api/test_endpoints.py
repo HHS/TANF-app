@@ -120,24 +120,30 @@ class TestUserAPIAuthenticatedUserNoRole(UserAPITestsBase):
         return api_client
 
     def test_list_users(self, api_client):
-        """List users, expect 403 with un-authenticated user."""
+        """List users, expect 403 since user has no role."""
         response = self.list_users(api_client)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_user(self, api_client, user):
-        """Get a specific user, expect 403 with un-authenticated user."""
+        """Get a specific user, expect 403 since user has no role."""
         response = self.get_user(api_client, user.id)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_set_profile(self, api_client, profile_data):
-        """Patch user profile data, expect 403 with un-authenticated user."""
+        """Patch user profile data, expect 403 since user has no role."""
         response = self.set_profile(api_client, profile_data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_request_access(self, api_client, profile_data):
-        """Request access, expect 403 with un-authenticated user."""
+    def test_request_access(self, api_client, user, stt, profile_data):
+        """Request access, expect 200 with profile updated appropriately."""
+        profile_data['stt'] = stt.id
+        profile_data['access_request'] = True
         response = self.request_access(api_client, profile_data)
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['id'] == user.id
+        assert response.data['first_name'] == "Test"
+        assert response.data['last_name'] == "Test"
+        assert response.data['access_request']
 
     def test_get_roles(self, api_client):
         """Get roles, expect 403 with un-authenticated user."""
