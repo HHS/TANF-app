@@ -5,7 +5,7 @@ from . import models
 
 # Register your models here.
 class ParserErrorAdmin(admin.ModelAdmin):
-    """ModelAdmin class for parsed M1 data files."""
+    """ModelAdmin class for ParserError objects generated in parsing."""
 
     list_display = [
         'row_number',
