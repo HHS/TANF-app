@@ -2,6 +2,7 @@
 import logging
 from rest_framework import serializers
 
+from tdpservice.parsers.models import ParserError
 from tdpservice.data_files.errors import ImmutabilityError
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.validators import (
@@ -20,6 +21,7 @@ class DataFileSerializer(serializers.ModelSerializer):
     stt = serializers.PrimaryKeyRelatedField(queryset=STT.objects.all())
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     ssp = serializers.BooleanField(write_only=True)
+    has_error = serializers.SerializerMethodField()
 
     class Meta:
         """Metadata."""
@@ -45,6 +47,11 @@ class DataFileSerializer(serializers.ModelSerializer):
         ]
 
         read_only_fields = ("version",)
+
+    def get_has_error(self, obj):
+        """Return whether the file has an error."""
+        parser_errors = ParserError.objects.filter(file=obj.id)
+        return len(parser_errors) > 0
 
     def create(self, validated_data):
         """Create a new entry with a new version number."""

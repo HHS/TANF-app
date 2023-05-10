@@ -1,14 +1,6 @@
 import React from 'react'
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  within,
-} from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { Provider } from 'react-redux'
-import thunk from 'redux-thunk'
-import configureStore from 'redux-mock-store'
 import appConfigureStore from '../../configureStore'
 import SubmissionHistory from './SubmissionHistory'
 
@@ -248,6 +240,9 @@ describe('SubmissionHistory', () => {
     expect(screen.queryByText('test4.txt')).not.toBeInTheDocument()
     expect(screen.queryByText('test5.txt')).not.toBeInTheDocument()
     expect(screen.queryByText('test6.txt')).toBeInTheDocument()
+
+    expect(screen.queryByText('Error Reports')).toBeInTheDocument()
+    expect(screen.queryByText('Currently Unavailable')).toBeInTheDocument()
   })
 
   it('Shows SSP results when SSP-MOE file type selected', () => {
