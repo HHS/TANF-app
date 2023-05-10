@@ -44,6 +44,7 @@ class DataFileSerializer(serializers.ModelSerializer):
             'version',
             's3_location',
             's3_versioning_id',
+            'has_error',
         ]
 
         read_only_fields = ("version",)
