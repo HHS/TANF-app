@@ -26,10 +26,10 @@ def test_retrieve_user_as_ofa_admin(api_client, ofa_admin, user):
 
 
 @pytest.mark.django_db
-def test_can_update_own_user(api_client, user_with_group):
+def test_can_update_own_user(api_client, stt_data_analyst):
     """Test a user can update their own user."""
-    api_client.login(username=user_with_group.username, password="test_password")
-    response = api_client.patch(f"/v1/users/{user_with_group.pk}/", {"first_name": "Jane"})
+    api_client.login(username=stt_data_analyst.username, password="test_password")
+    response = api_client.patch(f"/v1/users/{stt_data_analyst.pk}/", {"first_name": "Jane"})
     assert response.status_code == status.HTTP_200_OK
     assert response.data["first_name"] == "Jane"
     assert User.objects.filter(first_name="Jane").exists()

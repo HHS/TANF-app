@@ -44,8 +44,8 @@ def user():
 
 
 @pytest.fixture
-def user_with_group():
-    """Return a basic, non-admin user."""
+def stt_data_analyst():
+    """Return a basic, data analyst stt user."""
     return UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
 
 
