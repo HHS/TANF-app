@@ -46,7 +46,7 @@ def user():
 
 @pytest.fixture
 def stt_data_analyst():
-    """Return a basic, data analyst stt user."""
+    """Return a basic, approved, data analyst stt user."""
     user = UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
     user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
@@ -55,9 +55,7 @@ def stt_data_analyst():
 @pytest.fixture
 def stt_data_analyst_initial():
     """Return a basic, data analyst stt user."""
-    user = UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
-    return user
-
+    return UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
 
 @pytest.fixture
 def regional_user(region, stt):

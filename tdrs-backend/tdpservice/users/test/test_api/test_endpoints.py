@@ -250,7 +250,6 @@ class TestUserAPIAdminUser(UserAPITestsBase):
         """Patch user profile data, expect 200 with profile updated appropriately."""
         profile_data['stt'] = user.stt.id
         response = self.set_profile(api_client, profile_data)
-        print(f'\n\n{response.data}\n\n')
         assert response.status_code == status.HTTP_200_OK
         assert response.data['id'] == user.id
         assert response.data['first_name'] == "Test"
@@ -261,7 +260,6 @@ class TestUserAPIAdminUser(UserAPITestsBase):
         profile_data['stt'] = user.stt.id
         profile_data['access_request'] = True
         response = self.request_access(api_client, profile_data)
-        print(f'\n\n{response.data}\n\n')
         assert response.status_code == status.HTTP_200_OK
         assert response.data['id'] == user.id
         assert response.data['first_name'] == "Test"

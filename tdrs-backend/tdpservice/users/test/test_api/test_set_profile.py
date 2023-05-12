@@ -49,7 +49,7 @@ def test_set_profile_data(api_client, stt_data_analyst):
 
 @pytest.mark.django_db
 def test_cannot_set_account_approval_status_through_api(api_client, stt_data_analyst_initial):
-    """Test that the `account_approval_status` field cannot be updated through an api call to `set_profile`."""
+    """Test that you cannot 'set_profile' without a group and an approval."""
     api_client.login(username=stt_data_analyst_initial.username, password="test_password")
     response = api_client.patch(
         "/v1/users/set_profile/",
@@ -60,8 +60,7 @@ def test_cannot_set_account_approval_status_through_api(api_client, stt_data_ana
         },
         impformat="json"
     )
-    assert response.data['account_approval_status'] == "Initial"  # value doesn't update
-    assert response.status_code == status.HTTP_200_OK  # even though the request succeeds
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 @pytest.mark.django_db
 def test_set_profile_data_last_name_apostrophe(api_client, stt_data_analyst):
