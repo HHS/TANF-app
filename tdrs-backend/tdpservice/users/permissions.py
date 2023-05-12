@@ -1,5 +1,6 @@
 """Set permissions for users."""
 from tdpservice.stts.models import STT
+from tdpservice.users.models import AccountApprovalStatusChoices
 from rest_framework import permissions
 from django.db.models import Q, QuerySet
 from django.contrib.auth.management import create_permissions
@@ -120,12 +121,14 @@ def is_own_stt(user, requested_stt):
     )
 
 
-class HasRolePermission(permissions.DjangoModelPermissions):
-    """Generic permission class ensuring a user has been assigned a group."""
+class IsApprovedPermission(permissions.DjangoModelPermissions):
+    """Generic permission class ensuring a user has been assigned a group and is approved."""
 
     def has_permission(self, request, view):
-        """Return True if the user has been assigned a group."""
-        return request.user.groups.first() is not None
+        """Return True if the user has been assigned a group and is approved."""
+        print(f"\n\nINSIDE HAS PERMISSION {request.user.account_approval_status}\n\n")
+        return (request.user.groups.first() is not None and
+        request.user.account_approval_status == AccountApprovalStatusChoices.APPROVED)
 
 
 class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):

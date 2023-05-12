@@ -7,6 +7,8 @@ from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 from django.conf import settings
 
+from tdpservice.users.models import AccountApprovalStatusChoices
+
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
@@ -35,6 +37,8 @@ def get_or_create_superuser(username):
     except User.DoesNotExist:
         super_user = User.objects.create_superuser(username=username, email=username)
         super_user.groups.add(Group.objects.get(name="OFA System Admin"))
+        super_user.account_approval_status = AccountApprovalStatusChoices.APPROVED
+        super_user.save()
         logger.debug(f'created super user {username}')
 
     return super_user

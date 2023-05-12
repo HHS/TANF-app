@@ -1,5 +1,5 @@
 """Views for the parsers app."""
-from tdpservice.users.permissions import HasRolePermission
+from tdpservice.users.permissions import IsApprovedPermission
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from .serializers import ParsingErrorSerializer
@@ -17,7 +17,7 @@ class ParsingErrorViewSet(ModelViewSet):
 
     queryset = ParserError.objects.all()
     serializer_class = ParsingErrorSerializer
-    permission_classes = [HasRolePermission]
+    permission_classes = [IsApprovedPermission]
 
     def list(self, request, *args, **kwargs):
         """Override list to return xls file."""

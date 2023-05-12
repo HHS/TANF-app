@@ -6,14 +6,14 @@ from django.contrib.auth.models import Group
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 
 from tdpservice.users.models import User, AccountApprovalStatusChoices
-from tdpservice.users.permissions import DjangoModelCRUDPermissions, HasRolePermission, UserPermissions
+from tdpservice.users.permissions import DjangoModelCRUDPermissions, IsApprovedPermission, UserPermissions
 from tdpservice.users.serializers import (
     GroupSerializer,
     UserProfileSerializer,
@@ -58,7 +58,7 @@ class UserViewSet(
     def get_permissions(self):
         """Determine the permissions to apply based on action."""
         if self.action in ['list', 'retrieve', 'set_profile']:
-            permission_classes = [IsAuthenticated, HasRolePermission, UserPermissions]
+            permission_classes = [IsAuthenticated, IsApprovedPermission, UserPermissions]
         else:
             permission_classes = [IsAuthenticated, UserPermissions]
         return [permission() for permission in permission_classes]
@@ -81,9 +81,11 @@ class UserViewSet(
         )
         return Response(serializer.data)
 
-    @action(methods=["PATCH"], detail=False)
+    @action(methods=["GET", "PATCH"], detail=False)
     def request_access(self, request, pk=None):
         """Update request.user with provided data, set `account_approval_status` to 'Access Request'."""
+        if request.method == "GET":
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         serializer = self.get_serializer(self.request.user, request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(account_approval_status=AccountApprovalStatusChoices.ACCESS_REQUEST,
@@ -99,5 +101,5 @@ class GroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     pagination_class = None
     queryset = Group.objects.all()
-    permission_classes = [DjangoModelCRUDPermissions, HasRolePermission]
+    permission_classes = [DjangoModelCRUDPermissions, IsApprovedPermission]
     serializer_class = GroupSerializer

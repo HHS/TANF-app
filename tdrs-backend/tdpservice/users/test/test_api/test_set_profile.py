@@ -40,7 +40,7 @@ def test_set_profile_data(api_client, stt_data_analyst):
         "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         'access_requested_date': '1-01-01T00:00:00+0000',
-        "account_approval_status": 'Initial'
+        "account_approval_status": 'Approved'
     }
     stt_data_analyst.refresh_from_db()
     assert stt_data_analyst.first_name == "Joe"
@@ -48,9 +48,9 @@ def test_set_profile_data(api_client, stt_data_analyst):
 
 
 @pytest.mark.django_db
-def test_cannot_set_account_approval_status_through_api(api_client, stt_data_analyst):
+def test_cannot_set_account_approval_status_through_api(api_client, stt_data_analyst_initial):
     """Test that the `account_approval_status` field cannot be updated through an api call to `set_profile`."""
-    api_client.login(username=stt_data_analyst.username, password="test_password")
+    api_client.login(username=stt_data_analyst_initial.username, password="test_password")
     response = api_client.patch(
         "/v1/users/set_profile/",
         {
@@ -91,7 +91,7 @@ def test_set_profile_data_last_name_apostrophe(api_client, stt_data_analyst):
         "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         'access_requested_date': '1-01-01T00:00:00+0000',
-        "account_approval_status": 'Initial'
+        "account_approval_status": 'Approved'
     }
     stt_data_analyst.refresh_from_db()
     assert stt_data_analyst.first_name == "Mike"
@@ -126,7 +126,7 @@ def test_set_profile_data_first_name_apostrophe(api_client, stt_data_analyst):
         "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         'access_requested_date': '1-01-01T00:00:00+0000',
-        "account_approval_status": 'Initial'
+        "account_approval_status": 'Approved'
     }
     stt_data_analyst.refresh_from_db()
     assert stt_data_analyst.first_name == "Pat'Jack"
@@ -191,7 +191,7 @@ def test_set_profile_data_special_last_name(api_client, stt_data_analyst):
         "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         'access_requested_date': '1-01-01T00:00:00+0000',
-        "account_approval_status": 'Initial'
+        "account_approval_status": 'Approved'
     }
     stt_data_analyst.refresh_from_db()
     assert stt_data_analyst.first_name == "John"
@@ -226,7 +226,7 @@ def test_set_profile_data_special_first_name(api_client, stt_data_analyst):
         "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         'access_requested_date': '1-01-01T00:00:00+0000',
-        "account_approval_status": 'Initial'
+        "account_approval_status": 'Approved'
     }
     stt_data_analyst.refresh_from_db()
     assert stt_data_analyst.first_name == "John-Tom'"
@@ -261,7 +261,7 @@ def test_set_profile_data_spaced_last_name(api_client, stt_data_analyst):
         "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         'access_requested_date': '1-01-01T00:00:00+0000',
-        "account_approval_status": 'Initial'
+        "account_approval_status": 'Approved'
     }
     stt_data_analyst.refresh_from_db()
     assert stt_data_analyst.first_name == "Joan"
@@ -296,7 +296,7 @@ def test_set_profile_data_spaced_first_name(api_client, stt_data_analyst):
         "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         'access_requested_date': '1-01-01T00:00:00+0000',
-        "account_approval_status": 'Initial'
+        "account_approval_status": 'Approved'
     }
     stt_data_analyst.refresh_from_db()
     assert stt_data_analyst.first_name == "John Jim"
@@ -331,7 +331,7 @@ def test_set_profile_data_last_name_with_tilde_over_char(api_client, stt_data_an
         "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         'access_requested_date': '1-01-01T00:00:00+0000',
-        "account_approval_status": 'Initial'
+        "account_approval_status": 'Approved'
     }
     stt_data_analyst.refresh_from_db()
     assert stt_data_analyst.first_name == "Max"
@@ -366,7 +366,7 @@ def test_set_profile_data_last_name_with_tilde(api_client, stt_data_analyst):
         "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
         "access_request": False,
         'access_requested_date': '1-01-01T00:00:00+0000',
-        "account_approval_status": 'Initial'
+        "account_approval_status": 'Approved'
     }
 
     stt_data_analyst.refresh_from_db()
@@ -409,7 +409,7 @@ def test_set_profile_data_extra_field_include_required(api_client, stt_data_anal
             "date_joined": stt_data_analyst.date_joined.strftime("%Y-%m-%dT%H:%M:%S+0000"),
             "access_request": False,
             'access_requested_date': '1-01-01T00:00:00+0000',
-            "account_approval_status": 'Initial'
+            "account_approval_status": 'Approved'
         }
         stt_data_analyst.refresh_from_db()
         assert stt_data_analyst.first_name == "Heather"

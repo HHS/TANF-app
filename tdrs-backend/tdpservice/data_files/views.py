@@ -19,7 +19,7 @@ from rest_framework import status
 from tdpservice.users.models import AccountApprovalStatusChoices, User
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.models import DataFile, get_s3_upload_path
-from tdpservice.users.permissions import DataFilePermissions, HasRolePermission
+from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermission
 from tdpservice.scheduling import sftp_task, parser_task
 from tdpservice.email.helpers.data_file import send_data_submitted_email
 from tdpservice.data_files.s3_client import S3Client
@@ -45,7 +45,7 @@ class DataFileViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'head']
     filterset_class = DataFileFilter
     parser_classes = [MultiPartParser]
-    permission_classes = [DataFilePermissions, HasRolePermission]
+    permission_classes = [DataFilePermissions, IsApprovedPermission]
     serializer_class = DataFileSerializer
     pagination_class = None
 
@@ -174,7 +174,7 @@ class GetYearList(APIView):
 
     query_string = False
     pattern_name = "data_file-list"
-    permission_classes = [DataFilePermissions, HasRolePermission]
+    permission_classes = [DataFilePermissions, IsApprovedPermission]
 
     # The DataFilePermissions subclasses DjangoModelPermissions which requires
     # declaration of a queryset in order to perform introspection to determine
