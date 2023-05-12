@@ -128,7 +128,7 @@ class IsApprovedPermission(permissions.DjangoModelPermissions):
         """Return True if the user has been assigned a group and is approved."""
         print(f"\n\nINSIDE HAS PERMISSION {request.user.account_approval_status}\n\n")
         return (request.user.groups.first() is not None and
-        request.user.account_approval_status == AccountApprovalStatusChoices.APPROVED)
+                request.user.account_approval_status == AccountApprovalStatusChoices.APPROVED)
 
 
 class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
