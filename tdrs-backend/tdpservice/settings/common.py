@@ -443,7 +443,7 @@ class Common(Configuration):
         },
         'name': {
             'task': 'tdpservice.scheduling.tasks.check_for_accounts_needing_deactivation_warning',
-            'schedule': crontab(day_of_week='*', hour='13', minute='*'), # Every day at 1pm UTC (9am EST)
+            'schedule': crontab(day_of_week='*', hour='13', minute='0'), # Every day at 1pm UTC (8am EST)
 
             'options': {
                 'expires': 15.0,
@@ -451,7 +451,7 @@ class Common(Configuration):
         },
         'Email Admin Number of Access Requests' : {
             'task': 'tdpservice.scheduling.tasks.email_admin_num_access_requests',
-            'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9am EST)
+            'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (8pm EST)
         }
     }
 
