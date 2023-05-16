@@ -6,15 +6,16 @@ from pathlib import Path
 from .. import parse
 from tdpservice.data_files.models import DataFile
 from tdpservice.search_indexes.models.tanf import TANF_T1
+from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
 
 
-def create_test_datafile(filename, stt_user, stt):
+def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
     """Create a test DataFile instance with the given file attached."""
     path = str(Path(__file__).parent.joinpath('data')) + f'/{filename}'
     datafile = DataFile.create_new_version({
         'quarter': '4',
         'year': 2022,
-        'section': 'Active Case Data',
+        'section': section,
         'user': stt_user,
         'stt': stt
     })
@@ -86,8 +87,7 @@ def test_parse_big_file(test_big_file):
     """Test parsing of ADS.E2J.FTP1.TS06."""
     expected_errors_count = 1828
     expected_t1_record_count = 815
-    expected_errors_count = 1828
-    expected_t1_record_count = 815
+
     errors = parse.parse_datafile(test_big_file)
 
     assert len(errors.keys()) == expected_errors_count
@@ -203,3 +203,54 @@ def test_parse_empty_file(empty_file):
     assert errors == {
         'document': ['No headers found.'],
     }
+
+
+@pytest.fixture
+def small_ssp_section1_datafile(stt_user, stt):
+    """Fixture for small_ssp_section1."""
+    return create_test_datafile('small_ssp_section1.txt', stt_user, stt, 'SSP Active Case Data')
+
+
+@pytest.mark.django_db
+def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile):
+    """Test parsing small_ssp_section1_datafile."""
+    expected_m1_record_count = 5
+    expected_m2_record_count = 6
+    expected_m3_record_count = 8
+
+    errors = parse.parse_datafile(small_ssp_section1_datafile)
+
+    assert errors == {
+        'trailer': ['Value length 15 does not match 23.']
+    }
+    assert SSP_M1.objects.count() == expected_m1_record_count
+    assert SSP_M2.objects.count() == expected_m2_record_count
+    assert SSP_M3.objects.count() == expected_m3_record_count
+
+
+@pytest.fixture
+def ssp_section1_datafile(stt_user, stt):
+    """Fixture for ssp_section1_datafile."""
+    return create_test_datafile('ssp_section1_datafile.txt', stt_user, stt, 'SSP Active Case Data')
+
+
+@pytest.mark.django_db
+def test_parse_ssp_section1_datafile(ssp_section1_datafile):
+    """Test parsing ssp_section1_datafile."""
+    expected_m1_record_count = 7849
+    expected_m2_record_count = 9373
+    expected_m3_record_count = 16764
+
+    errors = parse.parse_datafile(ssp_section1_datafile)
+
+    assert errors == {
+        'trailer': ['Value length 14 does not match 23.'],
+        12430: ['Value length 30 does not match 150.'],
+        15573: ['Value length 30 does not match 150.'],
+        15615: ['Value length 30 does not match 150.'],
+        16004: ['Value length 30 does not match 150.'],
+        19681: ['Value length 30 does not match 150.']
+    }
+    assert SSP_M1.objects.count() == expected_m1_record_count
+    assert SSP_M2.objects.count() == expected_m2_record_count
+    assert SSP_M3.objects.count() == expected_m3_record_count

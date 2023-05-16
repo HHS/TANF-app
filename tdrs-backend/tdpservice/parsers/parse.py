@@ -2,8 +2,7 @@
 
 
 import os
-from . import schema_defs
-from . import validators
+from . import schema_defs, validators, util
 from tdpservice.data_files.models import DataFile
 
 
@@ -62,7 +61,18 @@ def parse_datafile(datafile):
         errors['document'] = ['Section does not match.']
         return errors
 
-    # parse line with appropriate schema
+    line_errors = parse_datafile_lines(datafile, program_type, section)
+
+    errors = errors | line_errors
+
+    return errors
+
+
+def parse_datafile_lines(datafile, program_type, section):
+    """Parse lines with appropriate schema and return errors."""
+    errors = {}
+    rawfile = datafile.file
+
     rawfile.seek(0)
     line_number = 0
     schema_options = get_schema_options(program_type)
@@ -75,12 +85,40 @@ def parse_datafile(datafile):
             continue
 
         schema = get_schema(line, section, schema_options)
-        record_is_valid, record_errors = parse_datafile_line(line, schema)
 
-        if not record_is_valid:
-            errors[line_number] = record_errors
+        if isinstance(schema, util.MultiRecordRowSchema):
+            records = parse_multi_record_line(line, schema)
+
+            record_number = 0
+            for r in records:
+                record_number += 1
+                record, record_is_valid, record_errors = r
+                if not record_is_valid:
+                    line_errors = errors.get(line_number, {})
+                    line_errors[record_number] = record_errors
+                    errors[line_number] = line_errors
+        else:
+            record_is_valid, record_errors = parse_datafile_line(line, schema)
+            if not record_is_valid:
+                errors[line_number] = record_errors
 
     return errors
+
+
+def parse_multi_record_line(line, schema):
+    """Parse and validate a datafile line using MultiRecordRowSchema."""
+    if schema:
+        records = schema.parse_and_validate(line)
+
+        for r in records:
+            record, record_is_valid, record_errors = r
+
+            if record:
+                record.save()
+
+        return records
+
+    return [(None, False, ['No schema selected.'])]
 
 
 def parse_datafile_line(line, schema):
@@ -89,7 +127,6 @@ def parse_datafile_line(line, schema):
         record, record_is_valid, record_errors = schema.parse_and_validate(line)
 
         if record:
-            record.errors = record_errors
             record.save()
 
         return record_is_valid, record_errors
@@ -101,35 +138,46 @@ def get_schema_options(program_type):
     """Return the allowed schema options."""
     match program_type:
         case 'TAN':
-            return schema_defs.tanf
+            return {
+                'A': {
+                    'T1': schema_defs.tanf.t1,
+                    # 'T2': schema_options.t2,
+                    # 'T3': schema_options.t3,
+                },
+                'C': {
+                    # 'T4': schema_options.t4,
+                    # 'T5': schema_options.t5,
+                },
+                'G': {
+                    # 'T6': schema_options.t6,
+                },
+                'S': {
+                    # 'T7': schema_options.t7,
+                },
+            }
         case 'SSP':
-            # return schema_defs.ssp
-            return None
+            return {
+                'A': {
+                    'M1': schema_defs.ssp.m1,
+                    'M2': schema_defs.ssp.m2,
+                    'M3': schema_defs.ssp.m3,
+                },
+                'C': {
+                    # 'M4': schema_options.m4,
+                    # 'M5': schema_options.m5,
+                },
+                'G': {
+                    # 'M6': schema_options.m6,
+                },
+                'S': {
+                    # 'M7': schema_options.m7,
+                },
+            }
         # case tribal?
     return None
 
 
 def get_schema(line, section, schema_options):
     """Return the appropriate schema for the line."""
-    if section == 'A' and line.startswith('T1'):
-        return schema_options.t1
-    elif section == 'A' and line.startswith('T2'):
-        return None
-        # return schema_options.t2
-    elif section == 'A' and line.startswith('T3'):
-        return None
-        # return schema_options.t3
-    elif section == 'C' and line.startswith('T4'):
-        return None
-        # return schema_options.t4
-    elif section == 'C' and line.startswith('T5'):
-        return None
-        # return schema_options.t5
-    elif section == 'G' and line.startswith('T6'):
-        return None
-        # return schema_options.t6
-    elif section == 'S' and line.startswith('T7'):
-        return None
-        # return schema_options.t7
-    else:
-        return None
+    line_type = line[0:2]
+    return schema_options.get(section, {}).get(line_type, None)
