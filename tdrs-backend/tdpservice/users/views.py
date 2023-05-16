@@ -70,9 +70,11 @@ class UserViewSet(
         serializer = self.get_serializer_class()(item)
         return Response(serializer.data)
 
-    @action(methods=["PATCH"], detail=False)
+    @action(methods=["GET", "PATCH"], detail=False)
     def set_profile(self, request, pk=None):
         """Set a user's profile data."""
+        if request.method == "GET":
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
         serializer = self.get_serializer(self.request.user, request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
