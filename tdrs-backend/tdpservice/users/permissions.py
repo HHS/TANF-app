@@ -1,5 +1,6 @@
 """Set permissions for users."""
 from tdpservice.stts.models import STT
+from tdpservice.users.models import AccountApprovalStatusChoices
 from rest_framework import permissions
 from django.db.models import Q, QuerySet
 from django.contrib.auth.management import create_permissions
@@ -120,6 +121,15 @@ def is_own_stt(user, requested_stt):
     )
 
 
+class IsApprovedPermission(permissions.DjangoModelPermissions):
+    """Generic permission class ensuring a user has been assigned a group and is approved."""
+
+    def has_permission(self, request, view):
+        """Return True if the user has been assigned a group and is approved."""
+        return (request.user.groups.first() is not None and
+                request.user.account_approval_status == AccountApprovalStatusChoices.APPROVED)
+
+
 class DjangoModelCRUDPermissions(permissions.DjangoModelPermissions):
     """The request is authorized using `django.contrib.auth` permissions.
 
@@ -212,18 +222,15 @@ class UserPermissions(DjangoModelCRUDPermissions):
         #       action only. In that case actions dealing with individual
         #       object permissions will need to be passed through this function
         #       by returning True.
+
         return True
 
     def has_object_permission(self, request, view, obj):
         """
         Check if the object being modified belongs to the user.
 
-        Alternatively, check if the user has been granted Model Permissions.
+        Alternatively, check if the user is an admin and grant permission.
         """
-        # If the user has the relevant model permission that will also allow
-        # access to individual objects
-        has_model_permission = super().has_permission(request, view)
-
         # Regional Staff can only see files uploaded for their designated Region
         if request.user.groups.filter(name="OFA Regional Staff").exists():
             user_region = (
@@ -233,4 +240,6 @@ class UserPermissions(DjangoModelCRUDPermissions):
             )
             return user_region == obj.stt.region_id
 
-        return obj == request.user or has_model_permission
+        # Check if user is an admin
+        is_admin = request.user.groups.filter(name__in=["OFA System Admin", "OFA Admin"]).exists()
+        return obj == request.user or is_admin
