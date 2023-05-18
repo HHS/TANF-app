@@ -183,9 +183,6 @@ class RowSchema:
                 else:
                     setattr(record, field.name, value)
 
-        # if not isinstance(record, dict):
-        #     record.save()
-
         return record
 
     def run_field_validators(self, instance, generate_error):
@@ -254,7 +251,6 @@ class MultiRecordRowSchema:
     """Maps a line to multiple `RowSchema`s and runs all parsers and validators."""
 
     def __init__(self, schemas):
-        # self.common_fields = None
         self.schemas = schemas
 
     def parse_and_validate(self, line, generate_error):
