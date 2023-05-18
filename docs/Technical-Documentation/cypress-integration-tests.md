@@ -52,7 +52,7 @@ On top of Cypress, we've layered `cypress-cucumber-preprocessor` to provide [Ghe
 
 Test files are defined as `.feature` files within the `tdrs-frontend/cypress/e2e` directory. Feature "areas" can be grouped into a folder.
 
-Step implementations are defined as `.js` files within the `tdrs-frontend/cypress/e2e` directory. A `.feature` file will load any `.js` files in its same directory.
+Step implementations are defined as `.js`. The cucumber preprocessor uses the glob pattern `cypress/e2e/*/[filepath].js` to discover the step files at the same level as and within the feature directory so long as the step file has the same name as the `.feature` file. The cucumber preprocessor uses the glob pattern `cypress/e2e/common-steps/*.js` to identify it's common step file(s) which are available to all `.feature` files.
 
 Here's an example feature file
 
@@ -60,9 +60,9 @@ Here's an example feature file
 ```gherkin
 Feature: Users can create and manage their accounts
     Scenario: A user can log in and request access
-        When I visit the home page
-        And I log in as a new user
-        Then I see a Request Access form
+        When 'new-cypress@teamraft.com' visits the home page
+        And 'new-cypress@teamraft.com' logs in
+        Then {string} sees a Request Access form
 ```
 
 At its top level, it defines a `Feature` with multiple `Scenarios` (this can be likened to a `describe` and `it` in jest, respectively). Scenarios belonging to a feature area should be grouped within a Feature. Scenarios should describe a specific task/goal the user is required to perform in the system.
@@ -76,21 +76,21 @@ In general, all `Given`, `When`, and `Then` steps should reflect things the _use
 
 Each step defined in a `Scenario` must have a corresponding "step implementation" (loaded from a `.js` file). Here is an example step implementation file
 
-`tdrs-frontend/cypress/e2e/accounts/steps.js`
+`tdrs-frontend/cypress/e2e/accounts/accounts.js`
 ```js
 /* eslint-disable no-undef */
 import { When, Then } from '@badeball/cypress-cucumber-preprocessor'
 
-When('I visit the home page', () => {
+When('{string} visits the home page', (username) => {
   cy.visit('/')
   cy.contains('Sign into TANF Data Portal', { timeout: 30000 })
 })
 
-When('I log in as a new user', () => {
-  cy.login('new-cypress@goraft.tech')
+When('{string} logs in', (username) => {
+  cy.login(username)
 })
 
-Then('I see a Request Access form', () => {
+Then('{string} sees a Request Access form', (username) => {
   cy.contains('Welcome').should('exist')
   cy.get('button').contains('Request Access').should('exist')
 })
@@ -98,4 +98,4 @@ Then('I see a Request Access form', () => {
 
 For each step implementation, a good rule of thumb is to perform both an action and an [assertion](https://docs.cypress.io/guides/references/assertions#Chai). An action should be something the user can do in the system (click, type, etc.). Assertions help "slow down" the test and limit unexpected behavior when applications run a lot of asynchronous processes. By asserting on something verifiable in each step, we can ensure the test is in a proper state to move forward. This applies to `Given`, `When`, and `Then` steps (though `Then` steps can often omit an action).
 
-Shared step implementations, which apply to all feature files, can be added as [common step definitions](https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/step-definitions.md#example-2-directory-with-common-step-definitions) (which may still need to be configured).
+Shared step implementations, which apply to all feature files, can be added as [common step definitions](https://github.com/badeball/cypress-cucumber-preprocessor/blob/master/docs/step-definitions.md#example-2-directory-with-common-step-definitions) in `tdrs-frontend/cypress/e2e/common-steps/common-steps.js`

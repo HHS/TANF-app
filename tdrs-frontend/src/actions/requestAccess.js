@@ -1,4 +1,5 @@
 import { SET_AUTH } from './auth'
+import axios from 'axios'
 import axiosInstance from '../axios-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 
@@ -14,9 +15,7 @@ export const requestAccess =
     try {
       const URL = `${process.env.REACT_APP_BACKEND_URL}/users/request_access/`
       const user = { first_name: firstName, last_name: lastName, stt: stt?.id }
-      const { data } = await (
-        await axiosInstance
-      ).patch(URL, user, {
+      const { data } = await axios.patch(URL, user, {
         withCredentials: true,
       })
 
