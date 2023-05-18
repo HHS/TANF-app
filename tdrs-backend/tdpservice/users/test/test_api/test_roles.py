@@ -16,10 +16,10 @@ def create_test_users():
 
 
 @pytest.mark.django_db
-def test_role_list(api_client, create_test_users):
+def test_role_list(api_client, ofa_admin, create_test_users):
     """Test role list."""
     # Groups are populated in a data migrations, so are already available.
-    api_client.login(username="test__ofa_admin", password="test_password")
+    api_client.login(username=ofa_admin.username, password="test_password")
     response = api_client.get("/v1/roles/")
     assert response.status_code == status.HTTP_200_OK
     role_names = {group["name"] for group in response.data}

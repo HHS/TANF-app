@@ -2,6 +2,8 @@
 
 import pytest
 from ..util import MultiRecordRowSchema, RowSchema, Field, value_is_empty
+import pytest
+from ..util import MultiRecordRowSchema, RowSchema, Field, value_is_empty
 
 
 def passing_validator():
