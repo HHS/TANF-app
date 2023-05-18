@@ -21,17 +21,17 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
     return ParserError.objects.create(
         file=datafile,
         row_number=line_number,
-        column_number=getattr(field, 'item', 0),
-        item_number=getattr(field, 'item', 0),
-        field_name=getattr(field, 'name', 'none'),
-        category=error_category,
+        column_number=getattr(field, 'item', None),
+        item_number=getattr(field, 'item', None),
+        field_name=getattr(field, 'name', None),
+        rpt_month_year=getattr(record, 'RPT_MONTH_YEAR', None),
         case_number=getattr(record, 'CASE_NUMBER', None),
         error_message=error_message,
         error_type=error_category,
         content_type=ContentType.objects.get(
-            model=model if record and not isinstance(record, dict) else 'ssp_m1'
-        ),
-        object_id=getattr(record, 'pk', 0) if record and not isinstance(record, dict) else 0,
+            model=model
+        ) if record and not isinstance(record, dict) else None,
+        object_id=getattr(record, 'pk', 0) if record and not isinstance(record, dict) else None,
         fields_json=None
     )
 

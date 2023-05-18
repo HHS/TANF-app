@@ -34,18 +34,17 @@ class ParserError(models.Model):
         null=True,
     )
     row_number = models.IntegerField(null=False)
-    column_number = models.IntegerField(null=False)
-    item_number = models.IntegerField(null=False)
-    field_name = models.TextField(null=False, max_length=128)
-    category = models.IntegerField(null=False, default=1)
+    column_number = models.IntegerField(null=True)
+    item_number = models.IntegerField(null=True)
+    field_name = models.TextField(null=True, max_length=128)
     rpt_month_year = models.IntegerField(null=True,  blank=False)
     case_number = models.TextField(null=True, max_length=128)
 
     error_message = models.TextField(null=True, max_length=512)
     error_type = models.TextField(max_length=128, choices=ParserErrorCategoryChoices.choices)
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
+    object_id = models.PositiveIntegerField(null=True)
     content_object = GenericForeignKey()
 
     created_at = models.DateTimeField(auto_now_add=True)

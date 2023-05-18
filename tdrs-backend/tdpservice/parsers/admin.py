@@ -10,7 +10,6 @@ class ParserErrorAdmin(admin.ModelAdmin):
     list_display = [
         'row_number',
         'field_name',
-        'category',
         'error_type',
         'error_message',
     ]
