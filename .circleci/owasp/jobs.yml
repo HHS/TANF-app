@@ -6,6 +6,7 @@
       - checkout
       - docker-compose-check
       - docker-compose-up-backend
+      - docker-compose-up-frontend
       - run:
           name: Wait for Django to become available
           command: |

@@ -21,7 +21,7 @@ elif [ "$ENVIRONMENT" = "circle" ] || [ "$ENVIRONMENT" = "local" ]; then
     if [ "$TARGET" = "frontend" ]; then
         APP_URL="http://tdp-frontend/"
     elif [ "$TARGET" = "backend" ]; then
-        APP_URL="http://web:8080/"
+        APP_URL="http://tdp-frontend/"
     else
         echo "Invalid target $TARGET"
         exit 1
@@ -37,6 +37,11 @@ if [ "$TARGET" = "backend" ]; then
 fi
 
 cd "$TARGET_DIR" || exit 2
+
+
+if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then 
+    docker network create external-net
+fi
 
 # Ensure the APP_URL is reachable from the zaproxy container
 if ! docker-compose run --rm zaproxy curl -Is "$APP_URL" > /dev/null 2>&1; then
@@ -63,7 +68,7 @@ ZAP_CLI_OPTIONS="\
   -config spider.postform=true"
 
 # How long ZAP will crawl the app with the spider process
-ZAP_SPIDER_MINS=5
+ZAP_SPIDER_MINS=10
 
 ZAP_ARGS=(-t "$APP_URL" -m "$ZAP_SPIDER_MINS" -r "$REPORT_NAME" -z "$ZAP_CLI_OPTIONS")
 if [ -z ${CONFIG_FILE+x} ]; then

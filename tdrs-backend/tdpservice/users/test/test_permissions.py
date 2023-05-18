@@ -111,6 +111,15 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'parsers.add_parsererror',
         'parsers.change_parsererror',
         'parsers.view_parsererror',
+        'search_indexes.add_ssp_m1',
+        'search_indexes.view_ssp_m1',
+        'search_indexes.change_ssp_m1',
+        'search_indexes.add_ssp_m2',
+        'search_indexes.view_ssp_m2',
+        'search_indexes.change_ssp_m2',
+        'search_indexes.add_ssp_m3',
+        'search_indexes.view_ssp_m3',
+        'search_indexes.change_ssp_m3',
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions

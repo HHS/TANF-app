@@ -29,6 +29,9 @@ class ParsingErrorViewSet(ModelViewSet):
         id = self.request.query_params.get('id', None)
         if id is not None:
             queryset = queryset.filter(id=id)
+        file = self.request.query_params.get('file', None)
+        if file is not None:
+            queryset = queryset.filter(file=file)
         return queryset
 
     def _get_xls_serialized_file(self, data):
@@ -38,12 +41,23 @@ class ParsingErrorViewSet(ModelViewSet):
         workbook = xlsxwriter.Workbook(output)
         worksheet = workbook.add_worksheet()
 
+        report_columns = ['case_number',
+                          'rpt_month_year',
+                          'error_type',
+                          'error_message',
+                          'item_number',
+                          'field_name',
+                          'row_number',
+                          'column_number']
+
+        # write csv header
+        [worksheet.write(row, col, key) for col, key in enumerate(report_columns)]
+
         for i in data:
             row += 1
             col = 0
-            for key, value in i.items():
-                worksheet.write(0, col, key)
-                worksheet.write(row, col, value)
+            for key in report_columns:
+                worksheet.write(row, col, i[key])  # writes value by looking up data by key
                 col += 1
         workbook.close()
         return {"data": data, "xls_report": base64.b64encode(output.getvalue()).decode("utf-8")}
