@@ -21,9 +21,6 @@ name: Build Only Backend When tdrs-backend/ Files Change
 on:
   push:
     paths: 'tdrs-backend/**'
-    paths_ignore:
-      - '**.md'
-      - '**.txt'
     branches-ignore:
       - develop
       - main

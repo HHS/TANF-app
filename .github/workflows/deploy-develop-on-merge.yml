@@ -24,7 +24,7 @@ on:
   push:
     branches:
     - develop
-    paths_ignore:
+    paths-ignore:
     - 'docs/**'
     - '**.md'
     - '**.txt'

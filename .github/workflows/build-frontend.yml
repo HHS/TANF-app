@@ -21,9 +21,6 @@ name: Build Only Frontend When tdrs-frontend Files Change
 on:
   push:
     paths: 'tdrs-frontend/**'
-    paths_ignore:
-      - '**.md'
-      - '**.txt'
     branches-ignore:
       - develop
       - main

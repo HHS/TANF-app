@@ -19,15 +19,13 @@
 name: Run Infrastructure Pipeline When Terraform or Infrastructure Files Change
 on:
   push:
-    branches_ignore: #handled in CircleCI
+    branches-ignore: #handled in CircleCI
       - main
       - master
+      - 'release/**'
     paths:
       - 'terraform/**'
       - '.circleci/infrastructure/**'
-    paths_ignore:
-      - '**.md'
-      - '**.txt'
 jobs:
   run_infrastructure_deployment:
     runs-on: ubuntu-latest
