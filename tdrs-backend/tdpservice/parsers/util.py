@@ -12,15 +12,6 @@ def value_is_empty(value, length):
     return value is None or value in empty_values
 
 
-error_types = {
-    1: 'File pre-check',
-    2: 'Record value invalid',
-    3: 'Record value consistency',
-    4: 'Case consistency',
-    5: 'Section consistency',
-    6: 'Historical consistency'
-}
-
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
     """Create and return a ParserError using args."""
     model = schema.model if schema else None

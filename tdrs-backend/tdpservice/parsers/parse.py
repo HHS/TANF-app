@@ -4,7 +4,6 @@ import os
 from . import schema_defs, validators, util
 from .models import ParserErrorCategoryChoices
 from tdpservice.data_files.models import DataFile
-from .models import DataFileSummary
 
 
 def parse_datafile(datafile):
@@ -61,6 +60,9 @@ def parse_datafile(datafile):
         },
     }
 
+    # TODO: utility transformations between text to schemas and back
+    # text > prog > sections > schemas
+
     program_type = header['program_type']
     section = header['type']
 
@@ -76,6 +78,35 @@ def parse_datafile(datafile):
     line_errors = parse_datafile_lines(datafile, program_type, section)
 
     errors = errors | line_errors
+
+    # errors['summary'] = DataFileSummary.objects.create(
+    #     datafile=datafile,
+    #     status=DataFileSummary.get_status(errors)
+    # )
+
+    # or perhaps just invert this?
+    # what does it look like having the errors dict as a field of the summary?
+    # summary.errors = errors  --- but I don't want/need to store this in DB
+    # divesting that storage and just using my FK to datafile so I can run querysets later
+    # perserves the ability to use the summary object to generate the errors dict
+
+    # perhaps just formalize the entire errors struct?
+    # pros:
+    #   - can be used to generate error report
+    #   - can be used to generate summary
+    #  - can be used to generate error count
+    #  - can be used to generate error count by type
+    #  - can be used to generate error count by record type
+    #  - can be used to generate error count by field
+    #  - can be used to generate error count by field type
+    #  - has a consistent structure between differing file types
+    #  - has testable functions for each of the above
+    #  - has agreed-upon inputs/outputs
+    # cons:
+    #  - requires boilerplate to generate
+    #  - different structures may be needed for different purposes
+    #  - built-in dict may be easier to reference ala Cameron
+    #  - built-in dict is freer-form and complete already
 
     return errors
 
@@ -97,6 +128,17 @@ def parse_datafile_lines(datafile, program_type, section):
             continue
 
         schema = get_schema(line, section, schema_options)
+        if schema is None:
+            errors[line_number] = [util.generate_parser_error(
+                datafile=datafile,
+                line_number=line_number,
+                schema=None,
+                error_category=ParserErrorCategoryChoices.FIELD_VALUE,
+                error_message="Record_Type '{}' not yet implemented.",
+                record=None,
+                field="Record_Type",
+            )]
+            continue
 
         if isinstance(schema, util.MultiRecordRowSchema):
             records = parse_multi_record_line(
@@ -123,56 +165,30 @@ def parse_datafile_lines(datafile, program_type, section):
             if not record_is_valid:
                 errors[line_number] = record_errors
 
-    summary = DataFileSummary(datafile=datafile)
-    summary.set_status(errors)
-    summary.save()
-
     return errors
 
 
 def parse_multi_record_line(line, schema, generate_error):
     """Parse and validate a datafile line using MultiRecordRowSchema."""
-    if schema:
-        records = schema.parse_and_validate(line, generate_error)
+    records = schema.parse_and_validate(line, generate_error)
 
-        for r in records:
-            record, record_is_valid, record_errors = r
-
-            if record:
-                record.save()
-
-        return records
-
-    return [(None, False, [
-        generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message="No schema selected.",
-            record=None,
-            field=None
-        )
-    ])]
-
-
-def parse_datafile_line(line, schema, generate_error):
-    """Parse and validate a datafile line and save any errors to the model."""
-    if schema:
-        record, record_is_valid, record_errors = schema.parse_and_validate(line, generate_error)
+    for r in records:
+        record, record_is_valid, record_errors = r
 
         if record:
             record.save()
 
-        return record_is_valid, record_errors
+    return records
 
-    return (False, [
-        generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message="No schema selected.",
-            record=None,
-            field=None
-        )
-    ])
+
+def parse_datafile_line(line, schema, generate_error):
+    """Parse and validate a datafile line and save any errors to the model."""
+    record, record_is_valid, record_errors = schema.parse_and_validate(line, generate_error)
+
+    if record:
+        record.save()
+
+    return record_is_valid, record_errors
 
 
 def get_schema_options(program_type):
@@ -182,8 +198,8 @@ def get_schema_options(program_type):
             return {
                 'A': {
                     'T1': schema_defs.tanf.t1,
-                    # 'T2': schema_options.t2,
-                    # 'T3': schema_options.t3,
+                    # 'T2': schema_defs.tanf.t2,
+                    # 'T3': schema_defs.tanf.t3,
                 },
                 'C': {
                     # 'T4': schema_options.t4,

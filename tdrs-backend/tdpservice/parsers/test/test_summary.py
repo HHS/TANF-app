@@ -30,29 +30,27 @@ def test_dfs_rejected(test_datafile, dfs):
     test_datafile.section = 'Closed Case Data'
     test_datafile.save()
 
-    dfs.set_status(parse.parse_datafile(test_datafile))
-    assert dfs.status == DataFileSummary.Status.REJECTED
+    error_ast = parse.parse_datafile(test_datafile)
+    dfs.status = dfs.get_status(error_ast)
+    assert DataFileSummary.Status.REJECTED == dfs.status
 
 @pytest.mark.django_db
 def test_dfs_set_status(dfs):
     """Test that the status is set correctly."""
     assert dfs.status == DataFileSummary.Status.PENDING
-    dfs.set_status(errors={})
+    dfs.status = dfs.get_status(errors={})
     assert dfs.status == DataFileSummary.Status.ACCEPTED
-
     # create category 1 ParserError list to prompt rejected status
     parser_errors = []
 
-    # this feels precarious for tests. the defaults in the factory could cause issues should logic change
-    # resulting in failures if we stop keying off category and instead go to content or msg
     for i in range(2, 4):
         parser_errors.append(ParserErrorFactory(row_number=i, category=str(i)))
 
-    dfs.set_status(errors={'document': parser_errors})
+    dfs.status = dfs.get_status(errors={'document': parser_errors})
 
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
     parser_errors.append(ParserErrorFactory(row_number=5, category=ParserErrorCategoryChoices.PRE_CHECK))
-    dfs.set_status(errors={'document': parser_errors})
+    dfs.status = dfs.get_status(errors={'document': parser_errors})
 
     assert dfs.status == DataFileSummary.Status.REJECTED

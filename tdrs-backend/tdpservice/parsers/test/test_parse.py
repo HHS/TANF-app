@@ -4,11 +4,11 @@
 import pytest
 from pathlib import Path
 from .. import parse
-from ..models import ParserError, ParserErrorCategoryChoices
+from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.data_files.models import DataFile
 from tdpservice.search_indexes.models.tanf import TANF_T1
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
-
+from .factories import DataFileSummaryFactory
 
 def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
     """Create a test DataFile instance with the given file attached."""
@@ -31,12 +31,18 @@ def test_datafile(stt_user, stt):
     """Fixture for small_correct_file."""
     return create_test_datafile('small_correct_file', stt_user, stt)
 
+@pytest.fixture
+def dfs():
+    """Fixture for DataFileSummary."""
+    return DataFileSummaryFactory()
+
 @pytest.mark.django_db
-def test_parse_small_correct_file(test_datafile):
+def test_parse_small_correct_file(test_datafile, dfs):
     """Test parsing of small_correct_file."""
     errors = parse.parse_datafile(test_datafile)
 
     assert errors == {}
+    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED
     assert TANF_T1.objects.count() == 1
     assert ParserError.objects.filter(file=test_datafile).count() == 0
 
@@ -55,13 +61,13 @@ def test_parse_small_correct_file(test_datafile):
 
 
 @pytest.mark.django_db
-def test_parse_section_mismatch(test_datafile):
+def test_parse_section_mismatch(test_datafile, dfs):
     """Test parsing of small_correct_file where the DataFile section doesn't match the rawfile section."""
     test_datafile.section = 'Closed Case Data'
     test_datafile.save()
 
     errors = parse.parse_datafile(test_datafile)
-
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=test_datafile)
     assert parser_errors.count() == 1
 
@@ -76,12 +82,13 @@ def test_parse_section_mismatch(test_datafile):
 
 
 @pytest.mark.django_db
-def test_parse_wrong_program_type(test_datafile):
+def test_parse_wrong_program_type(test_datafile, dfs):
     """Test parsing of small_correct_file where the DataFile program type doesn't match the rawfile."""
     test_datafile.section = 'SSP Active Case Data'
     test_datafile.save()
 
     errors = parse.parse_datafile(test_datafile)
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=test_datafile)
     assert parser_errors.count() == 1
@@ -103,12 +110,13 @@ def test_big_file(stt_user, stt):
 
 
 @pytest.mark.django_db
-def test_parse_big_file(test_big_file):
+def test_parse_big_file(test_big_file, dfs):
     """Test parsing of ADS.E2J.FTP1.TS06."""
     expected_errors_count = 1828
     expected_t1_record_count = 815
 
     errors = parse.parse_datafile(test_big_file)
+    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     parser_errors = ParserError.objects.filter(file=test_big_file)
 
     assert len(errors.keys()) == expected_errors_count
@@ -123,9 +131,11 @@ def bad_test_file(stt_user, stt):
 
 
 @pytest.mark.django_db
-def test_parse_bad_test_file(bad_test_file):
+def test_parse_bad_test_file(bad_test_file, dfs):
     """Test parsing of bad_TANF_S2."""
     errors = parse.parse_datafile(bad_test_file)
+
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_test_file)
     assert parser_errors.count() == 1
@@ -147,10 +157,10 @@ def bad_file_missing_header(stt_user, stt):
 
 
 @pytest.mark.django_db
-def test_parse_bad_file_missing_header(bad_file_missing_header):
+def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
     """Test parsing of bad_missing_header."""
     errors = parse.parse_datafile(bad_file_missing_header)
-
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=bad_file_missing_header)
     assert parser_errors.count() == 1
 
@@ -171,9 +181,10 @@ def bad_file_multiple_headers(stt_user, stt):
 
 
 @pytest.mark.django_db
-def test_parse_bad_file_multiple_headers(bad_file_multiple_headers):
+def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
     """Test parsing of bad_two_headers."""
     errors = parse.parse_datafile(bad_file_multiple_headers)
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_file_multiple_headers)
     assert parser_errors.count() == 1

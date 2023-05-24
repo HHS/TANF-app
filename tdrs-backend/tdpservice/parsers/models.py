@@ -114,26 +114,39 @@ class DataFileSummary(models.Model):
         }
     """
 
-    def set_status(self, errors):
+    def get_status(self, errors):
         """Set and return the status field based on errors and models associated with datafile."""
-        # to set rejected, we would need to have raised an exception during (pre)parsing
-        # else if there are errors, we can set to accepted with errors
-        # else we can set to accepted (default)
-        if errors == {}:  # This feels better than running len() on `errors`...but is it a dict vs list?
-            self.status = self.Status.ACCEPTED
-        elif check_for_preparsing(errors):
-            self.status = self.Status.REJECTED
-        elif errors:
-            self.status = self.Status.ACCEPTED_WITH_ERRORS
+        if errors is None:
+            return self.status  # aka PENDING
 
-        return self.status
+        if type(errors) != dict:
+            raise TypeError("errors parameter must be a dictionary.")
 
-def check_for_preparsing(errors):
-    """Check for pre-parsing errors."""
-    for key in errors.keys():  # keys are 'header', 'trailer', 'document'
+        if errors == {}:
+            return self.Status.ACCEPTED
+        elif DataFileSummary.find_precheck(errors):
+            return self.Status.REJECTED
+        else:
+            return self.Status.ACCEPTED_WITH_ERRORS
 
-        for error in errors[key]:
-            if (error.category == ParserErrorCategoryChoices.PRE_CHECK) and \
-               (key != 'trailer'):
-                return True
-    return False
+    def find_precheck(errors):
+        """Check for pre-parsing errors.
+
+        @param errors: dict of errors keyed by location in datafile.
+        e.g.
+        errors =
+        {
+            "trailer": [ParserError, ...],
+            "header": [ParserError, ...],
+            "document": [ParserError, ...],
+            "123": [ParserError, ...],
+            ...
+        }
+        """
+        for key in errors.keys():
+            if key == 'trailer':
+                continue
+            for parserError in errors[key]:
+                if parserError.category == ParserErrorCategoryChoices.PRE_CHECK:
+                    return True
+        return False
