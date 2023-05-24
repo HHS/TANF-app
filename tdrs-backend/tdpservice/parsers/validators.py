@@ -58,6 +58,14 @@ def startsWith(substring):
     )
 
 
+def notEmpty(start=0, end=None):
+    """Validate that string value isn't only blanks."""
+    return make_validator(
+        lambda value: not value[start:end if end else len(value)].isspace(),
+        lambda value: f'{value} contains blanks between positions {start} and {end if end else len(value)}.'
+    )
+
+
 # custom validators
 
 def validate_single_header_trailer(file):
