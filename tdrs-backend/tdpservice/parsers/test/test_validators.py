@@ -157,3 +157,47 @@ def test_startsWith_returns_invalid():
 
     assert is_valid is False
     assert error == '12345abcde does not start with abc.'
+
+
+def test_notEmpty_returns_valid_full_string():
+    """Test `notEmpty` gives a valid result for a full string."""
+    value = '1        '
+
+    validator = validators.notEmpty()
+    is_valid, error = validator(value)
+
+    assert is_valid is True
+    assert error is None
+
+
+def test_notEmpty_returns_invalid_full_string():
+    """Test `notEmpty` gives an invalid result for a full string."""
+    value = '         '
+
+    validator = validators.notEmpty()
+    is_valid, error = validator(value)
+
+    assert is_valid is False
+    assert error == '          contains blanks between positions 0 and 9.'
+
+
+def test_notEmpty_returns_valid_substring():
+    """Test `notEmpty` gives a valid result for a partial string."""
+    value = '11122333'
+
+    validator = validators.notEmpty(start=3, end=5)
+    is_valid, error = validator(value)
+
+    assert is_valid is True
+    assert error is None
+
+
+def test_notEmpty_returns_invalid_substring():
+    """Test `notEmpty` gives an invalid result for a partial string."""
+    value = '111  333'
+
+    validator = validators.notEmpty(start=3, end=5)
+    is_valid, error = validator(value)
+
+    assert is_valid is False
+    assert error == "111  333 contains blanks between positions 3 and 5."

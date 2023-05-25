@@ -41,8 +41,13 @@ class DataFileSerializer(serializers.ModelSerializer):
             "created_at",
             "ssp",
             "submitted_by",
-            "has_error"
+            'version',
+            's3_location',
+            's3_versioning_id',
+            'has_error',
         ]
+
+        read_only_fields = ("version",)
 
     def get_has_error(self, obj):
         """Return whether the file has an error."""

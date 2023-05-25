@@ -20,7 +20,7 @@ Contains workflows, jobs, and commands for building and testing the application.
 Contains workflows, jobs, and commands for setting up the infrastructure on Cloud gov.
 
 #### deployment
-Contains workflows, jobs, and commands for deploying the application on Cloud gov.
+Contains workflows, jobs, and commands for deploying the application on Cloud gov. Note: merges to develop now automatically trigger a develop deploy using [deploy-develop-on-merge](../.github/workflows/deploy-develop-on-merge.yml) and deploys to dev environments happen when a label is created on the PR using [deploy-on-label](../.github/workflows/deploy-on-label.yml)
 
 #### owasp
 Contains workflows, jobs, and commands for running OWASP scans on the application in during the pipeline against Cloud.gov environments.

@@ -1,7 +1,7 @@
 """Test the methods of RowSchema to ensure parsing and validation work in all individual cases."""
 
-
-from ..util import RowSchema, Field
+import pytest
+from ..util import MultiRecordRowSchema, RowSchema, Field, value_is_empty
 
 
 def passing_validator():
@@ -45,13 +45,15 @@ def test_run_preparsing_validators_returns_invalid_and_errors():
 
 def test_parse_line_parses_line_from_schema_to_dict():
     """Test that parse_line parses a string into a dict given start and end indices for all fields."""
-    line = '12345'
+    line = '12345001'
     schema = RowSchema(
         model=dict,
         fields=[
             Field(name='first', type='string', startIndex=0, endIndex=3),
             Field(name='second', type='string', startIndex=3, endIndex=4),
             Field(name='third', type='string', startIndex=4, endIndex=5),
+            Field(name='fourth', type='number', startIndex=5, endIndex=7),
+            Field(name='fifth', type='number', startIndex=7, endIndex=8),
         ]
     )
 
@@ -60,6 +62,8 @@ def test_parse_line_parses_line_from_schema_to_dict():
     assert record['first'] == '123'
     assert record['second'] == '4'
     assert record['third'] == '5'
+    assert record['fourth'] == 0
+    assert record['fifth'] == 1
 
 
 def test_parse_line_parses_line_from_schema_to_object():
@@ -68,14 +72,18 @@ def test_parse_line_parses_line_from_schema_to_object():
         first = None
         second = None
         third = None
+        fourth = None
+        fifth = None
 
-    line = '12345'
+    line = '12345001'
     schema = RowSchema(
         model=TestModel,
         fields=[
             Field(name='first', type='string', startIndex=0, endIndex=3),
             Field(name='second', type='string', startIndex=3, endIndex=4),
             Field(name='third', type='string', startIndex=4, endIndex=5),
+            Field(name='fourth', type='number', startIndex=5, endIndex=7),
+            Field(name='fifth', type='number', startIndex=7, endIndex=8),
         ]
     )
 
@@ -84,6 +92,8 @@ def test_parse_line_parses_line_from_schema_to_object():
     assert record.first == '123'
     assert record.second == '4'
     assert record.third == '5'
+    assert record.fourth == 0
+    assert record.fifth == 1
 
 
 def test_run_field_validators_returns_valid_with_dict():
@@ -206,11 +216,16 @@ def test_run_field_validators_returns_invalid_with_object():
     assert errors == ['Value is not valid.']
 
 
-def test_field_validators_blank_and_required_returns_error():
+@pytest.mark.parametrize('first,second', [
+    (' ', '  '),
+    ('#', '##'),
+    (None, None),
+])
+def test_field_validators_blank_and_required_returns_error(first, second):
     """Test required field returns error if value not provided (blank)."""
     instance = {
-        'first': ' ',
-        'second': '  ',
+        'first': first,
+        'second': second,
     }
     schema = RowSchema(
         model=dict,
@@ -232,10 +247,15 @@ def test_field_validators_blank_and_required_returns_error():
     ]
 
 
-def test_field_validators_blank_and_not_required_returns_valid():
+@pytest.mark.parametrize('first', [
+    (' '),
+    ('#'),
+    (None),
+])
+def test_field_validators_blank_and_not_required_returns_valid(first):
     """Test not required field returns valid if value not provided (blank)."""
     instance = {
-        'first': ' ',
+        'first': first,
     }
     schema = RowSchema(
         model=dict,
@@ -279,3 +299,118 @@ def test_run_postparsing_validators_returns_invalid_and_errors():
     is_valid, errors = schema.run_postparsing_validators(instance)
     assert is_valid is False
     assert errors == ['Value is not valid.']
+
+
+@pytest.mark.parametrize("value,length", [
+    (None, 0),
+    (None, 10),
+    ('     ', 5),
+    ('###', 3)
+])
+def test_value_is_empty_returns_true(value, length):
+    """Test value_is_empty returns valid."""
+    result = value_is_empty(value, length)
+    assert result is True
+
+
+@pytest.mark.parametrize("value,length", [
+    (0, 1),
+    (1, 1),
+    (10, 2),
+    ('0', 1),
+    ('0000', 4),
+    ('1    ', 5),
+    ('##3', 3)
+])
+def test_value_is_empty_returns_false(value, length):
+    """Test value_is_empty returns invalid."""
+    result = value_is_empty(value, length)
+    assert result is False
+
+
+def test_multi_record_schema_parses_and_validates():
+    """Test MultiRecordRowSchema parse_and_validate."""
+    line = '12345'
+    schema = MultiRecordRowSchema(
+        schemas=[
+            RowSchema(
+                model=dict,
+                preparsing_validators=[
+                    passing_validator()
+                ],
+                postparsing_validators=[
+                    failing_validator()
+                ],
+                fields=[
+                    Field(name='first', type='string', startIndex=0, endIndex=3, validators=[
+                        passing_validator()
+                    ]),
+                ]
+            ),
+            RowSchema(
+                model=dict,
+                preparsing_validators=[
+                    passing_validator()
+                ],
+                postparsing_validators=[
+                    passing_validator()
+                ],
+                fields=[
+                    Field(name='second', type='string', startIndex=2, endIndex=4, validators=[
+                        passing_validator()
+                    ]),
+                ]
+            ),
+            RowSchema(
+                model=dict,
+                preparsing_validators=[
+                    failing_validator()
+                ],
+                postparsing_validators=[
+                    passing_validator()
+                ],
+                fields=[
+                    Field(name='third', type='string', startIndex=4, endIndex=5, validators=[
+                        passing_validator()
+                    ]),
+                ]
+            ),
+            RowSchema(
+                model=dict,
+                preparsing_validators=[
+                    passing_validator()
+                ],
+                postparsing_validators=[
+                    passing_validator()
+                ],
+                fields=[
+                    Field(name='fourth', type='string', startIndex=4, endIndex=5, validators=[
+                        failing_validator()
+                    ]),
+                ]
+            )
+        ]
+    )
+
+    rs = schema.parse_and_validate(line)
+
+    r0_record, r0_is_valid, r0_errors = rs[0]
+    r1_record, r1_is_valid, r1_errors = rs[1]
+    r2_record, r2_is_valid, r2_errors = rs[2]
+    r3_record, r3_is_valid, r3_errors = rs[3]
+
+    assert r0_record == {'first': '123'}
+    assert r0_is_valid is False
+    assert r0_errors == ['Value is not valid.']
+
+    assert r1_record == {'second': '34'}
+    assert r1_is_valid is True
+    assert r1_errors == []
+
+    assert r2_record is None
+    assert r2_is_valid is False
+    assert r2_errors == ['Value is not valid.']
+
+    assert r3_record == {'fourth': '5'}
+    assert r3_is_valid is False
+    assert r3_errors == ['Value is not valid.']
