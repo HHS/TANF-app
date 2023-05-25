@@ -110,11 +110,18 @@ def test_parse_big_file(test_big_file):
     expected_t1_record_count = 815
     expected_t2_record_count = 882
     expected_t3_record_count = 1376
+
     errors = parse.parse_datafile(test_big_file)
     parser_errors = ParserError.objects.filter(file=test_big_file)
+    assert parser_errors.count() == 355
+    assert len(errors) == 334
 
-    assert errors == {}
-    assert parser_errors.count() == 0
+    row_18_error = parser_errors.get(row_number=18)
+    assert row_18_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_18_error.error_message == 'MONTHS_FED_TIME_LIMIT is required but a value was not provided.'
+
+    assert errors[18] == [row_18_error]
+
     assert TANF_T1.objects.count() == expected_t1_record_count
     assert TANF_T2.objects.count() == expected_t2_record_count
     assert TANF_T3.objects.count() == expected_t3_record_count
