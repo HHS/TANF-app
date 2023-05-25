@@ -5,7 +5,7 @@ import pytest
 from pathlib import Path
 from .. import parse
 from tdpservice.data_files.models import DataFile
-from tdpservice.search_indexes.models.tanf import TANF_T1
+from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
 
 
@@ -85,13 +85,15 @@ def test_big_file(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_big_file(test_big_file):
     """Test parsing of ADS.E2J.FTP1.TS06."""
-    expected_errors_count = 1828
     expected_t1_record_count = 815
-
+    expected_t2_record_count = 882
+    expected_t3_record_count = 1376
     errors = parse.parse_datafile(test_big_file)
 
-    assert len(errors.keys()) == expected_errors_count
+    assert errors == {}
     assert TANF_T1.objects.count() == expected_t1_record_count
+    assert TANF_T2.objects.count() == expected_t2_record_count
+    assert TANF_T3.objects.count() == expected_t3_record_count
 
 
 @pytest.fixture
@@ -254,3 +256,63 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile):
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
     assert SSP_M3.objects.count() == expected_m3_record_count
+
+@pytest.fixture
+def small_tanf_section1_datafile(stt_user, stt):
+    """Fixture for small_tanf_section1."""
+    return create_test_datafile('small_tanf_section1.txt', stt_user, stt)
+
+@pytest.mark.django_db
+def test_parse_tanf_section1_datafile(small_tanf_section1_datafile):
+    """Test parsing of small_tanf_section1_datafile and validate T2 model data."""
+    errors = parse.parse_datafile(small_tanf_section1_datafile)
+
+    assert errors == {}
+    assert TANF_T2.objects.count() == 5
+
+    t2_models = TANF_T2.objects.all()
+
+    t2 = t2_models[0]
+    assert t2.RPT_MONTH_YEAR == 202010
+    assert t2.CASE_NUMBER == '11111111112'
+    assert t2.FAMILY_AFFILIATION == 1
+    assert t2.OTHER_UNEARNED_INCOME == '0291'
+
+    t2_2 = t2_models[1]
+    assert t2_2.RPT_MONTH_YEAR == 202010
+    assert t2_2.CASE_NUMBER == '11111111115'
+    assert t2_2.FAMILY_AFFILIATION == 2
+    assert t2_2.OTHER_UNEARNED_INCOME == '0000'
+
+@pytest.mark.django_db
+def test_parse_tanf_section1_datafile_obj_counts(small_tanf_section1_datafile):
+    """Test parsing of small_tanf_section1_datafile in general."""
+    errors = parse.parse_datafile(small_tanf_section1_datafile)
+
+    assert errors == {}
+    assert TANF_T1.objects.count() == 5
+    assert TANF_T2.objects.count() == 5
+    assert TANF_T3.objects.count() == 6
+
+@pytest.mark.django_db
+def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile):
+    """Test parsing of small_tanf_section1_datafile and validate T3 model data."""
+    errors = parse.parse_datafile(small_tanf_section1_datafile)
+
+    assert errors == {}
+    assert TANF_T3.objects.count() == 6
+
+    t3_models = TANF_T3.objects.all()
+    t3_1 = t3_models[0]
+    assert t3_1.RPT_MONTH_YEAR == 202010
+    assert t3_1.CASE_NUMBER == '11111111112'
+    assert t3_1.FAMILY_AFFILIATION == 1
+    assert t3_1.GENDER == 2
+    assert t3_1.EDUCATION_LEVEL == '98'
+
+    t3_6 = t3_models[5]
+    assert t3_6.RPT_MONTH_YEAR == 202010
+    assert t3_6.CASE_NUMBER == '11111111151'
+    assert t3_6.FAMILY_AFFILIATION == 1
+    assert t3_6.GENDER == 2
+    assert t3_6.EDUCATION_LEVEL == '98'
