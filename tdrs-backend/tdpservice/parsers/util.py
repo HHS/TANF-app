@@ -15,9 +15,6 @@ def value_is_empty(value, length):
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
     """Create and return a ParserError using args."""
-    model = schema.model if schema else None
-
-    # make fields optional
     return ParserError.objects.create(
         file=datafile,
         row_number=line_number,
@@ -28,8 +25,8 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         case_number=getattr(record, 'CASE_NUMBER', None),
         error_message=error_message,
         error_type=error_category,
-        content_type=ContentType.objects.get(
-            model=model
+        content_type=ContentType.objects.get_for_model(
+            model=schema.model if schema else None
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'pk', 0) if record and not isinstance(record, dict) else None,
         fields_json=None
@@ -191,14 +188,14 @@ class RowSchema:
         errors = []
 
         for field in self.fields:
-            for validator in field.validators:
-                value = None
-                if isinstance(instance, dict):
-                    value = instance.get(field.name, None)
-                else:
-                    value = getattr(instance, field.name, None)
+            value = None
+            if isinstance(instance, dict):
+                value = instance.get(field.name, None)
+            else:
+                value = getattr(instance, field.name, None)
 
-                if field.required and not value_is_empty(value, field.endIndex-field.startIndex):
+            if field.required and not value_is_empty(value, field.endIndex-field.startIndex):
+                for validator in field.validators:
                     validator_is_valid, validator_error = validator(value)
                     is_valid = False if not validator_is_valid else is_valid
                     if validator_error:
@@ -211,17 +208,17 @@ class RowSchema:
                                 field=field
                             )
                         )
-                elif field.required:
-                    is_valid = False
-                    errors.append(
-                        generate_error(
-                            schema=self,
-                            error_category=ParserErrorCategoryChoices.FIELD_VALUE,
-                            error_message=f"{field.name} is required but a value was not provided.",
-                            record=instance,
-                            field=field
-                        )
+            elif field.required:
+                is_valid = False
+                errors.append(
+                    generate_error(
+                        schema=self,
+                        error_category=ParserErrorCategoryChoices.FIELD_VALUE,
+                        error_message=f"{field.name} is required but a value was not provided.",
+                        record=instance,
+                        field=field
                     )
+                )
 
         return is_valid, errors
 

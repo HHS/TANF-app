@@ -454,3 +454,84 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile):
     assert t3_6.FAMILY_AFFILIATION == 1
     assert t3_6.GENDER == 2
     assert t3_6.EDUCATION_LEVEL == '98'
+
+
+@pytest.fixture
+def bad_tanf_s1__row_missing_required_field(stt_user, stt):
+    """Fixture for small_tanf_section1."""
+    return create_test_datafile('small_bad_tanf_s1', stt_user, stt)
+
+
+@pytest.mark.django_db
+def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field):
+    """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
+    errors = parse.parse_datafile(bad_tanf_s1__row_missing_required_field)
+
+    parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
+    assert parser_errors.count() == 4
+
+    row_2_error = parser_errors.get(row_number=2)
+    assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_2_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+
+    row_3_error = parser_errors.get(row_number=3)
+    assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_3_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+
+    row_4_error = parser_errors.get(row_number=4)
+    assert row_4_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_4_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+
+    row_5_error = parser_errors.get(row_number=5)
+    assert row_5_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_5_error.error_message == 'No schema selected.'
+
+    assert errors == {
+        2: [row_2_error],
+        3: [row_3_error],
+        4: {1: [row_4_error]},
+        5: [row_5_error],
+    }
+
+
+@pytest.fixture
+def bad_ssp_s1__row_missing_required_field(stt_user, stt):
+    """Fixture for ssp_section1_datafile."""
+    return create_test_datafile('small_bad_ssp_s1', stt_user, stt, 'SSP Active Case Data')
+
+
+@pytest.mark.django_db
+def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_field):
+    """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
+    errors = parse.parse_datafile(bad_ssp_s1__row_missing_required_field)
+
+    parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
+    assert parser_errors.count() == 5
+
+    row_2_error = parser_errors.get(row_number=2)
+    assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_2_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+
+    row_3_error = parser_errors.get(row_number=3)
+    assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_3_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+
+    row_4_error = parser_errors.get(row_number=4)
+    assert row_4_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_4_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+
+    row_5_error = parser_errors.get(row_number=5)
+    assert row_5_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert row_5_error.error_message == 'No schema selected.'
+
+    trailer_error = parser_errors.get(row_number=-1)
+    assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert trailer_error.error_message == 'Value length 15 does not match 23.'
+
+    assert errors == {
+        2: [row_2_error],
+        3: [row_3_error],
+        4: {1: [row_4_error]},
+        5: [row_5_error],
+        'trailer': [trailer_error],
+    }
