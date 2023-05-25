@@ -114,6 +114,7 @@ def test_parse_big_file(test_big_file):
     parser_errors = ParserError.objects.filter(file=test_big_file)
 
     assert errors == {}
+    assert parser_errors.count() == 0
     assert TANF_T1.objects.count() == expected_t1_record_count
     assert TANF_T2.objects.count() == expected_t2_record_count
     assert TANF_T3.objects.count() == expected_t3_record_count
