@@ -49,7 +49,7 @@ This runs the python3 version installed on the system
 
 ## Backup
 ```bash
-./python /app/scripts/db_backup.py -b -f <filename> -d <database URI>
+./python /app/tdpservice/scheduling/db_backup.py -b -f <filename> -d <database URI>
 ```
 where:
 + -b: run backup script
@@ -66,3 +66,4 @@ where:
 + -f <filename> [Optional]: defines the filename for backup file. If not defines, it defaults to backup.pg. The filename
 also accepts absolute path: e.g: /tmp/backup.pg
 The utility uses the URI which includes all addresses needed to connect to remote AWS RDS.
++ -d <database URI> [Optional]: URI format: ```postgresql://$<USERNAME>:$<PASSWORD>@$<HOST>:$<PORT>/$<NAME>```
