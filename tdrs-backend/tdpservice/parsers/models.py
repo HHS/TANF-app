@@ -44,7 +44,7 @@ class ParserError(models.Model):
     error_type = models.TextField(max_length=128, choices=ParserErrorCategoryChoices.choices)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
-    object_id = models.PositiveIntegerField(null=True)
+    object_id = models.UUIDField(null=True)
     content_object = GenericForeignKey()
 
     created_at = models.DateTimeField(auto_now_add=True)

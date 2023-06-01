@@ -1,6 +1,7 @@
 """Utility file for functions shared between all parsers even preparser."""
 from .models import ParserError, ParserErrorCategoryChoices
 from django.contrib.contenttypes.models import ContentType
+import uuid
 
 
 def value_is_empty(value, length):
@@ -28,7 +29,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         content_type=ContentType.objects.get_for_model(
             model=schema.model if schema else None
         ) if record and not isinstance(record, dict) else None,
-        object_id=getattr(record, 'pk', 0) if record and not isinstance(record, dict) else None,
+        object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
         fields_json=None
     )
 

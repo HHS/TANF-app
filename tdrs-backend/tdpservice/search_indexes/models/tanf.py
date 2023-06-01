@@ -1,5 +1,6 @@
 """Models representing parsed TANF data file records submitted to TDP."""
 
+import uuid
 from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
 from tdpservice.parsers.models import ParserError
@@ -12,8 +13,7 @@ class TANF_T1(models.Model):
     Mapped to an elastic search index.
     """
 
-    # def __is_valid__():
-    # TODO: might need a correlating validator to check across fields
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     error = GenericRelation(ParserError)
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -74,6 +74,8 @@ class TANF_T2(models.Model):
 
     Mapped to an elastic search index.
     """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
@@ -154,6 +156,8 @@ class TANF_T3(models.Model):
     Mapped to an elastic search index.
     """
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
@@ -185,6 +189,8 @@ class TANF_T4(models.Model):
     Mapped to an elastic search index.
     """
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)
     case_number = models.CharField(max_length=11, null=False, blank=False)
@@ -211,6 +217,8 @@ class TANF_T5(models.Model):
 
     Mapped to an elastic search index.
     """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)
@@ -252,6 +260,8 @@ class TANF_T6(models.Model):
     Mapped to an elastic search index.
     """
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)
     fips_code = models.CharField(max_length=100, null=False, blank=False)
@@ -280,6 +290,8 @@ class TANF_T7(models.Model):
 
     Mapped to an elastic search index.
     """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)

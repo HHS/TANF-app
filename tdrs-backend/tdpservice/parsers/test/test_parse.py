@@ -72,6 +72,8 @@ def test_parse_section_mismatch(test_datafile):
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == 'Section does not match.'
+    assert err.content_type is None
+    assert err.object_id is None
     assert errors == {
         'document': [err]
     }
@@ -93,6 +95,8 @@ def test_parse_wrong_program_type(test_datafile):
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == 'Section does not match.'
+    assert err.content_type is None
+    assert err.object_id is None
     assert errors == {
         'document': [err]
     }
@@ -119,6 +123,8 @@ def test_parse_big_file(test_big_file):
     row_18_error = parser_errors.get(row_number=18)
     assert row_18_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_18_error.error_message == 'MONTHS_FED_TIME_LIMIT is required but a value was not provided.'
+    assert row_18_error.content_type.model == 'tanf_t2'
+    assert row_18_error.object_id is not None
 
     assert errors[18] == [row_18_error]
 
@@ -146,6 +152,8 @@ def test_parse_bad_test_file(bad_test_file):
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == 'Value length 24 does not match 23.'
+    assert err.content_type is None
+    assert err.object_id is None
     assert errors == {
         'header': [err]
     }
@@ -170,6 +178,8 @@ def test_parse_bad_file_missing_header(bad_file_missing_header):
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == 'No headers found.'
+    assert err.content_type is None
+    assert err.object_id is None
     assert errors == {
         'document': [err]
     }
@@ -194,6 +204,8 @@ def test_parse_bad_file_multiple_headers(bad_file_multiple_headers):
     assert err.row_number == 9
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == 'Multiple headers found.'
+    assert err.content_type is None
+    assert err.object_id is None
     assert errors == {
         'document': [err]
     }
@@ -218,6 +230,8 @@ def test_parse_big_bad_test_file(big_bad_test_file):
     assert err.row_number == 7204
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == 'Multiple trailers found.'
+    assert err.content_type is None
+    assert err.object_id is None
     assert errors == {
         'document': [err]
     }
@@ -240,10 +254,14 @@ def test_parse_bad_trailer_file(bad_trailer_file):
     trailer_error = parser_errors.get(row_number=-1)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error.error_message == 'Value length 11 does not match 23.'
+    assert trailer_error.content_type is None
+    assert trailer_error.object_id is None
 
     row_error = parser_errors.get(row_number=2)
     assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_error.error_message == 'Value length 7 does not match 156.'
+    assert row_error.content_type is None
+    assert row_error.object_id is None
 
     assert errors == {
         'trailer': [trailer_error],
@@ -270,18 +288,26 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     trailer_error_1 = trailer_errors.first()
     assert trailer_error_1.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error_1.error_message == 'Value length 7 does not match 23.'
+    assert trailer_error_1.content_type is None
+    assert trailer_error_1.object_id is None
 
     trailer_error_2 = trailer_errors.last()
     assert trailer_error_2.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error_2.error_message == 'T1trash does not start with TRAILER.'
+    assert trailer_error_2.content_type is None
+    assert trailer_error_2.object_id is None
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_2_error.error_message == 'Value length 117 does not match 156.'
+    assert row_2_error.content_type is None
+    assert row_2_error.object_id is None
 
     row_3_error = parser_errors.get(row_number=3)
     assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_3_error.error_message == 'Value length 7 does not match 156.'
+    assert row_3_error.content_type is None
+    assert row_3_error.object_id is None
 
     assert errors == {
         'trailer': [
@@ -312,6 +338,8 @@ def test_parse_empty_file(empty_file):
     assert err.row_number == 0
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == 'No headers found.'
+    assert err.content_type is None
+    assert err.object_id is None
     assert errors == {
         'document': [err]
     }
@@ -340,6 +368,8 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile):
     assert err.row_number == -1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == 'Value length 15 does not match 23.'
+    assert err.content_type is None
+    assert err.object_id is None
     assert errors == {
         'trailer': [err]
     }
@@ -480,18 +510,26 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_2_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+    assert row_2_error.content_type.model == 'tanf_t1'
+    assert row_2_error.object_id is not None
 
     row_3_error = parser_errors.get(row_number=3)
     assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_3_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+    assert row_3_error.content_type.model == 'tanf_t2'
+    assert row_3_error.object_id is not None
 
     row_4_error = parser_errors.get(row_number=4)
     assert row_4_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_4_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+    assert row_4_error.content_type.model == 'tanf_t3'
+    assert row_4_error.object_id is not None
 
     row_5_error = parser_errors.get(row_number=5)
     assert row_5_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_5_error.error_message == 'No schema selected.'
+    assert row_5_error.content_type is None
+    assert row_5_error.object_id is None
 
     assert errors == {
         2: [row_2_error],
@@ -518,22 +556,32 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_2_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+    assert row_2_error.content_type.model == 'ssp_m1'
+    assert row_2_error.object_id is not None
 
     row_3_error = parser_errors.get(row_number=3)
     assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_3_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+    assert row_3_error.content_type.model == 'ssp_m2'
+    assert row_3_error.object_id is not None
 
     row_4_error = parser_errors.get(row_number=4)
     assert row_4_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_4_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+    assert row_4_error.content_type.model == 'ssp_m3'
+    assert row_4_error.object_id is not None
 
     row_5_error = parser_errors.get(row_number=5)
     assert row_5_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_5_error.error_message == 'No schema selected.'
+    assert row_5_error.content_type is None
+    assert row_5_error.object_id is None
 
     trailer_error = parser_errors.get(row_number=-1)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error.error_message == 'Value length 15 does not match 23.'
+    assert trailer_error.content_type is None
+    assert trailer_error.object_id is None
 
     assert errors == {
         2: [row_2_error],
