@@ -1,7 +1,6 @@
 """Utility file for functions shared between all parsers even preparser."""
 from .models import ParserError, ParserErrorCategoryChoices
 from django.contrib.contenttypes.models import ContentType
-import uuid
 
 
 def value_is_empty(value, length):
