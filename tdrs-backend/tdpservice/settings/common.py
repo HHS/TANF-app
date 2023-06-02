@@ -271,10 +271,10 @@ class Common(Configuration):
 
     # Django Rest Framework
     DEFAULT_RENDERER_CLASSES = ['rest_framework.renderers.JSONRenderer']
-    TEST_REQUEST_RENDERER_CLASSES = ['rest_framework.renderers.JSONRenderer']
+    TEST_REQUEST_RENDERER_CLASSES = ['rest_framework.renderers.JSONRenderer',
+                                     'rest_framework.renderers.MultiPartRenderer']
     if DEBUG:
         DEFAULT_RENDERER_CLASSES.append('rest_framework.renderers.BrowsableAPIRenderer')
-        TEST_REQUEST_RENDERER_CLASSES.append('rest_framework.renderers.MultiPartRenderer')
 
     REST_FRAMEWORK = {
         "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
