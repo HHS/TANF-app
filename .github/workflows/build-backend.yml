@@ -41,4 +41,4 @@ jobs:
         payload: '{
           "build_and_test_backend": true,
           "triggered": true
-        },'
+        }'
