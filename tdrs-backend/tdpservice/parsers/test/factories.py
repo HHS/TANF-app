@@ -70,11 +70,10 @@ class ParserErrorFactory(factory.django.DjangoModelFactory):
     column_number = 1
     item_number = 1
     field_name = "test field name"
-    category = ParserErrorCategoryChoices.PRE_CHECK
     case_number = '1'
     rpt_month_year = 202001
     error_message = "test error message"
-    error_type = "out of range"
+    error_type = ParserErrorCategoryChoices.PRE_CHECK
 
     created_at = factory.Faker("date_time")
     fields_json = {"test": "test"}

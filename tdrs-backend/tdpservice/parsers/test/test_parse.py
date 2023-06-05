@@ -66,6 +66,9 @@ def test_parse_section_mismatch(test_datafile, dfs):
     test_datafile.section = 'Closed Case Data'
     test_datafile.save()
 
+    dfs.datafile = test_datafile
+    dfs.save()
+
     errors = parse.parse_datafile(test_datafile)
     assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=test_datafile)
@@ -536,7 +539,7 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     row_5_error = parser_errors.get(row_number=5)
     assert row_5_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_5_error.error_message == 'No schema selected.'
+    assert row_5_error.error_message == 'Unknown Record_Type was found.'
     assert row_5_error.content_type is None
     assert row_5_error.object_id is None
 
@@ -582,7 +585,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
 
     row_5_error = parser_errors.get(row_number=5)
     assert row_5_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_5_error.error_message == 'No schema selected.'
+    assert row_5_error.error_message == 'Unknown Record_Type was found.'
     assert row_5_error.content_type is None
     assert row_5_error.object_id is None
 

@@ -50,7 +50,7 @@ def test_dfs_set_status(dfs):
 
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
-    parser_errors.append(ParserErrorFactory(row_number=5, category=ParserErrorCategoryChoices.PRE_CHECK))
+    parser_errors.append(ParserErrorFactory(row_number=5, error_type=ParserErrorCategoryChoices.PRE_CHECK))
     dfs.status = dfs.get_status(errors={'document': parser_errors})
 
     assert dfs.status == DataFileSummary.Status.REJECTED

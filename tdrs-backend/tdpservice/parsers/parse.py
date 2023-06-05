@@ -133,8 +133,8 @@ def parse_datafile_lines(datafile, program_type, section):
                 datafile=datafile,
                 line_number=line_number,
                 schema=None,
-                error_category=ParserErrorCategoryChoices.FIELD_VALUE,
-                error_message="Record_Type '{}' not yet implemented.",
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                error_message="Unknown Record_Type was found.",
                 record=None,
                 field="Record_Type",
             )]

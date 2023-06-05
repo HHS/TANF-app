@@ -146,6 +146,6 @@ class DataFileSummary(models.Model):
             if key == 'trailer':
                 continue
             for parserError in errors[key]:
-                if parserError.category == ParserErrorCategoryChoices.PRE_CHECK:
+                if parserError.error_type == ParserErrorCategoryChoices.PRE_CHECK:
                     return True
         return False
