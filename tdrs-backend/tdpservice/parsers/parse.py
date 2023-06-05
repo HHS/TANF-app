@@ -198,8 +198,8 @@ def get_schema_options(program_type):
             return {
                 'A': {
                     'T1': schema_defs.tanf.t1,
-                    # 'T2': schema_defs.tanf.t2,
-                    # 'T3': schema_defs.tanf.t3,
+                    'T2': schema_defs.tanf.t2,
+                    'T3': schema_defs.tanf.t3,
                 },
                 'C': {
                     # 'T4': schema_options.t4,

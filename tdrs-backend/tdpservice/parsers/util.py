@@ -14,23 +14,20 @@ def value_is_empty(value, length):
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
     """Create and return a ParserError using args."""
-    model = schema.model if schema else None
-
-    # make fields optional
     return ParserError.objects.create(
         file=datafile,
         row_number=line_number,
-        column_number=getattr(field, 'item', 0),
-        item_number=getattr(field, 'item', 0),
-        field_name=getattr(field, 'name', 'none'),
-        category=error_category,
+        column_number=getattr(field, 'item', None),
+        item_number=getattr(field, 'item', None),
+        field_name=getattr(field, 'name', None),
+        rpt_month_year=getattr(record, 'RPT_MONTH_YEAR', None),
         case_number=getattr(record, 'CASE_NUMBER', None),
         error_message=error_message,
         error_type=error_category,
-        content_type=ContentType.objects.get(
-            model=model if record and not isinstance(record, dict) else 'ssp_m1'
-        ),
-        object_id=getattr(record, 'pk', 0) if record and not isinstance(record, dict) else 0,
+        content_type=ContentType.objects.get_for_model(
+            model=schema.model if schema else None
+        ) if record and not isinstance(record, dict) else None,
+        object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
         fields_json=None
     )
 
@@ -195,14 +192,14 @@ class RowSchema:
         errors = []
 
         for field in self.fields:
-            for validator in field.validators:
-                value = None
-                if isinstance(instance, dict):
-                    value = instance.get(field.name, None)
-                else:
-                    value = getattr(instance, field.name, None)
+            value = None
+            if isinstance(instance, dict):
+                value = instance.get(field.name, None)
+            else:
+                value = getattr(instance, field.name, None)
 
-                if field.required and not value_is_empty(value, field.endIndex-field.startIndex):
+            if field.required and not value_is_empty(value, field.endIndex-field.startIndex):
+                for validator in field.validators:
                     validator_is_valid, validator_error = validator(value)
                     is_valid = False if not validator_is_valid else is_valid
                     if validator_error:
@@ -215,17 +212,17 @@ class RowSchema:
                                 field=field
                             )
                         )
-                elif field.required:
-                    is_valid = False
-                    errors.append(
-                        generate_error(
-                            schema=self,
-                            error_category=ParserErrorCategoryChoices.FIELD_VALUE,
-                            error_message=f"{field.name} is required but a value was not provided.",
-                            record=instance,
-                            field=field
-                        )
+            elif field.required:
+                is_valid = False
+                errors.append(
+                    generate_error(
+                        schema=self,
+                        error_category=ParserErrorCategoryChoices.FIELD_VALUE,
+                        error_message=f"{field.name} is required but a value was not provided.",
+                        record=instance,
+                        field=field
                     )
+                )
 
         return is_valid, errors
 
@@ -254,7 +251,6 @@ class MultiRecordRowSchema:
     """Maps a line to multiple `RowSchema`s and runs all parsers and validators."""
 
     def __init__(self, schemas):
-        # self.common_fields = None
         self.schemas = schemas
 
     def parse_and_validate(self, line, generate_error):

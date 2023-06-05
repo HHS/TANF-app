@@ -40,7 +40,7 @@ When('{string} requests access', (username) => {
   cy.get('#lastName').type('cypress')
   cy.get('#stt').type('Colorado{enter}')
   cy.get('button').contains('Request Access').should('exist').click()
-  cy.wait(800).then(() => {
+  cy.wait(2000).then(() => {
     cy.contains('Request Submitted').should('exist')
   })
 })

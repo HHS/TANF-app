@@ -270,14 +270,17 @@ class Common(Configuration):
 
 
     # Django Rest Framework
+    DEFAULT_RENDERER_CLASSES = ['rest_framework.renderers.JSONRenderer']
+    TEST_REQUEST_RENDERER_CLASSES = ['rest_framework.renderers.JSONRenderer',
+                                     'rest_framework.renderers.MultiPartRenderer']
+    if DEBUG:
+        DEFAULT_RENDERER_CLASSES.append('rest_framework.renderers.BrowsableAPIRenderer')
+
     REST_FRAMEWORK = {
         "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
         "PAGE_SIZE": int(os.getenv("DJANGO_PAGINATION_LIMIT", 32)),
         "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S%z",
-        "DEFAULT_RENDERER_CLASSES": (
-            "rest_framework.renderers.JSONRenderer",
-            "rest_framework.renderers.BrowsableAPIRenderer",
-        ),
+        "DEFAULT_RENDERER_CLASSES": DEFAULT_RENDERER_CLASSES,
         "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
         "DEFAULT_AUTHENTICATION_CLASSES": (
             "tdpservice.users.authentication.CustomAuthentication",
@@ -288,10 +291,7 @@ class Common(Configuration):
             "django_filters.rest_framework.DjangoFilterBackend",
         ],
         "TEST_REQUEST_DEFAULT_FORMAT": "json",
-        "TEST_REQUEST_RENDERER_CLASSES": [
-            "rest_framework.renderers.MultiPartRenderer",
-            "rest_framework.renderers.JSONRenderer"
-        ],
+        "TEST_REQUEST_RENDERER_CLASSES": TEST_REQUEST_RENDERER_CLASSES,
     }
 
     AUTHENTICATION_BACKENDS = (
@@ -435,7 +435,7 @@ class Common(Configuration):
     CELERY_BEAT_SCHEDULE = {
         'name': {
             'task': 'tdpservice.scheduling.tasks.postgres_backup',
-            'schedule': crontab(minute='*', hour='4'), # Runs at midnight EST
+            'schedule': crontab(minute='0', hour='4'), # Runs at midnight EST
             'args': "-b",
             'options': {
                 'expires': 15.0,
@@ -443,7 +443,7 @@ class Common(Configuration):
         },
         'name': {
             'task': 'tdpservice.scheduling.tasks.check_for_accounts_needing_deactivation_warning',
-            'schedule': crontab(day_of_week='*', hour='13', minute='*'), # Every day at 1pm UTC (9am EST)
+            'schedule': crontab(day_of_week='*', hour='13', minute='0'), # Every day at 1pm UTC (9am EST)
 
             'options': {
                 'expires': 15.0,
@@ -451,7 +451,7 @@ class Common(Configuration):
         },
         'Email Admin Number of Access Requests' : {
             'task': 'tdpservice.scheduling.tasks.email_admin_num_access_requests',
-            'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9am EST)
+            'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
         }
     }
 
