@@ -78,7 +78,7 @@ const SectionSubmissionHistory = ({ section, label, files }) => {
                 <th>Submitted On</th>
                 <th>Submitted By</th>
                 <th>File Name</th>
-                <th>Error Reports</th>
+                <th>Error Reports (In development)</th>
               </tr>
             </thead>
             <tbody>
