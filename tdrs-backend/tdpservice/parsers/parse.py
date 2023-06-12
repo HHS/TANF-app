@@ -3,7 +3,6 @@
 import os
 from . import schema_defs, validators, util
 from .models import ParserErrorCategoryChoices
-from tdpservice.data_files.models import DataFile
 
 
 def parse_datafile(datafile):
@@ -45,30 +44,13 @@ def parse_datafile(datafile):
         errors['trailer'] = trailer_errors
 
     # ensure file section matches upload section
-    section_names = {
-        'TAN': {
-            'A': DataFile.Section.ACTIVE_CASE_DATA,
-            'C': DataFile.Section.CLOSED_CASE_DATA,
-            'G': DataFile.Section.AGGREGATE_DATA,
-            'S': DataFile.Section.STRATUM_DATA,
-        },
-        'SSP': {
-            'A': DataFile.Section.SSP_ACTIVE_CASE_DATA,
-            'C': DataFile.Section.SSP_CLOSED_CASE_DATA,
-            'G': DataFile.Section.SSP_AGGREGATE_DATA,
-            'S': DataFile.Section.SSP_STRATUM_DATA,
-        },
-    }
-
-    # TODO: utility transformations between text to schemas and back
-    # text > prog > sections > schemas
-
     program_type = header['program_type']
     section = header['type']
 
     section_is_valid, section_error = validators.validate_header_section_matches_submission(
         datafile,
-        section_names.get(program_type, {}).get(section)
+        program_type,
+        section,
     )
 
     if not section_is_valid:
@@ -189,6 +171,15 @@ def parse_datafile_line(line, schema, generate_error):
         record.save()
 
     return record_is_valid, record_errors
+    return (False, [
+        generate_error(
+            schema=None,
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+            error_message="Record Type is missing from record.",
+            record=None,
+            field=None
+        )
+    ])
 
 
 def get_schema_options(program_type):

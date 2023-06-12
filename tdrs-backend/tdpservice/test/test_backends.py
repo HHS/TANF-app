@@ -1,5 +1,6 @@
 """Tests for storage backends available for use within tdpservice."""
 import pytest
+import math
 
 from tdpservice.backends import DataFilesS3Storage, StaticFilesS3Storage
 
@@ -43,3 +44,80 @@ def test_datafiles_and_staticfiles_storages_have_distinct_credentials(
     """Test that the credentials used differ between backends."""
     assert datafiles_backend.access_key != staticfiles_backend.access_key
     assert datafiles_backend.secret_key != staticfiles_backend.secret_key
+
+
+char_map = [
+    (1, 'I'),
+    (4, 'IV'),
+    (5, 'V'),
+    (9, 'IX'),
+    (10, 'X'),
+    (40, 'XL'),
+    (50, 'L'),
+    (90, 'XC'),
+    (100, 'C'),
+    (400, 'CD'),
+    (500, 'D'),
+    (900, 'CM'),
+    (1000, 'M'),
+]
+
+
+def arabic_to_roman(arabic):
+    for (a, r) in reversed(char_map):
+        if arabic == a:
+            return r
+        if arabic > a:
+            return f"{r}{arabic_to_roman(arabic - a)}"
+
+
+@pytest.mark.parametrize('arabic,roman', [
+    (1, 'I'),
+    (2, 'II'),
+    (3, 'III'),
+    (4, 'IV'),
+    (5, 'V'),
+    (6, 'VI'),
+    (7, 'VII'),
+    (8, 'VIII'),
+    (9, 'IX'),
+    (10, 'X'),
+    (11, 'XI'),
+    (20, 'XX'),
+    (23, 'XXIII'),
+    (24, 'XXIV'),
+    (25, 'XXV'),
+    (27, 'XXVII'),
+    (29, 'XXIX'),
+    (30, 'XXX'),
+    (39, 'XXXIX'),
+    (40, 'XL'),
+    (50, 'L'),
+    (60, 'LX'),
+    (70, 'LXX'),
+    (73, 'LXXIII'),
+    (80, 'LXXX'),
+    (90, 'XC'),
+    (100, 'C'),
+    (110, 'CX'),
+    (190, 'CXC'),
+    (200, 'CC'),
+    (300, 'CCC'),
+    (400, 'CD'),
+    (492, 'CDXCII'),
+    (500, 'D'),
+    (600, 'DC'),
+    (700, 'DCC'),
+    (800, 'DCCC'),
+    (900, 'CM'),
+    (1000, 'M'),
+    (1048, 'MXLVIII'),
+    (1100, 'MC'),
+    (2000, 'MM'),
+    (2001, 'MMI'),
+    (3000, 'MMM'),
+    (3549, 'MMMDXLIX'),
+    (3999, 'MMMCMXCIX'),
+])
+def test_arabic_to_roman(arabic, roman):
+    assert arabic_to_roman(arabic) == roman

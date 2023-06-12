@@ -5,10 +5,21 @@ from ..util import RowSchema, Field
 from .. import validators
 
 
+# def header_length_validator(length):
+#     return validators.make_validator(
+#         lambda value: len(value) == length,
+#         lambda value: f'Header length is {len(value)} but must be {length} characters.'
+#     )
+
+
 header = RowSchema(
     model=dict,
     preparsing_validators=[
-        validators.hasLength(23),
+        # header_length_validator(23),
+        validators.hasLength(
+            23,
+            lambda value, length: f'Header length is {len(value)} but must be {length} characters.'
+        ),
         validators.startsWith('HEADER'),
     ],
     postparsing_validators=[],
