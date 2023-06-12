@@ -10,7 +10,7 @@ http {
 
     server {
         listen 80;
-        client_max_body_size 50m;
+        client_max_body_size 100m;
         root /usr/share/nginx/html;
         include locations.conf;
 
@@ -84,7 +84,7 @@ http {
         add_header Content-Security-Policy $CSP;
     }
 
-    limit_req_zone $binary_remote_addr zone=limitreqsbyaddr:200m rate=100r/s;
+    limit_req_zone $binary_remote_addr zone=limitreqsbyaddr:20m rate=1000r/s;
     limit_req_status 444;
 
     # Logging format
