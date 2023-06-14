@@ -31,7 +31,9 @@ function App() {
       <GovBanner />
       <Header />
       <Alert />
-      <main id="main-content">{/* <Routes /> */}</main>
+      <main id="main-content">
+        <Routes />
+      </main>
       <Footer />
     </>
   )
