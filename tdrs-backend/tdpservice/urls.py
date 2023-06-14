@@ -80,4 +80,4 @@ doc_patterns = [
     path('redocs/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 
-urlpatterns.extend(doc_patterns)
+# urlpatterns.extend(doc_patterns)
