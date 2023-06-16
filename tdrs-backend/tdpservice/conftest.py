@@ -18,6 +18,7 @@ from tdpservice.core.admin import LogEntryAdmin
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.security.test.factories import OwaspZapScanFactory
 from tdpservice.stts.models import STT, Region
+from tdpservice.users.models import AccountApprovalStatusChoices
 from tdpservice.users.test.factories import (
     AdminSTTUserFactory,
     AdminUserFactory,
@@ -44,12 +45,26 @@ def user():
 
 
 @pytest.fixture
+def stt_data_analyst():
+    """Return a basic, approved, data analyst stt user."""
+    user = UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
+    user.account_approval_status = AccountApprovalStatusChoices.APPROVED
+    user.save()
+    return user
+
+@pytest.fixture
+def stt_data_analyst_initial():
+    """Return a basic, data analyst stt user."""
+    return UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
+
+@pytest.fixture
 def regional_user(region, stt):
     """Return a regional staff user."""
     user = STTUserFactory.create(
         groups=(Group.objects.get(name="OFA Regional Staff"),),
     )
     user.region = region
+    user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
     return user
 
@@ -62,6 +77,7 @@ def user_in_region(stt, region):
         groups=(Group.objects.get(name="Data Analyst"),),
     )
     user.stt = stt
+    user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
     return user
 
@@ -73,6 +89,7 @@ def user_in_other_region(other_stt, other_region):
         groups=(Group.objects.get(name="Data Analyst"),),
     )
     user.stt = other_stt
+    user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
     return user
 
@@ -84,34 +101,44 @@ def stt_user():
 
 
 @pytest.fixture
+def stt_user_with_group():
+    """Return a user without an STT but with a group for STT tests."""
+    return STTUserFactory.create(groups=(Group.objects.get(name="Data Analyst"),))
+
+
+@pytest.fixture
 def ofa_admin_stt_user():
     """Return an admin user without an STT for Data File tests."""
-    return AdminSTTUserFactory.create(
-        groups=(Group.objects.get(name="OFA Admin"),))
+    ofa_admin = AdminSTTUserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
+    ofa_admin.account_approval_status = AccountApprovalStatusChoices.APPROVED
+    ofa_admin.save()
+    return ofa_admin
 
 
 @pytest.fixture
 def ofa_admin():
     """Return an ofa admin user."""
-    return UserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
+    ofa_admin = UserFactory.create(groups=(Group.objects.get(name="OFA Admin"),))
+    ofa_admin.account_approval_status = AccountApprovalStatusChoices.APPROVED
+    ofa_admin.save()
+    return ofa_admin
 
 
 @pytest.fixture
 def ofa_system_admin():
     """Return on OFA System Admin user."""
-    return UserFactory.create(
-        groups=(
-            Group.objects.get(
-                name='OFA System Admin'),))
+    ofa_sys_adming = UserFactory.create(groups=(Group.objects.get(name='OFA System Admin'),))
+    ofa_sys_adming.account_approval_status = AccountApprovalStatusChoices.APPROVED
+    ofa_sys_adming.save()
+    return ofa_sys_adming
 
 
 @pytest.fixture
 def data_analyst(stt):
     """Return a data analyst user."""
-    user = UserFactory.create(
-        groups=(Group.objects.get(name="Data Analyst"),),
-    )
+    user = UserFactory.create(groups=(Group.objects.get(name="Data Analyst"),),)
     user.stt = stt
+    user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
     return user
 

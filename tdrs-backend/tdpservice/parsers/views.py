@@ -1,4 +1,5 @@
 """Views for the parsers app."""
+from tdpservice.users.permissions import IsApprovedPermission
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from .serializers import ParsingErrorSerializer
@@ -16,6 +17,7 @@ class ParsingErrorViewSet(ModelViewSet):
 
     queryset = ParserError.objects.all()
     serializer_class = ParsingErrorSerializer
+    permission_classes = [IsApprovedPermission]
 
     def list(self, request, *args, **kwargs):
         """Override list to return xls file."""
@@ -50,6 +52,12 @@ class ParsingErrorViewSet(ModelViewSet):
                           'row_number',
                           'column_number']
 
+        # write beta banner
+        worksheet.write(row, col,
+                        "Error reporting in TDP is still in development." +
+                        "We'll be in touch when it's ready to use!" +
+                        "For now please refer to the reports you receive via email")
+        row, col = 2, 0
         # write csv header
         [worksheet.write(row, col, key) for col, key in enumerate(report_columns)]
 

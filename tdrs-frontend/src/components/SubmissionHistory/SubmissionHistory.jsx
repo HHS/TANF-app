@@ -44,7 +44,7 @@ const SubmissionHistoryRow = ({ file }) => {
       <td>
         {file.hasError > 0 ? (
           <button className="section-download" onClick={returned_errors}>
-            {file.year}-{file.quarter}-{file.section}
+            {file.year}-{file.quarter}-{file.section}.xlsx
           </button>
         ) : (
           'Currently Unavailable'
@@ -78,7 +78,7 @@ const SectionSubmissionHistory = ({ section, label, files }) => {
                 <th>Submitted On</th>
                 <th>Submitted By</th>
                 <th>File Name</th>
-                <th>Error Reports</th>
+                <th>Error Reports (In development)</th>
               </tr>
             </thead>
             <tbody>

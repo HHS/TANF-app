@@ -21,4 +21,4 @@ reload = True
 # Daemonize the Gunicorn process (detach & enter background)
 # daemon = True
 
-timeout = 10
+timeout = 100

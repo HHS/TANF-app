@@ -65,6 +65,9 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(2\).regex='^https?://.*\.amazonaws\.(?:com|org|net)/.*$' \
   -config globalexcludeurl.url_list.url\(2\).description='TDP S3 buckets' \
   -config globalexcludeurl.url_list.url\(2\).enabled=true \
+  -config globalexcludeurl.url_list.url\(3\).regex='^https:\/\/.*\.acf.hhs.gov\/v1\/login\/.*$' \
+  -config globalexcludeurl.url_list.url\(3\).description='Site - identity pages' \
+  -config globalexcludeurl.url_list.url\(3\).enabled=true \
   -config spider.postform=true"
 
 # How long ZAP will crawl the app with the spider process
