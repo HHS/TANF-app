@@ -15,7 +15,6 @@ class ParserErrorFactory(factory.django.DjangoModelFactory):
     column_number = 1
     item_number = 1
     field_name = "test field name"
-    category = 1
     case_number = '1'
     rpt_month_year = 202001
     error_message = "test error message"
