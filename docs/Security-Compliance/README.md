@@ -2,6 +2,8 @@
 
 This subdirectory contains documentation that describes our practices as it relates to keeping the TDP system in compliance with security requirements for [FISMA moderate systems](https://csrc.nist.gov/CSRC/media/Projects/risk-management/documents/02-Categorize%20Step/NIST%20RMF%20Categorize%20Step-FAQs.pdf) (*Note: see section 18 for definition*) and other related federal system regulations. 
 
+The TANF Data Portal received its Authority to Operate (ATO) from the ACF Chief Information Officer on May 18, 2021. The ATO was extended on March 29, 2023 through May 24, 2024.
+
 ## Table of Contents
 * **[Security Controls](./Security-Controls)** - Herein you will find information about TDP's security controls (security requirements laid out by the [National Institute of Standards and Technology (NIST)](https://www.nist.gov/)), documented as part of the authority to operate (ATO) process in coordination with ACF's Office of the Chief Information Officer (OCIO).
 * **[White House Cybersecurity Executive Order 14208](./WH_CybersecurityEO.md)** - includes information about the status of TANF Data Portal's compliance with White House Cybersecurity Executive Order 14208 issued on May 12, 2021.
