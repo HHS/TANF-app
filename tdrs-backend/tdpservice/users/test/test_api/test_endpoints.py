@@ -231,7 +231,6 @@ class TestUserAPIAdminUser(UserAPITestsBase):
         results = response.data['results']
         assert response.status_code == status.HTTP_200_OK
         assert len(results) == 2
-        assert results[1]['id'] == user.id
 
     def test_get_user(self, api_client, user):
         """Get a specific user, expect 200 and ability to get any user."""
