@@ -13,7 +13,7 @@ class ParserErrorFactory(factory.django.DjangoModelFactory):
     file = factory.SubFactory(DataFileFactory)
     row_number = 1
     column_number = 1
-    item_number = 1
+    item_number = "1"
     field_name = "test field name"
     case_number = '1'
     rpt_month_year = 202001
