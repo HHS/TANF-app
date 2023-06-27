@@ -110,10 +110,10 @@
         default: tdp-frontend
         type: string
 # So the frontend knows what space its in for the banner.
-# I am unclear if the domain is a reliable metric to make this function 
+# I am unclear if the domain is a reliable metric to make this function
 # It seems like it might not be working
       cf-space:
-        default: dev 
+        default: dev
         type: string
     steps:
       - install-nodejs:

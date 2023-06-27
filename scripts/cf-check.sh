@@ -13,4 +13,5 @@ else
 
     apt-get update
     apt-get install cf7-cli
+
 fi

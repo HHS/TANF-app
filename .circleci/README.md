@@ -14,10 +14,10 @@ This script will generate a complete config for building, testing, and deploying
 ### Directory structure
 
 #### build-and-test
-Contains workflows, jobs, and commands for building and testing the application.
+Contains workflows, jobs, and commands for building and testing the application. For all development side builds, these are now triggered by GitHub Actions that serve as a filter so only the code that's changed is tested. See [build-all](../.github/workflows/build-all.yml), [build-backend](../.github/workflows/build-backend.yml), and [build-frontend](../.github/workflows/build-frontend.yml)
 
 #### infrastructure
-Contains workflows, jobs, and commands for setting up the infrastructure on Cloud gov.
+Contains workflows, jobs, and commands for setting up the infrastructure on Cloud gov. For all development side builds, this is now triggered by GitHub Actions that serve as a filter so only runs when infrastructure code is changed. See [deploy-infrastructure](../.github/workflows/deploy-infrastructure.yml)
 
 #### deployment
 Contains workflows, jobs, and commands for deploying the application on Cloud gov. Note: merges to develop now automatically trigger a develop deploy using [deploy-develop-on-merge](../.github/workflows/deploy-develop-on-merge.yml) and deploys to dev environments happen when a label is created on the PR using [deploy-on-label](../.github/workflows/deploy-on-label.yml)
@@ -71,3 +71,17 @@ You want to set the branch to be the branch you want this scan to be run on.
 You want to add a Pipeline Parameter with `run_nightly_owasp_scan`to be a boolean and set to `true`.
 
 You want Attribution set to Scheduled Actor (Scheduling System)
+
+## Updating Cloud Foundry App OS
+Cloud Foundry (CF) occasionally releases OS updates. In doing so they deprecate the previous OS and after a short time
+do not allow any apps to run/deploy on anything but the latest OS. The steps below describe how the main TDP apps are
+updated along with the secondary apps running in CF.
+
+### Frontend/Backend
+ - Before updating, make sure the current buildpacks that these apps use are supported by the latest OS. If they aren't you can update the manifest to point them to the correct buildpacks.
+ - To update the apps you can either deploy each of the environments (sandbox, raft, qasp, etc) from CircleCi or you can use the `tdrs-deploy <ENVIRONMENT>` command from `commands.sh`. Assuming the buildpacks are up to date, that is all you need to do.
+
+### Secondary apps
+ - Before you can make the update, you need to ensure you have the CF plugin that allows you to do so. Download the binary for your respective OS [HERE](https://github.com/cloudfoundry/stack-auditor/releases) and follow the installation instructions [HERE](https://docs.cloudfoundry.org/adminguide/stack-auditor.html#install).
+  - Verify the installation succeeded by running `cf audit-stack`. Note you need to be logged in and have targeted a space via `cf target -o hhs-acf-ofa -s <SPACE>`
+ - To update the remaining apps you need to run `cf change-stack <APP_NAME> <OS_NAME>` against every app that is not a frontend/backend app.

@@ -3,7 +3,7 @@
 
 import os
 from . import schema_defs, validators, util
-from tdpservice.data_files.models import DataFile
+from .models import ParserErrorCategoryChoices
 
 
 def parse_datafile(datafile):
@@ -11,7 +11,7 @@ def parse_datafile(datafile):
     rawfile = datafile.file
     errors = {}
 
-    document_is_valid, document_error = validators.validate_single_header_trailer(rawfile)
+    document_is_valid, document_error = validators.validate_single_header_trailer(datafile)
     if not document_is_valid:
         errors['document'] = [document_error]
         return errors
@@ -29,36 +29,33 @@ def parse_datafile(datafile):
     trailer_line = rawfile.readline().decode().strip('\n')
 
     # parse header, trailer
-    header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(header_line)
+    header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
+        header_line,
+        util.make_generate_parser_error(datafile, 1)
+    )
     if not header_is_valid:
         errors['header'] = header_errors
         return errors
 
-    trailer, trailer_is_valid, trailer_errors = schema_defs.trailer.parse_and_validate(trailer_line)
+    trailer, trailer_is_valid, trailer_errors = schema_defs.trailer.parse_and_validate(
+        trailer_line,
+        util.make_generate_parser_error(datafile, -1)
+    )
     if not trailer_is_valid:
         errors['trailer'] = trailer_errors
 
     # ensure file section matches upload section
-    section_names = {
-        'TAN': {
-            'A': DataFile.Section.ACTIVE_CASE_DATA,
-            'C': DataFile.Section.CLOSED_CASE_DATA,
-            'G': DataFile.Section.AGGREGATE_DATA,
-            'S': DataFile.Section.STRATUM_DATA,
-        },
-        'SSP': {
-            'A': DataFile.Section.SSP_ACTIVE_CASE_DATA,
-            'C': DataFile.Section.SSP_CLOSED_CASE_DATA,
-            'G': DataFile.Section.SSP_AGGREGATE_DATA,
-            'S': DataFile.Section.SSP_STRATUM_DATA,
-        },
-    }
-
     program_type = header['program_type']
     section = header['type']
 
-    if datafile.section != section_names.get(program_type, {}).get(section):
-        errors['document'] = ['Section does not match.']
+    section_is_valid, section_error = validators.validate_header_section_matches_submission(
+        datafile,
+        program_type,
+        section,
+    )
+
+    if not section_is_valid:
+        errors['document'] = [section_error]
         return errors
 
     line_errors = parse_datafile_lines(datafile, program_type, section)
@@ -87,7 +84,11 @@ def parse_datafile_lines(datafile, program_type, section):
         schema = get_schema(line, section, schema_options)
 
         if isinstance(schema, util.MultiRecordRowSchema):
-            records = parse_multi_record_line(line, schema)
+            records = parse_multi_record_line(
+                line,
+                schema,
+                util.make_generate_parser_error(datafile, line_number)
+            )
 
             record_number = 0
             for r in records:
@@ -98,17 +99,21 @@ def parse_datafile_lines(datafile, program_type, section):
                     line_errors[record_number] = record_errors
                     errors[line_number] = line_errors
         else:
-            record_is_valid, record_errors = parse_datafile_line(line, schema)
+            record_is_valid, record_errors = parse_datafile_line(
+                line,
+                schema,
+                util.make_generate_parser_error(datafile, line_number)
+            )
             if not record_is_valid:
                 errors[line_number] = record_errors
 
     return errors
 
 
-def parse_multi_record_line(line, schema):
+def parse_multi_record_line(line, schema, generate_error):
     """Parse and validate a datafile line using MultiRecordRowSchema."""
     if schema:
-        records = schema.parse_and_validate(line)
+        records = schema.parse_and_validate(line, generate_error)
 
         for r in records:
             record, record_is_valid, record_errors = r
@@ -118,20 +123,36 @@ def parse_multi_record_line(line, schema):
 
         return records
 
-    return [(None, False, ['No schema selected.'])]
+    return [(None, False, [
+        generate_error(
+            schema=None,
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+            error_message="Record Type is missing from record.",
+            record=None,
+            field=None
+        )
+    ])]
 
 
-def parse_datafile_line(line, schema):
+def parse_datafile_line(line, schema, generate_error):
     """Parse and validate a datafile line and save any errors to the model."""
     if schema:
-        record, record_is_valid, record_errors = schema.parse_and_validate(line)
+        record, record_is_valid, record_errors = schema.parse_and_validate(line, generate_error)
 
         if record:
             record.save()
 
         return record_is_valid, record_errors
 
-    return (False, ['No schema selected.'])
+    return (False, [
+        generate_error(
+            schema=None,
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+            error_message="Record Type is missing from record.",
+            record=None,
+            field=None
+        )
+    ])
 
 
 def get_schema_options(program_type):
