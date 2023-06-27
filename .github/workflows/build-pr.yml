@@ -1,0 +1,54 @@
+########################################################################### 
+# GitHub Action Workflow
+# On pull requests requesting review from individuals, besides staging, 
+# master, and release branches triggers the full build and test pipeline. 
+# 
+# NOTE: release branches, staging(main) and master are skipped because
+#       these branch builds are managed in CircleCI
+#
+# Step 0: make PR from your branch into develop, then select reviewers.
+#
+# Step 1: Makes a request to the V2 CircleCI API to initiate the project,
+#         which will filter based upon build_and_test_backend and 
+#         build_and_test_frontend to run the workflow/jobs listed here:
+#           build-and-test:[
+#             test-backend,
+#             test-frontend,
+#             test-e2e
+#           ]
+#
+#         Leverages the open source GitHub Action:
+#           https://github.com/promiseofcake/circleci-trigger-action
+###########################################################################
+name: Build and test All for PRs
+on:
+  pull_request:
+    branches-ignore: #handled in circleci
+      - main
+      - master
+      - 'release/**'
+    types: [review_requested, ready_for_review, synchronize]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '**.txt'
+      - '.gitattributes'
+      - '.gitignore'
+      - 'LICENSE'
+jobs:
+  build_and_test_pr:
+    runs-on: ubuntu-latest
+    name: Initiate deploy job in CircleCI
+    steps:
+      - uses: actions/checkout@v2
+      - name: Circle CI Deployment Trigger
+        id: curl-circle-ci
+        uses: promiseofcake/circleci-trigger-action@v1
+        with:
+          user-token: ${{ secrets.CIRCLE_CI_V2_TOKEN }}
+          project-slug: ${{ github.repository }}
+          branch: ${{ (github.event_name == 'pull_request') && github.head_ref || github.ref_name }}
+          payload: '{
+            "build_and_test_all": true,
+            "triggered": true
+          }'
