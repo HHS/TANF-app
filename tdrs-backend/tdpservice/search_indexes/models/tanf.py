@@ -3,6 +3,7 @@
 import uuid
 from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.models import ParserError
 
 
@@ -14,6 +15,16 @@ class TANF_T1(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t1_parent'
+    )
 
     error = GenericRelation(ParserError)
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -76,6 +87,16 @@ class TANF_T2(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t2_parent'
+    )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
@@ -157,6 +178,16 @@ class TANF_T3(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t3_parent'
+    )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
@@ -190,6 +221,16 @@ class TANF_T4(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t4_parent'
+    )
 
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)
@@ -219,6 +260,16 @@ class TANF_T5(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t5_parent'
+    )
 
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)
@@ -261,6 +312,16 @@ class TANF_T6(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t6_parent'
+    )
 
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)
@@ -292,6 +353,16 @@ class TANF_T7(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t7_parent'
+    )
 
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)

@@ -1,13 +1,22 @@
 """Elasticsearch document mappings for TANF submission models."""
 
-from django_elasticsearch_dsl import Document
+from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 from ..models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
+from tdpservice.data_files.models import DataFile
 
 
 @registry.register_document
 class TANF_T1DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed TANF T1 data file."""
+
+    parent = fields.ObjectField(properties={
+                      'pk': fields.IntegerField(),
+                  })
+
+    def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, DataFile):
+            return related_instance
 
     class Index:
         """ElasticSearch index generation settings."""
@@ -23,6 +32,8 @@ class TANF_T1DataSubmissionDocument(Document):
 
         model = TANF_T1
         fields = [
+            'version',
+            'created_at',
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -69,6 +80,7 @@ class TANF_T1DataSubmissionDocument(Document):
             'FAMILY_EXEMPT_TIME_LIMITS',
             'FAMILY_NEW_CHILD'
         ]
+        related_models = [DataFile]
 
 
 @registry.register_document
@@ -89,6 +101,10 @@ class TANF_T2DataSubmissionDocument(Document):
 
         model = TANF_T2
         fields = [
+
+            'version',
+            'created_at',
+
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -180,6 +196,10 @@ class TANF_T3DataSubmissionDocument(Document):
 
         model = TANF_T3
         fields = [
+
+            'version',
+            'created_at',
+
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -222,6 +242,10 @@ class TANF_T4DataSubmissionDocument(Document):
 
         model = TANF_T4
         fields = [
+
+            'version',
+            'created_at',
+
             'record',
             'rpt_month_year',
             'case_number',
@@ -257,6 +281,10 @@ class TANF_T5DataSubmissionDocument(Document):
 
         model = TANF_T5
         fields = [
+
+            'version',
+            'created_at',
+
             'record',
             'rpt_month_year',
             'case_number',
@@ -309,6 +337,9 @@ class TANF_T6DataSubmissionDocument(Document):
 
         model = TANF_T6
         fields = [
+
+            'version',
+            'created_at',
             'record',
             'rpt_month_year',
             'fips_code',
@@ -350,6 +381,9 @@ class TANF_T7DataSubmissionDocument(Document):
 
         model = TANF_T7
         fields = [
+
+            'version',
+            'created_at',
             'record',
             'rpt_month_year',
             'fips_code',

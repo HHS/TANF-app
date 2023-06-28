@@ -23,6 +23,9 @@ class SSP_M1DataSubmissionDocument(Document):
 
         model = SSP_M1
         fields = [
+            'version',
+            'created_at',
+
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -87,6 +90,9 @@ class SSP_M2DataSubmissionDocument(Document):
 
         model = SSP_M2
         fields = [
+            'version',
+            'created_at',
+
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -175,6 +181,9 @@ class SSP_M3DataSubmissionDocument(Document):
 
         model = SSP_M3
         fields = [
+            'version',
+            'created_at',
+
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',

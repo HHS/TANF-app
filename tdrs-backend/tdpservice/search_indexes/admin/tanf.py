@@ -1,11 +1,13 @@
 """ModelAdmin classes for parsed TANF data files."""
 from django.contrib import admin
+from .filter import CreationDateFilter
 
 
 class TANF_T1Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T1 data files."""
 
     list_display = [
+        'version',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
@@ -15,6 +17,7 @@ class TANF_T1Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        CreationDateFilter,
         'RPT_MONTH_YEAR',
         'ZIP_CODE',
         'STRATUM',
@@ -25,12 +28,14 @@ class TANF_T2Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T2 data files."""
 
     list_display = [
+        'version',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
     ]
 
     list_filter = [
+        CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
 
@@ -39,12 +44,14 @@ class TANF_T3Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T3 data files."""
 
     list_display = [
+        'version',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
     ]
 
     list_filter = [
+        CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
 

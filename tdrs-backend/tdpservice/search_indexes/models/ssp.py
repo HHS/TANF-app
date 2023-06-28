@@ -3,6 +3,7 @@
 import uuid
 from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.models import ParserError
 
 
@@ -14,6 +15,16 @@ class SSP_M1(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='m1_parent'
+    )
 
     error = GenericRelation(ParserError)
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -77,6 +88,16 @@ class SSP_M2(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='m2_parent'
+    )
 
     error = GenericRelation(ParserError)
     RecordType = models.CharField(max_length=156, null=True, blank=False)
@@ -160,6 +181,16 @@ class SSP_M3(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    version = models.IntegerField(null=True, blank=False)
+    created_at = models.DateTimeField(null=True, blank=False)
+    parent = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='m3_parent'
+    )
 
     error = GenericRelation(ParserError)
     RecordType = models.CharField(max_length=156, null=True, blank=False)
