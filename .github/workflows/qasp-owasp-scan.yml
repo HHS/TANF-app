@@ -34,5 +34,6 @@ jobs:
         branch: ${{ github.head_ref }}
         payload: |
           {
-            "run_owasp_scan": ${{ env.HAS_QASP_LABEL }}
+            "run_owasp_scan": ${{ env.HAS_QASP_LABEL }},
+            "triggered": true
           }
