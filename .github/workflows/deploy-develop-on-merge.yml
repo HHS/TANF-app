@@ -45,4 +45,8 @@ jobs:
         user-token: ${{ secrets.CIRCLE_CI_V2_TOKEN }}
         project-slug: ${{ github.repository }}
         branch: ${{ github.ref_name }}
-        payload: '{"develop_branch_deploy": true, "target_env": "develop"}'
+        payload: '{
+          "develop_branch_deploy": true,
+          "target_env": "develop",
+          "triggered": true
+        }'

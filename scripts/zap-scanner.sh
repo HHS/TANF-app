@@ -59,15 +59,91 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(0\).regex='.*/robots\.txt.*' \
   -config globalexcludeurl.url_list.url\(0\).description='Exclude robots.txt' \
   -config globalexcludeurl.url_list.url\(0\).enabled=true \
+
   -config globalexcludeurl.url_list.url\(1\).regex='^https?://.*\.cdn\.mozilla\.(?:com|org|net)/.*$' \
   -config globalexcludeurl.url_list.url\(1\).description='Site - Mozilla CDN (requests such as getpocket)' \
   -config globalexcludeurl.url_list.url\(1\).enabled=true \
+
   -config globalexcludeurl.url_list.url\(2\).regex='^https?://.*\.amazonaws\.(?:com|org|net)/.*$' \
   -config globalexcludeurl.url_list.url\(2\).description='TDP S3 buckets' \
   -config globalexcludeurl.url_list.url\(2\).enabled=true \
-  -config globalexcludeurl.url_list.url\(3\).regex='^https:\/\/.*\.acf.hhs.gov\/v1\/login\/.*$' \
-  -config globalexcludeurl.url_list.url\(3\).description='Site - identity pages' \
+
+  -config globalexcludeurl.url_list.url\(3\).regex='^https:\/\/.*\.hhs.gov\/.*$' \
+  -config globalexcludeurl.url_list.url\(3\).description='Site - acf.hhs.gov' \
   -config globalexcludeurl.url_list.url\(3\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(4\).regex='^https:\/\/.*\.google.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(4\).description='Site - Google.com' \
+  -config globalexcludeurl.url_list.url\(4\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(5\).regex='^https:\/\/.*\.youtube.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(5\).description='Site - youtube.com' \
+  -config globalexcludeurl.url_list.url\(5\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(6\).regex='^https:\/\/.*\.monsido.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(6\).description='Site - monsido.com' \
+  -config globalexcludeurl.url_list.url\(6\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(7\).regex='^https:\/\/.*\.crazyegg.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(7\).description='Site - crazyegg.com' \
+  -config globalexcludeurl.url_list.url\(7\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(8\).regex='^https:\/\/.*\.gstatic.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(8\).description='Site - gstatic.com' \
+  -config globalexcludeurl.url_list.url\(8\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(9\).regex='^https:\/\/.*\.googleapis.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(9\).description='Site - GoogleAPIs.com' \
+  -config globalexcludeurl.url_list.url\(9\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(10\).regex='^https:\/\/.*\.crazyegg.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(10\).description='Site - CrazyEgg.com' \
+  -config globalexcludeurl.url_list.url\(10\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(11\).regex='^https:\/\/.*\.doubleclick.net\/.*$' \
+  -config globalexcludeurl.url_list.url\(11\).description='Site - DoubleClick.net' \
+  -config globalexcludeurl.url_list.url\(11\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(12\).regex='^https:\/\/.*unpkg.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(12\).description='Site - Unpkg.com' \
+  -config globalexcludeurl.url_list.url\(12\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(13\).regex='^https:\/\/.*\.readspeaker.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(13\).description='Site - ReadSpeaker.com' \
+  -config globalexcludeurl.url_list.url\(13\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(14\).regex='^https:\/\/.*\.fontawesome.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(14\).description='Site - FontAwesome.com' \
+  -config globalexcludeurl.url_list.url\(14\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(15\).regex='^https:\/\/.*\.cloud.gov\/.*$' \
+  -config globalexcludeurl.url_list.url\(15\).description='Site - Cloud.gov' \
+  -config globalexcludeurl.url_list.url\(15\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(16\).regex='^https:\/\/.*\.googletagmanager.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(16\).description='Site - googletagmanager.com' \
+  -config globalexcludeurl.url_list.url\(16\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(17\).regex='^https:\/\/.*\.cloudflare.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(17\).description='Site - CloudFlare.com' \
+  -config globalexcludeurl.url_list.url\(17\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(18\).regex='^https:\/\/.*\.google-analytics.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(18\).description='Site - Google-Analytics.com' \
+  -config globalexcludeurl.url_list.url\(18\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(19\).regex='^https:\/\/.*\.googletagmanager.com\/.*$' \
+  -config globalexcludeurl.url_list.url\(19\).description='Site - googletagmanager.com' \
+  -config globalexcludeurl.url_list.url\(19\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(20\).regex='^https:\/\/.*\.digitalgov.gov\/.*$' \
+  -config globalexcludeurl.url_list.url\(20\).description='Site - DigitalGov.gov' \
+  -config globalexcludeurl.url_list.url\(20\).enabled=true \
+
+  -config globalexcludeurl.url_list.url\(21\).regex='^https:\/\/.*\.identitysandbox.gov\/.*$' \
+  -config globalexcludeurl.url_list.url\(21\).description='Site - IdentitySandbox.gov' \
+  -config globalexcludeurl.url_list.url\(21\).enabled=true \
+
   -config spider.postform=true"
 
 # How long ZAP will crawl the app with the spider process
