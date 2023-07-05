@@ -14,6 +14,7 @@ class SSP_M1DataSubmissionDocument(Document):
                   })
 
     def get_instances_from_related(self, related_instance):
+        """Return correct instance."""
         if isinstance(related_instance, DataFile):
             return related_instance
 
@@ -88,6 +89,8 @@ class SSP_M2DataSubmissionDocument(Document):
                   })
 
     def get_instances_from_related(self, related_instance):
+        """Return correct instance."""
+        """Return correct instance."""
         if isinstance(related_instance, DataFile):
             return related_instance
 
@@ -186,6 +189,7 @@ class SSP_M3DataSubmissionDocument(Document):
                   })
 
     def get_instances_from_related(self, related_instance):
+        """Return correct instance."""
         if isinstance(related_instance, DataFile):
             return related_instance
 
