@@ -1,13 +1,21 @@
 """Elasticsearch document mappings for SSP submission models."""
 
-from django_elasticsearch_dsl import Document
+from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 from ..models.ssp import SSP_M1, SSP_M2, SSP_M3
-
+from tdpservice.data_files.models import DataFile
 
 @registry.register_document
 class SSP_M1DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed SSP M1 data file."""
+
+    datafile = fields.ObjectField(properties={
+                      'pk': fields.IntegerField(),
+                  })
+
+    def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, DataFile):
+            return related_instance
 
     class Index:
         """ElasticSearch index generation settings."""
@@ -25,7 +33,6 @@ class SSP_M1DataSubmissionDocument(Document):
         fields = [
             'version',
             'created_at',
-
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -76,6 +83,14 @@ class SSP_M1DataSubmissionDocument(Document):
 class SSP_M2DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed SSP M2 data file."""
 
+    datafile = fields.ObjectField(properties={
+                      'pk': fields.IntegerField(),
+                  })
+
+    def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, DataFile):
+            return related_instance
+
     class Index:
         """ElasticSearch index generation settings."""
 
@@ -92,7 +107,6 @@ class SSP_M2DataSubmissionDocument(Document):
         fields = [
             'version',
             'created_at',
-
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -167,6 +181,14 @@ class SSP_M2DataSubmissionDocument(Document):
 class SSP_M3DataSubmissionDocument(Document):
     """Elastic search model mapping for a parsed SSP M3 data file."""
 
+    datafile = fields.ObjectField(properties={
+                      'pk': fields.IntegerField(),
+                  })
+
+    def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, DataFile):
+            return related_instance
+
     class Index:
         """ElasticSearch index generation settings."""
 
@@ -183,7 +205,6 @@ class SSP_M3DataSubmissionDocument(Document):
         fields = [
             'version',
             'created_at',
-
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',

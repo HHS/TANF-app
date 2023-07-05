@@ -28,6 +28,8 @@ RUN groupadd -g ${gid} ${group} && useradd -u ${uid} -g ${group} -s /bin/sh ${us
 
 RUN chown -R tdpuser /tdpapp && chmod u+x gunicorn_start.sh wait_for_services.sh
 
+# This is not a great solution to our serious version mismatches in our dependencies. It is however the lowest lift solution.
+RUN sed -i 's/collections/collections.abc/g' /usr/local/lib/python3.10/site-packages/django_elasticsearch_dsl/fields.py
 
 CMD ["./gunicorn_start.sh"]
 # if the container crashes/loops, we can shell into it by doing the following:
