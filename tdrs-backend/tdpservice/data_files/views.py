@@ -1,5 +1,4 @@
 """Check if user is authorized."""
-
 import logging
 from django.http import FileResponse
 from django_filters import rest_framework as filters
@@ -127,24 +126,6 @@ class DataFileViewSet(ModelViewSet):
             queryset = queryset.filter(section__contains='SSP')
         else:
             queryset = queryset.exclude(section__contains='SSP')
-
-        q1 = queryset.filter(quarter='Q1')
-        if len(q1):
-            q1 = q1.filter(created_at=q1.latest('created_at').created_at)
-
-        q2 = queryset.filter(quarter='Q2')
-        if len(q2):
-            q2 = q2.filter(created_at=q2.latest('created_at').created_at)
-
-        q3 = queryset.filter(quarter='Q3')
-        if len(q3):
-            q3 = q3.filter(created_at=q3.latest('created_at').created_at)
-
-        q4 = queryset.filter(quarter='Q4')
-        if len(q4):
-            q4 = q4.filter(created_at=q4.latest('created_at').created_at)
-
-        queryset = q1 | q2 | q3 | q4
 
         return queryset
 
