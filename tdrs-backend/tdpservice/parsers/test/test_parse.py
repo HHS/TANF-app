@@ -2,29 +2,11 @@
 
 
 import pytest
-from pathlib import Path
+from ..util import create_test_datafile
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices
-from tdpservice.data_files.models import DataFile
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
-
-
-def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
-    """Create a test DataFile instance with the given file attached."""
-    path = str(Path(__file__).parent.joinpath('data')) + f'/{filename}'
-    datafile = DataFile.create_new_version({
-        'quarter': '4',
-        'year': 2022,
-        'section': section,
-        'user': stt_user,
-        'stt': stt
-    })
-
-    with open(path, 'rb') as file:
-        datafile.file.save(filename, file)
-
-    return datafile
 
 
 @pytest.fixture
