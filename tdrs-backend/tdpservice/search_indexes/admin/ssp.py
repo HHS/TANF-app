@@ -6,6 +6,8 @@ class SSP_M1Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed M1 data files."""
 
     list_display = [
+        'version',
+        'datafile',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
@@ -25,6 +27,8 @@ class SSP_M2Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed M2 data files."""
 
     list_display = [
+        'version',
+        'datafile',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
@@ -39,6 +43,8 @@ class SSP_M3Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed M3 data files."""
 
     list_display = [
+        'version',
+        'datafile',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',

@@ -8,6 +8,7 @@ class TANF_T1Admin(admin.ModelAdmin):
 
     list_display = [
         'version',
+        'datafile',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
@@ -29,6 +30,7 @@ class TANF_T2Admin(admin.ModelAdmin):
 
     list_display = [
         'version',
+        'datafile',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
@@ -45,6 +47,7 @@ class TANF_T3Admin(admin.ModelAdmin):
 
     list_display = [
         'version',
+        'datafile',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
@@ -60,6 +63,8 @@ class TANF_T4Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T4 data files."""
 
     list_display = [
+        'version',
+        'datafile',
         'record',
         'rpt_month_year',
         'case_number',
@@ -74,6 +79,8 @@ class TANF_T5Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T5 data files."""
 
     list_display = [
+        'version',
+        'datafile',
         'record',
         'rpt_month_year',
         'case_number',
@@ -88,6 +95,8 @@ class TANF_T6Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T6 data files."""
 
     list_display = [
+        'version',
+        'datafile',
         'record',
         'rpt_month_year',
     ]
@@ -101,6 +110,8 @@ class TANF_T7Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T7 data files."""
 
     list_display = [
+        'version',
+        'datafile',
         'record',
         'rpt_month_year',
     ]
