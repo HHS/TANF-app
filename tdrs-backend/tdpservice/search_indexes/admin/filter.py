@@ -1,6 +1,7 @@
 """Filter classes."""
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin import SimpleListFilter
+from tdpservice.data_files.models import DataFile
 
 class CreationDateFilter(SimpleListFilter):
     """Simple filter class to show newest created datafile records."""
@@ -30,6 +31,7 @@ class CreationDateFilter(SimpleListFilter):
     def queryset(self, request, queryset):
         """Sort queryset to show latest records."""
         if self.value() is None and len(queryset):
-            max_date = queryset.latest('created_at').created_at
-            return queryset.filter(created_at=max_date)
-        return queryset.order_by("-created_at")
+            max_date = DataFile.objects.all().latest('created_at').created_at
+            datafile = DataFile.objects.get(created_at=max_date)
+            return queryset.filter(datafile=datafile)
+        return queryset

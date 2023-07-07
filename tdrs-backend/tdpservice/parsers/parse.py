@@ -121,8 +121,6 @@ def parse_multi_record_line(line, schema, generate_error, datafile):
             record, record_is_valid, record_errors = r
 
             if record:
-                record.created_at = datafile.created_at
-                record.version = datafile.version
                 record.datafile = datafile
                 record.save()
 
@@ -145,8 +143,6 @@ def parse_datafile_line(line, schema, generate_error, datafile):
         record, record_is_valid, record_errors = schema.parse_and_validate(line, generate_error)
 
         if record:
-            record.created_at = datafile.created_at
-            record.version = datafile.version
             record.datafile = datafile
             record.save()
 

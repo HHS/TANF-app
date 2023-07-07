@@ -15,8 +15,6 @@ class TANF_T1(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
@@ -87,8 +85,6 @@ class TANF_T2(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
@@ -178,8 +174,6 @@ class TANF_T3(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
@@ -221,8 +215,6 @@ class TANF_T4(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
@@ -260,8 +252,6 @@ class TANF_T5(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
@@ -312,8 +302,6 @@ class TANF_T6(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
@@ -353,8 +341,6 @@ class TANF_T7(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,

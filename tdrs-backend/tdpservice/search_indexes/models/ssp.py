@@ -15,8 +15,6 @@ class SSP_M1(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
@@ -88,8 +86,6 @@ class SSP_M2(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,
@@ -181,8 +177,6 @@ class SSP_M3(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    version = models.IntegerField(null=True, blank=False)
-    created_at = models.DateTimeField(null=True, blank=False)
     datafile = models.ForeignKey(
         DataFile,
         blank=True,

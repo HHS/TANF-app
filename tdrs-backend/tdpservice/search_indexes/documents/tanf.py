@@ -32,8 +32,6 @@ class TANF_T1DataSubmissionDocument(Document):
 
         model = TANF_T1
         fields = [
-            'version',
-            'created_at',
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -109,9 +107,6 @@ class TANF_T2DataSubmissionDocument(Document):
 
         model = TANF_T2
         fields = [
-
-            'version',
-            'created_at',
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -211,9 +206,6 @@ class TANF_T3DataSubmissionDocument(Document):
 
         model = TANF_T3
         fields = [
-
-            'version',
-            'created_at',
             'RecordType',
             'RPT_MONTH_YEAR',
             'CASE_NUMBER',
@@ -265,9 +257,6 @@ class TANF_T4DataSubmissionDocument(Document):
 
         model = TANF_T4
         fields = [
-
-            'version',
-            'created_at',
             'record',
             'rpt_month_year',
             'case_number',
@@ -312,9 +301,6 @@ class TANF_T5DataSubmissionDocument(Document):
 
         model = TANF_T5
         fields = [
-
-            'version',
-            'created_at',
             'record',
             'rpt_month_year',
             'case_number',
@@ -375,8 +361,6 @@ class TANF_T6DataSubmissionDocument(Document):
 
         model = TANF_T6
         fields = [
-            'version',
-            'created_at',
             'record',
             'rpt_month_year',
             'fips_code',
@@ -426,8 +410,6 @@ class TANF_T7DataSubmissionDocument(Document):
 
         model = TANF_T7
         fields = [
-            'version',
-            'created_at',
             'record',
             'rpt_month_year',
             'fips_code',
