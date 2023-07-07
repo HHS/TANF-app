@@ -11,6 +11,9 @@ class SSP_M1DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):
@@ -84,6 +87,9 @@ class SSP_M2DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):
@@ -182,6 +188,9 @@ class SSP_M3DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):

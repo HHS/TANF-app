@@ -11,6 +11,9 @@ class TANF_T1DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):
@@ -86,6 +89,9 @@ class TANF_T2DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):
@@ -185,6 +191,9 @@ class TANF_T3DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):
@@ -236,6 +245,9 @@ class TANF_T4DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):
@@ -280,6 +292,9 @@ class TANF_T5DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):
@@ -340,6 +355,9 @@ class TANF_T6DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):
@@ -389,6 +407,9 @@ class TANF_T7DataSubmissionDocument(Document):
 
     datafile = fields.ObjectField(properties={
                       'pk': fields.IntegerField(),
+                      'created_at': fields.DateField(),
+                      'version': fields.IntegerField(),
+                      'quarter': fields.TextField()
                   })
 
     def get_instances_from_related(self, related_instance):
