@@ -24,7 +24,7 @@ def test_dfs_model(dfs):
     """Test that the model is created and populated correctly."""
     assert dfs.case_aggregates['Jan']['accepted'] == 100
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_dfs_rejected(test_datafile, dfs):
     """Ensure that an invalid file generates a rejected status."""
     test_datafile.section = 'Closed Case Data'
