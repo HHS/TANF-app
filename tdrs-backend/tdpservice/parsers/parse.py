@@ -152,25 +152,38 @@ def parse_datafile_lines(datafile, program_type, section):
 
 def parse_multi_record_line(line, schema, generate_error):
     """Parse and validate a datafile line using MultiRecordRowSchema."""
-    records = schema.parse_and_validate(line, generate_error)
+    if schema:
+        records = schema.parse_and_validate(line, generate_error)
 
-    for r in records:
-        record, record_is_valid, record_errors = r
+        for r in records:
+            record, record_is_valid, record_errors = r
 
-        if record:
-            record.save()
+            if record:
+                record.save()
 
-    return records
+        return records
+
+    return [(None, False, [
+        generate_error(
+            schema=None,
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+            error_message="Record Type is missing from record.",
+            record=None,
+            field=None
+        )
+    ])]
 
 
 def parse_datafile_line(line, schema, generate_error):
     """Parse and validate a datafile line and save any errors to the model."""
-    record, record_is_valid, record_errors = schema.parse_and_validate(line, generate_error)
+    if schema:
+        record, record_is_valid, record_errors = schema.parse_and_validate(line, generate_error)
 
-    if record:
-        record.save()
+        if record:
+            record.save()
 
-    return record_is_valid, record_errors
+        return record_is_valid, record_errors
+
     return (False, [
         generate_error(
             schema=None,

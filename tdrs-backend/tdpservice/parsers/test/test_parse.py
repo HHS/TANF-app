@@ -64,6 +64,7 @@ def test_parse_small_correct_file(test_datafile, dfs):
 def test_parse_section_mismatch(test_datafile, dfs):
     """Test parsing of small_correct_file where the DataFile section doesn't match the rawfile section."""
     test_datafile.section = 'Closed Case Data'
+    test_datafile.save()
 
     dfs.datafile = test_datafile
     dfs.save()
