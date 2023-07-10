@@ -44,7 +44,7 @@ def test_dfs_set_status(dfs):
     parser_errors = []
 
     for i in range(2, 4):
-        parser_errors.append(ParserErrorFactory(row_number=i, category=str(i)))
+        parser_errors.append(ParserErrorFactory(row_number=i, error_type=str(i)))
 
     dfs.status = dfs.get_status(errors={'document': parser_errors})
 
