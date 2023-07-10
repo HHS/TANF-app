@@ -2,7 +2,6 @@
 
 import factory
 from ..models import STT, Region
-import random
 
 
 class RegionFactory(factory.django.DjangoModelFactory):
@@ -13,7 +12,7 @@ class RegionFactory(factory.django.DjangoModelFactory):
 
         model = "stts.Region"
 
-    id = random.getrandbits(16)
+    id = factory.Sequence(int)
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
