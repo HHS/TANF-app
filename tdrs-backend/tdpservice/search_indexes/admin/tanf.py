@@ -7,13 +7,13 @@ class TANF_T1Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T1 data files."""
 
     list_display = [
-        'datafile',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
         'COUNTY_FIPS_CODE',
         'ZIP_CODE',
         'STRATUM',
+        'datafile',
     ]
 
     list_filter = [
@@ -28,10 +28,10 @@ class TANF_T2Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T2 data files."""
 
     list_display = [
-        'datafile',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
+        'datafile',
     ]
 
     list_filter = [
@@ -44,10 +44,10 @@ class TANF_T3Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T3 data files."""
 
     list_display = [
-        'datafile',
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
+        'datafile',
     ]
 
     list_filter = [
@@ -60,10 +60,10 @@ class TANF_T4Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T4 data files."""
 
     list_display = [
-        'datafile',
         'record',
         'rpt_month_year',
         'case_number',
+        'datafile',
     ]
 
     list_filter = [
@@ -75,10 +75,10 @@ class TANF_T5Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T5 data files."""
 
     list_display = [
-        'datafile',
         'record',
         'rpt_month_year',
         'case_number',
+        'datafile',
     ]
 
     list_filter = [
@@ -90,9 +90,9 @@ class TANF_T6Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T6 data files."""
 
     list_display = [
-        'datafile',
         'record',
         'rpt_month_year',
+        'datafile',
     ]
 
     list_filter = [
@@ -104,9 +104,9 @@ class TANF_T7Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T7 data files."""
 
     list_display = [
-        'datafile',
         'record',
         'rpt_month_year',
+        'datafile',
     ]
 
     list_filter = [
