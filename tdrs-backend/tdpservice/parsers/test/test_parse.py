@@ -64,7 +64,6 @@ def test_parse_small_correct_file(test_datafile, dfs):
 def test_parse_section_mismatch(test_datafile, dfs):
     """Test parsing of small_correct_file where the DataFile section doesn't match the rawfile section."""
     test_datafile.section = 'Closed Case Data'
-    test_datafile.save()
 
     dfs.datafile = test_datafile
     dfs.save()
@@ -518,6 +517,8 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
+    for e in parser_errors:
+        print(e.error_type, e.error_message)
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
