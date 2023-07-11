@@ -54,3 +54,14 @@ def test_dfs_set_status(dfs):
     dfs.status = dfs.get_status(errors={'document': parser_errors})
 
     assert dfs.status == DataFileSummary.Status.REJECTED
+
+@pytest.mark.django_db
+def test_dfs_set_case_aggregates(test_datafile, dfs):
+    """Test that the case aggregates are set correctly."""
+    test_datafile.section = 'Active Case Data'
+    test_datafile.save()
+    error_ast = parse.parse_datafile(test_datafile)
+    dfs.case_aggregates = dfs.get_case_aggregates(error_ast)
+    assert dfs.case_aggregates['Jan']['accepted'] == 1
+    assert dfs.case_aggregates['Jan']['rejected'] == 0
+    assert dfs.case_aggregates['Jan']['total'] == 1
