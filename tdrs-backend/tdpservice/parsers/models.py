@@ -172,7 +172,6 @@ class DataFileSummary(models.Model):
         '''
 
 
-
     def get_status(self, errors):
         """Set and return the status field based on errors and models associated with datafile."""
         if errors is None:
