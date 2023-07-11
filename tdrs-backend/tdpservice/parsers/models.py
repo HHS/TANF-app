@@ -117,59 +117,6 @@ class DataFileSummary(models.Model):
             "total": 110
         }
     """
-    def transform_to_months(quarter):
-        """Return a list of months in a quarter."""
-        match quarter:
-            case "Q1":
-                return ["Jan", "Feb", "Mar"]
-            case "Q2":
-                return ["Apr", "May", "Jun"]
-            case "Q3":
-                return ["Jul", "Aug", "Sep"]
-            case "Q4":
-                return ["Oct", "Nov", "Dec"]
-            case _:
-                raise ValueError("Invalid quarter value.")
-
-    '''
-    def case_aggregates_by_month(self):
-        """Return case aggregates by month."""
-        df = self.datafile
-        section = transform_to_text(df.section)
-
-        # from datafile quarter, generate short month names for each month in quarter ala 'Jan', 'Feb', 'Mar'
-        month_list = transform_to_months(df.quarter)
-        # or we do upgrade get_schema_options to always take named params vs string text?
-
-        # use or leverage `get_schema_options` to lookup model in RowSchema
-        models = [model for x in get_schema_options(program_type)[section]]
-
-
-        # using a django queryset, filter by datafile to find relevant search_index objects
-
-        # count the number of objects in the queryset and assign to total
-        # using a queryset of parserError objects, filter by datafile and error_type to get count of rejected cases
-        # subtract rejected cases from total to get accepted cases
-        # return a dict of month: {accepted: x, rejected: y, total: z}
-        for month in month_list:
-            total = 0
-            rejected = 0
-            accepted = 0
-
-            for model in models:
-                total += model.objects.filter(datafile=df, month=month).count() # todo change to RPT_MONTH_YEAR
-                rejected += model.objects.filter(datafile=df, error.exists()).count() # todo filter doesn't actually work this way
-                #ParserError.objects.filter(datafile=df, month=month).count() #TODO filter where field_name != header or trailer ??
-                accepted +=  total - rejected # again look for all objects where generic relation to error is false/empty
-
-            case_aggregates_by_month[month] = {
-                
-            # filter by month
-            # filter by model
-            # filter by datafile
-            # count objects
-            # add to dict
-        '''
 
 
     def get_status(self, errors):

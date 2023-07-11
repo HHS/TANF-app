@@ -51,7 +51,7 @@ def parse_datafile(datafile):
 
     section_is_valid, section_error = validators.validate_header_section_matches_submission(
         datafile,
-        get_section_field(program_type, section)
+        util.get_section_reference(program_type, section) 
     )
 
     if not section_is_valid:
@@ -111,7 +111,7 @@ def parse_datafile_lines(datafile, program_type, section):
         if line.startswith('HEADER') or line.startswith('TRAILER'):
             continue
 
-        schema = get_schema(line, section, program_type)
+        schema = util.get_schema(line, section, program_type)
         if schema is None:
             errors[line_number] = [util.generate_parser_error(
                 datafile=datafile,
@@ -174,131 +174,3 @@ def parse_datafile_line(line, schema, generate_error):
 
     return record_is_valid, record_errors
 
-def get_schema_options(program, section, query=None, model=None, model_name=None):
-    '''
-    Centralized function to return the appropriate schema for a given program, section, and query.
-    @param program: the abbreviated program type (.e.g, 'TAN')
-    @param section: the section of the file (.e.g, 'A')
-    @param query: the query for section_names (.e.g, 'section', 'models', etc.)
-    @return: the appropriate references (e.g., ACTIVE_CASE_DATA or {t1,t2,t3}) 
-    '''
-
-    # ensure file section matches upload section
-    schema_options = {
-        'TAN': {
-            'A': {
-                'section': DataFile.Section.ACTIVE_CASE_DATA,
-                'models': {
-                    'T1': schema_defs.tanf.t1,
-                    'T2': schema_defs.tanf.t2,
-                    'T3': schema_defs.tanf.t3,
-                }
-            },
-            'C': {
-                'section': DataFile.Section.CLOSED_CASE_DATA,
-                'models': {
-                    #'T4': schema_defs.tanf.t4,
-                    #'T5': schema_defs.tanf.t5,
-                }
-            },
-            'G': {
-                'section':DataFile.Section.AGGREGATE_DATA,
-                'models': {
-                    #'T6': schema_defs.tanf.t6,
-                }
-            },
-            'S': {
-                'section':DataFile.Section.STRATUM_DATA,
-                'models': {
-                    #'T7': schema_defs.tanf.t7,
-                }
-            }
-        },
-        'SSP': {
-            'A': {
-                'section': DataFile.Section.SSP_ACTIVE_CASE_DATA,
-                'models': {
-                    'S1': schema_defs.ssp.m1,
-                    'S2': schema_defs.ssp.m2,
-                    'S3': schema_defs.ssp.m3,
-                }
-            },
-            'C': {
-                'section':DataFile.Section.SSP_CLOSED_CASE_DATA,
-                'models': {
-                    #'S4': schema_defs.ssp.m4,
-                    #'S5': schema_defs.ssp.m5,
-                }
-            },
-            'G': {
-                'section':DataFile.Section.SSP_AGGREGATE_DATA,
-                'models': {
-                    #'S6': schema_defs.ssp.m6,
-                }
-            },
-            'S': {
-                'section':DataFile.Section.SSP_STRATUM_DATA,
-                'models': {
-                    #'S7': schema_defs.ssp.m7,
-                }
-            }
-        },
-        # TODO: tribal tanf
-    }
-        
-    #TODO: add error handling for bad inputs -- how does `get` handle bad inputs?
-    if query == "text":
-        for prog_name, prog_dict in schema_options.items():
-            for sect,val in prog_dict.items():
-                if val==model:
-                    return {'program_type':prog_name, 'section': sect}
-        raise ValueError("Model not found in schema_defs")
-    elif query == "section":
-        return schema_options.get(program, {}).get(section, None)[query]
-    elif query == "models":
-        links = schema_options.get(program, {}).get(section, None)
-
-        # if query is not chosen or wrong input, return all options
-        # query = 'models', model = 'T1'
-        models = links.get(query, links)
-
-        return models.get(model_name, models)
-
-    
-#TODO is it more flexible w/o option? we can do filtering in wrapper functions
-# if option is empty, null, none, just return more
-
-'''
-text -> section
-text -> models{} YES
-text -> model YES
-datafile -> model
-    ^ section -> program -> model
-datafile -> text
-model -> text YES
-section -> text
-
-text**: input string from the header/file
-'''
-
-def get_program_models(str_prog, str_section):
-    return get_schema_options(program=str_prog, section=str_section, query='models')
-
-def get_program_model(str_prog, str_section, str_model):
-    return get_schema_options(program=str_prog, section=str_section, query='models', model_name=str_model)
-
-def get_section_reference(str_prog, str_section):
-    return get_schema_options(program=str_prog, section=str_section, query='section')
-
-def get_text_from_model(model):
-    get_schema_options()
-
-
-
-    #TODO: if given a datafile (section), we can reverse back to the program b/c the section string has "tribal/ssp" in it, then process of elimination we have tanf
-
-
-def get_schema(line, section, program_type):
-    """Return the appropriate schema for the line."""
-    line_type = line[0:2]
-    return get_schema_options(program_type, section, query='models', model_name=line_type)

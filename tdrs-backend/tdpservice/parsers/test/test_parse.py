@@ -9,7 +9,7 @@ from tdpservice.data_files.models import DataFile
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
 from .factories import DataFileSummaryFactory
-from .. import schema_defs 
+from .. import schema_defs, util 
 
 def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
     """Create a test DataFile instance with the given file attached."""
@@ -605,6 +605,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     }
 
 
+@pytest.mark.django_db
 def test_get_schema_options():
     """Test use-cases for translating strings to named object references."""
 
@@ -623,22 +624,27 @@ def test_get_schema_options():
 
     # from text:
     # get schema
-    schema = parse.get_schema('T3', 'A', 'TAN')
+    schema = util.get_schema('T3', 'A', 'TAN')
     assert schema == schema_defs.tanf.t3
-    # get section
+
     # get model
-    models = parse.get_program_models('TAN', 'A')
+    models = util.get_program_models('TAN', 'A')
     assert models == {
                     'T1': schema_defs.tanf.t1,
                     'T2': schema_defs.tanf.t2,
                     'T3': schema_defs.tanf.t3,
                 }
 
-    model = parse.get_program_model('TAN', 'A', 'T1')
+    model = util.get_program_model('TAN', 'A', 'T1')
     assert model == schema_defs.tanf.t1
-
-    section = parse.get_section_reference('TAN','C')
+    # get section
+    section = util.get_section_reference('TAN','C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
+
+    dfs = DataFileSummaryFactory()
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+
+    assert False
     # from datafile:
     # get model(s)
     # get section str
