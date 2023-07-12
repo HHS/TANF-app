@@ -152,7 +152,7 @@ def parse_datafile_lines(datafile, program_type, section):
     return errors
 
 
-def parse_multi_record_line(line, schema, generate_error):
+def parse_multi_record_line(line, schema, generate_error, datafile):
     """Parse and validate a datafile line using MultiRecordRowSchema."""
     if schema:
         records = schema.parse_and_validate(line, generate_error)
@@ -161,6 +161,7 @@ def parse_multi_record_line(line, schema, generate_error):
             record, record_is_valid, record_errors = r
 
             if record:
+                record.datafile = datafile
                 record.save()
 
         return records
@@ -176,12 +177,13 @@ def parse_multi_record_line(line, schema, generate_error):
     ])]
 
 
-def parse_datafile_line(line, schema, generate_error):
+def parse_datafile_line(line, schema, generate_error, datafile):
     """Parse and validate a datafile line and save any errors to the model."""
     if schema:
         record, record_is_valid, record_errors = schema.parse_and_validate(line, generate_error)
 
         if record:
+            record.datafile = datafile
             record.save()
 
         return record_is_valid, record_errors
