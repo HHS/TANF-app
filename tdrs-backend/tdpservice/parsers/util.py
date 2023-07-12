@@ -338,7 +338,7 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
         },
         # TODO: tribal tanf
     }
-        
+
     #TODO: add error handling for bad inputs -- how does `get` handle bad inputs?
     if query == "text":
         for prog_name, prog_dict in schema_options.items():
@@ -362,7 +362,7 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
         else:
             return models.get(model_name, models)
 
-    
+
 #TODO is it more flexible w/o option? we can do filtering in wrapper functions
 # if option is empty, null, none, just return more
 
@@ -402,8 +402,8 @@ def get_prog_from_section(str_section):  # this is pure, we could use get_schema
         return 'TAN'  # problematic, do we need to infer tribal entirely from tribe/fips code? should we make a new type?
     else:
         return 'TAN'
-    
-    #TODO: if given a datafile (section), we can reverse back to the program b/c the 
+
+    #TODO: if given a datafile (section), we can reverse back to the program b/c the
     # section string has "tribal/ssp" in it, then process of elimination we have tanf
 
 def get_schema(line, section, program_type):
@@ -425,6 +425,33 @@ def transform_to_months(quarter):
         case _:
             raise ValueError("Invalid quarter value.")
 
+def month_to_int(month):
+    match month:
+        case "Jan":
+            return 1
+        case "Feb":
+            return 2
+        case "Mar":
+            return 3
+        case "Apr":
+            return 4
+        case "May":
+            return 5
+        case "Jun":
+            return 6
+        case "Jul":
+            return 7
+        case "Aug":
+            return 8
+        case "Sep":
+            return 9
+        case "Oct":
+            return 10
+        case "Nov":
+            return 11
+        case "Dec":
+            return 12
+
 def case_aggregates_by_month(df):
     """Return case aggregates by month."""
     section = str(df.section)  # section -> text
@@ -438,7 +465,8 @@ def case_aggregates_by_month(df):
     # or we do upgrade get_schema_options to always take named params vs string text?
 
     short_section = get_text_from_df(df)['section']
-    models = get_program_models(program_type, short_section)
+    models_dict = get_program_models(program_type, short_section)
+    models = [model for model in models_dict.values()]
     print("models: ", models)
 
     #TODO: convert models from dict to list of only the references
@@ -447,11 +475,11 @@ def case_aggregates_by_month(df):
     section:  Active Case Data
     program_type:  TAN
     month_list:  ['Jan', 'Feb', 'Mar']
-    models:  {'T1': <tdpservice.parsers.util.RowSchema object at 0xffff8afca230>, 
-    'T2': <tdpservice.parsers.util.RowSchema object at 0xffff8b3a3730>, 
+    models:  {'T1': <tdpservice.parsers.util.RowSchema object at 0xffff8afca230>,
+    'T2': <tdpservice.parsers.util.RowSchema object at 0xffff8b3a3730>,
     'T3': <tdpservice.parsers.util.MultiRecordRowSchema object at 0xffff8b3a2b30>}
     '''
-    
+
 
 
     # using a django queryset, filter by datafile to find relevant search_index objects
@@ -460,22 +488,28 @@ def case_aggregates_by_month(df):
     # using a queryset of parserError objects, filter by datafile and error_type to get count of rejected cases
     # subtract rejected cases from total to get accepted cases
     # return a dict of month: {accepted: x, rejected: y, total: z}
-    '''for month in month_list:
+    aggregate_data = {}
+    for month in month_list:
         total = 0
         rejected = 0
         accepted = 0
 
         for model in models:
-            total += model.objects.filter(datafile=df, month=month).count() # todo change to RPT_MONTH_YEAR
-            rejected += model.objects.filter(datafile=df, error.exists()).count() # todo filter doesn't actually work this way
+            # TODO: We need the TANF_T1 and other models to have the FK on datafile which hasnt been merged in yet
+            total += model.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).count()
+            print(total)
+            rejected += model.model.objects.filter(datafile=df, error__isnull=False).count() # todo filter doesn't actually work this way
             #ParserError.objects.filter(datafile=df, month=month).count() #TODO filter where field_name != header or trailer ??
             accepted +=  total - rejected # again look for all objects where generic relation to error is false/empty
 
-        case_aggregates_by_month[month] = {}
-            
+        aggregate_data[month] = {"accepted": accepted, "rejected": rejected, "total": total}
+
+    return aggregate_data
+
+
+
         # filter by month
         # filter by model
         # filter by datafile
         # count objects
         # add to dict
-    '''
