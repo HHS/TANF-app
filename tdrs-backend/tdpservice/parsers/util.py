@@ -3,6 +3,7 @@ from .models import ParserError, ParserErrorCategoryChoices
 from django.contrib.contenttypes.models import ContentType
 from . import schema_defs
 from tdpservice.data_files.models import DataFile
+from datetime import datetime
 
 def value_is_empty(value, length):
     """Handle 'empty' values as field inputs."""
@@ -426,31 +427,9 @@ def transform_to_months(quarter):
             raise ValueError("Invalid quarter value.")
 
 def month_to_int(month):
-    match month:
-        case "Jan":
-            return 1
-        case "Feb":
-            return 2
-        case "Mar":
-            return 3
-        case "Apr":
-            return 4
-        case "May":
-            return 5
-        case "Jun":
-            return 6
-        case "Jul":
-            return 7
-        case "Aug":
-            return 8
-        case "Sep":
-            return 9
-        case "Oct":
-            return 10
-        case "Nov":
-            return 11
-        case "Dec":
-            return 12
+    """Return the integer value of a month."""
+    return datetime.strptime(month, '%b').month
+
 
 def case_aggregates_by_month(df):
     """Return case aggregates by month."""
