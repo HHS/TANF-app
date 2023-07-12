@@ -119,20 +119,20 @@ class DataFileSummary(models.Model):
     """
 
 
-    def get_status(self, errors):
+    def get_status(errors):
         """Set and return the status field based on errors and models associated with datafile."""
         if errors is None:
-            return self.status  # aka PENDING
+            return DataFileSummary.Status.PENDING
 
         if type(errors) != dict:
             raise TypeError("errors parameter must be a dictionary.")
 
         if errors == {}:
-            return self.Status.ACCEPTED
+            return DataFileSummary.Status.ACCEPTED
         elif DataFileSummary.find_precheck(errors):
-            return self.Status.REJECTED
+            return DataFileSummary.Status.REJECTED
         else:
-            return self.Status.ACCEPTED_WITH_ERRORS
+            return DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
     def find_precheck(errors):
         """Check for pre-parsing errors.
