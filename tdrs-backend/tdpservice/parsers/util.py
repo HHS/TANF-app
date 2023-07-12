@@ -464,9 +464,9 @@ def case_aggregates_by_month(df):
     # or we do upgrade get_schema_options to always take named params vs string text?
 
     short_section = get_text_from_df(df)['section']
-    models_dict = get_program_models(program_type, short_section)
-    models = [model for model in models_dict.values()]
-    print("models: ", models)
+    schema_models_dict = get_program_models(program_type, short_section)
+    schema_models = [model for model in schema_models_dict.values()]
+    print("models: ", schema_models)
 
     #TODO: convert models from dict to list of only the references
 
@@ -493,15 +493,21 @@ def case_aggregates_by_month(df):
         rejected = 0
         accepted = 0
 
-        for model in models:
-            # TODO: We need the TANF_T1 and other models to have the FK on datafile which hasnt been merged in yet
-            total += model.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).count()
-            print(total)
-            rejected += model.model.objects.filter(datafile=df, error__isnull=False).count() # todo filter doesn't actually work this way
-            #ParserError.objects.filter(datafile=df, month=month).count() #TODO filter where field_name != header or trailer ??
-            accepted +=  total - rejected # again look for all objects where generic relation to error is false/empty
+        for schema_model in schema_models:
+            if isinstance(schema_model, MultiRecordRowSchema):
+                for sm in schema_model.schemas:
+                    total += sm.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).count()
+                    ids = sm.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).values_list('pk', flat=True)
+                    rejected += ParserError.objects.filter(content_type=ContentType.objects.get_for_model(sm.model), object_id__in=ids).count()
+                    accepted +=  total - rejected
+            else:
+                total += schema_model.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).count()
+                ids = schema_model.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).values_list('pk', flat=True)
+                rejected += ParserError.objects.filter(content_type=ContentType.objects.get_for_model(schema_model.model), object_id__in=ids).count()
+                accepted +=  total - rejected
 
         aggregate_data[month] = {"accepted": accepted, "rejected": rejected, "total": total}
+    print(aggregate_data)
 
     return aggregate_data
 
