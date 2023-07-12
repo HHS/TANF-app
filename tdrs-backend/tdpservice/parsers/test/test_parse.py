@@ -2,30 +2,16 @@
 
 
 import pytest
-from pathlib import Path
+from ..util import create_test_datafile
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.data_files.models import DataFile
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
 from .factories import DataFileSummaryFactory
-from .. import schema_defs, util 
+from .. import schema_defs, util
+from pathlib import Path
 
-def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
-    """Create a test DataFile instance with the given file attached."""
-    path = str(Path(__file__).parent.joinpath('data')) + f'/{filename}'
-    datafile = DataFile.create_new_version({
-        'quarter': '4',
-        'year': 2022,
-        'section': section,
-        'user': stt_user,
-        'stt': stt
-    })
-
-    with open(path, 'rb') as file:
-        datafile.file.save(filename, file)
-
-    return datafile
 
 @pytest.fixture
 def test_datafile(stt_user, stt):
@@ -79,7 +65,7 @@ def test_parse_section_mismatch(test_datafile, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Section does not match.'
+    assert err.error_message == 'Data does not match the expected layout for Closed Case Data.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -103,7 +89,7 @@ def test_parse_wrong_program_type(test_datafile, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Section does not match.'
+    assert err.error_message == 'Data does not match the expected layout for SSP Active Case Data.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -163,7 +149,7 @@ def test_parse_bad_test_file(bad_test_file, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Value length 24 does not match 23.'
+    assert err.error_message == 'Header length is 24 but must be 23 characters.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -266,7 +252,7 @@ def test_parse_bad_trailer_file(bad_trailer_file):
 
     trailer_error = parser_errors.get(row_number=-1)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error.error_message == 'Value length 11 does not match 23.'
+    assert trailer_error.error_message == 'Trailer length is 11 but must be 23 characters.'
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
@@ -300,7 +286,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
 
     trailer_error_1 = trailer_errors.first()
     assert trailer_error_1.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_1.error_message == 'Value length 7 does not match 23.'
+    assert trailer_error_1.error_message == 'Trailer length is 7 but must be 23 characters.'
     assert trailer_error_1.content_type is None
     assert trailer_error_1.object_id is None
 
@@ -380,7 +366,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile):
 
     assert err.row_number == -1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Value length 15 does not match 23.'
+    assert err.error_message == 'Trailer length is 15 but must be 23 characters.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -411,7 +397,7 @@ def ssp_section1_datafile(stt_user, stt):
 
 #     trailer_error = parser_errors.get(row_number=-1)
 #     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-#     assert trailer_error.error_message == 'Value length 14 does not match 23.'
+#     assert trailer_error.error_message == 'Trailer length is 14 but must be 23 characters.'
 
 #     row_12430_error = parser_errors.get(row_number=12430)
 #     assert row_12430_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
@@ -592,7 +578,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
 
     trailer_error = parser_errors.get(row_number=-1)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error.error_message == 'Value length 15 does not match 23.'
+    assert trailer_error.error_message == 'Trailer length is 15 but must be 23 characters.'
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
@@ -648,7 +634,7 @@ def test_get_schema_options():
     # from datafile:
     # get model(s)
     # get section str
-    
+
     # from model:
     # get text
     # get section str

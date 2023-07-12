@@ -33,6 +33,11 @@ class AccountApprovalStatusChoices(models.TextChoices):
 class User(AbstractUser):
     """Define user fields and methods."""
 
+    class Meta:
+        """Define meta user model attributes."""
+
+        ordering = ['pk']
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     stt = models.ForeignKey(

@@ -20,7 +20,7 @@
           cf-password: CF_PASSWORD_STAGING
           cf-space: tanf-staging
           cf-username: CF_USERNAME_STAGING
-  
+
   deploy-develop:
     executor: docker-executor
     working_directory: ~/tdp-deploy
@@ -43,7 +43,7 @@
           app-dir: tdrs-frontend
       - run:
           name: Run Cypress e2e tests
-          command: cd tdrs-frontend; npm run test:e2e-ci -- --config baseUrl="https://tdp-frontend-develop.acf.hhs.gov" --env cypressToken=$CYPRESS_TOKEN,apiUrl="https://tdp-frontend-develop.acf.hhs.gov/v1"
+          command: cd tdrs-frontend; npm run test:e2e-ci -- --config baseUrl="https://tdp-frontend-develop.acf.hhs.gov" --env cypressToken=$CYPRESS_TOKEN,apiUrl="https://tdp-frontend-develop.acf.hhs.gov/v1",adminUrl="https://tdp-frontend-develop.acf.hhs.gov/admin"
       - store_artifacts:
           path: tdrs-frontend/cypress/screenshots/
       - store_artifacts:
