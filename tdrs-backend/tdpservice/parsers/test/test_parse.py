@@ -2,7 +2,6 @@
 
 
 import pytest
-from ..util import create_test_datafile
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.data_files.models import DataFile
@@ -10,13 +9,12 @@ from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
 from .factories import DataFileSummaryFactory
 from .. import schema_defs, util
-from pathlib import Path
 
 
 @pytest.fixture
 def test_datafile(stt_user, stt):
     """Fixture for small_correct_file."""
-    return create_test_datafile('small_correct_file', stt_user, stt)
+    return util.create_test_datafile('small_correct_file', stt_user, stt)
 
 @pytest.fixture
 def dfs():
@@ -100,7 +98,7 @@ def test_parse_wrong_program_type(test_datafile, dfs):
 @pytest.fixture
 def test_big_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP1.TS06."""
-    return create_test_datafile('ADS.E2J.FTP1.TS06', stt_user, stt)
+    return util.create_test_datafile('ADS.E2J.FTP1.TS06', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -132,7 +130,7 @@ def test_parse_big_file(test_big_file, dfs):
 @pytest.fixture
 def bad_test_file(stt_user, stt):
     """Fixture for bad_TANF_S2."""
-    return create_test_datafile('bad_TANF_S2.txt', stt_user, stt)
+    return util.create_test_datafile('bad_TANF_S2.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -160,7 +158,7 @@ def test_parse_bad_test_file(bad_test_file, dfs):
 @pytest.fixture
 def bad_file_missing_header(stt_user, stt):
     """Fixture for bad_missing_header."""
-    return create_test_datafile('bad_missing_header.txt', stt_user, stt)
+    return util.create_test_datafile('bad_missing_header.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -186,7 +184,7 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
 @pytest.fixture
 def bad_file_multiple_headers(stt_user, stt):
     """Fixture for bad_two_headers."""
-    return create_test_datafile('bad_two_headers.txt', stt_user, stt)
+    return util.create_test_datafile('bad_two_headers.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -213,7 +211,7 @@ def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
 @pytest.fixture
 def big_bad_test_file(stt_user, stt):
     """Fixture for bad_TANF_S1."""
-    return create_test_datafile('bad_TANF_S1.txt', stt_user, stt)
+    return util.create_test_datafile('bad_TANF_S1.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -239,7 +237,7 @@ def test_parse_big_bad_test_file(big_bad_test_file):
 @pytest.fixture
 def bad_trailer_file(stt_user, stt):
     """Fixture for bad_trailer_1."""
-    return create_test_datafile('bad_trailer_1.txt', stt_user, stt)
+    return util.create_test_datafile('bad_trailer_1.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -271,7 +269,7 @@ def test_parse_bad_trailer_file(bad_trailer_file):
 @pytest.fixture
 def bad_trailer_file_2(stt_user, stt):
     """Fixture for bad_trailer_2."""
-    return create_test_datafile('bad_trailer_2.txt', stt_user, stt)
+    return util.create_test_datafile('bad_trailer_2.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -321,7 +319,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
 @pytest.fixture
 def empty_file(stt_user, stt):
     """Fixture for empty_file."""
-    return create_test_datafile('empty_file', stt_user, stt)
+    return util.create_test_datafile('empty_file', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -347,7 +345,7 @@ def test_parse_empty_file(empty_file):
 @pytest.fixture
 def small_ssp_section1_datafile(stt_user, stt):
     """Fixture for small_ssp_section1."""
-    return create_test_datafile('small_ssp_section1.txt', stt_user, stt, 'SSP Active Case Data')
+    return util.create_test_datafile('small_ssp_section1.txt', stt_user, stt, 'SSP Active Case Data')
 
 
 @pytest.mark.django_db
@@ -380,7 +378,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile):
 @pytest.fixture
 def ssp_section1_datafile(stt_user, stt):
     """Fixture for ssp_section1_datafile."""
-    return create_test_datafile('ssp_section1_datafile.txt', stt_user, stt, 'SSP Active Case Data')
+    return util.create_test_datafile('ssp_section1_datafile.txt', stt_user, stt, 'SSP Active Case Data')
 
 
 # @pytest.mark.django_db
@@ -434,7 +432,7 @@ def ssp_section1_datafile(stt_user, stt):
 @pytest.fixture
 def small_tanf_section1_datafile(stt_user, stt):
     """Fixture for small_tanf_section1."""
-    return create_test_datafile('small_tanf_section1.txt', stt_user, stt)
+    return util.create_test_datafile('small_tanf_section1.txt', stt_user, stt)
 
 @pytest.mark.django_db
 def test_parse_tanf_section1_datafile(small_tanf_section1_datafile):
@@ -495,7 +493,7 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile):
 @pytest.fixture
 def bad_tanf_s1__row_missing_required_field(stt_user, stt):
     """Fixture for small_tanf_section1."""
-    return create_test_datafile('small_bad_tanf_s1', stt_user, stt)
+    return util.create_test_datafile('small_bad_tanf_s1', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -541,7 +539,7 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 @pytest.fixture
 def bad_ssp_s1__row_missing_required_field(stt_user, stt):
     """Fixture for ssp_section1_datafile."""
-    return create_test_datafile('small_bad_ssp_s1', stt_user, stt, 'SSP Active Case Data')
+    return util.create_test_datafile('small_bad_ssp_s1', stt_user, stt, 'SSP Active Case Data')
 
 
 @pytest.mark.django_db

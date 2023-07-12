@@ -4,7 +4,7 @@ import pytest
 from tdpservice.parsers import parse
 from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices
 from .factories import DataFileSummaryFactory, ParserErrorFactory
-from .test_parse import create_test_datafile
+from ..util import create_test_datafile
 
 import logging
 logger = logging.getLogger(__name__)
