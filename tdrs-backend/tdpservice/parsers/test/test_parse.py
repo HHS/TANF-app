@@ -9,6 +9,10 @@ from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
 from .factories import DataFileSummaryFactory
 from .. import schema_defs, util
+import logging
+
+es_logger = logging.getLogger('elasticsearch')
+es_logger.setLevel(logging.WARNING)
 
 
 @pytest.fixture
@@ -24,7 +28,17 @@ def dfs():
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile, dfs):
     """Test parsing of small_correct_file."""
+    dfs.datafile = test_datafile
+    dfs.save()
+
     errors = parse.parse_datafile(test_datafile)
+
+    print(f"OBJ Date: {TANF_T1.objects.all().first().RPT_MONTH_YEAR}")
+
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+    assert dfs.case_aggregates == {'Oct': {'accepted': 1, 'rejected': 0, 'total': 1},
+                                   'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
+                                   'Dec': {'accepted': 0, 'rejected': 0, 'total': 0}}
 
     assert errors == {}
     assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED
@@ -55,6 +69,12 @@ def test_parse_section_mismatch(test_datafile, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(test_datafile)
+
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+    print(dfs.case_aggregates)
+    # I think in the case where no records are generated because of the type of error, we need a check in the util function to handle that
+    assert dfs.case_aggregates == False #{'Jan': {'accepted': 0, 'rejected': 0, 'total': 0}, 'Feb': {'accepted': 0, 'rejected': 0, 'total': 0}, 'Mar': {'accepted': 0, 'rejected': 0, 'total': 0}}
+
     assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=test_datafile)
     assert parser_errors.count() == 1
@@ -79,6 +99,11 @@ def test_parse_wrong_program_type(test_datafile, dfs):
 
     errors = parse.parse_datafile(test_datafile)
     assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
+
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+    print(dfs.case_aggregates)
+    # I think in the case where no records are generated because of the type of error, we need a check in the util function to handle that
+    assert dfs.case_aggregates == False #{'Jan': {'accepted': 0, 'rejected': 0, 'total': 0}, 'Feb': {'accepted': 0, 'rejected': 0, 'total': 0}, 'Mar': {'accepted': 0, 'rejected': 0, 'total': 0}}
 
     parser_errors = ParserError.objects.filter(file=test_datafile)
     assert parser_errors.count() == 1
@@ -108,7 +133,16 @@ def test_parse_big_file(test_big_file, dfs):
     expected_t2_record_count = 882
     expected_t3_record_count = 1376
 
+    dfs.datafile = test_big_file
+    dfs.save()
+
     errors = parse.parse_datafile(test_big_file)
+
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+    assert dfs.case_aggregates == {'Oct': {'accepted': 270, 'rejected': 0, 'total': 270},
+                                   'Nov': {'accepted': 273, 'rejected': 0, 'total': 273},
+                                   'Dec': {'accepted': 272, 'rejected': 0, 'total': 272}}
+
     assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     parser_errors = ParserError.objects.filter(file=test_big_file)
     assert parser_errors.count() == 355
@@ -136,9 +170,20 @@ def bad_test_file(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_bad_test_file(bad_test_file, dfs):
     """Test parsing of bad_TANF_S2."""
+    bad_test_file.year = 2021
+    bad_test_file.save()
+
+    dfs.datafile = bad_test_file
+    dfs.save()
+
     errors = parse.parse_datafile(bad_test_file)
+    print(f"{TANF_T1.objects.all().first().RPT_MONTH_YEAR}")
 
     assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+    print(dfs.case_aggregates)
+    # I think in the case where no records are generated because of the type of error, we need a check in the util function to handle that
+    assert dfs.case_aggregates == False
 
     parser_errors = ParserError.objects.filter(file=bad_test_file)
     assert parser_errors.count() == 1
@@ -164,8 +209,17 @@ def bad_file_missing_header(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
     """Test parsing of bad_missing_header."""
+    dfs.datafile = bad_file_missing_header
+    dfs.save()
+
     errors = parse.parse_datafile(bad_file_missing_header)
+
     assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+    print(dfs.case_aggregates)
+    # I think in the case where no records are generated because of the type of error, we need a check in the util function to handle that
+    assert dfs.case_aggregates == False
+
     parser_errors = ParserError.objects.filter(file=bad_file_missing_header)
     assert parser_errors.count() == 1
 
@@ -190,8 +244,16 @@ def bad_file_multiple_headers(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
     """Test parsing of bad_two_headers."""
+    dfs.datafile = bad_file_multiple_headers
+    dfs.save()
+
     errors = parse.parse_datafile(bad_file_multiple_headers)
+
     assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+    print(dfs.case_aggregates)
+    # I think in the case where no records are generated because of the type of error, we need a check in the util function to handle that
+    assert dfs.case_aggregates == False
 
     parser_errors = ParserError.objects.filter(file=bad_file_multiple_headers)
     assert parser_errors.count() == 1
@@ -241,8 +303,11 @@ def bad_trailer_file(stt_user, stt):
 
 
 @pytest.mark.django_db
-def test_parse_bad_trailer_file(bad_trailer_file):
+def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     """Test parsing bad_trailer_1."""
+    dfs.datafile = bad_trailer_file
+    dfs.save()
+
     errors = parse.parse_datafile(bad_trailer_file)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file)
@@ -349,13 +414,22 @@ def small_ssp_section1_datafile(stt_user, stt):
 
 
 @pytest.mark.django_db
-def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile):
+def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
     """Test parsing small_ssp_section1_datafile."""
     expected_m1_record_count = 5
     expected_m2_record_count = 6
     expected_m3_record_count = 8
 
+    dfs.datafile = small_ssp_section1_datafile
+    dfs.save()
+
     errors = parse.parse_datafile(small_ssp_section1_datafile)
+
+    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+    print(dfs.case_aggregates)
+    # I think in the case where no records are generated because of the type of error, we need a check in the util function to handle that
+    assert dfs.case_aggregates == False
 
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
     assert parser_errors.count() == 1
@@ -435,9 +509,18 @@ def small_tanf_section1_datafile(stt_user, stt):
     return util.create_test_datafile('small_tanf_section1.txt', stt_user, stt)
 
 @pytest.mark.django_db
-def test_parse_tanf_section1_datafile(small_tanf_section1_datafile):
+def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     """Test parsing of small_tanf_section1_datafile and validate T2 model data."""
+
+    dfs.datafile = small_tanf_section1_datafile
+    dfs.save()
+
     errors = parse.parse_datafile(small_tanf_section1_datafile)
+
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
+    dfs.case_aggregates = {'Oct': {'accepted': 5, 'rejected': 0, 'total': 5},
+                           'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
+                           'Dec': {'accepted': 0, 'rejected': 0, 'total': 0}}
 
     assert errors == {}
     assert TANF_T2.objects.count() == 5

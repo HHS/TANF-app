@@ -6,14 +6,15 @@ from tdpservice.data_files.models import DataFile
 from datetime import datetime
 from tdpservice.data_files.models import DataFile
 from pathlib import Path
+from itertools import chain
 
 
 def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
     """Create a test DataFile instance with the given file attached."""
     path = str(Path(__file__).parent.joinpath('test/data')) + f'/{filename}'
     datafile = DataFile.create_new_version({
-        'quarter': '4',
-        'year': 2022,
+        'quarter': 'Q4',
+        'year': 2020,
         'section': section,
         'user': stt_user,
         'stt': stt
@@ -454,19 +455,15 @@ def month_to_int(month):
 def case_aggregates_by_month(df):
     """Return case aggregates by month."""
     section = str(df.section)  # section -> text
-    print("section: ", section)
     program_type = get_prog_from_section(section)  # section -> program_type -> text
-    print("program_type: ", program_type)
 
     # from datafile quarter, generate short month names for each month in quarter ala 'Jan', 'Feb', 'Mar'
     month_list = transform_to_months(df.quarter)
-    print("month_list: ", month_list)
     # or we do upgrade get_schema_options to always take named params vs string text?
 
     short_section = get_text_from_df(df)['section']
     schema_models_dict = get_program_models(program_type, short_section)
     schema_models = [model for model in schema_models_dict.values()]
-    print("models: ", schema_models)
 
     #TODO: convert models from dict to list of only the references
 
@@ -492,21 +489,25 @@ def case_aggregates_by_month(df):
         total = 0
         rejected = 0
         accepted = 0
+        month_int = month_to_int(month)
+        rpt_month_year = int(f"{df.year}{month_int}")
 
+        qset = set()
         for schema_model in schema_models:
             if isinstance(schema_model, MultiRecordRowSchema):
-                for sm in schema_model.schemas:
-                    total += sm.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).count()
-                    ids = sm.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).values_list('pk', flat=True)
-                    rejected += ParserError.objects.filter(content_type=ContentType.objects.get_for_model(sm.model), object_id__in=ids).count()
-                    accepted +=  total - rejected
-            else:
-                total += schema_model.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).count()
-                ids = schema_model.model.objects.filter(datafile=df, RPT_MONTH_YEAR=month_to_int(month)).values_list('pk', flat=True)
-                rejected += ParserError.objects.filter(content_type=ContentType.objects.get_for_model(schema_model.model), object_id__in=ids).count()
-                accepted +=  total - rejected
+                schema_model = schema_model.schemas[0]
+
+            next = set(schema_model.model.objects.filter(datafile=df).filter(RPT_MONTH_YEAR=rpt_month_year).distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
+            qset = qset.union(next)
+
+        total += len(qset)
+        rejected += ParserError.objects.filter(content_type=ContentType.objects.get_for_model(schema_model.model),
+                                                case_number__in=qset).count()
+        accepted = total - rejected
 
         aggregate_data[month] = {"accepted": accepted, "rejected": rejected, "total": total}
+
+    print(f"Num Errors: {ParserError.objects.filter(file=df).count()}")
     print(aggregate_data)
 
     return aggregate_data
