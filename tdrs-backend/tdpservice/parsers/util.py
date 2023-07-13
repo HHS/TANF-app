@@ -4,9 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from . import schema_defs
 from tdpservice.data_files.models import DataFile
 from datetime import datetime
-from tdpservice.data_files.models import DataFile
 from pathlib import Path
-from itertools import chain
 
 
 def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
@@ -287,18 +285,16 @@ class MultiRecordRowSchema:
 
         return records
 
-
-
 def get_schema_options(program, section, query=None, model=None, model_name=None):
-    '''
-    Centralized function to return the appropriate schema for a given program, section, and query.
+    """Centralized function to return the appropriate schema for a given program, section, and query.
+
+    TODO: need to rework this docstring as it is outdated hence the weird ';;' for some of them.
+
     @param program: the abbreviated program type (.e.g, 'TAN')
     @param section: the section of the file (.e.g, 'A');; or ACTIVE_CASE_DATA
     @param query: the query for section_names (.e.g, 'section', 'models', etc.)
     @return: the appropriate references (e.g., ACTIVE_CASE_DATA or {t1,t2,t3}) ;; returning 'A'
-    '''
-
-    # ensure file section matches upload section
+    """
     schema_options = {
         'TAN': {
             'A': {
@@ -312,20 +308,20 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             'C': {
                 'section': DataFile.Section.CLOSED_CASE_DATA,
                 'models': {
-                    #'T4': schema_defs.tanf.t4,
-                    #'T5': schema_defs.tanf.t5,
+                    # 'T4': schema_defs.tanf.t4,
+                    # 'T5': schema_defs.tanf.t5,
                 }
             },
             'G': {
-                'section':DataFile.Section.AGGREGATE_DATA,
+                'section': DataFile.Section.AGGREGATE_DATA,
                 'models': {
-                    #'T6': schema_defs.tanf.t6,
+                    # 'T6': schema_defs.tanf.t6,
                 }
             },
             'S': {
-                'section':DataFile.Section.STRATUM_DATA,
+                'section': DataFile.Section.STRATUM_DATA,
                 'models': {
-                    #'T7': schema_defs.tanf.t7,
+                    # 'T7': schema_defs.tanf.t7,
                 }
             }
         },
@@ -339,34 +335,33 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
                 }
             },
             'C': {
-                'section':DataFile.Section.SSP_CLOSED_CASE_DATA,
+                'section': DataFile.Section.SSP_CLOSED_CASE_DATA,
                 'models': {
-                    #'S4': schema_defs.ssp.m4,
-                    #'S5': schema_defs.ssp.m5,
+                    # 'S4': schema_defs.ssp.m4,
+                    # 'S5': schema_defs.ssp.m5,
                 }
             },
             'G': {
-                'section':DataFile.Section.SSP_AGGREGATE_DATA,
+                'section': DataFile.Section.SSP_AGGREGATE_DATA,
                 'models': {
-                    #'S6': schema_defs.ssp.m6,
+                    # 'S6': schema_defs.ssp.m6,
                 }
             },
             'S': {
-                'section':DataFile.Section.SSP_STRATUM_DATA,
+                'section': DataFile.Section.SSP_STRATUM_DATA,
                 'models': {
-                    #'S7': schema_defs.ssp.m7,
+                    # 'S7': schema_defs.ssp.m7,
                 }
             }
         },
         # TODO: tribal tanf
     }
 
-    #TODO: add error handling for bad inputs -- how does `get` handle bad inputs?
     if query == "text":
         for prog_name, prog_dict in schema_options.items():
-            for sect,val in prog_dict.items():
+            for sect, val in prog_dict.items():
                 if val['section'] == section:
-                    return {'program_type':prog_name, 'section': sect}
+                    return {'program_type': prog_name, 'section': sect}
         raise ValueError("Model not found in schema_defs")
     elif query == "section":
         return schema_options.get(program, {}).get(section, None)[query]
@@ -385,9 +380,6 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             return models.get(model_name, models)
 
 
-#TODO is it more flexible w/o option? we can do filtering in wrapper functions
-# if option is empty, null, none, just return more
-
 '''
 text -> section YES
 text -> models{} YES
@@ -402,30 +394,32 @@ text**: input string from the header/file
 '''
 
 def get_program_models(str_prog, str_section):
+    """Return the models dict for a given program and section."""
     return get_schema_options(program=str_prog, section=str_section, query='models')
 
 def get_program_model(str_prog, str_section, str_model):
+    """Return singular model for a given program, section, and name."""
     return get_schema_options(program=str_prog, section=str_section, query='models', model_name=str_model)
 
 def get_section_reference(str_prog, str_section):
+    """Return the named section reference for a given program and section."""
     return get_schema_options(program=str_prog, section=str_section, query='section')
 
-def get_text_from_model(model):
-    get_schema_options()
-
 def get_text_from_df(df):
+    """Return the short-hand text for program, section for a given datafile."""
     return get_schema_options("", section=df.section, query='text')
 
-def get_prog_from_section(str_section):  # this is pure, we could use get_schema_options but it's hard
-    # 'SSP Closed Case Data'
+def get_prog_from_section(str_section):
+    """Return the program type for a given section."""
+    # e.g., 'SSP Closed Case Data'
     if str_section.startswith('SSP'):
         return 'SSP'
     elif str_section.startswith('Tribal'):
-        return 'TAN'  # problematic, do we need to infer tribal entirely from tribe/fips code? should we make a new type?
+        return 'TAN'  # problematic, do we need to infer tribal entirely from tribe/fips code?
     else:
         return 'TAN'
 
-    #TODO: if given a datafile (section), we can reverse back to the program b/c the
+    # TODO: if given a datafile (section), we can reverse back to the program b/c the
     # section string has "tribal/ssp" in it, then process of elimination we have tanf
 
 def get_schema(line, section, program_type):
@@ -459,31 +453,13 @@ def case_aggregates_by_month(df):
 
     # from datafile quarter, generate short month names for each month in quarter ala 'Jan', 'Feb', 'Mar'
     month_list = transform_to_months(df.quarter)
-    # or we do upgrade get_schema_options to always take named params vs string text?
 
     short_section = get_text_from_df(df)['section']
     schema_models_dict = get_program_models(program_type, short_section)
     schema_models = [model for model in schema_models_dict.values()]
 
-    #TODO: convert models from dict to list of only the references
+    # TODO: convert models from dict to list of only the references
 
-    '''
-    section:  Active Case Data
-    program_type:  TAN
-    month_list:  ['Jan', 'Feb', 'Mar']
-    models:  {'T1': <tdpservice.parsers.util.RowSchema object at 0xffff8afca230>,
-    'T2': <tdpservice.parsers.util.RowSchema object at 0xffff8b3a3730>,
-    'T3': <tdpservice.parsers.util.MultiRecordRowSchema object at 0xffff8b3a2b30>}
-    '''
-
-
-
-    # using a django queryset, filter by datafile to find relevant search_index objects
-
-    # count the number of objects in the queryset and assign to total
-    # using a queryset of parserError objects, filter by datafile and error_type to get count of rejected cases
-    # subtract rejected cases from total to get accepted cases
-    # return a dict of month: {accepted: x, rejected: y, total: z}
     aggregate_data = {}
     for month in month_list:
         total = 0
@@ -497,12 +473,13 @@ def case_aggregates_by_month(df):
             if isinstance(schema_model, MultiRecordRowSchema):
                 schema_model = schema_model.schemas[0]
 
-            next = set(schema_model.model.objects.filter(datafile=df).filter(RPT_MONTH_YEAR=rpt_month_year).distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
+            next = set(schema_model.model.objects.filter(datafile=df).filter(RPT_MONTH_YEAR=rpt_month_year)
+                       .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
             qset = qset.union(next)
 
         total += len(qset)
         rejected += ParserError.objects.filter(content_type=ContentType.objects.get_for_model(schema_model.model),
-                                                case_number__in=qset).count()
+                                               case_number__in=qset).count()
         accepted = total - rejected
 
         aggregate_data[month] = {"accepted": accepted, "rejected": rejected, "total": total}
@@ -511,11 +488,3 @@ def case_aggregates_by_month(df):
     print(aggregate_data)
 
     return aggregate_data
-
-
-
-        # filter by month
-        # filter by model
-        # filter by datafile
-        # count objects
-        # add to dict

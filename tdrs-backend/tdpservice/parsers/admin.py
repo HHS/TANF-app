@@ -14,10 +14,12 @@ class ParserErrorAdmin(admin.ModelAdmin):
         'error_message',
     ]
 
+
 class DataFileSummaryAdmin(admin.ModelAdmin):
     """ModelAdmin class for DataFileSummary objects generated in parsing."""
 
     list_display = ['status', 'case_aggregates', 'datafile']
+
 
 admin.site.register(models.ParserError, ParserErrorAdmin)
 admin.site.register(models.DataFileSummary, DataFileSummaryAdmin)

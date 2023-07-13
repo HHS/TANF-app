@@ -86,38 +86,7 @@ class DataFileSummary(models.Model):
 
     datafile = models.ForeignKey(DataFile, on_delete=models.CASCADE)
 
-    # TODO: worth adding more fields here or ???
-    #named program schema
-    #named models schema via rowschema
-    #named section via datafile
-
-    #  eventually needs a breakdown of cases (accepted, rejected, total) per month
-    #  elif qtr2 jan-mar
-    #  elif qtr3 apr-jun
-    #  elif qtr4 jul-sept
-
     case_aggregates = models.JSONField(null=True, blank=False)
-    """
-    # Do these queries only once, save result during creation of this model
-    # or do we grab this data during parsing and bubble it up during create call?
-    {
-        "Jan": {
-            "accepted": 100,
-            "rejected": 10,
-            "total": 110
-        },
-        "Feb": {
-            "accepted": 100,
-            "rejected": 10,
-            "total": 110
-        },
-        "Mar": {
-            "accepted": 100,
-            "rejected": 10,
-            "total": 110
-        }
-    """
-
 
     def get_status(errors):
         """Set and return the status field based on errors and models associated with datafile."""

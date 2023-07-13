@@ -474,7 +474,6 @@ def small_tanf_section1_datafile(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     """Test parsing of small_tanf_section1_datafile and validate T2 model data."""
-
     dfs.datafile = small_tanf_section1_datafile
     dfs.save()
 
@@ -646,7 +645,6 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
 @pytest.mark.django_db
 def test_get_schema_options():
     """Test use-cases for translating strings to named object references."""
-
     '''
     text -> section
     text -> models{} YES
@@ -676,7 +674,7 @@ def test_get_schema_options():
     model = util.get_program_model('TAN', 'A', 'T1')
     assert model == schema_defs.tanf.t1
     # get section
-    section = util.get_section_reference('TAN','C')
+    section = util.get_section_reference('TAN', 'C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
 
     dfs = DataFileSummaryFactory()
@@ -691,4 +689,3 @@ def test_get_schema_options():
     # get text
     # get section str
     # get ref section
-

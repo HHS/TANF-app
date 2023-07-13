@@ -60,42 +60,11 @@ def parse_datafile(datafile):
 
     errors = errors | line_errors
 
-    # errors['summary'] = DataFileSummary.objects.create(
-    #     datafile=datafile,
-    #     status=DataFileSummary.get_status(errors)
-    # )
-
-    # or perhaps just invert this?
-    # what does it look like having the errors dict as a field of the summary?
-    # summary.errors = errors  --- but I don't want/need to store this in DB
-    # divesting that storage and just using my FK to datafile so I can run querysets later
-    # perserves the ability to use the summary object to generate the errors dict
-
-    # perhaps just formalize the entire errors struct?
-    # pros:
-    #   - can be used to generate error report
-    #   - can be used to generate summary
-    #  - can be used to generate error count
-    #  - can be used to generate error count by type
-    #  - can be used to generate error count by record type
-    #  - can be used to generate error count by field
-    #  - can be used to generate error count by field type
-    #  - has a consistent structure between differing file types
-    #  - has testable functions for each of the above
-    #  - has agreed-upon inputs/outputs
-    # cons:
-    #  - requires boilerplate to generate
-    #  - different structures may be needed for different purposes
-    #  - built-in dict may be easier to reference ala Cameron
-    #  - built-in dict is freer-form and complete already
-
     return errors
 
 
 def parse_datafile_lines(datafile, program_type, section):
-    """Parse lines with appropriate schema and return errors."""
-    #dfs = DataFileSummary.object.create(datafile=datafile)
-    # and then what, pass in program_type to case_aggregates after loop?
+    """Parse and validate all lines in a datafile."""
     errors = {}
     rawfile = datafile.file
 
@@ -187,7 +156,6 @@ def parse_datafile_line(line, schema, generate_error, datafile):
             record.save()
 
         return record_is_valid, record_errors
-
 
     return (False, [
         generate_error(
