@@ -1,19 +1,67 @@
 # workflows:
-  build-and-test:
-    unless:
-      or:
-        - << pipeline.parameters.run_dev_deployment >>
-        - << pipeline.parameters.develop_branch_deploy >>
-        - << pipeline.parameters.run_owasp_scan >>
-        - << pipeline.parameters.run_nightly_owasp_scan >>
+  build-and-test-all:
+    when: << pipeline.parameters.build_and_test_all >>
     jobs:
       - secrets-check
+      - test-backend:
+          requires:
+            - secrets-check      
       - test-frontend:
           requires:
             - secrets-check
+      - test-e2e:
+          requires:
+            - secrets-check
+
+  ci-build-and-test-all:
+    jobs:
+      - secrets-check:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
       - test-backend:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
+          requires:
+            - secrets-check      
+      - test-frontend:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
           requires:
             - secrets-check
       - test-e2e:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
+          requires:
+            - secrets-check
+
+  build-and-test-backend:
+    when: << pipeline.parameters.build_and_test_backend >>
+    jobs:
+      - secrets-check
+      - test-backend:
+          requires:
+            - secrets-check
+
+  build-and-test-frontend:
+    when: << pipeline.parameters.build_and_test_frontend >>
+    jobs:
+      - secrets-check
+      - test-frontend:
           requires:
             - secrets-check

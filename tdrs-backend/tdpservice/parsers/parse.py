@@ -188,6 +188,7 @@ def parse_datafile_line(line, schema, generate_error, datafile):
 
         return record_is_valid, record_errors
 
+
     return (False, [
         generate_error(
             schema=None,
@@ -197,4 +198,3 @@ def parse_datafile_line(line, schema, generate_error, datafile):
             field=None
         )
     ])
-

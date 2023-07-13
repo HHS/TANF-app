@@ -24,7 +24,7 @@ def test_dfs_model(dfs):
     """Test that the model is created and populated correctly."""
     assert dfs.case_aggregates['Jan']['accepted'] == 100
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db
 def test_dfs_rejected(test_datafile, dfs):
     """Ensure that an invalid file generates a rejected status."""
     test_datafile.section = 'Closed Case Data'
@@ -44,7 +44,7 @@ def test_dfs_set_status(dfs):
     parser_errors = []
 
     for i in range(2, 4):
-        parser_errors.append(ParserErrorFactory(row_number=i, category=str(i)))
+        parser_errors.append(ParserErrorFactory(row_number=i, error_type=str(i)))
 
     dfs.status = dfs.get_status(errors={'document': parser_errors})
 

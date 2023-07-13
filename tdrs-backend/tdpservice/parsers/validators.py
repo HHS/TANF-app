@@ -117,9 +117,24 @@ def validate_single_header_trailer(datafile):
     return is_valid, error
 
 
-def validate_header_section_matches_submission(datafile, section):
+def validate_header_section_matches_submission(datafile, program_type, section):
     """Validate header section matches submission section."""
-    is_valid = datafile.section == section
+    section_names = {
+        'TAN': {
+            'A': DataFile.Section.ACTIVE_CASE_DATA,
+            'C': DataFile.Section.CLOSED_CASE_DATA,
+            'G': DataFile.Section.AGGREGATE_DATA,
+            'S': DataFile.Section.STRATUM_DATA,
+        },
+        'SSP': {
+            'A': DataFile.Section.SSP_ACTIVE_CASE_DATA,
+            'C': DataFile.Section.SSP_CLOSED_CASE_DATA,
+            'G': DataFile.Section.SSP_AGGREGATE_DATA,
+            'S': DataFile.Section.SSP_STRATUM_DATA,
+        },
+    }
+
+    is_valid = datafile.section == section_names.get(program_type, {}).get(section)
 
     error = None
     if not is_valid:
