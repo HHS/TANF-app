@@ -23,7 +23,7 @@ def test_datafile(stt_user, stt):
 @pytest.fixture
 def dfs():
     """Fixture for DataFileSummary."""
-    return DataFileSummaryFactory()
+    return DataFileSummaryFactory.create()
 
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile, dfs):
@@ -32,8 +32,6 @@ def test_parse_small_correct_file(test_datafile, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(test_datafile)
-
-    print(f"OBJ Date: {TANF_T1.objects.all().first().RPT_MONTH_YEAR}")
 
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
     assert dfs.case_aggregates == {'Oct': {'accepted': 1, 'rejected': 0, 'total': 1},
@@ -554,8 +552,8 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
-    for e in parser_errors:
-        print(e.error_type, e.error_message)
+    # for e in parser_errors:
+    #    print(e.error_type, e.error_message)
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
@@ -641,9 +639,21 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
         'trailer': [trailer_error],
     }
 
+@pytest.mark.django_db
+def test_dfs_set_case_aggregates(test_datafile, dfs):
+    """Test that the case aggregates are set correctly."""
+    test_datafile.section = 'Active Case Data'
+    test_datafile.save()
+    error_ast = parse.parse_datafile(test_datafile)
+    dfs.case_aggregates = util.case_aggregates_by_month(test_datafile)
+    dfs.save()
+
+    assert dfs.case_aggregates['Oct']['accepted'] == 1
+    assert dfs.case_aggregates['Oct']['rejected'] == 0
+    assert dfs.case_aggregates['Oct']['total'] == 1
 
 @pytest.mark.django_db
-def test_get_schema_options():
+def test_get_schema_options(dfs):
     """Test use-cases for translating strings to named object references."""
     '''
     text -> section
@@ -677,7 +687,6 @@ def test_get_schema_options():
     section = util.get_section_reference('TAN', 'C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
 
-    dfs = DataFileSummaryFactory()
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
 
     # from datafile:
@@ -688,3 +697,4 @@ def test_get_schema_options():
     # get text
     # get section str
     # get ref section
+

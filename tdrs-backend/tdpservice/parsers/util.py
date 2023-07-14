@@ -482,7 +482,4 @@ def case_aggregates_by_month(df):
 
         aggregate_data[month] = {"accepted": accepted, "rejected": rejected, "total": total}
 
-    print(f"Num Errors: {ParserError.objects.filter(file=df).count()}")
-    print(aggregate_data)
-
     return aggregate_data

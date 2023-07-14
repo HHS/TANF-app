@@ -88,7 +88,7 @@ class DataFileSummary(models.Model):
 
     case_aggregates = models.JSONField(null=True, blank=False)
 
-    def get_status(errors):
+    def get_status(self, errors):
         """Set and return the status field based on errors and models associated with datafile."""
         if errors is None:
             return DataFileSummary.Status.PENDING
