@@ -39,7 +39,7 @@ def test_parse_small_correct_file(test_datafile, dfs):
                                    'Dec': {'accepted': 0, 'rejected': 0, 'total': 0}}
 
     assert errors == {}
-    assert DataFileSummary.get_status(errors) == DataFileSummary.Status.ACCEPTED
+    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED
     assert TANF_T1.objects.count() == 1
     assert ParserError.objects.filter(file=test_datafile).count() == 0
 
@@ -63,9 +63,12 @@ def test_parse_section_mismatch(test_datafile, dfs):
     test_datafile.section = 'Closed Case Data'
     test_datafile.save()
 
+    dfs.datafile = test_datafile
+    dfs.save()
+
     errors = parse.parse_datafile(test_datafile)
 
-    assert DataFileSummary.get_status(errors) == DataFileSummary.Status.REJECTED
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=test_datafile)
     assert parser_errors.count() == 1
 
@@ -88,7 +91,7 @@ def test_parse_wrong_program_type(test_datafile, dfs):
     test_datafile.save()
 
     errors = parse.parse_datafile(test_datafile)
-    assert DataFileSummary.get_status(errors) == DataFileSummary.Status.REJECTED
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=test_datafile)
     assert parser_errors.count() == 1
@@ -123,7 +126,7 @@ def test_parse_big_file(test_big_file, dfs):
 
     errors = parse.parse_datafile(test_big_file)
 
-    assert DataFileSummary.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
     assert dfs.case_aggregates == {'Oct': {'accepted': 270, 'rejected': 0, 'total': 270},
                                    'Nov': {'accepted': 273, 'rejected': 0, 'total': 273},
@@ -183,7 +186,7 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
     """Test parsing of bad_missing_header."""
     errors = parse.parse_datafile(bad_file_missing_header)
 
-    assert DataFileSummary.get_status(errors) == DataFileSummary.Status.REJECTED
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_file_missing_header)
     assert parser_errors.count() == 1
@@ -211,7 +214,7 @@ def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
     """Test parsing of bad_two_headers."""
     errors = parse.parse_datafile(bad_file_multiple_headers)
 
-    assert DataFileSummary.get_status(errors) == DataFileSummary.Status.REJECTED
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_file_multiple_headers)
     assert parser_errors.count() == 1
@@ -386,7 +389,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
 
     errors = parse.parse_datafile(small_ssp_section1_datafile)
 
-    assert DataFileSummary.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
     assert dfs.case_aggregates == {'Oct': {'accepted': 5, 'rejected': 0, 'total': 5},
                                    'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
@@ -477,7 +480,7 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
 
     errors = parse.parse_datafile(small_tanf_section1_datafile)
 
-    assert DataFileSummary.get_status(errors) == DataFileSummary.Status.ACCEPTED
+    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
     assert dfs.case_aggregates == {'Oct': {'accepted': 5, 'rejected': 0, 'total': 5},
                                    'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
@@ -548,7 +551,7 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     errors = parse.parse_datafile(bad_tanf_s1__row_missing_required_field)
 
-    assert DataFileSummary.get_status(errors) == DataFileSummary.Status.REJECTED
+    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
