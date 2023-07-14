@@ -680,7 +680,6 @@ def test_get_schema_options():
     dfs = DataFileSummaryFactory()
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile)
 
-    assert False
     # from datafile:
     # get model(s)
     # get section str

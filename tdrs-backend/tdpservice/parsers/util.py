@@ -458,8 +458,6 @@ def case_aggregates_by_month(df):
     schema_models_dict = get_program_models(program_type, short_section)
     schema_models = [model for model in schema_models_dict.values()]
 
-    # TODO: convert models from dict to list of only the references
-
     aggregate_data = {}
     for month in month_list:
         total = 0
