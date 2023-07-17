@@ -79,7 +79,7 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - 2598-staging-deployment-failure-issue
                 - master
                 - /^release.*/      
       
