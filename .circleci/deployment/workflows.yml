@@ -25,14 +25,14 @@
           filters:
             branches:
               only:
-                - main
+                - 2598-staging-deployment-failure-issue
       - deploy-staging:
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
               only:
-                - main
+                - 2598-staging-deployment-failure-issue
       - deploy-infrastructure-develop:
           filters:
             branches:
