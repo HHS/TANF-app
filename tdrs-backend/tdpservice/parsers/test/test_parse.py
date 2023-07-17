@@ -647,7 +647,7 @@ def test_dfs_set_case_aggregates(test_datafile, dfs):
     """Test that the case aggregates are set correctly."""
     test_datafile.section = 'Active Case Data'
     test_datafile.save()
-    error_ast = parse.parse_datafile(test_datafile)
+    parse.parse_datafile(test_datafile)  # this still needs to execute to create db objects to be queried
     dfs.case_aggregates = util.case_aggregates_by_month(test_datafile)
     dfs.save()
 
@@ -700,4 +700,3 @@ def test_get_schema_options(dfs):
     # get text
     # get section str
     # get ref section
-

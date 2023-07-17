@@ -2,7 +2,6 @@
 
 from .util import generate_parser_error
 from .models import ParserErrorCategoryChoices
-from tdpservice.data_files.models import DataFile
 
 # higher order validator func
 

@@ -39,7 +39,7 @@ def test_dfs_model(dfs):
 def test_dfs_get_status(dfs):
     """Test that the initial status is set correctly."""
     assert dfs.status == DataFileSummary.Status.PENDING
-    
+
     # create empty Error dict to prompt accepted status
     assert dfs.get_status(errors={}) == DataFileSummary.Status.ACCEPTED
 
