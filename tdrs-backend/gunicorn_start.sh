@@ -14,7 +14,7 @@ fi
 
 #
 echo "Applying database migrations"
-python manage.py < temp_debug_script.py
+python manage.py shell < temp_debug_script.py
 python manage.py makemigrations
 python manage.py migrate
 python manage.py populate_stts
