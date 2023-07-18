@@ -1,6 +1,25 @@
 """Utility file for functions shared between all parsers even preparser."""
 from .models import ParserError, ParserErrorCategoryChoices
 from django.contrib.contenttypes.models import ContentType
+from tdpservice.data_files.models import DataFile
+from pathlib import Path
+
+
+def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
+    """Create a test DataFile instance with the given file attached."""
+    path = str(Path(__file__).parent.joinpath('test/data')) + f'/{filename}'
+    datafile = DataFile.create_new_version({
+        'quarter': '4',
+        'year': 2022,
+        'section': section,
+        'user': stt_user,
+        'stt': stt
+    })
+
+    with open(path, 'rb') as file:
+        datafile.file.save(filename, file)
+
+    return datafile
 
 def value_is_empty(value, length):
     """Handle 'empty' values as field inputs."""
