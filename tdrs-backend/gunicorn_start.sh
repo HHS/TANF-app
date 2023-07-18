@@ -13,8 +13,9 @@ else
 fi
 
 #
-echo "Applying database migrations"
+echo "Waiting for redis to start"
 python manage.py shell < temp_debug_script.py
+echo "Applying database migrations"
 python manage.py makemigrations
 python manage.py migrate
 python manage.py populate_stts
