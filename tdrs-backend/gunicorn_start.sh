@@ -12,13 +12,9 @@ else
     ( cd  /home/vcap/deps/0/bin/; ./redis-server /home/vcap/app/redis.conf &)
 fi
 
-#
-echo "Waiting for redis to start"
-python manage.py shell < temp_debug_script.py
-echo "Applying database migrations"
-python manage.py makemigrations
-python manage.py migrate
-python manage.py populate_stts
+# python manage.py makemigrations
+# python manage.py migrate
+# python manage.py populate_stts
 python manage.py collectstatic --noinput
 
 celery -A tdpservice.settings worker -c 1 &
