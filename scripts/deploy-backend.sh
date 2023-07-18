@@ -89,9 +89,9 @@ update_backend()
 
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
-        cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -u port -t HEALTH-CHECK-TIMEOUT --strategy rolling || exit 1
+        cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 300 --strategy rolling || exit 1
     else
-        cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -u port -t HEALTH-CHECK-TIMEOUT
+        cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 300
         # set up JWT key if needed
         if cf e "$CGAPPNAME_BACKEND" | grep -q JWT_KEY ; then
             echo jwt cert already created
