@@ -163,16 +163,6 @@ def parse_multi_record_line(line, schema, generate_error):
 
         return records
 
-    return [(None, False, [
-        generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message="Record Type is missing from record.",
-            record=None,
-            field=None
-        )
-    ])]
-
 
 def parse_datafile_line(line, schema, generate_error):
     """Parse and validate a datafile line and save any errors to the model."""
@@ -183,16 +173,6 @@ def parse_datafile_line(line, schema, generate_error):
             record.save()
 
         return record_is_valid, record_errors
-
-    return (False, [
-        generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message="Record Type is missing from record.",
-            record=None,
-            field=None
-        )
-    ])
 
 
 def get_schema_options(program_type):
