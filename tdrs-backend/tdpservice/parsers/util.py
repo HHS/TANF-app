@@ -23,7 +23,6 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
 
     return datafile
 
-
 def value_is_empty(value, length):
     """Handle 'empty' values as field inputs."""
     empty_values = [

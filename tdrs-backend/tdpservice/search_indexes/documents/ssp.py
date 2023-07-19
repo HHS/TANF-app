@@ -4,9 +4,10 @@ from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 from ..models.ssp import SSP_M1, SSP_M2, SSP_M3
 from tdpservice.data_files.models import DataFile
+from .document_base import DocumentBase
 
 @registry.register_document
-class SSP_M1DataSubmissionDocument(Document):
+class SSP_M1DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed SSP M1 data file."""
 
     datafile = fields.ObjectField(properties={
@@ -82,7 +83,7 @@ class SSP_M1DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class SSP_M2DataSubmissionDocument(Document):
+class SSP_M2DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed SSP M2 data file."""
 
     datafile = fields.ObjectField(properties={
@@ -183,7 +184,7 @@ class SSP_M2DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class SSP_M3DataSubmissionDocument(Document):
+class SSP_M3DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed SSP M3 data file."""
 
     datafile = fields.ObjectField(properties={

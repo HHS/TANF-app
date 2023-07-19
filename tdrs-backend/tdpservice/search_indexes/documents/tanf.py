@@ -4,9 +4,10 @@ from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 from ..models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 from tdpservice.data_files.models import DataFile
+from .document_base import DocumentBase
 
 @registry.register_document
-class TANF_T1DataSubmissionDocument(Document):
+class TANF_T1DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed TANF T1 data file."""
 
     datafile = fields.ObjectField(properties={
@@ -84,7 +85,7 @@ class TANF_T1DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class TANF_T2DataSubmissionDocument(Document):
+class TANF_T2DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed TANF T2 data file."""
 
     datafile = fields.ObjectField(properties={
@@ -186,7 +187,7 @@ class TANF_T2DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class TANF_T3DataSubmissionDocument(Document):
+class TANF_T3DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed TANF T3 data file."""
 
     datafile = fields.ObjectField(properties={
@@ -240,7 +241,7 @@ class TANF_T3DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class TANF_T4DataSubmissionDocument(Document):
+class TANF_T4DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed TANF T4 data file."""
 
     datafile = fields.ObjectField(properties={
@@ -287,7 +288,7 @@ class TANF_T4DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class TANF_T5DataSubmissionDocument(Document):
+class TANF_T5DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed TANF T5 data file."""
 
     datafile = fields.ObjectField(properties={
@@ -350,7 +351,7 @@ class TANF_T5DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class TANF_T6DataSubmissionDocument(Document):
+class TANF_T6DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed TANF T6 data file."""
 
     datafile = fields.ObjectField(properties={
@@ -402,7 +403,7 @@ class TANF_T6DataSubmissionDocument(Document):
 
 
 @registry.register_document
-class TANF_T7DataSubmissionDocument(Document):
+class TANF_T7DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed TANF T7 data file."""
 
     datafile = fields.ObjectField(properties={
