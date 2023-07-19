@@ -136,7 +136,6 @@ def parse_multi_record_line(line, schema, generate_error, datafile):
         return records
 
 
-
 def parse_datafile_line(line, schema, generate_error, datafile):
     """Parse and validate a datafile line and save any errors to the model."""
     if schema:
