@@ -129,8 +129,8 @@ def test_parse_big_file(test_big_file, dfs):
     assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
     print(dfs.case_aggregates)
-    assert dfs.case_aggregates == {'Oct': {'accepted': 169, 'rejected': 104, 'total': 270},
-                                   'Nov': {'accepted': 171, 'rejected': 99, 'total': 273},
+    assert dfs.case_aggregates == {'Oct': {'accepted': 171, 'rejected': 99, 'total': 270},
+                                   'Nov': {'accepted': 169, 'rejected': 104, 'total': 273},
                                    'Dec': {'accepted': 166, 'rejected': 106, 'total': 272}}
 
     parser_errors = ParserError.objects.filter(file=test_big_file)
