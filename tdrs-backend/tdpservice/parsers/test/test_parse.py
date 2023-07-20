@@ -363,10 +363,10 @@ def test_parse_empty_file(empty_file, dfs):
     dfs.case_aggregates = util.case_aggregates_by_month(empty_file, dfs.status)
 
     assert dfs.status == DataFileSummary.Status.REJECTED
-    assert dfs.case_aggregates == {'Oct': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'}, 
-                                   'Nov': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'}, 
+    assert dfs.case_aggregates == {'Oct': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'},
+                                   'Nov': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'},
                                    'Dec': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'}}
-    
+
     parser_errors = ParserError.objects.filter(file=empty_file)
     assert parser_errors.count() == 1
 

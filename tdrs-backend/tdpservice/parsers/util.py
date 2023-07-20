@@ -428,11 +428,11 @@ def get_schema(line, section, program_type):
 
 def fiscal_to_calendar(year, fiscal_quarter):
     """Decrement the input quarter text by one."""
-    array = [1,2,3,4]  # wrapping around an array
+    array = [1, 2, 3, 4]  # wrapping around an array
     int_qtr = int(fiscal_quarter[1:])  # remove the 'Q', e.g., 'Q1' -> '1'
     if int_qtr == 1:
         year = year - 1
-    
+
     ind_qtr = array.index(int_qtr)  # get the index so we can easily wrap-around end of array
     return year, "Q{}".format(array[ind_qtr - 1])  # return the previous quarter
 
@@ -487,9 +487,9 @@ def case_aggregates_by_month(df, dfs_status):
         for schema_model in schema_models:
             if isinstance(schema_model, MultiRecordRowSchema):
                 schema_model = schema_model.schemas[0]
-            
+
             curr_case_numbers = set(schema_model.model.objects.filter(datafile=df).filter(RPT_MONTH_YEAR=rpt_month_year)
-                       .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
+                                    .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
             case_numbers = case_numbers.union(curr_case_numbers)
 
         total += len(case_numbers)
