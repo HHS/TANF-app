@@ -465,18 +465,18 @@ def case_aggregates_by_month(df):
         month_int = month_to_int(month)
         rpt_month_year = int(f"{df.year}{month_int}")
 
-        qset = set()
+        case_numbers = set()
         for schema_model in schema_models:
             if isinstance(schema_model, MultiRecordRowSchema):
                 schema_model = schema_model.schemas[0]
-
-            next = set(schema_model.model.objects.filter(datafile=df).filter(RPT_MONTH_YEAR=rpt_month_year)
+            
+            curr_case_numbers = set(schema_model.model.objects.filter(datafile=df).filter(RPT_MONTH_YEAR=rpt_month_year)
                        .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
-            qset = qset.union(next)
+            case_numbers = case_numbers.union(curr_case_numbers)
 
-        total += len(qset)
-        rejected += ParserError.objects.filter(content_type=ContentType.objects.get_for_model(schema_model.model),
-                                               case_number__in=qset).count()
+        total += len(case_numbers)
+        rejected += ParserError.objects.filter(case_number__in=case_numbers).distinct('case_number').count()
+
         accepted = total - rejected
 
         aggregate_data[month] = {"accepted": accepted, "rejected": rejected, "total": total}
