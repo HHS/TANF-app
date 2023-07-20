@@ -445,7 +445,7 @@ def month_to_int(month):
     return datetime.strptime(month, '%b').month
 
 
-def case_aggregates_by_month(df):
+def case_aggregates_by_month(df, dfs_status):
     """Return case aggregates by month."""
     section = str(df.section)  # section -> text
     program_type = get_prog_from_section(section)  # section -> program_type -> text
@@ -464,6 +464,12 @@ def case_aggregates_by_month(df):
         accepted = 0
         month_int = month_to_int(month)
         rpt_month_year = int(f"{df.year}{month_int}")
+
+        if dfs_status == "Rejected":
+            # we need to be careful here on examples of bad headers or empty files, since no month will be found
+            # but we can rely on the frontend submitted year-quarter to still generate the list of months
+            aggregate_data[month] = {"accepted": "N/A", "rejected": "N/A", "total": "N/A"}
+            continue
 
         qset = set()
         for schema_model in schema_models:

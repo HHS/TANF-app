@@ -349,9 +349,19 @@ def empty_file(stt_user, stt):
 
 
 @pytest.mark.django_db
-def test_parse_empty_file(empty_file):
+def test_parse_empty_file(empty_file, dfs):
     """Test parsing of empty_file."""
+    dfs.datafile = empty_file
+    dfs.save()
     errors = parse.parse_datafile(empty_file)
+
+    dfs.status = dfs.get_status(errors)
+    dfs.case_aggregates = dfs.case_aggregates_by_month(empty_file)
+
+    assert dfs.status == DataFileSummary.Status.REJECTED
+    assert dfs.case_aggregates[0] == "N/A"
+    print(dfs.case_aggregates[0])
+    assert False
 
     parser_errors = ParserError.objects.filter(file=empty_file)
     assert parser_errors.count() == 1
