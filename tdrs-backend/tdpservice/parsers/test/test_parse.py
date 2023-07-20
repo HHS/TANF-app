@@ -18,7 +18,10 @@ es_logger.setLevel(logging.WARNING)
 @pytest.fixture
 def test_datafile(stt_user, stt):
     """Fixture for small_correct_file."""
-    return util.create_test_datafile('small_correct_file', stt_user, stt)
+    df = util.create_test_datafile('small_correct_file', stt_user, stt)
+    df.region = None
+    df.save()
+    return df
 
 @pytest.fixture
 def dfs():
