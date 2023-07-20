@@ -11,8 +11,8 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
     """Create a test DataFile instance with the given file attached."""
     path = str(Path(__file__).parent.joinpath('test/data')) + f'/{filename}'
     datafile = DataFile.create_new_version({
-        'quarter': 'Q4',
-        'year': 2020,
+        'quarter': 'Q1',
+        'year': 2021,
         'section': section,
         'user': stt_user,
         'stt': stt
