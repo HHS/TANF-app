@@ -18,10 +18,7 @@ es_logger.setLevel(logging.WARNING)
 @pytest.fixture
 def test_datafile(stt_user, stt):
     """Fixture for small_correct_file."""
-    df = util.create_test_datafile('small_correct_file', stt_user, stt)
-    df.region = None
-    df.save()
-    return df
+    return util.create_test_datafile('small_correct_file', stt_user, stt)
 
 @pytest.fixture
 def dfs():
@@ -35,7 +32,7 @@ def test_parse_small_correct_file(test_datafile, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(test_datafile)
-
+    dfs.status = dfs.get_status(errors)
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'Oct': {'accepted': 1, 'rejected': 0, 'total': 1},
                                    'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
@@ -70,9 +67,13 @@ def test_parse_section_mismatch(test_datafile, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(test_datafile)
-
-    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
+    dfs.status = dfs.get_status(errors)
+    assert dfs.status == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=test_datafile)
+    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {'Oct': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'},
+                                   'Nov': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'},
+                                   'Dec': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'}}
     assert parser_errors.count() == 1
 
     err = parser_errors.first()
@@ -128,10 +129,9 @@ def test_parse_big_file(test_big_file, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(test_big_file)
-
-    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    dfs.status = dfs.get_status(errors)
+    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
-    print(dfs.case_aggregates)
     assert dfs.case_aggregates == {'Oct': {'accepted': 171, 'rejected': 99, 'total': 270},
                                    'Nov': {'accepted': 169, 'rejected': 104, 'total': 273},
                                    'Dec': {'accepted': 166, 'rejected': 106, 'total': 272}}
@@ -404,7 +404,8 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
 
     errors = parse.parse_datafile(small_ssp_section1_datafile)
 
-    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    dfs.status = dfs.get_status(errors)
+    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'Oct': {'accepted': 5, 'rejected': 0, 'total': 5},
                                    'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
@@ -495,7 +496,8 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
 
     errors = parse.parse_datafile(small_tanf_section1_datafile)
 
-    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED
+    dfs.status = dfs.get_status(errors)
+    assert dfs.status == DataFileSummary.Status.ACCEPTED
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'Oct': {'accepted': 5, 'rejected': 0, 'total': 5},
                                    'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
@@ -570,6 +572,8 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
+    # for e in parser_errors:
+    #    print(e.error_type, e.error_message)
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
@@ -660,7 +664,8 @@ def test_dfs_set_case_aggregates(test_datafile, dfs):
     """Test that the case aggregates are set correctly."""
     test_datafile.section = 'Active Case Data'
     test_datafile.save()
-    parse.parse_datafile(test_datafile)  # this still needs to execute to create db objects to be queried
+    errors = parse.parse_datafile(test_datafile)  # this still needs to execute to create db objects to be queried
+    dfs.status = dfs.get_status(errors)
     dfs.case_aggregates = util.case_aggregates_by_month(test_datafile, dfs.status)
     dfs.save()
 
@@ -702,8 +707,6 @@ def test_get_schema_options(dfs):
     # get section
     section = util.get_section_reference('TAN', 'C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
-
-    dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
 
     # from datafile:
     # get model(s)
