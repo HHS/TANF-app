@@ -34,7 +34,7 @@ def value_is_empty(value, length):
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
     """Create and return a ParserError using args."""
-    return ParserError.objects.create(
+    return ParserError(
         file=datafile,
         row_number=line_number,
         column_number=getattr(field, 'item', None),
@@ -263,8 +263,8 @@ class RowSchema:
         return is_valid, errors
 
 
-class MultiRecordRowSchema:
-    """Maps a line to multiple `RowSchema`s and runs all parsers and validators."""
+class SchemaManager:
+    """Manages one or more RowSchema's and runs all parsers and validators."""
 
     def __init__(self, schemas):
         self.schemas = schemas
@@ -274,7 +274,7 @@ class MultiRecordRowSchema:
         records = []
 
         for schema in self.schemas:
-            r = schema.parse_and_validate(line, generate_error)
-            records.append(r)
+            record, is_valid, errors = schema.parse_and_validate(line, generate_error)
+            records.append((record, is_valid, errors))
 
         return records

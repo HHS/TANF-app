@@ -1,7 +1,7 @@
 """Schema for HEADER row of all submission types."""
 
 
-from ...util import MultiRecordRowSchema, RowSchema, Field
+from ...util import SchemaManager, RowSchema, Field
 from ... import validators
 from tdpservice.search_indexes.models.tanf import TANF_T3
 
@@ -111,7 +111,7 @@ child_two = RowSchema(
     ],
 )
 
-t3 = MultiRecordRowSchema(
+t3 = SchemaManager(
     schemas=[
         child_one,
         child_two

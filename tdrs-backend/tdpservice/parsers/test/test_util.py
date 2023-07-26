@@ -1,7 +1,7 @@
 """Test the methods of RowSchema to ensure parsing and validation work in all individual cases."""
 
 import pytest
-from ..util import MultiRecordRowSchema, RowSchema, Field, value_is_empty
+from ..util import SchemaManager, RowSchema, Field, value_is_empty
 
 
 def passing_validator():
@@ -334,9 +334,9 @@ def test_value_is_empty_returns_false(value, length):
 
 
 def test_multi_record_schema_parses_and_validates():
-    """Test MultiRecordRowSchema parse_and_validate."""
+    """Test SchemaManager parse_and_validate."""
     line = '12345'
-    schema = MultiRecordRowSchema(
+    schema_manager = SchemaManager(
         schemas=[
             RowSchema(
                 model=dict,
@@ -397,7 +397,7 @@ def test_multi_record_schema_parses_and_validates():
         ]
     )
 
-    rs = schema.parse_and_validate(line, error_func)
+    rs = schema_manager.parse_and_validate(line, error_func)
 
     r0_record, r0_is_valid, r0_errors = rs[0]
     r1_record, r1_is_valid, r1_errors = rs[1]

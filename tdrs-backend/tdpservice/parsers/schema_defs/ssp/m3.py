@@ -1,14 +1,13 @@
 """Schema for SSP M1 record type."""
 
 
-from ...util import MultiRecordRowSchema, RowSchema, Field
+from ...util import SchemaManager, RowSchema, Field
 from ... import validators
 from tdpservice.search_indexes.models.ssp import SSP_M3
 
 first_part_schema = RowSchema(
     model=SSP_M3,
     preparsing_validators=[
-        # validators.hasLength(150),  # unreliable.
         validators.notEmpty(start=19, end=60),
     ],
     postparsing_validators=[],
@@ -62,7 +61,6 @@ second_part_schema = RowSchema(
     model=SSP_M3,
     quiet_preparser_errors=True,
     preparsing_validators=[
-        # validators.hasLength(150),  # unreliable.
         validators.notEmpty(start=60, end=101),
     ],
     postparsing_validators=[],
@@ -112,7 +110,7 @@ second_part_schema = RowSchema(
     ]
 )
 
-m3 = MultiRecordRowSchema(
+m3 = SchemaManager(
     schemas=[
         first_part_schema,
         second_part_schema
