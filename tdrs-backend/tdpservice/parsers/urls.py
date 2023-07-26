@@ -5,8 +5,8 @@ from .views import ParsingErrorViewSet, DataFileSummaryViewSet
 
 router = DefaultRouter()
 
-router.register("parsing_errors/", ParsingErrorViewSet)
-router.register("dfs/", DataFileSummaryViewSet)
+router.register("parsing_errors", ParsingErrorViewSet)
+router.register("dfs", DataFileSummaryViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
