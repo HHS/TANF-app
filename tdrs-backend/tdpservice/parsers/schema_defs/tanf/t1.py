@@ -1,7 +1,9 @@
 """Schema for HEADER row of all submission types."""
 
 
-from ...util import RowSchema, Field, SchemaManager
+from ...util import SchemaManager
+from ...fields import Field
+from ...row_schema import RowSchema
 from ... import validators
 from tdpservice.search_indexes.models.tanf import TANF_T1
 

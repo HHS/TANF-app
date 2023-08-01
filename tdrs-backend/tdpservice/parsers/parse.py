@@ -27,6 +27,8 @@ def parse_datafile(datafile):
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
 
+    is_encrypted = util.contains_encrypted_indicator(header_line, schema_defs.header.get_field_by_name("encryption"))
+
     # ensure file section matches upload section
     program_type = header['program_type']
     section = header['type']
@@ -43,7 +45,7 @@ def parse_datafile(datafile):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    line_errors = parse_datafile_lines(datafile, program_type, section)
+    line_errors = parse_datafile_lines(datafile, program_type, section, is_encrypted)
 
     errors = errors | line_errors
 
@@ -99,7 +101,7 @@ def rollback_parser_errors(datafile):
     """Delete created errors in the event of a failure."""
     ParserError.objects.filter(file=datafile).delete()
 
-def parse_datafile_lines(datafile, program_type, section):
+def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
     errors = {}
@@ -160,6 +162,8 @@ def parse_datafile_lines(datafile, program_type, section):
             continue
 
         schema_manager = get_schema_manager(line, section, schema_manager_options)
+
+        schema_manager.update_encrypted_fields(is_encrypted)
 
         records = manager_parse_line(line, schema_manager, generate_error)
 

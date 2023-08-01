@@ -1,7 +1,8 @@
 """Schema for HEADER row of all submission types."""
 
 
-from ..util import RowSchema, Field
+from ..fields import Field
+from ..row_schema import RowSchema
 from .. import validators
 
 
@@ -41,7 +42,7 @@ header = RowSchema(
             validators.oneOf(['1', '2'])
         ]),
         Field(item="9", name='encryption', type='string', startIndex=21, endIndex=22, required=False, validators=[
-            validators.matches('E')
+            validators.oneOf([' ', 'E'])
         ]),
         Field(item="10", name='update', type='string', startIndex=22, endIndex=23, required=True, validators=[
             validators.oneOf(['N', 'D', 'U'])
