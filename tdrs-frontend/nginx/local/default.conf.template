@@ -14,6 +14,11 @@ http {
         root /usr/share/nginx/html;
         include locations.conf;
 
+        # Return custom 503
+        if (-f $document_root/503.html) {
+            rewrite ^ /503.html break;
+        }
+
         # Only use HTTPS; disabled for local
         add_header Strict-Transport-Security: max-age=31536000 ;
 
@@ -82,6 +87,7 @@ http {
         set $CSP "${CSP}style-src-attr 'self';";
         set $CSP "${CSP}worker-src 'none';";
         add_header Content-Security-Policy $CSP;
+
     }
 
     limit_req_zone $binary_remote_addr zone=limitreqsbyaddr:20m rate=1000r/s;
