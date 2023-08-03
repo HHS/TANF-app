@@ -1,14 +1,15 @@
 """Schema for SSP M1 record type."""
 
 
-from ...util import MultiRecordRowSchema, RowSchema, Field
+from ...util import SchemaManager
+from ...fields import EncryptedField, Field, ssp_ssn_decryption_func
+from ...row_schema import RowSchema
 from ... import validators
 from tdpservice.search_indexes.models.ssp import SSP_M3
 
 first_part_schema = RowSchema(
     model=SSP_M3,
     preparsing_validators=[
-        # validators.hasLength(150),  # unreliable.
         validators.notEmpty(start=19, end=60),
     ],
     postparsing_validators=[],
@@ -23,8 +24,8 @@ first_part_schema = RowSchema(
               required=True, validators=[]),
         Field(item="61", name='DATE_OF_BIRTH', type='string', startIndex=20, endIndex=28,
               required=True, validators=[]),
-        Field(item="62", name='SSN', type='string', startIndex=28, endIndex=37,
-              required=True, validators=[]),
+        EncryptedField(decryption_func=ssp_ssn_decryption_func, item="62", name='SSN', type='string', startIndex=28,
+                       endIndex=37, required=True, validators=[]),
         Field(item="63A", name='RACE_HISPANIC', type='number', startIndex=37, endIndex=38,
               required=True, validators=[]),
         Field(item="63B", name='RACE_AMER_INDIAN', type='number', startIndex=38, endIndex=39,
@@ -62,7 +63,6 @@ second_part_schema = RowSchema(
     model=SSP_M3,
     quiet_preparser_errors=True,
     preparsing_validators=[
-        # validators.hasLength(150),  # unreliable.
         validators.notEmpty(start=60, end=101),
     ],
     postparsing_validators=[],
@@ -77,8 +77,8 @@ second_part_schema = RowSchema(
               required=True, validators=[]),
         Field(item="61", name='DATE_OF_BIRTH', type='string', startIndex=61, endIndex=69,
               required=True, validators=[]),
-        Field(item="62", name='SSN', type='string', startIndex=69, endIndex=78,
-              required=True, validators=[]),
+        EncryptedField(decryption_func=ssp_ssn_decryption_func, item="62", name='SSN', type='string', startIndex=69,
+                       endIndex=78, required=True, validators=[]),
         Field(item="63A", name='RACE_HISPANIC', type='number', startIndex=78, endIndex=79,
               required=True, validators=[]),
         Field(item="63B", name='RACE_AMER_INDIAN', type='number', startIndex=79, endIndex=80,
@@ -112,7 +112,7 @@ second_part_schema = RowSchema(
     ]
 )
 
-m3 = MultiRecordRowSchema(
+m3 = SchemaManager(
     schemas=[
         first_part_schema,
         second_part_schema
