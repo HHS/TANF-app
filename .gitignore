@@ -105,3 +105,6 @@ tfapply
 *.~undo-tree~
 
 cypress.env.json
+
+# Patches
+*.patch

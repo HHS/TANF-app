@@ -5,9 +5,15 @@ With a few exceptions, we've tended to publish markdown research syntheses to su
 
 The syntheses included herein are organized reverse-chronologically from newest to oldest:
 
+### [2023, Sprint - TDP 3.0 Pilot Program](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2023%2C%20Spring%20-%20Testing%20CSV%20%26%20Excel-based%20error%20reports.md#spring-2023---testing-csv--excel-based-error-reports)
+
+- Research sessions conducted with 5 states and 4 Tribes with a focus on programs that had errors on their Section 1 Data Files.
+- Tested the usability of an Excel-based error report located in Submission History to evaluate whether participants would be successful in downloading, opening, and ultimately acting on the reports. 
+* Explored optimal column structures and data needed to help guide error correction and cut down on the time required to understand the report itself.
+
 ### [2023, Winter - TDP 3.0 Pilot Program](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2023%2C%20Winter%20-%20TDP%203.0%20Pilot%20Program.md)
 
-- A total of 17 states, 17 tribes and two territories participated in the pilot expansion using the production version of TDP to submit their FY2023 Q1 data files.
+- A total of 17 states, 17 Tribes and two territories participated in the pilot expansion using the production version of TDP to submit their FY2023 Q1 data files.
 - Conducted a retrospective on the usability of Django (system admin) as the TDP user base continues to expand and what might the System Admins need to keep up with onboarding, and managing users and logs at scale.
 
 ### [2022, Winter - Understanding How STTs Would Use the Transmission Report](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Winter%20-%20Understanding%20How%20STTs%20Would%20Use%20the%20Transmission%20Report.md)

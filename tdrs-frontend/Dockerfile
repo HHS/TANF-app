@@ -50,3 +50,6 @@ RUN rm /etc/nginx/conf.d/default.conf
 RUN rm /etc/nginx/nginx.conf
 COPY nginx/local/default.conf.template /etc/nginx/default.conf.template
 COPY nginx/local/locations.conf /etc/nginx/locations.conf
+#COPY nginx/local/under_maintenance.html /etc/nginx/under_maintenance.html
+COPY nginx/src/503.html /usr/share/nginx/html/503_.html
+COPY nginx/src/static/ /usr/share/nginx/html/static/

@@ -1,7 +1,9 @@
 """Models representing parsed TANF data file records submitted to TDP."""
 
+import uuid
 from django.db import models
 from django.contrib.contenttypes.fields import GenericRelation
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.models import ParserError
 
 
@@ -12,60 +14,67 @@ class TANF_T1(models.Model):
     Mapped to an elastic search index.
     """
 
-    # def __is_valid__():
-    # TODO: might need a correlating validator to check across fields
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t1_parent'
+    )
 
     error = GenericRelation(ParserError)
-    RecordType = models.CharField(max_length=156, null=False, blank=False)
-    RPT_MONTH_YEAR = models.IntegerField(null=False, blank=False)
-    CASE_NUMBER = models.CharField(max_length=11, null=False, blank=False)
-    FIPS_CODE = models.CharField(max_length=2, null=False, blank=False)
+    RecordType = models.CharField(max_length=156, null=True, blank=False)
+    RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
+    CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
+    FIPS_CODE = models.CharField(max_length=2, null=True, blank=False)
     COUNTY_FIPS_CODE = models.CharField(
         max_length=3,
-        null=False,
+        null=True,
         blank=False
     )
-    STRATUM = models.IntegerField(null=False, blank=False)
-    ZIP_CODE = models.CharField(max_length=5, null=False, blank=False)
-    FUNDING_STREAM = models.IntegerField(null=False, blank=False)
-    DISPOSITION = models.IntegerField(null=False, blank=False)
-    NEW_APPLICANT = models.IntegerField(null=False, blank=False)
-    NBR_FAMILY_MEMBERS = models.IntegerField(null=False, blank=False)
-    FAMILY_TYPE = models.IntegerField(null=False, blank=False)
-    RECEIVES_SUB_HOUSING = models.IntegerField(null=False, blank=False)
-    RECEIVES_MED_ASSISTANCE = models.IntegerField(null=False, blank=False)
-    RECEIVES_FOOD_STAMPS = models.IntegerField(null=False, blank=False)
-    AMT_FOOD_STAMP_ASSISTANCE = models.IntegerField(null=False, blank=False)
-    RECEIVES_SUB_CC = models.IntegerField(null=False, blank=False)
-    AMT_SUB_CC = models.IntegerField(null=False, blank=False)
-    CHILD_SUPPORT_AMT = models.IntegerField(null=False, blank=False)
-    FAMILY_CASH_RESOURCES = models.IntegerField(null=False, blank=False)
-    CASH_AMOUNT = models.IntegerField(null=False, blank=False)
-    NBR_MONTHS = models.IntegerField(null=False, blank=False)
-    CC_AMOUNT = models.IntegerField(null=False, blank=False)
-    CHILDREN_COVERED = models.IntegerField(null=False, blank=False)
-    CC_NBR_MONTHS = models.IntegerField(null=False, blank=False)
-    TRANSP_AMOUNT = models.IntegerField(null=False, blank=False)
-    TRANSP_NBR_MONTHS = models.IntegerField(null=False, blank=False)
-    TRANSITION_SERVICES_AMOUNT = models.IntegerField(null=False, blank=False)
-    TRANSITION_NBR_MONTHS = models.IntegerField(null=False, blank=False)
-    OTHER_AMOUNT = models.IntegerField(null=False, blank=False)
-    OTHER_NBR_MONTHS = models.IntegerField(null=False, blank=False)
-    SANC_REDUCTION_AMT = models.IntegerField(null=False, blank=False)
-    WORK_REQ_SANCTION = models.IntegerField(null=False, blank=False)
-    FAMILY_SANC_ADULT = models.IntegerField(null=False, blank=False)
-    SANC_TEEN_PARENT = models.IntegerField(null=False, blank=False)
-    NON_COOPERATION_CSE = models.IntegerField(null=False, blank=False)
-    FAILURE_TO_COMPLY = models.IntegerField(null=False, blank=False)
-    OTHER_SANCTION = models.IntegerField(null=False, blank=False)
-    RECOUPMENT_PRIOR_OVRPMT = models.IntegerField(null=False, blank=False)
-    OTHER_TOTAL_REDUCTIONS = models.IntegerField(null=False, blank=False)
-    FAMILY_CAP = models.IntegerField(null=False, blank=False)
-    REDUCTIONS_ON_RECEIPTS = models.IntegerField(null=False, blank=False)
-    OTHER_NON_SANCTION = models.IntegerField(null=False, blank=False)
-    WAIVER_EVAL_CONTROL_GRPS = models.IntegerField(null=False, blank=False)
-    FAMILY_EXEMPT_TIME_LIMITS = models.IntegerField(null=False, blank=False)
-    FAMILY_NEW_CHILD = models.IntegerField(null=False, blank=False)
+    STRATUM = models.IntegerField(null=True, blank=False)
+    ZIP_CODE = models.CharField(max_length=5, null=True, blank=False)
+    FUNDING_STREAM = models.IntegerField(null=True, blank=False)
+    DISPOSITION = models.IntegerField(null=True, blank=False)
+    NEW_APPLICANT = models.IntegerField(null=True, blank=False)
+    NBR_FAMILY_MEMBERS = models.IntegerField(null=True, blank=False)
+    FAMILY_TYPE = models.IntegerField(null=True, blank=False)
+    RECEIVES_SUB_HOUSING = models.IntegerField(null=True, blank=False)
+    RECEIVES_MED_ASSISTANCE = models.IntegerField(null=True, blank=False)
+    RECEIVES_FOOD_STAMPS = models.IntegerField(null=True, blank=False)
+    AMT_FOOD_STAMP_ASSISTANCE = models.IntegerField(null=True, blank=False)
+    RECEIVES_SUB_CC = models.IntegerField(null=True, blank=False)
+    AMT_SUB_CC = models.IntegerField(null=True, blank=False)
+    CHILD_SUPPORT_AMT = models.IntegerField(null=True, blank=False)
+    FAMILY_CASH_RESOURCES = models.IntegerField(null=True, blank=False)
+    CASH_AMOUNT = models.IntegerField(null=True, blank=False)
+    NBR_MONTHS = models.IntegerField(null=True, blank=False)
+    CC_AMOUNT = models.IntegerField(null=True, blank=False)
+    CHILDREN_COVERED = models.IntegerField(null=True, blank=False)
+    CC_NBR_MONTHS = models.IntegerField(null=True, blank=False)
+    TRANSP_AMOUNT = models.IntegerField(null=True, blank=False)
+    TRANSP_NBR_MONTHS = models.IntegerField(null=True, blank=False)
+    TRANSITION_SERVICES_AMOUNT = models.IntegerField(null=True, blank=False)
+    TRANSITION_NBR_MONTHS = models.IntegerField(null=True, blank=False)
+    OTHER_AMOUNT = models.IntegerField(null=True, blank=False)
+    OTHER_NBR_MONTHS = models.IntegerField(null=True, blank=False)
+    SANC_REDUCTION_AMT = models.IntegerField(null=True, blank=False)
+    WORK_REQ_SANCTION = models.IntegerField(null=True, blank=False)
+    FAMILY_SANC_ADULT = models.IntegerField(null=True, blank=False)
+    SANC_TEEN_PARENT = models.IntegerField(null=True, blank=False)
+    NON_COOPERATION_CSE = models.IntegerField(null=True, blank=False)
+    FAILURE_TO_COMPLY = models.IntegerField(null=True, blank=False)
+    OTHER_SANCTION = models.IntegerField(null=True, blank=False)
+    RECOUPMENT_PRIOR_OVRPMT = models.IntegerField(null=True, blank=False)
+    OTHER_TOTAL_REDUCTIONS = models.IntegerField(null=True, blank=False)
+    FAMILY_CAP = models.IntegerField(null=True, blank=False)
+    REDUCTIONS_ON_RECEIPTS = models.IntegerField(null=True, blank=False)
+    OTHER_NON_SANCTION = models.IntegerField(null=True, blank=False)
+    WAIVER_EVAL_CONTROL_GRPS = models.IntegerField(null=True, blank=False)
+    FAMILY_EXEMPT_TIME_LIMITS = models.IntegerField(null=True, blank=False)
+    FAMILY_NEW_CHILD = models.IntegerField(null=True, blank=False)
 
 
 class TANF_T2(models.Model):
@@ -74,6 +83,16 @@ class TANF_T2(models.Model):
 
     Mapped to an elastic search index.
     """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t2_parent'
+    )
 
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
@@ -154,6 +173,16 @@ class TANF_T3(models.Model):
     Mapped to an elastic search index.
     """
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t3_parent'
+    )
+
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
@@ -185,6 +214,16 @@ class TANF_T4(models.Model):
     Mapped to an elastic search index.
     """
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t4_parent'
+    )
+
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)
     case_number = models.CharField(max_length=11, null=False, blank=False)
@@ -211,6 +250,16 @@ class TANF_T5(models.Model):
 
     Mapped to an elastic search index.
     """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t5_parent'
+    )
 
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)
@@ -252,6 +301,16 @@ class TANF_T6(models.Model):
     Mapped to an elastic search index.
     """
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t6_parent'
+    )
+
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)
     fips_code = models.CharField(max_length=100, null=False, blank=False)
@@ -280,6 +339,16 @@ class TANF_T7(models.Model):
 
     Mapped to an elastic search index.
     """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='t7_parent'
+    )
 
     record = models.CharField(max_length=156, null=False, blank=False)
     rpt_month_year = models.IntegerField(null=False, blank=False)

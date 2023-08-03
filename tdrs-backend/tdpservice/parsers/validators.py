@@ -1,5 +1,8 @@
 """Generic parser validator functions for use in schema definitions."""
 
+from .util import generate_parser_error
+from .models import ParserErrorCategoryChoices
+from tdpservice.data_files.models import DataFile
 
 # higher order validator func
 
@@ -34,11 +37,11 @@ def between(min, max):
     )
 
 
-def hasLength(length):
+def hasLength(length, error_func=None):
     """Validate that value (string or array) has a length matching length param."""
     return make_validator(
         lambda value: len(value) == length,
-        lambda value: f'Value length {len(value)} does not match {length}.'
+        lambda value: error_func(value, length) if error_func else f'Value length {len(value)} does not match {length}.'
     )
 
 
@@ -68,13 +71,17 @@ def notEmpty(start=0, end=None):
 
 # custom validators
 
-def validate_single_header_trailer(file):
+def validate_single_header_trailer(datafile):
     """Validate that a raw datafile has one trailer and one footer."""
+    line_number = 0
     headers = 0
     trailers = 0
+    is_valid = True
+    error_message = None
 
-    for rawline in file:
+    for rawline in datafile.file:
         line = rawline.decode()
+        line_number += 1
 
         if line.startswith('HEADER'):
             headers += 1
@@ -82,12 +89,63 @@ def validate_single_header_trailer(file):
             trailers += 1
 
         if headers > 1:
-            return (False, 'Multiple headers found.')
+            is_valid = False
+            error_message = 'Multiple headers found.'
+            break
 
         if trailers > 1:
-            return (False, 'Multiple trailers found.')
+            is_valid = False
+            error_message = 'Multiple trailers found.'
+            break
 
     if headers == 0:
-        return (False, 'No headers found.')
+        is_valid = False
+        error_message = 'No headers found.'
 
-    return (True, None)
+    error = None
+    if not is_valid:
+        error = generate_parser_error(
+            datafile=datafile,
+            line_number=line_number,
+            schema=None,
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+            error_message=error_message,
+            record=None,
+            field=None
+        )
+
+    return is_valid, error
+
+
+def validate_header_section_matches_submission(datafile, program_type, section):
+    """Validate header section matches submission section."""
+    section_names = {
+        'TAN': {
+            'A': DataFile.Section.ACTIVE_CASE_DATA,
+            'C': DataFile.Section.CLOSED_CASE_DATA,
+            'G': DataFile.Section.AGGREGATE_DATA,
+            'S': DataFile.Section.STRATUM_DATA,
+        },
+        'SSP': {
+            'A': DataFile.Section.SSP_ACTIVE_CASE_DATA,
+            'C': DataFile.Section.SSP_CLOSED_CASE_DATA,
+            'G': DataFile.Section.SSP_AGGREGATE_DATA,
+            'S': DataFile.Section.SSP_STRATUM_DATA,
+        },
+    }
+
+    is_valid = datafile.section == section_names.get(program_type, {}).get(section)
+
+    error = None
+    if not is_valid:
+        error = generate_parser_error(
+            datafile=datafile,
+            line_number=1,
+            schema=None,
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+            error_message=f"Data does not match the expected layout for {datafile.section}.",
+            record=None,
+            field=None
+        )
+
+    return is_valid, error

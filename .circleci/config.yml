@@ -13,6 +13,18 @@ orbs:
 
 # parameters from github actions
 parameters:
+  build_and_test_all:
+    type: boolean
+    default: false
+  build_and_test_backend:
+    type: boolean
+    default: false
+  build_and_test_frontend:
+    type: boolean
+    default: false
+  deploy_infrastructure:
+    type: boolean
+    default: false
   develop_branch_deploy:
     type: boolean
     default: false
@@ -28,6 +40,12 @@ parameters:
   target_env:
     type: string
     default: ''
+  triggered:
+    type: boolean
+    default: false
+  util_make_erd:
+    type: boolean
+    default: false
 
 jobs:
   setup:
@@ -45,6 +63,24 @@ jobs:
 
 # our single workflow, that triggers the setup job defined above
 workflows:
-  setup:
+  github-triggered-setup:
+    when: << pipeline.parameters.triggered >>
     jobs:
-      - setup
+      - setup:
+          filters:
+            branches:
+              ignore:
+                - main
+                - master
+                - /^release.*/
+  circle-ci-setup:
+    jobs:
+      - setup:
+          filters:
+            branches:
+              only:
+                - develop
+                - main
+                - master
+                - /^release.*/      
+      

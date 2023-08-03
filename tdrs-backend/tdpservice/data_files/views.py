@@ -1,5 +1,4 @@
 """Check if user is authorized."""
-
 import logging
 from django.http import FileResponse
 from django_filters import rest_framework as filters
@@ -123,7 +122,6 @@ class DataFileViewSet(ModelViewSet):
     def get_queryset(self):
         """Apply custom queryset filters."""
         queryset = super().get_queryset().order_by('-created_at')
-
         if self.request.query_params.get('file_type') == 'ssp-moe':
             queryset = queryset.filter(section__contains='SSP')
         else:
