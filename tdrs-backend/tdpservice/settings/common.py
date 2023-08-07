@@ -246,6 +246,8 @@ class Common(Configuration):
             "django.db.backends": {"handlers": ["console"], "level": "INFO"},
         },
     }
+    es_logger = logging.getLogger('elasticsearch')
+    es_logger.setLevel(getattr(logging, LOGGING_LEVEL))
 
     # Custom user app
     AUTH_USER_MODEL = "users.User"

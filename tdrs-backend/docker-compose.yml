@@ -93,7 +93,10 @@ services:
     build: .
     command: >
       bash -c "./wait_for_services.sh &&
-               ./gunicorn_start.sh && celery -A tdpservice.settings worker -l info"
+      ./manage.py makemigrations &&
+      ./manage.py migrate &&
+      ./manage.py populate_stts &&
+      ./gunicorn_start.sh && celery -A tdpservice.settings worker -l info"
     ports:
       - "5555:5555"
     depends_on:
