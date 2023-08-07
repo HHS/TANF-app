@@ -186,7 +186,7 @@ class RowSchema:
                         error_category=ParserErrorCategoryChoices.PRE_CHECK,
                         error_message=validator_error,
                         record=None,
-                        field=None
+                        field="Record"
                     )
                 )
 

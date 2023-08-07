@@ -61,7 +61,7 @@ class ParserError(models.Model):
 
     def __str__(self):
         """Return a string representation of the model."""
-        return f"ParserError {self.id}"
+        return f"ParserError {self.values()}"
 
     def _get_error_message(self):
         """Return the error message."""
@@ -88,39 +88,23 @@ class DataFileSummary(models.Model):
 
     case_aggregates = models.JSONField(null=True, blank=False)
 
-    def get_status(self, errors):
+    def get_status(self):
         """Set and return the status field based on errors and models associated with datafile."""
+        errors = ParserError.objects.filter(file=self.datafile)
+
+        # excluding row-level pre-checks and trailer pre-checks.
+        precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\
+                                .exclude(field_name="Record")\
+                                .exclude(error_message__contains="railer")
+        # The "railer" is not a typo, we see both t and T in the error message.
+
         if errors is None:
             return DataFileSummary.Status.PENDING
-
-        if type(errors) != dict:
-            raise TypeError("errors parameter must be a dictionary.")
-
-        if errors == {}:
+        elif errors.count() == 0:
             return DataFileSummary.Status.ACCEPTED
-        elif DataFileSummary.find_precheck(errors):
+        elif precheck_errors.count() > 0:
+            print(precheck_errors.values())
             return DataFileSummary.Status.REJECTED
         else:
+            print(errors)
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS
-
-    def find_precheck(errors):
-        """Check for pre-parsing errors.
-
-        @param errors: dict of errors keyed by location in datafile.
-        e.g.
-        errors =
-        {
-            "trailer": [ParserError, ...],
-            "header": [ParserError, ...],
-            "document": [ParserError, ...],
-            "123": [ParserError, ...],
-            ...
-        }
-        """
-        for key in errors.keys():
-            if key == 'trailer':
-                continue
-            for parserError in errors[key]:
-                if type(parserError) is ParserError and parserError.error_type == ParserErrorCategoryChoices.PRE_CHECK:
-                    return True
-        return False

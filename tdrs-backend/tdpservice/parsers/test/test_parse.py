@@ -32,14 +32,14 @@ def test_parse_small_correct_file(test_datafile, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(test_datafile)
-    dfs.status = dfs.get_status(errors)
+    dfs.status = dfs.get_status()
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'Oct': {'accepted': 1, 'rejected': 0, 'total': 1},
                                    'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
                                    'Dec': {'accepted': 0, 'rejected': 0, 'total': 0}}
 
     assert errors == {}
-    assert dfs.get_status(errors) == DataFileSummary.Status.ACCEPTED
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
     assert TANF_T1.objects.count() == 1
     assert ParserError.objects.filter(file=test_datafile).count() == 0
 
@@ -67,7 +67,7 @@ def test_parse_section_mismatch(test_datafile, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(test_datafile)
-    dfs.status = dfs.get_status(errors)
+    dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=test_datafile)
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
@@ -94,8 +94,10 @@ def test_parse_wrong_program_type(test_datafile, dfs):
     test_datafile.section = 'SSP Active Case Data'
     test_datafile.save()
 
+    dfs.datafile = test_datafile
+    dfs.save()
     errors = parse.parse_datafile(test_datafile)
-    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=test_datafile)
     assert parser_errors.count() == 1
@@ -129,7 +131,7 @@ def test_parse_big_file(test_big_file, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(test_big_file)
-    dfs.status = dfs.get_status(errors)
+    dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'Oct': {'accepted': 171, 'rejected': 99, 'total': 270},
@@ -189,8 +191,9 @@ def bad_file_missing_header(stt_user, stt):
 def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
     """Test parsing of bad_missing_header."""
     errors = parse.parse_datafile(bad_file_missing_header)
-
-    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
+    dfs.datafile = bad_file_missing_header
+    dfs.save()
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_file_missing_header)
     assert parser_errors.count() == 1
@@ -217,8 +220,9 @@ def bad_file_multiple_headers(stt_user, stt):
 def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
     """Test parsing of bad_two_headers."""
     errors = parse.parse_datafile(bad_file_multiple_headers)
-
-    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
+    dfs.datafile = bad_file_multiple_headers
+    dfs.save()
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_file_multiple_headers)
     assert parser_errors.count() == 1
@@ -359,7 +363,7 @@ def test_parse_empty_file(empty_file, dfs):
     dfs.save()
     errors = parse.parse_datafile(empty_file)
 
-    dfs.status = dfs.get_status(errors)
+    dfs.status = dfs.get_status()
     dfs.case_aggregates = util.case_aggregates_by_month(empty_file, dfs.status)
 
     assert dfs.status == DataFileSummary.Status.REJECTED
@@ -404,7 +408,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
 
     errors = parse.parse_datafile(small_ssp_section1_datafile)
 
-    dfs.status = dfs.get_status(errors)
+    dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'Oct': {'accepted': 5, 'rejected': 0, 'total': 5},
@@ -496,7 +500,7 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
 
     errors = parse.parse_datafile(small_tanf_section1_datafile)
 
-    dfs.status = dfs.get_status(errors)
+    dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'Oct': {'accepted': 5, 'rejected': 0, 'total': 5},
@@ -568,7 +572,7 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     errors = parse.parse_datafile(bad_tanf_s1__row_missing_required_field)
 
-    assert dfs.get_status(errors) == DataFileSummary.Status.REJECTED
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
@@ -664,8 +668,10 @@ def test_dfs_set_case_aggregates(test_datafile, dfs):
     """Test that the case aggregates are set correctly."""
     test_datafile.section = 'Active Case Data'
     test_datafile.save()
-    errors = parse.parse_datafile(test_datafile)  # this still needs to execute to create db objects to be queried
-    dfs.status = dfs.get_status(errors)
+    parse.parse_datafile(test_datafile)  # this still needs to execute to create db objects to be queried
+    dfs.file = test_datafile
+    dfs.save()
+    dfs.status = dfs.get_status()
     dfs.case_aggregates = util.case_aggregates_by_month(test_datafile, dfs.status)
     dfs.save()
 
