@@ -23,14 +23,6 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
 
     return datafile
 
-def value_is_empty(value, length):
-    """Handle 'empty' values as field inputs."""
-    empty_values = [
-        ' '*length,  # '     '
-        '#'*length,  # '#####'
-    ]
-
-    return value is None or value in empty_values
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
     """Create and return a ParserError using args."""
@@ -67,9 +59,9 @@ def make_generate_parser_error(datafile, line_number):
 
     return generate
 
-
 class SchemaManager:
     """Manages one or more RowSchema's and runs all parsers and validators."""
+
     def __init__(self, schemas):
         self.schemas = schemas
 
@@ -82,6 +74,19 @@ class SchemaManager:
             records.append((record, is_valid, errors))
 
         return records
+
+    def update_encrypted_fields(self, is_encrypted):
+        """Update whether schema fields are encrypted or not."""
+        for schema in self.schemas:
+            for field in schema.fields:
+                if type(field) == EncryptedField:
+                    field.is_encrypted = is_encrypted
+
+def contains_encrypted_indicator(line, encryption_field):
+    """Determine if line contains encryption indicator."""
+    if encryption_field is not None:
+        return encryption_field.parse_value(line) == "E"
+    return False
 
 
 def get_schema_options(program, section, query=None, model=None, model_name=None):
@@ -285,7 +290,7 @@ def case_aggregates_by_month(df, dfs_status):
 
         case_numbers = set()
         for schema_model in schema_models:
-            if isinstance(schema_model, MultiRecordRowSchema):
+            if isinstance(schema_model, SchemaManager):
                 schema_model = schema_model.schemas[0]
 
             curr_case_numbers = set(schema_model.model.objects.filter(datafile=df).filter(RPT_MONTH_YEAR=rpt_month_year)
@@ -300,16 +305,3 @@ def case_aggregates_by_month(df, dfs_status):
         aggregate_data[month] = {"accepted": accepted, "rejected": rejected, "total": total}
 
     return aggregate_data
-
-    def update_encrypted_fields(self, is_encrypted):
-        """Update whether schema fields are encrypted or not."""
-        for schema in self.schemas:
-            for field in schema.fields:
-                if type(field) == EncryptedField:
-                    field.is_encrypted = is_encrypted
-
-def contains_encrypted_indicator(line, encryption_field):
-    """Determine if line contains encryption indicator."""
-    if encryption_field is not None:
-        return encryption_field.parse_value(line) == "E"
-    return False
