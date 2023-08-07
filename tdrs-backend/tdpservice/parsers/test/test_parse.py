@@ -577,7 +577,7 @@ def bad_tanf_s1__row_missing_required_field(stt_user, stt):
 
 
 @pytest.mark.django_db
-def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field, dfs)
+def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field, dfs):
     """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
     dfs.datafile = bad_tanf_s1__row_missing_required_field
     dfs.save()
