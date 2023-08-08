@@ -35,9 +35,12 @@ def test_parse_small_correct_file(test_datafile, dfs):
     errors = parse.parse_datafile(test_datafile)
     dfs.status = dfs.get_status()
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'Oct': {'accepted': 1, 'rejected': 0, 'total': 1},
-                                   'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
-                                   'Dec': {'accepted': 0, 'rejected': 0, 'total': 0}}
+    assert dfs.case_aggregates == {'rejected': 0,
+                                   'months': [
+                                       {'accepted_without_errors': 1, 'accepted_with_errors': 0, 'month': 'Oct'},
+                                       {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Nov'},
+                                        {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
+                                    ]}
 
     assert errors == {}
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
@@ -71,9 +74,12 @@ def test_parse_section_mismatch(test_datafile, dfs):
     assert dfs.status == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=test_datafile)
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'Oct': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'},
-                                   'Nov': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'},
-                                   'Dec': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'}}
+    assert dfs.case_aggregates == {'rejected': 0,
+                                   'months': [
+                                       {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Oct'},
+                                       {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Nov'},
+                                        {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Dec'}
+                                    ]}
     assert parser_errors.count() == 1
 
     err = parser_errors.first()
@@ -120,6 +126,7 @@ def test_big_file(stt_user, stt):
     return util.create_test_datafile('ADS.E2J.FTP1.TS06', stt_user, stt)
 
 @pytest.mark.django_db
+@pytest.mark.big_files
 def test_parse_big_file(test_big_file, dfs):
     """Test parsing of ADS.E2J.FTP1.TS06."""
     expected_t1_record_count = 815
@@ -133,9 +140,12 @@ def test_parse_big_file(test_big_file, dfs):
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'Oct': {'accepted': 171, 'rejected': 99, 'total': 270},
-                                   'Nov': {'accepted': 169, 'rejected': 104, 'total': 273},
-                                   'Dec': {'accepted': 166, 'rejected': 106, 'total': 272}}
+    assert dfs.case_aggregates == {'rejected': 0,
+                                   'months': [
+                                       {'accepted_without_errors': 171, 'accepted_with_errors': 99, 'month': 'Oct'},
+                                       {'accepted_without_errors': 169, 'accepted_with_errors': 104, 'month': 'Nov'},
+                                        {'accepted_without_errors': 166, 'accepted_with_errors': 106, 'month': 'Dec'}
+                                    ]}
 
     parser_errors = ParserError.objects.filter(file=test_big_file)
     assert parser_errors.count() == 355
@@ -357,9 +367,12 @@ def test_parse_empty_file(empty_file, dfs):
     dfs.case_aggregates = util.case_aggregates_by_month(empty_file, dfs.status)
 
     assert dfs.status == DataFileSummary.Status.REJECTED
-    assert dfs.case_aggregates == {'Oct': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'},
-                                   'Nov': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'},
-                                   'Dec': {'accepted': 'N/A', 'rejected': 'N/A', 'total': 'N/A'}}
+    assert dfs.case_aggregates == {'rejected': 2,
+                                   'months': [
+                                       {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Oct'},
+                                       {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Nov'},
+                                        {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Dec'}
+                                    ]}
 
     parser_errors = ParserError.objects.filter(file=empty_file)
     assert parser_errors.count() == 2
@@ -401,9 +414,12 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'Oct': {'accepted': 5, 'rejected': 0, 'total': 5},
-                                   'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
-                                   'Dec': {'accepted': 0, 'rejected': 0, 'total': 0}}
+    assert dfs.case_aggregates == {'rejected': 1,
+                                   'months': [
+                                       {'accepted_without_errors': 5, 'accepted_with_errors': 0, 'month': 'Oct'},
+                                       {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Nov'},
+                                        {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
+                                    ]}
 
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
     assert parser_errors.count() == 1
@@ -469,9 +485,12 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'Oct': {'accepted': 5, 'rejected': 0, 'total': 5},
-                                   'Nov': {'accepted': 0, 'rejected': 0, 'total': 0},
-                                   'Dec': {'accepted': 0, 'rejected': 0, 'total': 0}}
+    assert dfs.case_aggregates == {'rejected': 0,
+                                   'months': [
+                                       {'accepted_without_errors': 5, 'accepted_with_errors': 0, 'month': 'Oct'},
+                                       {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Nov'},
+                                        {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
+                                    ]}
 
     assert errors == {}
     assert TANF_T2.objects.count() == 5
@@ -548,6 +567,7 @@ def super_big_s1_rollback_file(stt_user, stt):
     return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.rollback', stt_user, stt)
 
 @pytest.mark.django_db()
+@pytest.mark.big_files
 def test_parse_super_big_s1_file_with_rollback(super_big_s1_rollback_file):
     """Test parsing of super_big_s1_rollback_file.
 
@@ -689,9 +709,10 @@ def test_dfs_set_case_aggregates(test_datafile, dfs):
     dfs.case_aggregates = util.case_aggregates_by_month(test_datafile, dfs.status)
     dfs.save()
 
-    assert dfs.case_aggregates['Oct']['accepted'] == 1
-    assert dfs.case_aggregates['Oct']['rejected'] == 0
-    assert dfs.case_aggregates['Oct']['total'] == 1
+    for month in dfs.case_aggregates['months']:
+        if month['month'] == 'Oct':
+            assert month['accepted_without_errors'] == 1
+            assert month['accepted_with_errors'] == 0
 
 @pytest.mark.django_db
 def test_get_schema_options(dfs):

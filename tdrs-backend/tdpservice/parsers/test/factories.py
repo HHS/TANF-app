@@ -37,21 +37,24 @@ class DataFileSummaryFactory(factory.django.DjangoModelFactory):
     status = DataFileSummary.Status.PENDING
 
     case_aggregates = {
-        "Jan": {
-            "accepted": 100,
-            "rejected": 10,
-            "total": 110
-        },
-        "Feb": {
-            "accepted": 100,
-            "rejected": 10,
-            "total": 110
-        },
-        "Mar": {
-            "accepted": 100,
-            "rejected": 10,
-            "total": 110
-        }
+        "rejected": 0,
+        "months": [
+            {
+                "accepted_without_errors": 100,
+                "accepted_with_errors": 10,
+                "month": "Jan",
+            },
+            {
+                "accepted_without_errors": 100,
+                "accepted_with_errors": 10,
+                "month": "Feb",
+            },
+            {
+                "accepted_without_errors": 100,
+                "accepted_with_errors": 10,
+                "month": "Mar",
+            },
+        ]
     }
 
     datafile = factory.SubFactory(DataFileFactory)
