@@ -494,7 +494,7 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
 @pytest.mark.django_db()
 def test_parse_tanf_section1_datafile_obj_counts(small_tanf_section1_datafile):
     """Test parsing of small_tanf_section1_datafile in general."""
-    errors = parse.parse_datafile(small_tanf_section1_datafile)
+    parse.parse_datafile(small_tanf_section1_datafile)
 
 #     assert errors == {}
 #     assert TANF_T1.objects.count() == 5
@@ -504,7 +504,7 @@ def test_parse_tanf_section1_datafile_obj_counts(small_tanf_section1_datafile):
 @pytest.mark.django_db()
 def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile):
     """Test parsing of small_tanf_section1_datafile and validate T3 model data."""
-    errors = parse.parse_datafile(small_tanf_section1_datafile)
+    parse.parse_datafile(small_tanf_section1_datafile)
 
 #     assert errors == {}
 #     assert TANF_T3.objects.count() == 6
@@ -527,7 +527,8 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile):
 @pytest.fixture
 def super_big_s1_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM1.TS53_fake."""
-    return create_test_datafile('ADS.E2J.NDM1.TS53_fake', stt_user, stt)
+    return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake', stt_user, stt)
+
 
 @pytest.mark.django_db()
 def test_parse_super_big_s1_file(super_big_s1_file):
@@ -544,7 +545,7 @@ def test_parse_super_big_s1_file(super_big_s1_file):
 @pytest.fixture
 def super_big_s1_rollback_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM1.TS53_fake.rollback."""
-    return create_test_datafile('ADS.E2J.NDM1.TS53_fake.rollback', stt_user, stt)
+    return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.rollback', stt_user, stt)
 
 @pytest.mark.django_db()
 def test_parse_super_big_s1_file_with_rollback(super_big_s1_rollback_file):
@@ -584,7 +585,7 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     errors = parse.parse_datafile(bad_tanf_s1__row_missing_required_field)
 
-    assert dfs.get_status() == DataFileSummary.Status.REJECTED
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
     parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
@@ -635,6 +636,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     errors = parse.parse_datafile(bad_ssp_s1__row_missing_required_field)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
+    print(parser_errors.values())
     assert parser_errors.count() == 5
 
     row_2_error = parser_errors.get(row_number=2)

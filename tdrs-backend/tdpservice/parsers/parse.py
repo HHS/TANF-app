@@ -1,6 +1,6 @@
 """Convert raw uploaded Datafile into a parsed model, and accumulate/return any errors."""
 
-import os
+
 from django.db import DatabaseError
 import itertools
 import logging
@@ -129,19 +129,6 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
         header_count += int(line.startswith('HEADER'))
         trailer_count += int(line.startswith('TRAILER'))
 
-        schema = util.get_schema(line, section, program_type)
-        if schema is None:
-            errors[line_number] = [util.generate_parser_error(
-                datafile=datafile,
-                line_number=line_number,
-                schema=None,
-                error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                error_message="Unknown Record_Type was found.",
-                record=None,
-                field="Record_Type",
-            )]
-            continue
-
         is_last = offset == file_length
         multiple_trailer_errors, trailer_errors = evaluate_trailer(datafile, trailer_count, multiple_trailer_errors,
                                                                    is_last, line, line_number)
@@ -162,7 +149,6 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
                 record=None,
                 field=None
             )
-
             preparse_error = {line_number: [err_obj]}
             unsaved_parser_errors.update(preparse_error)
             rollback_records(unsaved_records, datafile)
@@ -172,6 +158,22 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
 
         if prev_sum != header_count + trailer_count:
             prev_sum = header_count + trailer_count
+            continue
+
+        schema = util.get_schema(line, section, program_type)
+        if schema is None:
+            err_obj = util.generate_parser_error(
+                datafile=datafile,
+                line_number=line_number,
+                schema=None,
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                error_message="Unknown Record_Type was found.",
+                record=None,
+                field="Record_Type",
+            )
+            preparse_error = {line_number: [err_obj]}
+            errors[line_number] = [err_obj]
+            unsaved_parser_errors.update(preparse_error)
             continue
 
         schema_manager = get_schema_manager(line, section, schema_manager_options)
@@ -233,16 +235,6 @@ def manager_parse_line(line, schema_manager, generate_error):
         records = schema_manager.parse_and_validate(line, generate_error)
         return records
 
-    return [(None, False, [
-        generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message="Record Type is missing from record.",
-            record=None,
-            field=None
-        )
-    ])]
-
 
 def get_schema_manager_options(program_type):
     """Return the allowed schema options."""
@@ -291,4 +283,3 @@ def get_schema_manager(line, section, schema_options):
     """Return the appropriate schema for the line."""
     line_type = line[0:2]
     return schema_options.get(section, {}).get(line_type, util.SchemaManager([]))
-

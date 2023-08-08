@@ -94,17 +94,15 @@ class DataFileSummary(models.Model):
 
         # excluding row-level pre-checks and trailer pre-checks.
         precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\
-                                .exclude(field_name="Record")\
+                                .exclude(field_name="Record_Type")\
                                 .exclude(error_message__contains="railer")
         # The "railer" is not a typo, we see both t and T in the error message.
-
+        print(precheck_errors.values())
         if errors is None:
             return DataFileSummary.Status.PENDING
         elif errors.count() == 0:
             return DataFileSummary.Status.ACCEPTED
         elif precheck_errors.count() > 0:
-            print(precheck_errors.values())
             return DataFileSummary.Status.REJECTED
         else:
-            print(errors)
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS
