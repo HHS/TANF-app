@@ -95,7 +95,7 @@ class DataFileSummary(models.Model):
         # excluding row-level pre-checks and trailer pre-checks.
         precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\
                                 .exclude(field_name="Record_Type")\
-                                .exclude(error_message__contains="railer")
+                                .exclude(error_message__icontains="trailer")
         # The "railer" is not a typo, we see both t and T in the error message.
         print(precheck_errors.values())
         if errors is None:
