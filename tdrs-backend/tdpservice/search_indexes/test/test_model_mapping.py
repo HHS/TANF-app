@@ -23,8 +23,6 @@ def test_can_create_and_index_tanf_t1_submission(test_datafile):
     record_num = fake.uuid4()
 
     submission = models.tanf.TANF_T1()
-    submission.version = test_datafile.version
-    submission.created_at = test_datafile.created_at
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
@@ -93,8 +91,6 @@ def test_can_create_and_index_tanf_t2_submission(test_datafile):
     record_num = fake.uuid4()
 
     submission = models.tanf.TANF_T2()
-    submission.version = test_datafile.version
-    submission.created_at = test_datafile.created_at
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
@@ -185,8 +181,6 @@ def test_can_create_and_index_tanf_t3_submission(test_datafile):
     record_num = fake.uuid4()
 
     submission = models.tanf.TANF_T3()
-    submission.version = test_datafile.version
-    submission.created_at = test_datafile.created_at
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
@@ -229,22 +223,19 @@ def test_can_create_and_index_tanf_t4_submission(test_datafile):
     record_num = fake.uuid4()
 
     submission = models.tanf.TANF_T4()
-    submission.version = test_datafile.version
-    submission.created_at = test_datafile.created_at
     submission.datafile = test_datafile
-    submission.record = record_num
-    submission.rpt_month_year = 1
-    submission.case_number = '1'
-    submission.disposition = 1
-    submission.fips_code = '1'
-    submission.county_fips_code = '1'
-    submission.stratum = 1
-    submission.zip_code = '1'
-    submission.closure_reason = 1
-    submission.rec_sub_housing = 1
-    submission.rec_med_assist = 1
-    submission.rec_food_stamps = 1
-    submission.rec_sub_cc = 1
+    submission.RecordType = record_num
+    submission.RPT_MONTH_YEAR = 1
+    submission.CASE_NUMBER = '1'
+    submission.COUNTY_FIPS_CODE = '1'
+    submission.STRATUM = 1
+    submission.ZIP_CODE = '1'
+    submission.DISPOSITION = 1
+    submission.CLOSURE_REASON = "1"
+    submission.REC_SUB_HOUSING = 1
+    submission.REC_MED_ASSIST = 1
+    submission.REC_FOOD_STAMPS = 1
+    submission.REC_SUB_CC = 1
 
     submission.save()
 
@@ -252,7 +243,7 @@ def test_can_create_and_index_tanf_t4_submission(test_datafile):
 
     search = documents.tanf.TANF_T4DataSubmissionDocument.search().query(
         'match',
-        record=record_num
+        RecordType=record_num
     )
     response = search.execute()
 
@@ -265,39 +256,36 @@ def test_can_create_and_index_tanf_t5_submission(test_datafile):
     record_num = fake.uuid4()
 
     submission = models.tanf.TANF_T5()
-    submission.version = test_datafile.version
-    submission.created_at = test_datafile.created_at
     submission.datafile = test_datafile
-    submission.record = record_num
-    submission.rpt_month_year = 1
-    submission.case_number = '1'
-    submission.fips_code = '1'
-    submission.family_affiliation = 1
-    submission.date_of_birth = '1'
-    submission.ssn = '1'
-    submission.race_hispanic = 1
-    submission.race_amer_indian = 1
-    submission.race_asian = 1
-    submission.race_black = 1
-    submission.race_hawaiian = 1
-    submission.race_white = 1
-    submission.gender = 1
-    submission.rec_oasdi_insurance = 1
-    submission.rec_federal_disability = 1
-    submission.rec_aid_totally_disabled = 1
-    submission.rec_aid_aged_blind = 1
-    submission.rec_ssi = 1
-    submission.marital_status = 1
-    submission.relationship_hoh = 1
-    submission.parent_minor_child = 1
-    submission.needs_of_pregnant_woman = 1
-    submission.education_level = 1
-    submission.citizenship_status = 1
-    submission.countable_month_fed_time = 1
-    submission.countable_months_state_tribe = 1
-    submission.employment_status = 1
-    submission.amount_earned_income = 1
-    submission.amount_unearned_income = 1
+    submission.RecordType = record_num
+    submission.RPT_MONTH_YEAR = 1
+    submission.CASE_NUMBER = '1'
+    submission.FAMILY_AFFILIATION = 1
+    submission.DATE_OF_BIRTH = '1'
+    submission.SSN = '1'
+    submission.RACE_HISPANIC = 1
+    submission.RACE_AMER_INDIAN = 1
+    submission.RACE_ASIAN = 1
+    submission.RACE_BLACK = 1
+    submission.RACE_HAWAIIAN = 1
+    submission.RACE_WHITE = 1
+    submission.GENDER = 1
+    submission.REC_OASDI_INSURANCE = 1
+    submission.REC_FEDERAL_DISABILITY = 1
+    submission.REC_AID_TOTALLY_DISABLED = 1
+    submission.REC_AID_AGED_BLIND = 1
+    submission.RECEIVE_SSI = 1
+    submission.MARITAL_STATUS = 1
+    submission.RELATIONSHIP_HOH = "1"
+    submission.PARENT_WITH_MINOR_CHILD = 1
+    submission.NEEDS_PREGNANT_WOMAN = 1
+    submission.EDUCATION_LEVEL = "1"
+    submission.CITIZENSHIP_STATUS = 1
+    submission.COUNTABLE_MONTH_FED_TIME = "1"
+    submission.COUNTABLE_MONTHS_STATE_TRIBE = "1"
+    submission.EMPLOYMENT_STATUS = 1
+    submission.AMOUNT_EARNED_INCOME = "1"
+    submission.AMOUNT_UNEARNED_INCOME = "1"
 
     submission.save()
 
@@ -305,7 +293,7 @@ def test_can_create_and_index_tanf_t5_submission(test_datafile):
 
     search = documents.tanf.TANF_T5DataSubmissionDocument.search().query(
         'match',
-        record=record_num
+        RecordType=record_num
     )
     response = search.execute()
 
@@ -318,8 +306,6 @@ def test_can_create_and_index_tanf_t6_submission(test_datafile):
     record_num = fake.uuid4()
 
     submission = models.tanf.TANF_T6()
-    submission.version = test_datafile.version
-    submission.created_at = test_datafile.created_at
     submission.datafile = test_datafile
     submission.record = record_num
     submission.rpt_month_year = 1
@@ -360,8 +346,6 @@ def test_can_create_and_index_tanf_t7_submission(test_datafile):
     record_num = fake.uuid4()
 
     submission = models.tanf.TANF_T7()
-    submission.version = test_datafile.version
-    submission.created_at = test_datafile.created_at
     submission.datafile = test_datafile
     submission.record = record_num
     submission.rpt_month_year = 1
