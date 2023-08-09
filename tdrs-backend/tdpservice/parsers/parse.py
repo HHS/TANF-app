@@ -160,22 +160,6 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
             prev_sum = header_count + trailer_count
             continue
 
-        schema = util.get_schema(line, section, program_type)
-        if schema is None:
-            err_obj = util.generate_parser_error(
-                datafile=datafile,
-                line_number=line_number,
-                schema=None,
-                error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                error_message="Unknown Record_Type was found.",
-                record=None,
-                field="Record_Type",
-            )
-            preparse_error = {line_number: [err_obj]}
-            errors[line_number] = [err_obj]
-            unsaved_parser_errors.update(preparse_error)
-            continue
-
         schema_manager = get_schema_manager(line, section, schema_manager_options)
 
         schema_manager.update_encrypted_fields(is_encrypted)
