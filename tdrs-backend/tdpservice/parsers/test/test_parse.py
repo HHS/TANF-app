@@ -39,7 +39,7 @@ def test_parse_small_correct_file(test_datafile, dfs):
                                    'months': [
                                        {'accepted_without_errors': 1, 'accepted_with_errors': 0, 'month': 'Oct'},
                                        {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Nov'},
-                                        {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
+                                       {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
                                     ]}
 
     assert errors == {}
@@ -74,11 +74,17 @@ def test_parse_section_mismatch(test_datafile, dfs):
     assert dfs.status == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=test_datafile)
     dfs.case_aggregates = util.case_aggregates_by_month(dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'rejected': 0,
+    assert dfs.case_aggregates == {'rejected': 1,
                                    'months': [
-                                       {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Oct'},
-                                       {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Nov'},
-                                        {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Dec'}
+                                       {'accepted_without_errors': 'N/A',
+                                        'accepted_with_errors': 'N/A',
+                                        'month': 'Oct'},
+                                       {'accepted_without_errors': 'N/A',
+                                        'accepted_with_errors': 'N/A',
+                                        'month': 'Nov'},
+                                       {'accepted_without_errors': 'N/A',
+                                        'accepted_with_errors': 'N/A',
+                                        'month': 'Dec'}
                                     ]}
     assert parser_errors.count() == 1
 
@@ -144,7 +150,7 @@ def test_parse_big_file(test_big_file, dfs):
                                    'months': [
                                        {'accepted_without_errors': 171, 'accepted_with_errors': 99, 'month': 'Oct'},
                                        {'accepted_without_errors': 169, 'accepted_with_errors': 104, 'month': 'Nov'},
-                                        {'accepted_without_errors': 166, 'accepted_with_errors': 106, 'month': 'Dec'}
+                                       {'accepted_without_errors': 166, 'accepted_with_errors': 106, 'month': 'Dec'}
                                     ]}
 
     parser_errors = ParserError.objects.filter(file=test_big_file)
@@ -369,9 +375,15 @@ def test_parse_empty_file(empty_file, dfs):
     assert dfs.status == DataFileSummary.Status.REJECTED
     assert dfs.case_aggregates == {'rejected': 2,
                                    'months': [
-                                       {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Oct'},
-                                       {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Nov'},
-                                        {'accepted_without_errors': 'N/A', 'accepted_with_errors': 'N/A', 'month': 'Dec'}
+                                       {'accepted_without_errors': 'N/A',
+                                        'accepted_with_errors': 'N/A',
+                                        'month': 'Oct'},
+                                       {'accepted_without_errors': 'N/A',
+                                        'accepted_with_errors': 'N/A',
+                                        'month': 'Nov'},
+                                       {'accepted_without_errors': 'N/A',
+                                        'accepted_with_errors': 'N/A',
+                                        'month': 'Dec'}
                                     ]}
 
     parser_errors = ParserError.objects.filter(file=empty_file)
@@ -418,7 +430,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
                                    'months': [
                                        {'accepted_without_errors': 5, 'accepted_with_errors': 0, 'month': 'Oct'},
                                        {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Nov'},
-                                        {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
+                                       {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
                                     ]}
 
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
@@ -489,7 +501,7 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
                                    'months': [
                                        {'accepted_without_errors': 5, 'accepted_with_errors': 0, 'month': 'Oct'},
                                        {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Nov'},
-                                        {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
+                                       {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
                                     ]}
 
     assert errors == {}

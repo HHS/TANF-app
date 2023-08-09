@@ -274,7 +274,7 @@ def case_aggregates_by_month(df, dfs_status):
     schema_models_dict = get_program_models(program_type, short_section)
     schema_models = [model for model in schema_models_dict.values()]
 
-    aggregate_data = {"months":[], "rejected": 0}
+    aggregate_data = {"months": [], "rejected": 0}
     for month in month_list:
         total = 0
         cases_with_errors = 0
@@ -285,7 +285,9 @@ def case_aggregates_by_month(df, dfs_status):
         if dfs_status == "Rejected":
             # we need to be careful here on examples of bad headers or empty files, since no month will be found
             # but we can rely on the frontend submitted year-quarter to still generate the list of months
-            aggregate_data["months"].append({"accepted_with_errors": "N/A", "accepted_without_errors": "N/A", "month": month})
+            aggregate_data["months"].append({"accepted_with_errors": "N/A",
+                                             "accepted_without_errors": "N/A",
+                                             "month": month})
             continue
 
         case_numbers = set()
@@ -301,7 +303,9 @@ def case_aggregates_by_month(df, dfs_status):
         cases_with_errors += ParserError.objects.filter(case_number__in=case_numbers).distinct('case_number').count()
         accepted = total - cases_with_errors
 
-        aggregate_data['months'].append({"month": month, "accepted_without_errors": accepted, "accepted_with_errors": cases_with_errors})
+        aggregate_data['months'].append({"month": month,
+                                         "accepted_without_errors": accepted,
+                                         "accepted_with_errors": cases_with_errors})
 
     aggregate_data['rejected'] = ParserError.objects.filter(file=df).filter(case_number=None).count()
 
