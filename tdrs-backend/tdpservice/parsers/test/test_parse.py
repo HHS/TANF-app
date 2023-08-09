@@ -773,7 +773,7 @@ def test_get_schema_options(dfs):
 @pytest.fixture
 def small_tanf_section2_file(stt_user, stt):
     """Fixture for ssp_section1_datafile."""
-    return create_test_datafile('small_tanf_section2.txt', stt_user, stt, 'Closed Case Data')
+    return util.create_test_datafile('small_tanf_section2.txt', stt_user, stt, 'Closed Case Data')
 
 @pytest.mark.django_db()
 def test_parse_small_tanf_section2_file(small_tanf_section2_file):
@@ -799,7 +799,7 @@ def test_parse_small_tanf_section2_file(small_tanf_section2_file):
 @pytest.fixture
 def tanf_section2_file(stt_user, stt):
     """Fixture for ssp_section1_datafile."""
-    return create_test_datafile('ADS.E2J.FTP2.TS06', stt_user, stt, 'Closed Case Data')
+    return util.create_test_datafile('ADS.E2J.FTP2.TS06', stt_user, stt, 'Closed Case Data')
 
 @pytest.mark.django_db()
 def test_parse_tanf_section2_file(tanf_section2_file):
