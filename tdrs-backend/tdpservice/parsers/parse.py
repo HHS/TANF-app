@@ -106,7 +106,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     errors = {}
 
     line_number = 0
-    schema_manager_options = get_schema_manager_options(program_type)
+    schema_manager_options = get_schema_manager_options(program_type) # TODO: make another wrapper to replace and use get_schema_options
 
     unsaved_records = {}
     unsaved_parser_errors = {}
@@ -158,6 +158,22 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
 
         if prev_sum != header_count + trailer_count:
             prev_sum = header_count + trailer_count
+            continue
+
+        schema = util.get_schema(line, section, program_type)
+        if schema is None:  #TODO: this pushes complexity >10, should be handled by the schema manager
+            err_obj = util.generate_parser_error(
+                datafile=datafile,
+                line_number=line_number,
+                schema=None,
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                error_message="Unknown Record_Type was found.",
+                record=None,
+                field="Record_Type",
+            )
+            preparse_error = {line_number: [err_obj]}
+            errors[line_number] = [err_obj]
+            unsaved_parser_errors.update(preparse_error)
             continue
 
         schema_manager = get_schema_manager(line, section, schema_manager_options)
@@ -222,7 +238,7 @@ def manager_parse_line(line, schema_manager, generate_error):
 
 def get_schema_manager_options(program_type):
     """Return the allowed schema options."""
-    match program_type:
+    match program_type:   #TODO: delete this hard-coded stuff, wrap util.get_schema_options
         case 'TAN':
             return {
                 'A': {
@@ -235,7 +251,7 @@ def get_schema_manager_options(program_type):
                     # 'T5': schema_options.t5,
                 },
                 'G': {
-                    # 'T6': schema_options.t6,
+                    'T6': schema_options.t6,
                 },
                 'S': {
                     # 'T7': schema_options.t7,

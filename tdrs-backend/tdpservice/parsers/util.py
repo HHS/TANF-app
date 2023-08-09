@@ -179,7 +179,7 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
         if model_name is None:
             return models
         elif model_name not in models.keys():
-            return None  # intentionally trigger the error_msg for unknown record type
+            return []  # intentionally trigger the error_msg for unknown record type
         else:
             return models.get(model_name, models)
 
