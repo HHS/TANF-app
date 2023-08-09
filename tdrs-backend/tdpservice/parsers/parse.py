@@ -245,7 +245,7 @@ def get_schema_manager_options(program_type):
                     'T5': schema_defs.tanf.t5,
                 },
                 'G': {
-                    'T6': schema_options.t6,
+                    #'T6': schema_options.t6,
                 },
                 'S': {
                     # 'T7': schema_options.t7,
