@@ -6,6 +6,9 @@ from tdpservice.data_files.models import DataFile
 from datetime import datetime
 from pathlib import Path
 from .fields import EncryptedField
+import logging
+
+logger = logging.getLogger(__name__)
 
 def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
     """Create a test DataFile instance with the given file attached."""
@@ -112,8 +115,8 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             'C': {
                 'section': DataFile.Section.CLOSED_CASE_DATA,
                 'models': {
-                    # 'T4': schema_defs.tanf.t4,
-                    # 'T5': schema_defs.tanf.t5,
+                    'T4': schema_defs.tanf.t4,
+                    'T5': schema_defs.tanf.t5,
                 }
             },
             'G': {
@@ -179,6 +182,7 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
         if model_name is None:
             return models
         elif model_name not in models.keys():
+            logger.debug(f"Model {model_name} not found in schema_defs")
             return []  # intentionally trigger the error_msg for unknown record type
         else:
             return models.get(model_name, models)
@@ -203,6 +207,7 @@ def get_program_models(str_prog, str_section):
 
 def get_program_model(str_prog, str_section, str_model):
     """Return singular model for a given program, section, and name."""
+    print(f"str_model: {str_model}")
     return get_schema_options(program=str_prog, section=str_section, query='models', model_name=str_model)
 
 def get_section_reference(str_prog, str_section):

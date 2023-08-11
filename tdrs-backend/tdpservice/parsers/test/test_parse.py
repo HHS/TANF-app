@@ -770,14 +770,17 @@ def test_get_schema_options(dfs):
     # get section str
     # get ref section
 
+    assert type(parse.get_schema_manager('T1xx', 'A', 'TAN')) == type(util.SchemaManager([]))
+
+
 @pytest.fixture
 def small_tanf_section2_file(stt_user, stt):
-    """Fixture for ssp_section1_datafile."""
+    """Fixture for tanf section2 datafile."""
     return util.create_test_datafile('small_tanf_section2.txt', stt_user, stt, 'Closed Case Data')
 
 @pytest.mark.django_db()
 def test_parse_small_tanf_section2_file(small_tanf_section2_file):
-    """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
+    """Test parsing a good TANF Section 2 submission."""
     parse.parse_datafile(small_tanf_section2_file)
 
     assert TANF_T4.objects.all().count() == 1
