@@ -231,11 +231,6 @@ def get_prog_from_section(str_section):
     # TODO: if given a datafile (section), we can reverse back to the program b/c the
     # section string has "tribal/ssp" in it, then process of elimination we have tanf
 
-def get_schema(line, section, program_type):
-    """Return the appropriate schema for the line."""
-    line_type = line[0:2]
-    return get_schema_options(program_type, section, query='models', model_name=line_type)
-
 def fiscal_to_calendar(year, fiscal_quarter):
     """Decrement the input quarter text by one."""
     array = [1, 2, 3, 4]  # wrapping around an array

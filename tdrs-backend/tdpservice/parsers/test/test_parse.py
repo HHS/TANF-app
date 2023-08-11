@@ -177,7 +177,7 @@ def bad_test_file(stt_user, stt):
 
 
 @pytest.mark.django_db
-def test_parse_bad_test_file(bad_test_file, dfs):
+def test_parse_bad_test_file(bad_test_file):
     """Test parsing of bad_TANF_S2."""
     errors = parse.parse_datafile(bad_test_file)
 
@@ -621,8 +621,6 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
-    # for e in parser_errors:
-    #    print(e.error_type, e.error_message)
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
@@ -668,7 +666,6 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     errors = parse.parse_datafile(bad_ssp_s1__row_missing_required_field)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
-    print(parser_errors.values())
     assert parser_errors.count() == 5
 
     row_2_error = parser_errors.get(row_number=2)

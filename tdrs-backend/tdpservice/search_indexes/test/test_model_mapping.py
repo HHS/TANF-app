@@ -358,7 +358,6 @@ def test_can_create_and_index_tanf_t7_submission(test_datafile):
     submission.save()
 
     # No checks her because t7 records can't be parsed currently.
-
     # assert submission.id is not None
 
     # search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
