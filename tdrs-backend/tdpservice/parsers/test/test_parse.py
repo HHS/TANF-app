@@ -740,9 +740,9 @@ def test_get_schema_options(dfs):
     '''
 
     # from text:
-    # get schema
-    schema = util.get_schema('T3', 'A', 'TAN')
-    assert schema == schema_defs.tanf.t3
+    schema = parse.get_schema_manager('T1xx', 'A', 'TAN')
+    assert isinstance(schema, util.SchemaManager)
+    assert schema == schema_defs.tanf.t1
 
     # get model
     models = util.get_program_models('TAN', 'A')
@@ -767,7 +767,7 @@ def test_get_schema_options(dfs):
     # get section str
     # get ref section
 
-    assert isinstance(parse.get_schema_manager('T1xx', 'A', 'TAN'), util.SchemaManager)
+    
 
 
 @pytest.fixture
