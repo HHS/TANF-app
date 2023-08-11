@@ -767,9 +767,6 @@ def test_get_schema_options(dfs):
     # get section str
     # get ref section
 
-    
-
-
 @pytest.fixture
 def small_tanf_section2_file(stt_user, stt):
     """Fixture for tanf section2 datafile."""
