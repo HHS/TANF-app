@@ -770,7 +770,7 @@ def test_get_schema_options(dfs):
     # get section str
     # get ref section
 
-    assert type(parse.get_schema_manager('T1xx', 'A', 'TAN')) == type(util.SchemaManager([]))
+    assert parse.get_schema_manager('T1xx', 'A', 'TAN').isinstance(util.SchemaManager)
 
 
 @pytest.fixture
