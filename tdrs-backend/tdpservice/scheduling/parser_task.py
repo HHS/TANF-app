@@ -24,6 +24,6 @@ def parse(data_file_id):
     dfs = DataFileSummary.objects.create(datafile=data_file, status=DataFileSummary.Status.PENDING)
     errors = parse_datafile(data_file)
     dfs.status = dfs.get_status()
-    dfs.case_aggregates = case_aggregates_by_month(data_file)
+    dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
     dfs.save()
     logger.info(f"DataFile parsing finished with status {dfs.status} and {len(errors)} errors: {errors}")
