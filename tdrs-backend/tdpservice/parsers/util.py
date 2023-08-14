@@ -262,7 +262,7 @@ def transform_to_months(quarter):
 
 def month_to_int(month):
     """Return the integer value of a month."""
-    return datetime.strptime(month, '%b').month
+    return datetime.strptime(month, '%b').strftime('%m')
 
 
 def case_aggregates_by_month(df, dfs_status):
