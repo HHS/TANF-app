@@ -207,7 +207,6 @@ def get_program_models(str_prog, str_section):
 
 def get_program_model(str_prog, str_section, str_model):
     """Return singular model for a given program, section, and name."""
-    print(f"str_model: {str_model}")
     return get_schema_options(program=str_prog, section=str_section, query='models', model_name=str_model)
 
 def get_section_reference(str_prog, str_section):
@@ -230,6 +229,11 @@ def get_prog_from_section(str_section):
 
     # TODO: if given a datafile (section), we can reverse back to the program b/c the
     # section string has "tribal/ssp" in it, then process of elimination we have tanf
+
+def get_schema(line, section, program_type):
+    """Return the appropriate schema for the line."""
+    line_type = line[0:2]
+    return get_schema_options(program_type, section, query='models', model_name=line_type)
 
 def fiscal_to_calendar(year, fiscal_quarter):
     """Decrement the input quarter text by one."""

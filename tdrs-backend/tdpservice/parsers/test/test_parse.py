@@ -525,35 +525,35 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
 @pytest.mark.django_db()
 def test_parse_tanf_section1_datafile_obj_counts(small_tanf_section1_datafile):
     """Test parsing of small_tanf_section1_datafile in general."""
-    parse.parse_datafile(small_tanf_section1_datafile)
+    errors = parse.parse_datafile(small_tanf_section1_datafile)
 
-#     assert errors == {}
-#     assert TANF_T1.objects.count() == 5
-#     assert TANF_T2.objects.count() == 5
-#     assert TANF_T3.objects.count() == 6
+    assert errors == {}
+    assert TANF_T1.objects.count() == 5
+    assert TANF_T2.objects.count() == 5
+    assert TANF_T3.objects.count() == 6
 
 @pytest.mark.django_db()
 def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile):
     """Test parsing of small_tanf_section1_datafile and validate T3 model data."""
-    parse.parse_datafile(small_tanf_section1_datafile)
+    errors = parse.parse_datafile(small_tanf_section1_datafile)
 
-#     assert errors == {}
-#     assert TANF_T3.objects.count() == 6
+    assert errors == {}
+    assert TANF_T3.objects.count() == 6
 
-#     t3_models = TANF_T3.objects.all()
-#     t3_1 = t3_models[0]
-#     assert t3_1.RPT_MONTH_YEAR == 202010
-#     assert t3_1.CASE_NUMBER == '11111111112'
-#     assert t3_1.FAMILY_AFFILIATION == 1
-#     assert t3_1.GENDER == 2
-#     assert t3_1.EDUCATION_LEVEL == '98'
+    t3_models = TANF_T3.objects.all()
+    t3_1 = t3_models[0]
+    assert t3_1.RPT_MONTH_YEAR == 202010
+    assert t3_1.CASE_NUMBER == '11111111112'
+    assert t3_1.FAMILY_AFFILIATION == 1
+    assert t3_1.GENDER == 2
+    assert t3_1.EDUCATION_LEVEL == '98'
 
-#     t3_6 = t3_models[5]
-#     assert t3_6.RPT_MONTH_YEAR == 202010
-#     assert t3_6.CASE_NUMBER == '11111111151'
-#     assert t3_6.FAMILY_AFFILIATION == 1
-#     assert t3_6.GENDER == 2
-#     assert t3_6.EDUCATION_LEVEL == '98'
+    t3_6 = t3_models[5]
+    assert t3_6.RPT_MONTH_YEAR == 202010
+    assert t3_6.CASE_NUMBER == '11111111151'
+    assert t3_6.FAMILY_AFFILIATION == 1
+    assert t3_6.GENDER == 2
+    assert t3_6.EDUCATION_LEVEL == '98'
 
 @pytest.fixture
 def super_big_s1_file(stt_user, stt):
