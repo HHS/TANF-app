@@ -3,7 +3,7 @@ version: "3.4"
 
 services:
   zaproxy:
-    image: owasp/zap2docker-stable:2.11.0
+    image: owasp/zap2docker-stable:2.13.0
     command: sleep 3600
     depends_on:
       - web
