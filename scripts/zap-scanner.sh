@@ -68,10 +68,6 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(2\).description='TDP S3 buckets' \
   -config globalexcludeurl.url_list.url\(2\).enabled=true \
 
-  -config globalexcludeurl.url_list.url\(3\).regex='^https:\/\/.*\.hhs.gov\/.*$' \
-  -config globalexcludeurl.url_list.url\(3\).description='Site - acf.hhs.gov' \
-  -config globalexcludeurl.url_list.url\(3\).enabled=true \
-
   -config globalexcludeurl.url_list.url\(4\).regex='^https:\/\/.*\.google.com\/.*$' \
   -config globalexcludeurl.url_list.url\(4\).description='Site - Google.com' \
   -config globalexcludeurl.url_list.url\(4\).enabled=true \
