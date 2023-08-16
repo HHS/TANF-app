@@ -87,6 +87,7 @@ services:
       - ACFTITAN_SFTP_PYTEST
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
+      - SENDGRID_API_KEY
     volumes:
       - .:/tdpapp
     image: tdp
@@ -118,6 +119,7 @@ volumes:
   localstack_data:
   postgres_data:
   elastic_data:
+
 
 networks:
   default:
