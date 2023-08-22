@@ -34,7 +34,7 @@ class ParserError(models.Model):
         null=True,
     )
     row_number = models.IntegerField(null=False)
-    column_number = models.IntegerField(null=True)
+    column_number = models.CharField(null=True, max_length=8)
     item_number = models.CharField(null=True, max_length=8)
     field_name = models.TextField(null=True, max_length=128)
     rpt_month_year = models.IntegerField(null=True,  blank=False)
