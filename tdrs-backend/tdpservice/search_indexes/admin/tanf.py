@@ -60,14 +60,14 @@ class TANF_T4Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T4 data files."""
 
     list_display = [
-        'record',
-        'rpt_month_year',
-        'case_number',
+        'RecordType',
+        'RPT_MONTH_YEAR',
+        'CASE_NUMBER',
         'datafile',
     ]
 
     list_filter = [
-        'rpt_month_year',
+        'RPT_MONTH_YEAR',
     ]
 
 
@@ -75,14 +75,14 @@ class TANF_T5Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T5 data files."""
 
     list_display = [
-        'record',
-        'rpt_month_year',
-        'case_number',
+        'RecordType',
+        'RPT_MONTH_YEAR',
+        'CASE_NUMBER',
         'datafile',
     ]
 
     list_filter = [
-        'rpt_month_year',
+        'RPT_MONTH_YEAR',
     ]
 
 

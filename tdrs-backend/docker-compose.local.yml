@@ -73,6 +73,7 @@ services:
       - REDIS_URI=redis://redis-server:6379
       - REDIS_SERVER_LOCAL=TRUE
       - ACFTITAN_SFTP_PYTEST
+      - SENDGRID_API_KEY
     volumes:
       - .:/tdpapp
     image: tdp
@@ -101,6 +102,7 @@ volumes:
   localstack_data:
   postgres_data:
   elastic_data:
+
 
 networks:
   default:

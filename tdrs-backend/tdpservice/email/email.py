@@ -1,9 +1,8 @@
 """Wrapper to send emails with Django."""
 
-from celery import shared_task
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import get_template
 from django.contrib.admin.models import LogEntry, ContentType, CHANGE
@@ -61,7 +60,7 @@ def prepare_email(email_path, recipient_email, email_context, logger_context):
 
     return html_message, valid_emails
 
-@shared_task
+
 def automated_email(email_path, recipient_email, subject, email_context, text_message, logger_context=None):
     """Send email to user."""
     html_message, valid_emails = prepare_email(email_path, recipient_email, email_context, logger_context)
@@ -81,15 +80,14 @@ def automated_email(email_path, recipient_email, subject, email_context, text_me
 
 def send_email(subject, message, html_message, recipient_list):
     """Send an email to a list of recipients."""
-    email = EmailMultiAlternatives(
+    num_emails_sent = send_mail(
         subject=subject,
-        body=message,
+        message=message,
+        html_message=html_message,
+        recipient_list=recipient_list,
         from_email=settings.EMAIL_HOST_USER,
-        to=recipient_list,
     )
-    email.attach_alternative(html_message, "text/html")
 
-    num_emails_sent = email.send()
     if num_emails_sent == 0:
         raise Exception(
             f"Emails were attempted to the following email list: {recipient_list}. \

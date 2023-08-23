@@ -5,7 +5,7 @@ import pytest
 from ..util import create_test_datafile
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices
-from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3
+from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
 import logging
 
@@ -168,7 +168,7 @@ def test_parse_bad_file_missing_header(bad_file_missing_header):
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
-        'header': list(parser_errors)
+        'header': [parser_errors[1], parser_errors[0]]
     }
 
 
@@ -590,3 +590,50 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
         5: [row_5_error],
         'trailer': [trailer_error],
     }
+
+@pytest.fixture
+def small_tanf_section2_file(stt_user, stt):
+    """Fixture for ssp_section1_datafile."""
+    return create_test_datafile('small_tanf_section2.txt', stt_user, stt, 'Closed Case Data')
+
+@pytest.mark.django_db()
+def test_parse_small_tanf_section2_file(small_tanf_section2_file):
+    """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
+    parse.parse_datafile(small_tanf_section2_file)
+
+    assert TANF_T4.objects.all().count() == 1
+    assert TANF_T5.objects.all().count() == 1
+
+    parser_errors = ParserError.objects.filter(file=small_tanf_section2_file)
+
+    assert parser_errors.count() == 0
+
+    t4 = TANF_T4.objects.first()
+    t5 = TANF_T5.objects.first()
+
+    assert t4.DISPOSITION == 1
+    assert t4.REC_SUB_CC == 3
+
+    assert t5.GENDER == 2
+    assert t5.AMOUNT_UNEARNED_INCOME == '0000'
+
+@pytest.fixture
+def tanf_section2_file(stt_user, stt):
+    """Fixture for ssp_section1_datafile."""
+    return create_test_datafile('ADS.E2J.FTP2.TS06', stt_user, stt, 'Closed Case Data')
+
+@pytest.mark.django_db()
+def test_parse_tanf_section2_file(tanf_section2_file):
+    """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
+    parse.parse_datafile(tanf_section2_file)
+
+    assert TANF_T4.objects.all().count() == 223
+    assert TANF_T5.objects.all().count() == 605
+
+    parser_errors = ParserError.objects.filter(file=tanf_section2_file)
+    assert parser_errors.count() == 2681
+    err = parser_errors.first()
+    assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert err.error_message == "REC_OASDI_INSURANCE is required but a value was not provided."
+    assert err.content_type.model == "tanf_t5"
+    assert err.object_id is not None

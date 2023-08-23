@@ -16,7 +16,7 @@ def send_data_submitted_email(recipients, data_file, context, subject):
 
     log(f'Data file submitted; emailing Data Analysts {recipients}', logger_context=logger_context)
 
-    automated_email.delay(
+    automated_email(
         email_path=template_path,
         recipient_email=recipients,
         subject=subject,
