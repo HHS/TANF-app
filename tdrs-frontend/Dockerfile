@@ -38,7 +38,7 @@ RUN npm run build:development
 
 # ---
 # Stage 2: Serve over nginx
-FROM nginx:1.19-alpine AS nginx
+FROM nginx:1.25-alpine AS nginx
 
 # Copy the build folder (from the result of the Stage 1 "build" stage) to the root of nginx (www)
 COPY --from=build /home/node/app/build /usr/share/nginx/html

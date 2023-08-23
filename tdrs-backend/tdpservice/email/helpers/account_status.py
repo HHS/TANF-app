@@ -55,7 +55,7 @@ def send_approval_status_update_email(
 
     context.update({'subject': subject})
 
-    automated_email.delay(
+    automated_email(
         email_path=template_path,
         recipient_email=recipient_email,
         subject=subject,

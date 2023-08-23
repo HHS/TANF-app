@@ -27,7 +27,7 @@ def send_deactivation_warning_email(users, days):
            'object_repr': user.email
         }
 
-        automated_email.delay(
+        automated_email(
             email_path=template_path,
             recipient_email=recipient_email,
             subject=subject,

@@ -61,7 +61,7 @@ Data reports are due within 45 days of the end of the fiscal quarter--
 | -------------- | --------------- | ----------- |
 | 1              | Oct 1 - Dec 31  | February 14 |
 | 2              | Jan 1 – Mar 31   | May 15      |
-| 3              | Apr 1 – Jun 30  | August 15   |
+| 3              | Apr 1 – Jun 30  | August 14   |
 | 4              | Jul 1 – Sep 30  | November 14 |
 
 STTs are permitted to make corrections and re-transmit data throughout the fiscal year, but an end-of-fiscal year deadline is enforced after the fiscal quarter 4 data is due. 

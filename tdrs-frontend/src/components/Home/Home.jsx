@@ -227,7 +227,7 @@ function Home() {
             <tr>
               <td>3</td>
               <td>Apr 1 - Jun 30</td>
-              <td>August 15</td>
+              <td>August 14</td>
             </tr>
             <tr>
               <td>4</td>

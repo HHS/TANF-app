@@ -13,11 +13,6 @@ class Local(Common):
     # Default DEBUG to True in local environments
     DEBUG = strtobool(os.getenv("DJANGO_DEBUG", "yes"))
 
-    # Mail
-    EMAIL_HOST = "localhost"
-    EMAIL_PORT = 1025
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
     # Whether to use localstack in place of a live AWS S3 environment
     # NOTE: Defaults to True when this settings module is in use
     USE_LOCALSTACK = bool(strtobool(os.getenv("USE_LOCALSTACK", "yes")))
