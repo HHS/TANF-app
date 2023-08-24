@@ -79,7 +79,9 @@ Cypress.Commands.add(
       body,
       url: `${Cypress.env('adminUrl')}${path}`,
       form: true,
-      headers: {},
+      headers: {
+        Referer: `${Cypress.env('adminUrl')}`,
+      },
     }
 
     cy.get('@adminSessionId').then((sessionId) =>

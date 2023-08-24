@@ -26,7 +26,6 @@ When('{string} is in begin state', (username) => {
       _save: 'Save',
     }
 
-
     cy.adminApiRequest(
       'POST',
       `/users/user/${cypressUser.selector.id}/change/`,
@@ -61,7 +60,11 @@ When('{string} is in approved state', (username) => {
 When('{string} requests access', (username) => {
   cy.get('#firstName').type('cypress')
   cy.get('#lastName').type('cypress')
-  cy.get('#stt').type('Colorado{enter}')
+
+  cy.wait('@getSttSearchList').then(() => {
+    cy.get('#stt').type('Colorado{enter}')
+  })
+
   cy.get('button').contains('Request Access').should('exist').click()
   cy.wait(2000).then(() => {
     cy.contains('Request Submitted').should('exist')
