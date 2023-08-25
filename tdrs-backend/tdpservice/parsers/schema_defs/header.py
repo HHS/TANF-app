@@ -21,7 +21,7 @@ header = RowSchema(
             validators.matches('HEADER'),
         ]),
         Field(item="4", name='year', type='number', startIndex=6, endIndex=10, required=True, validators=[
-            validators.between(2000, 2099)
+            validators.isInLimits(2000, 2099)
         ]),
         Field(item="5", name='quarter', type='string', startIndex=10, endIndex=11, required=True, validators=[
             validators.oneOf(['1', '2', '3', '4'])
@@ -30,10 +30,13 @@ header = RowSchema(
             validators.oneOf(['A', 'C', 'G', 'S'])
         ]),
         Field(item="1", name='state_fips', type='string', startIndex=12, endIndex=14, required=True, validators=[
-            validators.between(0, 99)
+            validators.oneOf(("01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15", "16", "17", "18",
+                              "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33",
+                              "34", "35", "36", "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48", "49",
+                              "50", "51", "53", "54", "55", "56", "66", "72", "78"))
         ]),
         Field(item="3", name='tribe_code', type='string', startIndex=14, endIndex=17, required=False, validators=[
-            validators.between(0, 999)
+            validators.isInStringRange(0, 999)
         ]),
         Field(item="7", name='program_type', type='string', startIndex=17, endIndex=20, required=True, validators=[
             validators.oneOf(['TAN', 'SSP'])

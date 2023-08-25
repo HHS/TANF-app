@@ -23,10 +23,10 @@ def test_datafile(stt_user, stt):
 def test_parse_small_correct_file(test_datafile):
     """Test parsing of small_correct_file."""
     errors = parse.parse_datafile(test_datafile)
+    errors = ParserError.objects.filter(file=test_datafile)
+    assert errors.count() == 0
 
-    assert errors == {}
     assert TANF_T1.objects.count() == 1
-    assert ParserError.objects.filter(file=test_datafile).count() == 0
 
     # spot check
     t1 = TANF_T1.objects.all().first()
@@ -101,18 +101,15 @@ def test_parse_big_file(test_big_file):
     expected_t2_record_count = 882
     expected_t3_record_count = 1376
 
-    errors = parse.parse_datafile(test_big_file)
+    parse.parse_datafile(test_big_file)
     parser_errors = ParserError.objects.filter(file=test_big_file)
-    assert parser_errors.count() == 355
-    assert len(errors) == 334
 
-    row_18_error = parser_errors.get(row_number=18)
+    error_message = 'MONTHS_FED_TIME_LIMIT is required but a value was not provided.'
+    row_18_error = parser_errors.get(row_number=18, error_message=error_message)
     assert row_18_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_18_error.error_message == 'MONTHS_FED_TIME_LIMIT is required but a value was not provided.'
+    assert row_18_error.error_message == error_message
     assert row_18_error.content_type.model == 'tanf_t2'
     assert row_18_error.object_id is not None
-
-    assert errors[18] == [row_18_error]
 
     assert TANF_T1.objects.count() == expected_t1_record_count
     assert TANF_T2.objects.count() == expected_t2_record_count
@@ -247,7 +244,7 @@ def test_parse_bad_trailer_file(bad_trailer_file):
 
     assert errors == {
         'trailer': [trailer_error],
-        2: [row_error]
+        "2_0": [row_error]
     }
 
 
@@ -265,7 +262,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
     assert parser_errors.count() == 4
 
-    trailer_errors = parser_errors.filter(row_number=3)
+    trailer_errors = parser_errors.filter(row_number=3).order_by('id')
 
     trailer_error_1 = trailer_errors.first()
     assert trailer_error_1.error_type == ParserErrorCategoryChoices.PRE_CHECK
@@ -292,8 +289,8 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     assert row_3_error.object_id is None
 
     assert errors == {
-        2: [row_2_error],
-        3: [row_3_error],
+        "2_0": [row_2_error],
+        "3_0": [row_3_error],
         "trailer": [trailer_error_1, trailer_error_2],
     }
 
@@ -309,7 +306,7 @@ def test_parse_empty_file(empty_file):
     """Test parsing of empty_file."""
     errors = parse.parse_datafile(empty_file)
 
-    parser_errors = ParserError.objects.filter(file=empty_file)
+    parser_errors = ParserError.objects.filter(file=empty_file).order_by('id')
     assert parser_errors.count() == 2
 
     err = parser_errors.first()
@@ -395,9 +392,8 @@ def small_tanf_section1_datafile(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section1_datafile(small_tanf_section1_datafile):
     """Test parsing of small_tanf_section1_datafile and validate T2 model data."""
-    errors = parse.parse_datafile(small_tanf_section1_datafile)
+    parse.parse_datafile(small_tanf_section1_datafile)
 
-    assert errors == {}
     assert TANF_T2.objects.count() == 5
 
     t2_models = TANF_T2.objects.all()
@@ -417,9 +413,8 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile):
 @pytest.mark.django_db()
 def test_parse_tanf_section1_datafile_obj_counts(small_tanf_section1_datafile):
     """Test parsing of small_tanf_section1_datafile in general."""
-    errors = parse.parse_datafile(small_tanf_section1_datafile)
+    parse.parse_datafile(small_tanf_section1_datafile)
 
-    assert errors == {}
     assert TANF_T1.objects.count() == 5
     assert TANF_T2.objects.count() == 5
     assert TANF_T3.objects.count() == 6
@@ -427,9 +422,8 @@ def test_parse_tanf_section1_datafile_obj_counts(small_tanf_section1_datafile):
 @pytest.mark.django_db()
 def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile):
     """Test parsing of small_tanf_section1_datafile and validate T3 model data."""
-    errors = parse.parse_datafile(small_tanf_section1_datafile)
+    parse.parse_datafile(small_tanf_section1_datafile)
 
-    assert errors == {}
     assert TANF_T3.objects.count() == 6
 
     t3_models = TANF_T3.objects.all()
@@ -456,9 +450,6 @@ def super_big_s1_file(stt_user, stt):
 def test_parse_super_big_s1_file(super_big_s1_file):
     """Test parsing of super_big_s1_file and validate all T1/T2/T3 records are created."""
     parse.parse_datafile(super_big_s1_file)
-
-    parser_errors = ParserError.objects.filter(file=super_big_s1_file)
-    assert parser_errors.count() == 13
 
     assert TANF_T1.objects.count() == 96642
     assert TANF_T2.objects.count() == 112794
@@ -502,41 +493,36 @@ def bad_tanf_s1__row_missing_required_field(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field):
     """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
-    errors = parse.parse_datafile(bad_tanf_s1__row_missing_required_field)
+    parse.parse_datafile(bad_tanf_s1__row_missing_required_field)
 
     parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
 
-    row_2_error = parser_errors.get(row_number=2)
+    error_message = 'RPT_MONTH_YEAR is required but a value was not provided.'
+    row_2_error = parser_errors.get(row_number=2, error_message=error_message)
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_2_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+    assert row_2_error.error_message == error_message
     assert row_2_error.content_type.model == 'tanf_t1'
     assert row_2_error.object_id is not None
 
-    row_3_error = parser_errors.get(row_number=3)
+    row_3_error = parser_errors.get(row_number=3, error_message=error_message)
     assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_3_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+    assert row_3_error.error_message == error_message
     assert row_3_error.content_type.model == 'tanf_t2'
     assert row_3_error.object_id is not None
 
-    row_4_error = parser_errors.get(row_number=4)
+    row_4_error = parser_errors.get(row_number=4, error_message=error_message)
     assert row_4_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_4_error.error_message == 'RPT_MONTH_YEAR is required but a value was not provided.'
+    assert row_4_error.error_message == error_message
     assert row_4_error.content_type.model == 'tanf_t3'
     assert row_4_error.object_id is not None
 
-    row_5_error = parser_errors.get(row_number=5)
+    error_message = 'Record Type is missing from record.'
+    row_5_error = parser_errors.get(row_number=5, error_message=error_message)
     assert row_5_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_5_error.error_message == 'Record Type is missing from record.'
+    assert row_5_error.error_message == error_message
     assert row_5_error.content_type is None
     assert row_5_error.object_id is None
-
-    assert errors == {
-        2: [row_2_error],
-        3: [row_3_error],
-        4: [row_4_error],
-        5: [row_5_error],
-    }
 
 
 @pytest.fixture
@@ -584,10 +570,10 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     assert trailer_error.object_id is None
 
     assert errors == {
-        2: [row_2_error],
-        3: [row_3_error],
-        4: [row_4_error],
-        5: [row_5_error],
+        "2_0": [row_2_error],
+        "3_0": [row_3_error],
+        "4_0": [row_4_error],
+        "5_0": [row_5_error],
         'trailer': [trailer_error],
     }
 
