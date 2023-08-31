@@ -5,9 +5,7 @@ from . import schema_defs
 from tdpservice.data_files.models import DataFile
 from datetime import datetime
 from pathlib import Path
-from .fields import EncryptedField
 from .fields import TransformField
-from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -64,6 +62,7 @@ def make_generate_parser_error(datafile, line_number):
         )
 
     return generate
+
 
 class SchemaManager:
     """Manages one or more RowSchema's and runs all parsers and validators."""

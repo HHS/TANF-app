@@ -91,6 +91,7 @@ class DataFileSummary(models.Model):
     def get_status(self):
         """Set and return the status field based on errors and models associated with datafile."""
         errors = ParserError.objects.filter(file=self.datafile)
+        [print(error) for error in errors]
 
         # excluding row-level pre-checks and trailer pre-checks.
         precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\

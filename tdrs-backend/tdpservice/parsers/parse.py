@@ -35,7 +35,8 @@ def parse_datafile(datafile):
 
     section_is_valid, section_error = validators.validate_header_section_matches_submission(
         datafile,
-        util.get_section_reference(program_type, section)
+        util.get_section_reference(program_type, section),
+        util.make_generate_parser_error(datafile, 1)
     )
 
     if not section_is_valid:
