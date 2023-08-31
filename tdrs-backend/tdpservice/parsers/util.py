@@ -6,9 +6,12 @@ from tdpservice.data_files.models import DataFile
 from datetime import datetime
 from pathlib import Path
 from .fields import EncryptedField
+from .fields import TransformField
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
     """Create a test DataFile instance with the given file attached."""
@@ -82,15 +85,14 @@ class SchemaManager:
         """Update whether schema fields are encrypted or not."""
         for schema in self.schemas:
             for field in schema.fields:
-                if type(field) == EncryptedField:
-                    field.is_encrypted = is_encrypted
+                if type(field) == TransformField and "is_encrypted" in field.kwargs:
+                    field.kwargs['is_encrypted'] = is_encrypted
 
 def contains_encrypted_indicator(line, encryption_field):
     """Determine if line contains encryption indicator."""
     if encryption_field is not None:
         return encryption_field.parse_value(line) == "E"
     return False
-
 
 def get_schema_options(program, section, query=None, model=None, model_name=None):
     """Centralized function to return the appropriate schema for a given program, section, and query.
@@ -245,7 +247,6 @@ def fiscal_to_calendar(year, fiscal_quarter):
     ind_qtr = array.index(int_qtr)  # get the index so we can easily wrap-around end of array
     return year, "Q{}".format(array[ind_qtr - 1])  # return the previous quarter
 
-
 def transform_to_months(quarter):
     """Return a list of months in a quarter."""
     match quarter:
@@ -259,6 +260,7 @@ def transform_to_months(quarter):
             return ["Oct", "Nov", "Dec"]
         case _:
             raise ValueError("Invalid quarter value.")
+
 
 def month_to_int(month):
     """Return the integer value of a month."""

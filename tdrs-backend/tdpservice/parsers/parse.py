@@ -66,7 +66,7 @@ def bulk_create_records(unsaved_records, line_number, header_count, batch_size=1
             return False, unsaved_records
     return True, unsaved_records
 
-def bulk_create_errors(unsaved_parser_errors, num_errors, batch_size=500, flush=False):
+def bulk_create_errors(unsaved_parser_errors, num_errors, batch_size=5000, flush=False):
     """Bulk create all ParserErrors."""
     if flush or (unsaved_parser_errors and num_errors >= batch_size):
         ParserError.objects.bulk_create(list(itertools.chain.from_iterable(unsaved_parser_errors.values())))
@@ -169,10 +169,8 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
             record_number += 1
             record, record_is_valid, record_errors = r
             if not record_is_valid:
-                line_errors = errors.get(line_number, {})
-                line_errors.update({record_number: record_errors})
-                errors.update({line_number: record_errors})
-                unsaved_parser_errors.update({line_number: record_errors})
+                errors.update({f"{line_number}_{i}": record_errors})
+                unsaved_parser_errors.update({f"{line_number}_{i}": record_errors})
                 num_errors += len(record_errors)
             if record:
                 s = schema_manager.schemas[i]

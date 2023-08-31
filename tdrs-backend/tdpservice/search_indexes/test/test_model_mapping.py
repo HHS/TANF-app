@@ -26,10 +26,10 @@ def test_can_create_and_index_tanf_t1_submission(test_datafile):
     submission.datafile = test_datafile
     submission.RecordType = record_num
     submission.RPT_MONTH_YEAR = 1
-    submission.CASE_NUMBER = 1
+    submission.CASE_NUMBER = "1"
     submission.COUNTY_FIPS_CODE = 1
-    submission.STRATUM = 1
-    submission.ZIP_CODE = 1
+    submission.STRATUM = "1"
+    submission.ZIP_CODE = "01"
     submission.FUNDING_STREAM = 1
     submission.DISPOSITION = 1
     submission.NEW_APPLICANT = 1
@@ -112,7 +112,7 @@ def test_can_create_and_index_tanf_t2_submission(test_datafile):
     submission.AID_AGED_BLIND = 1
     submission.RECEIVE_SSI = 1
     submission.MARITAL_STATUS = 1
-    submission.RELATIONSHIP_HOH = 1
+    submission.RELATIONSHIP_HOH = "01"
     submission.PARENT_WITH_MINOR_CHILD = 1
     submission.NEEDS_PREGNANT_WOMAN = 1
     submission.EDUCATION_LEVEL = 1
@@ -197,7 +197,7 @@ def test_can_create_and_index_tanf_t3_submission(test_datafile):
     submission.GENDER = 1
     submission.RECEIVE_NONSSA_BENEFITS = 1
     submission.RECEIVE_SSI = 1
-    submission.RELATIONSHIP_HOH = 1
+    submission.RELATIONSHIP_HOH = "01"
     submission.PARENT_MINOR_CHILD = 1
     submission.EDUCATION_LEVEL = 1
     submission.CITIZENSHIP_STATUS = 1
@@ -228,8 +228,8 @@ def test_can_create_and_index_tanf_t4_submission(test_datafile):
     submission.RPT_MONTH_YEAR = 1
     submission.CASE_NUMBER = '1'
     submission.COUNTY_FIPS_CODE = '1'
-    submission.STRATUM = 1
-    submission.ZIP_CODE = '1'
+    submission.STRATUM = "1"
+    submission.ZIP_CODE = '01'
     submission.DISPOSITION = 1
     submission.CLOSURE_REASON = "1"
     submission.REC_SUB_HOUSING = 1
@@ -276,7 +276,7 @@ def test_can_create_and_index_tanf_t5_submission(test_datafile):
     submission.REC_AID_AGED_BLIND = 1
     submission.RECEIVE_SSI = 1
     submission.MARITAL_STATUS = 1
-    submission.RELATIONSHIP_HOH = "1"
+    submission.RELATIONSHIP_HOH = "01"
     submission.PARENT_WITH_MINOR_CHILD = 1
     submission.NEEDS_PREGNANT_WOMAN = 1
     submission.EDUCATION_LEVEL = "1"
@@ -307,25 +307,24 @@ def test_can_create_and_index_tanf_t6_submission(test_datafile):
 
     submission = models.tanf.TANF_T6()
     submission.datafile = test_datafile
-    submission.record = record_num
-    submission.rpt_month_year = 1
-    submission.fips_code = '1'
-    submission.calendar_quarter = 1
-    submission.applications = 1
-    submission.approved = 1
-    submission.denied = 1
-    submission.assistance = 1
-    submission.families = 1
-    submission.num_2_parents = 1
-    submission.num_1_parents = 1
-    submission.num_no_parents = 1
-    submission.recipients = 1
-    submission.adult_recipients = 1
-    submission.child_recipients = 1
-    submission.noncustodials = 1
-    submission.births = 1
-    submission.outwedlock_births = 1
-    submission.closed_cases = 1
+    submission.RecordType = record_num
+    submission.CALENDAR_QUARTER = 1
+    submission.RPT_MONTH_YEAR = 1
+    submission.NUM_APPLICATIONS = 1
+    submission.NUM_APPROVED = 1
+    submission.NUM_DENIED = 1
+    submission.ASSISTANCE = 1
+    submission.NUM_FAMILIES = 1
+    submission.NUM_2_PARENTS = 1
+    submission.NUM_1_PARENTS = 1
+    submission.NUM_NO_PARENTS = 1
+    submission.NUM_RECIPIENTS = 1
+    submission.NUM_ADULT_RECIPIENTS = 1
+    submission.NUM_CHILD_RECIPIENTS = 1
+    submission.NUM_NONCUSTODIALS = 1
+    submission.NUM_BIRTHS = 1
+    submission.NUM_OUTWEDLOCK_BIRTHS = 1
+    submission.NUM_CLOSED_CASES = 1
 
     submission.save()
 
@@ -333,7 +332,7 @@ def test_can_create_and_index_tanf_t6_submission(test_datafile):
 
     search = documents.tanf.TANF_T6DataSubmissionDocument.search().query(
         'match',
-        record=record_num
+        RecordType=record_num
     )
     response = search.execute()
 
@@ -400,10 +399,10 @@ def test_can_create_and_map_ssp_m1_submission():
     submission = models.ssp.SSP_M1.objects.create(
         RecordType=record_num,
         RPT_MONTH_YEAR=1,
-        CASE_NUMBER=1,
+        CASE_NUMBER="1",
         COUNTY_FIPS_CODE=1,
-        STRATUM=1,
-        ZIP_CODE=1,
+        STRATUM="1",
+        ZIP_CODE="01",
         # FUNDING_STREAM=1,
         DISPOSITION=1,
         # NEW_APPLICANT=1,
@@ -485,7 +484,7 @@ def test_can_create_and_index_ssp_m2_submission():
         AID_AGED_BLIND=1,
         RECEIVE_SSI=1,
         MARITAL_STATUS=1,
-        RELATIONSHIP_HOH=1,
+        RELATIONSHIP_HOH="01",
         PARENT_MINOR_CHILD=1,
         NEEDS_PREGNANT_WOMAN=1,
         EDUCATION_LEVEL=1,
@@ -570,7 +569,7 @@ def test_can_create_and_index_ssp_m3_submission():
         GENDER=1,
         RECEIVE_NONSSI_BENEFITS=1,
         RECEIVE_SSI=1,
-        RELATIONSHIP_HOH=1,
+        RELATIONSHIP_HOH="01",
         PARENT_MINOR_CHILD=1,
         EDUCATION_LEVEL=1,
         CITIZENSHIP_STATUS=1,

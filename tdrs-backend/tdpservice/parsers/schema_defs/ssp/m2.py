@@ -2,7 +2,8 @@
 
 
 from ...util import SchemaManager
-from ...fields import EncryptedField, Field, ssp_ssn_decryption_func
+from ...transforms import ssp_ssn_decryption_func
+from ...fields import TransformField, Field
 from ...row_schema import RowSchema
 from ... import validators
 from tdpservice.search_indexes.models.ssp import SSP_M2
@@ -29,8 +30,8 @@ m2 = SchemaManager(
                     required=True, validators=[]),
               Field(item="28", name='DATE_OF_BIRTH', type='string', startIndex=21, endIndex=29,
                     required=True, validators=[]),
-              EncryptedField(decryption_func=ssp_ssn_decryption_func, item="29", name='SSN', type='string',
-                             startIndex=29, endIndex=38, required=True, validators=[]),
+              TransformField(transform_func=ssp_ssn_decryption_func, item="29", name='SSN', type='string',
+                             startIndex=29, endIndex=38, required=True, validators=[], is_encrypted=False),
               Field(item="30A", name='RACE_HISPANIC', type='number', startIndex=38, endIndex=39, required=True,
                     validators=[]),
               Field(item="30B", name='RACE_AMER_INDIAN', type='number', startIndex=39, endIndex=40,

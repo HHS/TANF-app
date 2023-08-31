@@ -24,7 +24,7 @@ m1 = SchemaManager(
                     required=True, validators=[]),
               Field(item="2", name='COUNTY_FIPS_CODE', type='string', startIndex=19, endIndex=22,
                     required=True, validators=[]),
-              Field(item="4", name='STRATUM', type='number', startIndex=22, endIndex=24,
+              Field(item="4", name='STRATUM', type='string', startIndex=22, endIndex=24,
                     required=True, validators=[]),
               Field(item="6", name='ZIP_CODE', type='string', startIndex=24, endIndex=29,
                     required=True, validators=[]),

@@ -34,7 +34,7 @@ class SSP_M1(models.Model):
         null=True,
         blank=False
     )
-    STRATUM = models.IntegerField(null=True, blank=False)
+    STRATUM = models.CharField(max_length=2, null=True, blank=False)
     ZIP_CODE = models.CharField(max_length=5, null=True, blank=False)
     # FUNDING_STREAM = models.IntegerField(null=True, blank=False)
     DISPOSITION = models.IntegerField(null=True, blank=False)
