@@ -3,7 +3,8 @@ from .models import ParserError
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
 from pathlib import Path
-from .fields import EncryptedField
+from .fields import TransformField
+from datetime import datetime
 
 def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
     """Create a test DataFile instance with the given file attached."""
@@ -78,11 +79,29 @@ class SchemaManager:
         """Update whether schema fields are encrypted or not."""
         for schema in self.schemas:
             for field in schema.fields:
-                if type(field) == EncryptedField:
-                    field.is_encrypted = is_encrypted
+                if type(field) == TransformField and "is_encrypted" in field.kwargs:
+                    field.kwargs['is_encrypted'] = is_encrypted
 
 def contains_encrypted_indicator(line, encryption_field):
     """Determine if line contains encryption indicator."""
     if encryption_field is not None:
         return encryption_field.parse_value(line) == "E"
     return False
+
+def month_to_int(month):
+    """Return the integer value of a month."""
+    return datetime.strptime(month, '%b').strftime('%m')
+
+def transform_to_months(quarter):
+    """Return a list of months in a quarter."""
+    match quarter:
+        case "Q1":
+            return ["Jan", "Feb", "Mar"]
+        case "Q2":
+            return ["Apr", "May", "Jun"]
+        case "Q3":
+            return ["Jul", "Aug", "Sep"]
+        case "Q4":
+            return ["Oct", "Nov", "Dec"]
+        case _:
+            raise ValueError("Invalid quarter value.")

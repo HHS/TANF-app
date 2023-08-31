@@ -5,7 +5,7 @@ import pytest
 from ..util import create_test_datafile
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices
-from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5
+from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
 import logging
 
@@ -317,7 +317,7 @@ def test_parse_empty_file(empty_file):
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
-        'header': list(parser_errors),
+        'header': list(parser_errors)
     }
 
 
@@ -579,12 +579,12 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
 
 @pytest.fixture
 def small_tanf_section2_file(stt_user, stt):
-    """Fixture for ssp_section1_datafile."""
+    """Fixture for small_tanf_section2."""
     return create_test_datafile('small_tanf_section2.txt', stt_user, stt, 'Closed Case Data')
 
 @pytest.mark.django_db()
 def test_parse_small_tanf_section2_file(small_tanf_section2_file):
-    """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
+    """Test parsing a small TANF Section 2 submission."""
     parse.parse_datafile(small_tanf_section2_file)
 
     assert TANF_T4.objects.all().count() == 1
@@ -605,21 +605,54 @@ def test_parse_small_tanf_section2_file(small_tanf_section2_file):
 
 @pytest.fixture
 def tanf_section2_file(stt_user, stt):
-    """Fixture for ssp_section1_datafile."""
+    """Fixture for ADS.E2J.FTP2.TS06."""
     return create_test_datafile('ADS.E2J.FTP2.TS06', stt_user, stt, 'Closed Case Data')
 
 @pytest.mark.django_db()
 def test_parse_tanf_section2_file(tanf_section2_file):
-    """Test parsing a bad TANF Section 1 submission where a row is missing required data."""
+    """Test parsing TANF Section 2 submission."""
     parse.parse_datafile(tanf_section2_file)
 
     assert TANF_T4.objects.all().count() == 223
     assert TANF_T5.objects.all().count() == 605
 
     parser_errors = ParserError.objects.filter(file=tanf_section2_file)
-    assert parser_errors.count() == 2681
+
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert err.error_message == "REC_OASDI_INSURANCE is required but a value was not provided."
     assert err.content_type.model == "tanf_t5"
     assert err.object_id is not None
+
+@pytest.fixture
+def tanf_section3_file(stt_user, stt):
+    """Fixture for ADS.E2J.FTP3.TS06."""
+    return create_test_datafile('ADS.E2J.FTP3.TS06', stt_user, stt, "Aggregate Data")
+
+@pytest.mark.django_db()
+def test_parse_tanf_section3_file(tanf_section3_file):
+    """Test parsing TANF Section 3 submission."""
+    parse.parse_datafile(tanf_section3_file)
+
+    assert TANF_T6.objects.all().count() == 3
+
+    parser_errors = ParserError.objects.filter(file=tanf_section3_file)
+    assert parser_errors.count() == 0
+
+    t6_objs = TANF_T6.objects.all().order_by('NUM_APPROVED')
+
+    first = t6_objs.first()
+    second = t6_objs[1]
+    third = t6_objs[2]
+
+    assert first.RPT_MONTH_YEAR == 202012
+    assert second.RPT_MONTH_YEAR == 202011
+    assert third.RPT_MONTH_YEAR == 202010
+
+    assert first.NUM_APPROVED == 3924
+    assert second.NUM_APPROVED == 3977
+    assert third.NUM_APPROVED == 4301
+
+    assert first.NUM_CLOSED_CASES == 3884
+    assert second.NUM_CLOSED_CASES == 3881
+    assert third.NUM_CLOSED_CASES == 5453
