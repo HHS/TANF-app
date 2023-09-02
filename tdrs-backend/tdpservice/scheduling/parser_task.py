@@ -4,6 +4,9 @@ from celery import shared_task
 import logging
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.parse import parse_datafile
+from tdpservice.parsers.models import DataFileSummary
+from tdpservice.parsers.util import case_aggregates_by_month
+
 
 logger = logging.getLogger(__name__)
 
@@ -17,5 +20,10 @@ def parse(data_file_id):
     data_file = DataFile.objects.get(id=data_file_id)
 
     logger.info(f"DataFile parsing started for file {data_file.filename}")
+
+    dfs = DataFileSummary.objects.create(datafile=data_file, status=DataFileSummary.Status.PENDING)
     errors = parse_datafile(data_file)
-    logger.info(f"DataFile parsing finished with {len(errors)} errors: {errors}")
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
+    dfs.save()
+    logger.info(f"DataFile parsing finished with status {dfs.status} and {len(errors)} errors: {errors}")

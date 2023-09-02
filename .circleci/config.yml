@@ -82,5 +82,5 @@ workflows:
                 - develop
                 - main
                 - master
-                - /^release.*/      
-      
+                - /^release.*/
+

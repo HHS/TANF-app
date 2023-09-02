@@ -80,7 +80,7 @@ services:
     build: .
     command: >
       bash -c "./wait_for_services.sh &&
-               ./gunicorn_start.sh && 
+               ./gunicorn_start.sh &&
                celery -A tdpservice.settings worker -l info"
     ports:
       - "5555:5555"
@@ -106,5 +106,5 @@ volumes:
 
 networks:
   default:
-    external:
-      name: external-net
+    name: external-net
+    external: true
