@@ -4,6 +4,26 @@ from django.contrib import admin
 from ..core.utils import ReadOnlyAdminMixin
 from .models import DataFile, LegacyFileTransfer
 
+class DataFileSummaryListFilter(admin.SimpleListFilter):
+    """Admin class filter for file status (accepted, rejected) for datafile model"""
+
+    title = 'status'
+    parameter_name = 'status'
+
+    def lookups(self, request, model_admin):
+        """Return a list of tuples."""
+        return [
+            ('Accepted', 'Accepted'),
+            ('Rejected', 'Rejected'),
+        ]
+    
+    def queryset(self, request, queryset):
+        """Return a queryset."""
+        if self.value():
+            return queryset.filter(datafilesummary__status=self.value())
+        else:
+            return queryset
+
 
 @admin.register(DataFile)
 class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
@@ -25,6 +45,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'user',
         'year',
         'version',
+        DataFileSummaryListFilter
     ]
 
 @admin.register(LegacyFileTransfer)
