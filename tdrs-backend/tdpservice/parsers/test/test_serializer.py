@@ -57,5 +57,4 @@ def test_serializer_with_no_context(parser_error_instance):
             parser_error_instance,
             data={},
             partial=True)
-    print(e.value)
     assert str(e.value) == "'context'"
