@@ -2,7 +2,7 @@
 
 import pytest
 from .. import validators
-from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory
+from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
 
 
 def test_or_validators():
@@ -69,10 +69,10 @@ def test_validate__FAM_AFF__SSN():
     result = validators.validate__FAM_AFF__SSN()(instance)
     assert result == (True, None)
 
-def test_month_year_yearIsLargerThan():
-    """Test `month_year_yearIsLargerThan` gives a valid result."""
+def test_dateYearIsLargerThan():
+    """Test `dateYearIsLargerThan` gives a valid result."""
     value = "199806"
-    validator = validators.month_year_yearIsLargerThan(1999)
+    validator = validators.dateYearIsLargerThan(1999)
     result = validator(value)
     assert result == (False, '1998 year must be larger than 1999.')
 
@@ -156,19 +156,19 @@ def test_between_returns_invalid():
     assert error == '47 is not between 48 and 400.'
 
 
-def test_month_year_monthIsValid_returns_valid():
-    """Test `month_year_monthIsValid` gives a valid result."""
+def test_date_month_is_valid_returns_valid():
+    """Test `dateMonthIsValid` gives a valid result."""
     value = '20191027'
-    validator = validators.month_year_monthIsValid()
+    validator = validators.dateMonthIsValid()
     is_valid, error = validator(value)
     assert is_valid is True
     assert error is None
 
 
-def test_month_year_monthIsValid_returns_invalid():
-    """Test `month_year_monthIsValid` gives an invalid result."""
+def test_date_month_is_valid_returns_invalid():
+    """Test `dateMonthIsValid` gives an invalid result."""
     value = '20191327'
-    validator = validators.month_year_monthIsValid()
+    validator = validators.dateMonthIsValid()
     is_valid, error = validator(value)
     assert is_valid is False
     assert error == '13 is not a valid month.'
@@ -294,9 +294,8 @@ def test_notEmpty_returns_invalid_substring():
     assert is_valid is False
     assert error == "111  333 contains blanks between positions 3 and 5."
 
-
 @pytest.mark.usefixtures('db')
-class TanfSection1TestCat3ValidatorsBase:
+class TestCat3ValidatorsBase:
     """A base test class for tests that evaluate category three validators."""
 
     @pytest.fixture
@@ -308,7 +307,7 @@ class TanfSection1TestCat3ValidatorsBase:
         raise NotImplementedError()
 
 
-class TestT1Cat3Validators(TanfSection1TestCat3ValidatorsBase):
+class TestT1Cat3Validators(TestCat3ValidatorsBase):
     """Test category three validators for TANF T1 records."""
 
     @pytest.fixture
@@ -463,7 +462,7 @@ class TestT1Cat3Validators(TanfSection1TestCat3ValidatorsBase):
                           "'TRANSP_AMOUNT', 'TRANSITION_SERVICES_AMOUNT', 'OTHER_AMOUNT') is not larger than 0.")
 
 
-class TestT2Cat3Validators(TanfSection1TestCat3ValidatorsBase):
+class TestT2Cat3Validators(TestCat3ValidatorsBase):
     """Test category three validators for TANF T2 records."""
 
     @pytest.fixture
@@ -527,8 +526,8 @@ class TestT2Cat3Validators(TanfSection1TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 3
         record.MARITAL_STATUS = 0
         result = val(record)
-        assert result == (False, 'if FAMILY_AFFILIATION :3 validator1 passed then MARITAL_STATUS 0 is not larger ' +
-                          'or equal to 1 and smaller or equal to 5.')
+        assert result == (False, 'if FAMILY_AFFILIATION :3 validator1 passed then MARITAL_STATUS 0 is not larger or ' +
+                          'equal to 1 and smaller or equal to 5.')
 
     def test_validate_parent_with_minor(self, record):
         """Test cat3 validator for parent with a minor child."""
@@ -541,8 +540,8 @@ class TestT2Cat3Validators(TanfSection1TestCat3ValidatorsBase):
 
         record.PARENT_WITH_MINOR_CHILD = 0
         result = val(record)
-        assert result == (False, 'if FAMILY_AFFILIATION :1 validator1 passed then PARENT_WITH_MINOR_CHILD 0 is ' +
-                          'not larger or equal to 1 and smaller or equal to 3.')
+        assert result == (False, 'if FAMILY_AFFILIATION :1 validator1 passed then PARENT_WITH_MINOR_CHILD 0 is not ' +
+                          'larger or equal to 1 and smaller or equal to 3.')
 
     def test_validate_education_level(self, record):
         """Test cat3 validator for education level."""
@@ -624,8 +623,8 @@ class TestT2Cat3Validators(TanfSection1TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 3
         record.EMPLOYMENT_STATUS = 4
         result = val(record)
-        assert result == (False, 'if FAMILY_AFFILIATION :3 validator1 passed then EMPLOYMENT_STATUS 4 is not ' +
-                          'larger or equal to 1 and smaller or equal to 3.')
+        assert result == (False, 'if FAMILY_AFFILIATION :3 validator1 passed then EMPLOYMENT_STATUS 4 is not larger ' +
+                          'or equal to 1 and smaller or equal to 3.')
 
     def test_validate_work_eligible_indicator(self, record):
         """Test cat3 validator for work eligibility."""
@@ -675,7 +674,7 @@ class TestT2Cat3Validators(TanfSection1TestCat3ValidatorsBase):
                           + 'WORK_PART_STATUS 99 matches 99.')
 
 
-class TestT3Cat3Validators(TanfSection1TestCat3ValidatorsBase):
+class TestT3Cat3Validators(TestCat3ValidatorsBase):
     """Test category three validators for TANF T3 records."""
 
     @pytest.fixture
@@ -778,3 +777,250 @@ class TestT3Cat3Validators(TanfSection1TestCat3ValidatorsBase):
         result = val(record)
         assert result == (False, 'if FAMILY_AFFILIATION :2 validator1 passed then CITIZENSHIP_STATUS 3 ' +
                           'is not in (1, 2, 9).')
+
+
+class TestT5Cat3Validators(TestCat3ValidatorsBase):
+    """Test category three validators for TANF T5 records."""
+
+    @pytest.fixture
+    def record(self):
+        """Override default record with TANF T5 record."""
+        return TanfT5Factory.create()
+
+    def test_validate_ssn(self, record):
+        """Test cat3 validator for SSN."""
+        val = validators.if_then_validator(
+                  condition_field='FAMILY_AFFILIATION', condition_function=validators.notMatches(1),
+                  result_field='SSN', result_function=validators.isNumber()
+                  )
+
+        result = val(record)
+        assert result == (True, None)
+
+        record.SSN = "abc"
+        record.FAMILY_AFFILIATION = 2
+
+        result = val(record)
+        assert result == (False, 'if FAMILY_AFFILIATION :2 validator1 passed then SSN abc is not a number.')
+
+    def test_validate_ssn_citizenship(self, record):
+        """Test cat3 validator for SSN/citizenship."""
+        val = validators.validate__FAM_AFF__SSN()
+
+        result = val(record)
+        assert result == (True, None)
+
+        record.FAMILY_AFFILIATION = 2
+        record.SSN = "000000000"
+
+        result = val(record)
+        assert result == (False, "If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, then SSN " +
+                          "!= 000000000 -- 999999999.")
+
+    def test_validate_race_ethnicity(self, record):
+        """Test cat3 validator for race/ethnicity."""
+        races = ["RACE_HISPANIC", "RACE_AMER_INDIAN", "RACE_ASIAN", "RACE_BLACK", "RACE_HAWAIIAN", "RACE_WHITE"]
+        record.FAMILY_AFFILIATION = 1
+        for race in races:
+            val = validators.if_then_validator(
+                    condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+                    result_field='RACE_HISPANIC', result_function=validators.isInLimits(1, 2)
+                  )
+            result = val(record)
+            assert result == (True, None)
+
+        record.FAMILY_AFFILIATION = 1
+        record.RACE_HISPANIC = 0
+        record.RACE_AMER_INDIAN = 0
+        record.RACE_ASIAN = 0
+        record.RACE_BLACK = 0
+        record.RACE_HAWAIIAN = 0
+        record.RACE_WHITE = 0
+        for race in races:
+            val = validators.if_then_validator(
+                    condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+                    result_field=race, result_function=validators.isInLimits(1, 2)
+                  )
+            result = val(record)
+            assert result == (False, f'if FAMILY_AFFILIATION :1 validator1 passed then {race} 0 is not larger or ' +
+                              'equal to 1 and smaller or equal to 2.')
+
+    def test_validate_marital_status(self, record):
+        """Test cat3 validator for marital status."""
+        val = validators.if_then_validator(
+                    condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+                    result_field='MARITAL_STATUS', result_function=validators.isInLimits(0, 5)
+                  )
+
+        record.FAMILY_AFFILIATION = 0
+        result = val(record)
+        assert result == (True, None)
+
+        record.FAMILY_AFFILIATION = 2
+        record.MARITAL_STATUS = 6
+
+        result = val(record)
+        assert result == (False, 'if FAMILY_AFFILIATION :2 validator1 passed then MARITAL_STATUS 6 is not larger or ' +
+                          'equal to 0 and smaller or equal to 5.')
+
+    def test_validate_parent_minor(self, record):
+        """Test cat3 validator for parent with minor."""
+        val = validators.if_then_validator(
+                    condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 2),
+                    result_field='PARENT_MINOR_CHILD', result_function=validators.isInLimits(1, 3)
+                  )
+
+        record.FAMILY_AFFILIATION = 0
+        result = val(record)
+        assert result == (True, None)
+
+        record.FAMILY_AFFILIATION = 2
+        record.PARENT_MINOR_CHILD = 0
+
+        result = val(record)
+        assert result == (False, 'if FAMILY_AFFILIATION :2 validator1 passed then PARENT_MINOR_CHILD 0 is not larger ' +
+                          'or equal to 1 and smaller or equal to 3.')
+
+    def test_validate_education(self, record):
+        """Test cat3 validator for education level."""
+        val = validators.if_then_validator(
+                  condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+                  result_field='EDUCATION_LEVEL', result_function=validators.or_validators(
+                      validators.isInStringRange(1, 16),
+                      validators.isInStringRange(98, 99)
+                      )
+                  )
+
+        record.FAMILY_AFFILIATION = 0
+        result = val(record)
+        assert result == (True, None)
+
+        record.FAMILY_AFFILIATION = 2
+        record.EDUCATION_LEVEL = "0"
+
+        result = val(record)
+        assert result == (False, "if FAMILY_AFFILIATION :2 validator1 passed then EDUCATION_LEVEL 0 is not in range " +
+                          "[1, 16]. or 0 is not in range [98, 99].")
+
+    def test_validate_citizenship_status(self, record):
+        """Test cat3 validator for citizenship status."""
+        val = validators.if_then_validator(
+                    condition_field='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+                    result_field='CITIZENSHIP_STATUS', result_function=validators.isInLimits(1, 2)
+                  )
+
+        record.FAMILY_AFFILIATION = 0
+        result = val(record)
+        assert result == (True, None)
+
+        record.FAMILY_AFFILIATION = 1
+        record.CITIZENSHIP_STATUS = 0
+
+        result = val(record)
+        assert result == (False, 'if FAMILY_AFFILIATION :1 validator1 passed then CITIZENSHIP_STATUS 0 is not larger ' +
+                          'or equal to 1 and smaller or equal to 2.')
+
+    def test_validate_hoh_fed_time(self, record):
+        """Test cat3 validator for federal disability."""
+        val = validators.validate__FAM_AFF__HOH__Count_Fed_Time()
+
+        record.FAMILY_AFFILIATION = 0
+        result = val(record)
+        assert result == (True, None)
+
+        record.FAMILY_AFFILIATION = 1
+        record.RELATIONSHIP_HOH = 1
+        record.COUNTABLE_MONTH_FED_TIME = 0
+
+        result = val(record)
+        assert result == (False, 'If FAMILY_AFFILIATION == 2 and COUNTABLE_MONTH_FED_TIME== 1 or 2, then ' +
+                          'COUNTABLE_MONTH_FED_TIME > 1.')
+
+    def test_validate_oasdi_insurance(self, record):
+        """Test cat3 validator for OASDI insurance."""
+        val = validators.if_then_validator(
+                    condition_field='DATE_OF_BIRTH', condition_function=validators.olderThan(18),
+                    result_field='REC_OASDI_INSURANCE', result_function=validators.isInLimits(1, 2)
+                  )
+
+        record.DATE_OF_BIRTH = 0
+        result = val(record)
+        assert result == (True, None)
+
+        record.DATE_OF_BIRTH = 200001
+        record.REC_OASDI_INSURANCE = 0
+
+        result = val(record)
+        assert result == (False, 'if DATE_OF_BIRTH :200001 validator1 passed then REC_OASDI_INSURANCE 0 is not ' +
+                          'larger or equal to 1 and smaller or equal to 2.')
+
+    def test_validate_federal_disability(self, record):
+        """Test cat3 validator for federal disability."""
+        val = validators.if_then_validator(
+                    condition_field='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+                    result_field='REC_FEDERAL_DISABILITY', result_function=validators.isInLimits(1, 2)
+                  )
+
+        record.FAMILY_AFFILIATION = 0
+        result = val(record)
+        assert result == (True, None)
+
+        record.FAMILY_AFFILIATION = 1
+        record.REC_FEDERAL_DISABILITY = 0
+
+        result = val(record)
+        assert result == (False, 'if FAMILY_AFFILIATION :1 validator1 passed then REC_FEDERAL_DISABILITY 0 is not ' +
+                          'larger or equal to 1 and smaller or equal to 2.')
+
+
+class TestT6Cat3Validators(TestCat3ValidatorsBase):
+    """Test category three validators for TANF T6 records."""
+
+    @pytest.fixture
+    def record(self):
+        """Override default record with TANF T6 record."""
+        return TanfT6Factory.create()
+
+    def test_sum_of_applications(self, record):
+        """Test cat3 validator for sum of applications."""
+        val = validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"])
+
+        record.NUM_APPLICATIONS = 2
+        result = val(record)
+
+        assert result == (True, None)
+
+        record.NUM_APPLICATIONS = 1
+        result = val(record)
+
+        assert result == (False, "The sum of ['NUM_APPROVED', 'NUM_DENIED'] does not equal NUM_APPLICATIONS.")
+
+    def test_sum_of_families(self, record):
+        """Test cat3 validator for sum of families."""
+        val = validators.sumIsEqual("NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"])
+
+        record.NUM_FAMILIES = 3
+        result = val(record)
+
+        assert result == (True, None)
+
+        record.NUM_FAMILIES = 1
+        result = val(record)
+
+        assert result == (False, "The sum of ['NUM_2_PARENTS', 'NUM_1_PARENTS', 'NUM_NO_PARENTS'] does not equal " +
+                          "NUM_FAMILIES.")
+
+    def test_sum_of_recipients(self, record):
+        """Test cat3 validator for sum of recipients."""
+        val = validators.sumIsEqual("NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"])
+
+        record.NUM_RECIPIENTS = 2
+        result = val(record)
+
+        assert result == (True, None)
+
+        record.NUM_RECIPIENTS = 1
+        result = val(record)
+
+        assert result == (False, "The sum of ['NUM_ADULT_RECIPIENTS', 'NUM_CHILD_RECIPIENTS'] does not equal " +
+                          "NUM_RECIPIENTS.")

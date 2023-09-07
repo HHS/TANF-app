@@ -3,6 +3,7 @@
 from .util import generate_parser_error
 from .models import ParserErrorCategoryChoices
 from tdpservice.data_files.models import DataFile
+from datetime import date
 
 # higher order validator func
 
@@ -53,6 +54,19 @@ def if_then_validator(condition_field, condition_function,
                                       else "validator2 passed")) if not validator2_result[0] else None)
 
     return lambda value: if_then_validator_func(value)
+
+def sumIsEqual(condition_field, sum_fields=[]):
+    """Validate that the sum of the sum_fields equals the condition_field."""
+    def sumIsEqualFunc(value):
+        sum = 0
+        for field in sum_fields:
+            sum += value[field] if type(value) is dict else getattr(value, field)
+
+        condition_val = value[condition_field] if type(value) is dict else getattr(value, condition_field)
+        return (True, None) if sum == condition_val else (False,
+                                                          f"The sum of {sum_fields} does not equal {condition_field}.")
+
+    return lambda value: sumIsEqualFunc(value)
 
 def sumIsLarger(fields, val):
     """Validate that the sum of the fields is larger than val."""
@@ -225,23 +239,51 @@ def isInLimits(LowerBound, UpperBound):
         lambda value: f'{value} is not larger or equal to {LowerBound} and smaller or equal to {UpperBound}.'
     )
 
-
 # custom validators
 
-def month_year_monthIsValid():
+def dateMonthIsValid():
     """Validate that in a monthyear combination, the month is a valid month."""
     return make_validator(
         lambda value: int(str(value)[4:6]) in range(1, 13),
         lambda value: f'{str(value)[4:6]} is not a valid month.'
     )
 
+def olderThan(min_age):
+    """Validate that value is larger than min_age."""
+    return make_validator(
+        lambda value: date.today().year - int(str(value)[:4]) > min_age,
+        lambda value: f'{date.today().year - int(str(value)[:4])} is not larger than {min_age}.'
+    )
 
-def month_year_yearIsLargerThan(year):
+def dateYearIsLargerThan(year):
     """Validate that in a monthyear combination, the year is larger than the given year."""
     return make_validator(
         lambda value: int(str(value)[:4]) > year,
         lambda value: f'{str(value)[:4]} year must be larger than {year}.'
     )
+
+def quarterIsValid():
+    """Validate in a year quarter combination, the quarter is valid."""
+    return make_validator(
+        lambda value: int(str(value)[-1]) > 0 and int(str(value)[-1]) < 5,
+        lambda value: f'{str(value)[-1]} is not a valid quarter.'
+    )
+
+def validateSSN():
+    """Validate that SSN value is not a repeating digit."""
+    options = [str(i)*9 for i in range(0, 10)]
+    return make_validator(
+        lambda value: value not in options,
+        lambda value: f'{value} is in {options}.'
+    )
+
+def validateRace():
+    """Validate race."""
+    return make_validator(
+        lambda value: value >= 0 and value <= 2,
+        lambda value: f'{value} is not greater than or equal to 0 or smaller than or equal to 1.'
+    )
+
 
 # outlier validators
 def validate__FAM_AFF__SSN():
@@ -279,6 +321,27 @@ def validate__FAM_AFF__HOH__Fed_Time():
                 return (False,
                         'If FAMILY_AFFILIATION == 2 and MONTHS_FED_TIME_LIMIT== 1 or 2, then MONTHS_FED_TIME_LIMIT > 1.'
                         )
+            else:
+                return (True, None)
+        else:
+            return (True, None)
+    return lambda instance: validate(instance)
+
+def validate__FAM_AFF__HOH__Count_Fed_Time():
+    """If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH== 1 or 2, then COUNTABLE_MONTH_FED_TIME >= 1."""
+    # value is instance
+    def validate(instance):
+        FAMILY_AFFILIATION = instance['FAMILY_AFFILIATION'] if type(instance) is dict else \
+            getattr(instance, 'FAMILY_AFFILIATION')
+        RELATIONSHIP_HOH = instance['RELATIONSHIP_HOH'] if type(instance) is dict else \
+            getattr(instance, 'RELATIONSHIP_HOH')
+        RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
+        COUNTABLE_MONTH_FED_TIME = instance['COUNTABLE_MONTH_FED_TIME'] if type(instance) is dict else \
+            getattr(instance, 'COUNTABLE_MONTH_FED_TIME')
+        if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
+            if int(COUNTABLE_MONTH_FED_TIME) < 1:
+                return (False, 'If FAMILY_AFFILIATION == 2 and COUNTABLE_MONTH_FED_TIME== 1 or 2, then ' +
+                        'COUNTABLE_MONTH_FED_TIME > 1.')
             else:
                 return (True, None)
         else:

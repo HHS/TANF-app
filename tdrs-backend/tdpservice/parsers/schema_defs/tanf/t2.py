@@ -2,7 +2,8 @@
 
 
 from ...util import SchemaManager
-from ...fields import EncryptedField, Field, tanf_ssn_decryption_func
+from ...transforms import tanf_ssn_decryption_func
+from ...fields import TransformField, Field
 from ...row_schema import RowSchema
 from ... import validators
 from tdpservice.search_indexes.models.tanf import TANF_T2
@@ -18,31 +19,31 @@ t2 = SchemaManager(schemas=[
                 validators.validate__FAM_AFF__SSN(),
                 validators.if_then_validator(
                     condition_field='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                    result_field='SSN', result_function=validators.notOneOf([str(i)*9 for i in range(0, 9)]),
+                    result_field='SSN', result_function=validators.validateSSN(),
                 ),
                 validators.if_then_validator(
                     condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                    result_field='RACE_HISPANIC', result_function=validators.oneOf((1, 2)),
+                    result_field='RACE_HISPANIC', result_function=validators.isInLimits(1, 2),
                 ),
                 validators.if_then_validator(
                         condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field='RACE_AMER_INDIAN', result_function=validators.oneOf((1, 2)),
+                        result_field='RACE_AMER_INDIAN', result_function=validators.isInLimits(1, 2),
                     ),
                 validators.if_then_validator(
                         condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field='RACE_ASIAN', result_function=validators.oneOf((1, 2)),
+                        result_field='RACE_ASIAN', result_function=validators.isInLimits(1, 2),
                     ),
                 validators.if_then_validator(
                         condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field='RACE_BLACK', result_function=validators.oneOf((1, 2)),
+                        result_field='RACE_BLACK', result_function=validators.isInLimits(1, 2),
                     ),
                 validators.if_then_validator(
                         condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field='RACE_HAWAIIAN', result_function=validators.oneOf((1, 2)),
+                        result_field='RACE_HAWAIIAN', result_function=validators.isInLimits(1, 2),
                     ),
                 validators.if_then_validator(
                         condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field='RACE_WHITE', result_function=validators.oneOf((1, 2)),
+                        result_field='RACE_WHITE', result_function=validators.isInLimits(1, 2),
                     ),
                 validators.if_then_validator(
                         condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
@@ -94,23 +95,20 @@ t2 = SchemaManager(schemas=[
             Field(item="0", name='RecordType', type='string', startIndex=0, endIndex=2,
                   required=True, validators=[]),
             Field(item="4", name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8,
-                  required=True, validators=[validators.month_year_yearIsLargerThan(1998),
-                                             validators.month_year_monthIsValid(),
+                  required=True, validators=[validators.dateYearIsLargerThan(1998),
+                                             validators.dateMonthIsValid(),
                                              ]),
             Field(item="6", name='CASE_NUMBER', type='string', startIndex=8, endIndex=19,
-                  required=True, validators=[validators.isAlphaNumeric(),
-                                             validators.notMatches('_'*11),
-                                             validators.notEmpty(),
-                                             ]),
+                  required=True, validators=[validators.isAlphaNumeric()]),
             Field(item="30", name='FAMILY_AFFILIATION', type='number', startIndex=19, endIndex=20,
                   required=True, validators=[validators.oneOf([1, 2, 3, 5])]),
             Field(item="31", name='NONCUSTODIAL_PARENT', type='number', startIndex=20, endIndex=21, required=True,
                   validators=[validators.oneOf([1, 2])]),
             Field(item="32", name='DATE_OF_BIRTH', type='number', startIndex=21, endIndex=29, required=True,
                   validators=[validators.isLargerThan(0),]),
-            EncryptedField(decryption_func=tanf_ssn_decryption_func, item="33", name='SSN', type='string',
-                           startIndex=29, endIndex=38, required=True,
-                           validators=[validators.notOneOf([str(i)*9 for i in range(0, 10)])]),
+            TransformField(transform_func=tanf_ssn_decryption_func, item="33", name='SSN', type='string', startIndex=29,
+                           endIndex=38, required=True,
+                           validators=[validators.validateSSN()], is_encrypted=False),
             Field(item="34A", name='RACE_HISPANIC', type='number', startIndex=38, endIndex=39, required=True,
                   validators=[validators.isInLimits(0, 2)]),
             Field(item="34B", name='RACE_AMER_INDIAN', type='number', startIndex=39, endIndex=40, required=True,

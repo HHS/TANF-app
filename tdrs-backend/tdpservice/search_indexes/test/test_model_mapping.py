@@ -307,25 +307,24 @@ def test_can_create_and_index_tanf_t6_submission(test_datafile):
 
     submission = models.tanf.TANF_T6()
     submission.datafile = test_datafile
-    submission.record = record_num
-    submission.rpt_month_year = 1
-    submission.fips_code = '1'
-    submission.calendar_quarter = 1
-    submission.applications = 1
-    submission.approved = 1
-    submission.denied = 1
-    submission.assistance = 1
-    submission.families = 1
-    submission.num_2_parents = 1
-    submission.num_1_parents = 1
-    submission.num_no_parents = 1
-    submission.recipients = 1
-    submission.adult_recipients = 1
-    submission.child_recipients = 1
-    submission.noncustodials = 1
-    submission.births = 1
-    submission.outwedlock_births = 1
-    submission.closed_cases = 1
+    submission.RecordType = record_num
+    submission.CALENDAR_QUARTER = 1
+    submission.RPT_MONTH_YEAR = 1
+    submission.NUM_APPLICATIONS = 1
+    submission.NUM_APPROVED = 1
+    submission.NUM_DENIED = 1
+    submission.ASSISTANCE = 1
+    submission.NUM_FAMILIES = 1
+    submission.NUM_2_PARENTS = 1
+    submission.NUM_1_PARENTS = 1
+    submission.NUM_NO_PARENTS = 1
+    submission.NUM_RECIPIENTS = 1
+    submission.NUM_ADULT_RECIPIENTS = 1
+    submission.NUM_CHILD_RECIPIENTS = 1
+    submission.NUM_NONCUSTODIALS = 1
+    submission.NUM_BIRTHS = 1
+    submission.NUM_OUTWEDLOCK_BIRTHS = 1
+    submission.NUM_CLOSED_CASES = 1
 
     submission.save()
 
@@ -333,7 +332,7 @@ def test_can_create_and_index_tanf_t6_submission(test_datafile):
 
     search = documents.tanf.TANF_T6DataSubmissionDocument.search().query(
         'match',
-        record=record_num
+        RecordType=record_num
     )
     response = search.execute()
 
