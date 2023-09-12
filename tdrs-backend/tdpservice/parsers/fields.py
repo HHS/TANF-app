@@ -1,5 +1,9 @@
 """Datafile field representations."""
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def value_is_empty(value, length):
     """Handle 'empty' values as field inputs."""
     empty_values = [
@@ -36,6 +40,7 @@ class Field:
         value = line[self.startIndex:self.endIndex]
 
         if value_is_empty(value, self.endIndex-self.startIndex):
+            logger.debug(f"Field: '{self.name}' at position: [{self.startIndex}, {self.endIndex}) is empty.")
             return None
 
         match self.type:
@@ -44,9 +49,13 @@ class Field:
                     value = int(value)
                     return value
                 except ValueError:
+                    logger.error(f"Error parsing field value: {value} to integer.")
                     return None
             case 'string':
                 return value
+            case _:
+                logger.warn(f"Unknown field type: {self.type}.")
+                return None
 
 class TransformField(Field):
     """Represents a field that requires some transformation before serializing."""

@@ -57,11 +57,12 @@ class ParserError(models.Model):
 
     def __repr__(self):
         """Return a string representation of the model."""
-        return f"ParserError {self.id} for file {self.file} and object key {self.object_id}"
+        return f"{{id: {self.id}, file: {self.file.id}, row: {self.row_number}, column: {self.column_number}, " + \
+               f"error message: {self.error_message}}}"
 
     def __str__(self):
         """Return a string representation of the model."""
-        return f"ParserError {self.id}"
+        return f"error_message: {self.error_message}"
 
     def _get_error_message(self):
         """Return the error message."""
