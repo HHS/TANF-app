@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-
+from tdpservice.data_files.models import DataFile
 
 class ParserErrorCategoryChoices(models.TextChoices):
     """Enum of ParserError error_type."""
@@ -62,8 +62,49 @@ class ParserError(models.Model):
 
     def __str__(self):
         """Return a string representation of the model."""
-        return f"error_message: {self.error_message}"
+        return f"ParserError {self.__dict__}"
 
     def _get_error_message(self):
         """Return the error message."""
         return self.error_message
+
+class DataFileSummary(models.Model):
+    """Aggregates information about a parsed file."""
+
+    class Status(models.TextChoices):
+        """Enum for status of parsed file."""
+
+        PENDING = "Pending"  # file has been uploaded, but not validated
+        ACCEPTED = "Accepted"
+        ACCEPTED_WITH_ERRORS = "Accepted with Errors"
+        REJECTED = "Rejected"
+
+    status = models.CharField(
+        max_length=50,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    datafile = models.ForeignKey(DataFile, on_delete=models.CASCADE)
+
+    case_aggregates = models.JSONField(null=True, blank=False)
+
+    def get_status(self):
+        """Set and return the status field based on errors and models associated with datafile."""
+        errors = ParserError.objects.filter(file=self.datafile)
+        [print(error) for error in errors]
+
+        # excluding row-level pre-checks and trailer pre-checks.
+        precheck_errors = errors.filter(error_type=ParserErrorCategoryChoices.PRE_CHECK)\
+                                .exclude(field_name="Record_Type")\
+                                .exclude(error_message__icontains="trailer")\
+                                .exclude(error_message__icontains="Unknown Record_Type was found.")
+
+        if errors is None:
+            return DataFileSummary.Status.PENDING
+        elif errors.count() == 0:
+            return DataFileSummary.Status.ACCEPTED
+        elif precheck_errors.count() > 0:
+            return DataFileSummary.Status.REJECTED
+        else:
+            return DataFileSummary.Status.ACCEPTED_WITH_ERRORS

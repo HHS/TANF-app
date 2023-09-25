@@ -124,5 +124,5 @@ volumes:
 
 networks:
   default:
-    external:
       name: external-net
+      external: true
