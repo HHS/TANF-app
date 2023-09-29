@@ -4,7 +4,7 @@
 import pytest
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
-from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6
+from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
@@ -833,3 +833,32 @@ def test_parse_tanf_section3_file(tanf_section3_file):
     assert first.NUM_CLOSED_CASES == 3884
     assert second.NUM_CLOSED_CASES == 3881
     assert third.NUM_CLOSED_CASES == 5453
+
+@pytest.fixture
+def tanf_section4_file(stt_user, stt):
+    """Fixture for ADS.E2J.FTP4.TS06."""
+    return util.create_test_datafile('ADS.E2J.FTP4.TS06', stt_user, stt, "Stratum Data")
+
+@pytest.mark.django_db()
+def test_parse_tanf_section4_file(tanf_section4_file):
+    """Test parsing TANF Section 4 submission."""
+    parse.parse_datafile(tanf_section4_file)
+
+    assert TANF_T7.objects.all().count() == 18
+
+    parser_errors = ParserError.objects.filter(file=tanf_section4_file)
+    assert parser_errors.count() == 0
+
+    t7_objs = TANF_T7.objects.all().order_by('FAMILIES_MONTH')
+
+    first = t7_objs.first()
+    sixth = t7_objs[5]
+
+    assert first.RPT_MONTH_YEAR == 202011
+    assert sixth.RPT_MONTH_YEAR == 202012
+
+    assert first.TDRS_SECTION_IND == '2'
+    assert sixth.TDRS_SECTION_IND == '2'
+
+    assert first.FAMILIES_MONTH == 274
+    assert sixth.FAMILIES_MONTH == 499

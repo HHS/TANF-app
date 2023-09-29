@@ -335,3 +335,17 @@ class TanfT6Factory(factory.django.DjangoModelFactory):
     NUM_BIRTHS = 1
     NUM_OUTWEDLOCK_BIRTHS = 1
     NUM_CLOSED_CASES = 1
+
+class TanfT7Factory(factory.django.DjangoModelFactory):
+    """Generate TANF T7 record for testing."""
+
+    class Meta:
+        """Hardcoded meta data for TANF_T7."""
+
+        model = "search_indexes.TANF_T7"
+
+    CALENDAR_QUARTER = 20204
+    RPT_MONTH_YEAR = 202011
+    TDRS_SECTION_IND = '1'
+    STRATUM = '01'
+    FAMILIES_MONTH = 1

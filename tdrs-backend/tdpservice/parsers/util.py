@@ -129,7 +129,7 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             'S': {
                 'section': DataFile.Section.STRATUM_DATA,
                 'models': {
-                    # 'T7': schema_defs.tanf.t7,
+                    'T7': schema_defs.tanf.t7,
                 }
             }
         },

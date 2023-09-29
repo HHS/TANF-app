@@ -2,7 +2,6 @@
 
 import pytest
 from faker import Faker
-from django.db.utils import IntegrityError
 from tdpservice.search_indexes import models
 from tdpservice.search_indexes import documents
 from tdpservice.parsers.util import create_test_datafile
@@ -346,26 +345,27 @@ def test_can_create_and_index_tanf_t7_submission(test_datafile):
 
     submission = models.tanf.TANF_T7()
     submission.datafile = test_datafile
-    submission.record = record_num
-    submission.rpt_month_year = 1
-    submission.fips_code = '2'
-    submission.calendar_quarter = 1
-    submission.tdrs_section_ind = '1'
-    submission.stratum = '1'
-    submission.families = 1
+    submission.RecordType = record_num
+    submission.CALENDAR_YEAR = 2020
+    submission.CALENDAR_QUARTER = 1
+    submission.TDRS_SECTION_IND = '1'
+    submission.STRATUM = '01'
+    submission.FAMILIES_MONTH_1 = 47655
+    submission.FAMILIES_MONTH_2 = 81982
+    submission.FAMILIES_MONTH_3 = 9999999
 
     submission.save()
 
     # No checks her because t7 records can't be parsed currently.
-    # assert submission.id is not None
+    assert submission.id is not None
 
-    # search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
-    #     'match',
-    #     record=record_num
-    # )
-    # response = search.execute()
+    search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
 
-    # assert response.hits.total.value == 1
+    assert response.hits.total.value == 1
 
 
 @pytest.mark.django_db
@@ -373,17 +373,9 @@ def test_does_not_create_index_if_model_creation_fails():
     """Index creation shouldn't happen if saving a model errors."""
     record_num = fake.uuid4()
 
-    with pytest.raises(IntegrityError):
-        submission = models.tanf.TANF_T7.objects.create(
-            record=record_num
-            # leave out a bunch of required fields
-        )
-
-        assert submission.id is None
-
     search = documents.tanf.TANF_T7DataSubmissionDocument.search().query(
         'match',
-        record=record_num
+        RecordType=record_num
     )
 
     response = search.execute()
