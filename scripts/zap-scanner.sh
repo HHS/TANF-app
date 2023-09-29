@@ -139,7 +139,6 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(21\).regex='^https:\/\/.*\.identitysandbox.gov\/.*$' \
   -config globalexcludeurl.url_list.url\(21\).description='Site - IdentitySandbox.gov' \
   -config globalexcludeurl.url_list.url\(21\).enabled=true \
-
   -config spider.postform=true"
 
 # How long ZAP will crawl the app with the spider process

@@ -1,7 +1,7 @@
 """Serializers for parsing errors."""
 
 from rest_framework import serializers
-from .models import ParserError
+from .models import ParserError, DataFileSummary
 
 
 class ParsingErrorSerializer(serializers.ModelSerializer):
@@ -23,3 +23,13 @@ class ParsingErrorSerializer(serializers.ModelSerializer):
 
         model = ParserError
         fields = '__all__'
+
+
+class DataFileSummarySerializer(serializers.ModelSerializer):
+    """Serializer for Parsing Errors."""
+
+    class Meta:
+        """Metadata."""
+
+        model = DataFileSummary
+        fields = ['status', 'case_aggregates', 'datafile']

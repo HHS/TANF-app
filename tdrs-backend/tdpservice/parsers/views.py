@@ -2,8 +2,8 @@
 from tdpservice.users.permissions import IsApprovedPermission
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
-from .serializers import ParsingErrorSerializer
-from .models import ParserError
+from .serializers import ParsingErrorSerializer, DataFileSummarySerializer
+from .models import ParserError, DataFileSummary
 import logging
 import base64
 from io import BytesIO
@@ -69,3 +69,11 @@ class ParsingErrorViewSet(ModelViewSet):
                 col += 1
         workbook.close()
         return {"data": data, "xls_report": base64.b64encode(output.getvalue()).decode("utf-8")}
+
+
+class DataFileSummaryViewSet(ModelViewSet):
+    """DataFileSummary file views."""
+
+    queryset = DataFileSummary.objects.all()
+    serializer_class = DataFileSummarySerializer
+    permission_classes = [IsApprovedPermission]

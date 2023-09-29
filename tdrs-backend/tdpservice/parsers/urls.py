@@ -1,12 +1,13 @@
 """Routing for DataFiles."""
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ParsingErrorViewSet
+from .views import ParsingErrorViewSet, DataFileSummaryViewSet
 
 router = DefaultRouter()
 
-router.register("", ParsingErrorViewSet)
+router.register("parsing_errors", ParsingErrorViewSet)
+router.register("dfs", DataFileSummaryViewSet)
 
 urlpatterns = [
-    path('parsing_errors/', include(router.urls)),
+    path('', include(router.urls)),
 ]

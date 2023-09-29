@@ -1,4 +1,4 @@
-"""Schema for HEADER row of all submission types."""
+"""Schema for t1 record types."""
 
 from ...util import SchemaManager
 from ...fields import Field
