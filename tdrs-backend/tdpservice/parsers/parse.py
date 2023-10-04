@@ -20,7 +20,7 @@ def parse_datafile(datafile):
     header_line = rawfile.readline().decode().strip()
     header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
         header_line,
-        util.make_generate_parser_error(datafile, 1)
+        util.make_generate_file_precheck_parser_error(datafile, 1)
     )
     if not header_is_valid:
         logger.info(f"Preparser Error: {len(header_errors)} header errors encountered.")

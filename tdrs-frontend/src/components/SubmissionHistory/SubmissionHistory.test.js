@@ -244,8 +244,6 @@ describe('SubmissionHistory', () => {
     expect(
       screen.queryByText('Error Reports (In development)')
     ).toBeInTheDocument()
-
-    expect(screen.queryByText('Currently Unavailable')).toBeInTheDocument()
   })
 
   it('Shows SSP results when SSP-MOE file type selected', () => {
@@ -338,5 +336,64 @@ describe('SubmissionHistory', () => {
     expect(screen.queryByText('test4.txt')).toBeInTheDocument()
     expect(screen.queryByText('test5.txt')).toBeInTheDocument()
     expect(screen.queryByText('test6.txt')).not.toBeInTheDocument()
+  })
+
+  it.each([
+    'Pending',
+    'Accepted',
+    'Accepted with Errors',
+    'Partially Accepted with Errors',
+    'Rejected',
+    null,
+  ])('Shows the submission acceptance status', (status) => {
+    const state = {
+      reports: {
+        files: [
+          {
+            id: '123',
+            fileName: 'test1.txt',
+            fileType: 'TANF',
+            quarter: 'Q1',
+            section: 'Active Case Data',
+            uuid: '123-4-4-321',
+            year: '2023',
+            s3_version_id: '321-0-0-123',
+            createdAt: '12/12/2012 12:12',
+            submittedBy: 'test@teamraft.com',
+            summary: {
+              datafile: '123',
+              status: status,
+              case_aggregates: {
+                Oct: {
+                  total: 0,
+                  accepted: 0,
+                  rejected: 0,
+                },
+                Nov: {
+                  total: 0,
+                  accepted: 0,
+                  rejected: 0,
+                },
+                Dec: {
+                  total: 0,
+                  accepted: 0,
+                  rejected: 0,
+                },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const store = appConfigureStore(state)
+    const dispatch = jest.fn(store.dispatch)
+    store.dispatch = dispatch
+
+    setup(store)
+
+    expect(screen.queryByText('Acceptance Status')).toBeInTheDocument()
+    expect(screen.queryByText('test1.txt')).toBeInTheDocument()
+    expect(screen.queryByText(status || 'Pending')).toBeInTheDocument()
   })
 })

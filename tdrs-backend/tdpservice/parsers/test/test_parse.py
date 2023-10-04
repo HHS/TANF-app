@@ -608,7 +608,7 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     parse.parse_datafile(bad_tanf_s1__row_missing_required_field)
 
-    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert dfs.get_status() == DataFileSummary.Status.PARTIALLY_ACCEPTED
 
     parser_errors = ParserError.objects.filter(file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4

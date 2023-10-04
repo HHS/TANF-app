@@ -35,7 +35,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         row_number=line_number,
         column_number=getattr(field, 'item', None),
         item_number=getattr(field, 'item', None),
-        field_name=getattr(field, 'name', None),
+        field_name=getattr(field, 'name', None) if hasattr(field, 'name') else field,
         rpt_month_year=getattr(record, 'RPT_MONTH_YEAR', None),
         case_number=getattr(record, 'CASE_NUMBER', None),
         error_message=error_message,
@@ -59,6 +59,22 @@ def make_generate_parser_error(datafile, line_number):
             error_message=error_message,
             record=record,
             field=field
+        )
+
+    return generate
+
+
+def make_generate_file_precheck_parser_error(datafile, line_number):
+    """Configure a generate_parser_error that acts as a file pre-check error."""
+    def generate(schema, error_category, error_message, record=None, field=None):
+        return generate_parser_error(
+            datafile=datafile,
+            line_number=line_number,
+            schema=schema,
+            error_category=error_category,
+            error_message=error_message,
+            record=record,
+            field=None,  # purposely overridden to force a "Rejected" status for certain file precheck errors
         )
 
     return generate

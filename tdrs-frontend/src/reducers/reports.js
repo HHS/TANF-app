@@ -66,6 +66,7 @@ export const serializeApiDataFile = (dataFile) => ({
   createdAt: dataFile.created_at,
   submittedBy: dataFile.submitted_by,
   hasError: dataFile.has_error,
+  summary: dataFile.summary,
 })
 
 const initialState = {
@@ -131,6 +132,7 @@ const reports = (state = initialState, action) => {
             created_at: null,
             submitted_by: null,
             has_error: null,
+            summary: null,
           })
         }),
       }
