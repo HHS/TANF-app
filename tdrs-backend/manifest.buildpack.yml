@@ -3,7 +3,7 @@ applications:
 - name: tdp-backend
   memory: 2G
   instances: 1
-  disk_quota: 2G
+  disk_quota: 4G
   env:
     REDIS_URI: redis://localhost:6379
   buildpacks:
