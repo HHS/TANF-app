@@ -339,13 +339,25 @@ describe('SubmissionHistory', () => {
   })
 
   it.each([
-    'Pending',
-    'Accepted',
-    'Accepted with Errors',
-    'Partially Accepted with Errors',
-    'Rejected',
-    null,
-  ])('Shows the submission acceptance status', (status) => {
+    ['Pending', 'Active Case Data'],
+    ['Pending', 'Closed Case Data'],
+    ['Pending', 'Aggregate Data'],
+    ['Accepted', 'Active Case Data'],
+    ['Accepted', 'Closed Case Data'],
+    ['Accepted', 'Aggregate Data'],
+    ['Accepted with Errors', 'Active Case Data'],
+    ['Accepted with Errors', 'Closed Case Data'],
+    ['Accepted with Errors', 'Aggregate Data'],
+    ['Partially Accepted with Errors', 'Active Case Data'],
+    ['Partially Accepted with Errors', 'Closed Case Data'],
+    ['Partially Accepted with Errors', 'Aggregate Data'],
+    ['Rejected', 'Active Case Data'],
+    ['Rejected', 'Closed Case Data'],
+    ['Rejected', 'Aggregate Data'],
+    [null, 'Active Case Data'],
+    [null, 'Closed Case Data'],
+    [null, 'Aggregate Data'],
+  ])('Shows the submission acceptance status section 3', (status, section) => {
     const state = {
       reports: {
         files: [
@@ -354,7 +366,7 @@ describe('SubmissionHistory', () => {
             fileName: 'test1.txt',
             fileType: 'TANF',
             quarter: 'Q1',
-            section: 'Active Case Data',
+            section: section,
             uuid: '123-4-4-321',
             year: '2023',
             s3_version_id: '321-0-0-123',
@@ -392,8 +404,13 @@ describe('SubmissionHistory', () => {
 
     setup(store)
 
-    expect(screen.queryByText('Acceptance Status')).toBeInTheDocument()
+    expect(screen.queryByText('Status')).toBeInTheDocument()
     expect(screen.queryByText('test1.txt')).toBeInTheDocument()
-    expect(screen.queryByText(status || 'Pending')).toBeInTheDocument()
+
+    if (status && status !== 'Pending') {
+      expect(screen.queryByText(status)).toBeInTheDocument()
+    } else {
+      expect(screen.queryAllByText('Pending')).toHaveLength(2)
+    }
   })
 })

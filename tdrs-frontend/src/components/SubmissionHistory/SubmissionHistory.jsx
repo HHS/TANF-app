@@ -51,6 +51,63 @@ const SubmissionSummaryStatusIcon = ({ status }) => {
   )
 }
 
+const CaseAggregatesHeader = ({ section }) =>
+  section === 1 || section === 2 ? (
+    <>
+      <th scope="col" rowSpan={2}>
+        Month
+      </th>
+      <th scope="col" rowSpan={2}>
+        Cases Without Errors
+      </th>
+      <th scope="col" rowSpan={2}>
+        Cases With Errors
+      </th>
+      <th scope="col" rowSpan={2}>
+        Records Unable To Process
+      </th>
+    </>
+  ) : (
+    <>
+      <th scope="col" rowSpan={2}>
+        Month
+      </th>
+      <th scope="col" rowSpan={2}>
+        Total
+      </th>
+      <th scope="col" rowSpan={2}>
+        Cases With Errors
+      </th>
+    </>
+  )
+
+const CaseAggregatesRow = ({ data, section }) =>
+  section === 1 || section === 2 ? (
+    data ? (
+      <>
+        <th scope="row">{data.month}</th>
+        <td>{data.accepted_without_errors}</td>
+        <td>{data.accepted_with_errors}</td>
+      </>
+    ) : (
+      <>
+        <th scope="row">-</th>
+        <td>N/A</td>
+        <td>N/A</td>
+      </>
+    )
+  ) : data ? (
+    <>
+      <th scope="row">{data.month}</th>
+      <td>{data.total}</td>
+    </>
+  ) : (
+    <>
+      <th scope="row">-</th>
+      <td>N/A</td>
+    </>
+  )
+
 const SubmissionHistoryRow = ({ file }) => {
   const dispatch = useDispatch()
 
@@ -72,35 +129,96 @@ const SubmissionHistoryRow = ({ file }) => {
     }
   }
 
+  const section_index = (element) => file.section.includes(element)
+
+  const section = fileUploadSections.findIndex(section_index) + 1
+
   return (
-    <tr>
-      <td>{formatDate(file.createdAt)}</td>
-      <td>{file.submittedBy}</td>
-      <td>
-        <button className="section-download" onClick={downloadFile}>
-          {file.fileName}
-        </button>
-      </td>
-      <td>
-        {file.summary ? (
-          <>
-            <SubmissionSummaryStatusIcon status={file.summary.status} />
-            {file.summary && file.summary.status
-              ? file.summary.status
-              : 'Pending'}
-          </>
-        ) : (
-          'N/A'
-        )}
-      </td>
-      <td>
-        {file.hasError > 0 ? (
-          <button className="section-download" onClick={returned_errors}>
-            {file.year}-{file.quarter}-{file.section}.xlsx
+    <>
+      <tr>
+        <th scope="rowgroup" rowSpan={3}>
+          {formatDate(file.createdAt)}
+        </th>
+        <th scope="rowgroup" rowSpan={3}>
+          {file.submittedBy}
+        </th>
+        <th scope="rowgroup" rowSpan={3}>
+          <button className="section-download" onClick={downloadFile}>
+            {file.fileName}
           </button>
-        ) : null}
-      </td>
-    </tr>
+        </th>
+        <CaseAggregatesRow
+          data={
+            file.summary &&
+            file.summary.case_aggregates &&
+            file.summary.case_aggregates.months
+              ? file.summary.case_aggregates.months[0]
+              : null
+          }
+          section={section}
+        />
+
+        <th scope="rowgroup" rowSpan={3}>
+          {file.summary &&
+          file.summary.case_aggregates &&
+          file.summary.case_aggregates.months
+            ? file.summary.case_aggregates.rejected
+            : 'N/A'}
+        </th>
+
+        <th scope="rowgroup" rowSpan={3}>
+          <span>
+            <SubmissionSummaryStatusIcon
+              status={file.summary ? file.summary.status : 'Pending'}
+            />
+          </span>
+          {file.summary && file.summary.status
+            ? file.summary.status
+            : 'Pending'}
+        </th>
+
+        <th scope="rowgroup" rowSpan={3}>
+          {file.summary &&
+          file.summary.status &&
+          file.summary.status !== 'Pending' ? (
+            file.hasError > 0 ? (
+              <button className="section-download" onClick={returned_errors}>
+                {file.year}-{file.quarter}-{file.section}.xlsx
+              </button>
+            ) : (
+              'No Errors'
+            )
+          ) : (
+            'Pending'
+          )}
+        </th>
+      </tr>
+
+      <tr>
+        <CaseAggregatesRow
+          data={
+            file.summary &&
+            file.summary.case_aggregates &&
+            file.summary.case_aggregates.months
+              ? file.summary.case_aggregates.months[1]
+              : null
+          }
+          section={section}
+        />
+      </tr>
+      <tr>
+        <CaseAggregatesRow
+          data={
+            file.summary &&
+            file.summary.case_aggregates &&
+            file.summary.case_aggregates.months
+              ? file.summary.case_aggregates.months[2]
+              : null
+          }
+          section={section}
+        />
+      </tr>
+    </>
   )
 }
 
@@ -118,18 +236,33 @@ const SectionSubmissionHistory = ({ section, label, files }) => {
   const pageEnd = Math.min(files.length, pageStart + pageSize)
 
   return (
-    <div className="submission-history-section">
+    <div
+      className="submission-history-section usa-table-container--scrollable"
+      style={{ maxWidth: '100%' }}
+      tabIndex={0}
+    >
       <table className="usa-table usa-table--striped">
         <caption>{`Section ${section} - ${label}`}</caption>
         {files && files.length > 0 ? (
           <>
             <thead>
               <tr>
-                <th>Submitted On</th>
-                <th>Submitted By</th>
-                <th>File Name</th>
-                <th>Acceptance Status</th>
-                <th>Error Reports (In development)</th>
+                <th scope="col" rowSpan={2}>
+                  Submitted On
+                </th>
+                <th scope="col" rowSpan={2}>
+                  Submitted By
+                </th>
+                <th scope="col" rowSpan={2}>
+                  File Name
+                </th>
+                <CaseAggregatesHeader section={section} />
+                <th scope="col" rowSpan={2}>
+                  Status
+                </th>
+                <th scope="col" rowSpan={2}>
+                  Error Reports (In development)
+                </th>
               </tr>
             </thead>
             <tbody>

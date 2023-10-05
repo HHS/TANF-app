@@ -43,7 +43,6 @@ def test_parse_small_correct_file(test_datafile, dfs):
                                     ]}
 
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
-
     assert TANF_T1.objects.count() == 1
 
     # spot check

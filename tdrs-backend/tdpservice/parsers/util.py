@@ -276,7 +276,6 @@ def transform_to_months(quarter):
         case _:
             raise ValueError("Invalid quarter value.")
 
-
 def month_to_int(month):
     """Return the integer value of a month."""
     return datetime.strptime(month, '%b').strftime('%m')
