@@ -1,10 +1,15 @@
 """Datafile field representations."""
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def value_is_empty(value, length):
     """Handle 'empty' values as field inputs."""
     empty_values = [
         ' '*length,  # '     '
         '#'*length,  # '#####'
+        '_'*length,  # '_____'
     ]
 
     return value is None or value in empty_values
@@ -35,6 +40,7 @@ class Field:
         value = line[self.startIndex:self.endIndex]
 
         if value_is_empty(value, self.endIndex-self.startIndex):
+            logger.debug(f"Field: '{self.name}' at position: [{self.startIndex}, {self.endIndex}) is empty.")
             return None
 
         match self.type:
@@ -43,45 +49,23 @@ class Field:
                     value = int(value)
                     return value
                 except ValueError:
+                    logger.error(f"Error parsing field value: {value} to integer.")
                     return None
             case 'string':
                 return value
+            case _:
+                logger.warn(f"Unknown field type: {self.type}.")
+                return None
 
-def tanf_ssn_decryption_func(value, is_encrypted):
-    """Decrypt TANF SSN value."""
-    if is_encrypted:
-        decryption_dict = {"@": "1", "9": "2", "Z": "3", "P": "4", "0": "5",
-                           "#": "6", "Y": "7", "B": "8", "W": "9", "T": "0"}
-        decryption_table = str.maketrans(decryption_dict)
-        return value.translate(decryption_table)
-    return value
+class TransformField(Field):
+    """Represents a field that requires some transformation before serializing."""
 
-def ssp_ssn_decryption_func(value, is_encrypted):
-    """Decrypt SSP SSN value."""
-    if is_encrypted:
-        decryption_dict = {"@": "1", "9": "2", "Z": "3", "P": "4", "0": "5",
-                           "#": "6", "Y": "7", "B": "8", "W": "9", "T": "0"}
-        decryption_table = str.maketrans(decryption_dict)
-        return value.translate(decryption_table)
-    return value
-
-class EncryptedField(Field):
-    """Represents an encrypted field and its position."""
-
-    def __init__(self, decryption_func, item, name, type, startIndex, endIndex, required=True, validators=[]):
+    def __init__(self, transform_func, item, name, type, startIndex, endIndex, required=True, validators=[], **kwargs):
         super().__init__(item, name, type, startIndex, endIndex, required, validators)
-        self.decryption_func = decryption_func
-        self.is_encrypted = False
+        self.transform_func = transform_func
+        self.kwargs = kwargs
 
     def parse_value(self, line):
-        """Parse and decrypt the value for a field given a line, startIndex, endIndex, and field type."""
-        value = line[self.startIndex:self.endIndex]
-
-        if value_is_empty(value, self.endIndex-self.startIndex):
-            return None
-
-        match self.type:
-            case 'string':
-                return self.decryption_func(value, self.is_encrypted)
-            case _:
-                return None
+        """Parse and transform the value for a field given a line, startIndex, endIndex, and field type."""
+        value = super().parse_value(line)
+        return self.transform_func(value, **self.kwargs)

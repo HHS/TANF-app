@@ -6,13 +6,13 @@
       - docker-compose-check
       - docker-compose-up-backend
       - run:
-          name: Execute Python Linting Test
-          command: cd tdrs-backend; docker-compose run --rm web bash -c "flake8 ."
-      - run:
           name: Run Unit Tests And Create Code Coverage Report
           command: |
             cd tdrs-backend;
             docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
+      - run:
+          name: Execute Python Linting Test
+          command: cd tdrs-backend; docker-compose run --rm web bash -c "flake8 ."
       - upload-codecov:
           component: backend
           coverage-report: ./tdrs-backend/coverage.xml
@@ -59,6 +59,9 @@
               "PATH=$PATH:/home/zap/.local/bin &&
                pip install wait-for-it &&
                wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
+      - run:
+          name: apply the migrations
+          command: cd tdrs-backend; docker-compose exec web bash -c "python manage.py makemigrations; python manage.py migrate" 
       - run:
           name: Remove existing cypress test users
           command: cd tdrs-backend; docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com

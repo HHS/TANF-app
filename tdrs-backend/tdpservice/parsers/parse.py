@@ -23,23 +23,27 @@ def parse_datafile(datafile):
         util.make_generate_parser_error(datafile, 1)
     )
     if not header_is_valid:
+        logger.info(f"Preparser Error: {len(header_errors)} header errors encountered.")
         errors['header'] = header_errors
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
 
     is_encrypted = util.contains_encrypted_indicator(header_line, schema_defs.header.get_field_by_name("encryption"))
+    logger.debug(f"Datafile has encrypted fields: {is_encrypted}.")
 
     # ensure file section matches upload section
     program_type = header['program_type']
     section = header['type']
+    logger.debug(f"Program type: {program_type}, Section: {section}.")
 
     section_is_valid, section_error = validators.validate_header_section_matches_submission(
         datafile,
-        program_type,
-        section,
+        util.get_section_reference(program_type, section),
+        util.make_generate_parser_error(datafile, 1)
     )
 
     if not section_is_valid:
+        logger.info(f"Preparser Error -> Section is not valid: {section_error.error_message}")
         errors['document'] = [section_error]
         unsaved_parser_errors = {1: [section_error]}
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
@@ -55,22 +59,30 @@ def parse_datafile(datafile):
 def bulk_create_records(unsaved_records, line_number, header_count, batch_size=10000, flush=False):
     """Bulk create passed in records."""
     if (line_number % batch_size == 0 and header_count > 0) or flush:
+        logger.debug("Bulk creating records.")
         try:
             num_created = 0
             num_expected = 0
             for model, records in unsaved_records.items():
                 num_expected += len(records)
                 num_created += len(model.objects.bulk_create(records))
+            if num_created != num_expected:
+                logger.error(f"Bulk create only created {num_created}/{num_expected}!")
+            else:
+                logger.info(f"Created {num_created}/{num_expected} records.")
             return num_created == num_expected, {}
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
             return False, unsaved_records
     return True, unsaved_records
 
-def bulk_create_errors(unsaved_parser_errors, num_errors, batch_size=500, flush=False):
+def bulk_create_errors(unsaved_parser_errors, num_errors, batch_size=5000, flush=False):
     """Bulk create all ParserErrors."""
     if flush or (unsaved_parser_errors and num_errors >= batch_size):
-        ParserError.objects.bulk_create(list(itertools.chain.from_iterable(unsaved_parser_errors.values())))
+        logger.debug("Bulk creating ParserErrors.")
+        num_created = len(ParserError.objects.bulk_create(list(itertools.chain.from_iterable(
+            unsaved_parser_errors.values()))))
+        logger.info(f"Created {num_created}/{num_errors} ParserErrors.")
         return {}, 0
     return unsaved_parser_errors, num_errors
 
@@ -94,12 +106,16 @@ def evaluate_trailer(datafile, trailer_count, multiple_trailer_errors, is_last_l
 
 def rollback_records(unsaved_records, datafile):
     """Delete created records in the event of a failure."""
+    logger.info("Rolling back created records.")
     for model in unsaved_records:
-        model.objects.filter(datafile=datafile).delete()
+        num_deleted, models = model.objects.filter(datafile=datafile).delete()
+        logger.debug(f"Deleted {num_deleted} records of type: {model}.")
 
 def rollback_parser_errors(datafile):
     """Delete created errors in the event of a failure."""
-    ParserError.objects.filter(file=datafile).delete()
+    logger.info("Rolling back created parser errors.")
+    num_deleted, models = ParserError.objects.filter(file=datafile).delete()
+    logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
 def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     """Parse lines with appropriate schema and return errors."""
@@ -107,7 +123,6 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     errors = {}
 
     line_number = 0
-    schema_manager_options = get_schema_manager_options(program_type)
 
     unsaved_records = {}
     unsaved_parser_errors = {}
@@ -135,6 +150,8 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
                                                                    is_last, line, line_number)
 
         if trailer_errors is not None:
+            logger.debug(f"{len(trailer_errors)} trailer error(s) detected for file " +
+                         f"'{datafile.original_filename}' on line {line_number}.")
             errors['trailer'] = trailer_errors
             unsaved_parser_errors.update({"trailer": trailer_errors})
             num_errors += len(trailer_errors)
@@ -142,6 +159,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
         generate_error = util.make_generate_parser_error(datafile, line_number)
 
         if header_count > 1:
+            logger.info(f"Preparser Error -> Multiple headers found for file: {datafile.id} on line: {line_number}.")
             errors.update({'document': ['Multiple headers found.']})
             err_obj = generate_error(
                 schema=None,
@@ -161,11 +179,9 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
             prev_sum = header_count + trailer_count
             continue
 
-        schema_manager = get_schema_manager(line, section, schema_manager_options)
+        schema_manager = get_schema_manager(line, section, program_type)
 
-        schema_manager.update_encrypted_fields(is_encrypted)
-
-        records = manager_parse_line(line, schema_manager, generate_error)
+        records = manager_parse_line(line, schema_manager, generate_error, is_encrypted)
 
         record_number = 0
         for i in range(len(records)):
@@ -173,10 +189,11 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
             record_number += 1
             record, record_is_valid, record_errors = r
             if not record_is_valid:
-                line_errors = errors.get(line_number, {})
+                logger.debug(f"Record #{i} from line {line_number} is invalid.")
+                line_errors = errors.get(f"{line_number}_{i}", {})
                 line_errors.update({record_number: record_errors})
-                errors.update({line_number: record_errors})
-                unsaved_parser_errors.update({line_number: record_errors})
+                errors.update({f"{line_number}_{i}": record_errors})
+                unsaved_parser_errors.update({f"{line_number}_{i}": record_errors})
                 num_errors += len(record_errors)
             if record:
                 s = schema_manager.schemas[i]
@@ -187,6 +204,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
 
     if header_count == 0:
+        logger.info(f"Preparser Error -> No headers found for file: {datafile.id}.")
         errors.update({'document': ['No headers found.']})
         err_obj = generate_error(
             schema=None,
@@ -205,6 +223,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     # successfully create the records.
     all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, flush=True)
     if not all_created:
+        logger.error(f"Not all parsed records created for file: {datafile.id}!")
         rollback_records(unsaved_records, datafile)
         bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
         return errors
@@ -214,67 +233,25 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     return errors
 
 
-def manager_parse_line(line, schema_manager, generate_error):
+def manager_parse_line(line, schema_manager, generate_error, is_encrypted=False):
     """Parse and validate a datafile line using SchemaManager."""
-    if schema_manager.schemas:
+    try:
+        schema_manager.update_encrypted_fields(is_encrypted)
         records = schema_manager.parse_and_validate(line, generate_error)
         return records
+    except AttributeError as e:
+        logging.error(e)
+        return [(None, False, [
+            generate_error(
+                schema=None,
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                error_message="Unknown Record_Type was found.",
+                record=None,
+                field="Record_Type",
+            )
+        ])]
 
-    return [(None, False, [
-        generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message="Record Type is missing from record.",
-            record=None,
-            field=None
-        )
-    ])]
-
-
-def get_schema_manager_options(program_type):
-    """Return the allowed schema options."""
-    match program_type:
-        case 'TAN':
-            return {
-                'A': {
-                    'T1': schema_defs.tanf.t1,
-                    'T2': schema_defs.tanf.t2,
-                    'T3': schema_defs.tanf.t3,
-                },
-                'C': {
-                    'T4': schema_defs.tanf.t4,
-                    'T5': schema_defs.tanf.t5,
-                },
-                'G': {
-                    # 'T6': schema_options.t6,
-                },
-                'S': {
-                    # 'T7': schema_options.t7,
-                },
-            }
-        case 'SSP':
-            return {
-                'A': {
-                    'M1': schema_defs.ssp.m1,
-                    'M2': schema_defs.ssp.m2,
-                    'M3': schema_defs.ssp.m3,
-                },
-                'C': {
-                    # 'M4': schema_options.m4,
-                    # 'M5': schema_options.m5,
-                },
-                'G': {
-                    # 'M6': schema_options.m6,
-                },
-                'S': {
-                    # 'M7': schema_options.m7,
-                },
-            }
-        # case tribal?
-    return None
-
-
-def get_schema_manager(line, section, schema_options):
+def get_schema_manager(line, section, program_type):
     """Return the appropriate schema for the line."""
     line_type = line[0:2]
-    return schema_options.get(section, {}).get(line_type, util.SchemaManager([]))
+    return util.get_program_model(program_type, section, line_type)

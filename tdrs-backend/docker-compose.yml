@@ -100,6 +100,7 @@ services:
       ./gunicorn_start.sh && celery -A tdpservice.settings worker -l info"
     ports:
       - "5555:5555"
+    tty: true
     depends_on:
       - clamav-rest
       - localstack
@@ -123,5 +124,5 @@ volumes:
 
 networks:
   default:
-    external:
       name: external-net
+      external: true

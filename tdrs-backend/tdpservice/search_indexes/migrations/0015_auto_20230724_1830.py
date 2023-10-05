@@ -195,7 +195,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tanf_t4',
             name='COUNTY_FIPS_CODE',
-            field=models.IntegerField(null=True),
+            field=models.CharField(max_length=3, null=True),
         ),
         migrations.AddField(
             model_name='tanf_t4',
@@ -245,12 +245,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tanf_t5',
             name='AMOUNT_EARNED_INCOME',
-            field=models.CharField(max_length=4, null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='AMOUNT_UNEARNED_INCOME',
-            field=models.CharField(max_length=4, null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
@@ -260,17 +260,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tanf_t5',
             name='CITIZENSHIP_STATUS',
-            field=models.CharField(max_length=1, null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='COUNTABLE_MONTHS_STATE_TRIBE',
-            field=models.CharField(max_length=2, null=True),
+            field=models.FloatField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='COUNTABLE_MONTH_FED_TIME',
-            field=models.CharField(max_length=3, null=True),
+            field=models.FloatField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
@@ -280,12 +280,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tanf_t5',
             name='EDUCATION_LEVEL',
-            field=models.CharField(max_length=2, null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='EMPLOYMENT_STATUS',
-            field=models.CharField(max_length=1, null=True),
+            field=models.FloatField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
@@ -300,17 +300,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tanf_t5',
             name='MARITAL_STATUS',
-            field=models.CharField(max_length=1, null=True),
+            field=models.FloatField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='NEEDS_OF_PREGNANT_WOMAN',
-            field=models.CharField(max_length=1, null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='PARENT_MINOR_CHILD',
-            field=models.CharField(max_length=1, null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
@@ -345,32 +345,32 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tanf_t5',
             name='REC_AID_AGED_BLIND',
-            field=models.CharField(max_length=1, null=True),
+            field=models.FloatField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='REC_AID_TOTALLY_DISABLED',
-            field=models.CharField(max_length=1, null=True),
+            field=models.FloatField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='REC_FEDERAL_DISABILITY',
-            field=models.CharField(max_length=1, null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='REC_OASDI_INSURANCE',
-            field=models.CharField(max_length=1, null=True),
+            field=models.FloatField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='REC_SSI',
-            field=models.CharField(max_length=1, null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
             name='RELATIONSHIP_HOH',
-            field=models.CharField(max_length=1, null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.AddField(
             model_name='tanf_t5',
