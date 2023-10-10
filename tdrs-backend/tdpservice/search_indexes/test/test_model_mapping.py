@@ -12,8 +12,8 @@ fake = Faker()
 
 @pytest.fixture
 def test_datafile(stt_user, stt):
-    """Fixture for small_correct_file."""
-    return create_test_datafile('small_correct_file', stt_user, stt)
+    """Fixture for small_correct_file.txt."""
+    return create_test_datafile('small_correct_file.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
