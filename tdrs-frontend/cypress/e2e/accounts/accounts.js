@@ -8,7 +8,9 @@ Then('{string} sees a Request Access form', (username) => {
 
 Then('{string} can see the hompage', (username) => {
   cy.visit('/home')
-  cy.contains('You have been approved for access to TDP.').should('exist')
+  cy.wait(2000).then(() => {
+    cy.contains('You have been approved for access to TDP.').should('exist')
+  })
 })
 
 When('{string} is in begin state', (username) => {
