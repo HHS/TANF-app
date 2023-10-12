@@ -40,7 +40,6 @@ set_cf_envs()
   "AMS_CLIENT_ID"
   "AMS_CLIENT_SECRET"
   "AMS_CONFIGURATION_ENDPOINT"
-  "AV_SCAN_URL"
   "BASE_URL"
   "CLAMAV_NEEDED"
   "CYPRESS_TOKEN"
@@ -84,6 +83,15 @@ generate_jwt_cert()
 update_backend()
 {
     cd tdrs-backend || exit
+    cf unset-env "$CGAPPNAME_BACKEND" "AV_SCAN_URL"
+    
+    if ["$CF_SPACE" = "tanf-prod" ]; then
+      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"
+    else
+      # Add environment varilables for clamav
+      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tdp-clamav-nginx-$env.apps.internal:9000/scan"
+    fi
+
     if [ "$1" = "rolling" ] ; then
         set_cf_envs
 
@@ -101,11 +109,18 @@ update_backend()
     fi
 
     set_cf_envs
-
+    
     cf map-route "$CGAPPNAME_BACKEND" apps.internal --hostname "$CGAPPNAME_BACKEND"
 
     # Add network policy to allow frontend to access backend
     cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
+    
+    if ["$CF_SPACE" = "tanf-prod" ]; then
+      # Add network policy to allow backend to access tanf-prod services
+      cf add-network-policy "$CGAPPNAME_BACKEND" clamav-rest --protocol tcp --port 9000
+    else
+      cf add-network-policy "$CGAPPNAME_BACKEND" tdp-clamav-nginx-$env --protocol tcp --port 9000
+    fi
 
     cd ..
 }

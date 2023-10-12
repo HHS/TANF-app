@@ -9,4 +9,4 @@ applications:
   env:
     MAX_FILE_SIZE: 200M
   routes:
-    - route: ((cf-space))-clamav-rest.apps.internal
+    - route: tanf-prod-clamav-rest.apps.internal
