@@ -59,7 +59,8 @@ class ParsingErrorViewSet(ModelViewSet):
                         "For now please refer to the reports you receive via email")
         row, col = 2, 0
         # write csv header
-        [worksheet.write(row, col, key) for col, key in enumerate(report_columns)]
+        bold = workbook.add_format({'bold': True})
+        [worksheet.write(row, col, key, bold) for col, key in enumerate(report_columns)]
 
         for i in data:
             row += 1
@@ -67,6 +68,11 @@ class ParsingErrorViewSet(ModelViewSet):
             for key in report_columns:
                 worksheet.write(row, col, i[key])  # writes value by looking up data by key
                 col += 1
+
+        # autofit all columns except for the first one
+        worksheet.autofit()
+        worksheet.set_column(0, 0, 20)
+
         workbook.close()
         return {"data": data, "xls_report": base64.b64encode(output.getvalue()).decode("utf-8")}
 
