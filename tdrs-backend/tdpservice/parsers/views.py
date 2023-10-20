@@ -43,14 +43,18 @@ class ParsingErrorViewSet(ModelViewSet):
         workbook = xlsxwriter.Workbook(output)
         worksheet = workbook.add_worksheet()
 
-        report_columns = ['case_number',
-                          'rpt_month_year',
-                          'error_type',
-                          'error_message',
-                          'item_number',
-                          'field_name',
-                          'row_number',
-                          'column_number']
+        report_columns = [
+                        ('case_number' , lambda x: x['case_number']),
+                        ('year', lambda x: x['rpt_month_year'].split('-')[0] if x['rpt_month_year'] else None),
+                        ('month', lambda x: x['rpt_month_year'].split('-')[1] if x['rpt_month_year'] else None),
+                        ('error_type', lambda x: x['error_type']),
+                        ('error_message', lambda x: x['error_message']),
+                        ('item_number', lambda x: x['item_number']),
+                        ('field_name', lambda x: x['field_name']),
+                        ('row_number', lambda x: x['row_number']),
+                        ('column_number', lambda x: x['column_number'])
+]
+
 
         # write beta banner
         worksheet.write(row, col,
@@ -60,19 +64,17 @@ class ParsingErrorViewSet(ModelViewSet):
         row, col = 2, 0
         # write csv header
         bold = workbook.add_format({'bold': True})
-        
-        def make_header(header_list: list):
-            """Make header."""
+
+        def format_header(header_list: list):
+            """Format header."""
             return ' '.join([i.capitalize() for i in header_list.split('_')])
+        
+        [worksheet.write(row, col, format_header(key[0]), bold) for col, key in enumerate(report_columns)]
 
-        [worksheet.write(row, col, make_header(key), bold) for col, key in enumerate(report_columns)]
-
-        for i in data:
-            row += 1
-            col = 0
-            for key in report_columns:
-                worksheet.write(row, col, i[key])  # writes value by looking up data by key
-                col += 1
+        [
+            worksheet.write(row + 3, col, key[1](data_i)) for col, key in enumerate(report_columns)
+                for row, data_i in enumerate(data)
+        ]
 
         # autofit all columns except for the first one
         worksheet.autofit()
