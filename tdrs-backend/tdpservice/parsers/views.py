@@ -60,7 +60,12 @@ class ParsingErrorViewSet(ModelViewSet):
         row, col = 2, 0
         # write csv header
         bold = workbook.add_format({'bold': True})
-        [worksheet.write(row, col, key, bold) for col, key in enumerate(report_columns)]
+        
+        def make_header(header_list: list):
+            """Make header."""
+            return ' '.join([i.capitalize() for i in header_list.split('_')])
+
+        [worksheet.write(row, col, make_header(key), bold) for col, key in enumerate(report_columns)]
 
         for i in data:
             row += 1
