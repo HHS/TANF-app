@@ -4,10 +4,12 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from .serializers import ParsingErrorSerializer, DataFileSummarySerializer
 from .models import ParserError, DataFileSummary
+from .constants import TANF_ITEM_NAME
 import logging
 import base64
 from io import BytesIO
 import xlsxwriter
+import calendar
 
 logger = logging.getLogger()
 
@@ -42,15 +44,15 @@ class ParsingErrorViewSet(ModelViewSet):
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output)
         worksheet = workbook.add_worksheet()
-
         report_columns = [
                         ('case_number' , lambda x: x['case_number']),
-                        ('year', lambda x: x['rpt_month_year'].split('-')[0] if x['rpt_month_year'] else None),
-                        ('month', lambda x: x['rpt_month_year'].split('-')[1] if x['rpt_month_year'] else None),
+                        ('year', lambda x: str(x['rpt_month_year'])[0:4] if x['rpt_month_year'] else None),
+                        ('month', lambda x: calendar.month_name[int(str(x['rpt_month_year'])[4:])] if x['rpt_month_year'] else None),
                         ('error_type', lambda x: x['error_type']),
                         ('error_message', lambda x: x['error_message']),
                         ('item_number', lambda x: x['item_number']),
-                        ('field_name', lambda x: x['field_name']),
+                        ('item_name', lambda x: TANF_ITEM_NAME.get(x['field_name'])),
+                        ('internal_variable_name', lambda x: x['field_name']),
                         ('row_number', lambda x: x['row_number']),
                         ('column_number', lambda x: x['column_number'])
 ]
