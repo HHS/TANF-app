@@ -28,15 +28,16 @@ for i in range(1, 31):
           ],
           postparsing_validators=[],
           fields=[
-              Field(item="0", name="RecordType", type='string', startIndex=0, endIndex=2,
+              Field(item="0", name="RecordType", friendly_name='record type', type='string', startIndex=0, endIndex=2,
                     required=True, validators=[]),
-              Field(item="3", name='CALENDAR_QUARTER', type='number', startIndex=2, endIndex=7,
+              Field(item="3", name='CALENDAR_QUARTER', friendly_name='calendar quarter', type='number', startIndex=2, endIndex=7,
                     required=True, validators=[validators.dateYearIsLargerThan(1998),
                                                validators.quarterIsValid()]),
               TransformField(
                   transform_func=calendar_quarter_to_rpt_month_year(month_index),
                   item="3A",
                   name='RPT_MONTH_YEAR',
+                  friendly_name='report month and year',
                   type='number',
                   startIndex=2,
                   endIndex=7,
@@ -46,11 +47,11 @@ for i in range(1, 31):
                       validators.dateMonthIsValid()
                   ]
               ),
-              Field(item="4", name='TDRS_SECTION_IND', type='string', startIndex=section_ind_index,
+              Field(item="4", name='TDRS_SECTION_IND', friendly_name='tdrs section indicator', type='string', startIndex=section_ind_index,
                     endIndex=section_ind_index + 1, required=True, validators=[validators.oneOf(['1', '2'])]),
-              Field(item="5", name='STRATUM', type='string', startIndex=stratum_index,
+              Field(item="5", name='STRATUM', friendly_name='stratum', type='string', startIndex=stratum_index,
                     endIndex=stratum_index + 2, required=True, validators=[validators.isInStringRange(1, 99)]),
-              Field(item=families_value_item_number, name='FAMILIES_MONTH', type='number', startIndex=families_index,
+              Field(item=families_value_item_number, name='FAMILIES_MONTH', friendly_name='total number of families for each month', type='number', startIndex=families_index,
                     endIndex=families_index + 7, required=True, validators=[validators.isInLimits(0, 9999999)]),
           ]
       )
