@@ -56,16 +56,16 @@ def test_parse_line_parses_line_from_schema_to_dict():
     schema = RowSchema(
         model=dict,
         fields=[
-            Field(item=1, name='first', type='string', startIndex=0, endIndex=3),
-            Field(item=2, name='second', type='string', startIndex=3, endIndex=4),
-            Field(item=3, name='third', type='string', startIndex=4, endIndex=5),
-            Field(item=4, name='fourth', type='number', startIndex=5, endIndex=7),
-            Field(item=5, name='fifth', type='number', startIndex=7, endIndex=8),
+            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3),
+            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4),
+            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5),
+            Field(item=4, name='fourth', friendly_name='fourth', type='number', startIndex=5, endIndex=7),
+            Field(item=5, name='fifth', friendly_name='fifth', type='number', startIndex=7, endIndex=8),
         ]
     )
 
     record = schema.parse_line(line)
-
+    
     assert record['first'] == '123'
     assert record['second'] == '4'
     assert record['third'] == '5'
@@ -86,11 +86,11 @@ def test_parse_line_parses_line_from_schema_to_object():
     schema = RowSchema(
         model=TestModel,
         fields=[
-            Field(item=1, name='first', type='string', startIndex=0, endIndex=3),
-            Field(item=2, name='second', type='string', startIndex=3, endIndex=4),
-            Field(item=3, name='third', type='string', startIndex=4, endIndex=5),
-            Field(item=4, name='fourth', type='number', startIndex=5, endIndex=7),
-            Field(item=5, name='fifth', type='number', startIndex=7, endIndex=8),
+            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3),
+            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4),
+            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5),
+            Field(item=4, name='fourth', friendly_name='fourth', type='number', startIndex=5, endIndex=7),
+            Field(item=5, name='fifth', friendly_name='fifth', type='number', startIndex=7, endIndex=8),
         ]
     )
 
@@ -113,13 +113,13 @@ def test_run_field_validators_returns_valid_with_dict():
     schema = RowSchema(
         model=dict,
         fields=[
-            Field(item=1, name='first', type='string', startIndex=0, endIndex=3, validators=[
+            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
                 passing_validator()
             ]),
-            Field(item=2, name='second', type='string', startIndex=3, endIndex=4, validators=[
+            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
                 passing_validator()
             ]),
-            Field(item=3, name='third', type='string', startIndex=4, endIndex=5, validators=[
+            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
                 passing_validator()
             ]),
         ]
@@ -145,13 +145,13 @@ def test_run_field_validators_returns_valid_with_object():
     schema = RowSchema(
         model=TestModel,
         fields=[
-            Field(item=1, name='first', type='string', startIndex=0, endIndex=3, validators=[
+            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
                 passing_validator()
             ]),
-            Field(item=2, name='second', type='string', startIndex=3, endIndex=4, validators=[
+            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
                 passing_validator()
             ]),
-            Field(item=3, name='third', type='string', startIndex=4, endIndex=5, validators=[
+            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
                 passing_validator()
             ]),
         ]
@@ -172,14 +172,14 @@ def test_run_field_validators_returns_invalid_with_dict():
     schema = RowSchema(
         model=dict,
         fields=[
-            Field(item=1, name='first', type='string', startIndex=0, endIndex=3, validators=[
+            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
                 passing_validator(),
                 failing_validator()
             ]),
-            Field(item=2, name='second', type='string', startIndex=3, endIndex=4, validators=[
+            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
                 passing_validator()
             ]),
-            Field(item=3, name='third', type='string', startIndex=4, endIndex=5, validators=[
+            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
                 passing_validator()
             ]),
         ]
@@ -205,14 +205,14 @@ def test_run_field_validators_returns_invalid_with_object():
     schema = RowSchema(
         model=TestModel,
         fields=[
-            Field(item=1, name='first', type='string', startIndex=0, endIndex=3, validators=[
+            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
                 passing_validator(),
                 failing_validator()
             ]),
-            Field(item=2, name='second', type='string', startIndex=3, endIndex=4, validators=[
+            Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4, validators=[
                 passing_validator()
             ]),
-            Field(item=3, name='third', type='string', startIndex=4, endIndex=5, validators=[
+            Field(item=3, name='third', friendly_name='third', type='string', startIndex=4, endIndex=5, validators=[
                 passing_validator()
             ]),
         ]
@@ -237,10 +237,10 @@ def test_field_validators_blank_and_required_returns_error(first, second):
     schema = RowSchema(
         model=dict,
         fields=[
-            Field(item=1, name='first', type='string', startIndex=0, endIndex=1, required=True, validators=[
+            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=1, required=True, validators=[
                 passing_validator(),
             ]),
-            Field(item=2, name='second', type='string', startIndex=1, endIndex=3, required=True, validators=[
+            Field(item=2, name='second', friendly_name='second', type='string', startIndex=1, endIndex=3, required=True, validators=[
                 passing_validator(),
             ]),
         ]
@@ -267,7 +267,7 @@ def test_field_validators_blank_and_not_required_returns_valid(first):
     schema = RowSchema(
         model=dict,
         fields=[
-            Field(item=1, name='first', type='string', startIndex=0, endIndex=3, required=False, validators=[
+            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, required=False, validators=[
                 passing_validator(),
                 failing_validator()
             ]),
@@ -349,7 +349,7 @@ def test_multi_record_schema_parses_and_validates():
                     failing_validator()
                 ],
                 fields=[
-                    Field(item=1, name='first', type='string', startIndex=0, endIndex=3, validators=[
+                    Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
                         passing_validator()
                     ]),
                 ]
@@ -363,7 +363,7 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 fields=[
-                    Field(item=2, name='second', type='string', startIndex=2, endIndex=4, validators=[
+                    Field(item=2, name='second', friendly_name='first', type='string', startIndex=2, endIndex=4, validators=[
                         passing_validator()
                     ]),
                 ]
@@ -377,7 +377,7 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 fields=[
-                    Field(item=3, name='third', type='string', startIndex=4, endIndex=5, validators=[
+                    Field(item=3, name='third', friendly_name='first', type='string', startIndex=4, endIndex=5, validators=[
                         passing_validator()
                     ]),
                 ]
@@ -391,7 +391,7 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 fields=[
-                    Field(item=4, name='fourth', type='string', startIndex=4, endIndex=5, validators=[
+                    Field(item=4, name='fourth', friendly_name='first', type='string', startIndex=4, endIndex=5, validators=[
                         failing_validator()
                     ]),
                 ]

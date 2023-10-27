@@ -44,13 +44,13 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
             model=schema.model if schema else None
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
-        fields_json=None
+        fields_json={"friendly_name": getattr(field, 'friendly_name', None) if hasattr(field, 'friendly_name') else None}
     )
 
 
 def make_generate_parser_error(datafile, line_number):
     """Configure generate_parser_error with a datafile and line number."""
-    def generate(schema, error_category, error_message, record=None, field=None):
+    def generate(schema, error_category, error_message, record=None, field=None, field_json=None):
         return generate_parser_error(
             datafile=datafile,
             line_number=line_number,
@@ -58,7 +58,7 @@ def make_generate_parser_error(datafile, line_number):
             error_category=error_category,
             error_message=error_message,
             record=record,
-            field=field
+            field=field,
         )
 
     return generate
