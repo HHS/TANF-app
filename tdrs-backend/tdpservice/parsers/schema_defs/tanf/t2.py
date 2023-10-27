@@ -106,7 +106,7 @@ t2 = SchemaManager(schemas=[
                   validators=[validators.oneOf([1, 2])]),
             Field(item="32", name='DATE_OF_BIRTH', friendly_name='date of birth', type='number', startIndex=21, endIndex=29, required=True,
                   validators=[validators.isLargerThan(0),]),
-            TransformField(transform_func=tanf_ssn_decryption_func, item="33", name='SSN', type='string', startIndex=29,
+            TransformField(transform_func=tanf_ssn_decryption_func, item="33", name='SSN', friendly_name='social security number SSN', type='string', startIndex=29,
                            endIndex=38, required=True,
                            validators=[validators.validateSSN()], is_encrypted=False),
             Field(item="34A", name='RACE_HISPANIC', friendly_name='race hispanic', type='number', startIndex=38, endIndex=39, required=True,

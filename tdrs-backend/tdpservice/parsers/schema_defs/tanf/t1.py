@@ -232,7 +232,7 @@ t1 = SchemaManager(schemas=[
                         required=True, validators=[
                               validators.isLargerThanOrEqualTo(0),
                         ]),
-                  Field(item="26CII", name='FAMILY_CAP', friendly_name='family cap', failure_type='number', startIndex=110, endIndex=111,
+                  Field(item="26CII", name='FAMILY_CAP', friendly_name='family cap', type='number', startIndex=110, endIndex=111,
                         required=True, validators=[
                               validators.oneOf([1, 2]),
                         ]),
