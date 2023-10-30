@@ -44,7 +44,9 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
             model=schema.model if schema else None
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
-        fields_json={"friendly_name": getattr(field, 'friendly_name', None) if hasattr(field, 'friendly_name') else None}
+        fields_json={
+            "friendly_name": getattr(field, 'friendly_name', None) if hasattr(field, 'friendly_name') else None
+            }
     )
 
 
