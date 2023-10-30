@@ -472,6 +472,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile):
     assert err.error_message == 'EARNED_INCOME is required but a value was not provided.'
     assert err.content_type is not None
     assert err.object_id is not None
+    assert err.fields_json == {'friendly_name': 'earned income'}
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
