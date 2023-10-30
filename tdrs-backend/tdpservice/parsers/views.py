@@ -49,14 +49,13 @@ class ParsingErrorViewSet(ModelViewSet):
                         ('year', lambda x: str(x['rpt_month_year'])[0:4] if x['rpt_month_year'] else None),
                         ('month', lambda x: calendar.month_name[int(str(x['rpt_month_year'])[4:])] if x['rpt_month_year'] else None),
                         ('error_type', lambda x: x['error_type']),
-                        ('error_message', lambda x: x['error_message']),
+                        ('error_message', lambda x: x['error_message'].replace(x['field_name'],str(x['fields_json']['friendly_name']))),
                         ('item_number', lambda x: x['item_number']),
-                        ('item_name', lambda x: TANF_ITEM_NAME.get(x['field_name'])),
+                        ('item_name', lambda x: x['fields_json']['friendly_name']),
                         ('internal_variable_name', lambda x: x['field_name']),
                         ('row_number', lambda x: x['row_number']),
                         ('column_number', lambda x: x['column_number'])
 ]
-
 
         # write beta banner
         worksheet.write(row, col,

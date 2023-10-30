@@ -50,7 +50,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
 
 def make_generate_parser_error(datafile, line_number):
     """Configure generate_parser_error with a datafile and line number."""
-    def generate(schema, error_category, error_message, record=None, field=None, field_json=None):
+    def generate(schema, error_category, error_message, record=None, field=None):
         return generate_parser_error(
             datafile=datafile,
             line_number=line_number,
