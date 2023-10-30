@@ -65,7 +65,7 @@ def test_parse_line_parses_line_from_schema_to_dict():
     )
 
     record = schema.parse_line(line)
-    
+
     assert record['first'] == '123'
     assert record['second'] == '4'
     assert record['third'] == '5'
@@ -237,12 +237,30 @@ def test_field_validators_blank_and_required_returns_error(first, second):
     schema = RowSchema(
         model=dict,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=1, required=True, validators=[
-                passing_validator(),
-            ]),
-            Field(item=2, name='second', friendly_name='second', type='string', startIndex=1, endIndex=3, required=True, validators=[
-                passing_validator(),
-            ]),
+            Field(
+                item=1,
+                name='first',
+                friendly_name='first',
+                type='string',
+                startIndex=0,
+                endIndex=1,
+                required=True,
+                validators=[
+                    passing_validator(),
+                ]
+            ),
+            Field(
+                item=2,
+                name='second',
+                friendly_name='second',
+                type='string',
+                startIndex=1,
+                endIndex=3,
+                required=True,
+                validators=[
+                    passing_validator(),
+                ]
+            ),
         ]
     )
 
@@ -267,10 +285,19 @@ def test_field_validators_blank_and_not_required_returns_valid(first):
     schema = RowSchema(
         model=dict,
         fields=[
-            Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, required=False, validators=[
-                passing_validator(),
-                failing_validator()
-            ]),
+            Field(
+                item=1,
+                name='first',
+                friendly_name='first',
+                type='string',
+                startIndex=0,
+                endIndex=3,
+                required=False,
+                validators=[
+                    passing_validator(),
+                    failing_validator()
+                ]
+            ),
         ]
     )
 
@@ -349,9 +376,15 @@ def test_multi_record_schema_parses_and_validates():
                     failing_validator()
                 ],
                 fields=[
-                    Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
-                        passing_validator()
-                    ]),
+                    Field(
+                        item=1,
+                        name='first',
+                        friendly_name='first',
+                        type='string',
+                        startIndex=0,
+                        endIndex=3,
+                        validators=[passing_validator()]
+                        ),
                 ]
             ),
             RowSchema(
@@ -363,9 +396,14 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 fields=[
-                    Field(item=2, name='second', friendly_name='first', type='string', startIndex=2, endIndex=4, validators=[
-                        passing_validator()
-                    ]),
+                    Field(
+                        item=2,
+                        name='second',
+                        friendly_name='first',
+                        type='string',
+                        startIndex=2,
+                        endIndex=4,
+                        validators=[passing_validator()]),
                 ]
             ),
             RowSchema(
@@ -377,9 +415,15 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 fields=[
-                    Field(item=3, name='third', friendly_name='first', type='string', startIndex=4, endIndex=5, validators=[
-                        passing_validator()
-                    ]),
+                    Field(
+                        item=3,
+                        name='third',
+                        friendly_name='first',
+                        type='string',
+                        startIndex=4,
+                        endIndex=5,
+                        validators=[passing_validator()]
+                        ),
                 ]
             ),
             RowSchema(
@@ -391,9 +435,15 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 fields=[
-                    Field(item=4, name='fourth', friendly_name='first', type='string', startIndex=4, endIndex=5, validators=[
-                        failing_validator()
-                    ]),
+                    Field(
+                        item=4,
+                        name='fourth',
+                        friendly_name='first',
+                        type='string',
+                        startIndex=4,
+                        endIndex=5,
+                        validators=[failing_validator()]
+                        ),
                 ]
             )
         ]
