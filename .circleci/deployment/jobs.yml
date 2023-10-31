@@ -8,10 +8,10 @@
     steps:
       when:
         condition: << pipeline.parameters.run_dev_deployment >>
-          steps:
-            - deploy-cloud-dot-gov:
-                backend-appname: tdp-backend-<< parameters.target_env >>
-                frontend-appname: tdp-frontend-<< parameters.target_env >>
+        steps:
+          - deploy-cloud-dot-gov:
+              backend-appname: tdp-backend-<< parameters.target_env >>
+              frontend-appname: tdp-frontend-<< parameters.target_env >>
 
   deploy-staging:
     executor: docker-executor
@@ -41,7 +41,7 @@
     steps:
       when:
         condition: << pipeline.parameters.run_dev_deployment >>
-          steps:
+        steps:
             - deploy-infrastructure:
               cf-app: << parameters.target_env >>
 
