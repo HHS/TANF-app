@@ -1,12 +1,13 @@
 #workflows:
   deployment:
     when:
-      or:
-        - equal: [ master, << pipeline.git.branch >> ]
-        - equal: [ main, << pipeline.git.branch >> ]
-        - equal: [ develop, << pipeline.git.branch >> ]
-        - << pipeline.parameters.run_dev_deployment >>
-    unless: << pipeline.parameters.run_nightly_owasp_scan >>
+      and:
+        - or:
+            - equal: [ master, << pipeline.git.branch >> ]
+            - equal: [ main, << pipeline.git.branch >> ]
+            - equal: [ develop, << pipeline.git.branch >> ]
+            - << pipeline.parameters.run_dev_deployment >>
+        - not: << pipeline.parameters.run_nightly_owasp_scan >>
 
     jobs:
       - deploy-project-updates-site:
@@ -126,4 +127,3 @@
               only:
                 - develop
                 - master
-                
