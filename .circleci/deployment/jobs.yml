@@ -6,9 +6,12 @@
         type: string
     working_directory: ~/tdp-deploy
     steps:
-      - deploy-cloud-dot-gov:
-          backend-appname: tdp-backend-<< parameters.target_env >>
-          frontend-appname: tdp-frontend-<< parameters.target_env >>
+      when:
+        condition: << pipeline.parameters.run_dev_deployment >>
+          steps:
+            - deploy-cloud-dot-gov:
+                backend-appname: tdp-backend-<< parameters.target_env >>
+                frontend-appname: tdp-frontend-<< parameters.target_env >>
 
   deploy-staging:
     executor: docker-executor
@@ -35,24 +38,14 @@
   deploy-infrastructure-dev:
     executor: terraform/default
     working_directory: ~/tdp-deploy
-    parameters:
-      target_env:
-        type: string
     steps:
-      - deploy-infrastructure:
-          cf-app: << parameters.target_env >>
+      when:
+        condition: << pipeline.parameters.run_dev_deployment >>
+          steps:
+            - deploy-infrastructure:
+              cf-app: << parameters.target_env >>
 
   deploy-infrastructure-staging:
-    executor: terraform/default
-    working_directory: ~/tdp-deploy
-    steps:
-      - deploy-infrastructure:
-          cf-password: CF_PASSWORD_STAGING
-          cf-username: CF_USERNAME_STAGING
-          cf-space: tanf-staging
-          tf-path: ./terraform/staging
-
-  deploy-infrastructure-develop:
     executor: terraform/default
     working_directory: ~/tdp-deploy
     steps:
