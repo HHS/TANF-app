@@ -96,7 +96,7 @@
                 - master
       - deploy-develop:
           requires:
-            - deploy-infrastructure-develop
+            - deploy-infrastructure-staging
           filters:
             branches:
               only:
