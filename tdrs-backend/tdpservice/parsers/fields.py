@@ -49,7 +49,7 @@ class Field:
 
     def parse_value(self, line):
         """Parse the value for a field given a line, startIndex, endIndex, and field type."""
-        value = line[self.startIndex : self.endIndex]
+        value = line[self.startIndex: self.endIndex]
 
         if value_is_empty(value, self.endIndex - self.startIndex):
             logger.debug(
