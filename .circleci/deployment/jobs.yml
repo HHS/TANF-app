@@ -1,14 +1,17 @@
 # jobs:
   deploy-dev:
     executor: docker-executor
+    parameters:
+      target_env:
+        type: string
     working_directory: ~/tdp-deploy
     steps:
       - when:
           condition: << pipeline.parameters.run_dev_deployment >>
           steps:
             - deploy-cloud-dot-gov:
-                backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
-                frontend-appname: tdp-frontend-<< pipeline.parameters.target_env >>
+                backend-appname: tdp-backend-<< parameters.target_env >>
+                frontend-appname: tdp-frontend-<< parameters.target_env >>
 
   deploy-staging:
     executor: docker-executor
@@ -33,7 +36,7 @@
           cf-username: CF_USERNAME_STAGING
 
   deploy-infrastructure-dev:
-    parameters:
+  parameters:
       target_env:
         type: string
     executor: terraform/default
@@ -43,7 +46,7 @@
           condition: << pipeline.parameters.run_dev_deployment >>
           steps:
               - deploy-infrastructure:
-                cf-app: << pipeline.parameters.target_env >>
+                cf-app: << parameters.target_env >>
 
   deploy-infrastructure-staging:
     executor: terraform/default

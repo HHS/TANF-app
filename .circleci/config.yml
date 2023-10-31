@@ -39,7 +39,7 @@ parameters:
     default: false
   target_env:
     type: string
-    default: 'nil'
+    default: ''
   triggered:
     type: boolean
     default: false

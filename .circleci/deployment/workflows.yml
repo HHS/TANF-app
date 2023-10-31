@@ -17,6 +17,7 @@
                 - develop
                 - master
       - deploy-infrastructure-dev:
+          target_env: << pipeline.parameters.target_env >>
           filters:
             branches:
               ignore:
@@ -84,6 +85,7 @@
               only:
                 - master
       - deploy-dev:
+          target_env: << pipeline.parameters.target_env >>
           requires:
             - deploy-infrastructure-dev
           filters:
