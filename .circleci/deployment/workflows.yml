@@ -84,7 +84,6 @@
               only:
                 - master
       - deploy-dev:
-          target_env: << pipeline.parameters.target_env >>
           requires:
             - deploy-infrastructure-dev
           filters:
