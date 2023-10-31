@@ -1,9 +1,9 @@
 # jobs:
   deploy-dev:
-    executor: docker-executor
     parameters:
       target_env:
         type: string
+    executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - when:
@@ -36,7 +36,7 @@
           cf-username: CF_USERNAME_STAGING
 
   deploy-infrastructure-dev:
-  parameters:
+    parameters:
       target_env:
         type: string
     executor: terraform/default
