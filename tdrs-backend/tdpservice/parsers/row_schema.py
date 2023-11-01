@@ -148,7 +148,9 @@ class RowSchema:
         errors = []
 
         for validator in self.postparsing_validators:
-            validator_is_valid, validator_error = validator(instance)
+            validator_is_valid, validator_error, fields = validator(instance)
+            friendly_field_names = [field.friendly_name for field in self.fields if field.name in fields]
+            print('+++++++++++++++++++: ', friendly_field_names)
             is_valid = False if not validator_is_valid else is_valid
             if validator_error:
                 errors.append(

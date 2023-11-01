@@ -43,13 +43,13 @@ def if_then_validator(condition_field, condition_function,
 
         validator1_result = condition_function(value1)
         validator2_result = result_function(value2)
-        return (True, None) if not validator1_result[0] else (
+        return (True, None, [condition_field, result_field]) if not validator1_result[0] else (
             validator2_result[0], (f'if {condition_field} '
                                    + (validator1_result[1] if validator1_result[1] is not None
                                       else f":{value1} validator1 passed")
                                    + f' then {result_field} '
                                    + (validator2_result[1] if validator2_result[1] is not None
-                                      else "validator2 passed")) if not validator2_result[0] else None)
+                                      else "validator2 passed")) if not validator2_result[0] else None, [condition_field, result_field])
 
     return lambda value: if_then_validator_func(value)
 
@@ -61,8 +61,8 @@ def sumIsEqual(condition_field, sum_fields=[]):
             sum += value[field] if type(value) is dict else getattr(value, field)
 
         condition_val = value[condition_field] if type(value) is dict else getattr(value, condition_field)
-        return (True, None) if sum == condition_val else (False,
-                                                          f"The sum of {sum_fields} does not equal {condition_field}.")
+        return (True, None, [condition_field, sum_fields]) if sum == condition_val else (False,
+                                                          f"The sum of {sum_fields} does not equal {condition_field}.", [condition_field, sum_fields])
 
     return lambda value: sumIsEqualFunc(value)
 
@@ -73,7 +73,7 @@ def sumIsLarger(fields, val):
         for field in fields:
             sum += value[field] if type(value) is dict else getattr(value, field)
 
-        return (True, None) if sum > val else (False, f"The sum of {fields} is not larger than {val}.")
+        return (True, None, fields) if sum > val else (False, f"The sum of {fields} is not larger than {val}.", fields)
 
     return lambda value: sumIsLargerFunc(value)
 
@@ -296,11 +296,12 @@ def validate__FAM_AFF__SSN():
         if FAMILY_AFFILIATION == 2 and (CITIZENSHIP_STATUS == 1 or CITIZENSHIP_STATUS == 2):
             if SSN in [str(i) * 9 for i in range(10)]:
                 return (False,
-                        'If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, then SSN != 000000000 -- 999999999.')
+                        'If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, then SSN != 000000000 -- 999999999.',
+                        ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
             else:
-                return (True, None)
+                return (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
         else:
-            return (True, None)
+            return (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
     return lambda instance: validate(instance)
 
 def validate__FAM_AFF__HOH__Fed_Time():
@@ -317,12 +318,12 @@ def validate__FAM_AFF__HOH__Fed_Time():
         if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
             if int(MONTHS_FED_TIME_LIMIT) < 1:
                 return (False,
-                        'If FAMILY_AFFILIATION == 2 and MONTHS_FED_TIME_LIMIT== 1 or 2, then MONTHS_FED_TIME_LIMIT > 1.'
-                        )
+                        'If FAMILY_AFFILIATION == 2 and MONTHS_FED_TIME_LIMIT== 1 or 2, then MONTHS_FED_TIME_LIMIT > 1.',
+                        ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'MONTHS_FED_TIME_LIMIT'])
             else:
-                return (True, None)
+                return (True, None, ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'MONTHS_FED_TIME_LIMIT'])
         else:
-            return (True, None)
+            return (True, None, ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'MONTHS_FED_TIME_LIMIT'])
     return lambda instance: validate(instance)
 
 def validate__FAM_AFF__HOH__Count_Fed_Time():
@@ -339,11 +340,12 @@ def validate__FAM_AFF__HOH__Count_Fed_Time():
         if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
             if int(COUNTABLE_MONTH_FED_TIME) < 1:
                 return (False, 'If FAMILY_AFFILIATION == 2 and COUNTABLE_MONTH_FED_TIME== 1 or 2, then ' +
-                        'COUNTABLE_MONTH_FED_TIME > 1.')
+                        'COUNTABLE_MONTH_FED_TIME > 1.',
+                        ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'COUNTABLE_MONTH_FED_TIME'])
             else:
-                return (True, None)
+                return (True, None, ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'COUNTABLE_MONTH_FED_TIME'])
         else:
-            return (True, None)
+            return (True, None , ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'COUNTABLE_MONTH_FED_TIME'])
     return lambda instance: validate(instance)
 
 
