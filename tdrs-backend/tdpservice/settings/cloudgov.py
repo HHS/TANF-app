@@ -70,7 +70,11 @@ class CloudGov(Common):
     #
     env_based_db_name = f'tdp_db_{cloudgov_space_suffix}_{cloudgov_name}'
 
-    db_name = database_creds['db_name'] if (cloudgov_space_suffix in ["prod",  "staging"]) else env_based_db_name
+    logger.debug("css: " + cloudgov_space_suffix)
+    if (cloudgov_space_suffix in ["prod", "staging"]):
+        db_name = database_creds['db_name']
+    else:
+        db_name = env_based_db_name
 
     DATABASES = {
         'default': {

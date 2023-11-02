@@ -51,6 +51,8 @@ set_cf_envs()
   "FRONTEND_BASE_URL"
   "LOGGING_LEVEL"
   "REDIS_URI"
+  "JWT_KEY"
+  "STAGING_JWT_KEY"
   )
 
   echo "Setting environment variables for $CGAPPNAME_BACKEND"
@@ -62,6 +64,8 @@ set_cf_envs()
         cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
         $cf_cmd
         continue
+    elif [[ ("$var_name" =~ "STAGING_*") && ("$CF_SPACE" = "tanf-staging") ]]; then
+        var_name=$(echo "$var_name" | sed -e 's@STAGING_@@g')
     fi
 
     cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
@@ -128,7 +132,7 @@ update_backend()
 bind_backend_to_services() {
     echo "Binding services to app: $CGAPPNAME_BACKEND"
 
-    if [ "$CFAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
+    if [ "$CGAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
       # TODO: this is technical debt, we should either make staging mimic tanf-dev 
       #       or make unique services for all apps but we have a services limit
       #       Introducing technical debt for release 3.0.0 specifically.
