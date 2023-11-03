@@ -64,11 +64,13 @@ set_cf_envs()
         cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
         $cf_cmd
         continue
-    elif [[ ("$var_name" =~ "STAGING_*") && ("$CF_SPACE" = "tanf-staging") ]]; then
-        var_name=$(echo "$var_name" | sed -e 's@STAGING_@@g')
+    elif [[ ("$var_name" =~ "STAGING_") && ("$CF_SPACE" = "tanf-staging") ]]; then
+        sed_var_name=$(echo "$var_name" | sed -e 's@STAGING_@@g')
+        cf_cmd="cf set-env $CGAPPNAME_BACKEND $sed_var_name ${!var_name}"
+    else
+      cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
     fi
-
-    cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+    
     echo "Setting var : $var_name"
     $cf_cmd
   done
