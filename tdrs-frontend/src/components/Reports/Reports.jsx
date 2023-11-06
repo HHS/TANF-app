@@ -11,6 +11,7 @@ import {
   setFileType,
   getCurrentSubmission,
 } from '../../actions/reports'
+import { STT_ALPHA_DATA } from '../../mirage.data.js'
 import UploadReport from '../UploadReport'
 import STTComboBox from '../STTComboBox'
 import { fetchSttList } from '../../actions/sttList'
@@ -38,7 +39,8 @@ function Reports() {
   // The logged in user saved in our redux `auth` state object
   const user = useSelector((state) => state.auth.user)
   const isOFAAdmin = useSelector(selectPrimaryUserRole)?.name === 'OFA Admin'
-  const sttList = useSelector((state) => state?.stts?.sttList)
+  // const sttList = useSelector((state) => state?.stts?.sttList)
+  const sttList = STT_ALPHA_DATA
 
   const [errorModalVisible, setErrorModalVisible] = useState(false)
   const files = useSelector((state) => state.reports.submittedFiles)
@@ -59,7 +61,8 @@ function Reports() {
     Q4: 'Quarter 4 (July - September)',
   }
 
-  const currentStt = isOFAAdmin ? selectedStt : userProfileStt
+  // const currentStt = isOFAAdmin ? selectedStt : userProfileStt
+  const currentStt = sttList[0]
 
   const stt = sttList?.find((stt) => stt?.name === currentStt)
 

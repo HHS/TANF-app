@@ -1,0 +1,3 @@
+elasticsearch.hosts: ["http://elastic:9200"]
+server.host: kibana
+#logging.root.level: debug

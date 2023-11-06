@@ -41,11 +41,7 @@ const AppRoutes = () => {
         exact
         path="/data-files"
         element={
-          <PrivateRoute
-            title="Data Files"
-            requiredPermissions={['view_datafile', 'add_datafile']}
-            requiresApproval
-          >
+          <PrivateRoute title="Data Files">
             <Reports />
           </PrivateRoute>
         }

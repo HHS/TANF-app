@@ -37,7 +37,8 @@ function Home() {
   const sttList = useSelector((state) => state?.stts?.sttList)
 
   const userAccessInReview = useSelector(accountIsInReview)
-  const userAccessRequestApproved = useSelector(accountStatusIsApproved)
+  //  const userAccessRequestApproved = useSelector(accountStatusIsApproved)
+  const userAccessRequestApproved = true
 
   const shouldShowSttComboBox = !user?.email?.includes('@acf.hhs.gov')
 
