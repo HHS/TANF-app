@@ -60,7 +60,8 @@ class Field:
 class TransformField(Field):
     """Represents a field that requires some transformation before serializing."""
 
-    def __init__(self, transform_func, item, name, type, startIndex, endIndex, required=True, validators=[], **kwargs):
+    def __init__(self, transform_func, item, name, type, startIndex, endIndex, required=True,
+                 validators=[], **kwargs):
         super().__init__(item, name, type, startIndex, endIndex, required, validators)
         self.transform_func = transform_func
         self.kwargs = kwargs
