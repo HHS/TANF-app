@@ -298,7 +298,12 @@ def validateRace():
 
 # outlier validators
 def validate__FAM_AFF__SSN():
-    """If item 30 ==2 and item 42 ==1 or 2, then item 33 != 000000000 -- 999999999."""
+    """
+    Validate social security number provided.
+
+    If item FAMILY_AFFILIATION ==2 and item CITIZENSHIP_STATUS ==1 or 2,
+    then item SSN != 000000000 -- 999999999.
+    """
     # value is instance
     def validate(instance):
         FAMILY_AFFILIATION = instance['FAMILY_AFFILIATION'] if type(instance) is dict else \
