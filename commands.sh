@@ -227,7 +227,7 @@ tdrs-run-deploy() {
     --url https://circleci.com/api/v2/project/github/raft-tech/TANF-app/pipeline \
     --header 'Circle-Token: '$CIRCLE_CI_TOKEN \
     --header 'content-type: application/json' \
-    --data '{"parameters":{"triggered": true, "run_dev_deployment": true, "target_env":"'$TARGET_ENV'"}, "branch":"'$BRANCH'"}'
+    --data '{"parameters":{"run_dev_deployment": true, "target_env":"'$TARGET_ENV'"}, "branch":"'$BRANCH'"}'
 }
 
 # List all aliases and functions associated with tdrs
