@@ -83,5 +83,5 @@ workflows:
                 - main
                 - master
                 - /^release.*/
-                - /^2722*/ #DELETE BEFORE MERGE
+                - '2722/circleci' #DELETE BEFORE MERGE
 
