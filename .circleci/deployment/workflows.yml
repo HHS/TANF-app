@@ -22,6 +22,7 @@
           filters:
             branches:
               ignore:
+                - '2722/circleci' #DELETE BEFORE MERGE
                 - develop
                 - main
                 - master
@@ -94,6 +95,7 @@
           filters:
             branches:
               ignore:
+                - '2722/circleci' #DELETE BEFORE MERGE
                 - develop
                 - main
                 - master
