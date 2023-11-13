@@ -57,11 +57,11 @@
       - when:
           condition: << pipeline.parameters.run_dev_deployment >>
           steps:
-              - deploy-infrastructure:
-                cf-app: << parameters.target_env >>
-              - run:
-                name: Update CHECK RUN
-                command: CHECK_RUN="true"
+            - deploy-infrastructure:
+              cf-app: << parameters.target_env >>
+            - run:
+              name: Update CHECK RUN
+              command: CHECK_RUN="true"
       - run:
           name: Echo Check Run
           command: echo "dev-deploy run = $CHECK_RUN"
