@@ -30,6 +30,15 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
     """Create and return a ParserError using args."""
+    if type(field) == list:
+        fields_json = { 
+            "friend_name": {
+                getattr(f, 'name', None): getattr(f, 'friendly_name', None) for f in field 
+            }
+        }
+    else:
+        fields_json = {}
+    
     return ParserError(
         file=datafile,
         row_number=line_number,
@@ -44,9 +53,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
             model=schema.model if schema else None
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
-        fields_json={
-            "friendly_name": getattr(field, 'friendly_name', None) if hasattr(field, 'friendly_name') else None
-            }
+        fields_json=fields_json
     )
 
 

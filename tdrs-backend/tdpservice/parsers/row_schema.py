@@ -148,18 +148,19 @@ class RowSchema:
         errors = []
 
         for validator in self.postparsing_validators:
-            validator_is_valid, validator_error, fields = validator(instance)
-            friendly_field_names = [field.friendly_name for field in self.fields if field.name in fields]
-            print('+++++++++++++++++++: ', friendly_field_names)
+            validator_is_valid, validator_error, field_names = validator(instance)
+            #friendly_field_names = [field.friendly_name for field in self.fields if field.name in fields]
             is_valid = False if not validator_is_valid else is_valid
             if validator_error:
+                # get field from field name
+                fields = [self.get_field_by_name(name) for name in field_names]
                 errors.append(
                     generate_error(
                         schema=self,
                         error_category=ParserErrorCategoryChoices.VALUE_CONSISTENCY,
                         error_message=validator_error,
                         record=instance,
-                        field=None
+                        field=fields,
                     )
                 )
 

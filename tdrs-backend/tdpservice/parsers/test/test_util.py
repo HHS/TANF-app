@@ -3,7 +3,8 @@
 import pytest
 from ..fields import Field, value_is_empty
 from ..row_schema import RowSchema
-from ..util import SchemaManager
+from .. import schema_defs
+from ..util import SchemaManager, make_generate_parser_error, create_test_datafile
 
 
 def passing_validator():
@@ -15,6 +16,14 @@ def failing_validator():
     """Fake validator that always returns invalid."""
     return lambda _: (False, 'Value is not valid.')
 
+def passing_postparsing_validator():
+    """Fake validator that always returns valid."""
+    return lambda _: (True, None, [])
+
+
+def failing_postparsing_validator():
+    """Fake validator that always returns invalid."""
+    return lambda _: (False, 'Value is not valid.', [])
 
 def error_func(schema, error_category, error_message, record, field):
     """Fake error func that returns an error_message."""
@@ -306,12 +315,19 @@ def test_field_validators_blank_and_not_required_returns_valid(first):
     assert errors == []
 
 
+@pytest.fixture
+def test_datafile(stt_user, stt):
+    """Fixture for small_correct_file."""
+    return create_test_datafile('empty_file', stt_user, stt)
+
+
+
 def test_run_postparsing_validators_returns_valid():
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
     instance = {}
     schema = RowSchema(
         postparsing_validators=[
-            passing_validator()
+            passing_postparsing_validator()
         ]
     )
 
@@ -325,8 +341,8 @@ def test_run_postparsing_validators_returns_invalid_and_errors():
     instance = {}
     schema = RowSchema(
         postparsing_validators=[
-            passing_validator(),
-            failing_validator()
+            passing_postparsing_validator(),
+            failing_postparsing_validator()
         ]
     )
 
@@ -373,7 +389,7 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 postparsing_validators=[
-                    failing_validator()
+                    failing_postparsing_validator()
                 ],
                 fields=[
                     Field(
@@ -393,7 +409,7 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 postparsing_validators=[
-                    passing_validator()
+                    passing_postparsing_validator()
                 ],
                 fields=[
                     Field(
@@ -412,7 +428,7 @@ def test_multi_record_schema_parses_and_validates():
                     failing_validator()
                 ],
                 postparsing_validators=[
-                    passing_validator()
+                    passing_postparsing_validator()
                 ],
                 fields=[
                     Field(
@@ -432,7 +448,7 @@ def test_multi_record_schema_parses_and_validates():
                     passing_validator()
                 ],
                 postparsing_validators=[
-                    passing_validator()
+                    passing_postparsing_validator()
                 ],
                 fields=[
                     Field(
