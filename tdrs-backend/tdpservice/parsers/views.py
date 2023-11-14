@@ -50,11 +50,11 @@ class ParsingErrorViewSet(ModelViewSet):
                 int(str(x['rpt_month_year'])[4:])
                 ] if x['rpt_month_year'] else None),
             ('error_type', lambda x: x['error_type']),
-            ('error_message', lambda x: 1), #lambda x: x['error_message'].replace(
-                #x['field_name'],
-                #str(x['fields_json']))),
+            ('error_message', lambda x: 1), lambda x: x['error_message'].replace(
+                x['field_name'],
+                str(x['fields_json']['friendly_name'])),
             ('item_number', lambda x: x['item_number']),
-            ('item_name', lambda x: str(x['fields_json'])),
+            ('item_name', lambda x: str(x['fields_json']['friendly_name'])),
             ('internal_variable_name', lambda x: x['field_name']),
             ('row_number', lambda x: x['row_number']),
             ('column_number', lambda x: x['column_number'])

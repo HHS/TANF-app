@@ -32,7 +32,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
     """Create and return a ParserError using args."""
     if type(field) == list:
         fields_json = {
-            "friend_name": {
+            "friendly_name": {
                 getattr(f, 'name', None): getattr(f, 'friendly_name', None) for f in field
             }
         }

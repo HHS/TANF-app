@@ -192,7 +192,7 @@ m1 = SchemaManager(
                         validators.isLargerThanOrEqualTo(0),
                     ]),
               Field(item="24AII", name='WORK_REQ_SANCTION', type='number', startIndex=95, endIndex=96,
-                    friendly_name="work requirements sanction", srequired=True, validators=[
+                    friendly_name="work requirements sanction", required=True, validators=[
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="24AIII", name='FAMILY_SANC_ADULT', type='number', startIndex=96, endIndex=97,

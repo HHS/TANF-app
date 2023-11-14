@@ -3,7 +3,7 @@
 import pytest
 from ..fields import Field, value_is_empty
 from ..row_schema import RowSchema
-from ..util import SchemaManager, create_test_datafile
+from ..util import SchemaManager, make_generate_parser_error, create_test_datafile
 
 
 def passing_validator():
@@ -314,12 +314,6 @@ def test_field_validators_blank_and_not_required_returns_valid(first):
     assert errors == []
 
 
-@pytest.fixture
-def test_datafile(stt_user, stt):
-    """Fixture for small_correct_file."""
-    return create_test_datafile('empty_file', stt_user, stt)
-
-
 def test_run_postparsing_validators_returns_valid():
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
     instance = {}
@@ -485,3 +479,53 @@ def test_multi_record_schema_parses_and_validates():
     assert r3_record == {'fourth': '5'}
     assert r3_is_valid is False
     assert r3_errors == ['Value is not valid.']
+
+@pytest.fixture
+def test_datafile(stt_user, stt):
+    """Fixture for small_correct_file."""
+    return create_test_datafile('empty_file', stt_user, stt)
+
+@pytest.mark.django_db()
+def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile):
+    """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
+
+    def postparse_validator():
+        """Fake validator that always returns valid."""
+        return lambda _: (False, "an Error", ["FIRST", "SECOND"])
+
+    instance = {}
+    schema = RowSchema(
+        model=dict,
+        postparsing_validators=[
+            postparse_validator()
+        ],
+        fields=[
+            Field(
+                item=1,
+                name='FIRST',
+                friendly_name='first',
+                type='string',
+                startIndex=0,
+                endIndex=3,
+                required=False,
+                validators=[]
+            ),
+            Field(
+                item=2,
+                name='SECOND',
+                friendly_name='second',
+                type='string',
+                startIndex=3,
+                endIndex=4,
+                required=False,
+                validators=[]
+            ),
+        ]
+    )
+
+    is_valid, errors = schema.run_postparsing_validators(instance, make_generate_parser_error(
+        test_datafile, 10
+    ))
+    assert is_valid is False
+    assert errors[0].fields_json == {'friendly_name': {'FIRST': 'first', 'SECOND': 'second'}}
+    assert errors[0].error_message == "an Error"
