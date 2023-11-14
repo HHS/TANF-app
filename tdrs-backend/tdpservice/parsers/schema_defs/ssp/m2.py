@@ -291,7 +291,8 @@ m2 = SchemaManager(
                         validators.isInLimits(0, 99)
                     ]),
               Field(item="52A", name='ED_NO_HIGH_SCHOOL_DIPL_HOP', type='number', startIndex=102, endIndex=104,
-                    friendly_name="education no high school diploma - hours of participation", required=False, validators=[
+                    friendly_name="education no high school diploma - hours of participation",
+                    required=False, validators=[
                         validators.isInLimits(0, 99)
                     ]),
               Field(item="52B", name='ED_NO_HIGH_SCHOOL_DIPL_EA', type='number', startIndex=104, endIndex=106,

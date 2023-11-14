@@ -3,8 +3,7 @@
 import pytest
 from ..fields import Field, value_is_empty
 from ..row_schema import RowSchema
-from .. import schema_defs
-from ..util import SchemaManager, make_generate_parser_error, create_test_datafile
+from ..util import SchemaManager, create_test_datafile
 
 
 def passing_validator():
@@ -319,7 +318,6 @@ def test_field_validators_blank_and_not_required_returns_valid(first):
 def test_datafile(stt_user, stt):
     """Fixture for small_correct_file."""
     return create_test_datafile('empty_file', stt_user, stt)
-
 
 
 def test_run_postparsing_validators_returns_valid():

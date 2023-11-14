@@ -151,7 +151,6 @@ class RowSchema:
 
         for validator in self.postparsing_validators:
             validator_is_valid, validator_error, field_names = validator(instance)
-            #friendly_field_names = [field.friendly_name for field in self.fields if field.name in fields]
             is_valid = False if not validator_is_valid else is_valid
             if validator_error:
                 # get field from field name

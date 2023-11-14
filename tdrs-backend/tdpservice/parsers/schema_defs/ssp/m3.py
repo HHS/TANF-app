@@ -293,7 +293,7 @@ second_part_schema = RowSchema(
                   validators.oneOf([0, 1, 2, 3, 9])
               ]),
         Field(item="70A", name='UNEARNED_SSI', type='number', startIndex=93, endIndex=97,
-              friendly_name="unearned ssi", required=False, validators=[
+              friendly_name="unearned ssi",
               required=True, validators=[
                   validators.isInLimits(0, 9999)
               ]),

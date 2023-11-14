@@ -31,14 +31,14 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
     """Create and return a ParserError using args."""
     if type(field) == list:
-        fields_json = { 
+        fields_json = {
             "friend_name": {
-                getattr(f, 'name', None): getattr(f, 'friendly_name', None) for f in field 
+                getattr(f, 'name', None): getattr(f, 'friendly_name', None) for f in field
             }
         }
     else:
         fields_json = {}
-    
+
     return ParserError(
         file=datafile,
         row_number=line_number,
