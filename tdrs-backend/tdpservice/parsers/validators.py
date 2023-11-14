@@ -2,17 +2,24 @@
 
 from .models import ParserErrorCategoryChoices
 from datetime import date
+import logging
+
+logger = logging.getLogger(__name__)
 
 # higher order validator func
 
 
 def make_validator(validator_func, error_func):
     """Return a function accepting a value input and returning (bool, string) to represent validation state."""
-    return (
-        lambda value: (True, None)
-        if value is not None and validator_func(value)
-        else (False, error_func(value))
-    )
+    def validator(value):
+        try:
+            if validator_func(value):
+                return (True, None)
+            return (False, error_func(value))
+        except Exception as e:
+            logger.debug(f"Caught exception in validator. Exception: {e}")
+            return (False, error_func(value))
+    return validator
 
 
 def or_validators(*args, **kwargs):
@@ -114,7 +121,8 @@ def sumIsEqual(condition_field, sum_fields=[]):
     def sumIsEqualFunc(value):
         sum = 0
         for field in sum_fields:
-            sum += value[field] if type(value) is dict else getattr(value, field)
+            val = value[field] if type(value) is dict else getattr(value, field)
+            sum += 0 if val is None else val
 
         condition_val = (
             value[condition_field]
@@ -142,7 +150,8 @@ def sumIsLarger(fields, val):
     def sumIsLargerFunc(value):
         sum = 0
         for field in fields:
-            sum += value[field] if type(value) is dict else getattr(value, field)
+            temp_val = value[field] if type(value) is dict else getattr(value, field)
+            sum += 0 if temp_val is None else temp_val
 
         return (
             (True, None, [field for field in fields])
@@ -375,7 +384,12 @@ def validateRace():
 
 # outlier validators
 def validate__FAM_AFF__SSN():
-    """If item 30 ==2 and item 42 ==1 or 2, then item 33 != 000000000 -- 999999999."""
+    """
+    Validate social security number provided.
+
+    If item FAMILY_AFFILIATION ==2 and item CITIZENSHIP_STATUS ==1 or 2,
+    then item SSN != 000000000 -- 999999999.
+    """
     # value is instance
     def validate(instance):
         FAMILY_AFFILIATION = (
@@ -427,13 +441,10 @@ def validate__FAM_AFF__HOH__Fed_Time():
             else getattr(instance, "MONTHS_FED_TIME_LIMIT")
         )
         if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
-            if int(MONTHS_FED_TIME_LIMIT) < 1:
-                return (
-                    False,
-                    "If FAMILY_AFFILIATION == 2 and MONTHS_FED_TIME_LIMIT== 1 or 2,\
-                              then MONTHS_FED_TIME_LIMIT > 1.",
-                    ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "MONTHS_FED_TIME_LIMIT"],
-                )
+            if MONTHS_FED_TIME_LIMIT is None or int(MONTHS_FED_TIME_LIMIT) < 1:
+                return (False,
+                        'If FAMILY_AFFILIATION == 2 and MONTHS_FED_TIME_LIMIT== 1 or 2, then MONTHS_FED_TIME_LIMIT > 1.'
+                        )
             else:
                 return (
                     True,
