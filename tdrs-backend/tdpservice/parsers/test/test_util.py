@@ -3,6 +3,7 @@
 import pytest
 from ..fields import Field, value_is_empty
 from ..row_schema import RowSchema
+from ..schema_defs import *
 from ..util import SchemaManager, make_generate_parser_error, create_test_datafile
 
 
