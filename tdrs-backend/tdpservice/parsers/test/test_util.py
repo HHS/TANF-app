@@ -482,12 +482,12 @@ def test_multi_record_schema_parses_and_validates():
     assert r3_errors == ['Value is not valid.']
 
 @pytest.fixture
-def test_datafile(stt_user, stt):
+def test_datafile_empty_file(stt_user, stt):
     """Fixture for small_correct_file."""
     return create_test_datafile('empty_file', stt_user, stt)
 
 @pytest.mark.django_db()
-def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile):
+def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_empty_file):
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
 
     def postparse_validator():
@@ -525,7 +525,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile):
     )
 
     is_valid, errors = schema.run_postparsing_validators(instance, make_generate_parser_error(
-        test_datafile, 10
+        test_datafile_empty_file, 10
     ))
     assert is_valid is False
     assert errors[0].fields_json == {'friendly_name': {'FIRST': 'first', 'SECOND': 'second'}}

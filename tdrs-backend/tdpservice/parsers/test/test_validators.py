@@ -624,7 +624,7 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         result = val(record)
         assert result == (False, 'If FAMILY_AFFILIATION == 2 and MONTHS_FED_TIME_LIMIT== 1 or 2, ' +
                           'then MONTHS_FED_TIME_LIMIT > 1.',
-                          ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'MONTHS_FED_TIME_LIMIT'])
+                          ['FAMILY_AFFILIATION', 'MONTHS_FED_TIME_LIMIT'])
 
     def test_validate_employment_status(self, record):
         """Test cat3 validator for employment status."""
