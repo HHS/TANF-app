@@ -267,7 +267,7 @@ def test_field_validators_blank_and_not_required_returns_valid(first):
     schema = RowSchema(
         model=dict,
         fields=[
-            Field(item=1, name='first', type='string', startIndex=0, endIndex=3, required=False, validators=[
+            Field(item=1, name='first', type='string', startIndex=0, endIndex=1, required=False, validators=[
                 passing_validator(),
                 failing_validator()
             ]),
