@@ -211,7 +211,7 @@ t2 = SchemaManager(schemas=[
             Field(item="53C", name='WORK_EXPERIENCE_HOL', type='string', startIndex=80, endIndex=82, required=False,
                   friendly_name='work experience holiday',
                   validators=[validators.isInStringRange(0, 99),]),
-            Field(item="54", name='OJT', type='string', startIndex=82, endIndex=84, required=False, 
+            Field(item="54", name='OJT', type='string', startIndex=82, endIndex=84, required=False,
                   friendly_name='ojt',
                   validators=[validators.isInStringRange(0, 99),]),
             Field(item="55A", name='JOB_SEARCH_HOP', type='string', startIndex=84, endIndex=86, required=False,

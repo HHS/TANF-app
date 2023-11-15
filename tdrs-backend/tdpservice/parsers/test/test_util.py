@@ -281,12 +281,12 @@ def test_field_validators_blank_and_required_returns_error(first, second):
     ]
 
 
-@pytest.mark.parametrize('first', [
-    (' '),
-    ('#'),
-    (None),
+@pytest.mark.parametrize('first, expected_valid, expected_errors', [
+    ('   ', True, []),
+    ('####', False, ['Value is not valid.']),
+    (None, True, []),
 ])
-def test_field_validators_blank_and_not_required_returns_valid(first):
+def test_field_validators_blank_and_not_required_returns_valid(first, expected_valid, expected_errors):
     """Test not required field returns valid if value not provided (blank)."""
     instance = {
         'first': first,
@@ -311,8 +311,8 @@ def test_field_validators_blank_and_not_required_returns_valid(first):
     )
 
     is_valid, errors = schema.run_field_validators(instance, error_func)
-    assert is_valid is True
-    assert errors == []
+    assert is_valid is expected_valid
+    assert errors == expected_errors
 
 
 def test_run_postparsing_validators_returns_valid():
