@@ -6,10 +6,7 @@
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
-      - when:
-          condition: << pipeline.parameters.run_dev_deployment >>
-          steps:
-            - deploy-cloud-dot-gov:
+      - deploy-cloud-dot-gov:
                 backend-appname: tdp-backend-<< parameters.target_env >>
                 frontend-appname: tdp-frontend-<< parameters.target_env >>
 
@@ -42,10 +39,7 @@
     executor: terraform/default
     working_directory: ~/tdp-deploy
     steps:
-      - when:
-          condition: << pipeline.parameters.run_dev_deployment >>
-          steps:
-              - deploy-infrastructure:
+      - deploy-infrastructure:
                 cf-app: << parameters.target_env >>
 
   deploy-infrastructure-staging:
