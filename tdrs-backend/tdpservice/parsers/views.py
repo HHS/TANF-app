@@ -39,6 +39,14 @@ class ParsingErrorViewSet(ModelViewSet):
 
     def _get_xls_serialized_file(self, data):
         """Return xls file created from the error."""
+
+        def format_error_msg(x):
+            """Format error message."""
+            error_msg = x['error_message']  
+            for  key, value in x['fields_json']['friendly_name'].items():
+                error_msg = error_msg.replace(key, value)
+            return error_msg
+
         row, col = 0, 0
         output = BytesIO()
         workbook = xlsxwriter.Workbook(output)
@@ -50,12 +58,10 @@ class ParsingErrorViewSet(ModelViewSet):
                 int(str(x['rpt_month_year'])[4:])
                 ] if x['rpt_month_year'] else None),
             ('error_type', lambda x: x['error_type']),
-            ('error_message', lambda x: 1), lambda x: x['error_message'].replace(
-                x['field_name'],
-                str(x['fields_json']['friendly_name'])),
+            ('error_message', lambda x: format_error_msg(x)),
             ('item_number', lambda x: x['item_number']),
-            ('item_name', lambda x: str(x['fields_json']['friendly_name'])),
-            ('internal_variable_name', lambda x: x['field_name']),
+            ('item_name', lambda x: ','.join([i for i in x['fields_json']['friendly_name'].values()])),
+            ('internal_variable_name', lambda x: ','.join([i for i in x['fields_json']['friendly_name'].keys()])),
             ('row_number', lambda x: x['row_number']),
             ('column_number', lambda x: x['column_number'])
         ]
@@ -73,10 +79,11 @@ class ParsingErrorViewSet(ModelViewSet):
             """Format header."""
             return ' '.join([i.capitalize() for i in header_list.split('_')])
 
-        [worksheet.write(row, col, format_header(key[0]), bold) for col, key in enumerate(report_columns)]
+        # We will write the headers in the first row
+        [worksheet.write(row, col, format_header(key[0]), bold) for col, key in  enumerate(report_columns)]
 
         [
-            worksheet.write(row + 3, col, key[1](data_i)) for col, key in enumerate(report_columns)
+            worksheet.write(row + 3, col, key[1](data_i)) for col, key in  enumerate(report_columns)
             for row, data_i in enumerate(data)
         ]
 

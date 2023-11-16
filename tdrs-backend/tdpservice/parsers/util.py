@@ -36,6 +36,12 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
                 getattr(f, 'name', None): getattr(f, 'friendly_name', None) for f in field
             }
         }
+    elif field is not None:
+        fields_json = {
+            "friendly_name": {
+                getattr(field, 'name', None): getattr(field, 'friendly_name', None),
+            }
+        }
     else:
         fields_json = {}
 
