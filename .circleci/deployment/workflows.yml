@@ -1,43 +1,56 @@
 #workflows:
-  dev-deployment:
+  deployment:
     when:
-      << pipeline.parameters.run_dev_deployment >>
-    jobs:
-      - deploy-infrastructure-dev:
-          target_env: << pipeline.parameters.target_env >>
-      - enable-versioning:
-          requires:
-            - deploy-infrastructure-dev
-          filters:
-            branches:
-              ignore:
-                - develop
-                - main
-                - master
-      - deploy-dev:
-          target_env: << pipeline.parameters.target_env >>
-          requires:
-            - deploy-infrastructure-dev
+      and:
+        - or:
+            - equal: [ master, << pipeline.git.branch >> ]
+            - equal: [ main, << pipeline.git.branch >> ]
+            - equal: [ develop, << pipeline.git.branch >> ]
+            - equal: [ hhs-dev-devops, << pipeline.git.branch >> ] #DELETE BEFORE MERGE
+            - << pipeline.parameters.run_dev_deployment >>
+        - not: << pipeline.parameters.run_nightly_owasp_scan >>
 
-  staging-deployment:
-    unless:
-      or:
-        - << pipeline.parameters.run_dev_deployment >>
-        - << pipeline.parameters.run_nightly_owasp_scan >>
     jobs:
       - deploy-project-updates-site:
           filters:
             branches:
               only:
                 - develop
-      - deploy-infrastructure-develop:
+                - master
+      - deploy-infrastructure-dev:
+          target_env: << pipeline.parameters.target_env >>
+          filters:
+            branches:
+              ignore:
+                - hhs-dev-devops #DELETE BEFORE MERGE
+                - develop
+                - main
+                - master
+      - deploy-infrastructure-staging:
           filters:
             branches:
               only:
+                - hhs-dev-devops #DELETE BEFORE MERGE
                 - develop
+                - main
+      - deploy-infrastructure-production:
+          filters:
+            branches:
+              only:
+                - master
       - enable-versioning:
           requires:
-            - deploy-infrastructure-develop
+            - deploy-infrastructure-dev
+          filters:
+            branches:
+              ignore:
+                - hhs-dev-devops #DELETE BEFORE MERGE
+                - develop
+                - main
+                - master
+      - enable-versioning:
+          requires:
+            - deploy-infrastructure-staging
           target_env: develop
           cf-password: CF_PASSWORD_STAGING
           cf-username: CF_USERNAME_STAGING
@@ -46,13 +59,69 @@
             branches:
               only:
                 - develop
+      - enable-versioning:
+          requires:
+            - deploy-infrastructure-staging
+          target_env: staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          filters:
+            branches:
+              only:
+                - hhs-dev-devops #DELETE BEFORE MERGE
+                - main
+      - enable-versioning:
+          requires:
+            - deploy-infrastructure-production
+          target_env: prod
+          cf-password: CF_PASSWORD_PROD
+          cf-username: CF_USERNAME_PROD
+          cf-space: tanf-prod
+          filters:
+            branches:
+              only:
+                - master
+      - prod-deploy-clamav:
+          requires:
+            - deploy-infrastructure-production
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-dev:
+          target_env: << pipeline.parameters.target_env >>
+          requires:
+            - deploy-infrastructure-dev
+          filters:
+            branches:
+              ignore:
+                - hhs-dev-devops #DELETE BEFORE MERGE
+                - develop
+                - main
+                - master
       - deploy-develop:
           requires:
-            - deploy-infrastructure-develop
+            - deploy-infrastructure-staging
           filters:
             branches:
               only:
                 - develop
+      - deploy-staging:
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - hhs-dev-devops #DELETE BEFORE MERGE
+                - main
+      - deploy-production:
+          requires:
+            - deploy-infrastructure-production
+          filters:
+            branches:
+              only:
+                - master
       - test-deployment-e2e:
           requires:
             - deploy-develop
@@ -65,62 +134,4 @@
             branches:
               only:
                 - develop
-      - deploy-infrastructure-staging:
-          filters:
-            branches:
-              only:
-                - main
-      - enable-versioning:
-          requires:
-            - deploy-infrastructure-staging
-          target_env: staging
-          cf-password: CF_PASSWORD_STAGING
-          cf-username: CF_USERNAME_STAGING
-          cf-space: tanf-staging
-          filters:
-            branches:
-              only:
-                - main
-      - deploy-staging:
-          requires:
-            - deploy-infrastructure-staging
-          filters:
-            branches:
-              only:
-                - main
-
-  production-deployment:
-    unless:
-      or:
-        - << pipeline.parameters.run_dev_deployment >>
-        - << pipeline.parameters.run_nightly_owasp_scan >>
-    jobs:
-      - deploy-infrastructure-production:
-          filters:
-            branches:
-              only:
                 - master
-      - enable-versioning:
-          requires:
-            - deploy-infrastructure-production
-          target_env: prod
-          cf-password: CF_PASSWORD_PROD
-          cf-username: CF_USERNAME_PROD
-          cf-space: tanf-prod
-          filters:
-            branches:
-              only:
-                - master
-      - deploy-production:
-          requires:
-            - deploy-infrastructure-production
-          filters:
-            branches:
-              only:
-                - master
-      - make_erd: # from ../util folder
-          filters:
-            branches:
-              only:
-                - master
-
