@@ -78,8 +78,8 @@ class TransformField(Field):
     def __init__(self, transform_func, item, name, friendly_name, type, startIndex, endIndex, required=True,
                  validators=[], **kwargs):
         super().__init__(
-            item=item, 
-            name=name, 
+            item=item,
+            name=name,
             type=type,
             friendly_name=friendly_name,
             startIndex=startIndex,
