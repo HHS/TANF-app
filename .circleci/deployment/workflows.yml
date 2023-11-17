@@ -16,7 +16,6 @@
             branches:
               only:
                 - develop
-                - master
       - deploy-infrastructure-dev:
           target_env: << pipeline.parameters.target_env >>
           filters:
