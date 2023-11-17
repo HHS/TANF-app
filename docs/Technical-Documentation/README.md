@@ -17,6 +17,7 @@ This directory contains system and architecture documentation including diagrams
 - [data-file-downloads.md](./data-file-downloads.md) : Provides an architecture-level view of data file storage and downloading.
 - [django-admin-logging.md](./django-admin-logging.md) : Outlines sections of the Django Administrator Console and details what should be logged.
 - [jwt-key-rotation.md](./jwt-key-rotation.md) : Describes the process for rotating JWT keys in Login.gov.
+- [nexus-repo.md](./nexus-repo.md) : Setup, connection information, and how to use our Nexus Artifact Repository
 - [openid-connect.md](./openid-connect.md) : Provides an architecture-level view of the OpenID Connect prototocol.
 - [rafts-accessibility-dos-and-donts.md](./rafts-accessibility-dos-and-donts.md) : A succint list of UX guidelines for frontend accessibility.
 - [remote-development.md](./remote-development.md) : A guide on doing live remote development in Cloud.gov.
