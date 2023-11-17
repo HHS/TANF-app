@@ -70,6 +70,7 @@ workflows:
           filters:
             branches:
               ignore:
+                - hhs-dev-devops #DELETE BEFORE MERGE
                 - main
                 - master
                 - /^release.*/
@@ -79,6 +80,7 @@ workflows:
           filters:
             branches:
               only:
+                - hhs-dev-devops #DELETE BEFORE MERGE
                 - develop
                 - main
                 - master
