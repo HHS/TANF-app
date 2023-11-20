@@ -49,19 +49,17 @@ def and_validators(validator1, validator2):
 
 def extended_and_validators(*args, **kwargs):
     """Return a validator that is true only if all validators are true."""
-    return (
-        lambda value: (True, None)
-        if all([validator(value)[0] for validator in args])
-        else (
-            False,
-            "".join(
+    def returned_func(value):
+        if all([validator(value)[0] for validator in args]):
+            return (True, None)
+        else:
+            return (False, "".join(
                 [
                     " and " + validator(value)[1] if validator(value)[0] else ""
                     for validator in args
                 ]
-            ),
-        )
-    )
+            ))
+    return returned_func
 
 
 def if_then_validator(

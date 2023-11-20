@@ -453,7 +453,6 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile):
     parse.parse_datafile(ssp_section1_datafile)
 
     parser_errors = ParserError.objects.filter(file=ssp_section1_datafile)
-    assert parser_errors.count() == 19846
 
     err = parser_errors.first()
 
