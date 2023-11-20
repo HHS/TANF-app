@@ -444,7 +444,7 @@ def validate__FAM_AFF__HOH__Fed_Time():
             if MONTHS_FED_TIME_LIMIT is None or int(MONTHS_FED_TIME_LIMIT) < 1:
                 return (False,
                         "If FAMILY_AFFILIATION == 2 and MONTHS_FED_TIME_LIMIT== 1 or 2,"
-                         +" then MONTHS_FED_TIME_LIMIT > 1.",
+                        + " then MONTHS_FED_TIME_LIMIT > 1.",
                         ['FAMILY_AFFILIATION', 'MONTHS_FED_TIME_LIMIT']
                         )
             else:

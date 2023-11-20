@@ -42,8 +42,8 @@ class ParsingErrorViewSet(ModelViewSet):
 
         def format_error_msg(x):
             """Format error message."""
-            error_msg = x['error_message']  
-            for  key, value in x['fields_json']['friendly_name'].items():
+            error_msg = x['error_message']
+            for key, value in x['fields_json']['friendly_name'].items():
                 error_msg = error_msg.replace(key, value)
             return error_msg
 
@@ -80,10 +80,10 @@ class ParsingErrorViewSet(ModelViewSet):
             return ' '.join([i.capitalize() for i in header_list.split('_')])
 
         # We will write the headers in the first row
-        [worksheet.write(row, col, format_header(key[0]), bold) for col, key in  enumerate(report_columns)]
+        [worksheet.write(row, col, format_header(key[0]), bold) for col, key in enumerate(report_columns)]
 
         [
-            worksheet.write(row + 3, col, key[1](data_i)) for col, key in  enumerate(report_columns)
+            worksheet.write(row + 3, col, key[1](data_i)) for col, key in enumerate(report_columns)
             for row, data_i in enumerate(data)
         ]
 
