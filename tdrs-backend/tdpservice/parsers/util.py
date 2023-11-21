@@ -168,7 +168,7 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             'G': {
                 'section': DataFile.Section.SSP_AGGREGATE_DATA,
                 'models': {
-                    # 'S6': schema_defs.ssp.m6,
+                    'M6': schema_defs.ssp.m6,
                 }
             },
             'S': {

@@ -210,3 +210,36 @@ class SSP_M3(models.Model):
     CITIZENSHIP_STATUS = models.IntegerField(null=True, blank=False)
     UNEARNED_SSI = models.IntegerField(null=True, blank=False)
     OTHER_UNEARNED_INCOME = models.IntegerField(null=True, blank=False)
+
+
+class SSP_M6(models.Model):
+    """
+    Parsed record representing an M6 data submission.
+
+    Mapped to an elastic search index.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='m6_parent'
+    )
+
+    RecordType = models.CharField(max_length=156, null=True, blank=False)
+    CALENDAR_QUARTER = models.IntegerField(null=True, blank=True)
+    RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
+
+    SSPMOE_FAMILIES = models.IntegerField(null=True, blank=True)
+    NUM_2_PARENTS = models.IntegerField(null=True, blank=True)
+    NUM_1_PARENTS = models.IntegerField(null=True, blank=True)
+    NUM_NO_PARENTS = models.IntegerField(null=True, blank=True)
+    NUM_RECIPIENTS = models.IntegerField(null=True, blank=True)
+    ADULT_RECIPIENTS = models.IntegerField(null=True, blank=True)
+    CHILD_RECIPIENTS = models.IntegerField(null=True, blank=True)
+    NONCUSTODIALS = models.IntegerField(null=True, blank=True)
+    AMT_ASSISTANCE = models.IntegerField(null=True, blank=True)
+    CLOSED_CASES = models.IntegerField(null=True, blank=True)

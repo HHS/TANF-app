@@ -2,8 +2,9 @@
 
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from ..models.ssp import SSP_M1, SSP_M2, SSP_M3
+from ..models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M6
 from .document_base import DocumentBase
+
 
 @registry.register_document
 class SSP_M1DataSubmissionDocument(DocumentBase, Document):
@@ -197,4 +198,38 @@ class SSP_M3DataSubmissionDocument(DocumentBase, Document):
             'CITIZENSHIP_STATUS',
             'UNEARNED_SSI',
             'OTHER_UNEARNED_INCOME',
+        ]
+
+
+@registry.register_document
+class SSP_M6DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed SSP M6 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'ssp_m6_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = SSP_M6
+        fields = [
+            'RecordType',
+            'CALENDAR_QUARTER',
+            'RPT_MONTH_YEAR',
+            'SSPMOE_FAMILIES',
+            'NUM_2_PARENTS',
+            'NUM_1_PARENTS',
+            'NUM_NO_PARENTS',
+            'NUM_RECIPIENTS',
+            'ADULT_RECIPIENTS',
+            'CHILD_RECIPIENTS',
+            'NONCUSTODIALS',
+            'AMT_ASSISTANCE',
+            'CLOSED_CASES',
         ]
