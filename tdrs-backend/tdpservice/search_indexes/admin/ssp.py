@@ -2,6 +2,7 @@
 from django.contrib import admin
 from .filter import CreationDateFilter
 
+
 class SSP_M1Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed M1 data files."""
 
@@ -52,4 +53,21 @@ class SSP_M3Admin(admin.ModelAdmin):
     list_filter = [
         CreationDateFilter,
         'RPT_MONTH_YEAR',
+    ]
+
+
+class SSP_M6Admin(admin.ModelAdmin):
+    """ModelAdmin class for parsed M6 data files."""
+
+    list_display = [
+        'RecordType',
+        'CALENDAR_QUARTER',
+        'RPT_MONTH_YEAR',
+        'datafile',
+    ]
+
+    list_filter = [
+        'CALENDAR_QUARTER',
+        CreationDateFilter,
+        'RPT_MONTH_YEAR'
     ]
