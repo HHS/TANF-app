@@ -24,7 +24,7 @@ s1 = RowSchema(
               friendly_name='record type', required=True, validators=[]),
         Field(item="2", name='CALENDAR_QUARTER', type='number', startIndex=2, endIndex=7,
               friendly_name='calendar quarter', required=True, validators=[validators.dateYearIsLargerThan(1998),
-                                         validators.quarterIsValid()]),
+                                                                           validators.quarterIsValid()]),
         TransformField(calendar_quarter_to_rpt_month_year(0), item="2B", name='RPT_MONTH_YEAR', type='number',
                        friendly_name='reporting month year',
                        startIndex=2, endIndex=7, required=True, validators=[validators.dateYearIsLargerThan(1998),
