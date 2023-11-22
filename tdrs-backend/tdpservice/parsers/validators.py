@@ -85,30 +85,31 @@ def if_then_validator(
 
         validator1_result = condition_function(value1)
         validator2_result = result_function(value2)
-        return (
-            (True, None, [condition_field, result_field])
-            if not validator1_result[0]
-            else (
-                validator2_result[0],
-                (
-                    f"if {condition_field} "
-                    + (
-                        validator1_result[1]
-                        if validator1_result[1] is not None
-                        else f":{value1} validator1 passed"
-                    )
-                    + f" then {result_field} "
-                    + (
-                        validator2_result[1]
-                        if validator2_result[1] is not None
-                        else "validator2 passed"
-                    )
-                )
-                if not validator2_result[0]
-                else None,
-                [condition_field, result_field],
-            )
-        )
+
+        if not validator1_result[0]:
+            returned_value = (True, None, [condition_field, result_field])
+        else:
+            if not validator2_result[0]:
+
+                # center of error message
+                if validator1_result[1] is not None:
+                    center_error = validator1_result[1]
+                else:
+                    center_error = f":{value1} validator1 passed"
+
+                # ending of error message
+                if validator2_result[1] is not None:
+                    ending_error = validator2_result[1]
+                else:
+                    ending_error = "validator2 passed"
+
+                error_message = f"if {condition_field} " + (center_error) + f" then {result_field} " + ending_error
+            else:
+                error_message = None
+
+            returned_value = (validator2_result[0], error_message, [condition_field, result_field])
+
+        return returned_value
 
     return lambda value: if_then_validator_func(value)
 
