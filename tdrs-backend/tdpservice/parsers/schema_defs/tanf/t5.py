@@ -240,8 +240,8 @@ t5 = SchemaManager(
                 Field(
                     item="19A",
                     name="REC_OASDI_INSURANCE",
-                    friendly_name="receives federal disability insurance benefits\
-                         under the social security OASDI program",
+                    friendly_name="receives federal disability insurance benefits"
+                        + " under the social security OASDI program",
                     type="number",
                     startIndex=44,
                     endIndex=45,
