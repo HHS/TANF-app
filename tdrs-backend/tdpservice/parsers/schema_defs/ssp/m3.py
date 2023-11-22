@@ -301,9 +301,4 @@ second_part_schema = RowSchema(
     ]
 )
 
-m3 = SchemaManager(
-    schemas=[
-        first_part_schema,
-        second_part_schema
-    ]
-)
+m3 = SchemaManager(schemas=[first_part_schema, second_part_schema])

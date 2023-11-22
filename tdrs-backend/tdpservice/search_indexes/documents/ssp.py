@@ -2,7 +2,7 @@
 
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from ..models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M6
+from ..models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M6, SSP_M7
 from .document_base import DocumentBase
 
 
@@ -200,7 +200,6 @@ class SSP_M3DataSubmissionDocument(DocumentBase, Document):
             'OTHER_UNEARNED_INCOME',
         ]
 
-
 @registry.register_document
 class SSP_M6DataSubmissionDocument(DocumentBase, Document):
     """Elastic search model mapping for a parsed SSP M6 data file."""
@@ -232,4 +231,30 @@ class SSP_M6DataSubmissionDocument(DocumentBase, Document):
             'NONCUSTODIALS',
             'AMT_ASSISTANCE',
             'CLOSED_CASES',
+        ]
+
+@registry.register_document
+class SSP_M7DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed SSP M7 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'ssp_m7_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = SSP_M7
+        fields = [
+            "RecordType",
+            "CALENDAR_QUARTER",
+            "RPT_MONTH_YEAR",
+            "TDRS_SECTION_IND",
+            "STRATUM",
+            "FAMILIES_MONTH",
         ]

@@ -10,7 +10,7 @@ from tdpservice.search_indexes.models.ssp import SSP_M2
 
 
 m2 = SchemaManager(
-      schemas=[
+    schemas=[
         RowSchema(
           model=SSP_M2,
           preparsing_validators=[
@@ -364,5 +364,5 @@ m2 = SchemaManager(
                     ]),
           ],
         )
-      ]
-  )
+    ]
+)

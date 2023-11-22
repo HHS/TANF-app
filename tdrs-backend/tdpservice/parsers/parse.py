@@ -251,50 +251,6 @@ def manager_parse_line(line, schema_manager, generate_error, is_encrypted=False)
             )
         ])]
 
-
-def get_schema_manager_options(program_type):
-    """Return the allowed schema options."""
-    match program_type:
-        case 'TAN':
-            return {
-                'A': {
-                    'T1': schema_defs.tanf.t1,
-                    'T2': schema_defs.tanf.t2,
-                    'T3': schema_defs.tanf.t3,
-                },
-                'C': {
-                    'T4': schema_defs.tanf.t4,
-                    'T5': schema_defs.tanf.t5,
-                },
-                'G': {
-                    'T6': schema_defs.tanf.t6,
-                },
-                'S': {
-                    'T7': schema_defs.tanf.t7,
-                },
-            }
-        case 'SSP':
-            return {
-                'A': {
-                    'M1': schema_defs.ssp.m1,
-                    'M2': schema_defs.ssp.m2,
-                    'M3': schema_defs.ssp.m3,
-                },
-                'C': {
-                    # 'M4': schema_options.m4,
-                    # 'M5': schema_options.m5,
-                },
-                'G': {
-                    # 'M6': schema_options.m6,
-                },
-                'S': {
-                    # 'M7': schema_options.m7,
-                },
-            }
-        # case tribal?
-    return None
-
-
 def get_schema_manager(line, section, program_type):
     """Return the appropriate schema for the line."""
     line_type = line[0:2]

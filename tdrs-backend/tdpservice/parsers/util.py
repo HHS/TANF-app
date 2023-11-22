@@ -161,8 +161,8 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             'C': {
                 'section': DataFile.Section.SSP_CLOSED_CASE_DATA,
                 'models': {
-                    # 'S4': schema_defs.ssp.m4,
-                    # 'S5': schema_defs.ssp.m5,
+                    # 'M4': schema_defs.ssp.m4,
+                    # 'M5': schema_defs.ssp.m5,
                 }
             },
             'G': {
@@ -174,7 +174,7 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             'S': {
                 'section': DataFile.Section.SSP_STRATUM_DATA,
                 'models': {
-                    # 'S7': schema_defs.ssp.m7,
+                    'M7': schema_defs.ssp.m7,
                 }
             }
         },

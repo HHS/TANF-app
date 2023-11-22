@@ -8,7 +8,7 @@ from ... import validators
 from tdpservice.search_indexes.models.ssp import SSP_M1
 
 m1 = SchemaManager(
-      schemas=[
+    schemas=[
         RowSchema(
           model=SSP_M1,
           preparsing_validators=[
@@ -243,5 +243,5 @@ m1 = SchemaManager(
                     required=False, validators=[]),
           ]
         )
-      ]
-  )
+    ]
+)
