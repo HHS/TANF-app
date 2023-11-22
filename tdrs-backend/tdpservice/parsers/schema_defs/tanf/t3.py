@@ -1,11 +1,11 @@
 """Schema for HEADER row of all submission types."""
 
 
-from ...util import SchemaManager
-from ...transforms import tanf_ssn_decryption_func
-from ...fields import TransformField, Field
-from ...row_schema import RowSchema
-from ... import validators
+from tdpservice.parsers.util import SchemaManager
+from tdpservice.parsers.transforms import tanf_ssn_decryption_func
+from tdpservice.parsers.fields import TransformField, Field
+from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers import validators
 from tdpservice.search_indexes.models.tanf import TANF_T3
 
 
@@ -133,7 +133,7 @@ child_one = RowSchema(
             endIndex=28,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
+                validators.dateYearIsLargerThan(1950),
                 validators.dateMonthIsValid(),
             ],
         ),
@@ -416,7 +416,7 @@ child_two = RowSchema(
             endIndex=69,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
+                validators.dateYearIsLargerThan(1950),
                 validators.dateMonthIsValid(),
             ],
         ),

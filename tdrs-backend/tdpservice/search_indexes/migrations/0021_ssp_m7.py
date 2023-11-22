@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('data_files', '0012_datafile_s3_versioning_id'),
-        ('search_indexes', '0019_ssp_m6'),
+        ('search_indexes', '0020_ssp_m4_ssp_m5'),
     ]
 
     operations = [

@@ -1,19 +1,18 @@
-"""Schema for HEADER row of all submission types."""
+"""Schema for SSP M1 record type."""
 
 
 from tdpservice.parsers.util import SchemaManager
 from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers import validators
-from tdpservice.search_indexes.models.tanf import TANF_T4
+from tdpservice.search_indexes.models.ssp import SSP_M4
 
-
-t4 = SchemaManager(
+m4 = SchemaManager(
     schemas=[
         RowSchema(
-            model=TANF_T4,
+            model=SSP_M4,
             preparsing_validators=[
-                validators.hasLength(71),
+                validators.hasLength(66),
             ],
             postparsing_validators=[],
             fields=[
@@ -27,7 +26,7 @@ t4 = SchemaManager(
                     validators=[],
                 ),
                 Field(
-                    item="4",
+                    item="3",
                     name="RPT_MONTH_YEAR",
                     type="number",
                     startIndex=2,
@@ -39,7 +38,7 @@ t4 = SchemaManager(
                     ],
                 ),
                 Field(
-                    item="6",
+                    item="5",
                     name="CASE_NUMBER",
                     type="string",
                     startIndex=8,
@@ -54,37 +53,37 @@ t4 = SchemaManager(
                     startIndex=19,
                     endIndex=22,
                     required=True,
-                    validators=[validators.isInStringRange(1, 999)],
+                    validators=[validators.isInStringRange(0, 999)],
                 ),
                 Field(
-                    item="5",
+                    item="4",
                     name="STRATUM",
                     type="string",
                     startIndex=22,
                     endIndex=24,
-                    required=True,
+                    required=False,
                     validators=[validators.isInStringRange(0, 99)],
                 ),
                 Field(
-                    item="7",
+                    item="6",
                     name="ZIP_CODE",
                     type="string",
                     startIndex=24,
                     endIndex=29,
                     required=True,
-                    validators=[],
+                    validators=[validators.isInStringRange(0, 99999)],
                 ),
                 Field(
-                    item="8",
+                    item="7",
                     name="DISPOSITION",
                     type="number",
                     startIndex=29,
                     endIndex=30,
                     required=True,
-                    validators=[validators.oneOf([1, 2])],
+                    validators=[validators.matches(1)],
                 ),
                 Field(
-                    item="9",
+                    item="8",
                     name="CLOSURE_REASON",
                     type="string",
                     startIndex=30,
@@ -97,16 +96,16 @@ t4 = SchemaManager(
                     ],
                 ),
                 Field(
-                    item="10",
+                    item="9",
                     name="REC_SUB_HOUSING",
                     type="number",
                     startIndex=32,
                     endIndex=33,
                     required=True,
-                    validators=[validators.isInLimits(1, 3)],
+                    validators=[validators.isInLimits(1, 2)],
                 ),
                 Field(
-                    item="11",
+                    item="10`",
                     name="REC_MED_ASSIST",
                     type="number",
                     startIndex=33,
@@ -115,7 +114,7 @@ t4 = SchemaManager(
                     validators=[validators.isInLimits(1, 2)],
                 ),
                 Field(
-                    item="12",
+                    item="11",
                     name="REC_FOOD_STAMPS",
                     type="number",
                     startIndex=34,
@@ -124,20 +123,20 @@ t4 = SchemaManager(
                     validators=[validators.isInLimits(1, 2)],
                 ),
                 Field(
-                    item="13",
+                    item="12",
                     name="REC_SUB_CC",
                     type="number",
                     startIndex=35,
                     endIndex=36,
                     required=True,
-                    validators=[validators.isInLimits(1, 3)],
+                    validators=[validators.isInLimits(1, 2)],
                 ),
                 Field(
-                    item="14",
+                    item="-1",
                     name="BLANK",
                     type="string",
                     startIndex=36,
-                    endIndex=71,
+                    endIndex=66,
                     required=False,
                     validators=[],
                 ),

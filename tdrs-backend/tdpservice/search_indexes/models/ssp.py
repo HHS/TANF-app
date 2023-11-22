@@ -199,6 +199,86 @@ class SSP_M3(models.Model):
     UNEARNED_SSI = models.IntegerField(null=True, blank=False)
     OTHER_UNEARNED_INCOME = models.IntegerField(null=True, blank=False)
 
+class SSP_M4(models.Model):
+    """
+    Parsed record representing an SSP M1 data submission.
+
+    Mapped to an elastic search index.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='m4_parent'
+    )
+
+    RecordType = models.CharField(max_length=156, null=True, blank=False)
+    RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
+    CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
+    COUNTY_FIPS_CODE = models.CharField(
+        max_length=3,
+        null=True,
+        blank=False
+    )
+    STRATUM = models.CharField(max_length=2, null=True, blank=False)
+    ZIP_CODE = models.CharField(max_length=5, null=True, blank=False)
+    DISPOSITION = models.IntegerField(null=True, blank=False)
+    CLOSURE_REASON = models.CharField(max_length=2, null=True, blank=False)
+    REC_SUB_HOUSING = models.IntegerField(null=True, blank=False)
+    REC_MED_ASSIST = models.IntegerField(null=True, blank=False)
+    REC_FOOD_STAMPS = models.IntegerField(null=True, blank=False)
+    REC_SUB_CC = models.IntegerField(null=True, blank=False)
+
+class SSP_M5(models.Model):
+    """
+    Parsed record representing an SSP M1 data submission.
+
+    Mapped to an elastic search index.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='m5_parent'
+    )
+
+    RecordType = models.CharField(max_length=156, null=True, blank=False)
+    RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
+    CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
+
+    FAMILY_AFFILIATION = models.IntegerField(null=True, blank=False)
+    DATE_OF_BIRTH = models.CharField(max_length=8, null=True, blank=False)
+    SSN = models.CharField(max_length=9, null=True, blank=False)
+    RACE_HISPANIC = models.IntegerField(null=True, blank=False)
+    RACE_AMER_INDIAN = models.IntegerField(null=True, blank=False)
+    RACE_ASIAN = models.IntegerField(null=True, blank=False)
+    RACE_BLACK = models.IntegerField(null=True, blank=False)
+    RACE_HAWAIIAN = models.IntegerField(null=True, blank=False)
+    RACE_WHITE = models.IntegerField(null=True, blank=False)
+    GENDER = models.IntegerField(null=True, blank=False)
+    REC_OASDI_INSURANCE = models.IntegerField(null=True, blank=False)
+    REC_FEDERAL_DISABILITY = models.IntegerField(null=True, blank=False)
+    REC_AID_TOTALLY_DISABLED = models.IntegerField(null=True, blank=False)
+    REC_AID_AGED_BLIND = models.IntegerField(null=True, blank=False)
+    REC_SSI = models.IntegerField(null=True, blank=False)
+    MARITAL_STATUS = models.IntegerField(null=True, blank=False)
+    RELATIONSHIP_HOH = models.CharField(max_length=2, null=True, blank=False)
+    PARENT_MINOR_CHILD = models.IntegerField(null=True, blank=False)
+    NEEDS_OF_PREGNANT_WOMAN = models.IntegerField(null=True, blank=False)
+    EDUCATION_LEVEL = models.CharField(max_length=2, null=True, blank=False)
+    CITIZENSHIP_STATUS = models.IntegerField(null=True, blank=False)
+    EMPLOYMENT_STATUS = models.IntegerField(null=True, blank=False)
+    AMOUNT_EARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
+    AMOUNT_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
+
 class SSP_M6(models.Model):
     """
     Parsed record representing an M6 data submission.
