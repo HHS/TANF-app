@@ -159,7 +159,7 @@ t5 = SchemaManager(
                     transform_func=tanf_ssn_decryption_func,
                     item="16",
                     name="SSN",
-                    friendly_name="social security number SSN",
+                    friendly_name="social security number",
                     type="string",
                     startIndex=28,
                     endIndex=37,
@@ -180,7 +180,7 @@ t5 = SchemaManager(
                 Field(
                     item="17B",
                     name="RACE_AMER_INDIAN",
-                    friendly_name="race aerical indian",
+                    friendly_name="race american indian",
                     type="number",
                     startIndex=38,
                     endIndex=39,
@@ -240,8 +240,7 @@ t5 = SchemaManager(
                 Field(
                     item="19A",
                     name="REC_OASDI_INSURANCE",
-                    friendly_name="receives federal disability insurance benefits"
-                                  + " under the social security OASDI program",
+                    friendly_name="receives old-age survivors and disability insurance",
                     type="number",
                     startIndex=44,
                     endIndex=45,
@@ -261,7 +260,7 @@ t5 = SchemaManager(
                 Field(
                     item="19C",
                     name="REC_AID_TOTALLY_DISABLED",
-                    friendly_name="receives aid totally disabled",
+                    friendly_name="receives aid for totally disabled",
                     type="number",
                     startIndex=46,
                     endIndex=47,
@@ -281,7 +280,7 @@ t5 = SchemaManager(
                 Field(
                     item="19E",
                     name="REC_SSI",
-                    friendly_name="receives SSI",
+                    friendly_name="receives social security income",
                     type="number",
                     startIndex=48,
                     endIndex=49,
@@ -301,7 +300,7 @@ t5 = SchemaManager(
                 Field(
                     item="21",
                     name="RELATIONSHIP_HOH",
-                    friendly_name="relationship head of household",
+                    friendly_name="relationship to head of household",
                     type="string",
                     startIndex=50,
                     endIndex=52,

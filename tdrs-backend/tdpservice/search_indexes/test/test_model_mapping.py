@@ -350,9 +350,7 @@ def test_can_create_and_index_tanf_t7_submission(test_datafile):
     submission.CALENDAR_QUARTER = 1
     submission.TDRS_SECTION_IND = '1'
     submission.STRATUM = '01'
-    submission.FAMILIES_MONTH_1 = 47655
-    submission.FAMILIES_MONTH_2 = 81982
-    submission.FAMILIES_MONTH_3 = 9999999
+    submission.FAMILIES_MONTH = 47655
 
     submission.save()
 
@@ -579,7 +577,6 @@ def test_can_create_and_index_ssp_m3_submission():
 
     assert response.hits.total.value == 1
 
-
 @pytest.mark.django_db
 def test_can_create_and_index_ssp_m6_submission(test_datafile):
     """SSP M6 submissions can be created and mapped."""
@@ -611,6 +608,33 @@ def test_can_create_and_index_ssp_m6_submission(test_datafile):
     assert submission.id is not None
 
     search = documents.ssp.SSP_M6DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_ssp_m7_submission(test_datafile):
+    """SSP M7 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.ssp.SSP_M7()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.CALENDAR_YEAR = 2020
+    submission.CALENDAR_QUARTER = 1
+    submission.TDRS_SECTION_IND = '1'
+    submission.STRATUM = '01'
+    submission.FAMILIES_MONTH = 47655
+
+    submission.save()
+
+    # No checks her because m7 records can't be parsed currently.
+    assert submission.id is not None
+
+    search = documents.ssp.SSP_M7DataSubmissionDocument.search().query(
         'match',
         RecordType=record_num
     )

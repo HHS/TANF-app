@@ -5,7 +5,7 @@ import pytest
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
-from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M6
+from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M6, SSP_M7
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, util
@@ -917,6 +917,23 @@ def test_parse_tanf_section4_file(tanf_section4_file):
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
 
+@pytest.fixture
+def ssp_section4_file(stt_user, stt):
+    """Fixture for ADS.E2J.NDM4.MS24."""
+    return util.create_test_datafile('ADS.E2J.NDM4.MS24', stt_user, stt, "SSP Stratum Data")
+
+@pytest.mark.django_db()
+def test_parse_ssp_section4_file(ssp_section4_file):
+    """Test parsing SSP Section 4 submission."""
+    parse.parse_datafile(ssp_section4_file)
+
+    m7_objs = SSP_M7.objects.all().order_by('FAMILIES_MONTH')
+
+    assert m7_objs.count() == 12
+
+    first = m7_objs.first()
+    assert first.RPT_MONTH_YEAR == 201810
+    assert first.FAMILIES_MONTH == 748
 
 @pytest.fixture
 def ssp_section3_file(stt_user, stt):

@@ -117,7 +117,7 @@ t4 = SchemaManager(
                 Field(
                     item="11",
                     name="REC_MED_ASSIST",
-                    friendly_name="receives medical assisstance",
+                    friendly_name="receives medical assistance",
                     type="number",
                     startIndex=33,
                     endIndex=34,
@@ -127,7 +127,7 @@ t4 = SchemaManager(
                 Field(
                     item="12",
                     name="REC_FOOD_STAMPS",
-                    friendly_name="receieves food stamps",
+                    friendly_name="receives food stamps",
                     type="number",
                     startIndex=34,
                     endIndex=35,
@@ -137,7 +137,7 @@ t4 = SchemaManager(
                 Field(
                     item="13",
                     name="REC_SUB_CC",
-                    friendly_name="receieves subsidized child care",
+                    friendly_name="receives subsidized child care",
                     type="number",
                     startIndex=35,
                     endIndex=36,

@@ -11,9 +11,9 @@ trailer = RowSchema(
     preparsing_validators=[
         validators.hasLength(
             23,
-            lambda value, length: f'Trailer length is {len(value)} but must be {length} characters.'
+            lambda value, length: f"Trailer length is {len(value)} but must be {length} characters.",
         ),
-        validators.startsWith('TRAILER')
+        validators.startsWith("TRAILER"),
     ],
     postparsing_validators=[],
     fields=[

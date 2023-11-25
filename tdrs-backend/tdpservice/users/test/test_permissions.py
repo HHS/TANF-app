@@ -126,6 +126,9 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'search_indexes.add_ssp_m6',
         'search_indexes.view_ssp_m6',
         'search_indexes.change_ssp_m6',
+        'search_indexes.add_ssp_m7',
+        'search_indexes.view_ssp_m7',
+        'search_indexes.change_ssp_m7',
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions

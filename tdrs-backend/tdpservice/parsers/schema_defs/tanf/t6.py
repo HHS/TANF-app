@@ -333,7 +333,7 @@ s2 = RowSchema(
         Field(
             item="11B",
             name="NUM_NO_PARENTS",
-            friendly_name="total number of noparent family",
+            friendly_name="total number of no-parent family",
             type="number",
             startIndex=195,
             endIndex=203,
@@ -343,7 +343,7 @@ s2 = RowSchema(
         Field(
             item="12B",
             name="NUM_RECIPIENTS",
-            friendly_name="total number of receipients",
+            friendly_name="total number of recipients",
             type="number",
             startIndex=219,
             endIndex=227,
@@ -393,7 +393,7 @@ s2 = RowSchema(
         Field(
             item="17B",
             name="NUM_OUTWEDLOCK_BIRTHS",
-            friendly_name="total number of outwedlock births",
+            friendly_name="total number of out wedlock births",
             type="number",
             startIndex=339,
             endIndex=347,
@@ -592,7 +592,7 @@ s3 = RowSchema(
         Field(
             item="17C",
             name="NUM_OUTWEDLOCK_BIRTHS",
-            friendly_name="total number of outwedlock births",
+            friendly_name="total number of out wedlock births",
             type="number",
             startIndex=347,
             endIndex=355,
