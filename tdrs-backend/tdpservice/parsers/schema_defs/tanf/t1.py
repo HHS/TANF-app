@@ -648,7 +648,7 @@ t1 = SchemaManager(
                 Field(
                     item="29",
                     name="FAMILY_NEW_CHILD",
-                    family_name="family new child",
+                    friendly_name="family new child",
                     type="number",
                     startIndex=116,
                     endIndex=117,
