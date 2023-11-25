@@ -118,7 +118,7 @@ m2 = SchemaManager(
                     ]),
               TransformField(transform_func=ssp_ssn_decryption_func, item="29", name='SSN', type='string',
                              startIndex=29, endIndex=38, required=True, validators=[validators.validateSSN()],
-                             friendly_name="social security number - SSN", is_encrypted=False),
+                             friendly_name="social security number - ssn", is_encrypted=False),
               Field(item="30A", name='RACE_HISPANIC', type='number', startIndex=38, endIndex=39, required=False,
                     friendly_name="race hispanic", validators=[
                         validators.isInLimits(0, 2)
@@ -352,7 +352,7 @@ m2 = SchemaManager(
                         validators.isInLimits(0, 9999)
                     ]),
               Field(item="59C", name='UNEARNED_SSI', type='number', startIndex=138, endIndex=142,
-                    friendly_name="unearned SSI benefit", required=True, validators=[
+                    friendly_name="unearned ssi benefit", required=True, validators=[
                         validators.isInLimits(0, 9999)
                     ]),
               Field(item="59D", name='UNEARNED_WORKERS_COMP', type='number', startIndex=142, endIndex=146,

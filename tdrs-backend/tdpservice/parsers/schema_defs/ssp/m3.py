@@ -85,7 +85,7 @@ first_part_schema = RowSchema(
                   validators.dateMonthIsValid(),
               ]),
         TransformField(transform_func=ssp_ssn_decryption_func, item="62", name='SSN', type='string', startIndex=28,
-                       friendly_name="social security number - SSN", endIndex=37, required=True, is_encrypted=False,
+                       friendly_name="social security number - ssn", endIndex=37, required=True, is_encrypted=False,
                        validators=[
                            validators.validateSSN()
                         ]),
@@ -233,7 +233,7 @@ second_part_schema = RowSchema(
                   validators.dateMonthIsValid(),
               ]),
         TransformField(transform_func=ssp_ssn_decryption_func, item="62", name='SSN', type='string', startIndex=69,
-                       endIndex=78, required=True, is_encrypted=False, friendly_name="social security number - SSN",
+                       endIndex=78, required=True, is_encrypted=False, friendly_name="social security number - ssn",
                        validators=[
                            validators.validateSSN()
                        ]),
@@ -266,7 +266,7 @@ second_part_schema = RowSchema(
                   validators.isInLimits(0, 9)
               ]),
         Field(item="65A", name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=85, endIndex=86,
-              friendly_name="receive nonssi benefit", required=True, validators=[
+              friendly_name="receive non ssi benefit", required=True, validators=[
                   validators.oneOf([1, 2])
               ]),
         Field(item="65B", name='RECEIVE_SSI', type='number', startIndex=86, endIndex=87,
@@ -274,7 +274,7 @@ second_part_schema = RowSchema(
                   validators.oneOf([1, 2])
               ]),
         Field(item="66", name='RELATIONSHIP_HOH', type='number', startIndex=87, endIndex=89,
-              friendly_name="realtionship head of household", required=False, validators=[
+              friendly_name="relationship head of household", required=False, validators=[
                 validators.isInLimits(0, 10)
               ]),
         Field(item="67", name='PARENT_MINOR_CHILD', type='number', startIndex=89, endIndex=90,

@@ -108,7 +108,7 @@ m1 = SchemaManager(
                         validators.isInLimits(1, 3),
                     ]),
               Field(item="10", name='TANF_ASST_IN_6MONTHS', type='number', startIndex=33, endIndex=34,
-                    friendly_name="tanf assitance in 6 months", required=True, validators=[
+                    friendly_name="tanf assistance in 6 months", required=True, validators=[
                         validators.isInLimits(1, 3),
                     ]),
               Field(item="11", name='RECEIVES_SUB_HOUSING', type='number', startIndex=34, endIndex=35,
@@ -116,15 +116,15 @@ m1 = SchemaManager(
                         validators.isInLimits(1, 2),
                     ]),
               Field(item="12", name='RECEIVES_MED_ASSISTANCE', type='number', startIndex=35, endIndex=36,
-                    friendly_name="receives medical assisstance", required=True, validators=[
+                    friendly_name="receives medical assistance", required=True, validators=[
                         validators.isInLimits(1, 2),
                     ]),
               Field(item="13", name='RECEIVES_FOOD_STAMPS', type='number', startIndex=36, endIndex=37,
-                    friendly_name="receives food assisstance", required=False, validators=[
+                    friendly_name="receives food assistance", required=False, validators=[
                         validators.isInLimits(0, 2),
                     ]),
               Field(item="14", name='AMT_FOOD_STAMP_ASSISTANCE', type='number', startIndex=37, endIndex=41,
-                    friendly_name="amount of food stamp assisstance", required=True, validators=[
+                    friendly_name="amount of food stamp assistance", required=True, validators=[
                         validators.isLargerThanOrEqualTo(0),
                     ]),
               Field(item="15", name='RECEIVES_SUB_CC', type='number', startIndex=41, endIndex=42,
@@ -168,7 +168,7 @@ m1 = SchemaManager(
                         validators.isLargerThanOrEqualTo(0),
                     ]),
               Field(item="21B", name='TRANSP_NBR_MONTHS', type='number', startIndex=74, endIndex=77,
-                    friendly_name="transmportation number of months", required=True, validators=[
+                    friendly_name="transportation number of months", required=True, validators=[
                         validators.isLargerThanOrEqualTo(0),
                     ]),
               Field(item="22A", name='TRANSITION_SERVICES_AMOUNT', type='number', startIndex=77, endIndex=81,
@@ -184,7 +184,7 @@ m1 = SchemaManager(
                         validators.isLargerThanOrEqualTo(0),
                     ]),
               Field(item="23B", name='OTHER_NBR_MONTHS', type='number', startIndex=88, endIndex=91,
-                    friendly_name="other nuber of months", required=False, validators=[
+                    friendly_name="other number of months", required=False, validators=[
                         validators.isLargerThanOrEqualTo(0),
                     ]),
               Field(item="24AI", name='SANC_REDUCTION_AMT', type='number', startIndex=91, endIndex=95,
@@ -212,7 +212,7 @@ m1 = SchemaManager(
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="24AVII", name='OTHER_SANCTION', type='number', startIndex=100, endIndex=101,
-                    friendly_name="other sanciton", required=True, validators=[
+                    friendly_name="other sanction", required=True, validators=[
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="24B", name='RECOUPMENT_PRIOR_OVRPMT', type='number', startIndex=101, endIndex=105,
@@ -232,11 +232,11 @@ m1 = SchemaManager(
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="24CIV", name='OTHER_NON_SANCTION', type='number', startIndex=111, endIndex=112,
-                    friendly_name="other non santion", required=True, validators=[
+                    friendly_name="other non sanction", required=True, validators=[
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="25", name='WAIVER_EVAL_CONTROL_GRPS', type='number', startIndex=112, endIndex=113,
-                    friendly_name="waiver evaluation xperimental and control groups", required=False, validators=[
+                    friendly_name="waiver evaluation experimental and control groups", required=False, validators=[
                         validators.isInLimits(0, 9),
                     ]),
               Field(item="-1", name='BLANK', type='string', startIndex=113, endIndex=150,
