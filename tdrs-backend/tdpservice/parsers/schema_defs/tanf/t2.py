@@ -1,11 +1,11 @@
 """Schema for HEADER row of all submission types."""
 
 
-from ...util import SchemaManager
-from ...transforms import tanf_ssn_decryption_func
-from ...fields import TransformField, Field
-from ...row_schema import RowSchema
-from ... import validators
+from tdpservice.parsers.util import SchemaManager
+from tdpservice.parsers.transforms import tanf_ssn_decryption_func
+from tdpservice.parsers.fields import TransformField, Field
+from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers import validators
 from tdpservice.search_indexes.models.tanf import TANF_T2
 
 
@@ -186,7 +186,8 @@ t2 = SchemaManager(
                     endIndex=29,
                     required=True,
                     validators=[
-                        validators.isLargerThan(0),
+                        validators.dateYearIsLargerThan(1900),
+                        validators.dateMonthIsValid(),
                     ],
                 ),
                 TransformField(

@@ -176,8 +176,8 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             'C': {
                 'section': DataFile.Section.SSP_CLOSED_CASE_DATA,
                 'models': {
-                    # 'M4': schema_defs.ssp.m4,
-                    # 'M5': schema_defs.ssp.m5,
+                    'M4': schema_defs.ssp.m4,
+                    'M5': schema_defs.ssp.m5,
                 }
             },
             'G': {
