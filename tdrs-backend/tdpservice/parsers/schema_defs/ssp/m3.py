@@ -118,7 +118,7 @@ first_part_schema = RowSchema(
                   validators.isInLimits(0, 9)
               ]),
         Field(item="65A", name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=44, endIndex=45,
-              friendly_name="receive nonssi benefits", required=True, validators=[
+              friendly_name="receive non ssi benefits", required=True, validators=[
                   validators.oneOf([1, 2])
               ]),
         Field(item="65B", name='RECEIVE_SSI', type='number', startIndex=45, endIndex=46,
