@@ -44,7 +44,7 @@ class ParsingErrorViewSet(ModelViewSet):
             """Format error message."""
             error_msg = x['error_message']
             for key, value in x['fields_json']['friendly_name'].items():
-                error_msg = error_msg.replace(key, value)
+                error_msg = error_msg.replace(key, value) if value else error_msg
             return error_msg
 
         row, col = 0, 0
