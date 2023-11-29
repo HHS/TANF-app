@@ -8,6 +8,9 @@ from django.apps import apps
 from collections import ChainMap
 from copy import deepcopy
 from typing import List, Optional, TYPE_CHECKING
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -126,6 +129,7 @@ class IsApprovedPermission(permissions.DjangoModelPermissions):
 
     def has_permission(self, request, view):
         """Return True if the user has been assigned a group and is approved."""
+        logging.debug(f"{self.__class__.__name__}: {request} ; {view}")
         return (request.user.groups.first() is not None and
                 request.user.account_approval_status == AccountApprovalStatusChoices.APPROVED)
 
@@ -160,6 +164,8 @@ class DataFilePermissions(DjangoModelCRUDPermissions):
         Data Analyst will only have permission to files within their STT and a
         Regional Manager will only have permission to files within their region.
         """
+        logging.debug(f"{self.__class__.__name__}: {request} ; {view}")
+
         # Checks for existence of `data_files.view_datafile` Permission
         has_permission = super().has_permission(request, view)
 

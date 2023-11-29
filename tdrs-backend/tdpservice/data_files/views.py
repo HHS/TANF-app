@@ -54,6 +54,7 @@ class DataFileViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Override create to upload in case of successful scan."""
+        logger.debug(f"{self.__class__.__name__}: {request}")
         response = super().create(request, *args, **kwargs)
 
         # only if file is passed the virus scan and created successfully will we perform side-effects:
@@ -61,6 +62,7 @@ class DataFileViewSet(ModelViewSet):
         # * Upload to ACF-TITAN
         # * Send email to user
 
+        logger.debug(f"{self.__class__.__name__}: status: {response.status_code}")
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
             user = request.user
             data_file_id = response.data.get('id')
@@ -109,6 +111,7 @@ class DataFileViewSet(ModelViewSet):
             if len(recipients) > 0:
                 send_data_submitted_email(list(recipients), data_file, email_context, subject)
 
+        logger.debug(f"{self.__class__.__name__}: return val: {response}")
         return response
 
     def get_s3_versioning_id(self, file_name, prefix):
