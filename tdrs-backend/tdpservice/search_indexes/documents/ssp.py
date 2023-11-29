@@ -2,8 +2,9 @@
 
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from ..models.ssp import SSP_M1, SSP_M2, SSP_M3
+from ..models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from .document_base import DocumentBase
+
 
 @registry.register_document
 class SSP_M1DataSubmissionDocument(DocumentBase, Document):
@@ -197,4 +198,142 @@ class SSP_M3DataSubmissionDocument(DocumentBase, Document):
             'CITIZENSHIP_STATUS',
             'UNEARNED_SSI',
             'OTHER_UNEARNED_INCOME',
+        ]
+
+@registry.register_document
+class SSP_M4DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed SSP M4 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'ssp_m4_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = SSP_M4
+        fields = [
+            'RecordType',
+            'RPT_MONTH_YEAR',
+            'CASE_NUMBER',
+            'COUNTY_FIPS_CODE',
+            'STRATUM',
+            'ZIP_CODE',
+            'DISPOSITION',
+            'CLOSURE_REASON',
+            'REC_SUB_HOUSING',
+            'REC_MED_ASSIST',
+            'REC_FOOD_STAMPS',
+            'REC_SUB_CC',
+        ]
+
+@registry.register_document
+class SSP_M5DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed SSP M5 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'ssp_m5_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = SSP_M5
+        fields = [
+            'RecordType',
+            'RPT_MONTH_YEAR',
+            'CASE_NUMBER',
+            'FAMILY_AFFILIATION',
+            'DATE_OF_BIRTH',
+            'SSN',
+            'RACE_HISPANIC',
+            'RACE_AMER_INDIAN',
+            'RACE_ASIAN',
+            'RACE_BLACK',
+            'RACE_HAWAIIAN',
+            'RACE_WHITE',
+            'GENDER',
+            'REC_OASDI_INSURANCE',
+            'REC_FEDERAL_DISABILITY',
+            'REC_AID_TOTALLY_DISABLED',
+            'REC_AID_AGED_BLIND',
+            'REC_SSI',
+            'MARITAL_STATUS',
+            'RELATIONSHIP_HOH',
+            'PARENT_MINOR_CHILD',
+            'NEEDS_OF_PREGNANT_WOMAN',
+            'EDUCATION_LEVEL',
+            'CITIZENSHIP_STATUS',
+            'EMPLOYMENT_STATUS',
+            'AMOUNT_EARNED_INCOME',
+            'AMOUNT_UNEARNED_INCOME',
+        ]
+
+@registry.register_document
+class SSP_M6DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed SSP M6 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'ssp_m6_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = SSP_M6
+        fields = [
+            'RecordType',
+            'CALENDAR_QUARTER',
+            'RPT_MONTH_YEAR',
+            'SSPMOE_FAMILIES',
+            'NUM_2_PARENTS',
+            'NUM_1_PARENTS',
+            'NUM_NO_PARENTS',
+            'NUM_RECIPIENTS',
+            'ADULT_RECIPIENTS',
+            'CHILD_RECIPIENTS',
+            'NONCUSTODIALS',
+            'AMT_ASSISTANCE',
+            'CLOSED_CASES',
+        ]
+
+@registry.register_document
+class SSP_M7DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed SSP M7 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'ssp_m7_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = SSP_M7
+        fields = [
+            "RecordType",
+            "CALENDAR_QUARTER",
+            "RPT_MONTH_YEAR",
+            "TDRS_SECTION_IND",
+            "STRATUM",
+            "FAMILIES_MONTH",
         ]

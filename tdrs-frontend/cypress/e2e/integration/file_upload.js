@@ -5,7 +5,7 @@ Then('{string} can see Data Files page', (username) => {
     cy.visit('/data-files')
     cy.contains('Data Files').should('exist')
   })
-  
+
 Then('{string} can see search form', (username) => {
     cy.contains('Fiscal Year').should('exist')
     cy.contains('Quarter').should('exist')
@@ -19,7 +19,7 @@ Then('{string} can browse upload file form', (username) => {
 
 When('{string} uploads a file', (username) => {
     cy.get('button').contains('Search').should('exist').click()
-    cy.get('#closed-case-data').selectFile('../tdrs-backend/tdpservice/parsers/test/data/small_correct_file',{ action: 'drag-drop' })
+    cy.get('#closed-case-data').selectFile('../tdrs-backend/tdpservice/parsers/test/data/small_correct_file.txt',{ action: 'drag-drop' })
     cy.get('button').contains('Submit Data Files').should('exist').click()
 })
 

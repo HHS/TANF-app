@@ -151,3 +151,12 @@
           cf-password: CF_PASSWORD_PROD
           cf-space: tanf-prod
           cf-username: CF_USERNAME_PROD
+  prod-deploy-clamav:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - clamav-cloud-dot-gov:
+          backend-appname: tdp-backend-prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD

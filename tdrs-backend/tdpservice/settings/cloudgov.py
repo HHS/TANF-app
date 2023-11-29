@@ -43,7 +43,6 @@ class CloudGov(Common):
 
     cloudgov_space = cloudgov_app.get('space_name', 'tanf-dev')
     cloudgov_space_suffix = cloudgov_space.strip('tanf-')
-    AV_SCAN_URL = f'http://tanf-{cloudgov_space_suffix}-clamav-rest.apps.internal:9000/scan'
     cloudgov_name = cloudgov_app.get('name').split("-")[-1]  # converting "tdp-backend-name" to just "name"
     services_basename = cloudgov_name if (
         cloudgov_name == "develop" and cloudgov_space_suffix == "staging"
@@ -71,7 +70,11 @@ class CloudGov(Common):
     #
     env_based_db_name = f'tdp_db_{cloudgov_space_suffix}_{cloudgov_name}'
 
-    db_name = database_creds['db_name'] if (cloudgov_space_suffix in ["prod",  "staging"]) else env_based_db_name
+    logger.debug("css: " + cloudgov_space_suffix)
+    if (cloudgov_space_suffix in ["prod", "staging"]):
+        db_name = database_creds['db_name']
+    else:
+        db_name = env_based_db_name
 
     DATABASES = {
         'default': {

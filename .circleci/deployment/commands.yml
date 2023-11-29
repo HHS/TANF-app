@@ -37,15 +37,39 @@
           backend-appname: <<parameters.backend-appname>>
           frontend-appname: <<parameters.frontend-appname>>
           cf-space: <<parameters.cf-space>>
-      - deploy-clamav:
-          backend-appname: <<parameters.backend-appname>>
-          cf-org: <<parameters.cf-org>>
-          cf-space: <<parameters.cf-space>>
       - deploy-frontend:
           environment: <<parameters.environment>>
           backend-appname: <<parameters.backend-appname>>
           frontend-appname: <<parameters.frontend-appname>>
           cf-space: <<parameters.cf-space>>
+
+  clamav-cloud-dot-gov:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-password:
+        default: CF_PASSWORD_DEV
+        type: env_var_name
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-username:
+        default: CF_USERNAME_DEV
+        type: env_var_name
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - deploy-clamav
 
   deploy-backend:
     parameters:
@@ -71,30 +95,12 @@
               <<parameters.cf-space>>
 
   deploy-clamav:
-    parameters:
-      backend-appname:
-        default: tdp-backend
-        type: string
-      cf-org:
-        default: CF_ORG
-        type: env_var_name
-      cf-space:
-        default: tanf-dev
-        type: string
     steps:
       - run:
           name: Deploy ClamAV REST application
           command: |
             cf push clamav-rest -f tdrs-backend/manifest.clamav.yml \
-              --var cf-space=<<parameters.cf-space>> \
-      - run:
-          name: Enable internal route between backend and clamav-rest app
-          command: |
-            cf add-network-policy <<parameters.backend-appname>> clamav-rest \
-              -s <<parameters.cf-space>> \
-              -o ${<<parameters.cf-org>>} \
-              --protocol tcp \
-              --port 9000
+              --var cf-space=tanf-prod
 
   deploy-frontend:
     parameters:

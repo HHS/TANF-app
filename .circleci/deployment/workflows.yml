@@ -118,6 +118,13 @@
             branches:
               only:
                 - master
+      - prod-deploy-clamav:
+          requires:
+            - deploy-infrastructure-production
+          filters:
+            branches:
+              only:
+                - master
       - make_erd: # from ../util folder
           filters:
             branches:
