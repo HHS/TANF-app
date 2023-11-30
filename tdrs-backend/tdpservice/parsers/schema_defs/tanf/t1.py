@@ -527,7 +527,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AV",
                     name="NON_COOPERATION_CSE",
-                    friendly_name="non-cooperation child support enforcement",
+                    friendly_name="non-cooperation with child support",
                     type="number",
                     startIndex=99,
                     endIndex=100,
@@ -551,7 +551,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AVII",
                     name="OTHER_SANCTION",
-                    friendly_name="other sanction",
+                    friendly_name="other, sanction",
                     type="number",
                     startIndex=101,
                     endIndex=102,
@@ -611,7 +611,7 @@ t1 = SchemaManager(
                 Field(
                     item="26CIV",
                     name="OTHER_NON_SANCTION",
-                    friendly_name="other non-sanction",
+                    friendly_name="other, non-sanction",
                     type="number",
                     startIndex=112,
                     endIndex=113,

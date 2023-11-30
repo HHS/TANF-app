@@ -75,7 +75,7 @@ m1 = SchemaManager(
               Field(item="0", name='RecordType', type='string', startIndex=0, endIndex=2,
                     friendly_name="record type", required=True, validators=[]),
               Field(item="3", name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8,
-                    friendly_name="report month year", required=True, validators=[
+                    friendly_name="reporting month and year", required=True, validators=[
                         validators.dateYearIsLargerThan(1998),
                         validators.dateMonthIsValid(),
                     ]),
@@ -100,7 +100,7 @@ m1 = SchemaManager(
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="8", name='NBR_FAMILY_MEMBERS', type='number', startIndex=30, endIndex=32,
-                    friendly_name="number of family numbers", required=True, validators=[
+                    friendly_name="number of family members", required=True, validators=[
                         validators.isInLimits(1, 99),
                     ]),
               Field(item="9", name='FAMILY_TYPE', type='number', startIndex=32, endIndex=33,
@@ -124,7 +124,7 @@ m1 = SchemaManager(
                         validators.isInLimits(0, 2),
                     ]),
               Field(item="14", name='AMT_FOOD_STAMP_ASSISTANCE', type='number', startIndex=37, endIndex=41,
-                    friendly_name="amount of food stamp assistance", required=True, validators=[
+                    friendly_name="amount of food stamp assistance/stamps", required=True, validators=[
                         validators.isLargerThanOrEqualTo(0),
                     ]),
               Field(item="15", name='RECEIVES_SUB_CC', type='number', startIndex=41, endIndex=42,
@@ -176,7 +176,7 @@ m1 = SchemaManager(
                         validators.isLargerThanOrEqualTo(0),
                     ]),
               Field(item="22B", name='TRANSITION_NBR_MONTHS', type='number', startIndex=81, endIndex=84,
-                    friendly_name="transition number of months", required=False, validators=[
+                    friendly_name="transition services number of months", required=False, validators=[
                         validators.isLargerThanOrEqualTo(0),
                     ]),
               Field(item="23A", name='OTHER_AMOUNT', type='number', startIndex=84, endIndex=88,
@@ -200,11 +200,11 @@ m1 = SchemaManager(
                         validators.isInLimits(0, 9),
                     ]),
               Field(item="24AIV", name='SANC_TEEN_PARENT', type='number', startIndex=97, endIndex=98,
-                    friendly_name="santion for teen parent", required=True, validators=[
+                    friendly_name="sanction for teen parent", required=True, validators=[
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="24AV", name='NON_COOPERATION_CSE', type='number', startIndex=98, endIndex=99,
-                    friendly_name="non coopeartion case", required=True, validators=[
+                    friendly_name="non-cooperation with child support", required=True, validators=[
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="24AVI", name='FAILURE_TO_COMPLY', type='number', startIndex=99, endIndex=100,
@@ -232,7 +232,7 @@ m1 = SchemaManager(
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="24CIV", name='OTHER_NON_SANCTION', type='number', startIndex=111, endIndex=112,
-                    friendly_name="other non sanction", required=True, validators=[
+                    friendly_name="other, non sanction", required=True, validators=[
                         validators.oneOf([1, 2]),
                     ]),
               Field(item="25", name='WAIVER_EVAL_CONTROL_GRPS', type='number', startIndex=112, endIndex=113,

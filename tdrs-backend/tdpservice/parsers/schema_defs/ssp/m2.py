@@ -96,7 +96,7 @@ m2 = SchemaManager(
               Field(item="0", name='RecordType', type='string', startIndex=0, endIndex=2,
                     friendly_name="record type", required=True, validators=[]),
               Field(item="3", name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8,
-                    friendly_name="report month year", required=True, validators=[
+                    friendly_name="reporting month and year", required=True, validators=[
                         validators.dateYearIsLargerThan(1998),
                         validators.dateMonthIsValid(),
                     ]),
@@ -148,7 +148,8 @@ m2 = SchemaManager(
                         validators.isLargerThanOrEqualTo(0)
                     ]),
               Field(item="32A", name='FED_OASDI_PROGRAM', type='number', startIndex=45, endIndex=46,
-                    friendly_name="federal qasdi program", required=True, validators=[
+                    friendly_name="federal old-age survivors and disability insurance program", required=True,
+                    validators=[
                         validators.oneOf([1, 2])
                     ]),
               Field(item="32B", name='FED_DISABILITY_STATUS', type='number', startIndex=46, endIndex=47,
@@ -156,15 +157,17 @@ m2 = SchemaManager(
                         validators.oneOf([1, 2])
                     ]),
               Field(item="32C", name='DISABLED_TITLE_XIVAPDT', type='number', startIndex=47, endIndex=48,
-                    friendly_name="disabled title xivapdt", required=True, validators=[
+                    friendly_name="receives aid to the permanently and totally disabled" +
+                    " under title xiv-apdt of the social security act", required=True, validators=[
                         validators.oneOf([1, 2])
                     ]),
               Field(item="32D", name='AID_AGED_BLIND', type='number', startIndex=48, endIndex=49,
-                    friendly_name="receives aid to the aid aged blind", required=False, validators=[
+                    friendly_name="receives from the aid to the aged, blind, and disabled program",
+                    required=False, validators=[
                         validators.isLargerThanOrEqualTo(0)
                     ]),
               Field(item="32E", name='RECEIVE_SSI', type='number', startIndex=49, endIndex=50,
-                    friendly_name="receive ssi", required=True, validators=[
+                    friendly_name="receives social security income", required=True, validators=[
                         validators.oneOf([1, 2])
                     ]),
               Field(item="33", name='MARITAL_STATUS', type='number', startIndex=50, endIndex=51,
@@ -195,7 +198,7 @@ m2 = SchemaManager(
                         validators.oneOf([0, 1, 2, 3, 9])
                     ]),
               Field(item="39", name='COOPERATION_CHILD_SUPPORT', type='number', startIndex=58, endIndex=59,
-                    friendly_name="cooperation child support", required=False, validators=[
+                    friendly_name="cooperation with child support", required=False, validators=[
                         validators.oneOf([0, 1, 2, 9])
                     ]),
               Field(item="40", name='EMPLOYMENT_STATUS', type='number', startIndex=59, endIndex=60,
@@ -211,7 +214,7 @@ m2 = SchemaManager(
                         )
                     ]),
               Field(item="42", name='WORK_PART_STATUS', type='number', startIndex=62, endIndex=64,
-                    friendly_name="work part-time status", required=False, validators=[
+                    friendly_name="work participation status", required=False, validators=[
                         validators.oneOf([1, 2, 5, 7, 9, 15, 16, 17, 18, 19, 99])
                     ]),
               Field(item="43", name='UNSUB_EMPLOYMENT', type='number', startIndex=64, endIndex=66,
@@ -231,11 +234,11 @@ m2 = SchemaManager(
                         validators.isInLimits(0, 99)
                     ]),
               Field(item="46B", name='WORK_EXPERIENCE_EA', type='number', startIndex=72, endIndex=74,
-                    friendly_name="work experience - excused absense", required=False, validators=[
+                    friendly_name="work experience - excused absence", required=False, validators=[
                         validators.isInLimits(0, 99)
                     ]),
               Field(item="46C", name='WORK_EXPERIENCE_HOL', type='number', startIndex=74, endIndex=76,
-                    friendly_name="work experience holiday", required=False, validators=[
+                    friendly_name="work experience hours - holiday", required=False, validators=[
                         validators.isInLimits(0, 99)
                     ]),
               Field(item="47", name='OJT', type='number', startIndex=76, endIndex=78,
@@ -267,7 +270,7 @@ m2 = SchemaManager(
                         validators.isInLimits(0, 99)
                     ]),
               Field(item="50A", name='VOCATIONAL_ED_TRAINING_HOP', type='number', startIndex=90, endIndex=92,
-                    friendly_name="vocational education training - hours of operation", required=False, validators=[
+                    friendly_name="vocational education training - hours of participation", required=False, validators=[
                         validators.isInLimits(0, 99)
                     ]),
               Field(item="50B", name='VOCATIONAL_ED_TRAINING_EA', type='number', startIndex=92, endIndex=94,
@@ -279,7 +282,7 @@ m2 = SchemaManager(
                         validators.isInLimits(0, 99)
                     ]),
               Field(item="51A", name='JOB_SKILLS_TRAINING_HOP', type='number', startIndex=96, endIndex=98,
-                    friendly_name="job skills training - hours of operation", required=False, validators=[
+                    friendly_name="job skills training - hours of participation", required=False, validators=[
                         validators.isInLimits(0, 99)
                     ]),
               Field(item="51B", name='JOB_SKILLS_TRAINING_EA', type='number', startIndex=98, endIndex=100,

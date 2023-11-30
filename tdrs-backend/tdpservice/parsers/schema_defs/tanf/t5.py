@@ -115,7 +115,7 @@ t5 = SchemaManager(
                 Field(
                     item="4",
                     name="RPT_MONTH_YEAR",
-                    friendly_name="report month year",
+                    friendly_name="reporting month and year",
                     type="number",
                     startIndex=2,
                     endIndex=8,
@@ -162,7 +162,7 @@ t5 = SchemaManager(
                     transform_func=tanf_ssn_decryption_func,
                     item="16",
                     name="SSN",
-                    friendly_name="social security number",
+                    friendly_name="social security number - ssn",
                     type="string",
                     startIndex=28,
                     endIndex=37,
@@ -273,7 +273,7 @@ t5 = SchemaManager(
                 Field(
                     item="19D",
                     name="REC_AID_AGED_BLIND",
-                    friendly_name="receives aid aged blind",
+                    friendly_name="receives from the aid to the aged, blind, and disabled program",
                     type="number",
                     startIndex=47,
                     endIndex=48,
@@ -313,7 +313,7 @@ t5 = SchemaManager(
                 Field(
                     item="22",
                     name="PARENT_MINOR_CHILD",
-                    friendly_name="parent minor child",
+                    friendly_name="parent of minor child",
                     type="number",
                     startIndex=52,
                     endIndex=53,
@@ -362,7 +362,7 @@ t5 = SchemaManager(
                 Field(
                     item="26",
                     name="COUNTABLE_MONTH_FED_TIME",
-                    friendly_name="countable month federal time",
+                    friendly_name="countable months toward federal time",
                     type="string",
                     startIndex=57,
                     endIndex=60,
@@ -372,7 +372,7 @@ t5 = SchemaManager(
                 Field(
                     item="27",
                     name="COUNTABLE_MONTHS_STATE_TRIBE",
-                    friendly_name="countable months state tribe",
+                    friendly_name="countable months remaining under state tribe",
                     type="string",
                     startIndex=60,
                     endIndex=62,
@@ -392,7 +392,7 @@ t5 = SchemaManager(
                 Field(
                     item="29",
                     name="AMOUNT_EARNED_INCOME",
-                    friendly_name="amount earned income",
+                    friendly_name="amount earnedof income",
                     type="string",
                     startIndex=63,
                     endIndex=67,

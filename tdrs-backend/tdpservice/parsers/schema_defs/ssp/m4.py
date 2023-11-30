@@ -29,7 +29,7 @@ m4 = SchemaManager(
                 Field(
                     item="3",
                     name="RPT_MONTH_YEAR",
-                    friendly_name="report month year",
+                    friendly_name="reporting month and year",
                     type="number",
                     startIndex=2,
                     endIndex=8,

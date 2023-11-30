@@ -67,7 +67,7 @@ first_part_schema = RowSchema(
         Field(item="0", name='RecordType', type='string', startIndex=0, endIndex=2,
               friendly_name="record type", required=True, validators=[]),
         Field(item="3", name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8,
-              friendly_name="report month year", required=True, validators=[
+              friendly_name="reporting month and year", required=True, validators=[
                   validators.dateYearIsLargerThan(1998),
                   validators.dateMonthIsValid(),
               ]),
@@ -118,19 +118,19 @@ first_part_schema = RowSchema(
                   validators.isInLimits(0, 9)
               ]),
         Field(item="65A", name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=44, endIndex=45,
-              friendly_name="receive non ssi benefits", required=True, validators=[
+              friendly_name="receive non-ssi benefits", required=True, validators=[
                   validators.oneOf([1, 2])
               ]),
         Field(item="65B", name='RECEIVE_SSI', type='number', startIndex=45, endIndex=46,
-              friendly_name="receive ssi", required=True, validators=[
+              friendly_name="receives ssi", required=True, validators=[
                   validators.oneOf([1, 2])
               ]),
         Field(item="66", name='RELATIONSHIP_HOH', type='number', startIndex=46, endIndex=48,
-              friendly_name="relationship - head of household", required=False, validators=[
+              friendly_name="relationship to head of household", required=False, validators=[
                   validators.isInStringRange(0, 10)
               ]),
         Field(item="67", name='PARENT_MINOR_CHILD', type='number', startIndex=48, endIndex=49,
-              friendly_name="parent with minor child", required=False, validators=[
+              friendly_name="parent of minor child", required=False, validators=[
                   validators.oneOf([0, 2, 3])
               ]),
         Field(item="68", name='EDUCATION_LEVEL', type='number', startIndex=49, endIndex=51,
@@ -145,7 +145,7 @@ first_part_schema = RowSchema(
                   validators.oneOf([0, 1, 2, 3, 9])
               ]),
         Field(item="70A", name='UNEARNED_SSI', type='number', startIndex=52, endIndex=56,
-              friendly_name="unearned SSI", required=True, validators=[
+              friendly_name="unearned ssi benefit", required=True, validators=[
                   validators.isInLimits(0, 9999)
               ]),
         Field(item="70B", name='OTHER_UNEARNED_INCOME', type='number', startIndex=56, endIndex=60,
@@ -215,7 +215,7 @@ second_part_schema = RowSchema(
         Field(item="0", name='RecordType', type='string', startIndex=0, endIndex=2,
               friendly_name="record type", required=True, validators=[]),
         Field(item="3", name='RPT_MONTH_YEAR', type='number', startIndex=2, endIndex=8,
-              friendly_name="report month year", required=True, validators=[
+              friendly_name="reporting month and year", required=True, validators=[
                   validators.dateYearIsLargerThan(1998),
                   validators.dateMonthIsValid(),
               ]),
@@ -266,7 +266,7 @@ second_part_schema = RowSchema(
                   validators.isInLimits(0, 9)
               ]),
         Field(item="65A", name='RECEIVE_NONSSI_BENEFITS', type='number', startIndex=85, endIndex=86,
-              friendly_name="receive non ssi benefit", required=True, validators=[
+              friendly_name="receives non-ssi benefit", required=True, validators=[
                   validators.oneOf([1, 2])
               ]),
         Field(item="65B", name='RECEIVE_SSI', type='number', startIndex=86, endIndex=87,
@@ -274,11 +274,11 @@ second_part_schema = RowSchema(
                   validators.oneOf([1, 2])
               ]),
         Field(item="66", name='RELATIONSHIP_HOH', type='number', startIndex=87, endIndex=89,
-              friendly_name="relationship head of household", required=False, validators=[
+              friendly_name="relationship to head of household", required=False, validators=[
                 validators.isInLimits(0, 10)
               ]),
         Field(item="67", name='PARENT_MINOR_CHILD', type='number', startIndex=89, endIndex=90,
-              friendly_name="parent minor child", required=False, validators=[
+              friendly_name="parent of minor child", required=False, validators=[
                   validators.oneOf([0, 2, 3])
               ]),
         Field(item="68", name='EDUCATION_LEVEL', type='number', startIndex=90, endIndex=92,
@@ -293,7 +293,7 @@ second_part_schema = RowSchema(
                   validators.oneOf([0, 1, 2, 3, 9])
               ]),
         Field(item="70A", name='UNEARNED_SSI', type='number', startIndex=93, endIndex=97,
-              friendly_name="unearned ssi",
+              friendly_name="unearned ssi benefit",
               required=True, validators=[
                   validators.isInLimits(0, 9999)
               ]),

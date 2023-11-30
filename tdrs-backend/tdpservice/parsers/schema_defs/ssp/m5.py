@@ -114,7 +114,7 @@ m5 = SchemaManager(
                 Field(
                     item="3",
                     name="RPT_MONTH_YEAR",
-                    friendly_name="report month year",
+                    friendly_name="reporting month and year",
                     type="number",
                     startIndex=2,
                     endIndex=8,
@@ -161,7 +161,7 @@ m5 = SchemaManager(
                     transform_func=ssp_ssn_decryption_func,
                     item="15",
                     name="SSN",
-                    friendly_name="social security number",
+                    friendly_name="social security number - ssn",
                     type="string",
                     startIndex=28,
                     endIndex=37,
@@ -272,7 +272,7 @@ m5 = SchemaManager(
                 Field(
                     item="18D",
                     name="REC_AID_AGED_BLIND",
-                    friendly_name="receives aid for aged blind",
+                    friendly_name="receives from the aid to the aged, blind, and disabled program",
                     type="number",
                     startIndex=47,
                     endIndex=48,
@@ -282,7 +282,7 @@ m5 = SchemaManager(
                 Field(
                     item="18E",
                     name="REC_SSI",
-                    friendly_name="receives social security insurance",
+                    friendly_name="receives social security income",
                     type="number",
                     startIndex=48,
                     endIndex=49,
