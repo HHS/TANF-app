@@ -350,9 +350,7 @@ def test_can_create_and_index_tanf_t7_submission(test_datafile):
     submission.CALENDAR_QUARTER = 1
     submission.TDRS_SECTION_IND = '1'
     submission.STRATUM = '01'
-    submission.FAMILIES_MONTH_1 = 47655
-    submission.FAMILIES_MONTH_2 = 81982
-    submission.FAMILIES_MONTH_3 = 9999999
+    submission.FAMILIES_MONTH = 47655
 
     submission.save()
 
@@ -572,6 +570,151 @@ def test_can_create_and_index_ssp_m3_submission():
     assert submission.id is not None
 
     search = documents.ssp.SSP_M3DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_ssp_m4_submission():
+    """SSP M4 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.ssp.SSP_M4.objects.create(
+        RecordType=record_num,
+        RPT_MONTH_YEAR=1,
+        CASE_NUMBER='1',
+        COUNTY_FIPS_CODE='1',
+        STRATUM='01',
+        ZIP_CODE='11111',
+        DISPOSITION=1,
+        CLOSURE_REASON='01',
+        REC_SUB_HOUSING=1,
+        REC_MED_ASSIST=1,
+        REC_FOOD_STAMPS=1,
+        REC_SUB_CC=1
+    )
+
+    assert models.ssp.SSP_M4.objects.count() == 1
+
+    assert submission.id is not None
+
+    assert submission.id is not None
+
+    search = documents.ssp.SSP_M4DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_ssp_m5_submission():
+    """SSP M5 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.ssp.SSP_M5.objects.create(
+        RecordType=record_num,
+        RPT_MONTH_YEAR=1,
+        CASE_NUMBER='1',
+
+        FAMILY_AFFILIATION=1,
+        DATE_OF_BIRTH='11111111',
+        SSN='123456789',
+        RACE_HISPANIC=1,
+        RACE_AMER_INDIAN=1,
+        RACE_ASIAN=1,
+        RACE_BLACK=1,
+        RACE_HAWAIIAN=1,
+        RACE_WHITE=1,
+        GENDER=1,
+        REC_OASDI_INSURANCE=1,
+        REC_FEDERAL_DISABILITY=1,
+        REC_AID_TOTALLY_DISABLED=1,
+        REC_AID_AGED_BLIND=1,
+        REC_SSI=1,
+        MARITAL_STATUS=1,
+        RELATIONSHIP_HOH='01',
+        PARENT_MINOR_CHILD=1,
+        NEEDS_OF_PREGNANT_WOMAN=1,
+        EDUCATION_LEVEL='01',
+        CITIZENSHIP_STATUS=1,
+        EMPLOYMENT_STATUS=1,
+        AMOUNT_EARNED_INCOME='1000',
+        AMOUNT_UNEARNED_INCOME='1000'
+    )
+
+    assert submission.id is not None
+
+    search = documents.ssp.SSP_M5DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_ssp_m6_submission(test_datafile):
+    """SSP M6 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.ssp.SSP_M6()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.CALENDAR_QUARTER = 1
+    submission.RPT_MONTH_YEAR = 1
+    submission.NUM_APPLICATIONS = 1
+    submission.NUM_APPROVED = 1
+    submission.NUM_DENIED = 1
+    submission.ASSISTANCE = 1
+    submission.NUM_FAMILIES = 1
+    submission.NUM_2_PARENTS = 1
+    submission.NUM_1_PARENTS = 1
+    submission.NUM_NO_PARENTS = 1
+    submission.NUM_RECIPIENTS = 1
+    submission.NUM_ADULT_RECIPIENTS = 1
+    submission.NUM_CHILD_RECIPIENTS = 1
+    submission.NUM_NONCUSTODIALS = 1
+    submission.NUM_BIRTHS = 1
+    submission.NUM_OUTWEDLOCK_BIRTHS = 1
+    submission.NUM_CLOSED_CASES = 1
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.ssp.SSP_M6DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_ssp_m7_submission(test_datafile):
+    """SSP M7 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.ssp.SSP_M7()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.CALENDAR_YEAR = 2020
+    submission.CALENDAR_QUARTER = 1
+    submission.TDRS_SECTION_IND = '1'
+    submission.STRATUM = '01'
+    submission.FAMILIES_MONTH = 47655
+
+    submission.save()
+
+    # No checks her because m7 records can't be parsed currently.
+    assert submission.id is not None
+
+    search = documents.ssp.SSP_M7DataSubmissionDocument.search().query(
         'match',
         RecordType=record_num
     )

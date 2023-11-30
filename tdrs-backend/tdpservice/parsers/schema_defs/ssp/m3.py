@@ -1,11 +1,11 @@
 """Schema for SSP M1 record type."""
 
 
-from ...util import SchemaManager
-from ...transforms import ssp_ssn_decryption_func
-from ...fields import TransformField, Field
-from ...row_schema import RowSchema
-from ... import validators
+from tdpservice.parsers.util import SchemaManager
+from tdpservice.parsers.transforms import ssp_ssn_decryption_func
+from tdpservice.parsers.fields import TransformField, Field
+from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers import validators
 from tdpservice.search_indexes.models.ssp import SSP_M3
 
 first_part_schema = RowSchema(
@@ -301,9 +301,4 @@ second_part_schema = RowSchema(
     ]
 )
 
-m3 = SchemaManager(
-    schemas=[
-        first_part_schema,
-        second_part_schema
-    ]
-)
+m3 = SchemaManager(schemas=[first_part_schema, second_part_schema])

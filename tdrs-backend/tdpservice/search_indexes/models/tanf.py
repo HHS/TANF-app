@@ -2,9 +2,7 @@
 
 import uuid
 from django.db import models
-from django.contrib.contenttypes.fields import GenericRelation
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers.models import ParserError
 
 
 class TANF_T1(models.Model):
@@ -24,7 +22,6 @@ class TANF_T1(models.Model):
         related_name='t1_parent'
     )
 
-    error = GenericRelation(ParserError)
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)

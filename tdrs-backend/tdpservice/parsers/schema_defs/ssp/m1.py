@@ -1,14 +1,14 @@
 """Schema for SSP M1 record type."""
 
 
-from ...util import SchemaManager
-from ...fields import Field
-from ...row_schema import RowSchema
-from ... import validators
+from tdpservice.parsers.util import SchemaManager
+from tdpservice.parsers.fields import Field
+from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers import validators
 from tdpservice.search_indexes.models.ssp import SSP_M1
 
 m1 = SchemaManager(
-      schemas=[
+    schemas=[
         RowSchema(
           model=SSP_M1,
           preparsing_validators=[
@@ -243,5 +243,5 @@ m1 = SchemaManager(
                     required=False, validators=[]),
           ]
         )
-      ]
-  )
+    ]
+)
