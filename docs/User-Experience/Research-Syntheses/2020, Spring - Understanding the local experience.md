@@ -61,22 +61,22 @@ Raw notes from interviews were synthesized in Mural with the OFA data division. 
 
 **About the data submission process**
 
-- [There isn’t shared language between OFA and STTs on TANF data concepts and tools](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#there-isnt-shared-language-between-ofa-and-stts-on-tanf-data-concepts-and-tools)
-- [Data submitters often have years of TANF reporting experience and manage other mandated reports and data requests](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#data-submitters-often-have-years-of-tanf-reporting-experience-and-manage-other-mandated-reports-and-data-requests)
-- [Creating flat files in fTANF is a time-consuming, “moody” process, but there’s also anxiety about changing something established and well-known.](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#creating-flat-files-in-ftanf-is-a-time-consuming-moody-process-but-theres-also-anxiety-about-changing-something-established-and-well-known)
-- [It can take multiple data sources to create a complete data submission.](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#it-can-take-multiple-data-sources-to-create-a-complete-data-submission)
-- [Getting data to OFA can be a collaborative effort between many people](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#getting-data-to-ofa-can-be-a-collaborative-effort-between-many-people)
-- [Creating “a perfect file” is really hard; Data submitters have to resolve downstream data errors, meet TDRS formatting requirements, and wait a long time for feedback.](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#creating-a-perfect-file-is-really-hard-data-submitters-have-to-resolve-downstream-data-errors-meet-tdrs-formatting-requirements-and-wait-a-long-time-for-feedback)
-- [It’s hard to confirm when and what data has been transmitted, and data submitters need that information.](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#its-hard-to-confirm-when-and-what-data-has-been-transmitted-and-data-submitters-need-that-information)
-- [Covid-19 means adapting to new processes and distractions.](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#covid-19-means-adapting-to-new-processes-and-distractions)
-- [Data submitters do a mix of importing and manual entry to build flat files, depending on the section](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#data-submitters-do-a-mix-of-importing-and-manual-entry-to-build-flat-files-depending-on-the-section)
-- [The TDRS extranet is really missed, especially how it provided a way to submit data and view past data to confirm status](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#the-tdrs-extranet-is-really-missed-especially-how-it-provided-a-way-to-submit-data-and-view-past-data-to-confirm-status)
+- [There isn’t shared language between OFA and STTs on TANF data concepts and tools](#there-isnt-shared-language-between-ofa-and-stts-on-tanf-data-concepts-and-tools)
+- [Data submitters often have years of TANF reporting experience and manage other mandated reports and data requests](#data-submitters-often-have-years-of-tanf-reporting-experience-and-manage-other-mandated-reports-and-data-requests)
+- [Creating flat files in fTANF is a time-consuming, “moody” process, but there’s also anxiety about changing something established and well-known.](#creating-flat-files-in-ftanf-is-a-time-consuming-moody-process-but-theres-also-anxiety-about-changing-something-established-and-well-known)
+- [It can take multiple data sources to create a complete data submission.](#it-can-take-multiple-data-sources-to-create-a-complete-data-submission)
+- [Getting data to OFA can be a collaborative effort between many people](#getting-data-to-ofa-can-be-a-collaborative-effort-between-many-people)
+- [Creating “a perfect file” is really hard; Data submitters have to resolve downstream data errors, meet TDRS formatting requirements, and wait a long time for feedback.](#creating-a-perfect-file-is-really-hard-data-submitters-have-to-resolve-downstream-data-errors-meet-tdrs-formatting-requirements-and-wait-a-long-time-for-feedback)
+- [It’s hard to confirm when and what data has been transmitted, and data submitters need that information.](#its-hard-to-confirm-when-and-what-data-has-been-transmitted-and-data-submitters-need-that-information)
+- [Covid-19 means adapting to new processes and distractions.](#covid-19-means-adapting-to-new-processes-and-distractions)
+- [Data submitters do a mix of importing and manual entry to build flat files, depending on the section](#data-submitters-do-a-mix-of-importing-and-manual-entry-to-build-flat-files-depending-on-the-section)
+- [The TDRS extranet is really missed, especially how it provided a way to submit data and view past data to confirm status](#the-tdrs-extranet-is-really-missed-especially-how-it-provided-a-way-to-submit-data-and-view-past-data-to-confirm-status)
 
 **About the prototypes**
 
-- [The XLS template could be a stop-gap for Sections 3 and 4, but submitters are skeptical about Sections 1 and 2.](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#the-xls-template-could-be-a-stop-gap-for-sections-3-and-4-but-submitters-are-skeptical-about-sections-1-and-2)
-- [There were unfamiliar fields and layouts in the XLS template](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#there-were-unfamiliar-fields-and-layouts-in-the-xls-template)
-- [Seeing why errors happen and getting training on data rules is appreciated, but more detail is needed on where errors are happening](https://github.com/HHS/TANF-app/wiki/2020,-Spring:-Understanding-the-local-experience#seeing-why-errors-happen-and-getting-training-on-data-rules-is-appreciated-but-more-detail-is-needed-on-where-errors-are-happening)
+- [The XLS template could be a stop-gap for Sections 3 and 4, but submitters are skeptical about Sections 1 and 2.](#the-xls-template-could-be-a-stop-gap-for-sections-3-and-4-but-submitters-are-skeptical-about-sections-1-and-2)
+- [There were unfamiliar fields and layouts in the XLS template](#there-were-unfamiliar-fields-and-layouts-in-the-xls-template)
+- [Seeing why errors happen and getting training on data rules is appreciated, but more detail is needed on where errors are happening](#seeing-why-errors-happen-and-getting-training-on-data-rules-is-appreciated-but-more-detail-is-needed-on-where-errors-are-happening)
 
 **Resulting artifacts**
 
