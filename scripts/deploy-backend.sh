@@ -40,7 +40,6 @@ set_cf_envs()
   "AMS_CLIENT_ID"
   "AMS_CLIENT_SECRET"
   "AMS_CONFIGURATION_ENDPOINT"
-  "AV_SCAN_URL"
   "BASE_URL"
   "CLAMAV_NEEDED"
   "CYPRESS_TOKEN"
@@ -52,6 +51,8 @@ set_cf_envs()
   "FRONTEND_BASE_URL"
   "LOGGING_LEVEL"
   "REDIS_URI"
+  "JWT_KEY"
+  "STAGING_JWT_KEY"
   )
 
   echo "Setting environment variables for $CGAPPNAME_BACKEND"
@@ -63,9 +64,13 @@ set_cf_envs()
         cf_cmd="cf unset-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
         $cf_cmd
         continue
+    elif [[ ("$var_name" =~ "STAGING_") && ("$CF_SPACE" = "tanf-staging") ]]; then
+        sed_var_name=$(echo "$var_name" | sed -e 's@STAGING_@@g')
+        cf_cmd="cf set-env $CGAPPNAME_BACKEND $sed_var_name ${!var_name}"
+    else
+      cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
     fi
-
-    cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
+    
     echo "Setting var : $var_name"
     $cf_cmd
   done
@@ -84,6 +89,15 @@ generate_jwt_cert()
 update_backend()
 {
     cd tdrs-backend || exit
+    cf unset-env "$CGAPPNAME_BACKEND" "AV_SCAN_URL"
+    
+    if ["$CF_SPACE" = "tanf-prod" ]; then
+      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"
+    else
+      # Add environment varilables for clamav
+      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tdp-clamav-nginx-$env.apps.internal:9000/scan"
+    fi
+
     if [ "$1" = "rolling" ] ; then
         set_cf_envs
 
@@ -101,11 +115,18 @@ update_backend()
     fi
 
     set_cf_envs
-
+    
     cf map-route "$CGAPPNAME_BACKEND" apps.internal --hostname "$CGAPPNAME_BACKEND"
 
     # Add network policy to allow frontend to access backend
     cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
+    
+    if ["$CF_SPACE" = "tanf-prod" ]; then
+      # Add network policy to allow backend to access tanf-prod services
+      cf add-network-policy "$CGAPPNAME_BACKEND" clamav-rest --protocol tcp --port 9000
+    else
+      cf add-network-policy "$CGAPPNAME_BACKEND" tdp-clamav-nginx-$env --protocol tcp --port 9000
+    fi
 
     cd ..
 }
@@ -113,7 +134,7 @@ update_backend()
 bind_backend_to_services() {
     echo "Binding services to app: $CGAPPNAME_BACKEND"
 
-    if [ "$CFAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
+    if [ "$CGAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
       # TODO: this is technical debt, we should either make staging mimic tanf-dev 
       #       or make unique services for all apps but we have a services limit
       #       Introducing technical debt for release 3.0.0 specifically.

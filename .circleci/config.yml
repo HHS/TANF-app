@@ -74,6 +74,7 @@ workflows:
                 - main
                 - master
                 - /^release.*/
+                # - '2722/circleci' #DELETE BEFORE MERGE
   circle-ci-setup:
     jobs:
       - setup:
@@ -85,4 +86,5 @@ workflows:
                 - main
                 - master
                 - /^release.*/
+                # - '2722/circleci' #DELETE BEFORE MERGE
 

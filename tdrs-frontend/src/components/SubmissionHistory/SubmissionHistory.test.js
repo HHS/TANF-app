@@ -244,8 +244,6 @@ describe('SubmissionHistory', () => {
     expect(
       screen.queryByText('Error Reports (In development)')
     ).toBeInTheDocument()
-
-    expect(screen.queryByText('Currently Unavailable')).toBeInTheDocument()
   })
 
   it('Shows SSP results when SSP-MOE file type selected', () => {
@@ -338,5 +336,81 @@ describe('SubmissionHistory', () => {
     expect(screen.queryByText('test4.txt')).toBeInTheDocument()
     expect(screen.queryByText('test5.txt')).toBeInTheDocument()
     expect(screen.queryByText('test6.txt')).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['Pending', 'Active Case Data'],
+    ['Pending', 'Closed Case Data'],
+    ['Pending', 'Aggregate Data'],
+    ['Accepted', 'Active Case Data'],
+    ['Accepted', 'Closed Case Data'],
+    ['Accepted', 'Aggregate Data'],
+    ['Accepted with Errors', 'Active Case Data'],
+    ['Accepted with Errors', 'Closed Case Data'],
+    ['Accepted with Errors', 'Aggregate Data'],
+    ['Partially Accepted with Errors', 'Active Case Data'],
+    ['Partially Accepted with Errors', 'Closed Case Data'],
+    ['Partially Accepted with Errors', 'Aggregate Data'],
+    ['Rejected', 'Active Case Data'],
+    ['Rejected', 'Closed Case Data'],
+    ['Rejected', 'Aggregate Data'],
+    [null, 'Active Case Data'],
+    [null, 'Closed Case Data'],
+    [null, 'Aggregate Data'],
+  ])('Shows the submission acceptance status section 3', (status, section) => {
+    const state = {
+      reports: {
+        files: [
+          {
+            id: '123',
+            fileName: 'test1.txt',
+            fileType: 'TANF',
+            quarter: 'Q1',
+            section: section,
+            uuid: '123-4-4-321',
+            year: '2023',
+            s3_version_id: '321-0-0-123',
+            createdAt: '12/12/2012 12:12',
+            submittedBy: 'test@teamraft.com',
+            summary: {
+              datafile: '123',
+              status: status,
+              case_aggregates: {
+                Oct: {
+                  total: 0,
+                  accepted: 0,
+                  rejected: 0,
+                },
+                Nov: {
+                  total: 0,
+                  accepted: 0,
+                  rejected: 0,
+                },
+                Dec: {
+                  total: 0,
+                  accepted: 0,
+                  rejected: 0,
+                },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const store = appConfigureStore(state)
+    const dispatch = jest.fn(store.dispatch)
+    store.dispatch = dispatch
+
+    setup(store)
+
+    expect(screen.queryByText('Status')).toBeInTheDocument()
+    expect(screen.queryByText('test1.txt')).toBeInTheDocument()
+
+    if (status && status !== 'Pending') {
+      expect(screen.queryByText(status)).toBeInTheDocument()
+    } else {
+      expect(screen.queryAllByText('Pending')).toHaveLength(2)
+    }
   })
 })

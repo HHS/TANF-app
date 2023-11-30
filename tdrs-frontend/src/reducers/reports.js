@@ -2,6 +2,7 @@ import {
   SET_FILE,
   CLEAR_FILE,
   SET_FILE_ERROR,
+  FILE_EXT_ERROR,
   CLEAR_ERROR,
   SET_SELECTED_YEAR,
   SET_SELECTED_STT,
@@ -66,6 +67,7 @@ export const serializeApiDataFile = (dataFile) => ({
   createdAt: dataFile.created_at,
   submittedBy: dataFile.submitted_by,
   hasError: dataFile.has_error,
+  summary: dataFile.summary,
 })
 
 const initialState = {
@@ -131,6 +133,7 @@ const reports = (state = initialState, action) => {
             created_at: null,
             submitted_by: null,
             has_error: null,
+            summary: null,
           })
         }),
       }
@@ -171,6 +174,11 @@ const reports = (state = initialState, action) => {
       }
     }
     case SET_FILE_ERROR: {
+      const { error, section } = payload
+      const updatedFiles = getUpdatedFiles({ state, section, error })
+      return { ...state, submittedFiles: updatedFiles }
+    }
+    case FILE_EXT_ERROR: {
       const { error, section } = payload
       const updatedFiles = getUpdatedFiles({ state, section, error })
       return { ...state, submittedFiles: updatedFiles }

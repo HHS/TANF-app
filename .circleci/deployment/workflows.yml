@@ -57,6 +57,7 @@
           filters:
             branches:
               only:
+                # - '2722/circleci' #DELETE BEFORE MERGE
                 - develop
       - enable-versioning:
           requires:

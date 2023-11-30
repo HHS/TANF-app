@@ -22,7 +22,7 @@ ALLOWED_FILE_EXTENSIONS = [
 def _get_unsupported_msg(_type, value, supported_options):
     """Construct a message to convey an unsupported operation."""
     return (
-        f'Unsupported {_type}: {value}, supported {pluralize(_type)} '
+        f'Unsupported {_type}: supported {pluralize(_type)} '
         f'are: {supported_options}'
     )
 

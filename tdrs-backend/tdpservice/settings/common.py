@@ -326,7 +326,7 @@ class Common(Configuration):
     logger.debug("RAW_CLAMAV: " + str(RAW_CLAMAV))
     CLAMAV_NEEDED = bool(strtobool(RAW_CLAMAV))
 
-    # The URL endpoint to send AV scan requests to (clamav-rest)
+    # The URL endpoint to send AV scan requests to (clamav-rest/clamav-nginx-proxy)
     AV_SCAN_URL = os.getenv('AV_SCAN_URL')
 
     # The factor used to determine how long to wait before retrying failed scans

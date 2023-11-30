@@ -7,6 +7,7 @@ import {
   clearError,
   clearFile,
   SET_FILE_ERROR,
+  FILE_EXT_ERROR,
   upload,
   download,
 } from '../../actions/reports'
@@ -16,6 +17,9 @@ import { handlePreview, getTargetClassName } from './utils'
 
 const INVALID_FILE_ERROR =
   'We can’t process that file format. Please provide a plain text file.'
+
+const INVALID_EXT_ERROR =
+  'Invalid extension. Accepted file types are: .txt, .ms##, .ts##, or .ts###.'
 
 function FileUpload({ section, setLocalAlertState }) {
   // e.g. 'Aggregate Case Data' => 'aggregate-case-data'
@@ -29,6 +33,10 @@ function FileUpload({ section, setLocalAlertState }) {
 
   const hasFile = files?.some(
     (file) => file.section.includes(sectionName) && file.uuid
+  )
+
+  const hasPreview = files?.some(
+    (file) => file.section.includes(sectionName) && file.name
   )
 
   const selectedFile = files?.find((file) => file.section.includes(sectionName))
@@ -54,8 +62,10 @@ function FileUpload({ section, setLocalAlertState }) {
         setTimeout(trySettingPreview, 100)
       }
     }
-    if (hasFile) trySettingPreview()
-  }, [hasFile, fileName, targetClassName])
+    if (hasPreview || hasFile) {
+      trySettingPreview()
+    }
+  }, [hasPreview, hasFile, fileName, targetClassName])
 
   const downloadFile = ({ target }) => {
     dispatch(clearError({ section: sectionName }))
@@ -89,6 +99,19 @@ function FileUpload({ section, setLocalAlertState }) {
     filereader.onloadend = (evt) => {
       /* istanbul ignore next */
       if (!evt.target.error) {
+        // Validate file extension before proceeding
+        const re = /(\.txt|\.ms\d{2}|\.ts\d{2,3})$/i
+        if (!re.exec(file.name)) {
+          dispatch({
+            type: FILE_EXT_ERROR,
+            payload: {
+              error: { message: INVALID_EXT_ERROR },
+              section,
+            },
+          })
+          return
+        }
+
         // Read in the file blob "headers: and create a hex string signature
         const uint = new Uint8Array(evt.target.result)
         const bytes = []

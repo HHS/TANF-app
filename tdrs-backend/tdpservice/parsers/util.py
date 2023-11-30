@@ -35,7 +35,7 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         row_number=line_number,
         column_number=getattr(field, 'item', None),
         item_number=getattr(field, 'item', None),
-        field_name=getattr(field, 'name', None),
+        field_name=getattr(field, 'name', None) if hasattr(field, 'name') else field,
         rpt_month_year=getattr(record, 'RPT_MONTH_YEAR', None),
         case_number=getattr(record, 'CASE_NUMBER', None),
         error_message=error_message,
@@ -59,6 +59,22 @@ def make_generate_parser_error(datafile, line_number):
             error_message=error_message,
             record=record,
             field=field
+        )
+
+    return generate
+
+
+def make_generate_file_precheck_parser_error(datafile, line_number):
+    """Configure a generate_parser_error that acts as a file pre-check error."""
+    def generate(schema, error_category, error_message, record=None, field=None):
+        return generate_parser_error(
+            datafile=datafile,
+            line_number=line_number,
+            schema=schema,
+            error_category=error_category,
+            error_message=error_message,
+            record=record,
+            field=None,  # purposely overridden to force a "Rejected" status for certain file precheck errors
         )
 
     return generate
@@ -129,7 +145,7 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             'S': {
                 'section': DataFile.Section.STRATUM_DATA,
                 'models': {
-                    # 'T7': schema_defs.tanf.t7,
+                    'T7': schema_defs.tanf.t7,
                 }
             }
         },
@@ -145,20 +161,20 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
             'C': {
                 'section': DataFile.Section.SSP_CLOSED_CASE_DATA,
                 'models': {
-                    # 'S4': schema_defs.ssp.m4,
-                    # 'S5': schema_defs.ssp.m5,
+                    'M4': schema_defs.ssp.m4,
+                    'M5': schema_defs.ssp.m5,
                 }
             },
             'G': {
                 'section': DataFile.Section.SSP_AGGREGATE_DATA,
                 'models': {
-                    # 'S6': schema_defs.ssp.m6,
+                    'M6': schema_defs.ssp.m6,
                 }
             },
             'S': {
                 'section': DataFile.Section.SSP_STRATUM_DATA,
                 'models': {
-                    # 'S7': schema_defs.ssp.m7,
+                    'M7': schema_defs.ssp.m7,
                 }
             }
         },
@@ -260,7 +276,6 @@ def transform_to_months(quarter):
         case _:
             raise ValueError("Invalid quarter value.")
 
-
 def month_to_int(month):
     """Return the integer value of a month."""
     return datetime.strptime(month, '%b').strftime('%m')
@@ -305,7 +320,8 @@ def case_aggregates_by_month(df, dfs_status):
             case_numbers = case_numbers.union(curr_case_numbers)
 
         total += len(case_numbers)
-        cases_with_errors += ParserError.objects.filter(case_number__in=case_numbers).distinct('case_number').count()
+        cases_with_errors += ParserError.objects.filter(file=df).filter(
+            case_number__in=case_numbers).distinct('case_number').count()
         accepted = total - cases_with_errors
 
         aggregate_data['months'].append({"month": month,

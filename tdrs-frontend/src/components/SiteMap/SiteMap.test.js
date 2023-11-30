@@ -1,7 +1,6 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import SiteMap from './SiteMap'
-import { mount } from 'enzyme'
 import thunk from 'redux-thunk'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'

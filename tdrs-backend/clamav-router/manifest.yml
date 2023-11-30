@@ -1,0 +1,9 @@
+version: 1
+applications:
+- name: tdp-clamav-nginx
+  buildpacks:
+    - https://github.com/cloudfoundry/nginx-buildpack.git#v1.2.6
+  memory: 32M
+  instances: 1
+  disk_quota: 64M
+  timeout: 180

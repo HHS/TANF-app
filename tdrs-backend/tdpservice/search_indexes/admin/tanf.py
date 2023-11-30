@@ -109,12 +109,17 @@ class TANF_T7Admin(admin.ModelAdmin):
     """ModelAdmin class for parsed T7 data files."""
 
     list_display = [
-        'record',
-        'rpt_month_year',
+        'RecordType',
+        'CALENDAR_QUARTER',
+        'RPT_MONTH_YEAR',
+        'TDRS_SECTION_IND',
+        'STRATUM',
+        'FAMILIES_MONTH',
         'datafile',
     ]
 
     list_filter = [
+        'CALENDAR_QUARTER',
         CreationDateFilter,
-        'rpt_month_year',
+        'RPT_MONTH_YEAR',
     ]

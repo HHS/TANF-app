@@ -2,9 +2,7 @@
 
 import uuid
 from django.db import models
-from django.contrib.contenttypes.fields import GenericRelation
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers.models import ParserError
 
 
 class TANF_T1(models.Model):
@@ -24,7 +22,6 @@ class TANF_T1(models.Model):
         related_name='t1_parent'
     )
 
-    error = GenericRelation(ParserError)
     RecordType = models.CharField(max_length=156, null=True, blank=False)
     RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
     CASE_NUMBER = models.CharField(max_length=11, null=True, blank=False)
@@ -342,15 +339,13 @@ class TANF_T7(models.Model):
         related_name='t7_parent'
     )
 
-    record = models.CharField(max_length=156, null=False, blank=False)
-    rpt_month_year = models.IntegerField(null=False, blank=False)
-    fips_code = models.CharField(max_length=100, null=False, blank=False)
-
-    calendar_quarter = models.IntegerField(null=False, blank=False)
-    tdrs_section_ind = models.CharField(
+    RecordType = models.CharField(max_length=156, null=True, blank=False)
+    CALENDAR_QUARTER = models.IntegerField(null=True, blank=True)
+    RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
+    TDRS_SECTION_IND = models.CharField(
         max_length=1,
-        null=False,
+        null=True,
         blank=False
     )
-    stratum = models.CharField(max_length=2, null=False, blank=False)
-    families = models.IntegerField(null=False, blank=False)
+    STRATUM = models.CharField(max_length=2, null=True, blank=False)
+    FAMILIES_MONTH = models.IntegerField(null=True, blank=False)

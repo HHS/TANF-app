@@ -11,6 +11,7 @@ export const SET_FILE = 'SET_FILE'
 export const CLEAR_FILE = 'CLEAR_FILE'
 export const CLEAR_FILE_LIST = 'CLEAR_FILE_LIST'
 export const SET_FILE_ERROR = 'SET_FILE_ERROR'
+export const FILE_EXT_ERROR = 'FILE_EXT_ERROR'
 export const SET_FILE_SUBMITTED = 'SET_FILE_SUBMITTED'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
 
@@ -254,7 +255,11 @@ export const submit =
         setLocalAlertState({
           active: true,
           type: 'error',
-          message: error.message,
+          message: ''.concat(
+            error.message,
+            ': ',
+            error.response?.data?.file[0]
+          ),
         })
       )
   }
