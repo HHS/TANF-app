@@ -1,6 +1,5 @@
 import { SET_AUTH } from './auth'
 import axios from 'axios'
-import axiosInstance from '../axios-instance'
 import { logErrorToServer } from '../utils/eventLogger'
 
 export const PATCH_REQUEST_ACCESS = 'PATCH_REQUEST_ACCESS'

@@ -201,7 +201,7 @@ describe('actions/reports', () => {
     expect(axios.post).toHaveBeenCalledTimes(1)
     expect(setLocalAlertState).toHaveBeenCalledWith({
       active: true,
-      message: undefined,
+      message: 'undefined: undefined',
       type: 'error',
     })
   })

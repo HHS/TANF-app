@@ -335,3 +335,53 @@ class TanfT6Factory(factory.django.DjangoModelFactory):
     NUM_BIRTHS = 1
     NUM_OUTWEDLOCK_BIRTHS = 1
     NUM_CLOSED_CASES = 1
+
+class TanfT7Factory(factory.django.DjangoModelFactory):
+    """Generate TANF T7 record for testing."""
+
+    class Meta:
+        """Hardcoded meta data for TANF_T7."""
+
+        model = "search_indexes.TANF_T7"
+
+    CALENDAR_QUARTER = 20204
+    RPT_MONTH_YEAR = 202011
+    TDRS_SECTION_IND = '1'
+    STRATUM = '01'
+    FAMILIES_MONTH = 1
+
+class SSPM5Factory(factory.django.DjangoModelFactory):
+    """Generate SSP M5 record for testing."""
+
+    class Meta:
+        """Hardcoded meta data for SSP_M5."""
+
+        model = "search_indexes.SSP_M5"
+
+    RPT_MONTH_YEAR = 1
+    CASE_NUMBER = '1'
+
+    FAMILY_AFFILIATION = 1
+    DATE_OF_BIRTH = '11111111'
+    SSN = '123456789'
+    RACE_HISPANIC = 1
+    RACE_AMER_INDIAN = 1
+    RACE_ASIAN = 1
+    RACE_BLACK = 1
+    RACE_HAWAIIAN = 1
+    RACE_WHITE = 1
+    GENDER = 1
+    REC_OASDI_INSURANCE = 1
+    REC_FEDERAL_DISABILITY = 1
+    REC_AID_TOTALLY_DISABLED = 1
+    REC_AID_AGED_BLIND = 1
+    REC_SSI = 1
+    MARITAL_STATUS = 1
+    RELATIONSHIP_HOH = '01'
+    PARENT_MINOR_CHILD = 1
+    NEEDS_OF_PREGNANT_WOMAN = 1
+    EDUCATION_LEVEL = '01'
+    CITIZENSHIP_STATUS = 1
+    EMPLOYMENT_STATUS = 1
+    AMOUNT_EARNED_INCOME = '1000'
+    AMOUNT_UNEARNED_INCOME = '1000'

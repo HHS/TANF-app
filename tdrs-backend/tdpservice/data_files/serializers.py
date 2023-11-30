@@ -12,6 +12,7 @@ from tdpservice.data_files.validators import (
 from tdpservice.security.models import ClamAVFileScan
 from tdpservice.stts.models import STT
 from tdpservice.users.models import User
+from tdpservice.parsers.serializers import DataFileSummarySerializer
 logger = logging.getLogger(__name__)
 
 class DataFileSerializer(serializers.ModelSerializer):
@@ -22,6 +23,7 @@ class DataFileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     ssp = serializers.BooleanField(write_only=True)
     has_error = serializers.SerializerMethodField()
+    summary = DataFileSummarySerializer(many=False, read_only=True)
 
     class Meta:
         """Metadata."""
@@ -45,6 +47,7 @@ class DataFileSerializer(serializers.ModelSerializer):
             's3_location',
             's3_versioning_id',
             'has_error',
+            'summary'
         ]
 
         read_only_fields = ("version",)

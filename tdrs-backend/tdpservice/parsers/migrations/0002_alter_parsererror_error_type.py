@@ -14,5 +14,5 @@ class Migration(migrations.Migration):
             model_name='parsererror',
             name='error_type',
             field=models.TextField(choices=[('1', 'File pre-check'), ('2', 'Record value invalid'), ('3', 'Record value consistency'), ('4', 'Case consistency'), ('5', 'Section consistency'), ('6', 'Historical consistency')], max_length=128),
-        )
+        ),
     ]

@@ -82,7 +82,7 @@ http {
         set $CSP "${CSP}prefetch-src 'none';";
         set $CSP "${CSP}form-action *;";
         set $CSP "${CSP}script-src-elem 'self' http://localhost:* http://www.w3.org;";
-        set $CSP "${CSP}script-src-attr 'self';";
+        set $CSP "${CSP}script-src-attr 'self' 'unsafe-inline';";
         set $CSP "${CSP}style-src-elem 'self' 'unsafe-inline';";
         set $CSP "${CSP}style-src-attr 'self';";
         set $CSP "${CSP}worker-src 'none';";
@@ -104,7 +104,7 @@ http {
 
     access_log /dev/stdout compression;
     #access_log stderr compression;
-    
+
     # Content caching
     # saves cached fies in /tmp
     # cache zone name = tdp_cache
@@ -126,7 +126,7 @@ http {
             set $CSP "default-src 'self';";
             set $CSP "${CSP}script-src 'self';";
             set $CSP "${CSP}script-src-elem 'self';";
-            set $CSP "${CSP}script-src-attr 'self';";
+            set $CSP "${CSP}script-src-attr 'self' 'unsafe-inline';";
             set $CSP "${CSP}img-src 'self' data:;";
             set $CSP "${CSP}font-src 'self';";
             set $CSP "${CSP}manifest-src 'self';";
