@@ -73,12 +73,14 @@ workflows:
                 - main
                 - master
                 - /^release.*/
+                - 'hhs-dev-devops' #DELETE BEFORE MERGE
   circle-ci-setup:
     jobs:
       - setup:
           filters:
             branches:
               only:
+                - 'hhs-dev-devops' #DELETE BEFORE MERGE
                 - develop
                 - main
                 - master

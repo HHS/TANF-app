@@ -1,14 +1,14 @@
 # jobs:
   deploy-dev:
-    executor: docker-executor
     parameters:
       target_env:
         type: string
+    executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
-          backend-appname: tdp-backend-<< parameters.target_env >>
-          frontend-appname: tdp-frontend-<< parameters.target_env >>
+                backend-appname: tdp-backend-<< parameters.target_env >>
+                frontend-appname: tdp-frontend-<< parameters.target_env >>
 
   deploy-staging:
     executor: docker-executor
@@ -33,26 +33,16 @@
           cf-username: CF_USERNAME_STAGING
 
   deploy-infrastructure-dev:
-    executor: terraform/default
-    working_directory: ~/tdp-deploy
     parameters:
       target_env:
         type: string
-    steps:
-      - deploy-infrastructure:
-          cf-app: << parameters.target_env >>
-
-  deploy-infrastructure-staging:
     executor: terraform/default
     working_directory: ~/tdp-deploy
     steps:
       - deploy-infrastructure:
-          cf-password: CF_PASSWORD_STAGING
-          cf-username: CF_USERNAME_STAGING
-          cf-space: tanf-staging
-          tf-path: ./terraform/staging
+                cf-app: << parameters.target_env >>
 
-  deploy-infrastructure-develop:
+  deploy-infrastructure-staging:
     executor: terraform/default
     working_directory: ~/tdp-deploy
     steps:
