@@ -40,7 +40,7 @@ cd "$TARGET_DIR" || exit 2
 
 
 if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then 
-    docker network create external-net
+  docker network create external-net
 fi
 
 # Ensure the APP_URL is reachable from the zaproxy container
@@ -112,10 +112,6 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(14\).description='Site - FontAwesome.com' \
   -config globalexcludeurl.url_list.url\(14\).enabled=true \
 
-  -config globalexcludeurl.url_list.url\(15\).regex='^https:\/\/.*\.cloud.gov\/.*$' \
-  -config globalexcludeurl.url_list.url\(15\).description='Site - Cloud.gov' \
-  -config globalexcludeurl.url_list.url\(15\).enabled=true \
-
   -config globalexcludeurl.url_list.url\(16\).regex='^https:\/\/.*\.googletagmanager.com\/.*$' \
   -config globalexcludeurl.url_list.url\(16\).description='Site - googletagmanager.com' \
   -config globalexcludeurl.url_list.url\(16\).enabled=true \
@@ -140,7 +136,6 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(21\).description='Site - IdentitySandbox.gov' \
   -config globalexcludeurl.url_list.url\(21\).enabled=true \
   -config spider.postform=true"
-
 # How long ZAP will crawl the app with the spider process
 ZAP_SPIDER_MINS=10
 
