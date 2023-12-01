@@ -7,8 +7,8 @@
     working_directory: ~/tdp-deploy
     steps:
       - deploy-cloud-dot-gov:
-                backend-appname: tdp-backend-<< parameters.target_env >>
-                frontend-appname: tdp-frontend-<< parameters.target_env >>
+          backend-appname: tdp-backend-<< parameters.target_env >>
+          frontend-appname: tdp-frontend-<< parameters.target_env >>
 
   deploy-staging:
     executor: docker-executor
