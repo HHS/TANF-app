@@ -127,6 +127,7 @@ m2 = SchemaManager(
                     friendly_name="race american-indian", required=False, validators=[
                         validators.isInLimits(0, 2)
                     ]),
+              Field(item="30C", name='RACE_ASIAN', type='number', startIndex=40, endIndex=41,
                     friendly_name="race asian", required=False, validators=[
                         validators.isInLimits(0, 2)
                     ]),
