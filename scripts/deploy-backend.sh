@@ -100,7 +100,6 @@ update_backend()
 
     if [ "$1" = "rolling" ] ; then
         set_cf_envs
-
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
         cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 180 --strategy rolling || exit 1
