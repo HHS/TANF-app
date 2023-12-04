@@ -127,7 +127,7 @@ t2 = SchemaManager(
                 Field(
                     item="0",
                     name="RecordType",
-                    friendly_name="record tsype",
+                    friendly_name="record type",
                     type="string",
                     startIndex=0,
                     endIndex=2,
@@ -194,7 +194,7 @@ t2 = SchemaManager(
                     transform_func=tanf_ssn_decryption_func,
                     item="33",
                     name="SSN",
-                    friendly_name="social security number - ssn",
+                    friendly_name="social security number",
                     type="string",
                     startIndex=29,
                     endIndex=38,
@@ -297,8 +297,8 @@ t2 = SchemaManager(
                 Field(
                     item="36C",
                     name="DISABLED_TITLE_XIVAPDT",
-                    friendly_name="Receives Aid to the Permanently and Totally Disabled" +
-                    " Under Title XIV-APDT of the Social Security Act",
+                    friendly_name="receives aid to the permanently and totally disabled" +
+                    " under title xiv-apdt of the social security act",
                     type="string",
                     startIndex=47,
                     endIndex=48,
@@ -546,7 +546,7 @@ t2 = SchemaManager(
                 Field(
                     item="53A",
                     name="WORK_EXPERIENCE_HOP",
-                    friendly_name="work experience hours of participation",
+                    friendly_name="work experience - hours of participation",
                     type="string",
                     startIndex=76,
                     endIndex=78,
@@ -558,7 +558,7 @@ t2 = SchemaManager(
                 Field(
                     item="53B",
                     name="WORK_EXPERIENCE_EA",
-                    friendly_name="work experience excused absence",
+                    friendly_name="work experience - excused absence",
                     type="string",
                     startIndex=78,
                     endIndex=80,

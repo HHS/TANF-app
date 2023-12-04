@@ -85,7 +85,7 @@ first_part_schema = RowSchema(
                   validators.dateMonthIsValid(),
               ]),
         TransformField(transform_func=ssp_ssn_decryption_func, item="62", name='SSN', type='string', startIndex=28,
-                       friendly_name="social security number - ssn", endIndex=37, required=True, is_encrypted=False,
+                       friendly_name="social security number", endIndex=37, required=True, is_encrypted=False,
                        validators=[
                            validators.validateSSN()
                         ]),
@@ -94,7 +94,7 @@ first_part_schema = RowSchema(
                   validators.isInLimits(0, 2)
               ]),
         Field(item="63B", name='RACE_AMER_INDIAN', type='number', startIndex=38, endIndex=39,
-              friendly_name="race american indian", required=False, validators=[
+              friendly_name="race american-indian", required=False, validators=[
                   validators.isInLimits(0, 2)
               ]),
         Field(item="63C", name='RACE_ASIAN', type='number', startIndex=39, endIndex=40,
@@ -233,7 +233,7 @@ second_part_schema = RowSchema(
                   validators.dateMonthIsValid(),
               ]),
         TransformField(transform_func=ssp_ssn_decryption_func, item="62", name='SSN', type='string', startIndex=69,
-                       endIndex=78, required=True, is_encrypted=False, friendly_name="social security number - ssn",
+                       endIndex=78, required=True, is_encrypted=False, friendly_name="social security number",
                        validators=[
                            validators.validateSSN()
                        ]),
@@ -242,7 +242,7 @@ second_part_schema = RowSchema(
                   validators.isInLimits(0, 2)
               ]),
         Field(item="63B", name='RACE_AMER_INDIAN', type='number', startIndex=79, endIndex=80,
-              friendly_name="race american indian", required=False, validators=[
+              friendly_name="race american-indian", required=False, validators=[
                   validators.isInLimits(0, 2)
               ]),
         Field(item="63C", name='RACE_ASIAN', type='number', startIndex=80, endIndex=81,

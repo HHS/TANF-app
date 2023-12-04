@@ -118,16 +118,15 @@ m2 = SchemaManager(
                     ]),
               TransformField(transform_func=ssp_ssn_decryption_func, item="29", name='SSN', type='string',
                              startIndex=29, endIndex=38, required=True, validators=[validators.validateSSN()],
-                             friendly_name="social security number - ssn", is_encrypted=False),
+                             friendly_name="social security number", is_encrypted=False),
               Field(item="30A", name='RACE_HISPANIC', type='number', startIndex=38, endIndex=39, required=False,
                     friendly_name="race hispanic", validators=[
                         validators.isInLimits(0, 2)
                     ]),
               Field(item="30B", name='RACE_AMER_INDIAN', type='number', startIndex=39, endIndex=40,
-                    friendly_name="race american indian", required=False, validators=[
+                    friendly_name="race american-indian", required=False, validators=[
                         validators.isInLimits(0, 2)
                     ]),
-              Field(item="30C", name='RACE_ASIAN', type='number', startIndex=40, endIndex=41,
                     friendly_name="race asian", required=False, validators=[
                         validators.isInLimits(0, 2)
                     ]),

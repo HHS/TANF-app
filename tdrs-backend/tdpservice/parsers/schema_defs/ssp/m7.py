@@ -56,7 +56,7 @@ for i in range(1, 31):
                     transform_func=calendar_quarter_to_rpt_month_year((i - 1) % 3),
                     item="2A",
                     name="RPT_MONTH_YEAR",
-                    friendly_name="reporting month year",
+                    friendly_name="reporting month and year",
                     type="number",
                     startIndex=2,
                     endIndex=7,
