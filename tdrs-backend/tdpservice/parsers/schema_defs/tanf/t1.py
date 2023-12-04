@@ -395,7 +395,7 @@ t1 = SchemaManager(
                 Field(
                     item="22C",
                     name="CC_NBR_MONTHS",
-                    friendly_name="child care number of months",
+                    friendly_name="child care - number of months",
                     type="number",
                     startIndex=68,
                     endIndex=71,
