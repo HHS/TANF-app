@@ -469,6 +469,14 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile):
     parse.parse_datafile(ssp_section1_datafile)
 
     parser_errors = ParserError.objects.filter(file=ssp_section1_datafile)
+
+    err = parser_errors.first()
+
+    assert err.row_number == 2
+    assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert err.error_message == '3 is not larger or equal to 1 and smaller or equal to 2.'
+    assert err.content_type is not None
+    assert err.object_id is not None
     assert parser_errors.count() == 19846
 
     assert SSP_M1.objects.count() == expected_m1_record_count
