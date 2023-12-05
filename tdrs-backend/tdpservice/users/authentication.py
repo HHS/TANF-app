@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class DevAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        if not os.environ.get('DEVELOPMENT'):
+        if not os.environ.get('REACT_APP_DEVAUTH'):
             return None
         logging.debug(f"{self.__class__.__name__}: {request} ; {request.data}")
         requser = request.data.get("user")
