@@ -91,20 +91,20 @@ services:
       - discovery.type=single-node
       - logger.discovery.level=debug
       - xpack.security.enabled=true
-      # - xpack.security.authc.realms.oidc.cloudgov # The name of our realm
-      # - xpack.security.authc.realms.oidc.cloudgov.order=2 # Should be highest in the realm chain
-      # - xpack.security.authc.realms.oidc.cloudgov.rp.client_id="the_client_id" # assigned to the Elastic Stack RP by the OP upon registration.
-      # - xpack.security.authc.realms.oidc.cloudgov.rp.response_type=code # controls which OpenID Connect authentication flow this RP supports: code, token, id_token
-      # - xpack.security.authc.realms.oidc.cloudgov.rp.redirect_uri="https://kibana.example.org:5601/api/security/oidc/callback"
-      # - xpack.security.authc.realms.oidc.cloudgov.op.issuer="https://op.example.org" # Issuer Identifier is usually a case sensitive UR
-      # - xpack.security.authc.realms.oidc.cloudgov.op.authorization_endpoint="https://op.example.org/oauth2/v1/authorize" # The URL for the Authorization Endpoint in the OP
-      # - xpack.security.authc.realms.oidc.cloudgov.op.token_endpoint="https://op.example.org/oauth2/v1/token" # The URL for the Token Endpoint in the OpenID Connect Provider
-      # - xpack.security.authc.realms.oidc.cloudgov.op.jwkset_path=oidc/jwkset.json # The path to a file or a URL containing a JSON Web Key Set with the key material that the OpenID Connect Provider uses for signing tokens and claims responses. OP should provide this.
-      # - xpack.security.authc.realms.oidc.cloudgov.op.userinfo_endpoint="https://op.example.org/oauth2/v1/userinfo" # (Optional) The URL for the UserInfo Endpoint in the OpenID Connect Provider.
-      # - xpack.security.authc.realms.oidc.cloudgov.op.endsession_endpoint="https://op.example.org/oauth2/v1/logout" # (Optional) The URL to the End Session Endpoint in the OpenID Connect Provider.
-      # - xpack.security.authc.realms.oidc.cloudgov.rp.post_logout_redirect_uri="https://kibana.example.org:5601/security/logged_out" # (Optional) The Redirect URL where the OpenID Connect Provider should redirect the user after a successful Single Logout (assuming op.endsession_endpoint above is also set).
-      # - xpack.security.authc.realms.oidc.cloudgov.claims.principal=sub
-      # - xpack.security.authc.realms.oidc.cloudgov.claims.groups="http://example.info/claims/groups"
+      # - xpack.security.authc.realms.oidc.hhsams # The name of our realm
+      # - xpack.security.authc.realms.oidc.hhsams.order=2 # Should be highest in the realm chain
+      # - xpack.security.authc.realms.oidc.hhsams.rp.client_id="the_client_id" # assigned to the Elastic Stack RP by the OP upon registration.
+      # - xpack.security.authc.realms.oidc.hhsams.rp.response_type=code # controls which OpenID Connect authentication flow this RP supports: code, token, id_token
+      # - xpack.security.authc.realms.oidc.hhsams.rp.redirect_uri="https://kibana.example.org:5601/api/security/oidc/callback"
+      # - xpack.security.authc.realms.oidc.hhsams.op.issuer="https://op.example.org" # Issuer Identifier is usually a case sensitive UR
+      # - xpack.security.authc.realms.oidc.hhsams.op.authorization_endpoint="https://op.example.org/oauth2/v1/authorize" # The URL for the Authorization Endpoint in the OP
+      # - xpack.security.authc.realms.oidc.hhsams.op.token_endpoint="https://op.example.org/oauth2/v1/token" # The URL for the Token Endpoint in the OpenID Connect Provider
+      # - xpack.security.authc.realms.oidc.hhsams.op.jwkset_path=oidc/jwkset.json # The path to a file or a URL containing a JSON Web Key Set with the key material that the OpenID Connect Provider uses for signing tokens and claims responses. OP should provide this.
+      # - xpack.security.authc.realms.oidc.hhsams.op.userinfo_endpoint="https://op.example.org/oauth2/v1/userinfo" # (Optional) The URL for the UserInfo Endpoint in the OpenID Connect Provider.
+      # - xpack.security.authc.realms.oidc.hhsams.op.endsession_endpoint="https://op.example.org/oauth2/v1/logout" # (Optional) The URL to the End Session Endpoint in the OpenID Connect Provider.
+      # - xpack.security.authc.realms.oidc.hhsams.rp.post_logout_redirect_uri="https://kibana.example.org:5601/security/logged_out" # (Optional) The Redirect URL where the OpenID Connect Provider should redirect the user after a successful Single Logout (assuming op.endsession_endpoint above is also set).
+      # - xpack.security.authc.realms.oidc.hhsams.claims.principal=sub
+      # - xpack.security.authc.realms.oidc.hhsams.claims.groups="http://example.info/claims/groups"
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-}
       - KIBANA_SYSTEM_PASSWORD=${KIBANA_SYSTEM_PASSWORD:-}
     ports:
