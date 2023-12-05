@@ -40,7 +40,7 @@ export const SET_MOCK_LOGIN_STATE = 'SET_MOCK_LOGIN_STATE'
  */
 
 export const fetchAuth = () => async (dispatch) => {
-  if (process.env.DEVELOPMENT) {
+  if (process.env.REACT_APP_DEVAUTH) {
     return 0
   }
   dispatch({ type: FETCH_AUTH })
