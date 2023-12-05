@@ -578,7 +578,8 @@ child_two = RowSchema(
             required=True,
             validators=[
                 validators.or_validators(
-                    validators.isInStringRange(0, 16), validators.oneOf(["98", "99"])
+                    validators.isInStringRange(0, 16),
+                    validators.oneOf(["98", "99"])
                 )
             ],
         ),

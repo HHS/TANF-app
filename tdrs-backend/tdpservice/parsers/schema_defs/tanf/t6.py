@@ -15,12 +15,24 @@ s1 = RowSchema(
         validators.hasLength(379),
     ],
     postparsing_validators=[
-        validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
         validators.sumIsEqual(
-            "NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"]
+            "NUM_APPLICATIONS", [
+                "NUM_APPROVED",
+                "NUM_DENIED"
+            ]
         ),
         validators.sumIsEqual(
-            "NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"]
+            "NUM_FAMILIES", [
+                "NUM_2_PARENTS",
+                "NUM_1_PARENTS",
+                "NUM_NO_PARENTS"
+            ]
+        ),
+        validators.sumIsEqual(
+            "NUM_RECIPIENTS", [
+                "NUM_ADULT_RECIPIENTS",
+                "NUM_CHILD_RECIPIENTS"
+            ]
         ),
     ],
     fields=[
@@ -134,7 +146,7 @@ s1 = RowSchema(
         Field(
             item="11A",
             name="NUM_NO_PARENTS",
-            friendly_name="total number of no parent families",
+            friendly_name="total number of no-parent families",
             type="number",
             startIndex=187,
             endIndex=195,
@@ -220,12 +232,24 @@ s2 = RowSchema(
         validators.hasLength(379),
     ],
     postparsing_validators=[
-        validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
         validators.sumIsEqual(
-            "NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"]
+            "NUM_APPLICATIONS", [
+                "NUM_APPROVED",
+                "NUM_DENIED"
+            ]
         ),
         validators.sumIsEqual(
-            "NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"]
+            "NUM_FAMILIES", [
+                "NUM_2_PARENTS",
+                "NUM_1_PARENTS",
+                "NUM_NO_PARENTS"
+            ]
+        ),
+        validators.sumIsEqual(
+            "NUM_RECIPIENTS", [
+                "NUM_ADULT_RECIPIENTS",
+                "NUM_CHILD_RECIPIENTS"
+            ]
         ),
     ],
     fields=[
@@ -419,12 +443,24 @@ s3 = RowSchema(
         validators.hasLength(379),
     ],
     postparsing_validators=[
-        validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
         validators.sumIsEqual(
-            "NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"]
+            "NUM_APPLICATIONS", [
+                "NUM_APPROVED",
+                "NUM_DENIED"
+            ]
         ),
         validators.sumIsEqual(
-            "NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"]
+            "NUM_FAMILIES", [
+                "NUM_2_PARENTS",
+                "NUM_1_PARENTS",
+                "NUM_NO_PARENTS"
+            ]
+        ),
+        validators.sumIsEqual(
+            "NUM_RECIPIENTS", [
+                "NUM_ADULT_RECIPIENTS",
+                "NUM_CHILD_RECIPIENTS"
+            ]
         ),
     ],
     fields=[
@@ -522,7 +558,7 @@ s3 = RowSchema(
         Field(
             item="10C",
             name="NUM_1_PARENTS",
-            friendly_name="total number of one parent families",
+            friendly_name="total number of one-parent families",
             type="number",
             startIndex=179,
             endIndex=187,
@@ -532,7 +568,7 @@ s3 = RowSchema(
         Field(
             item="11C",
             name="NUM_NO_PARENTS",
-            friendly_name="total number of no parent families",
+            friendly_name="total number of no-parent families",
             type="number",
             startIndex=203,
             endIndex=211,

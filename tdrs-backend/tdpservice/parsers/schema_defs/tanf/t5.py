@@ -355,7 +355,8 @@ t5 = SchemaManager(
                     required=True,
                     validators=[
                         validators.or_validators(
-                            validators.isInLimits(0, 2), validators.matches(9)
+                            validators.isInLimits(0, 2),
+                            validators.matches(9)
                         )
                     ],
                 ),
