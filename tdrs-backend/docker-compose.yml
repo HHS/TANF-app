@@ -44,20 +44,69 @@ services:
       - localstack_data:/tmp/localstack
       # Copy in the Localstack setup script to configure any buckets needed
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
-  
+
   kibana:
     image: elastic/kibana:7.17.10
     ports:
       - 5601:5601
+    environment:
+      - xpack.security.encryptionKey="something_at_least_32_characters"
+      - xpack.security.session.idleTimeout="1h"
+      - xpack.security.session.lifespan="30d"
     volumes:
       - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elastic_setup
+
+  # This task only needs to be performed once, during the *initial* startup of
+  # the stack. Any subsequent run will reset the passwords of existing users to
+  # the values defined inside the '.env' file, and the built-in roles to their
+  # default permissions.
+  #
+  # By default, it is excluded from the services started by 'docker compose up'
+  # due to the non-default profile it belongs to. To run it, either provide the
+  # '--profile=elastic_setup' CLI flag to Compose commands, or "up" the service by name
+  # such as 'docker compose up elastic_setup'.
+  elastic_setup:
+    profiles:
+      - elastic_setup
+    build:
+      context: elastic_setup/
+      args:
+        ELASTIC_VERSION: "7.17.6"
+    init: true
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+      DATA_ANALYST_PASSWORD: ${DATA_ANALYST_PASSWORD:-}
+      OFA_SYS_ADMIN_PASSWORD: ${OFA_SYS_ADMIN_PASSWORD:-}
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-}
+    depends_on:
+      - elastic
+    network_mode: "host"
 
   elastic:
     image: elasticsearch:7.17.6
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
       - logger.discovery.level=debug
+      - xpack.security.enabled=true
+      # - xpack.security.authc.realms.oidc.cloudgov # The name of our realm
+      # - xpack.security.authc.realms.oidc.cloudgov.order=2 # Should be highest in the realm chain
+      # - xpack.security.authc.realms.oidc.cloudgov.rp.client_id="the_client_id" # assigned to the Elastic Stack RP by the OP upon registration.
+      # - xpack.security.authc.realms.oidc.cloudgov.rp.response_type=code # controls which OpenID Connect authentication flow this RP supports: code, token, id_token
+      # - xpack.security.authc.realms.oidc.cloudgov.rp.redirect_uri="https://kibana.example.org:5601/api/security/oidc/callback"
+      # - xpack.security.authc.realms.oidc.cloudgov.op.issuer="https://op.example.org" # Issuer Identifier is usually a case sensitive UR
+      # - xpack.security.authc.realms.oidc.cloudgov.op.authorization_endpoint="https://op.example.org/oauth2/v1/authorize" # The URL for the Authorization Endpoint in the OP
+      # - xpack.security.authc.realms.oidc.cloudgov.op.token_endpoint="https://op.example.org/oauth2/v1/token" # The URL for the Token Endpoint in the OpenID Connect Provider
+      # - xpack.security.authc.realms.oidc.cloudgov.op.jwkset_path=oidc/jwkset.json # The path to a file or a URL containing a JSON Web Key Set with the key material that the OpenID Connect Provider uses for signing tokens and claims responses. OP should provide this.
+      # - xpack.security.authc.realms.oidc.cloudgov.op.userinfo_endpoint="https://op.example.org/oauth2/v1/userinfo" # (Optional) The URL for the UserInfo Endpoint in the OpenID Connect Provider.
+      # - xpack.security.authc.realms.oidc.cloudgov.op.endsession_endpoint="https://op.example.org/oauth2/v1/logout" # (Optional) The URL to the End Session Endpoint in the OpenID Connect Provider.
+      # - xpack.security.authc.realms.oidc.cloudgov.rp.post_logout_redirect_uri="https://kibana.example.org:5601/security/logged_out" # (Optional) The Redirect URL where the OpenID Connect Provider should redirect the user after a successful Single Logout (assuming op.endsession_endpoint above is also set).
+      # - xpack.security.authc.realms.oidc.cloudgov.claims.principal=sub
+      # - xpack.security.authc.realms.oidc.cloudgov.claims.groups="http://example.info/claims/groups"
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-}
+      - KIBANA_SYSTEM_PASSWORD=${KIBANA_SYSTEM_PASSWORD:-}
     ports:
       - 9200:9200
       - 9300:9300
@@ -130,6 +179,5 @@ volumes:
 
 
 networks:
-  default:
-      name: external-net
-      external: true
+  external-net:
+    external: true

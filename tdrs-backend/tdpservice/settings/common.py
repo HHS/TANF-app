@@ -468,7 +468,8 @@ class Common(Configuration):
     # Elastic
     ELASTICSEARCH_DSL = {
         'default': {
-            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200')
+            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
+            'http_auth': ('elastic', 'changeme')
         },
     }
 
