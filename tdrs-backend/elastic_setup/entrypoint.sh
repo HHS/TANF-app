@@ -5,12 +5,6 @@ set -o pipefail
 
 source "${BASH_SOURCE[0]%/*}"/util.sh
 
-sleep 10
-
-whoami
-
-sleep 10
-
 
 # --------------------------------------------------------
 # Users declarations
