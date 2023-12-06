@@ -6,7 +6,11 @@
 
 ### Data flow
 
-Users with `OFA Admin` and (STT) `Data Analyst` roles can upload data on upload data files locally into the web application which will store the files in cloud.gov AWS S3 buckets only after the files are successfully scanned for viruses via [ClamAV](../Technical-Documentation/Architecture-Decision-Record/012-antivirus-strategy.md). Developers will deploy new code through GitHub, initiating the continuous integration process through Circle CI.
+Users with `OFA Admin` and (STT) `Data Analyst` roles can upload data on upload data files locally into the web application which will store the files in cloud.gov AWS S3 buckets only after the files are successfully scanned for viruses via [ClamAV](../Technical-Documentation/Architecture-Decision-Record/012-antivirus-strategy.md). For lower environments, we use an NGINX server to function as a proxy, routing to the ClamAV-rest server in the production space. The NGINX server also functions as a gatekeeper, allowing documents for scanning to only come from backend servers, and only able to route them directly to the ClamAV-rest server.
+
+### Code Repository and CI Pipeline
+
+Developers will deploy new code through GitHub, initiating the continuous integration process through Circle CI.
 
 ### Environments/Spaces
 
