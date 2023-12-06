@@ -56,7 +56,7 @@ services:
     volumes:
       - ./kibana.yml:/usr/share/kibana/config/kibana.yml
     depends_on:
-      - elastic_setup
+      - elastic
 
   # This task only needs to be performed once, during the *initial* startup of
   # the stack. Any subsequent run will reset the passwords of existing users to
