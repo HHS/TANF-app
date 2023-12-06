@@ -1,18 +1,9 @@
 """Datafile field representations."""
 
 import logging
+from .validators import value_is_empty
 
 logger = logging.getLogger(__name__)
-
-def value_is_empty(value, length):
-    """Handle 'empty' values as field inputs."""
-    empty_values = [
-        ' '*length,  # '     '
-        '#'*length,  # '#####'
-        '_'*length,  # '_____'
-    ]
-
-    return value is None or value in empty_values
 
 
 class Field:
@@ -38,8 +29,9 @@ class Field:
     def parse_value(self, line):
         """Parse the value for a field given a line, startIndex, endIndex, and field type."""
         value = line[self.startIndex:self.endIndex]
+        value_length = self.endIndex-self.startIndex
 
-        if value_is_empty(value, self.endIndex-self.startIndex):
+        if len(value) < value_length or value_is_empty(value, value_length):
             logger.debug(f"Field: '{self.name}' at position: [{self.startIndex}, {self.endIndex}) is empty.")
             return None
 

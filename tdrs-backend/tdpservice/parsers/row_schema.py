@@ -1,6 +1,7 @@
 """Row schema for datafile."""
 from .models import ParserErrorCategoryChoices
-from .fields import Field,  value_is_empty
+from .fields import Field
+from .validators import value_is_empty
 import logging
 
 logger = logging.getLogger(__name__)
