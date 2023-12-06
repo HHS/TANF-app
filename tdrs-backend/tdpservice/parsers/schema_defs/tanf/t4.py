@@ -6,12 +6,14 @@ from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.models.tanf import TANF_T4
+from tdpservice.search_indexes.documents.tanf import TANF_T4DataSubmissionDocument
 
 
 t4 = SchemaManager(
     schemas=[
         RowSchema(
             model=TANF_T4,
+            document=TANF_T4DataSubmissionDocument,
             preparsing_validators=[
                 validators.hasLength(71),
             ],

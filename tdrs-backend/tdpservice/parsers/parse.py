@@ -55,7 +55,6 @@ def parse_datafile(datafile):
 
     return errors
 
-
 def bulk_create_records(unsaved_records, line_number, header_count, batch_size=10000, flush=False):
     """Bulk create passed in records."""
     if (line_number % batch_size == 0 and header_count > 0) or flush:
@@ -63,14 +62,21 @@ def bulk_create_records(unsaved_records, line_number, header_count, batch_size=1
         try:
             num_created = 0
             num_expected = 0
-            for model, records in unsaved_records.items():
+            num_indices_created = 0
+            for model, doc_records_tuple in unsaved_records.items():
+                document = doc_records_tuple[0]
+                records = doc_records_tuple[1]
                 num_expected += len(records)
-                num_created += len(model.objects.bulk_create(records))
+                created_objs = model.objects.bulk_create(records)
+                num_indices_created += document().update(created_objs)[0]
+                num_created += len(created_objs)
             if num_created != num_expected:
                 logger.error(f"Bulk create only created {num_created}/{num_expected}!")
+            elif num_indices_created != num_expected:
+                logger.error(f"Bulk Elastic Index create only created {num_indices_created}/{num_expected}!")
             else:
                 logger.info(f"Created {num_created}/{num_expected} records.")
-            return num_created == num_expected, {}
+            return num_created == num_expected and num_indices_created == num_expected, {}
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
             return False, unsaved_records
@@ -198,7 +204,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
             if record:
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
-                unsaved_records.setdefault(s.model, []).append(record)
+                unsaved_records.setdefault(s.model, (s.document, []))[1].append(record)
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count,)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)

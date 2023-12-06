@@ -7,10 +7,12 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.models.tanf import TANF_T6
+from tdpservice.search_indexes.documents.tanf import TANF_T6DataSubmissionDocument
 
 
 s1 = RowSchema(
     model=TANF_T6,
+    document=TANF_T6DataSubmissionDocument,
     preparsing_validators=[
         validators.hasLength(379),
     ],
@@ -216,6 +218,7 @@ s1 = RowSchema(
 
 s2 = RowSchema(
     model=TANF_T6,
+    document=TANF_T6DataSubmissionDocument,
     preparsing_validators=[
         validators.hasLength(379),
     ],
@@ -415,6 +418,7 @@ s2 = RowSchema(
 
 s3 = RowSchema(
     model=TANF_T6,
+    document=TANF_T6DataSubmissionDocument,
     preparsing_validators=[
         validators.hasLength(379),
     ],

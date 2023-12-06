@@ -12,13 +12,15 @@ class RowSchema:
 
     def __init__(
             self,
-            model=dict,
+            model,
+            document,
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
-            quiet_preparser_errors=False
+            quiet_preparser_errors=False,
             ):
         self.model = model
+        self.document = document
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = postparsing_validators
         self.fields = fields

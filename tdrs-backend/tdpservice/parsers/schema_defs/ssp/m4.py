@@ -6,11 +6,13 @@ from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.models.ssp import SSP_M4
+from tdpservice.search_indexes.documents.ssp import SSP_M4DataSubmissionDocument
 
 m4 = SchemaManager(
     schemas=[
         RowSchema(
             model=SSP_M4,
+            document=SSP_M4DataSubmissionDocument,
             preparsing_validators=[
                 validators.hasLength(66),
             ],
