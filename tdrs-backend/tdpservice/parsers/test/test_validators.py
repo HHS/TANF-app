@@ -6,6 +6,35 @@ from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, Tanf
 from tdpservice.parsers.test.factories import SSPM5Factory
 
 
+@pytest.mark.parametrize("value,length", [
+    (None, 0),
+    (None, 10),
+    ('     ', 5),
+    ('###', 3),
+    ('', 0),
+    ('', 10),
+])
+def test_value_is_empty_returns_true(value, length):
+    """Test value_is_empty returns valid."""
+    result = validators.value_is_empty(value, length)
+    assert result is True
+
+
+@pytest.mark.parametrize("value,length", [
+    (0, 1),
+    (1, 1),
+    (10, 2),
+    ('0', 1),
+    ('0000', 4),
+    ('1    ', 5),
+    ('##3', 3),
+])
+def test_value_is_empty_returns_false(value, length):
+    """Test value_is_empty returns invalid."""
+    result = validators.value_is_empty(value, length)
+    assert result is False
+
+
 def test_or_validators():
     """Test `or_validators` gives a valid result."""
     value = "2"
@@ -295,6 +324,17 @@ def test_notEmpty_returns_invalid_substring():
 
     assert is_valid is False
     assert error == "111  333 contains blanks between positions 3 and 5."
+
+
+def test_notEmpty_returns_nonexistent_substring():
+    """Test `notEmpty` gives an invalid result for a nonexistent substring."""
+    value = '111  333'
+
+    validator = validators.notEmpty(start=10, end=12)
+    is_valid, error = validator(value)
+
+    assert is_valid is False
+    assert error == "111  333 contains blanks between positions 10 and 12."
 
 @pytest.mark.usefixtures('db')
 class TestCat3ValidatorsBase:
