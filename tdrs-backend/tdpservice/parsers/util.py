@@ -299,7 +299,6 @@ def case_aggregates_by_month(df, dfs_status):
 
     short_section = get_text_from_df(df)['section']
     schema_models_dict = get_program_models(program_type, short_section)
-    print(f"\n\nSCHEMA MODELS DICT: {schema_models_dict}\n\n")
     schema_models = [model for model in schema_models_dict.values()]
 
     aggregate_data = {"months": [], "rejected": 0}
