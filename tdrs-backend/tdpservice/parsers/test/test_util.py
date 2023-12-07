@@ -33,6 +33,7 @@ def test_run_preparsing_validators_returns_valid():
     """Test run_preparsing_validators executes all preparsing_validators provided in schema."""
     line = '12345'
     schema = RowSchema(
+        document=None,
         preparsing_validators=[
             passing_validator()
         ]
@@ -47,6 +48,7 @@ def test_run_preparsing_validators_returns_invalid_and_errors():
     """Test that run_preparsing_validators executes all preparsing_validators provided in schema and returns errors."""
     line = '12345'
     schema = RowSchema(
+        document=None,
         preparsing_validators=[
             passing_validator(),
             failing_validator()
@@ -62,7 +64,7 @@ def test_parse_line_parses_line_from_schema_to_dict():
     """Test that parse_line parses a string into a dict given start and end indices for all fields."""
     line = '12345001'
     schema = RowSchema(
-        model=dict,
+        document=None,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3),
             Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4),
@@ -90,9 +92,13 @@ def test_parse_line_parses_line_from_schema_to_object():
         fourth = None
         fifth = None
 
+    class TestDocument:
+        class Django:
+            model=TestModel
+
     line = '12345001'
     schema = RowSchema(
-        model=TestModel,
+        document=TestDocument(),
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3),
             Field(item=2, name='second', friendly_name='second', type='string', startIndex=3, endIndex=4),
@@ -119,7 +125,7 @@ def test_run_field_validators_returns_valid_with_dict():
         'third': '5'
     }
     schema = RowSchema(
-        model=dict,
+        document=None,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
                 passing_validator()
@@ -145,13 +151,20 @@ def test_run_field_validators_returns_valid_with_object():
         second = None
         third = None
 
+    class TestDocument:
+        class Django:
+            model=TestModel
+
     instance = TestModel()
     instance.first = '123'
     instance.second = '4'
     instance.third = '5'
 
+    document = TestDocument()
+    document.Django.model = instance
+
     schema = RowSchema(
-        model=TestModel,
+        document=document,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
                 passing_validator()
@@ -178,7 +191,7 @@ def test_run_field_validators_returns_invalid_with_dict():
         'third': '5'
     }
     schema = RowSchema(
-        model=dict,
+        document=None,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
                 passing_validator(),
@@ -205,13 +218,20 @@ def test_run_field_validators_returns_invalid_with_object():
         second = None
         third = None
 
+    class TestDocument:
+        class Django:
+            model=TestModel
+
     instance = TestModel()
     instance.first = '123'
     instance.second = '4'
     instance.third = '5'
 
+    document = TestDocument()
+    document.Django.model = instance
+
     schema = RowSchema(
-        model=TestModel,
+        document=document,
         fields=[
             Field(item=1, name='first', friendly_name='first', type='string', startIndex=0, endIndex=3, validators=[
                 passing_validator(),
@@ -244,7 +264,7 @@ def test_field_validators_blank_and_required_returns_error(first, second):
         'second': second,
     }
     schema = RowSchema(
-        model=dict,
+        document=None,
         fields=[
             Field(
                 item=1,
@@ -292,7 +312,7 @@ def test_field_validators_blank_and_not_required_returns_valid(first, expected_v
         'first': first,
     }
     schema = RowSchema(
-        model=dict,
+        document=None,
         fields=[
             Field(
                 item=1,
@@ -319,6 +339,7 @@ def test_run_postparsing_validators_returns_valid():
     """Test run_postparsing_validators executes all postparsing_validators provided in schema."""
     instance = {}
     schema = RowSchema(
+        document=None,
         postparsing_validators=[
             passing_postparsing_validator()
         ]
@@ -333,6 +354,7 @@ def test_run_postparsing_validators_returns_invalid_and_errors():
     """Test run_postparsing_validators executes all postparsing_validators provided in schema and returns errors."""
     instance = {}
     schema = RowSchema(
+        document=None,
         postparsing_validators=[
             passing_postparsing_validator(),
             failing_postparsing_validator()
@@ -350,7 +372,7 @@ def test_multi_record_schema_parses_and_validates():
     schema_manager = SchemaManager(
         schemas=[
             RowSchema(
-                model=dict,
+                document=None,
                 preparsing_validators=[
                     passing_validator()
                 ],
@@ -370,7 +392,7 @@ def test_multi_record_schema_parses_and_validates():
                 ]
             ),
             RowSchema(
-                model=dict,
+                document=None,
                 preparsing_validators=[
                     passing_validator()
                 ],
@@ -389,7 +411,7 @@ def test_multi_record_schema_parses_and_validates():
                 ]
             ),
             RowSchema(
-                model=dict,
+                document=None,
                 preparsing_validators=[
                     failing_validator()
                 ],
@@ -409,7 +431,7 @@ def test_multi_record_schema_parses_and_validates():
                 ]
             ),
             RowSchema(
-                model=dict,
+                document=None,
                 preparsing_validators=[
                     passing_validator()
                 ],
@@ -469,7 +491,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
 
     instance = {}
     schema = RowSchema(
-        model=dict,
+        document=None,
         postparsing_validators=[
             postparse_validator()
         ],
