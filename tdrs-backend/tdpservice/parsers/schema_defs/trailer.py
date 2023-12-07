@@ -7,7 +7,6 @@ from .. import validators
 
 
 trailer = RowSchema(
-    model=dict,
     document=None,
     preparsing_validators=[
         validators.hasLength(

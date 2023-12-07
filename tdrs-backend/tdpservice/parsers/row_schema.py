@@ -12,14 +12,12 @@ class RowSchema:
 
     def __init__(
             self,
-            model,
             document,
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
             quiet_preparser_errors=False,
             ):
-        self.model = model
         self.document = document
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = postparsing_validators
@@ -92,7 +90,7 @@ class RowSchema:
 
     def parse_line(self, line):
         """Create a model for the line based on the schema."""
-        record = self.model()
+        record = self.document.Django.model() if self.document is not None else dict()
 
         for field in self.fields:
             value = field.parse_value(line)

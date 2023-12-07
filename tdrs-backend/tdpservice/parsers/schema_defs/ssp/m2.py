@@ -6,15 +6,13 @@ from tdpservice.parsers.transforms import ssp_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers import validators
-from tdpservice.search_indexes.models.ssp import SSP_M2
 from tdpservice.search_indexes.documents.ssp import SSP_M2DataSubmissionDocument
 
 
 m2 = SchemaManager(
     schemas=[
         RowSchema(
-          model=SSP_M2,
-          document=SSP_M2DataSubmissionDocument,
+          document=SSP_M2DataSubmissionDocument(),
           preparsing_validators=[
               validators.hasLength(150),
           ],

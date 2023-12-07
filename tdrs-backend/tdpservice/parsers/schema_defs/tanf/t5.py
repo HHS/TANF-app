@@ -6,15 +6,13 @@ from tdpservice.parsers.transforms import tanf_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers import validators
-from tdpservice.search_indexes.models.tanf import TANF_T5
 from tdpservice.search_indexes.documents.tanf import TANF_T5DataSubmissionDocument
 
 
 t5 = SchemaManager(
     schemas=[
         RowSchema(
-            model=TANF_T5,
-            document=TANF_T5DataSubmissionDocument,
+            document=TANF_T5DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(71),
             ],

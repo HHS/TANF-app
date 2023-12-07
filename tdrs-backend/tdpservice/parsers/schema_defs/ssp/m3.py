@@ -6,12 +6,10 @@ from tdpservice.parsers.transforms import ssp_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers import validators
-from tdpservice.search_indexes.models.ssp import SSP_M3
 from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
 
 first_part_schema = RowSchema(
-    model=SSP_M3,
-    document=SSP_M3DataSubmissionDocument,
+    document=SSP_M3DataSubmissionDocument(),
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
     ],
@@ -158,8 +156,7 @@ first_part_schema = RowSchema(
 )
 
 second_part_schema = RowSchema(
-    model=SSP_M3,
-    document=SSP_M3DataSubmissionDocument,
+    document=SSP_M3DataSubmissionDocument(),
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
