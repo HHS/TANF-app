@@ -10,7 +10,7 @@ from tdpservice.search_indexes.documents.tanf import TANF_T1DataSubmissionDocume
 t1 = SchemaManager(
     schemas=[
         RowSchema(
-            document = TANF_T1DataSubmissionDocument(),
+            document=TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(156),
             ],

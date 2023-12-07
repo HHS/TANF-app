@@ -323,7 +323,8 @@ def case_aggregates_by_month(df, dfs_status):
             if isinstance(schema_model, SchemaManager):
                 schema_model = schema_model.schemas[0]
 
-            curr_case_numbers = set(schema_model.document.Django.model.objects.filter(datafile=df).filter(RPT_MONTH_YEAR=rpt_month_year)
+            curr_case_numbers = set(schema_model.document.Django.model.objects.filter(datafile=df)
+                                    .filter(RPT_MONTH_YEAR=rpt_month_year)
                                     .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
             case_numbers = case_numbers.union(curr_case_numbers)
 

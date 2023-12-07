@@ -94,7 +94,7 @@ def test_parse_line_parses_line_from_schema_to_object():
 
     class TestDocument:
         class Django:
-            model=TestModel
+            model = TestModel
 
     line = '12345001'
     schema = RowSchema(
@@ -153,7 +153,7 @@ def test_run_field_validators_returns_valid_with_object():
 
     class TestDocument:
         class Django:
-            model=TestModel
+            model = TestModel
 
     instance = TestModel()
     instance.first = '123'
@@ -220,7 +220,7 @@ def test_run_field_validators_returns_invalid_with_object():
 
     class TestDocument:
         class Django:
-            model=TestModel
+            model = TestModel
 
     instance = TestModel()
     instance.first = '123'
