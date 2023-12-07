@@ -162,7 +162,7 @@ t5 = SchemaManager(
                     transform_func=tanf_ssn_decryption_func,
                     item="16",
                     name="SSN",
-                    friendly_name="social security number - ssn",
+                    friendly_name="social security number",
                     type="string",
                     startIndex=28,
                     endIndex=37,
@@ -183,7 +183,7 @@ t5 = SchemaManager(
                 Field(
                     item="17B",
                     name="RACE_AMER_INDIAN",
-                    friendly_name="race american indian",
+                    friendly_name="race american-indian",
                     type="number",
                     startIndex=38,
                     endIndex=39,
@@ -355,7 +355,8 @@ t5 = SchemaManager(
                     required=True,
                     validators=[
                         validators.or_validators(
-                            validators.isInLimits(0, 2), validators.matches(9)
+                            validators.isInLimits(0, 2),
+                            validators.matches(9)
                         )
                     ],
                 ),
@@ -392,7 +393,7 @@ t5 = SchemaManager(
                 Field(
                     item="29",
                     name="AMOUNT_EARNED_INCOME",
-                    friendly_name="amount earnedof income",
+                    friendly_name="amount of earned income",
                     type="string",
                     startIndex=63,
                     endIndex=67,

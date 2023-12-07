@@ -132,7 +132,7 @@ t1 = SchemaManager(
                 Field(
                     item="4",
                     name="RPT_MONTH_YEAR",
-                    friendly_name="reporting month year",
+                    friendly_name="reporting month and year",
                     type="number",
                     startIndex=2,
                     endIndex=8,
@@ -395,7 +395,7 @@ t1 = SchemaManager(
                 Field(
                     item="22C",
                     name="CC_NBR_MONTHS",
-                    friendly_name="child care number of months",
+                    friendly_name="child care - number of months",
                     type="number",
                     startIndex=68,
                     endIndex=71,
@@ -419,7 +419,7 @@ t1 = SchemaManager(
                 Field(
                     item="23B",
                     name="TRANSP_NBR_MONTHS",
-                    friendly_name="transportation number of months",
+                    friendly_name="transportation - number of months",
                     type="number",
                     startIndex=75,
                     endIndex=78,
@@ -443,7 +443,7 @@ t1 = SchemaManager(
                 Field(
                     item="24B",
                     name="TRANSITION_NBR_MONTHS",
-                    friendly_name="transition services number of months",
+                    friendly_name="transition services - number of months",
                     type="number",
                     startIndex=82,
                     endIndex=85,
@@ -467,7 +467,7 @@ t1 = SchemaManager(
                 Field(
                     item="25B",
                     name="OTHER_NBR_MONTHS",
-                    friendly_name="other number of months",
+                    friendly_name="other - number of months",
                     type="number",
                     startIndex=89,
                     endIndex=92,
@@ -551,7 +551,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AVII",
                     name="OTHER_SANCTION",
-                    friendly_name="other, sanction",
+                    friendly_name="other sanction",
                     type="number",
                     startIndex=101,
                     endIndex=102,
@@ -611,7 +611,7 @@ t1 = SchemaManager(
                 Field(
                     item="26CIV",
                     name="OTHER_NON_SANCTION",
-                    friendly_name="other, non-sanction",
+                    friendly_name="other non-sanction",
                     type="number",
                     startIndex=112,
                     endIndex=113,
@@ -630,7 +630,8 @@ t1 = SchemaManager(
                     required=False,
                     validators=[
                         validators.or_validators(
-                            validators.matches("9"), validators.isEmpty()
+                            validators.matches("9"),
+                            validators.isEmpty()
                         ),
                         validators.isAlphaNumeric(),
                     ],

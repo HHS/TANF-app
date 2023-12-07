@@ -403,7 +403,7 @@ def test_multi_record_schema_parses_and_validates():
                     Field(
                         item=2,
                         name='second',
-                        friendly_name='first',
+                        friendly_name='second',
                         type='string',
                         startIndex=2,
                         endIndex=4,
@@ -422,7 +422,7 @@ def test_multi_record_schema_parses_and_validates():
                     Field(
                         item=3,
                         name='third',
-                        friendly_name='first',
+                        friendly_name='third',
                         type='string',
                         startIndex=4,
                         endIndex=5,
@@ -442,7 +442,7 @@ def test_multi_record_schema_parses_and_validates():
                     Field(
                         item=4,
                         name='fourth',
-                        friendly_name='first',
+                        friendly_name='fourth',
                         type='string',
                         startIndex=4,
                         endIndex=5,
