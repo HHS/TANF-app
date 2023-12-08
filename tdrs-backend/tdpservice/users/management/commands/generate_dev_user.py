@@ -22,6 +22,8 @@ class Command(BaseCommand):
             user = User.objects.create(username=email,
                                        email=email,
                                        password=pswd,
+                                       is_superuser=True,
+                                       is_staff=True,
                                        first_name=first,
                                        last_name=last,
                                        account_approval_status="Approved")
