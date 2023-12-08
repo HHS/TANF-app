@@ -31,6 +31,13 @@ const SiteMap = ({ user }) => {
           link={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
         />
       )}
+
+      {userIsAdmin && (
+        <SiteMap.Link
+          text="Kibana"
+          link={`${process.env.REACT_APP_BACKEND_HOST}/kibana/`}
+        />
+      )}
     </div>
   )
 }

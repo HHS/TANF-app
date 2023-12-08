@@ -137,6 +137,13 @@ function Header() {
                       href={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
                     />
                   )}
+                  {userIsAdmin && (
+                    <NavItem
+                      pathname={pathname}
+                      tabTitle="Kibana"
+                      href={`${process.env.REACT_APP_BACKEND_HOST}/kibana/`}
+                    />
+                  )}
                 </>
               )}
             </ul>

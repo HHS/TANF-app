@@ -101,6 +101,7 @@ services:
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
+      - BYPASS_KIBANA_AUTH
     volumes:
       - .:/tdpapp
     image: tdp
