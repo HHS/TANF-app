@@ -472,6 +472,6 @@ class Common(Configuration):
         },
     }
     KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://localhost:5601')
-    BYPASS_KIBANA_AUTH = os.getenv("BYPASS_KIBANA_AUTH", 0)
+    BYPASS_KIBANA_AUTH = strtobool(os.getenv("BYPASS_KIBANA_AUTH", "no"))
 
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
