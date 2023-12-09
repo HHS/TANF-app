@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+"""generate_dev_user command."""
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -12,8 +12,10 @@ first = "Jon"
 last = "Tester"
 
 class Command(BaseCommand):
+    """Command class."""
 
     def handle(self, *args, **options):
+        """Generate dev user if they don't exist."""
         try:
             user = User.objects.get(username=email)
             print(f"Found {vars(user)}")
@@ -29,4 +31,3 @@ class Command(BaseCommand):
                                        account_approval_status="Approved")
             user.groups.add(group)
             print(f"Created {vars(user)}")
-    
