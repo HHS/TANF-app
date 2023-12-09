@@ -7,6 +7,7 @@ import {
   accountStatusIsApproved,
   accountIsInReview,
   accountCanViewAdmin,
+  accountCanViewKibana,
 } from '../../selectors/auth'
 
 import NavItem from '../NavItem/NavItem'
@@ -29,6 +30,7 @@ function Header() {
   const userAccessRequestPending = useSelector(accountIsInReview)
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
   const userIsAdmin = useSelector(accountCanViewAdmin)
+  const userCanViewKibana = useSelector(accountCanViewKibana)
 
   const menuRef = useRef()
 
@@ -137,7 +139,7 @@ function Header() {
                       href={`${process.env.REACT_APP_BACKEND_HOST}/admin/`}
                     />
                   )}
-                  {userIsAdmin && (
+                  {userCanViewKibana && (
                     <NavItem
                       pathname={pathname}
                       tabTitle="Kibana"
