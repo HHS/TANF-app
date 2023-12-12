@@ -4,7 +4,7 @@ import logging
 from django.contrib.auth import logout
 from django.middleware import csrf
 from django.utils import timezone
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from ..serializers import UserProfileSerializer
@@ -55,7 +55,7 @@ class KibanaAuthorizationCheck(APIView):
 
     query_string = False
     pattern_name = "kibana-authorization-check"
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         """Handle get request and verify user is authorized to access kibana."""
@@ -63,7 +63,7 @@ class KibanaAuthorizationCheck(APIView):
 
         user_in_valid_group = user.is_ofa_sys_admin or user.is_ofa_admin or user.is_data_analyst
 
-        if (user.is_authenticated and user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_KIBANA_AUTH:
+        if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_KIBANA_AUTH:
             return HttpResponseRedirect(settings.KIBANA_BASE_URL)
         else:
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
