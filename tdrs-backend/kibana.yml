@@ -2,3 +2,11 @@ elasticsearch.hosts: ["http://elastic:9200"]
 server.host: kibana
 elasticsearch.username: kibana_system
 elasticsearch.password: changeme
+xpack.security.authc.providers:
+  anonymous.anonymous1:
+    order: 0
+    description: "OFA Admin Login"
+    hint: ""
+    credentials:
+      username: "ofa_admin"
+      password: "changeme"

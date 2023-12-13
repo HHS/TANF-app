@@ -12,15 +12,13 @@ source "${BASH_SOURCE[0]%/*}"/util.sh
 declare -A users_passwords
 users_passwords=(
 	[kibana_system]="${KIBANA_SYSTEM_PASSWORD:-}"
-	[data_analyst]="${DATA_ANALYST_PASSWORD:-}"
-	[ofa_sys_admin]="${OFA_SYS_ADMIN_PASSWORD:-}"
+	[ofa_admin]="${OFA_ADMIN_PASSWORD:-}"
 )
 
 declare -A users_roles
 users_roles=(
 	[kibana_system]='kibana_system'
-    [data_analyst]='editor'
-    [ofa_sys_admin]='kibana_admin'
+    [ofa_admin]='kibana_admin'
 )
 
 # --------------------------------------------------------

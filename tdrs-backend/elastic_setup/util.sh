@@ -34,7 +34,6 @@ function wait_for_elasticsearch {
 	local output
 
 	# retry for max 300s (60*5s)
-	echo Querying elastic with: curl "${args[@]}"
 	for _ in $(seq 1 60); do
 		local -i exit_code=0
 		output="$(curl "${args[@]}")" || exit_code=$?
