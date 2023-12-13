@@ -3,13 +3,11 @@ import { useSelector } from 'react-redux'
 import {
   accountStatusIsApproved,
   accountCanViewAdmin,
-  accountCanViewKibana,
 } from '../../selectors/auth'
 
 const SiteMap = ({ user }) => {
   const userIsApproved = useSelector(accountStatusIsApproved)
   const userIsAdmin = useSelector(accountCanViewAdmin)
-  const userCanViewKibana = useSelector(accountCanViewKibana)
 
   return (
     <div className="margin-top-5">
@@ -34,7 +32,7 @@ const SiteMap = ({ user }) => {
         />
       )}
 
-      {userCanViewKibana && (
+      {userIsAdmin && (
         <SiteMap.Link
           text="Kibana"
           link={`${process.env.REACT_APP_BACKEND_HOST}/kibana/`}
