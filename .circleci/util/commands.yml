@@ -11,6 +11,12 @@
           name: Build and spin-up Django API service
           command: cd tdrs-backend; docker network create external-net; docker-compose up -d --build
 
+  docker-compose-up-with-elastic-backend:
+    steps:
+      - run:
+          name: Build and spin-up Django API service
+          command: cd tdrs-backend; docker network create external-net; docker-compose --profile elastic_setup up -d --build
+
   cf-check:
     steps:
       - run:
