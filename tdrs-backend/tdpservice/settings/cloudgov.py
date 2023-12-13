@@ -146,6 +146,7 @@ class CloudGov(Common):
             'http_auth': awsauth,
             'use_ssl': True,
             'connection_class': RequestsHttpConnection,
+            'http_auth': ('elastic', os.getenv('ELASTIC_PASSWORD', 'changeme'))
         },
     }
 
