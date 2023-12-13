@@ -1,2 +1,4 @@
 elasticsearch.hosts: ["http://elastic:9200"]
 server.host: kibana
+elasticsearch.username: kibana_system
+elasticsearch.password: changeme
