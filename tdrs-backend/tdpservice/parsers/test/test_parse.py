@@ -621,7 +621,6 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
     parser_errors = ParserError.objects.filter(
         file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
-    [print(parser_error) for parser_error in parser_errors]
 
     error_message = 'RPT_MONTH_YEAR is required but a value was not provided.'
     row_2_error = parser_errors.get(row_number=2, error_message=error_message)
