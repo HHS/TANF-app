@@ -36,6 +36,7 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+      - cluster.routing.allocation.disk.threshold_enabled=false
       - logger.discovery.level=debug
     ports:
       - 9200:9200
