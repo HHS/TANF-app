@@ -16,6 +16,7 @@ RUN apt-get -y update
 RUN apt-get -y upgrade
 # Install a new package:
 RUN apt-get install -y gcc && apt-get install -y graphviz && apt-get install -y graphviz-dev
+RUN apt install libpq-dev python3-dev -y
 # Install pipenv
 RUN pip install --upgrade pip pipenv
 RUN pipenv install --dev --system --deploy
