@@ -76,10 +76,10 @@ services:
         ELASTIC_VERSION: "7.17.6"
     init: true
     environment:
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
-      OFA_ADMIN_PASSWORD: ${OFA_ADMIN_PASSWORD:-}
-      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-changeme}
+      OFA_ADMIN_PASSWORD: ${OFA_ADMIN_PASSWORD:-changeme}
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-localhost}
     depends_on:
       - elastic
     network_mode: "host"
