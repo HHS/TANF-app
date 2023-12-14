@@ -86,6 +86,10 @@
       - get-app-deploy-strategy:
           appname: <<parameters.backend-appname>>
       - run:
+          name: Apply database migrations
+          command: |
+            bash ./scripts/apply-remote-migrations.sh <<parameters.backend-appname>>
+      - run:
           name: Deploy backend application
           command: |
             bash ./scripts/deploy-backend.sh \
