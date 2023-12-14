@@ -293,7 +293,6 @@ class Common(Configuration):
         "DEFAULT_RENDERER_CLASSES": DEFAULT_RENDERER_CLASSES,
         "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
         "DEFAULT_AUTHENTICATION_CLASSES": (
-            "tdpservice.users.authentication.DevAuthentication",
             "tdpservice.users.authentication.CustomAuthentication",
             "rest_framework.authentication.SessionAuthentication",
             "rest_framework.authentication.TokenAuthentication",
@@ -473,4 +472,5 @@ class Common(Configuration):
         },
     }
 
-    CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
+    REACT_APP_DEVAUTH = os.getenv('REACT_APP_DEVAUTH', None)
+    CYPRESS_TOKEN = 'local-cypress-token' if REACT_APP_DEVAUTH else os.getenv('CYPRESS_TOKEN', None)
