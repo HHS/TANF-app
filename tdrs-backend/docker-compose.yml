@@ -76,10 +76,10 @@ services:
         ELASTIC_VERSION: "7.17.6"
     init: true
     environment:
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
-      OFA_ADMIN_PASSWORD: ${OFA_ADMIN_PASSWORD:-}
-      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-}
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-changeme}
+      OFA_ADMIN_PASSWORD: ${OFA_ADMIN_PASSWORD:-changeme}
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-localhost}
     depends_on:
       - elastic
     network_mode: "host"
@@ -93,8 +93,8 @@ services:
       - xpack.security.authc.anonymous.username="ofa_admin"
       - xpack.security.authc.anonymous.roles="ofa_admin"
       - xpack.security.authc.anonymous.authz_exception=true
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-}
-      - KIBANA_SYSTEM_PASSWORD=${KIBANA_SYSTEM_PASSWORD:-}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - KIBANA_SYSTEM_PASSWORD=${KIBANA_SYSTEM_PASSWORD:-changeme}
     ports:
       - 9200:9200
       - 9300:9300
