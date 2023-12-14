@@ -13,7 +13,7 @@ else
 fi
 
 #
-echo "Applying database migrations"
+#echo "Applying database migrations"
 #python manage.py migrate
 #python manage.py populate_stts
 #python manage.py collectstatic --noinput
