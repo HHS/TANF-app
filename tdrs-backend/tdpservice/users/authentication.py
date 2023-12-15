@@ -12,7 +12,7 @@ class CustomAuthentication(BaseAuthentication):
     """Define authentication and get user functions for custom authentication."""
 
     @staticmethod
-    def authenticate(request=None, login_gov_uuid=None, hhs_id=None):
+    def authenticate(request=None, username=None, login_gov_uuid=None, hhs_id=None):
         """ HACK
         This method currently needs to support two unrelated workflows.
         References:
@@ -24,7 +24,6 @@ class CustomAuthentication(BaseAuthentication):
             logging.debug(f"CustomAuthentication::authenticate: {request} {request.data} "
                           f"login_gov_id={login_gov_uuid} hhs_id={hhs_id}")
         else:
-            username = request
             logging.debug(f"CustomAuthentication::authenticate: {username} "
                           f"login_gov_id={login_gov_uuid} hhs_id={hhs_id}")
         User = get_user_model()
