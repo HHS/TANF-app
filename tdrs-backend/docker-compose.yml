@@ -79,10 +79,9 @@ services:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-changeme}
       OFA_ADMIN_PASSWORD: ${OFA_ADMIN_PASSWORD:-changeme}
-      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-localhost}
+      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-elastic}
     depends_on:
       - elastic
-    network_mode: "host"
 
   elastic:
     image: elasticsearch:7.17.6
