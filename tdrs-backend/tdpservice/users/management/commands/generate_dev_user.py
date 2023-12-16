@@ -28,6 +28,7 @@ class Command(BaseCommand):
                                        is_staff=True,
                                        first_name=first,
                                        last_name=last,
+                                       stt_id=31,
                                        account_approval_status="Approved")
             user.groups.add(group)
             print(f"Created {vars(user)}")

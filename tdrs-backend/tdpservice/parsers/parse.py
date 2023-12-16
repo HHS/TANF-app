@@ -60,22 +60,24 @@ def bulk_create_records(unsaved_records, line_number, header_count, batch_size=1
     if (line_number % batch_size == 0 and header_count > 0) or flush:
         logger.debug("Bulk creating records.")
         try:
-            num_records_created = 0
-            num_expected_records = 0
-            num_documents_created = 0
+            num_db_records_created = 0
+            num_expected_db_records = 0
+            num_elastic_records_created = 0
             for document, records in unsaved_records.items():
-                num_expected_records += len(records)
+                num_expected_db_records += len(records)
                 created_objs = document.Django.model.objects.bulk_create(records)
-                num_documents_created += document.update(created_objs)[0]
-                num_records_created += len(created_objs)
-            if num_records_created != num_expected_records:
-                logger.error(f"Bulk Django record creation only created {num_records_created}/{num_expected_records}!")
-            elif num_documents_created != num_expected_records:
-                logger.error(f"Bulk Elastic document creation only created {num_documents_created}/" +
-                             f"{num_expected_records}!")
+                num_elastic_records_created += document.update(created_objs)[0]
+                num_db_records_created += len(created_objs)
+            if num_db_records_created != num_expected_db_records:
+                logger.error(f"Bulk Django record creation only created {num_db_records_created}/" +
+                             f"{num_expected_db_records}!")
+            elif num_elastic_records_created != num_expected_db_records:
+                logger.error(f"Bulk Elastic document creation only created {num_elastic_records_created}/" +
+                             f"{num_expected_db_records}!")
             else:
-                logger.info(f"Created {num_records_created}/{num_expected_records} records.")
-            return num_records_created == num_expected_records and num_documents_created == num_expected_records, {}
+                logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
+            return num_db_records_created == num_expected_db_records and \
+                num_elastic_records_created == num_expected_db_records, {}
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
             return False, unsaved_records
