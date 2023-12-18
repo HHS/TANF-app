@@ -99,7 +99,8 @@ m4 = SchemaManager(
                     required=True,
                     validators=[
                         validators.or_validators(
-                            validators.isInStringRange(1, 19), validators.matches("99")
+                            validators.isInStringRange(1, 19),
+                            validators.matches("99")
                         )
                     ],
                 ),

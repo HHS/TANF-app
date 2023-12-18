@@ -237,7 +237,7 @@ child_one = RowSchema(
         Field(
             item="72B",
             name="RECEIVE_SSI",
-            friendly_name="receives social security income",
+            friendly_name="receives SSI",
             type="number",
             startIndex=45,
             endIndex=46,
@@ -292,7 +292,7 @@ child_one = RowSchema(
         Field(
             item="77A",
             name="UNEARNED_SSI",
-            friendly_name="unearned ssi benefit",
+            friendly_name="unearned SSI benefit",
             type="string",
             startIndex=52,
             endIndex=56,
@@ -541,7 +541,7 @@ child_two = RowSchema(
         Field(
             item="72B",
             name="RECEIVE_SSI",
-            friendly_name="receives social security income",
+            friendly_name="receives SSI",
             type="number",
             startIndex=86,
             endIndex=87,
@@ -596,7 +596,7 @@ child_two = RowSchema(
         Field(
             item="77A",
             name="UNEARNED_SSI",
-            friendly_name="unearned ssi benefit",
+            friendly_name="unearned SSI benefit",
             type="string",
             startIndex=93,
             endIndex=97,
