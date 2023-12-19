@@ -40,3 +40,8 @@
 *.jpg binary
 *.gif binary
 *.pdf binary
+
+# Annoying product-updates zip files
+product-updates/knowledge-center/FTANF_2009.zip binary eol=lf
+product-updates/knowledge-center/SSPMOE_2009.zip binary eol=lf
+product-updates/knowledge-center/ftanf.zip binary eol=lf
