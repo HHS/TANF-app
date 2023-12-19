@@ -4,6 +4,7 @@ import { createBrowserHistory } from 'history'
 import thunkMiddleware from 'redux-thunk'
 import loggerMiddleware from './middleware/logger'
 import createRootReducer from './reducers'
+import { permissions } from './components/Header/developer_permissions'
 
 export const history = createBrowserHistory()
 
