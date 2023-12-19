@@ -3,50 +3,54 @@
 from django.contrib.auth import get_user_model
 
 from rest_framework.authentication import BaseAuthentication
-from rest_framework.request import Request
 import logging
 import os
 logger = logging.getLogger(__name__)
+
+class DevAuthentication(BaseAuthentication):
+    """Define authentication and get user functions for local/developer authentication."""
+
+    def authenticate(self, request):
+        """Authenticate user."""
+        if not os.environ.get('REACT_APP_DEVAUTH'):
+            return None
+        logging.debug(f"{self.__class__.__name__}: {request} ; {request.data}")
+        requser = request.data.get("user")
+        reqname = requser if requser and requser != "undefined" else "dev@test.com"
+        User = get_user_model()
+        authuser = User.objects.get(username=reqname)
+        if authuser and requser == "undefined":
+            request.data["user"] = authuser.id
+        return (User.objects.get(username=reqname), True)
+
 
 class CustomAuthentication(BaseAuthentication):
     """Define authentication and get user functions for custom authentication."""
 
     @staticmethod
-    def authenticate(request=None, login_gov_uuid=None, hhs_id=None):
-        """ HACK
-        This method currently needs to support two unrelated workflows.
-        References:
-          tdpservice/users/api/login.py:TokenAuthorizationOIDC.handleUser
-          https://www.django-rest-framework.org/api-guide/authentication
-        """
-        if type(request) == Request:
-            logging.debug(f"CustomAuthentication::authenticate: {request} {request.data} "
-                          f"login_gov_id={login_gov_uuid} hhs_id={hhs_id}")
-            username = request.data.get('username')
-        else:
-            logging.debug(f"CustomAuthentication::authenticate: {username} "
-                          f"login_gov_id={login_gov_uuid} hhs_id={hhs_id}")
-            username = request
+    def authenticate(username=None, login_gov_uuid=None, hhs_id=None):
+        """Authenticate user with the request and username."""
         User = get_user_model()
+        logging.debug("CustomAuthentication::authenticate:hhs_id {}".format(hhs_id))
+        logging.debug("CustomAuthentication::authenticate:login_gov_uuid {}".format(login_gov_uuid))
+        logging.debug("CustomAuthentication::authenticate:username {}".format(username))
         try:
             if hhs_id:
                 try:
-                    user_obj = User.objects.get(hhs_id=hhs_id)
+                    return User.objects.get(hhs_id=hhs_id)
                 except User.DoesNotExist:
                     # If below line also fails with User.DNE, will bubble up and return None
                     user = User.objects.filter(username=username)
                     user.update(hhs_id=hhs_id)
                     logging.debug("Updated user {} with hhs_id {}.".format(username, hhs_id))
-                    user_obj = User.objects.get(hhs_id=hhs_id)
+                return User.objects.get(hhs_id=hhs_id)
 
             elif login_gov_uuid:
-                user_obj = User.objects.get(login_gov_uuid=login_gov_uuid)
+                return User.objects.get(login_gov_uuid=login_gov_uuid)
             else:
-                user_obj = User.objects.get(username=username)
+                return User.objects.get(username=username)
         except User.DoesNotExist:
-            user_obj = None
-        logging.debug(f"CustomAuthentication::authenticate found user: {user_obj}")
-        return (user_obj, None) if user_obj else None
+            return None
 
     @staticmethod
     def get_user(user_id):

@@ -21,8 +21,6 @@ class AuthorizationCheck(APIView):
 
     def get(self, request, *args, **kwargs):
         """Handle get request and verify user is authorized."""
-        logger.debug(f"{self.__class__.__name__}: {request} {args} {kwargs}")
-
         user = request.user
         serializer = UserProfileSerializer(user)
 

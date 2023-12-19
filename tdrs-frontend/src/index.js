@@ -24,28 +24,8 @@ axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFToken'
 axios.defaults.withCredentials = true
 
-function devLogin(devEmail) {
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
-  axios
-    .post(`${BACKEND_URL}/login/cypress`, {
-      username: devEmail,
-      token: 'local-cypress-token',
-    })
-    .then(function (response) {
-      console.log(response)
-    })
-    .catch(function (error) {
-      console.log(error)
-    })
-  store.dispatch({ type: 'SET_AUTH', payload: { devEmail } })
-  console.log(`dispatched SET_AUTH(${devEmail})`)
-}
-
 // call auth_check
 const store = configureStore()
-if (process.env.REACT_APP_DEVAUTH) {
-  devLogin(process.env.REACT_APP_DEVAUTH)
-}
 store.dispatch(fetchAuth())
 
 // if (window.location.href.match(/https:\/\/.*\.app\.cloud\.gov/)) {
