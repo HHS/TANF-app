@@ -472,5 +472,4 @@ class Common(Configuration):
         },
     }
 
-    REACT_APP_DEVAUTH = os.getenv('REACT_APP_DEVAUTH', None)
-    CYPRESS_TOKEN = 'local-cypress-token' if REACT_APP_DEVAUTH else os.getenv('CYPRESS_TOKEN', None)
+    CYPRESS_TOKEN = os.getenv('REACT_APP_DEVAUTH', None)
