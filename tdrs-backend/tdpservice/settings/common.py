@@ -472,4 +472,4 @@ class Common(Configuration):
         },
     }
 
-    CYPRESS_TOKEN = os.getenv(CYPRESS_TOKEN, None)
+    CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
