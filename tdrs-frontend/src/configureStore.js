@@ -36,7 +36,7 @@ export default function configureStore(preloadedState) {
   }
   const store = createStore(
     createRootReducer(history),
-    process.env.REACT_APP_DEVAUTH ? devState : preloadedState,
+    process.env.DEVELOPMENT ? devState : preloadedState,
     composedEnhancers
   )
   return store
