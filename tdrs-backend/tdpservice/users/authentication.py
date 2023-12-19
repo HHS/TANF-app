@@ -20,13 +20,13 @@ class CustomAuthentication(BaseAuthentication):
           https://www.django-rest-framework.org/api-guide/authentication
         """
         if type(request) == Request:
-            username = request.data.get('username')
             logging.debug(f"CustomAuthentication::authenticate: {request} {request.data} "
                           f"login_gov_id={login_gov_uuid} hhs_id={hhs_id}")
+            username = request.data.get('username')
         else:
-            username = request
             logging.debug(f"CustomAuthentication::authenticate: {username} "
                           f"login_gov_id={login_gov_uuid} hhs_id={hhs_id}")
+            username = request
         User = get_user_model()
         try:
             if hhs_id:
