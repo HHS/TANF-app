@@ -4,24 +4,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.authentication import BaseAuthentication
 import logging
-import os
 logger = logging.getLogger(__name__)
-
-class DevAuthentication(BaseAuthentication):
-    """Define authentication and get user functions for local/developer authentication."""
-
-    def authenticate(self, request):
-        if not os.environ.get('DEVELOPMENT'):
-            return None
-        logging.debug(f"{self.__class__.__name__}: {request} ; {request.data}")
-        requser = request.data.get("user")
-        reqname = requser if requser and requser != "undefined" else "dev@test.com"
-        User = get_user_model()
-        authuser = User.objects.get(username=reqname)
-        if authuser and requser == "undefined":
-            request.data["user"] = authuser.id
-        return (User.objects.get(username=reqname), True)
-
 
 class CustomAuthentication(BaseAuthentication):
     """Define authentication and get user functions for custom authentication."""

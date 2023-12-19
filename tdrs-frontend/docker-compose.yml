@@ -7,7 +7,7 @@ services:
     ports:
       - 8090:8090
     networks:
-      - default
+      - local
     volumes:
       - ./reports:/zap/wrk/:rw
       - ../scripts/zap-hook.py:/zap/scripts/zap-hook.py:ro
@@ -21,6 +21,7 @@ services:
       - 3000:80
       - 8080:8080
     networks:
+      - local
       - default
     volumes:
       - ./:/home/node/app
@@ -41,6 +42,9 @@ services:
       && nginx -g 'daemon off;'"
 
 networks:
+  local:
+    driver: bridge
+
   default:
     external:
       name: external-net
