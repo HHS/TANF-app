@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.request import Request
 import logging
+import os
 logger = logging.getLogger(__name__)
 
 class CustomAuthentication(BaseAuthentication):
@@ -12,11 +13,12 @@ class CustomAuthentication(BaseAuthentication):
 
     @staticmethod
     def authenticate(request=None, username=None, login_gov_uuid=None, hhs_id=None):
-        """Authenticate user with the request and username."""
-        # HACK: This method currently needs to support two unrelated workflows.
-        # References:
-        #   tdpservice/users/api/login.py:TokenAuthorizationOIDC.handleUser
-        #   https://www.django-rest-framework.org/api-guide/authentication
+        """ HACK
+        This method currently needs to support two unrelated workflows.
+        References:
+          tdpservice/users/api/login.py:TokenAuthorizationOIDC.handleUser
+          https://www.django-rest-framework.org/api-guide/authentication
+        """
         if type(request) == Request:
             username = request.data.get('username')
             logging.debug(f"CustomAuthentication::authenticate: {request} {request.data} "
