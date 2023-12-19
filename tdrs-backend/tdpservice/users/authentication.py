@@ -46,9 +46,7 @@ class CustomAuthentication(BaseAuthentication):
         except User.DoesNotExist:
             user_obj = None
         logging.debug(f"CustomAuthentication::authenticate found user: {user_obj}")
-        if type(request) == Request:
-            return (user_obj, None) if user_obj else None
-        return user_obj
+        return (user_obj, None) if user_obj else None
 
     @staticmethod
     def get_user(user_id):
