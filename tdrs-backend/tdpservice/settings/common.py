@@ -475,5 +475,4 @@ class Common(Configuration):
     KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://localhost:5601')
     BYPASS_KIBANA_AUTH = strtobool(os.getenv("BYPASS_KIBANA_AUTH", "no"))
 
-    REACT_APP_DEVAUTH = os.getenv('REACT_APP_DEVAUTH', None)
-    CYPRESS_TOKEN = 'local-cypress-token' if REACT_APP_DEVAUTH else os.getenv('CYPRESS_TOKEN', None)
+    CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
