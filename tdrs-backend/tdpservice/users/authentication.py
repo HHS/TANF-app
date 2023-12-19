@@ -11,8 +11,7 @@ class DevAuthentication(BaseAuthentication):
     """Define authentication and get user functions for local/developer authentication."""
 
     def authenticate(self, request):
-        """Authenticate user."""
-        if not os.environ.get('REACT_APP_DEVAUTH'):
+        if not os.environ.get('DEVELOPMENT'):
             return None
         logging.debug(f"{self.__class__.__name__}: {request} ; {request.data}")
         requser = request.data.get("user")
