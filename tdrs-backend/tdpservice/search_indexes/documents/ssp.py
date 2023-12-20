@@ -1,6 +1,5 @@
 """Elasticsearch document mappings for SSP submission models."""
 
-from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
 from ..models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from .document_base import DocumentBase
