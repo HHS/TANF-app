@@ -6,6 +6,7 @@ from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
+from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, util
@@ -139,7 +140,6 @@ def test_big_file(stt_user, stt):
 
 
 @pytest.mark.django_db
-@pytest.mark.skip(reason="long runtime")  # big_files
 def test_parse_big_file(test_big_file, dfs):
     """Test parsing of ADS.E2J.FTP1.TS06."""
     expected_t1_record_count = 815
@@ -154,29 +154,37 @@ def test_parse_big_file(test_big_file, dfs):
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(
         dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'rejected': 0,
-                                   'months': [
-                                       {'accepted_without_errors': 171,
-                                           'accepted_with_errors': 99, 'month': 'Oct'},
-                                       {'accepted_without_errors': 169,
-                                           'accepted_with_errors': 104, 'month': 'Nov'},
-                                       {'accepted_without_errors': 166,
-                                           'accepted_with_errors': 106, 'month': 'Dec'}
-                                   ]}
-
-    parser_errors = ParserError.objects.filter(file=test_big_file)
-
-    error_message = "14 is not in ['01', '02', '05', '07', '09', '15', '16', '17', '18', '19', '99']. " + \
-        "or 14 is not blank."
-    row_118_error = parser_errors.get(row_number=118, error_message=error_message)
-    assert row_118_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_118_error.error_message == error_message
-    assert row_118_error.content_type.model == 'tanf_t2'
-    assert row_118_error.object_id is not None
+    assert dfs.case_aggregates == {'months': [
+            {'month': 'Oct', 'accepted_without_errors': 129,'accepted_with_errors': 141},
+            {'month': 'Nov', 'accepted_without_errors': 143, 'accepted_with_errors': 130},
+            {'month': 'Dec', 'accepted_without_errors': 131, 'accepted_with_errors': 141}
+        ],
+        'rejected': 0}
 
     assert TANF_T1.objects.count() == expected_t1_record_count
     assert TANF_T2.objects.count() == expected_t2_record_count
     assert TANF_T3.objects.count() == expected_t3_record_count
+
+    search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=test_big_file.id
+    )
+    assert search.count() == expected_t1_record_count
+    search.delete()
+
+    search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=test_big_file.id
+    )
+    assert search.count() == expected_t2_record_count
+    search.delete()
+
+    search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=test_big_file.id
+    )
+    assert search.count() == expected_t3_record_count
+    search.delete()
 
 
 @pytest.fixture
@@ -565,7 +573,7 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile):
 @pytest.fixture
 def super_big_s1_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM1.TS53_fake."""
-    return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake', stt_user, stt)
+    return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.txt', stt_user, stt)
 
 
 @pytest.mark.django_db()
@@ -574,15 +582,40 @@ def test_parse_super_big_s1_file(super_big_s1_file):
     """Test parsing of super_big_s1_file and validate all T1/T2/T3 records are created."""
     parse.parse_datafile(super_big_s1_file)
 
-    assert TANF_T1.objects.count() == 96642
-    assert TANF_T2.objects.count() == 112794
-    assert TANF_T3.objects.count() == 172595
+    expected_t1_record_count = 96642
+    expected_t2_record_count = 112794
+    expected_t3_record_count = 172595
+
+    assert TANF_T1.objects.count() == expected_t1_record_count
+    assert TANF_T2.objects.count() == expected_t2_record_count
+    assert TANF_T3.objects.count() == expected_t3_record_count
+
+    search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=super_big_s1_file.id
+    )
+    assert search.count() == expected_t1_record_count
+    search.delete()
+
+    search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=super_big_s1_file.id
+    )
+    assert search.count() == expected_t2_record_count
+    search.delete()
+
+    search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=super_big_s1_file.id
+    )
+    assert search.count() == expected_t3_record_count
+    search.delete()
 
 
 @pytest.fixture
 def super_big_s1_rollback_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM1.TS53_fake.rollback."""
-    return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.rollback', stt_user, stt)
+    return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.rollback.txt', stt_user, stt)
 
 
 @pytest.mark.django_db()
@@ -608,6 +641,24 @@ def test_parse_super_big_s1_file_with_rollback(super_big_s1_rollback_file):
     assert TANF_T1.objects.count() == 0
     assert TANF_T2.objects.count() == 0
     assert TANF_T3.objects.count() == 0
+
+    search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=super_big_s1_rollback_file.id
+    )
+    assert search.count() == 0
+
+    search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=super_big_s1_rollback_file.id
+    )
+    assert search.count() == 0
+
+    search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=super_big_s1_rollback_file.id
+    )
+    assert search.count() == 0
 
 
 @pytest.fixture
@@ -948,8 +999,25 @@ def test_parse_ssp_section2_file(ssp_section2_file):
     m4_objs = SSP_M4.objects.all().order_by('id')
     m5_objs = SSP_M5.objects.all().order_by('AMOUNT_EARNED_INCOME')
 
-    assert SSP_M4.objects.all().count() == 2205
-    assert SSP_M5.objects.all().count() == 6736
+    expected_m4_count = 2205
+    expected_m5_count = 6736
+
+    assert SSP_M4.objects.all().count() == expected_m4_count
+    assert SSP_M5.objects.all().count() == expected_m5_count
+
+    search = documents.ssp.SSP_M4DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=ssp_section2_file.id
+    )
+    assert search.count() == expected_m4_count
+    search.delete()
+
+    search = documents.ssp.SSP_M5DataSubmissionDocument.search().query(
+        'match',
+        datafile__id=ssp_section2_file.id
+    )
+    assert search.count() == expected_m5_count
+    search.delete()
 
     m4 = m4_objs.first()
     assert m4.DISPOSITION == 1

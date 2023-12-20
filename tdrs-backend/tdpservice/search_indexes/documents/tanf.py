@@ -6,7 +6,7 @@ from ..models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, 
 from .document_base import DocumentBase
 
 @registry.register_document
-class TANF_T1DataSubmissionDocument(DocumentBase, Document):
+class TANF_T1DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed TANF T1 data file."""
 
     class Index:
@@ -72,7 +72,7 @@ class TANF_T1DataSubmissionDocument(DocumentBase, Document):
 
 
 @registry.register_document
-class TANF_T2DataSubmissionDocument(DocumentBase, Document):
+class TANF_T2DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed TANF T2 data file."""
 
     class Index:
@@ -162,7 +162,7 @@ class TANF_T2DataSubmissionDocument(DocumentBase, Document):
 
 
 @registry.register_document
-class TANF_T3DataSubmissionDocument(DocumentBase, Document):
+class TANF_T3DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed TANF T3 data file."""
 
     class Index:
@@ -204,7 +204,7 @@ class TANF_T3DataSubmissionDocument(DocumentBase, Document):
 
 
 @registry.register_document
-class TANF_T4DataSubmissionDocument(DocumentBase, Document):
+class TANF_T4DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed TANF T4 data file."""
 
     class Index:
@@ -237,7 +237,7 @@ class TANF_T4DataSubmissionDocument(DocumentBase, Document):
 
 
 @registry.register_document
-class TANF_T5DataSubmissionDocument(DocumentBase, Document):
+class TANF_T5DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed TANF T5 data file."""
 
     class Index:
@@ -287,7 +287,7 @@ class TANF_T5DataSubmissionDocument(DocumentBase, Document):
 
 
 @registry.register_document
-class TANF_T6DataSubmissionDocument(DocumentBase, Document):
+class TANF_T6DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed TANF T6 data file."""
 
     class Index:
@@ -326,7 +326,7 @@ class TANF_T6DataSubmissionDocument(DocumentBase, Document):
 
 
 @registry.register_document
-class TANF_T7DataSubmissionDocument(DocumentBase, Document):
+class TANF_T7DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed TANF T7 data file."""
 
     class Index:

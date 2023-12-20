@@ -1,16 +1,19 @@
 """Elasticsearch base document mappings."""
 
-from django_elasticsearch_dsl import fields
+from django_elasticsearch_dsl import fields, Document
 from tdpservice.data_files.models import DataFile
 
-class DocumentBase:
-    """Elastic search model mapping for a parsed SSP M1 data file."""
+
+class DocumentBase(Document):
+    """Elastic search base document to be overridden."""
 
     datafile = fields.ObjectField(properties={
-                      'pk': fields.IntegerField(),
+                      'id': fields.IntegerField(),
                       'created_at': fields.DateField(),
                       'version': fields.IntegerField(),
-                      'quarter': fields.TextField()
+                      'quarter': fields.TextField(),
+                      'year': fields.IntegerField(),
+                      'version': fields.IntegerField(),
                   })
 
     def get_instances_from_related(self, related_instance):
