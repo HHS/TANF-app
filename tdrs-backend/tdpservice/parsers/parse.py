@@ -34,6 +34,7 @@ def parse_datafile(datafile):
     # ensure file section matches upload section
     program_type = header['program_type']
     section = header['type']
+    print('***********************', header)
     logger.debug(f"Program type: {program_type}, Section: {section}.")
 
     section_is_valid, section_error = validators.validate_header_section_matches_submission(
@@ -46,6 +47,18 @@ def parse_datafile(datafile):
         logger.info(f"Preparser Error -> Section is not valid: {section_error.error_message}")
         errors['document'] = [section_error]
         unsaved_parser_errors = {1: [section_error]}
+        bulk_create_errors(unsaved_parser_errors, 1, flush=True)
+        return errors
+
+    rpt_month_year_is_valid, rpt_month_year_error = validators.validate_header_rpt_month_year(
+        datafile,
+        header,
+        util.make_generate_parser_error(datafile, 1)
+    )
+    if not rpt_month_year_is_valid:
+        logger.info(f"Preparser Error -> Rpt Month Year is not valid: {rpt_month_year_error.error_message}")
+        errors['document'] = [rpt_month_year_error]
+        unsaved_parser_errors = {1: [rpt_month_year_error]}
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 

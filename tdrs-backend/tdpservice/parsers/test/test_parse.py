@@ -2,6 +2,7 @@
 
 
 import pytest
+import datetime
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
@@ -34,6 +35,10 @@ def test_parse_small_correct_file(test_datafile, dfs):
     dfs.datafile = test_datafile
     dfs.save()
 
+    """
+    small correct file has the following header:
+    HEADER20204A06   TAN1 N
+    """
     parse.parse_datafile(test_datafile)
     dfs.status = dfs.get_status()
     dfs.case_aggregates = util.case_aggregates_by_month(
@@ -991,3 +996,34 @@ def test_parse_ssp_section3_file(ssp_section3_file):
     assert first.NUM_RECIPIENTS == 51355
     assert second.NUM_RECIPIENTS == 51696
     assert third.NUM_RECIPIENTS == 51348
+
+@pytest.mark.django_db
+def test_rpt_month_year_mismatch(test_datafile):
+    """Test that the rpt_month_year mismatch error is raised."""
+    datafile = test_datafile
+
+    datafile.section = 'Active Case Data'
+    # test_datafile fixture uses create_test_data_file which assigns 
+    # a default year / quarter of 2021 / Q1
+    datafile.year = 2020
+    datafile.quarter = 'Q4'
+    datafile.save()
+
+    parse.parse_datafile(datafile)
+
+    parser_errors = ParserError.objects.filter(file=datafile)
+    assert parser_errors.count() == 0
+
+    datafile.year = 2023
+    datafile.save()
+
+    parse.parse_datafile(datafile)
+
+    parser_errors = ParserError.objects.filter(file=datafile)
+    assert parser_errors.count() == 1
+
+    err = parser_errors.first()
+    assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert err.error_message == 'RPT_MONTH_YEAR does not match the file name.'
+    assert err.content_type.model == 'tanf_t1'
+    assert err.object_id is not None
