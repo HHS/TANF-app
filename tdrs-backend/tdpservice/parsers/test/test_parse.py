@@ -2,7 +2,6 @@
 
 
 import pytest
-import datetime
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
@@ -21,6 +20,12 @@ es_logger.setLevel(logging.WARNING)
 def test_datafile(stt_user, stt):
     """Fixture for small_correct_file."""
     return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
+
+
+@pytest.fixture
+def test_header_datafile(stt_user, stt):
+    """Fixture for header test."""
+    return util.create_test_datafile('tanf_section1_header_test.txt', stt_user, stt)
 
 
 @pytest.fixture
@@ -431,8 +436,8 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
     expected_m2_record_count = 6
     expected_m3_record_count = 8
 
-    small_ssp_section1_datafile.year = 2024
-    small_ssp_section1_datafile.quarter = 'Q1'
+    small_ssp_section1_datafile.year = 2023
+    small_ssp_section1_datafile.quarter = 'Q4'
     small_ssp_section1_datafile.save()
 
     dfs.datafile = small_ssp_section1_datafile
@@ -440,10 +445,15 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
 
     parse.parse_datafile(small_ssp_section1_datafile)
 
+    parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
+    for i in parser_errors:
+        print('___________ parser_errors:', i.__dict__)
+
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = util.case_aggregates_by_month(
         dfs.datafile, dfs.status)
+    print('___________ dfs.case_aggregates:', dfs.case_aggregates)
     assert dfs.case_aggregates == {'rejected': 1,
                                    'months': [
                                        {'accepted_without_errors': 0, 'accepted_with_errors': 5, 'month': 'Oct'},
@@ -998,12 +1008,12 @@ def test_parse_ssp_section3_file(ssp_section3_file):
     assert third.NUM_RECIPIENTS == 51348
 
 @pytest.mark.django_db
-def test_rpt_month_year_mismatch(test_datafile):
+def test_rpt_month_year_mismatch(test_header_datafile):
     """Test that the rpt_month_year mismatch error is raised."""
-    datafile = test_datafile
+    datafile = test_header_datafile
 
     datafile.section = 'Active Case Data'
-    # test_datafile fixture uses create_test_data_file which assigns 
+    # test_datafile fixture uses create_test_data_file which assigns
     # a default year / quarter of 2021 / Q1
     datafile.year = 2020
     datafile.quarter = 'Q4'
@@ -1024,6 +1034,5 @@ def test_rpt_month_year_mismatch(test_datafile):
 
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'RPT_MONTH_YEAR does not match the file name.'
-    assert err.content_type.model == 'tanf_t1'
-    assert err.object_id is not None
+    assert err.error_message == "Submitted reporting year:2020, quarter:Q4 doesn't match " + \
+                                "file reporting year:2023, quarter:Q4."

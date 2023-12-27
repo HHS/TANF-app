@@ -34,7 +34,6 @@ def parse_datafile(datafile):
     # ensure file section matches upload section
     program_type = header['program_type']
     section = header['type']
-    print('***********************', header)
     logger.debug(f"Program type: {program_type}, Section: {section}.")
 
     section_is_valid, section_error = validators.validate_header_section_matches_submission(

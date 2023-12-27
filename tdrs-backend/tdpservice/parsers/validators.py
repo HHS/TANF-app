@@ -554,19 +554,14 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
     is_valid = datafile.year is not None and datafile.quarter is not None
     is_valid = is_valid and datafile.year == header['year'] and datafile.quarter == f'Q{header["quarter"]}'
 
-    print('_____ datafile.year:',datafile.year)
-    print('_____ datafile.quarter:',datafile.quarter)
-    print('_____ header[year]:',header['year'])
-    print('_____ fQ{header["quarter"]:',f'Q{header["quarter"]}')
-    print(f'is_valid: {is_valid}')
     error = None
     if not is_valid:
         error = generate_error(
             schema=None,
             error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message=f"Reporting file year:{header['year']}, quarter:{header['quarter']} doesn't match .",
+            error_message=f"Submitted reporting year:{header['year']}, quarter:Q{header['quarter']} doesn't match "
+            + f"file reporting year:{datafile.year}, quarter:{datafile.quarter}.",
             record=None,
             field=None,
         )
-    print(f'error: {error}')
     return is_valid, error

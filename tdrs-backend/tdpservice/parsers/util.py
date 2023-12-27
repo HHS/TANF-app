@@ -308,7 +308,9 @@ def case_aggregates_by_month(df, dfs_status):
         accepted = 0
         month_int = month_to_int(month)
         rpt_month_year = int(f"{calendar_year}{month_int}")
-
+        print('++++++++++++++ month:', month)
+        print('++++++++++++++ rpt_month_year:', rpt_month_year)
+        print('++++++++++++++ dfs_status:', dfs_status)
         if dfs_status == "Rejected":
             # we need to be careful here on examples of bad headers or empty files, since no month will be found
             # but we can rely on the frontend submitted year-quarter to still generate the list of months
