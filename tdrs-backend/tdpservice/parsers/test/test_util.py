@@ -456,7 +456,7 @@ def test_multi_record_schema_parses_and_validates():
 
 @pytest.fixture
 def test_datafile_empty_file(stt_user, stt):
-    """Fixture for small_correct_file."""
+    """Fixture for empty_file."""
     return create_test_datafile('empty_file', stt_user, stt)
 
 @pytest.mark.django_db()

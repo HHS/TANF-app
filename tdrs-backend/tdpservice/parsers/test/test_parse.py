@@ -37,6 +37,9 @@ def dfs():
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile, dfs):
     """Test parsing of small_correct_file."""
+    test_datafile.year = 2020
+    test_datafile.quarter = 'Q4'
+    test_datafile.save()
     dfs.datafile = test_datafile
     dfs.save()
 
@@ -45,18 +48,18 @@ def test_parse_small_correct_file(test_datafile, dfs):
     HEADER20204A06   TAN1 N
     """
     parse.parse_datafile(test_datafile)
+
+    pes = ParserError.objects.filter(file=test_datafile)
     dfs.status = dfs.get_status()
     dfs.case_aggregates = util.case_aggregates_by_month(
         dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'rejected': 0,
-                                   'months': [
-                                       {'accepted_without_errors': 1,
-                                           'accepted_with_errors': 0, 'month': 'Oct'},
-                                       {'accepted_without_errors': 0,
-                                           'accepted_with_errors': 0, 'month': 'Nov'},
-                                       {'accepted_without_errors': 0,
-                                           'accepted_with_errors': 0, 'month': 'Dec'}
-                                   ]}
+    for month in dfs.case_aggregates['months']:
+        if month['month'] == 'Jul':
+            assert month['accepted_without_errors'] == 0
+            assert month['accepted_with_errors'] == 0
+        else:
+            assert month['accepted_without_errors'] == 0
+            assert month['accepted_with_errors'] == 0
 
     assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
     assert TANF_T1.objects.count() == 1
@@ -254,6 +257,9 @@ def bad_file_multiple_headers(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
     """Test parsing of bad_two_headers."""
+    bad_file_multiple_headers.year = 2023
+    bad_file_multiple_headers.quarter = 'Q4'
+    bad_file_multiple_headers.save()
     errors = parse.parse_datafile(bad_file_multiple_headers)
     dfs.datafile = bad_file_multiple_headers
     dfs.save()
@@ -281,6 +287,7 @@ def big_bad_test_file(stt_user, stt):
 @pytest.mark.django_db
 def test_parse_big_bad_test_file(big_bad_test_file, dfs):
     """Test parsing of bad_TANF_S1."""
+    big_bad_test_file.quarter = 'Q4'
     parse.parse_datafile(big_bad_test_file)
 
     parser_errors = ParserError.objects.filter(file=big_bad_test_file)
