@@ -1,0 +1,8 @@
+version: 1
+applications:
+- name: tdp-kibana
+  memory: 2G
+  instances: 1
+  disk_quota: 2G
+  buildpacks:
+  - https://github.com/swisscom/kibana-buildpack.git
