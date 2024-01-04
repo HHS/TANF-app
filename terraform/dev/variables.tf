@@ -10,10 +10,20 @@ variable "cf_api_url" {
   default     = "https://api.fr.cloud.gov"
 }
 
+variable "cf_app_name" {
+  type        = string
+  description = "name of app"
+}
+
 variable "cf_org_name" {
   type        = string
   description = "cloud.gov organization name"
   default     = "hhs-acf-ofa"
+}
+
+variable "cf_password" {
+  type        = string
+  description = "secret; cloud.gov deployer account password"
 }
 
 variable "cf_space_name" {
@@ -27,12 +37,8 @@ variable "cf_user" {
   description = "secret; cloud.gov deployer account user"
 }
 
-variable "cf_password" {
-  type        = string
-  description = "secret; cloud.gov deployer account password"
-}
-
-variable "cf_app_name" {
-  type        = string
-  description = "name of app"
+variable "dev_app_names" {
+  type        = list(string)
+  description = "list of app names deployed in the dev environment"
+  default     = ["a11y", "qasp", "raft", "sandbox"]
 }

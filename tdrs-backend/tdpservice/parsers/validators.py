@@ -7,14 +7,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def value_is_empty(value, length):
+def value_is_empty(value, length, extra_vals={}):
     """Handle 'empty' values as field inputs."""
-    empty_values = [
+    empty_values = {
         '',
         ' '*length,  # '     '
         '#'*length,  # '#####'
         '_'*length,  # '_____'
-    ]
+    }
+
+    empty_values = empty_values.union(extra_vals)
 
     return value is None or value in empty_values
 
@@ -545,6 +547,28 @@ def validate_header_section_matches_submission(datafile, section, generate_error
             error_message=f"Data does not match the expected layout for {datafile.section}.",
             record=None,
             field=None,
+        )
+
+    return is_valid, error
+
+def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code, generate_error):
+    """Validate tribe code, fips code, and program type all agree with eachother."""
+    is_valid = False
+
+    if program_type == 'TAN' and value_is_empty(state_fips_code, 2, extra_vals={'0'*2}):
+        is_valid = not value_is_empty(tribe_code, 3, extra_vals={'0'*3})
+    else:
+        is_valid = value_is_empty(tribe_code, 3, extra_vals={'0'*3})
+
+    error = None
+    if not is_valid:
+        error = generate_error(
+            schema=None,
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+            error_message=f"Tribe Code ({tribe_code}) inconsistency with Program Type ({program_type}) and " +
+            f"FIPS Code ({state_fips_code}).",
+            record=None,
+            field=None
         )
 
     return is_valid, error
