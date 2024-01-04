@@ -1,10 +1,19 @@
 """Datafile field representations."""
 
 import logging
-from .validators import value_is_empty
 
 logger = logging.getLogger(__name__)
 
+def value_is_empty(value, length):
+    """Handle 'empty' values as field inputs."""
+    empty_values = [
+        '',
+        ' '*length,  # '     '
+        '#'*length,  # '#####'
+        '_'*length,  # '_____'
+    ]
+
+    return value is None or value in empty_values
 
 class Field:
     """Provides a mapping between a field name and its position."""

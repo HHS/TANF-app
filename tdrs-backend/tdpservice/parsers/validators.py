@@ -1,6 +1,7 @@
 """Generic parser validator functions for use in schema definitions."""
 
 from .models import ParserErrorCategoryChoices
+from .util import fiscal_to_calendar
 from datetime import date
 import logging
 
@@ -551,8 +552,13 @@ def validate_header_section_matches_submission(datafile, section, generate_error
 
 def validate_header_rpt_month_year(datafile, header, generate_error):
     """Validate header rpt_month_year."""
-    is_valid = datafile.year is not None and datafile.quarter is not None
-    is_valid = is_valid and datafile.year == header['year'] and datafile.quarter == f'Q{header["quarter"]}'
+    # the header year/quarter represent a calendar period, and frontend year/qtr represents a fiscal period
+    header_calendar_qtr = f"Q{header['quarter']}"
+    header_calendar_year = header['year']
+    file_calendar_year, file_calendar_qtr = fiscal_to_calendar(datafile.year, f"{datafile.quarter}")
+
+    is_valid = file_calendar_year is not None and file_calendar_qtr is not None
+    is_valid = is_valid and file_calendar_year == header_calendar_year and file_calendar_qtr == header_calendar_qtr
 
     error = None
     if not is_valid:

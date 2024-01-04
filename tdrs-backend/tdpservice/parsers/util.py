@@ -5,7 +5,7 @@ from . import schema_defs
 from tdpservice.data_files.models import DataFile
 from datetime import datetime
 from pathlib import Path
-from .fields import TransformField
+from .row_schema import SchemaManager
 import logging
 
 logger = logging.getLogger(__name__)
@@ -86,29 +86,6 @@ def make_generate_file_precheck_parser_error(datafile, line_number):
 
     return generate
 
-
-class SchemaManager:
-    """Manages one or more RowSchema's and runs all parsers and validators."""
-
-    def __init__(self, schemas):
-        self.schemas = schemas
-
-    def parse_and_validate(self, line, generate_error):
-        """Run `parse_and_validate` for each schema provided and bubble up errors."""
-        records = []
-
-        for schema in self.schemas:
-            record, is_valid, errors = schema.parse_and_validate(line, generate_error)
-            records.append((record, is_valid, errors))
-
-        return records
-
-    def update_encrypted_fields(self, is_encrypted):
-        """Update whether schema fields are encrypted or not."""
-        for schema in self.schemas:
-            for field in schema.fields:
-                if type(field) == TransformField and "is_encrypted" in field.kwargs:
-                    field.kwargs['is_encrypted'] = is_encrypted
 
 def contains_encrypted_indicator(line, encryption_field):
     """Determine if line contains encryption indicator."""
