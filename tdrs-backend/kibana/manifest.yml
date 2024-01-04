@@ -1,15 +1,13 @@
 version: 1
 applications:
-- name: tdp-elastic-proxy
-  memory: 256M
-  disk_quota: 256M
+- name: tdp-kibana
+  memory: 4G
+  disk_quota: 4G
   instances: 1
   services:
       - es-sandbox
   docker:
-    image: elipe17/aws-es-proxy:latest
+    image: docker.elastic.co/kibana/kibana-oss:7.4.2
   command: |
-    export ENDPOINT=$(echo $VCAP_SERVICES | grep -Eo 'host[^,]*' | grep -Eo '[^:]*$' | tr -d '"' | sed -e 's/^/https:\/\//') &&
-    export AWS_ACCESS_KEY_ID=$(echo $VCAP_SERVICES | grep -Eo 'access_key[^,]*' | grep -Eo '[^:]*$' | tr -d '"') &&
-    export AWS_SECRET_ACCESS_KEY=$(echo $VCAP_SERVICES | grep -Eo 'secret_key[^,]*' | grep -Eo '[^:]*$' | tr -d '"') &&
-    /usr/local/bin/aws-es-proxy -endpoint $ENDPOINT -listen 0.0.0.0:8080 -verbose -debug
+    export ELASTICSEARCH_HOSTS=http://tdp-elastic-proxy.apps.internal:8080 &&
+    /usr/local/bin/dumb-init -- /usr/local/bin/kibana-docker
