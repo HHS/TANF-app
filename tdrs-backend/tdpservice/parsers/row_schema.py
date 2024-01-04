@@ -168,6 +168,14 @@ class RowSchema:
 
         return is_valid, errors
 
+    def get_field_values_by_names(self, line, names={}):
+        """Return dictionary of field values keyed on their name."""
+        field_values = {}
+        for field in self.fields:
+            if field.name in names:
+                field_values[field.name] = field.parse_value(line)
+        return field_values
+
     def get_field_by_name(self, name):
         """Get field by it's name."""
         for field in self.fields:
