@@ -82,9 +82,6 @@
       cf-space:
         default: tanf-dev
         type: string
-      kibana-appname:
-        default: tdp-kibana
-        type: string
     steps:
       - get-app-deploy-strategy:
           appname: <<parameters.backend-appname>>
@@ -95,8 +92,7 @@
               $DEPLOY_STRATEGY \
               <<parameters.frontend-appname>> \
               <<parameters.backend-appname>> \
-              <<parameters.cf-space>> \
-              <<parameters.kibana-appname>
+              <<parameters.cf-space>>
 
   deploy-clamav:
     steps:

@@ -1,8 +1,0 @@
-version: 7.17.10
-cmd-args: ""
-node-options: ""
-reserved-memory: 300
-heap-percentage: 75
-config-templates:
-- name: cf-kibana
-  service-instance-name: es-sandbox

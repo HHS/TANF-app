@@ -11,7 +11,6 @@ DEPLOY_STRATEGY=${1}
 CGAPPNAME_FRONTEND=${2}
 CGAPPNAME_BACKEND=${3}
 CF_SPACE=${4}
-CGAPPNAME_KIBANA=${5}
 
 strip() {
     # Usage: strip "string" "pattern"
@@ -104,10 +103,8 @@ update_backend()
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
         cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 180 --strategy rolling || exit 1
-        cf push "$CGAPPNAME_KIBANA" -f ../tdrs-backend/kibana/manifest.yml -t 180 --strategy rolling || exit 1
     else
         cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 180
-        cf push "$CGAPPNAME_KIBANA" -f ../tdrs-backend/kibana/manifest.yml -t 180
         # set up JWT key if needed
         if cf e "$CGAPPNAME_BACKEND" | grep -q JWT_KEY ; then
             echo jwt cert already created
