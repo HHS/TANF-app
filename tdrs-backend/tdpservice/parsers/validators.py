@@ -597,4 +597,4 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
             record=None,
             field=None,
         )
-    return is_valid, error  
+    return is_valid, error
