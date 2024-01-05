@@ -135,6 +135,15 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'search_indexes.add_ssp_m7',
         'search_indexes.view_ssp_m7',
         'search_indexes.change_ssp_m7',
+        'search_indexes.add_tribal_tanf_t1',
+        'search_indexes.view_tribal_tanf_t1',
+        'search_indexes.change_tribal_tanf_t1',
+        'search_indexes.add_tribal_tanf_t2',
+        'search_indexes.view_tribal_tanf_t2',
+        'search_indexes.change_tribal_tanf_t2',
+        'search_indexes.add_tribal_tanf_t3',
+        'search_indexes.view_tribal_tanf_t3',
+        'search_indexes.change_tribal_tanf_t3',
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions

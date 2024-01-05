@@ -5,6 +5,7 @@ import pytest
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
+from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
@@ -1084,3 +1085,64 @@ def test_rpt_month_year_mismatch(test_header_datafile):
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == "Submitted reporting year:2020, quarter:Q4 doesn't" + \
         " match file reporting year:2023, quarter:Q1."
+
+@pytest.fixture
+def tribal_section_1_file(stt_user, stt):
+    """Fixture for ADS.E2J.FTP4.TS06."""
+    return util.create_test_datafile('ADS.E2J.FTP1.TS142', stt_user, stt, "Tribal Active Case Data")
+
+@pytest.mark.django_db()
+def test_parse_tribal_section_1_file(tribal_section_1_file, dfs):
+    """Test parsing Tribal TANF Section 1 submission."""
+    tribal_section_1_file.year = 2022
+    tribal_section_1_file.quarter = 'Q1'
+    tribal_section_1_file.save()
+
+    dfs.datafile = tribal_section_1_file
+    dfs.save()
+
+    parse.parse_datafile(tribal_section_1_file)
+
+    dfs.status = dfs.get_status()
+    assert dfs.status == DataFileSummary.Status.ACCEPTED
+    dfs.case_aggregates = util.case_aggregates_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {'rejected': 0,
+                                   'months': [{'month': 'Oct', 'accepted_without_errors': 1, 'accepted_with_errors': 0},
+                                              {'month': 'Nov', 'accepted_without_errors': 0, 'accepted_with_errors': 0},
+                                              {'month': 'Dec', 'accepted_without_errors': 0, 'accepted_with_errors': 0}
+                                              ]}
+
+    assert Tribal_TANF_T1.objects.all().count() == 1
+    assert Tribal_TANF_T2.objects.all().count() == 1
+    assert Tribal_TANF_T3.objects.all().count() == 2
+
+    t1_objs = Tribal_TANF_T1.objects.all().order_by("CASH_AMOUNT")
+    t2_objs = Tribal_TANF_T2.objects.all().order_by("MONTHS_FED_TIME_LIMIT")
+    t3_objs = Tribal_TANF_T3.objects.all().order_by("EDUCATION_LEVEL")
+
+    t1 = t1_objs.first()
+    t2 = t2_objs.first()
+    t3 = t3_objs.last()
+
+    assert t1.CASH_AMOUNT == 502
+    assert t2.MONTHS_FED_TIME_LIMIT == '  0'
+    assert t3.EDUCATION_LEVEL == '98'
+
+@pytest.fixture
+def tribal_section_1_inconsistency_file(stt_user, stt):
+    """Fixture for ADS.E2J.FTP4.TS06."""
+    return util.create_test_datafile('tribal_section_1_inconsistency.txt', stt_user, stt, "Tribal Active Case Data")
+
+@pytest.mark.django_db()
+def test_parse_tribal_section_1_inconsistency_file(tribal_section_1_inconsistency_file):
+    """Test parsing inconsistent Tribal TANF Section 1 submission."""
+    parse.parse_datafile(tribal_section_1_inconsistency_file)
+
+    assert Tribal_TANF_T1.objects.all().count() == 0
+
+    parser_errors = ParserError.objects.filter(file=tribal_section_1_inconsistency_file)
+    assert parser_errors.count() == 1
+
+    assert parser_errors.first().error_message == "Tribe Code (142) inconsistency with Program Type (TAN) " + \
+        "and FIPS Code (01)."
