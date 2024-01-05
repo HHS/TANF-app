@@ -1,20 +1,10 @@
 """Row schema for datafile."""
 from .models import ParserErrorCategoryChoices
 from .fields import Field, TransformField
+from .validators import value_is_empty
 import logging
 
 logger = logging.getLogger(__name__)
-
-def value_is_empty(value, length):
-    """Handle 'empty' values as field inputs."""
-    empty_values = [
-        '',
-        ' '*length,  # '     '
-        '#'*length,  # '#####'
-        '_'*length,  # '_____'
-    ]
-
-    return value is None or value in empty_values
 
 class RowSchema:
     """Maps the schema for data lines."""

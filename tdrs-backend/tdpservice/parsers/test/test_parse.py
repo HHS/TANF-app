@@ -8,7 +8,7 @@ from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TAN
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
-from .. import schema_defs, util
+from .. import schema_defs, aggregates, util
 
 import logging
 
@@ -46,7 +46,7 @@ def test_parse_small_correct_file(test_datafile, dfs):
     parse.parse_datafile(test_datafile)
 
     dfs.status = dfs.get_status()
-    dfs.case_aggregates = util.case_aggregates_by_month(
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
@@ -86,7 +86,7 @@ def test_parse_section_mismatch(test_datafile, dfs):
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.REJECTED
     parser_errors = ParserError.objects.filter(file=test_datafile)
-    dfs.case_aggregates = util.case_aggregates_by_month(
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'rejected': 1,
                                    'months': [
@@ -160,7 +160,7 @@ def test_parse_big_file(test_big_file, dfs):
     parse.parse_datafile(test_big_file)
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
-    dfs.case_aggregates = util.case_aggregates_by_month(
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'rejected': 0,
                                    'months': [
@@ -398,7 +398,7 @@ def test_parse_empty_file(empty_file, dfs):
     errors = parse.parse_datafile(empty_file)
 
     dfs.status = dfs.get_status()
-    dfs.case_aggregates = util.case_aggregates_by_month(empty_file, dfs.status)
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(empty_file, dfs.status)
 
     assert dfs.status == DataFileSummary.Status.REJECTED
     assert dfs.case_aggregates == {'rejected': 2,
@@ -453,7 +453,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
-    dfs.case_aggregates = util.case_aggregates_by_month(
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
@@ -528,7 +528,7 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
 
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED
-    dfs.case_aggregates = util.case_aggregates_by_month(
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'rejected': 0,
                                    'months': [
@@ -762,7 +762,7 @@ def test_dfs_set_case_aggregates(test_datafile, dfs):
     dfs.file = test_datafile
     dfs.save()
     dfs.status = dfs.get_status()
-    dfs.case_aggregates = util.case_aggregates_by_month(
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
         test_datafile, dfs.status)
     dfs.save()
 
@@ -790,7 +790,7 @@ def test_get_schema_options(dfs):
 
     # from text:
     schema = parse.get_schema_manager('T1xx', 'A', 'TAN')
-    assert isinstance(schema, util.SchemaManager)
+    assert isinstance(schema, aggregates.SchemaManager)
     assert schema == schema_defs.tanf.t1
 
     # get model
