@@ -576,8 +576,8 @@ def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code,
 
     return is_valid, error
 
-  
-  def validate_header_rpt_month_year(datafile, header, generate_error):
+
+def validate_header_rpt_month_year(datafile, header, generate_error):
     """Validate header rpt_month_year."""
     # the header year/quarter represent a calendar period, and frontend year/qtr represents a fiscal period
     header_calendar_qtr = f"Q{header['quarter']}"
@@ -597,7 +597,4 @@ def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code,
             record=None,
             field=None,
         )
-    return is_valid, error
-
-  
-  
+    return is_valid, error  

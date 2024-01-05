@@ -1105,7 +1105,7 @@ def test_parse_tribal_section_1_file(tribal_section_1_file, dfs):
 
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED
-    dfs.case_aggregates = util.case_aggregates_by_month(
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'rejected': 0,
                                    'months': [{'month': 'Oct', 'accepted_without_errors': 1, 'accepted_with_errors': 0},

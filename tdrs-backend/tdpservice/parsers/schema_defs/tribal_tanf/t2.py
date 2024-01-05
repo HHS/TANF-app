@@ -1,10 +1,9 @@
 """Schema for Tribal TANF T2 row of all submission types."""
 
 
-from ...util import SchemaManager
 from ...transforms import tanf_ssn_decryption_func
 from ...fields import TransformField, Field
-from ...row_schema import RowSchema
+from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T2
 

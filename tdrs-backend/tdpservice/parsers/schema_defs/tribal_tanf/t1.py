@@ -1,8 +1,7 @@
 """Schema for Tribal TANF T1 record types."""
 
-from ...util import SchemaManager
 from ...fields import Field
-from ...row_schema import RowSchema
+from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1
 
