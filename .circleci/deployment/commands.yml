@@ -79,6 +79,12 @@
       frontend-appname:
         default: tdp-frontend
         type: string
+      kibana-appname:
+        default: tdp-kibana
+        type: string
+      proxy-appname:
+        default: tdp-elastic-proxy
+        type: string
       cf-space:
         default: tanf-dev
         type: string
@@ -86,12 +92,20 @@
       - get-app-deploy-strategy:
           appname: <<parameters.backend-appname>>
       - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            sudo add-apt-repository ppa:rmescandon/yq
+            sudo apt-get install yq
+      - run:
           name: Deploy backend application
           command: |
             bash ./scripts/deploy-backend.sh \
               $DEPLOY_STRATEGY \
               <<parameters.frontend-appname>> \
               <<parameters.backend-appname>> \
+              <<parameters.kibana-appname>> \
+              <<parameters.proxy-appname>> \
               <<parameters.cf-space>>
 
   deploy-clamav:

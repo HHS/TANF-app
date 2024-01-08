@@ -1,22 +1,11 @@
 version: 1
 applications:
-- name: tdp-kibana
-  memory: 4G
-  disk_quota: 4G
-  instances: 1
-  services:
-      - es-sandbox
-  docker:
-    image: docker.elastic.co/kibana/kibana-oss:7.4.2
-  command: |
-    export ELASTICSEARCH_HOSTS=http://tdp-elastic-proxy.apps.internal:8080 &&
-    /usr/local/bin/dumb-init -- /usr/local/bin/kibana-docker
 - name: tdp-elastic-proxy
   memory: 256M
   disk_quota: 256M
   instances: 1
   services:
-      - es-sandbox
+    - {{ service_0 }}
   docker:
     image: elipe17/aws-es-proxy:latest
   command: |
