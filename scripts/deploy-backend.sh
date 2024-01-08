@@ -219,7 +219,7 @@ else
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
 fi
 
-KIBANA_BASE_URL="http://$CGAPPNAME_KIBANA.apps.internal:5601"
+KIBANA_BASE_URL="http://$CGAPPNAME_KIBANA.apps.internal"
 
 # Dynamically generate a new DJANGO_SECRET_KEY
 DJANGO_SECRET_KEY=$(python3 -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
