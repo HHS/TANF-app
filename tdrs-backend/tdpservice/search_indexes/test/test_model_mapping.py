@@ -902,3 +902,85 @@ def test_can_create_and_index_tribal_tanf_t3_submission(test_datafile):
     response = search.execute()
 
     assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t4_submission(test_datafile):
+    """Tribal TANF T4 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T4()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.RPT_MONTH_YEAR = 1
+    submission.CASE_NUMBER = '1'
+    submission.COUNTY_FIPS_CODE = '1'
+    submission.STRATUM = "1"
+    submission.ZIP_CODE = '01'
+    submission.DISPOSITION = 1
+    submission.CLOSURE_REASON = "1"
+    submission.REC_SUB_HOUSING = 1
+    submission.REC_MED_ASSIST = 1
+    submission.REC_FOOD_STAMPS = 1
+    submission.REC_SUB_CC = 1
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T4DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t5_submission(test_datafile):
+    """Tribal TANF T5 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T5()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.RPT_MONTH_YEAR = 1
+    submission.CASE_NUMBER = '1'
+    submission.FAMILY_AFFILIATION = 1
+    submission.DATE_OF_BIRTH = '1'
+    submission.SSN = '1'
+    submission.RACE_HISPANIC = 1
+    submission.RACE_AMER_INDIAN = 1
+    submission.RACE_ASIAN = 1
+    submission.RACE_BLACK = 1
+    submission.RACE_HAWAIIAN = 1
+    submission.RACE_WHITE = 1
+    submission.GENDER = 1
+    submission.REC_OASDI_INSURANCE = 1
+    submission.REC_FEDERAL_DISABILITY = 1
+    submission.REC_AID_TOTALLY_DISABLED = 1
+    submission.REC_AID_AGED_BLIND = 1
+    submission.RECEIVE_SSI = 1
+    submission.MARITAL_STATUS = 1
+    submission.RELATIONSHIP_HOH = "01"
+    submission.PARENT_WITH_MINOR_CHILD = 1
+    submission.NEEDS_PREGNANT_WOMAN = 1
+    submission.EDUCATION_LEVEL = "1"
+    submission.CITIZENSHIP_STATUS = 1
+    submission.COUNTABLE_MONTH_FED_TIME = "1"
+    submission.COUNTABLE_MONTHS_STATE_TRIBE = "1"
+    submission.EMPLOYMENT_STATUS = 1
+    submission.AMOUNT_EARNED_INCOME = "1"
+    submission.AMOUNT_UNEARNED_INCOME = "1"
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T5DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1

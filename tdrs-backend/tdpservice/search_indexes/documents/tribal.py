@@ -2,7 +2,7 @@
 
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from ..models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3
+from ..models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4, Tribal_TANF_T5
 from .document_base import DocumentBase
 
 @registry.register_document
@@ -183,4 +183,84 @@ class Tribal_TANF_T3DataSubmissionDocument(DocumentBase, Document):
             'CITIZENSHIP_STATUS',
             'UNEARNED_SSI',
             'OTHER_UNEARNED_INCOME',
+        ]
+
+@registry.register_document
+class Tribal_TANF_T4DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed Tribal TANF T4 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'tribal_tanf_t4_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = Tribal_TANF_T4
+        fields = [
+            'RecordType',
+            'RPT_MONTH_YEAR',
+            'CASE_NUMBER',
+            'STRATUM',
+            'ZIP_CODE',
+            'DISPOSITION',
+            'CLOSURE_REASON',
+            'REC_SUB_HOUSING',
+            'REC_MED_ASSIST',
+            'REC_FOOD_STAMPS',
+            'REC_SUB_CC'
+        ]
+
+@registry.register_document
+class Tribal_TANF_T5DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed Tribal TANF T5 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'tribal_tanf_t5_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = Tribal_TANF_T5
+        fields = [
+            'RecordType',
+            'RPT_MONTH_YEAR',
+            'CASE_NUMBER',
+            'FAMILY_AFFILIATION',
+            'DATE_OF_BIRTH',
+            'SSN',
+            'RACE_HISPANIC',
+            'RACE_AMER_INDIAN',
+            'RACE_ASIAN',
+            'RACE_BLACK',
+            'RACE_HAWAIIAN',
+            'RACE_WHITE',
+            'GENDER',
+            'REC_OASDI_INSURANCE',
+            'REC_FEDERAL_DISABILITY',
+            'REC_AID_TOTALLY_DISABLED',
+            'REC_AID_AGED_BLIND',
+            'REC_SSI',
+            'MARITAL_STATUS',
+            'RELATIONSHIP_HOH',
+            'PARENT_MINOR_CHILD',
+            'NEEDS_OF_PREGNANT_WOMAN',
+            'EDUCATION_LEVEL',
+            'CITIZENSHIP_STATUS',
+            'COUNTABLE_MONTH_FED_TIME',
+            'COUNTABLE_MONTHS_STATE_TRIBE',
+            'EMPLOYMENT_STATUS',
+            'AMOUNT_EARNED_INCOME',
+            'AMOUNT_UNEARNED_INCOME'
         ]
