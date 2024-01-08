@@ -110,12 +110,6 @@ class SchemaManager:
                 if type(field) == TransformField and "is_encrypted" in field.kwargs:
                     field.kwargs['is_encrypted'] = is_encrypted
 
-def contains_encrypted_indicator(line, encryption_field):
-    """Determine if line contains encryption indicator."""
-    if encryption_field is not None:
-        return encryption_field.parse_value(line) == "E"
-    return False
-
 def get_schema_options(program, section, query=None, model=None, model_name=None):
     """Centralized function to return the appropriate schema for a given program, section, and query.
 
@@ -185,7 +179,29 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
                 }
             }
         },
-        # TODO: tribal tanf
+        'Tribal TAN': {
+            'A': {
+                'section': DataFile.Section.TRIBAL_ACTIVE_CASE_DATA,
+                'models': {
+                    'T1': schema_defs.tribal_tanf.t1,
+                    'T2': schema_defs.tribal_tanf.t2,
+                    'T3': schema_defs.tribal_tanf.t3,
+                }
+            },
+            'C': {
+                'section': DataFile.Section.TRIBAL_CLOSED_CASE_DATA,
+                'models': {
+                    'T4': schema_defs.tribal_tanf.t4,
+                    'T5': schema_defs.tribal_tanf.t5,
+                }
+            },
+            'G': {
+                'section': DataFile.Section.TRIBAL_AGGREGATE_DATA,
+                'models': {
+                    'T6': schema_defs.tribal_tanf.t6,
+                }
+            },
+        },
     }
 
     if query == "text":
@@ -247,7 +263,7 @@ def get_prog_from_section(str_section):
     if str_section.startswith('SSP'):
         return 'SSP'
     elif str_section.startswith('Tribal'):
-        return 'TAN'  # problematic, do we need to infer tribal entirely from tribe/fips code?
+        return 'Tribal TAN'
     else:
         return 'TAN'
 

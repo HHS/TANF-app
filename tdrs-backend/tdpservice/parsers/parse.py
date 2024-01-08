@@ -28,11 +28,31 @@ def parse_datafile(datafile):
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
 
-    is_encrypted = util.contains_encrypted_indicator(header_line, schema_defs.header.get_field_by_name("encryption"))
+    field_values = schema_defs.header.get_field_values_by_names(header_line,
+                                                                {"encryption", "tribe_code", "state_fips"})
+
+    # Validate tribe code in submission across program type and fips code
+    generate_error = util.make_generate_parser_error(datafile, 1)
+    tribe_is_valid, tribe_error = validators.validate_tribe_fips_program_agree(header['program_type'],
+                                                                               field_values["tribe_code"],
+                                                                               field_values["state_fips"],
+                                                                               generate_error)
+
+    if not tribe_is_valid:
+        logger.info(f"Tribe Code ({field_values['tribe_code']}) inconsistency with Program Type " +
+                    f"({header['program_type']}) and FIPS Code ({field_values['state_fips']}).",)
+        errors['header'] = [tribe_error]
+        bulk_create_errors({1: [tribe_error]}, 1, flush=True)
+        return errors
+
+    is_encrypted = field_values["encryption"] == "E"
+    is_tribal = not validators.value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
+
     logger.debug(f"Datafile has encrypted fields: {is_encrypted}.")
+    logger.debug(f"Datafile: {datafile.__repr__()}, is Tribal: {is_tribal}.")
 
     # ensure file section matches upload section
-    program_type = header['program_type']
+    program_type = f"Tribal {header['program_type']}" if is_tribal else header['program_type']
     section = header['type']
     logger.debug(f"Program type: {program_type}, Section: {section}.")
 

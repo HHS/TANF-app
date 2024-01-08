@@ -721,3 +721,304 @@ def test_can_create_and_index_ssp_m7_submission(test_datafile):
     response = search.execute()
 
     assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t1_submission(test_datafile):
+    """Tribal TANF T1 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T1()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.RPT_MONTH_YEAR = 1
+    submission.CASE_NUMBER = "1"
+    submission.COUNTY_FIPS_CODE = 1
+    submission.STRATUM = "1"
+    submission.ZIP_CODE = "01"
+    submission.FUNDING_STREAM = 1
+    submission.DISPOSITION = 1
+    submission.NEW_APPLICANT = 1
+    submission.NBR_FAMILY_MEMBERS = 1
+    submission.FAMILY_TYPE = 1
+    submission.RECEIVES_SUB_HOUSING = 1
+    submission.RECEIVES_MED_ASSISTANCE = 1
+    submission.RECEIVES_FOOD_STAMPS = 1
+    submission.AMT_FOOD_STAMP_ASSISTANCE = 1
+    submission.RECEIVES_SUB_CC = 1
+    submission.AMT_SUB_CC = 1
+    submission.CHILD_SUPPORT_AMT = 1
+    submission.FAMILY_CASH_RESOURCES = 1
+    submission.CASH_AMOUNT = 1
+    submission.NBR_MONTHS = 1
+    submission.CC_AMOUNT = 1
+    submission.CHILDREN_COVERED = 1
+    submission.CC_NBR_MONTHS = 1
+    submission.TRANSP_AMOUNT = 1
+    submission.TRANSP_NBR_MONTHS = 1
+    submission.TRANSITION_SERVICES_AMOUNT = 1
+    submission.TRANSITION_NBR_MONTHS = 1
+    submission.OTHER_AMOUNT = 1
+    submission.OTHER_NBR_MONTHS = 1
+    submission.SANC_REDUCTION_AMT = 1
+    submission.WORK_REQ_SANCTION = 1
+    submission.FAMILY_SANC_ADULT = 1
+    submission.SANC_TEEN_PARENT = 1
+    submission.NON_COOPERATION_CSE = 1
+    submission.FAILURE_TO_COMPLY = 1
+    submission.OTHER_SANCTION = 1
+    submission.RECOUPMENT_PRIOR_OVRPMT = 1
+    submission.OTHER_TOTAL_REDUCTIONS = 1
+    submission.FAMILY_CAP = 1
+    submission.REDUCTIONS_ON_RECEIPTS = 1
+    submission.OTHER_NON_SANCTION = 1
+    submission.WAIVER_EVAL_CONTROL_GRPS = 1
+    submission.FAMILY_EXEMPT_TIME_LIMITS = 1
+    submission.FAMILY_NEW_CHILD = 1
+
+    submission.save()
+
+    # submission.full_clean()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T1DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t2_submission(test_datafile):
+    """Tribal TANF T2 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T2()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.RPT_MONTH_YEAR = 1
+    submission.CASE_NUMBER = '1'
+    submission.FAMILY_AFFILIATION = 1
+    submission.NONCUSTODIAL_PARENT = 1
+    submission.DATE_OF_BIRTH = 1
+    submission.SSN = '1'
+    submission.RACE_HISPANIC = 1
+    submission.RACE_AMER_INDIAN = 1
+    submission.RACE_ASIAN = 1
+    submission.RACE_BLACK = 1
+    submission.RACE_HAWAIIAN = 1
+    submission.RACE_WHITE = 1
+    submission.GENDER = 1
+    submission.FED_OASDI_PROGRAM = 1
+    submission.FED_DISABILITY_STATUS = 1
+    submission.DISABLED_TITLE_XIVAPDT = 1
+    submission.AID_AGED_BLIND = 1
+    submission.RECEIVE_SSI = 1
+    submission.MARITAL_STATUS = 1
+    submission.RELATIONSHIP_HOH = "01"
+    submission.NEEDS_PREGNANT_WOMAN = 1
+    submission.EDUCATION_LEVEL = 1
+    submission.CITIZENSHIP_STATUS = 1
+    submission.COOPERATION_CHILD_SUPPORT = 1
+    submission.MONTHS_FED_TIME_LIMIT = 1
+    submission.MONTHS_STATE_TIME_LIMIT = 1
+    submission.CURRENT_MONTH_STATE_EXEMPT = 1
+    submission.EMPLOYMENT_STATUS = 1
+    submission.WORK_PART_STATUS = 1
+    submission.UNSUB_EMPLOYMENT = 1
+    submission.SUB_PRIVATE_EMPLOYMENT = 1
+    submission.SUB_PUBLIC_EMPLOYMENT = 1
+    submission.WORK_EXPERIENCE = 1
+    submission.OJT = 1
+    submission.JOB_SEARCH = 1
+    submission.COMM_SERVICES = 1
+    submission.VOCATIONAL_ED_TRAINING = 1
+    submission.JOB_SKILLS_TRAINING = 1
+    submission.ED_NO_HIGH_SCHOOL_DIPLOMA = 1
+    submission.SCHOOL_ATTENDENCE = 1
+    submission.PROVIDE_CC = 1
+    submission.ADD_WORK_ACTIVITIES = '01'
+    submission.OTHER_WORK_ACTIVITIES = 1
+    submission.REQ_HRS_WAIVER_DEMO = 1
+    submission.EARNED_INCOME = 1
+    submission.UNEARNED_INCOME_TAX_CREDIT = 1
+    submission.UNEARNED_SOCIAL_SECURITY = 1
+    submission.UNEARNED_SSI = 1
+    submission.UNEARNED_WORKERS_COMP = 1
+    submission.OTHER_UNEARNED_INCOME = 1
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T2DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t3_submission(test_datafile):
+    """Tribal TANF T3 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T3()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.RPT_MONTH_YEAR = 1
+    submission.CASE_NUMBER = '1'
+    submission.FAMILY_AFFILIATION = 1
+    submission.DATE_OF_BIRTH = 1
+    submission.SSN = '1'
+    submission.RACE_HISPANIC = 1
+    submission.RACE_AMER_INDIAN = 1
+    submission.RACE_ASIAN = 1
+    submission.RACE_BLACK = 1
+    submission.RACE_HAWAIIAN = 1
+    submission.RACE_WHITE = 1
+    submission.GENDER = 1
+    submission.RECEIVE_NONSSA_BENEFITS = 1
+    submission.RECEIVE_SSI = 1
+    submission.RELATIONSHIP_HOH = "01"
+    submission.PARENT_MINOR_CHILD = 1
+    submission.EDUCATION_LEVEL = 1
+    submission.CITIZENSHIP_STATUS = 1
+    submission.UNEARNED_SSI = 1
+    submission.OTHER_UNEARNED_INCOME = 1
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T3DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t4_submission(test_datafile):
+    """Tribal TANF T4 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T4()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.RPT_MONTH_YEAR = 1
+    submission.CASE_NUMBER = '1'
+    submission.COUNTY_FIPS_CODE = '1'
+    submission.STRATUM = "1"
+    submission.ZIP_CODE = '01'
+    submission.DISPOSITION = 1
+    submission.CLOSURE_REASON = "1"
+    submission.REC_SUB_HOUSING = 1
+    submission.REC_MED_ASSIST = 1
+    submission.REC_FOOD_STAMPS = 1
+    submission.REC_SUB_CC = 1
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T4DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t5_submission(test_datafile):
+    """Tribal TANF T5 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T5()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.RPT_MONTH_YEAR = 1
+    submission.CASE_NUMBER = '1'
+    submission.FAMILY_AFFILIATION = 1
+    submission.DATE_OF_BIRTH = '1'
+    submission.SSN = '1'
+    submission.RACE_HISPANIC = 1
+    submission.RACE_AMER_INDIAN = 1
+    submission.RACE_ASIAN = 1
+    submission.RACE_BLACK = 1
+    submission.RACE_HAWAIIAN = 1
+    submission.RACE_WHITE = 1
+    submission.GENDER = 1
+    submission.REC_OASDI_INSURANCE = 1
+    submission.REC_FEDERAL_DISABILITY = 1
+    submission.REC_AID_TOTALLY_DISABLED = 1
+    submission.REC_AID_AGED_BLIND = 1
+    submission.RECEIVE_SSI = 1
+    submission.MARITAL_STATUS = 1
+    submission.RELATIONSHIP_HOH = "01"
+    submission.PARENT_WITH_MINOR_CHILD = 1
+    submission.NEEDS_PREGNANT_WOMAN = 1
+    submission.EDUCATION_LEVEL = "1"
+    submission.CITIZENSHIP_STATUS = 1
+    submission.COUNTABLE_MONTH_FED_TIME = "1"
+    submission.COUNTABLE_MONTHS_STATE_TRIBE = "1"
+    submission.EMPLOYMENT_STATUS = 1
+    submission.AMOUNT_EARNED_INCOME = "1"
+    submission.AMOUNT_UNEARNED_INCOME = "1"
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T5DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t6_submission(test_datafile):
+    """Tribal TANF T6 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T6()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.CALENDAR_QUARTER = 1
+    submission.RPT_MONTH_YEAR = 1
+    submission.NUM_APPLICATIONS = 1
+    submission.NUM_APPROVED = 1
+    submission.NUM_DENIED = 1
+    submission.ASSISTANCE = 1
+    submission.NUM_FAMILIES = 1
+    submission.NUM_2_PARENTS = 1
+    submission.NUM_1_PARENTS = 1
+    submission.NUM_NO_PARENTS = 1
+    submission.NUM_RECIPIENTS = 1
+    submission.NUM_ADULT_RECIPIENTS = 1
+    submission.NUM_CHILD_RECIPIENTS = 1
+    submission.NUM_NONCUSTODIALS = 1
+    submission.NUM_BIRTHS = 1
+    submission.NUM_OUTWEDLOCK_BIRTHS = 1
+    submission.NUM_CLOSED_CASES = 1
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T6DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
