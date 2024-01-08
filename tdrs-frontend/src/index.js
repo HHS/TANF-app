@@ -43,7 +43,7 @@ function devLogin(devEmail) {
 
 // call auth_check
 const store = configureStore()
-if (process.env.REACT_APP_DEVAUTH) {
+if (process.env.REACT_APP_DEVAUTH && !store.getState().auth?.user) {
   devLogin(process.env.REACT_APP_DEVAUTH)
 }
 store.dispatch(fetchAuth())
