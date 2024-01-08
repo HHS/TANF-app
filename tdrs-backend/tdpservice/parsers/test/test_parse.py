@@ -6,7 +6,7 @@ from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4
-from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5
+from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
@@ -1076,3 +1076,23 @@ def test_parse_tribal_section_2_file(tribal_section_2_file):
 
     assert t4.CLOSURE_REASON == 8
     assert t5.COUNTABLE_MONTH_FED_TIME == '  8'
+
+@pytest.fixture
+def tribal_section_3_file(stt_user, stt):
+    """Fixture for ADS.E2J.FTP3.TS142."""
+    return util.create_test_datafile('ADS.E2J.FTP3.TS142', stt_user, stt, "Tribal Aggregate Data")
+
+@pytest.mark.django_db()
+def test_parse_tribal_section_3_file(tribal_section_3_file):
+    """Test parsing Tribal TANF Section 3 submission."""
+    parse.parse_datafile(tribal_section_3_file)
+
+    assert Tribal_TANF_T6.objects.all().count() == 3
+
+    t6_objs = Tribal_TANF_T6.objects.all().order_by("NUM_APPLICATIONS")
+
+    t6 = t6_objs.first()
+
+    assert t6.NUM_APPLICATIONS == 1
+    assert t6.NUM_FAMILIES == 41
+    assert t6.NUM_CLOSED_CASES == 3

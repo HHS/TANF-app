@@ -3,6 +3,7 @@
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
 from ..models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4, Tribal_TANF_T5
+from ..models.tribal import Tribal_TANF_T6
 from .document_base import DocumentBase
 
 @registry.register_document
@@ -263,4 +264,42 @@ class Tribal_TANF_T5DataSubmissionDocument(DocumentBase, Document):
             'EMPLOYMENT_STATUS',
             'AMOUNT_EARNED_INCOME',
             'AMOUNT_UNEARNED_INCOME'
+        ]
+
+@registry.register_document
+class Tribal_TANF_T6DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed Tribal TANF T6 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'tribal_tanf_t6_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = Tribal_TANF_T6
+        fields = [
+            'RecordType',
+            'CALENDAR_QUARTER',
+            'RPT_MONTH_YEAR',
+            'NUM_APPLICATIONS',
+            'NUM_APPROVED',
+            'NUM_DENIED',
+            'ASSISTANCE',
+            'NUM_FAMILIES',
+            'NUM_2_PARENTS',
+            'NUM_1_PARENTS',
+            'NUM_NO_PARENTS',
+            'NUM_RECIPIENTS',
+            'NUM_ADULT_RECIPIENTS',
+            'NUM_CHILD_RECIPIENTS',
+            'NUM_NONCUSTODIALS',
+            'NUM_BIRTHS',
+            'NUM_OUTWEDLOCK_BIRTHS',
+            'NUM_CLOSED_CASES'
         ]

@@ -266,3 +266,39 @@ class Tribal_TANF_T5(models.Model):
     EMPLOYMENT_STATUS = models.IntegerField(null=True, blank=False)
     AMOUNT_EARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
     AMOUNT_UNEARNED_INCOME = models.CharField(max_length=4, null=True, blank=False)
+
+class Tribal_TANF_T6(models.Model):
+    """
+    Parsed record representing a Tribal T6 data submission.
+
+    Mapped to an elastic search index.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='tribal_t6_parent'
+    )
+
+    RecordType = models.CharField(max_length=156, null=True, blank=False)
+    CALENDAR_QUARTER = models.IntegerField(null=True, blank=True)
+    RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
+    NUM_APPLICATIONS = models.IntegerField(null=True, blank=True)
+    NUM_APPROVED = models.IntegerField(null=True, blank=True)
+    NUM_DENIED = models.IntegerField(null=True, blank=True)
+    ASSISTANCE = models.IntegerField(null=True, blank=True)
+    NUM_FAMILIES = models.IntegerField(null=True, blank=True)
+    NUM_2_PARENTS = models.IntegerField(null=True, blank=True)
+    NUM_1_PARENTS = models.IntegerField(null=True, blank=True)
+    NUM_NO_PARENTS = models.IntegerField(null=True, blank=True)
+    NUM_RECIPIENTS = models.IntegerField(null=True, blank=True)
+    NUM_ADULT_RECIPIENTS = models.IntegerField(null=True, blank=True)
+    NUM_CHILD_RECIPIENTS = models.IntegerField(null=True, blank=True)
+    NUM_NONCUSTODIALS = models.IntegerField(null=True, blank=True)
+    NUM_BIRTHS = models.IntegerField(null=True, blank=True)
+    NUM_OUTWEDLOCK_BIRTHS = models.IntegerField(null=True, blank=True)
+    NUM_CLOSED_CASES = models.IntegerField(null=True, blank=True)

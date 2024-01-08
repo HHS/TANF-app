@@ -194,7 +194,13 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
                     'T4': schema_defs.tribal_tanf.t4,
                     'T5': schema_defs.tribal_tanf.t5,
                 }
-            }
+            },
+            'G': {
+                'section': DataFile.Section.TRIBAL_AGGREGATE_DATA,
+                'models': {
+                    'T6': schema_defs.tribal_tanf.t6,
+                }
+            },
         },
     }
 

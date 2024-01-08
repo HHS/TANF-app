@@ -984,3 +984,41 @@ def test_can_create_and_index_tribal_tanf_t5_submission(test_datafile):
     response = search.execute()
 
     assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t6_submission(test_datafile):
+    """Tribal TANF T6 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T6()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.CALENDAR_QUARTER = 1
+    submission.RPT_MONTH_YEAR = 1
+    submission.NUM_APPLICATIONS = 1
+    submission.NUM_APPROVED = 1
+    submission.NUM_DENIED = 1
+    submission.ASSISTANCE = 1
+    submission.NUM_FAMILIES = 1
+    submission.NUM_2_PARENTS = 1
+    submission.NUM_1_PARENTS = 1
+    submission.NUM_NO_PARENTS = 1
+    submission.NUM_RECIPIENTS = 1
+    submission.NUM_ADULT_RECIPIENTS = 1
+    submission.NUM_CHILD_RECIPIENTS = 1
+    submission.NUM_NONCUSTODIALS = 1
+    submission.NUM_BIRTHS = 1
+    submission.NUM_OUTWEDLOCK_BIRTHS = 1
+    submission.NUM_CLOSED_CASES = 1
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T6DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
