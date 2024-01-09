@@ -76,3 +76,18 @@ resource "cloudfoundry_service_instance" "datafiles" {
   service_plan     = data.cloudfoundry_service.s3.service_plans["basic-sandbox"]
   recursive_delete = true
 }
+
+###
+# Provision Redis for each env
+###
+
+data "cloudfoundry_service" "redis" {
+  name = "aws-elasticache-redis"
+}
+
+resource "cloudfoundry_service_instance" "redis" {
+  for_each     = toset(var.dev_app_names)
+  name         = "tdp-redis-${each.value}"
+  space        = data.cloudfoundry_space.space.id
+  service_plan = data.cloudfoundry_service.redis.service_plans["redis-dev"]
+}
