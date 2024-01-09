@@ -105,6 +105,8 @@ update_kibana()
   echo PARSED MANIFEST
   cat manifest.proxy.yml
 
+  cf set-env "$CGAPPNAME_KIBANA" CGAPPNAME_PROXY $CGAPPNAME_PROXY
+
   if [ "$1" = "rolling" ] ; then
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
@@ -128,7 +130,7 @@ update_kibana()
 update_backend()
 {
     cd tdrs-backend || exit
-    cf unset-env "$CGAPPNAME_BACKEND" "AV_SCAN_URL" "$CGAPPNAME_KIBANA"
+    cf unset-env "$CGAPPNAME_BACKEND" "AV_SCAN_URL"
     
     if [ "$CF_SPACE" = "tanf-prod" ]; then
       cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"

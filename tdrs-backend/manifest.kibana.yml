@@ -7,5 +7,5 @@ applications:
   docker:
     image: docker.elastic.co/kibana/kibana-oss:7.4.2
   command: |
-    export ELASTICSEARCH_HOSTS=http://tdp-elastic-proxy.apps.internal:8080 &&
+    export ELASTICSEARCH_HOSTS=http://$CGAPPNAME_PROXY.apps.internal:8080 &&
     /usr/local/bin/dumb-init -- /usr/local/bin/kibana-docker
