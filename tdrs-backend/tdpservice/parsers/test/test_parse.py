@@ -5,7 +5,8 @@ import pytest
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
-from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3
+from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4
+from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
@@ -1053,3 +1054,45 @@ def test_parse_tribal_section_1_inconsistency_file(tribal_section_1_inconsistenc
 
     assert parser_errors.first().error_message == "Tribe Code (142) inconsistency with Program Type (TAN) " + \
         "and FIPS Code (01)."
+
+@pytest.fixture
+def tribal_section_2_file(stt_user, stt):
+    """Fixture for ADS.E2J.FTP4.TS06."""
+    return util.create_test_datafile('ADS.E2J.FTP2.TS142.txt', stt_user, stt, "Tribal Closed Case Data")
+
+@pytest.mark.django_db()
+def test_parse_tribal_section_2_file(tribal_section_2_file):
+    """Test parsing Tribal TANF Section 2 submission."""
+    parse.parse_datafile(tribal_section_2_file)
+
+    assert Tribal_TANF_T4.objects.all().count() == 6
+    assert Tribal_TANF_T5.objects.all().count() == 13
+
+    t4_objs = Tribal_TANF_T4.objects.all().order_by("CLOSURE_REASON")
+    t5_objs = Tribal_TANF_T5.objects.all().order_by("COUNTABLE_MONTH_FED_TIME")
+
+    t4 = t4_objs.first()
+    t5 = t5_objs.last()
+
+    assert t4.CLOSURE_REASON == 8
+    assert t5.COUNTABLE_MONTH_FED_TIME == '  8'
+
+@pytest.fixture
+def tribal_section_3_file(stt_user, stt):
+    """Fixture for ADS.E2J.FTP3.TS142."""
+    return util.create_test_datafile('ADS.E2J.FTP3.TS142', stt_user, stt, "Tribal Aggregate Data")
+
+@pytest.mark.django_db()
+def test_parse_tribal_section_3_file(tribal_section_3_file):
+    """Test parsing Tribal TANF Section 3 submission."""
+    parse.parse_datafile(tribal_section_3_file)
+
+    assert Tribal_TANF_T6.objects.all().count() == 3
+
+    t6_objs = Tribal_TANF_T6.objects.all().order_by("NUM_APPLICATIONS")
+
+    t6 = t6_objs.first()
+
+    assert t6.NUM_APPLICATIONS == 1
+    assert t6.NUM_FAMILIES == 41
+    assert t6.NUM_CLOSED_CASES == 3
