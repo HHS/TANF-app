@@ -66,13 +66,17 @@ header = RowSchema(
             type="string",
             startIndex=12,
             endIndex=14,
-            required=True,
+            required=False,
             validators=[
-                validators.oneOf(("01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13", "15",
-                                  "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27",
-                                  "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
-                                  "40", "41", "42", "44", "45", "46", "47", "48", "49", "50", "51", "53",
-                                  "54", "55", "56", "66", "72", "78"))
+                validators.or_validators(
+                    validators.isInStringRange(0, 2),
+                    validators.isInStringRange(4, 6),
+                    validators.isInStringRange(8, 13),
+                    validators.isInStringRange(15, 42),
+                    validators.isInStringRange(44, 51),
+                    validators.isInStringRange(53, 56),
+                    validators.oneOf(["66", "72", "78"]),
+                )
             ],
         ),
         Field(
