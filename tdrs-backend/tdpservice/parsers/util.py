@@ -171,6 +171,19 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
                     'T3': schema_defs.tribal_tanf.t3,
                 }
             },
+            'C': {
+                'section': DataFile.Section.TRIBAL_CLOSED_CASE_DATA,
+                'models': {
+                    'T4': schema_defs.tribal_tanf.t4,
+                    'T5': schema_defs.tribal_tanf.t5,
+                }
+            },
+            'G': {
+                'section': DataFile.Section.TRIBAL_AGGREGATE_DATA,
+                'models': {
+                    'T6': schema_defs.tribal_tanf.t6,
+                }
+            },
         },
     }
 
