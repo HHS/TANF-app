@@ -101,7 +101,7 @@ update_kibana()
 
   # Run template evaluation on manifest
   echo UPDATING TEMPLATE MANIFEST
-  yq eval ".applications[0].services[0] = \"es-${backend_app_name}\""  manifest.proxy.yml
+  yq eval -i ".applications[0].services[0] = \"es-${backend_app_name}\""  manifest.proxy.yml
   echo PARSED MANIFEST
   cat manifest.proxy.yml
 
