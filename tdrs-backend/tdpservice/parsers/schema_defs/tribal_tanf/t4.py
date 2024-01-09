@@ -10,7 +10,7 @@ from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T4DataSubmiss
 t4 = SchemaManager(
     schemas=[
         RowSchema(
-            ocument=Tribal_TANF_T4DataSubmissionDocument(),
+            document=Tribal_TANF_T4DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(71),
             ],

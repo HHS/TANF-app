@@ -10,7 +10,7 @@ from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T3DataSubmiss
 
 
 child_one = RowSchema(
-    ocument=Tribal_TANF_T3DataSubmissionDocument(),
+    document=Tribal_TANF_T3DataSubmissionDocument(),
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
         validators.hasLength(122),
@@ -314,7 +314,7 @@ child_one = RowSchema(
 )
 
 child_two = RowSchema(
-    ocument=Tribal_TANF_T3DataSubmissionDocument(),
+    document=Tribal_TANF_T3DataSubmissionDocument(),
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),

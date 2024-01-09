@@ -10,7 +10,7 @@ from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T6DataSubmiss
 
 
 s1 = RowSchema(
-    ocument=Tribal_TANF_T6DataSubmissionDocument(),
+    document=Tribal_TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(379),
     ],
@@ -215,7 +215,7 @@ s1 = RowSchema(
 )
 
 s2 = RowSchema(
-    ocument=Tribal_TANF_T6DataSubmissionDocument(),
+    document=Tribal_TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(379),
     ],
@@ -414,7 +414,7 @@ s2 = RowSchema(
 )
 
 s3 = RowSchema(
-    ocument=Tribal_TANF_T6DataSubmissionDocument(),
+    document=Tribal_TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(379),
     ],
