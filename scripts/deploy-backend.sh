@@ -23,8 +23,8 @@ env=$(strip $CF_SPACE "tanf-")
 backend_app_name=$(echo $CGAPPNAME_BACKEND | cut -d"-" -f3)
 
 # Update the Kibana and Elastic proxy names to include the environment
-CGAPPNAME_KIBANA="${CGAPPNAME_KIBANA}${backend_app_name}"
-CGAPPNAME_PROXY="${CGAPPNAME_PROXY}${backend_app_name}"
+CGAPPNAME_KIBANA="${CGAPPNAME_KIBANA}-${backend_app_name}"
+CGAPPNAME_PROXY="${CGAPPNAME_PROXY}-${backend_app_name}"
 
 echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
 echo BACKEND_HOST: "$CGAPPNAME_BACKEND"
