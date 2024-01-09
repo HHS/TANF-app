@@ -59,11 +59,16 @@ class KibanaAuthorizationCheck(APIView):
 
     def get(self, request, *args, **kwargs):
         """Handle get request and verify user is authorized to access kibana."""
+        logger.debug("INSIDE KibanaAuthorizationCheck.")
         user = request.user
 
         user_in_valid_group = user.is_ofa_sys_admin or user.is_ofa_admin
 
+        logger.debug(f"\nIS OFA SYS AD: {user.is_ofa_sys_admin}, IS OFA AD: {user.is_ofa_admin}, HHS ID: {user.hhs_id}\n")
+
         if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_KIBANA_AUTH:
+            logger.debug("\nSUCCESSFULLY AUTHENTICATED USER. REDIRECTING TO KIBANA.\n\n")
             return HttpResponseRedirect(settings.KIBANA_BASE_URL)
         else:
+            logger.debug("\nUSER AUTHENTICATION CREDENTIALS INCORRECT. NOT REDIRECTING TO KIBANA.\n\n")
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
