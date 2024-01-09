@@ -1156,6 +1156,8 @@ def tribal_section_2_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_2_file(tribal_section_2_file):
     """Test parsing Tribal TANF Section 2 submission."""
+    tribal_section_2_file.year = 2020
+    tribal_section_2_file.quarter = 'Q1'
     parse.parse_datafile(tribal_section_2_file)
 
     assert Tribal_TANF_T4.objects.all().count() == 6
@@ -1178,6 +1180,9 @@ def tribal_section_3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_3_file(tribal_section_3_file):
     """Test parsing Tribal TANF Section 3 submission."""
+    tribal_section_3_file.year = 2020
+    tribal_section_3_file.quarter = 'Q1'
+
     parse.parse_datafile(tribal_section_3_file)
 
     assert Tribal_TANF_T6.objects.all().count() == 3
