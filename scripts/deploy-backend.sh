@@ -100,12 +100,8 @@ update_kibana()
   cd tdrs-backend || exit
 
   # Run template evaluation on manifest
-  echo UPDATING TEMPLATE MANIFEST
   yq eval -i ".applications[0].services[0] = \"es-${backend_app_name}\""  manifest.proxy.yml
-  echo PARSED MANIFEST
-  cat manifest.proxy.yml
-
-  cf set-env "$CGAPPNAME_KIBANA" CGAPPNAME_PROXY $CGAPPNAME_PROXY
+  yq eval -i ".applications[0].env.CGAPPNAME_PROXY = \"${CGAPPNAME_PROXY}\""  manifest.kibana.yml
 
   if [ "$1" = "rolling" ] ; then
         # Do a zero downtime deploy.  This requires enough memory for

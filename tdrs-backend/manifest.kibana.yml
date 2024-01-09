@@ -4,6 +4,8 @@ applications:
   memory: 4G
   disk_quota: 4G
   instances: 1
+  env:
+    CGAPPNAME_PROXY: {{ proxy_hostname }}
   docker:
     image: docker.elastic.co/kibana/kibana-oss:7.4.2
   command: |
