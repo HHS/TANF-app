@@ -64,7 +64,8 @@ class KibanaAuthorizationCheck(APIView):
 
         user_in_valid_group = user.is_ofa_sys_admin or user.is_ofa_admin
 
-        logger.debug(f"\nIS OFA SYS AD: {user.is_ofa_sys_admin}, IS OFA AD: {user.is_ofa_admin}, HHS ID: {user.hhs_id}\n")
+        logger.debug(f"\nIS OFA SYS AD: {user.is_ofa_sys_admin}, IS OFA AD: {user.is_ofa_admin}, " +
+                     f"HHS ID: {user.hhs_id}\n")
 
         if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_KIBANA_AUTH:
             logger.debug("\nSUCCESSFULLY AUTHENTICATED USER. REDIRECTING TO KIBANA.\n\n")
