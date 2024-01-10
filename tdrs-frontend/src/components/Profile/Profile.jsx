@@ -12,7 +12,7 @@ import {
 function Profile() {
   const user = useSelector((state) => state.auth.user)
   // Most higher-env users will only have a single role, so just grab the first one.
-  const primaryRole = user?.roles[0]
+  const primaryRole = user?.roles?.[0]
   const missingAccessRequest = useSelector(accountIsMissingAccessRequest)
   const isAccessRequestPending = useSelector(accountIsInReview)
 
