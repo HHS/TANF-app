@@ -1,13 +1,12 @@
 """Elasticsearch document mappings for SSP submission models."""
 
-from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
 from ..models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from .document_base import DocumentBase
 
 
 @registry.register_document
-class SSP_M1DataSubmissionDocument(DocumentBase, Document):
+class SSP_M1DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed SSP M1 data file."""
 
     class Index:
@@ -71,7 +70,7 @@ class SSP_M1DataSubmissionDocument(DocumentBase, Document):
 
 
 @registry.register_document
-class SSP_M2DataSubmissionDocument(DocumentBase, Document):
+class SSP_M2DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed SSP M2 data file."""
 
     class Index:
@@ -159,7 +158,7 @@ class SSP_M2DataSubmissionDocument(DocumentBase, Document):
 
 
 @registry.register_document
-class SSP_M3DataSubmissionDocument(DocumentBase, Document):
+class SSP_M3DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed SSP M3 data file."""
 
     class Index:
@@ -201,7 +200,7 @@ class SSP_M3DataSubmissionDocument(DocumentBase, Document):
         ]
 
 @registry.register_document
-class SSP_M4DataSubmissionDocument(DocumentBase, Document):
+class SSP_M4DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed SSP M4 data file."""
 
     class Index:
@@ -233,7 +232,7 @@ class SSP_M4DataSubmissionDocument(DocumentBase, Document):
         ]
 
 @registry.register_document
-class SSP_M5DataSubmissionDocument(DocumentBase, Document):
+class SSP_M5DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed SSP M5 data file."""
 
     class Index:
@@ -280,7 +279,7 @@ class SSP_M5DataSubmissionDocument(DocumentBase, Document):
         ]
 
 @registry.register_document
-class SSP_M6DataSubmissionDocument(DocumentBase, Document):
+class SSP_M6DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed SSP M6 data file."""
 
     class Index:
@@ -313,7 +312,7 @@ class SSP_M6DataSubmissionDocument(DocumentBase, Document):
         ]
 
 @registry.register_document
-class SSP_M7DataSubmissionDocument(DocumentBase, Document):
+class SSP_M7DataSubmissionDocument(DocumentBase):
     """Elastic search model mapping for a parsed SSP M7 data file."""
 
     class Index:
