@@ -1,8 +1,8 @@
 version: 1
 applications:
 - name: tdp-kibana
-  memory: 4G
-  disk_quota: 4G
+  memory: 2G
+  disk_quota: 2G
   instances: 1
   env:
     CGAPPNAME_PROXY: {{ proxy_hostname }}
