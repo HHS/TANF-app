@@ -112,7 +112,7 @@ def test_can_create_and_index_tanf_t2_submission(test_datafile):
     submission.RECEIVE_SSI = 1
     submission.MARITAL_STATUS = 1
     submission.RELATIONSHIP_HOH = "01"
-    submission.PARENT_WITH_MINOR_CHILD = 1
+    submission.PARENT_MINOR_CHILD = 1
     submission.NEEDS_PREGNANT_WOMAN = 1
     submission.EDUCATION_LEVEL = 1
     submission.CITIZENSHIP_STATUS = 1
@@ -273,11 +273,11 @@ def test_can_create_and_index_tanf_t5_submission(test_datafile):
     submission.REC_FEDERAL_DISABILITY = 1
     submission.REC_AID_TOTALLY_DISABLED = 1
     submission.REC_AID_AGED_BLIND = 1
-    submission.RECEIVE_SSI = 1
+    submission.REC_SSI = 1
     submission.MARITAL_STATUS = 1
     submission.RELATIONSHIP_HOH = "01"
-    submission.PARENT_WITH_MINOR_CHILD = 1
-    submission.NEEDS_PREGNANT_WOMAN = 1
+    submission.PARENT_MINOR_CHILD = 1
+    submission.NEEDS_OF_PREGNANT_WOMAN = 1
     submission.EDUCATION_LEVEL = "1"
     submission.CITIZENSHIP_STATUS = 1
     submission.COUNTABLE_MONTH_FED_TIME = "1"
@@ -1016,6 +1016,32 @@ def test_can_create_and_index_tribal_tanf_t6_submission(test_datafile):
     assert submission.id is not None
 
     search = documents.tribal.Tribal_TANF_T6DataSubmissionDocument.search().query(
+        'match',
+        RecordType=record_num
+    )
+    response = search.execute()
+
+    assert response.hits.total.value == 1
+
+@pytest.mark.django_db
+def test_can_create_and_index_tribal_tanf_t7_submission(test_datafile):
+    """Tribal TANF T7 submissions can be created and mapped."""
+    record_num = fake.uuid4()
+
+    submission = models.tribal.Tribal_TANF_T7()
+    submission.datafile = test_datafile
+    submission.RecordType = record_num
+    submission.CALENDAR_YEAR = 2020
+    submission.CALENDAR_QUARTER = 1
+    submission.TDRS_SECTION_IND = '1'
+    submission.STRATUM = '01'
+    submission.FAMILIES_MONTH = 47655
+
+    submission.save()
+
+    assert submission.id is not None
+
+    search = documents.tribal.Tribal_TANF_T7DataSubmissionDocument.search().query(
         'match',
         RecordType=record_num
     )

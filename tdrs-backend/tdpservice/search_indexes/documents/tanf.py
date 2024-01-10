@@ -110,7 +110,7 @@ class TANF_T2DataSubmissionDocument(DocumentBase, Document):
             'RECEIVE_SSI',
             'MARITAL_STATUS',
             'RELATIONSHIP_HOH',
-            'PARENT_WITH_MINOR_CHILD',
+            'PARENT_MINOR_CHILD',
             'NEEDS_PREGNANT_WOMAN',
             'EDUCATION_LEVEL',
             'CITIZENSHIP_STATUS',

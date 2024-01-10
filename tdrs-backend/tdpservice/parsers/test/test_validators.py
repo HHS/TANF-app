@@ -587,16 +587,16 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         """Test cat3 validator for parent with a minor child."""
         val = validators.if_then_validator(
                         condition_field='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field='PARENT_WITH_MINOR_CHILD', result_function=validators.isInLimits(1, 3),
+                        result_field='PARENT_MINOR_CHILD', result_function=validators.isInLimits(1, 3),
                     )
         result = val(record)
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'PARENT_WITH_MINOR_CHILD'])
+        assert result == (True, None, ['FAMILY_AFFILIATION', 'PARENT_MINOR_CHILD'])
 
-        record.PARENT_WITH_MINOR_CHILD = 0
+        record.PARENT_MINOR_CHILD = 0
         result = val(record)
-        assert result == (False, 'if FAMILY_AFFILIATION :1 validator1 passed then PARENT_WITH_MINOR_CHILD 0 is not ' +
+        assert result == (False, 'if FAMILY_AFFILIATION :1 validator1 passed then PARENT_MINOR_CHILD 0 is not ' +
                           'larger or equal to 1 and smaller or equal to 3.',
-                          ['FAMILY_AFFILIATION', 'PARENT_WITH_MINOR_CHILD'])
+                          ['FAMILY_AFFILIATION', 'PARENT_MINOR_CHILD'])
 
     def test_validate_education_level(self, record):
         """Test cat3 validator for education level."""

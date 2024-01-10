@@ -68,7 +68,7 @@ t2 = SchemaManager(
                 validators.if_then_validator(
                     condition_field="FAMILY_AFFILIATION",
                     condition_function=validators.isInLimits(1, 2),
-                    result_field="PARENT_WITH_MINOR_CHILD",
+                    result_field="PARENT_MINOR_CHILD",
                     result_function=validators.isInLimits(1, 3),
                 ),
                 validators.if_then_validator(
@@ -358,8 +358,8 @@ t2 = SchemaManager(
                 ),
                 Field(
                     item="39",
-                    name="PARENT_WITH_MINOR_CHILD",
-                    friendly_name="parent with minor child",
+                    name="PARENT_MINOR_CHILD",
+                    friendly_name="parent of minor child",
                     type="number",
                     startIndex=53,
                     endIndex=54,

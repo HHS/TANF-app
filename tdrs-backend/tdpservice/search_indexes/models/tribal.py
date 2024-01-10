@@ -302,3 +302,31 @@ class Tribal_TANF_T6(models.Model):
     NUM_BIRTHS = models.IntegerField(null=True, blank=True)
     NUM_OUTWEDLOCK_BIRTHS = models.IntegerField(null=True, blank=True)
     NUM_CLOSED_CASES = models.IntegerField(null=True, blank=True)
+
+class Tribal_TANF_T7(models.Model):
+    """
+    Parsed record representing a Tribal T7 data submission.
+
+    Mapped to an elastic search index.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    datafile = models.ForeignKey(
+        DataFile,
+        blank=True,
+        help_text='The parent file from which this record was created.',
+        null=True,
+        on_delete=models.CASCADE,
+        related_name='tribal_t7_parent'
+    )
+
+    RecordType = models.CharField(max_length=156, null=True, blank=False)
+    CALENDAR_QUARTER = models.IntegerField(null=True, blank=True)
+    RPT_MONTH_YEAR = models.IntegerField(null=True, blank=False)
+    TDRS_SECTION_IND = models.CharField(
+        max_length=1,
+        null=True,
+        blank=False
+    )
+    STRATUM = models.CharField(max_length=2, null=True, blank=False)
+    FAMILIES_MONTH = models.IntegerField(null=True, blank=False)

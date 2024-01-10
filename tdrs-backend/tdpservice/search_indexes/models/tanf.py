@@ -113,7 +113,7 @@ class TANF_T2(models.Model):
     RECEIVE_SSI = models.IntegerField(null=True, blank=False)
     MARITAL_STATUS = models.IntegerField(null=True, blank=False)
     RELATIONSHIP_HOH = models.CharField(max_length=2, null=True, blank=False)
-    PARENT_WITH_MINOR_CHILD = models.IntegerField(null=True, blank=False)
+    PARENT_MINOR_CHILD = models.IntegerField(null=True, blank=False)
     NEEDS_PREGNANT_WOMAN = models.IntegerField(null=True, blank=False)
     EDUCATION_LEVEL = models.CharField(max_length=2, null=True, blank=False)
     CITIZENSHIP_STATUS = models.IntegerField(null=True, blank=False)

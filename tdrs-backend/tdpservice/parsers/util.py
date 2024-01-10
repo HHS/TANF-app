@@ -184,6 +184,12 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
                     'T6': schema_defs.tribal_tanf.t6,
                 }
             },
+            'S': {
+                'section': DataFile.Section.TRIBAL_STRATUM_DATA,
+                'models': {
+                    'T7': schema_defs.tribal_tanf.t7,
+                }
+            },
         },
     }
 

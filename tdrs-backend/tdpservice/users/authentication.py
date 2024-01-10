@@ -12,10 +12,13 @@ class CustomAuthentication(BaseAuthentication):
     @staticmethod
     def authenticate(username=None, login_gov_uuid=None, hhs_id=None):
         """Authenticate user with the request and username."""
+        # TODO: Provide separate implementations for two unrelated workflows
+        # both using this method. (The latter appears to always fail.)
+        # References:
+        #   tdpservice/users/api/login.py:TokenAuthorizationOIDC.handleUser
+        #   https://www.django-rest-framework.org/api-guide/authentication
         User = get_user_model()
-        logging.debug("CustomAuthentication::authenticate:hhs_id {}".format(hhs_id))
-        logging.debug("CustomAuthentication::authenticate:login_gov_uuid {}".format(login_gov_uuid))
-        logging.debug("CustomAuthentication::authenticate:username {}".format(username))
+        logging.debug(f"CustomAuthentication::authenticate: {username}, {login_gov_uuid}, {hhs_id}")
         try:
             if hhs_id:
                 try:
