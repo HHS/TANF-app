@@ -6,7 +6,7 @@ from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4
-from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6
+from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
@@ -1096,3 +1096,29 @@ def test_parse_tribal_section_3_file(tribal_section_3_file):
     assert t6.NUM_APPLICATIONS == 1
     assert t6.NUM_FAMILIES == 41
     assert t6.NUM_CLOSED_CASES == 3
+
+@pytest.fixture
+def tribal_section_4_file(stt_user, stt):
+    """Fixture for tribal_section_4_fake.txt."""
+    return util.create_test_datafile('tribal_section_4_fake.txt', stt_user, stt, "Tribal Stratum Data")
+
+@pytest.mark.django_db()
+def test_parse_tribal_section_4_file(tribal_section_4_file):
+    """Test parsing Tribal TANF Section 4 submission."""
+    parse.parse_datafile(tribal_section_4_file)
+
+    assert Tribal_TANF_T7.objects.all().count() == 18
+
+    t7_objs = Tribal_TANF_T7.objects.all().order_by('FAMILIES_MONTH')
+
+    first = t7_objs.first()
+    sixth = t7_objs[5]
+
+    assert first.RPT_MONTH_YEAR == 202011
+    assert sixth.RPT_MONTH_YEAR == 202012
+
+    assert first.TDRS_SECTION_IND == '2'
+    assert sixth.TDRS_SECTION_IND == '2'
+
+    assert first.FAMILIES_MONTH == 274
+    assert sixth.FAMILIES_MONTH == 499

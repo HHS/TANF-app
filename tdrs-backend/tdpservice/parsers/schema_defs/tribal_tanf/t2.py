@@ -348,8 +348,8 @@ t2 = SchemaManager(
                 ),
                 Field(
                     item="39",
-                    name="PARENT_WITH_MINOR_CHILD",
-                    friendly_name="parent with minor child",
+                    name="PARENT_MINOR_CHILD",
+                    friendly_name="parent of minor child",
                     type="number",
                     startIndex=53,
                     endIndex=54,

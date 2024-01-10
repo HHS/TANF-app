@@ -3,7 +3,7 @@
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
 from ..models.tribal import Tribal_TANF_T1, Tribal_TANF_T2, Tribal_TANF_T3, Tribal_TANF_T4, Tribal_TANF_T5
-from ..models.tribal import Tribal_TANF_T6
+from ..models.tribal import Tribal_TANF_T6, Tribal_TANF_T7
 from .document_base import DocumentBase
 
 @registry.register_document
@@ -302,4 +302,30 @@ class Tribal_TANF_T6DataSubmissionDocument(DocumentBase, Document):
             'NUM_BIRTHS',
             'NUM_OUTWEDLOCK_BIRTHS',
             'NUM_CLOSED_CASES'
+        ]
+
+@registry.register_document
+class Tribal_TANF_T7DataSubmissionDocument(DocumentBase, Document):
+    """Elastic search model mapping for a parsed Tribal TANF T7 data file."""
+
+    class Index:
+        """ElasticSearch index generation settings."""
+
+        name = 'tribal_tanf_t7_submissions'
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0,
+        }
+
+    class Django:
+        """Django model reference and field mapping."""
+
+        model = Tribal_TANF_T7
+        fields = [
+            "RecordType",
+            "CALENDAR_QUARTER",
+            "RPT_MONTH_YEAR",
+            "TDRS_SECTION_IND",
+            "STRATUM",
+            "FAMILIES_MONTH",
         ]

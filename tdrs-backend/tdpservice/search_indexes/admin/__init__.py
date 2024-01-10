@@ -16,6 +16,7 @@ admin.site.register(models.tribal.Tribal_TANF_T3, tribal.Tribal_TANF_T3Admin)
 admin.site.register(models.tribal.Tribal_TANF_T4, tribal.Tribal_TANF_T4Admin)
 admin.site.register(models.tribal.Tribal_TANF_T5, tribal.Tribal_TANF_T5Admin)
 admin.site.register(models.tribal.Tribal_TANF_T6, tribal.Tribal_TANF_T6Admin)
+admin.site.register(models.tribal.Tribal_TANF_T7, tribal.Tribal_TANF_T7Admin)
 
 admin.site.register(models.ssp.SSP_M1, ssp.SSP_M1Admin)
 admin.site.register(models.ssp.SSP_M2, ssp.SSP_M2Admin)
