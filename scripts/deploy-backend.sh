@@ -114,7 +114,7 @@ update_kibana()
     fi
     
     cf map-route "$CGAPPNAME_PROXY" apps.internal --hostname "$CGAPPNAME_PROXY"
-    cf map-route "$CGAPPNAME_KIBANA" app.cloud.gov --hostname "$CGAPPNAME_KIBANA"
+    cf map-route "$CGAPPNAME_KIBANA" apps.internal --hostname "$CGAPPNAME_KIBANA"
 
     # Add network policy allowing Kibana to talk to the proxy and to allow the backend to talk to Kibana
     cf add-network-policy "$CGAPPNAME_KIBANA" "$CGAPPNAME_PROXY" --protocol tcp --port 8080
@@ -226,7 +226,7 @@ else
   FRONTEND_BASE_URL="$DEFAULT_FRONTEND_ROUTE"
 fi
 
-KIBANA_BASE_URL="http://$CGAPPNAME_KIBANA.app.cloud.gov"
+KIBANA_BASE_URL="http://$CGAPPNAME_KIBANA.apps.internal"
 
 # Dynamically generate a new DJANGO_SECRET_KEY
 DJANGO_SECRET_KEY=$(python3 -c "from secrets import token_urlsafe; print(token_urlsafe(50))")
