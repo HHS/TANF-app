@@ -8,8 +8,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from ..serializers import UserProfileSerializer
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
+import urllib
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,9 @@ class KibanaAuthorizationCheck(APIView):
 
         if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_KIBANA_AUTH:
             logger.debug("\nSUCCESSFULLY AUTHENTICATED USER. REDIRECTING TO KIBANA.\n\n")
-            return HttpResponseRedirect(settings.KIBANA_BASE_URL)
+            req = urllib.request.Request(f"http://nginx")
+            response = urllib.request.urlopen(req)
+            return HttpResponse(response.read())
         else:
             logger.debug("\nUSER AUTHENTICATION CREDENTIALS INCORRECT. NOT REDIRECTING TO KIBANA.\n\n")
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)

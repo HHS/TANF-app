@@ -340,6 +340,16 @@ class Common(Configuration):
     # The number of seconds to wait for socket response from clamav-rest
     AV_SCAN_TIMEOUT = int(os.getenv('AV_SCAN_TIMEOUT', 30))
 
+    # Elastic/Kibana
+    ELASTICSEARCH_DSL = {
+        'default': {
+            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
+            'http_auth': ('elastic', os.getenv('ELASTIC_PASSWORD', 'changeme'))
+        },
+    }
+    KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
+    BYPASS_KIBANA_AUTH = strtobool(os.getenv("BYPASS_KIBANA_AUTH", "no"))
+
     s3_src = "s3-us-gov-west-1.amazonaws.com"
 
     CSP_DEFAULT_SRC = ("'none'")
@@ -351,7 +361,7 @@ class Common(Configuration):
     CSP_OBJECT_SRC = ("'none'")
     CSP_FRAME_ANCESTORS = ("'none'")
     CSP_FORM_ACTION = ("'self'")
-    CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'")
+    CSP_STYLE_SRC = ("'self'", s3_src, "'unsafe-inline'", KIBANA_BASE_URL)
 
 
     ####################################
@@ -464,15 +474,5 @@ class Common(Configuration):
             'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
         }
     }
-
-    # Elastic/Kibana
-    ELASTICSEARCH_DSL = {
-        'default': {
-            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
-            'http_auth': ('elastic', os.getenv('ELASTIC_PASSWORD', 'changeme'))
-        },
-    }
-    KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://localhost:5601')
-    BYPASS_KIBANA_AUTH = strtobool(os.getenv("BYPASS_KIBANA_AUTH", "no"))
 
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)

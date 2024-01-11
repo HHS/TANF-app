@@ -1,13 +1,13 @@
 version: 1
 applications:
-- name: tdp-kibana
-  memory: 2G
-  disk_quota: 2G
-  instances: 1
-  env:
-    CGAPPNAME_PROXY: {{ proxy_hostname }}
-  docker:
-    image: docker.elastic.co/kibana/kibana-oss:7.4.2
-  command: |
-    export ELASTICSEARCH_HOSTS=http://$CGAPPNAME_PROXY.apps.internal:8080 &&
-    /usr/local/bin/dumb-init -- /usr/local/bin/kibana-docker
+  - name: tdp-kibana
+    memory: 2G
+    disk_quota: 2G
+    instances: 1
+    env:
+      CGAPPNAME_PROXY: tdp-elastic-proxy-raft
+    docker:
+      image: docker.elastic.co/kibana/kibana-oss:7.4.2
+    command: |
+      export ELASTICSEARCH_HOSTS=http://$CGAPPNAME_PROXY.apps.internal:8080 &&
+      /usr/local/bin/dumb-init -- /usr/local/bin/kibana-docker

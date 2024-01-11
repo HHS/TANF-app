@@ -1,0 +1,11 @@
+# ---
+# Stage 2: Serve over nginx
+FROM nginx:1.25-alpine AS nginx
+
+
+# To using react router
+# it's necessary to overwrite the default nginx configurations:
+# remove default nginx configuration file, replace with custom conf
+RUN rm /etc/nginx/conf.d/default.conf
+RUN rm /etc/nginx/nginx.conf
+COPY clamav-router/default.conf.template /etc/nginx/default.conf.template

@@ -29,6 +29,7 @@ services:
       - NGINX_FRONTEND=tdp-frontend
       - BACK_END=web
       - LOCAL_DEV=true
+      - KIBANA=kibana
     command: >
       /bin/sh -c
       "echo 'starting nginx' &&
@@ -36,10 +37,10 @@ services:
         rm /etc/nginx/locations.conf &&
         cp /etc/nginx/locations_.conf /etc/nginx/locations.conf &&
        envsubst '
-      $${BACK_END} $${NGINX_FRONTEND} $${LOCAL_DEV}
+      $${KIBANA} $${BACK_END} $${NGINX_FRONTEND} $${LOCAL_DEV}
       '< /etc/nginx/default.conf.template
-      > /etc/nginx/nginx.conf
-      && nginx -g 'daemon off;'"
+      > /etc/nginx/nginx.conf && 
+      nginx -g 'daemon off;'"
 
 networks:
   local:
