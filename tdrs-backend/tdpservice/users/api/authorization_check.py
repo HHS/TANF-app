@@ -65,8 +65,8 @@ class KibanaAuthorizationCheck(APIView):
         user_in_valid_group = user.is_ofa_sys_admin or user.is_ofa_admin
 
         if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_KIBANA_AUTH:
-            logger.debug(f"User: {user} is authenticated. Allowing access to Kibana.")
+            logger.debug(f"User: {user} has correct authentication credentials. Allowing access to Kibana.")
             return HttpResponse(status=200)
         else:
-            logger.debug(f"User: {user} is not authenticated. Not allowing access to Kibana.")
+            logger.debug(f"User: {user} has incorrect authentication credentials. Not allowing access to Kibana.")
             return HttpResponse(status=401)

@@ -34,29 +34,35 @@ http {
 
         ### ADD HEADERS
         # for clickjacking
+        add_header X-Frame-Options SAMEORIGIN always;
 
         # Using Adobe products like PDF, Flash, etc.? You can implement this header to instruct the browser
         # how to handle the requests over a cross-domain. By implementing this header, you restrict loading
         # your site’s assets from other domains to avoid resource abuse.
+        add_header X-Permitted-Cross-Domain-Policies: none;
 
         # Referrer-Policy: no-referrer
 
         # Cross-Origin-Embedder-Policy:This response header (also named COEP) prevents a document from loading
         # any cross-origin resources that don’t explicitly grant the document permission
+        add_header Cross-Origin-Embedder-Policy: require-corp;
 
         # Isolates the browsing context exclusively to same-origin documents. Cross-origin documents are not loaded
         # in the same browsing context
+        add_header Cross-Origin-Opener-Policy: same-origin;
 
         # This response header (also named CORP) allows to define a policy that lets web sites and applications opt
         # in to protection against certain requests from other origins (such as those issued with elements like
         # <script> and <img>), to mitigate speculative side-channel attacks, like Spectre, as well as Cross-Site
         # Script Inclusion (XSSI) attacks
+        add_header Cross-Origin-Resource-Policy: same-origin;
 
         # The must-revalidate response directive indicates that the response can be stored in caches and can be
         # reused while fresh. If the response becomes stale, it must be validated with the origin server before reuse.
         add_header Cache-Control: max-age=604800;
 
         # prevent MIME sniffing
+        add_header X-Content-Type-Options: nosniff;
 
         # CSP header options. All options are set either to none or self except
 
@@ -78,6 +84,7 @@ http {
         set $CSP "${CSP}style-src-elem 'self' 'unsafe-inline' http://${KIBANA}:5601;";
         set $CSP "${CSP}style-src-attr 'self' 'unsafe-inline' http://${KIBANA}:5601;";
         set $CSP "${CSP}worker-src 'none';";
+        add_header Content-Security-Policy $CSP;
 
     }
 
@@ -90,7 +97,6 @@ http {
                                '"request_body": "$request_body",'
                                '"http_x_forwarded_for": "$http_x_forwarded_for",'
                                '"host": "$host",'
-                               '"req_uri": "$request_uri",'
                                '"$http_referer" "$http_user_agent" "cookies=$http_cookie;"  "server=$server_name" "http_host=$http_host"'
                                '"HTTP_ORIGIN = $http_origin"';
 
