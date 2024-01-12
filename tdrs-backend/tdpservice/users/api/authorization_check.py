@@ -70,9 +70,11 @@ class KibanaAuthorizationCheck(APIView):
 
         if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_KIBANA_AUTH:
             logger.debug("\nSUCCESSFULLY AUTHENTICATED USER. REDIRECTING TO KIBANA.\n\n")
-            req = urllib.request.Request(f"http://nginx")
+            req = urllib.request.Request("http://nginx/kibana_files")
+            logger.debug("Got past request")
             response = urllib.request.urlopen(req)
-            return HttpResponse(response.read())
+            logger.debug("Got past reponse")
+            return HttpResponseRedirect(response.read())
         else:
             logger.debug("\nUSER AUTHENTICATION CREDENTIALS INCORRECT. NOT REDIRECTING TO KIBANA.\n\n")
             return HttpResponseRedirect(settings.FRONTEND_BASE_URL)

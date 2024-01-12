@@ -1,5 +1,7 @@
 elasticsearch.hosts: ["http://elastic:9200"]
 server.host: kibana
+server.port: 5601
+server.basePath: /kibana_files
 elasticsearch.username: kibana_system
 elasticsearch.password: changeme
 xpack.security.authc.providers:
