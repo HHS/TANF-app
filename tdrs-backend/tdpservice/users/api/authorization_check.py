@@ -69,8 +69,8 @@ class KibanaAuthorizationCheck(APIView):
                      f"HHS ID: {user.hhs_id}\n")
 
         if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_KIBANA_AUTH:
-            logger.debug("\nSUCCESSFULLY AUTHENTICATED USER. REDIRECTING TO KIBANA.\n\n")
+            logger.debug("\nSUCCESSFULLY AUTHENTICATED USER. RETURNING 200 CODE FOR AUTH ENDPOINT.\n\n")
             return HttpResponse(status=200)
         else:
-            logger.debug("\nUSER AUTHENTICATION CREDENTIALS INCORRECT. NOT REDIRECTING TO KIBANA.\n\n")
+            logger.debug("\nUSER AUTHENTICATION CREDENTIALS INCORRECT. RETURNING 401 CODE FOR AUTH ENDPOINT\n\n")
             return HttpResponse(status=401)

@@ -33,7 +33,7 @@ services:
     command: >
       /bin/sh -c
       "echo 'starting nginx' &&
-        envsubst '$${BACK_END}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
+        envsubst '$${BACK_END} $${KIBANA}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
         rm /etc/nginx/locations.conf &&
         cp /etc/nginx/locations_.conf /etc/nginx/locations.conf &&
        envsubst '

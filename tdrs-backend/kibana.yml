@@ -1,5 +1,10 @@
 elasticsearch.hosts: ["http://elastic:9200"]
 server.host: kibana
+server.basePath: /kibana
+server.securityResponseHeaders.referrerPolicy: 'no-referrer'
+csp.warnLegacyBrowsers: false
+csp.script_src: 
+  - 'unsafe-inline'
 elasticsearch.username: kibana_system
 elasticsearch.password: changeme
 xpack.security.authc.providers:
