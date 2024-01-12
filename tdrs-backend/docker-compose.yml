@@ -99,23 +99,6 @@ services:
       - 9300:9300
     volumes:
       - elastic_data:/usr/share/elasticsearch/data
-  
-  nginx:
-    environment:
-      - KIBANA=kibana
-    build:
-      context: .
-      dockerfile: ./Dockerfile.nginx
-    command: >
-      /bin/sh -c
-      "echo 'starting nginx' &&
-       envsubst '
-      $${KIBANA}
-      '< /etc/nginx/default.conf.template
-      > /etc/nginx/nginx.conf && 
-      nginx -g 'daemon off;'"
-    depends_on:
-      - kibana
 
   web:
     restart: always

@@ -86,10 +86,6 @@ http {
         set $CSP "${CSP}style-src-attr 'self' 'unsafe-inline' http://${KIBANA}:5601;";
         set $CSP "${CSP}worker-src 'none';";
 
-        location /kibana_files {
-            proxy_pass http://${KIBANA}:5601;
-        }
-
     }
 
     limit_req_zone $binary_remote_addr zone=limitreqsbyaddr:20m rate=1000r/s;
