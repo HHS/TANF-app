@@ -3,13 +3,13 @@
 from ...fields import Field
 from ...row_schema import RowSchema, SchemaManager
 from ... import validators
-from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1
+from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T1DataSubmissionDocument
 
 
 t1 = SchemaManager(
     schemas=[
         RowSchema(
-            model=Tribal_TANF_T1,
+            document=Tribal_TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(122),
             ],

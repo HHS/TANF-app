@@ -5,10 +5,10 @@ from ...transforms import calendar_quarter_to_rpt_month_year
 from ...fields import Field, TransformField
 from ...row_schema import RowSchema, SchemaManager
 from ... import validators
-from tdpservice.search_indexes.models.ssp import SSP_M6
+from tdpservice.search_indexes.documents.ssp import SSP_M6DataSubmissionDocument
 
 s1 = RowSchema(
-    model=SSP_M6,
+    document=SSP_M6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(259),
     ],
@@ -169,7 +169,7 @@ s1 = RowSchema(
 )
 
 s2 = RowSchema(
-    model=SSP_M6,
+    document=SSP_M6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(259),
     ],
@@ -330,7 +330,7 @@ s2 = RowSchema(
 )
 
 s3 = RowSchema(
-    model=SSP_M6,
+    document=SSP_M6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(259),
     ],
@@ -491,10 +491,4 @@ s3 = RowSchema(
 )
 
 
-m6 = SchemaManager(
-    schemas=[
-        s1,
-        s2,
-        s3
-    ]
-)
+m6 = SchemaManager(schemas=[s1, s2, s3])

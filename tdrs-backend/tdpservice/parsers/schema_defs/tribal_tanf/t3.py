@@ -5,11 +5,11 @@ from ...transforms import tanf_ssn_decryption_func
 from ...fields import TransformField, Field
 from ...row_schema import RowSchema, SchemaManager
 from ... import validators
-from tdpservice.search_indexes.models.tribal import Tribal_TANF_T3
+from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T3DataSubmissionDocument
 
 
 child_one = RowSchema(
-    model=Tribal_TANF_T3,
+    document=Tribal_TANF_T3DataSubmissionDocument(),
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
         validators.hasLength(122),
@@ -313,7 +313,7 @@ child_one = RowSchema(
 )
 
 child_two = RowSchema(
-    model=Tribal_TANF_T3,
+    document=Tribal_TANF_T3DataSubmissionDocument(),
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
