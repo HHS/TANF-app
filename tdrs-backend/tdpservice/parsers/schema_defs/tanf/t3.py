@@ -6,11 +6,11 @@ from tdpservice.parsers.transforms import tanf_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers import validators
-from tdpservice.search_indexes.models.tanf import TANF_T3
+from tdpservice.search_indexes.documents.tanf import TANF_T3DataSubmissionDocument
 
 
 child_one = RowSchema(
-    model=TANF_T3,
+    document=TANF_T3DataSubmissionDocument(),
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
     ],
@@ -313,7 +313,7 @@ child_one = RowSchema(
 )
 
 child_two = RowSchema(
-    model=TANF_T3,
+    document=TANF_T3DataSubmissionDocument(),
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
