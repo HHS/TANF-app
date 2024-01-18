@@ -45,12 +45,25 @@ services:
       # Copy in the Localstack setup script to configure any buckets needed
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
+  kibana:
+    image: elastic/kibana:7.17.10
+    ports:
+      - 5601:5601
+    environment:
+      - xpack.security.encryptionKey="something_at_least_32_characters"
+      - xpack.security.session.idleTimeout="1h"
+      - xpack.security.session.lifespan="30d"
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elastic
+
   elastic:
     image: elasticsearch:7.17.6
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
       - logger.discovery.level=debug
+      - xpack.security.enabled=false
     ports:
       - 9200:9200
       - 9300:9300

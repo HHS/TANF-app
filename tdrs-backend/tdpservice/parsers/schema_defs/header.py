@@ -7,7 +7,7 @@ from .. import validators
 
 
 header = RowSchema(
-    model=dict,
+    document=None,
     preparsing_validators=[
         validators.hasLength(
             23,
