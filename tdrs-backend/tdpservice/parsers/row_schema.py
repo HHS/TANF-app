@@ -22,6 +22,7 @@ class RowSchema:
         self.postparsing_validators = postparsing_validators
         self.fields = fields
         self.quiet_preparser_errors = quiet_preparser_errors
+        #self.datafile = None
 
     def _add_field(self, item, name, length, start, end, type):
         """Add a field to the schema."""
@@ -40,6 +41,7 @@ class RowSchema:
 
     def parse_and_validate(self, line, generate_error):
         """Run all validation steps in order, and parse the given line into a record."""
+
         errors = []
 
         # run preparsing validators
@@ -53,6 +55,13 @@ class RowSchema:
 
         # parse line to model
         record = self.parse_line(line)
+
+        # field validators   
+        if self.model.__name__ != 'dict':
+            print('__________________')
+            #print('_______ record:', record.__dict__)
+            #print('__________ self.datafile.year:', self.datafile.year)
+            #print('__________ self.datafile.month:', self.datafile.month)
 
         # run field validators
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
@@ -188,12 +197,14 @@ class SchemaManager:
 
     def __init__(self, schemas):
         self.schemas = schemas
+        self.datafile = None
 
     def parse_and_validate(self, line, generate_error):
         """Run `parse_and_validate` for each schema provided and bubble up errors."""
         records = []
 
         for schema in self.schemas:
+            #schema.datafile = self.datafile
             record, is_valid, errors = schema.parse_and_validate(line, generate_error)
             records.append((record, is_valid, errors))
 

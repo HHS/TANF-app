@@ -5,7 +5,7 @@ from django.db import DatabaseError
 import itertools
 import logging
 from .models import ParserErrorCategoryChoices, ParserError
-from . import schema_defs, validators, util
+from . import schema_defs, validators, util, row_schema
 
 logger = logging.getLogger(__name__)
 
@@ -212,6 +212,9 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
             continue
 
         schema_manager = get_schema_manager(line, section, program_type)
+
+        if type(schema_manager) is row_schema.SchemaManager:
+            schema_manager.datafile = datafile
 
         records = manager_parse_line(line, schema_manager, generate_error, is_encrypted)
 
