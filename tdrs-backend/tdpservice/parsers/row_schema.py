@@ -56,9 +56,10 @@ class RowSchema:
         # parse line to model
         record = self.parse_line(line)
 
-        # field validators   
-        if self.model.__name__ != 'dict':
-            print('__________________')
+        # field validators
+        print('__________________ self:', self.__dict__)
+        #if self.model.__name__ != 'dict':
+            #print('__________________')
             #print('_______ record:', record.__dict__)
             #print('__________ self.datafile.year:', self.datafile.year)
             #print('__________ self.datafile.month:', self.datafile.month)
