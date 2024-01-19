@@ -5,7 +5,7 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers import validators
-from tdpservice.search_indexes.models.tanf import TANF_T7
+from tdpservice.search_indexes.documents.tanf import TANF_T7DataSubmissionDocument
 
 schemas = []
 
@@ -20,7 +20,7 @@ for i in range(1, 31):
 
     schemas.append(
         RowSchema(
-            model=TANF_T7,
+            document=TANF_T7DataSubmissionDocument(),
             quiet_preparser_errors=i > 1,
             preparsing_validators=[
                 validators.hasLength(247),
@@ -32,6 +32,7 @@ for i in range(1, 31):
                 Field(
                     item="0",
                     name="RecordType",
+                    friendly_name="record type",
                     type="string",
                     startIndex=0,
                     endIndex=2,
@@ -41,6 +42,7 @@ for i in range(1, 31):
                 Field(
                     item="3",
                     name="CALENDAR_QUARTER",
+                    friendly_name="calendar quarter",
                     type="number",
                     startIndex=2,
                     endIndex=7,
@@ -54,6 +56,7 @@ for i in range(1, 31):
                     transform_func=calendar_quarter_to_rpt_month_year(month_index),
                     item="3A",
                     name="RPT_MONTH_YEAR",
+                    friendly_name="reporting month and year",
                     type="number",
                     startIndex=2,
                     endIndex=7,
@@ -66,6 +69,7 @@ for i in range(1, 31):
                 Field(
                     item="4",
                     name="TDRS_SECTION_IND",
+                    friendly_name="tdrs section indicator",
                     type="string",
                     startIndex=section_ind_index,
                     endIndex=section_ind_index + 1,
@@ -75,6 +79,7 @@ for i in range(1, 31):
                 Field(
                     item="5",
                     name="STRATUM",
+                    friendly_name="stratum",
                     type="string",
                     startIndex=stratum_index,
                     endIndex=stratum_index + 2,
@@ -84,6 +89,7 @@ for i in range(1, 31):
                 Field(
                     item=families_value_item_number,
                     name="FAMILIES_MONTH",
+                    friendly_name="families month",
                     type="number",
                     startIndex=families_index,
                     endIndex=families_index + 7,

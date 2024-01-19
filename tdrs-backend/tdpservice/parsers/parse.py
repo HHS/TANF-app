@@ -28,11 +28,31 @@ def parse_datafile(datafile):
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
 
-    is_encrypted = util.contains_encrypted_indicator(header_line, schema_defs.header.get_field_by_name("encryption"))
+    field_values = schema_defs.header.get_field_values_by_names(header_line,
+                                                                {"encryption", "tribe_code", "state_fips"})
+
+    # Validate tribe code in submission across program type and fips code
+    generate_error = util.make_generate_parser_error(datafile, 1)
+    tribe_is_valid, tribe_error = validators.validate_tribe_fips_program_agree(header['program_type'],
+                                                                               field_values["tribe_code"],
+                                                                               field_values["state_fips"],
+                                                                               generate_error)
+
+    if not tribe_is_valid:
+        logger.info(f"Tribe Code ({field_values['tribe_code']}) inconsistency with Program Type " +
+                    f"({header['program_type']}) and FIPS Code ({field_values['state_fips']}).",)
+        errors['header'] = [tribe_error]
+        bulk_create_errors({1: [tribe_error]}, 1, flush=True)
+        return errors
+
+    is_encrypted = field_values["encryption"] == "E"
+    is_tribal = not validators.value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
+
     logger.debug(f"Datafile has encrypted fields: {is_encrypted}.")
+    logger.debug(f"Datafile: {datafile.__repr__()}, is Tribal: {is_tribal}.")
 
     # ensure file section matches upload section
-    program_type = header['program_type']
+    program_type = f"Tribal {header['program_type']}" if is_tribal else header['program_type']
     section = header['type']
     logger.debug(f"Program type: {program_type}, Section: {section}.")
 
@@ -55,22 +75,29 @@ def parse_datafile(datafile):
 
     return errors
 
-
 def bulk_create_records(unsaved_records, line_number, header_count, batch_size=10000, flush=False):
     """Bulk create passed in records."""
     if (line_number % batch_size == 0 and header_count > 0) or flush:
         logger.debug("Bulk creating records.")
         try:
-            num_created = 0
-            num_expected = 0
-            for model, records in unsaved_records.items():
-                num_expected += len(records)
-                num_created += len(model.objects.bulk_create(records))
-            if num_created != num_expected:
-                logger.error(f"Bulk create only created {num_created}/{num_expected}!")
+            num_db_records_created = 0
+            num_expected_db_records = 0
+            num_elastic_records_created = 0
+            for document, records in unsaved_records.items():
+                num_expected_db_records += len(records)
+                created_objs = document.Django.model.objects.bulk_create(records)
+                num_elastic_records_created += document.update(created_objs)[0]
+                num_db_records_created += len(created_objs)
+            if num_db_records_created != num_expected_db_records:
+                logger.error(f"Bulk Django record creation only created {num_db_records_created}/" +
+                             f"{num_expected_db_records}!")
+            elif num_elastic_records_created != num_expected_db_records:
+                logger.error(f"Bulk Elastic document creation only created {num_elastic_records_created}/" +
+                             f"{num_expected_db_records}!")
             else:
-                logger.info(f"Created {num_created}/{num_expected} records.")
-            return num_created == num_expected, {}
+                logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
+            return num_db_records_created == num_expected_db_records and \
+                num_elastic_records_created == num_expected_db_records, {}
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
             return False, unsaved_records
@@ -107,7 +134,8 @@ def evaluate_trailer(datafile, trailer_count, multiple_trailer_errors, is_last_l
 def rollback_records(unsaved_records, datafile):
     """Delete created records in the event of a failure."""
     logger.info("Rolling back created records.")
-    for model in unsaved_records:
+    for document in unsaved_records:
+        model = document.Django.model
         num_deleted, models = model.objects.filter(datafile=datafile).delete()
         logger.debug(f"Deleted {num_deleted} records of type: {model}.")
 
@@ -198,7 +226,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
             if record:
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
-                unsaved_records.setdefault(s.model, []).append(record)
+                unsaved_records.setdefault(s.document, []).append(record)
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count,)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)

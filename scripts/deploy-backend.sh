@@ -91,7 +91,7 @@ update_backend()
     cd tdrs-backend || exit
     cf unset-env "$CGAPPNAME_BACKEND" "AV_SCAN_URL"
     
-    if ["$CF_SPACE" = "tanf-prod" ]; then
+    if [ "$CF_SPACE" = "tanf-prod" ]; then
       cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"
     else
       # Add environment varilables for clamav
@@ -100,7 +100,6 @@ update_backend()
 
     if [ "$1" = "rolling" ] ; then
         set_cf_envs
-
         # Do a zero downtime deploy.  This requires enough memory for
         # two apps to exist in the org/space at one time.
         cf push "$CGAPPNAME_BACKEND" --no-route -f manifest.buildpack.yml -t 180 --strategy rolling || exit 1
@@ -121,7 +120,7 @@ update_backend()
     # Add network policy to allow frontend to access backend
     cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
     
-    if ["$CF_SPACE" = "tanf-prod" ]; then
+    if [ "$CF_SPACE" = "tanf-prod" ]; then
       # Add network policy to allow backend to access tanf-prod services
       cf add-network-policy "$CGAPPNAME_BACKEND" clamav-rest --protocol tcp --port 9000
     else

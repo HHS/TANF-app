@@ -7,7 +7,7 @@ from .. import validators
 
 
 trailer = RowSchema(
-    model=dict,
+    document=None,
     preparsing_validators=[
         validators.hasLength(
             23,
@@ -19,30 +19,39 @@ trailer = RowSchema(
     fields=[
         Field(
             item="1",
-            name="title",
-            type="string",
+            name='title',
+            friendly_name='title',
+            type='string',
             startIndex=0,
             endIndex=7,
             required=True,
-            validators=[validators.matches("TRAILER")],
+            validators=[
+                validators.matches('TRAILER')
+            ]
         ),
         Field(
             item="2",
-            name="record_count",
-            type="number",
+            name='record_count',
+            friendly_name='record count',
+            type='number',
             startIndex=7,
             endIndex=14,
             required=True,
-            validators=[validators.between(0, 9999999)],
+            validators=[
+                validators.between(0, 9999999)
+            ]
         ),
         Field(
             item="-1",
-            name="blank",
-            type="string",
+            name='blank',
+            friendly_name='blank',
+            type='string',
             startIndex=14,
             endIndex=23,
             required=False,
-            validators=[validators.matches("         ")],
+            validators=[
+                validators.matches('         ')
+            ]
         ),
     ],
 )

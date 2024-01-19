@@ -30,6 +30,13 @@ def create_test_datafile(filename, stt_user, stt, section='Active Case Data'):
 
 def generate_parser_error(datafile, line_number, schema, error_category, error_message, record=None, field=None):
     """Create and return a ParserError using args."""
+    fields = [*field] if type(field) is list else [field]
+    fields_json = {
+        "friendly_name": {
+            getattr(f, 'name', ''): getattr(f, 'friendly_name', '') for f in fields
+        }
+    }
+
     return ParserError(
         file=datafile,
         row_number=line_number,
@@ -41,10 +48,10 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         error_message=error_message,
         error_type=error_category,
         content_type=ContentType.objects.get_for_model(
-            model=schema.model if schema else None
+            model=schema.document.Django.model if schema else None
         ) if record and not isinstance(record, dict) else None,
         object_id=getattr(record, 'id', None) if record and not isinstance(record, dict) else None,
-        fields_json=None
+        fields_json=fields_json
     )
 
 
@@ -58,7 +65,7 @@ def make_generate_parser_error(datafile, line_number):
             error_category=error_category,
             error_message=error_message,
             record=record,
-            field=field
+            field=field,
         )
 
     return generate
@@ -102,12 +109,6 @@ class SchemaManager:
             for field in schema.fields:
                 if type(field) == TransformField and "is_encrypted" in field.kwargs:
                     field.kwargs['is_encrypted'] = is_encrypted
-
-def contains_encrypted_indicator(line, encryption_field):
-    """Determine if line contains encryption indicator."""
-    if encryption_field is not None:
-        return encryption_field.parse_value(line) == "E"
-    return False
 
 def get_schema_options(program, section, query=None, model=None, model_name=None):
     """Centralized function to return the appropriate schema for a given program, section, and query.
@@ -178,7 +179,35 @@ def get_schema_options(program, section, query=None, model=None, model_name=None
                 }
             }
         },
-        # TODO: tribal tanf
+        'Tribal TAN': {
+            'A': {
+                'section': DataFile.Section.TRIBAL_ACTIVE_CASE_DATA,
+                'models': {
+                    'T1': schema_defs.tribal_tanf.t1,
+                    'T2': schema_defs.tribal_tanf.t2,
+                    'T3': schema_defs.tribal_tanf.t3,
+                }
+            },
+            'C': {
+                'section': DataFile.Section.TRIBAL_CLOSED_CASE_DATA,
+                'models': {
+                    'T4': schema_defs.tribal_tanf.t4,
+                    'T5': schema_defs.tribal_tanf.t5,
+                }
+            },
+            'G': {
+                'section': DataFile.Section.TRIBAL_AGGREGATE_DATA,
+                'models': {
+                    'T6': schema_defs.tribal_tanf.t6,
+                }
+            },
+            'S': {
+                'section': DataFile.Section.TRIBAL_STRATUM_DATA,
+                'models': {
+                    'T7': schema_defs.tribal_tanf.t7,
+                }
+            },
+        },
     }
 
     if query == "text":
@@ -240,7 +269,7 @@ def get_prog_from_section(str_section):
     if str_section.startswith('SSP'):
         return 'SSP'
     elif str_section.startswith('Tribal'):
-        return 'TAN'  # problematic, do we need to infer tribal entirely from tribe/fips code?
+        return 'Tribal TAN'
     else:
         return 'TAN'
 
@@ -315,7 +344,8 @@ def case_aggregates_by_month(df, dfs_status):
             if isinstance(schema_model, SchemaManager):
                 schema_model = schema_model.schemas[0]
 
-            curr_case_numbers = set(schema_model.model.objects.filter(datafile=df).filter(RPT_MONTH_YEAR=rpt_month_year)
+            curr_case_numbers = set(schema_model.document.Django.model.objects.filter(datafile=df)
+                                    .filter(RPT_MONTH_YEAR=rpt_month_year)
                                     .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
             case_numbers = case_numbers.union(curr_case_numbers)
 
