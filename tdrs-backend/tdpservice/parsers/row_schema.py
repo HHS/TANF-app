@@ -22,7 +22,7 @@ class RowSchema:
         self.postparsing_validators = postparsing_validators
         self.fields = fields
         self.quiet_preparser_errors = quiet_preparser_errors
-        #self.datafile = None
+        self.datafile = None
 
     def _add_field(self, item, name, length, start, end, type):
         """Add a field to the schema."""
@@ -56,13 +56,19 @@ class RowSchema:
         # parse line to model
         record = self.parse_line(line)
 
-        # field validators
-        print('__________________ self:', self.__dict__)
-        #if self.model.__name__ != 'dict':
+        # parsing field values
+        if self.document:
+            datafile_quarter = self.datafile.quarter
+            datafile_year = self.datafile.year
+            reporting_month_year = getattr(record, 'RPT_MONTH_YEAR', None)
+            print('__________________reporting_month_year:', reporting_month_year)
+            from .utils import year_month_to_year_quarter
+            print()
             #print('__________________')
             #print('_______ record:', record.__dict__)
+            #print('_______ self.datafile:', self.datafile.__dict__)
             #print('__________ self.datafile.year:', self.datafile.year)
-            #print('__________ self.datafile.month:', self.datafile.month)
+            #print('__________ self.datafile.month:', self.datafile.quarter)
 
         # run field validators
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
@@ -205,7 +211,7 @@ class SchemaManager:
         records = []
 
         for schema in self.schemas:
-            #schema.datafile = self.datafile
+            schema.datafile = self.datafile
             record, is_valid, errors = schema.parse_and_validate(line, generate_error)
             records.append((record, is_valid, errors))
 

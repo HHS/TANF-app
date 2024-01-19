@@ -291,3 +291,23 @@ def transform_to_months(quarter):
 def month_to_int(month):
     """Return the integer value of a month."""
     return datetime.strptime(month, '%b').strftime('%m')
+
+def year_month_to_year_quarter(year_month):
+    """Return the year and quarter from a year_month string."""
+    def get_quarter_from_month(month):
+        """Return the quarter from a month."""
+        if month in ["01", "02", "03"]:
+            return "Q1"
+        elif month in ["04", "05", "06"]:
+            return "Q2"
+        elif month in ["07", "08", "09"]:
+            return "Q3"
+        elif month in ["10", "11", "12"]:
+            return "Q4"
+        else:
+            raise ValueError("Invalid month value.")
+
+    year = year_month[:4]
+    month = year_month[4:]
+    quarter = get_quarter_from_month(month)
+    return year, quarter
