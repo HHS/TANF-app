@@ -1,6 +1,7 @@
 """Generic parser validator functions for use in schema definitions."""
 
 from .models import ParserErrorCategoryChoices
+from .util import fiscal_to_calendar
 from datetime import date
 import logging
 
@@ -551,6 +552,7 @@ def validate_header_section_matches_submission(datafile, section, generate_error
 
     return is_valid, error
 
+
 def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code, generate_error):
     """Validate tribe code, fips code, and program type all agree with eachother."""
     is_valid = False
@@ -565,10 +567,34 @@ def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code,
         error = generate_error(
             schema=None,
             error_category=ParserErrorCategoryChoices.PRE_CHECK,
+
             error_message=f"Tribe Code ({tribe_code}) inconsistency with Program Type ({program_type}) and " +
             f"FIPS Code ({state_fips_code}).",
             record=None,
             field=None
         )
 
+    return is_valid, error
+
+
+def validate_header_rpt_month_year(datafile, header, generate_error):
+    """Validate header rpt_month_year."""
+    # the header year/quarter represent a calendar period, and frontend year/qtr represents a fiscal period
+    header_calendar_qtr = f"Q{header['quarter']}"
+    header_calendar_year = header['year']
+    file_calendar_year, file_calendar_qtr = fiscal_to_calendar(datafile.year, f"{datafile.quarter}")
+
+    is_valid = file_calendar_year is not None and file_calendar_qtr is not None
+    is_valid = is_valid and file_calendar_year == header_calendar_year and file_calendar_qtr == header_calendar_qtr
+
+    error = None
+    if not is_valid:
+        error = generate_error(
+            schema=None,
+            error_category=ParserErrorCategoryChoices.PRE_CHECK,
+            error_message=f"Submitted reporting year:{header['year']}, quarter:Q{header['quarter']} doesn't match "
+            + f"file reporting year:{datafile.year}, quarter:{datafile.quarter}.",
+            record=None,
+            field=None,
+        )
     return is_valid, error

@@ -1,8 +1,7 @@
 """Schema for t1 record types."""
 
-from tdpservice.parsers.util import SchemaManager
 from tdpservice.parsers.fields import Field
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T1DataSubmissionDocument
 

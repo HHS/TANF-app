@@ -9,7 +9,7 @@ from .. import util
 
 @pytest.fixture
 def test_datafile(stt_user, stt):
-    """Fixture for small_correct_file."""
+    """Fixture for small_incorrect_file_cross_validator."""
     return util.create_test_datafile('small_incorrect_file_cross_validator.txt', stt_user, stt)
 
 
@@ -17,6 +17,8 @@ def test_datafile(stt_user, stt):
 def test_parsing_error_viewset_list(client, mocker, test_datafile):
     """Test the django rest framework parsing error viewset list."""
     # parse datafile
+    test_datafile.year = 2021
+    test_datafile.quarter = 'Q1'
     parse.parse_datafile(test_datafile)
 
     id = test_datafile.id
@@ -50,6 +52,8 @@ def test_parsing_error_viewset_list(client, mocker, test_datafile):
 def test_parsing_error_viewset_list_no_fields_json(mocker, test_datafile):
     """Test the django rest framework parsing error viewset list."""
     # parse datafile
+    test_datafile.year = 2021
+    test_datafile.quarter = 'Q1'
     parse.parse_datafile(test_datafile)
 
     # set fields_json to None

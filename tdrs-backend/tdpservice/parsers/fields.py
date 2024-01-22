@@ -5,7 +5,6 @@ from .validators import value_is_empty
 
 logger = logging.getLogger(__name__)
 
-
 class Field:
     """Provides a mapping between a field name and its position."""
 

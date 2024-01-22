@@ -5,7 +5,7 @@ import logging
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.parse import parse_datafile
 from tdpservice.parsers.models import DataFileSummary
-from tdpservice.parsers.util import case_aggregates_by_month
+from tdpservice.parsers.aggregates import case_aggregates_by_month
 
 
 logger = logging.getLogger(__name__)
