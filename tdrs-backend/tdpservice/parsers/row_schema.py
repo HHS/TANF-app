@@ -62,7 +62,7 @@ class RowSchema:
             datafile_year = self.datafile.year
             reporting_month_year = getattr(record, 'RPT_MONTH_YEAR', None)
             print('__________________reporting_month_year:', reporting_month_year)
-            from .utils import year_month_to_year_quarter
+            from .util import year_month_to_year_quarter
             print()
             #print('__________________')
             #print('_______ record:', record.__dict__)
