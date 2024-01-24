@@ -170,7 +170,7 @@ class TanfT2Factory(factory.django.DjangoModelFactory):
     RECEIVE_SSI = 1
     MARITAL_STATUS = 1
     RELATIONSHIP_HOH = "01"
-    PARENT_WITH_MINOR_CHILD = 1
+    PARENT_MINOR_CHILD = 1
     NEEDS_PREGNANT_WOMAN = 1
     EDUCATION_LEVEL = "01"
     CITIZENSHIP_STATUS = 1

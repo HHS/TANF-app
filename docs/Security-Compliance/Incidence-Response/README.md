@@ -7,3 +7,4 @@ This subdirectory contains documentation that describes our protocols for respon
 * **[Secret Key Management](./Secret-Key-Mgmt.md)** - lays out TDP's standards for minimizing the risk of leaking secret keys (i.e. sensitive information that--if exposed--opens the door for unauthorized access to the system and/or data therein).
 * **[System Admin Account Restoration](./Sys-Admin-Acct-Mgmt.md)** - lays out steps for restoring permissions for a TDP sys admin if their account has been compromised. 
 * **[CircleCI Secret Key Rotation Tabletop](./CircleCI-IRP.md)** - lays out steps taken in response to CircleCI's security incident in December 2022. 
+* **[Cloud.gov S3 Security Incident Response](./Cloudgov-S3-IRP-Oct2023.md)** - lays out steps taken in response to Cloud.gov's security incident in October 2023. 

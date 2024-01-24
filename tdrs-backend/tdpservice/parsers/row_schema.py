@@ -1,6 +1,7 @@
 """Row schema for datafile."""
 from .models import ParserErrorCategoryChoices
-from .fields import Field,  value_is_empty
+from .fields import Field
+from .validators import value_is_empty
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,13 +12,13 @@ class RowSchema:
 
     def __init__(
             self,
-            model=dict,
+            document,
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
-            quiet_preparser_errors=False
+            quiet_preparser_errors=False,
             ):
-        self.model = model
+        self.document = document
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = postparsing_validators
         self.fields = fields
@@ -89,7 +90,7 @@ class RowSchema:
 
     def parse_line(self, line):
         """Create a model for the line based on the schema."""
-        record = self.model()
+        record = self.document.Django.model() if self.document is not None else dict()
 
         for field in self.fields:
             value = field.parse_value(line)
@@ -150,20 +151,30 @@ class RowSchema:
         errors = []
 
         for validator in self.postparsing_validators:
-            validator_is_valid, validator_error = validator(instance)
+            validator_is_valid, validator_error, field_names = validator(instance)
             is_valid = False if not validator_is_valid else is_valid
             if validator_error:
+                # get field from field name
+                fields = [self.get_field_by_name(name) for name in field_names]
                 errors.append(
                     generate_error(
                         schema=self,
                         error_category=ParserErrorCategoryChoices.VALUE_CONSISTENCY,
                         error_message=validator_error,
                         record=instance,
-                        field=None
+                        field=fields,
                     )
                 )
 
         return is_valid, errors
+
+    def get_field_values_by_names(self, line, names={}):
+        """Return dictionary of field values keyed on their name."""
+        field_values = {}
+        for field in self.fields:
+            if field.name in names:
+                field_values[field.name] = field.parse_value(line)
+        return field_values
 
     def get_field_by_name(self, name):
         """Get field by it's name."""
