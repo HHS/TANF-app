@@ -9,6 +9,57 @@ from . import schema_defs, validators, util
 
 logger = logging.getLogger(__name__)
 
+def get_rpt_month_year_list(year, quarter):
+    months = None
+    if quarter == "1":
+        months = ["01", "02", "03"]
+    if quarter == "2":
+        months = ["04", "05", "06"]
+    if quarter == "3":
+        months = ["07", "08", "09"]
+    if quarter == "4":
+        months = ["10", "11", "12"]
+    
+    return [f"{year}{month}" for month in months]
+
+
+class Cat4Cache:
+
+    def __init__(self, header):
+        self.header = header
+        self.records = []
+        self.current_case = None
+        self.case_has_errors = False
+        self.section = header["type"]
+        self.program_type = header["program_type"]
+        self.has_validated = False
+
+    def add_record(self, record):
+        if record.CASE_NUMBER != self.current_case and self.current_case is not None:
+            self.validate()
+            self.current_case = record.CASE_NUMBER
+            self.records = [record]
+            self.has_validated = True
+        else:
+            self.records.append(record)
+            self.has_validated = False
+
+    def validate(self):
+        print(f"\n\nCat4 Errors: {self.__validate_tanf_s1_header_with_records()}\n\n")
+
+    def __validate_tanf_s1_header_with_records(self):
+        year = self.header["year"]
+        quarter = self.header["quarter"]
+        header_rpt_month_year_list = get_rpt_month_year_list(year, quarter)
+        errors = {}
+        for record in self.records:
+            print(record.RPT_MONTH_YEAR)
+            if str(record.RPT_MONTH_YEAR) not in header_rpt_month_year_list:
+                errors[record.RecordType] = f"Fail for RecordType={record.RecordType} and CASE_NUMBER=" + \
+                f"{record.CASE_NUMBER}. If YEAR={year} and QUARTER={quarter}, then RPT_MONTH_YEAR must be in " + \
+                f"{header_rpt_month_year_list}."
+        return errors
+
 
 def parse_datafile(datafile):
     """Parse and validate Datafile header/trailer, then select appropriate schema and parse/validate all lines."""
@@ -27,6 +78,8 @@ def parse_datafile(datafile):
         errors['header'] = header_errors
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
+    
+    cat4_cache = Cat4Cache(header)
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
@@ -81,7 +134,7 @@ def parse_datafile(datafile):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    line_errors = parse_datafile_lines(datafile, program_type, section, is_encrypted)
+    line_errors = parse_datafile_lines(datafile, program_type, section, is_encrypted, cat4_cache)
 
     errors = errors | line_errors
 
@@ -157,7 +210,7 @@ def rollback_parser_errors(datafile):
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
-def parse_datafile_lines(datafile, program_type, section, is_encrypted):
+def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat4_cache):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
     errors = {}
@@ -239,6 +292,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 unsaved_records.setdefault(s.document, []).append(record)
+                cat4_cache.add_record(record)
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count,)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
@@ -269,6 +323,9 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
         return errors
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
+
+    if not cat4_cache.has_validated:
+        cat4_cache.validate()
 
     return errors
 
