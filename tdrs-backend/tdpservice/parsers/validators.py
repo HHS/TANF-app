@@ -598,3 +598,86 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
             field=None,
         )
     return is_valid, error
+
+class Cat4Cache:
+
+    def __init__(self, header):
+        self.header = header
+        self.records = []
+        self.current_case = None
+        self.case_has_errors = False
+        self.section = header["type"]
+        self.program_type = header["program_type"]
+        self.has_validated = False
+
+    def add_record(self, record, case_has_errors):
+        self.case_has_errors = case_has_errors
+        if record.CASE_NUMBER != self.current_case and self.current_case is not None:
+            self.validate()
+            self.current_case = record.CASE_NUMBER
+            self.records = [record]
+            self.has_validated = True
+        else:
+            self.records.append(record)
+            self.has_validated = False
+    
+    @staticmethod
+    def get_rpt_month_year_list(year, quarter):
+        months = None
+        if quarter == "1":
+            months = ["01", "02", "03"]
+        if quarter == "2":
+            months = ["04", "05", "06"]
+        if quarter == "3":
+            months = ["07", "08", "09"]
+        if quarter == "4":
+            months = ["10", "11", "12"]
+        
+        return [int(f"{year}{month}") for month in months]
+
+    def validate(self):
+        if not self.case_has_errors:
+            if self.program_type == "TAN" and self.section == "A" and "state_fips" in self.header:
+                self.__validate_tanf_s1_case()
+            elif self.program_type == "TAN" and self.section == "C" and "state_fips" in self.header:
+                self.__validate_tanf_s2_case()
+            elif self.program_type == "TAN" and self.section == "A" and "tribe_code" in self.header:
+                self.__validate_tribal_tanf_s1_case()
+            elif self.program_type == "TAN" and self.section == "C" and "tribe_code" in self.header:
+                self.__validate_tribal_tanf_s2_case()
+            elif self.program_type == "SSP" and self.section == "A":
+                self.__validate_ssp_s1_case()
+            elif self.program_type == "SSP" and self.section == "C":
+                self.__validate_ssp_s2_case()
+        else:
+            logger.debug(f"Case: {self.current_case} has errors associated with it's records. Skipping Cat4 validation")
+    
+    def __validate_tanf_s1_case(self):
+        self.__validate_tanf_s1_header_with_records()
+
+    def __validate_tanf_s2_case(self):
+        pass
+
+    def __validate_tribal_tanf_s1_case(self):
+        pass
+
+    def __validate_tribal_tanf_s1_case(self):
+        pass
+
+    def __validate_ssp_s1_case(self):
+        pass
+
+    def __validate_ssp_s2_case(self):
+        pass
+
+    def __validate_tanf_s1_header_with_records(self):
+        year = self.header["year"]
+        quarter = self.header["quarter"]
+        header_rpt_month_year_list = Cat4Cache.get_rpt_month_year_list(year, quarter)
+        errors = {}
+        for record in self.records:
+            if record.RPT_MONTH_YEAR not in header_rpt_month_year_list:
+                errors[record.RecordType] = f"Fail for RecordType={record.RecordType} and CASE_NUMBER=" + \
+                f"{record.CASE_NUMBER}. If YEAR={year} and QUARTER={quarter}, then RPT_MONTH_YEAR must be in " + \
+                f"{header_rpt_month_year_list}."
+        return errors
