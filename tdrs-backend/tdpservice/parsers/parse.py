@@ -243,6 +243,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat4_cac
                 unsaved_records.setdefault(s.document, []).append(record)
                 cat4_cache.add_record(record, len(record_errors) > 0)
 
+        # Add any generated cat4 errors to our error data structure & clear our caches errors list
         unsaved_parser_errors[-1] = unsaved_parser_errors[-1] + cat4_cache.get_generated_errors()
         cat4_cache.clear_errors()
 

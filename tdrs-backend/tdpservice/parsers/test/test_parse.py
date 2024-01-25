@@ -74,7 +74,6 @@ def test_parse_small_correct_file(test_datafile, dfs):
     assert t1.CASH_AMOUNT == 873
     assert t1.SANC_REDUCTION_AMT == 0
     assert t1.FAMILY_NEW_CHILD == 2
-    assert False
 
 
 @pytest.mark.django_db

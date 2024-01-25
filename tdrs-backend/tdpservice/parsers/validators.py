@@ -622,12 +622,12 @@ class Cat4Cache:
         self.case_has_errors = case_has_errors
         if record.CASE_NUMBER != self.current_case and self.current_case is not None:
             self.validate()
-            self.current_case = record.CASE_NUMBER
             self.records = [record]
             self.has_validated = True
         else:
             self.records.append(record)
             self.has_validated = False
+        self.current_case = record.CASE_NUMBER
     
     @staticmethod
     def get_rpt_month_year_list(year, quarter):
