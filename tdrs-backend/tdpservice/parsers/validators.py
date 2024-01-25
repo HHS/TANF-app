@@ -601,7 +601,7 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
 
 class Cat4Cache:
 
-    def __init__(self, header):
+    def __init__(self, header, generate_error):
         self.header = header
         self.records = []
         self.current_case = None
@@ -609,6 +609,14 @@ class Cat4Cache:
         self.section = header["type"]
         self.program_type = header["program_type"]
         self.has_validated = False
+        self.generate_error = generate_error
+        self.generated_errors = []
+    
+    def clear_errors(self):
+        self.generated_errors = []
+    
+    def get_generated_errors(self):
+        return self.generated_errors
 
     def add_record(self, record, case_has_errors):
         self.case_has_errors = case_has_errors
@@ -674,10 +682,14 @@ class Cat4Cache:
         year = self.header["year"]
         quarter = self.header["quarter"]
         header_rpt_month_year_list = Cat4Cache.get_rpt_month_year_list(year, quarter)
-        errors = {}
         for record in self.records:
             if record.RPT_MONTH_YEAR not in header_rpt_month_year_list:
-                errors[record.RecordType] = f"Fail for RecordType={record.RecordType} and CASE_NUMBER=" + \
+                err_msg = f"Fail for RecordType={record.RecordType} and CASE_NUMBER=" + \
                 f"{record.CASE_NUMBER}. If YEAR={year} and QUARTER={quarter}, then RPT_MONTH_YEAR must be in " + \
                 f"{header_rpt_month_year_list}."
-        return errors
+                self.generated_errors.append(self.generate_error(schema=None,
+                                                                 error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
+                                                                 error_message=err_msg,
+                                                                 record=None,
+                                                                 field=None
+                                                                 ))

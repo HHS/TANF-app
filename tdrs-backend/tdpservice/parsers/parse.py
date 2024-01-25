@@ -27,8 +27,8 @@ def parse_datafile(datafile):
         errors['header'] = header_errors
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
-    
-    cat4_cache = validators.Cat4Cache(header)
+
+    cat4_cache = validators.Cat4Cache(header, util.make_generate_parser_error(datafile, -1))
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
@@ -167,7 +167,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat4_cac
     line_number = 0
 
     unsaved_records = {}
-    unsaved_parser_errors = {}
+    unsaved_parser_errors = {-1: []}
 
     header_count = 0
     trailer_count = 0
@@ -242,6 +242,9 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat4_cac
                 record.datafile = datafile
                 unsaved_records.setdefault(s.document, []).append(record)
                 cat4_cache.add_record(record, len(record_errors) > 0)
+
+        unsaved_parser_errors[-1] = unsaved_parser_errors[-1] + cat4_cache.get_generated_errors()
+        cat4_cache.clear_errors()
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count,)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
