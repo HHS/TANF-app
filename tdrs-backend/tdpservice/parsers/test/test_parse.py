@@ -12,8 +12,10 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
+from ..schema_defs import utils
 
 import logging
+logger = logging.getLogger(__name__)
 
 es_logger = logging.getLogger('elasticsearch')
 es_logger.setLevel(logging.WARNING)
@@ -854,10 +856,10 @@ def test_get_schema_options(dfs):
         'T3': schema_defs.tanf.t3,
     }
 
-    model = util.get_program_model('TAN', 'A', 'T1')
+    model = utils.get_program_model('TAN', 'A', 'T1')
     assert model == schema_defs.tanf.t1
     # get section
-    section = util.get_section_reference('TAN', 'C')
+    section = utils.get_section_reference('TAN', 'C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
 
     # from datafile:
