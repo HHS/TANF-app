@@ -629,6 +629,7 @@ class Cat4Cache:
             self.has_validated = False
         self.current_case = record.CASE_NUMBER
     
+    # TODO: this should be moved to util.py. We already have this as part of 2699
     @staticmethod
     def get_rpt_month_year_list(year, quarter):
         months = None

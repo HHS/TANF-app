@@ -1,10 +1,13 @@
 """Tests for generic validator functions."""
 
 import pytest
+import logging
 from .. import validators
+from .. import schema_defs, util
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
 from tdpservice.parsers.test.factories import SSPM5Factory
 
+logger = logging.getLogger(__name__)
 
 @pytest.mark.parametrize("value,length", [
     (None, 0),
@@ -1229,3 +1232,39 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         assert result == (False, 'if FAMILY_AFFILIATION :1 validator1 passed then REC_FEDERAL_DISABILITY 0 is not ' +
                           'larger or equal to 1 and smaller or equal to 2.',
                           ['FAMILY_AFFILIATION', 'REC_FEDERAL_DISABILITY'])
+
+
+class TestCat4Validator:
+    """Test category four validators."""
+
+
+    @pytest.fixture
+    def test_datafile(self, stt_user, stt):
+        """Fixture for small_correct_file."""
+        return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
+    
+    @pytest.fixture
+    def header(self, test_datafile):
+        """Return a valid header record."""
+        datafile = test_datafile
+        rawfile = datafile.file
+        errors = {}
+
+        # parse header, trailer
+        rawfile.seek(0)
+        header_line = rawfile.readline().decode().strip()
+        header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
+            header_line,
+            util.make_generate_file_precheck_parser_error(datafile, 1)
+        )
+        if not header_is_valid:
+            logger.error('Header is not valid: %s', header_errors)
+            return None
+        return header
+    
+    @pytest.mark.django_db
+    def test_me(self, header, test_datafile):
+        cat4_cache = validators.Cat4Cache(header, util.make_generate_parser_error(test_datafile, -1))
+        
+
+        

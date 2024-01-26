@@ -28,6 +28,7 @@ def parse_datafile(datafile):
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
 
+    # TODO: write a test for this line
     cat4_cache = validators.Cat4Cache(header, util.make_generate_parser_error(datafile, -1))
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
