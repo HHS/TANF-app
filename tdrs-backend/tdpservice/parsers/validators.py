@@ -599,7 +599,7 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
         )
     return is_valid, error
 
-class Cat4Cache:
+class CatFourValidator:
 
     def __init__(self, header, generate_error):
         self.header = header
@@ -646,45 +646,50 @@ class Cat4Cache:
 
     def validate(self):
         if not self.case_has_errors:
+            num_errors = 0
             if self.program_type == "TAN" and self.section == "A" and "state_fips" in self.header:
-                self.__validate_tanf_s1_case()
+                return self.__validate_tanf_s1_case(num_errors)
             elif self.program_type == "TAN" and self.section == "C" and "state_fips" in self.header:
-                self.__validate_tanf_s2_case()
+                return self.__validate_tanf_s2_case(num_errors)
             elif self.program_type == "TAN" and self.section == "A" and "tribe_code" in self.header:
-                self.__validate_tribal_tanf_s1_case()
+                return self.__validate_tribal_tanf_s1_case(num_errors)
             elif self.program_type == "TAN" and self.section == "C" and "tribe_code" in self.header:
-                self.__validate_tribal_tanf_s2_case()
+                return self.__validate_tribal_tanf_s2_case(num_errors)
             elif self.program_type == "SSP" and self.section == "A":
-                self.__validate_ssp_s1_case()
+                return self.__validate_ssp_s1_case(num_errors)
             elif self.program_type == "SSP" and self.section == "C":
-                self.__validate_ssp_s2_case()
+                return self.__validate_ssp_s2_case(num_errors)
         else:
             logger.debug(f"Case: {self.current_case} has errors associated with it's records. Skipping Cat4 validation")
+            return 0
     
-    def __validate_tanf_s1_case(self):
-        self.__validate_tanf_s1_header_with_records()
+    def __validate_tanf_s1_case(self, num_errors):
+        num_errors += self.__validate_tanf_s1_header_with_records()
+        return num_errors
 
-    def __validate_tanf_s2_case(self):
+    def __validate_tanf_s2_case(self, num_errors):
         pass
 
-    def __validate_tribal_tanf_s1_case(self):
+    def __validate_tribal_tanf_s1_case(self, num_errors):
         pass
 
-    def __validate_tribal_tanf_s1_case(self):
+    def __validate_tribal_tanf_s2_case(self, num_errors):
         pass
 
-    def __validate_ssp_s1_case(self):
+    def __validate_ssp_s1_case(self, num_errors):
         pass
 
-    def __validate_ssp_s2_case(self):
+    def __validate_ssp_s2_case(self, num_errors):
         pass
 
     def __validate_tanf_s1_header_with_records(self):
         year = self.header["year"]
         quarter = self.header["quarter"]
-        header_rpt_month_year_list = Cat4Cache.get_rpt_month_year_list(year, quarter)
+        header_rpt_month_year_list = CatFourValidator.get_rpt_month_year_list(year, quarter)
+        num_errors = 0
         for record in self.records:
             if record.RPT_MONTH_YEAR not in header_rpt_month_year_list:
+                num_errors += 1
                 err_msg = f"Fail for RecordType={record.RecordType} and CASE_NUMBER=" + \
                 f"{record.CASE_NUMBER}. If YEAR={year} and QUARTER={quarter}, then RPT_MONTH_YEAR must be in " + \
                 f"{header_rpt_month_year_list}."
@@ -694,3 +699,4 @@ class Cat4Cache:
                                                                  record=None,
                                                                  field=None
                                                                  ))
+        return num_errors

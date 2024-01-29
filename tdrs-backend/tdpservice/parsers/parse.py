@@ -30,7 +30,7 @@ def parse_datafile(datafile):
         return errors
 
     # TODO: write a test for this line
-    cat4_cache = validators.Cat4Cache(header, util.make_generate_parser_error(datafile, -1))
+    cat_four_validator = validators.CatFourValidator(header, util.make_generate_parser_error(datafile, -1))
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
@@ -85,7 +85,7 @@ def parse_datafile(datafile):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    line_errors = parse_datafile_lines(datafile, program_type, section, is_encrypted, cat4_cache)
+    line_errors = parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four_validator)
 
     errors = errors | line_errors
 
@@ -161,7 +161,7 @@ def rollback_parser_errors(datafile):
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
-def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat4_cache):
+def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four_validator):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
     errors = {}
@@ -243,11 +243,11 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat4_cac
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 unsaved_records.setdefault(s.document, []).append(record)
-                cat4_cache.add_record(record, len(record_errors) > 0)
+                cat_four_validator.add_record(record, len(record_errors) > 0)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
-        unsaved_parser_errors[-1] = unsaved_parser_errors[-1] + cat4_cache.get_generated_errors()
-        cat4_cache.clear_errors()
+        unsaved_parser_errors[-1] = unsaved_parser_errors[-1] + cat_four_validator.get_generated_errors()
+        cat_four_validator.clear_errors()
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count,)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
@@ -279,8 +279,8 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat4_cac
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
-    if not cat4_cache.has_validated:
-        cat4_cache.validate()
+    if not cat_four_validator.has_validated:
+        cat_four_validator.validate()
 
     return errors
 

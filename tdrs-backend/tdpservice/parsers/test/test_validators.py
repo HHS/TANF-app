@@ -6,6 +6,7 @@ from .. import validators
 from .. import schema_defs, util
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
 from tdpservice.parsers.test.factories import SSPM5Factory
+from ..models import ParserError
 
 logger = logging.getLogger(__name__)
 
@@ -1237,34 +1238,65 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
 class TestCat4Validator:
     """Test category four validators."""
 
-
-    @pytest.fixture
-    def test_datafile(self, stt_user, stt):
-        """Fixture for small_correct_file."""
-        return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
-    
-    @pytest.fixture
-    def header(self, test_datafile):
-        """Return a valid header record."""
-        datafile = test_datafile
+    def parse_header(self, datafile):
         rawfile = datafile.file
-        errors = {}
 
         # parse header, trailer
         rawfile.seek(0)
         header_line = rawfile.readline().decode().strip()
-        header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(
+        return schema_defs.header.parse_and_validate(
             header_line,
             util.make_generate_file_precheck_parser_error(datafile, 1)
         )
+
+    @pytest.fixture
+    def s1_records(self):
+        t1 = TanfT1Factory.create()
+        t2 = TanfT2Factory.create()
+        t3 = TanfT3Factory.create()
+        t3_1 = TanfT3Factory.create()
+        return [t1, t2, t3, t3_1]
+
+    @pytest.fixture
+    def small_correct_file(self, stt_user, stt):
+        """Fixture for small_correct_file."""
+        return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
+    
+    @pytest.fixture
+    def small_correct_file_header(self, small_correct_file):
+        """Return a valid header record."""
+
+        header, header_is_valid, header_errors = self.parse_header(small_correct_file)
+        
         if not header_is_valid:
             logger.error('Header is not valid: %s', header_errors)
             return None
         return header
     
     @pytest.mark.django_db
-    def test_me(self, header, test_datafile):
-        cat4_cache = validators.Cat4Cache(header, util.make_generate_parser_error(test_datafile, -1))
+    def test_section1_fail(self, small_correct_file_header, small_correct_file, s1_records):
+        cat_four_validator = validators.CatFourValidator(small_correct_file_header, 
+                                                         util.make_generate_parser_error(small_correct_file, -1))
         
+        for record in s1_records:
+            record.data_file = small_correct_file
+            cat_four_validator.add_record(record, False)
+        
+        num_errors = cat_four_validator.validate()
 
+        assert 4 == num_errors
+    
+    @pytest.mark.django_db
+    def test_section1_pass(self, small_correct_file_header, small_correct_file, s1_records):
+        cat_four_validator = validators.CatFourValidator(small_correct_file_header, 
+                                                         util.make_generate_parser_error(small_correct_file, -1))
         
+        for record in s1_records:
+            record.RPT_MONTH_YEAR = 202010
+            record.data_file = small_correct_file
+            cat_four_validator.add_record(record, False)
+        
+        num_errors = cat_four_validator.validate()
+
+        assert 0 == num_errors
+ 
