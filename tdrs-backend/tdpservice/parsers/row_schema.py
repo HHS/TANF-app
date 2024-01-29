@@ -56,19 +56,6 @@ class RowSchema:
         # parse line to model
         record = self.parse_line(line)
 
-        # parsing field values
-        if self.document:
-            datafile_quarter = self.datafile.quarter
-            datafile_year = self.datafile.year
-            reporting_month_year = getattr(record, 'RPT_MONTH_YEAR', None)
-            print('__________________reporting_month_year:', reporting_month_year)
-            from .util import year_month_to_year_quarter
-            print()
-            #print('__________________')
-            #print('_______ record:', record.__dict__)
-            #print('_______ self.datafile:', self.datafile.__dict__)
-            #print('__________ self.datafile.year:', self.datafile.year)
-            #print('__________ self.datafile.month:', self.datafile.quarter)
 
         # run field validators
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)
@@ -87,7 +74,7 @@ class RowSchema:
         errors = []
 
         for validator in self.preparsing_validators:
-            validator_is_valid, validator_error = validator(line)
+            validator_is_valid, validator_error = validator(line, self)
             is_valid = False if not validator_is_valid else is_valid
 
             if validator_error and not self.quiet_preparser_errors:

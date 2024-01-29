@@ -1,8 +1,10 @@
 """Aggregate methods for the parsers."""
 from .row_schema import SchemaManager
 from .models import ParserError
-from .util import month_to_int, get_program_models, get_text_from_df, \
-    transform_to_months, fiscal_to_calendar, get_prog_from_section
+from .util import month_to_int, get_prog_from_section, \
+    transform_to_months, fiscal_to_calendar
+
+from .schema_defs.util import get_program_models, get_text_from_df
 
 
 def case_aggregates_by_month(df, dfs_status):
