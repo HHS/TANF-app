@@ -12,7 +12,7 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
-from ..schema_defs.util import get_section_reference, get_program_models
+from ..schema_defs.util import get_section_reference, get_program_models, get_program_model
 
 import logging
 
@@ -324,8 +324,11 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(bad_trailer_file)
+    
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file)
+    for i in parser_errors:
+        print('================', i.__dict__)
     assert parser_errors.count() == 2
 
     trailer_error = parser_errors.get(row_number=3)
@@ -855,7 +858,7 @@ def test_get_schema_options(dfs):
         'T3': schema_defs.tanf.t3,
     }
 
-    model = util.get_program_model('TAN', 'A', 'T1')
+    model = get_program_model('TAN', 'A', 'T1')
     assert model == schema_defs.tanf.t1
     # get section
     section = get_section_reference('TAN', 'C')

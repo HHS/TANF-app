@@ -164,7 +164,7 @@ def year_month_to_year_quarter(year_month):
         elif month in ["10", "11", "12"]:
             return "Q4"
         else:
-            raise ValueError("Invalid month value.")
+            return "Invalid month value."
 
     year = year_month[:4]
     month = year_month[4:]
