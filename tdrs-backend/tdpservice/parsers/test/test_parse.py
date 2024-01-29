@@ -616,6 +616,9 @@ def super_big_s1_file(stt_user, stt):
 @pytest.mark.skip(reason="long runtime")  # big_files
 def test_parse_super_big_s1_file(super_big_s1_file):
     """Test parsing of super_big_s1_file and validate all T1/T2/T3 records are created."""
+    super_big_s1_file.year = 2023
+    super_big_s1_file.quarter = 'Q2'
+
     parse.parse_datafile(super_big_s1_file)
 
     expected_t1_record_count = 96642
