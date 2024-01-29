@@ -12,7 +12,6 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
-from ..schema_defs import utils
 
 import logging
 logger = logging.getLogger(__name__)
@@ -849,17 +848,17 @@ def test_get_schema_options(dfs):
     assert schema == schema_defs.tanf.t1
 
     # get model
-    models = util.get_program_models('TAN', 'A')
+    models = schema_defs.utils.get_program_models('TAN', 'A')
     assert models == {
         'T1': schema_defs.tanf.t1,
         'T2': schema_defs.tanf.t2,
         'T3': schema_defs.tanf.t3,
     }
 
-    model = utils.get_program_model('TAN', 'A', 'T1')
+    model = schema_defs.utils.get_program_model('TAN', 'A', 'T1')
     assert model == schema_defs.tanf.t1
     # get section
-    section = utils.get_section_reference('TAN', 'C')
+    section = schema_defs.utils.get_section_reference('TAN', 'C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
 
     # from datafile:

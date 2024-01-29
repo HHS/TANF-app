@@ -607,6 +607,7 @@ class CatFourValidator:
         self.current_case = None
         self.case_has_errors = False
         self.section = header["type"]
+        self.is_section_one_or_two = self.section in {'A', 'C'}
         self.program_type = header["program_type"]
         self.has_validated = False
         self.generate_error = generate_error
@@ -619,15 +620,16 @@ class CatFourValidator:
         return self.generated_errors
 
     def add_record(self, record, case_has_errors):
-        self.case_has_errors = case_has_errors
-        if record.CASE_NUMBER != self.current_case and self.current_case is not None:
-            self.validate()
-            self.records = [record]
-            self.has_validated = True
-        else:
-            self.records.append(record)
-            self.has_validated = False
-        self.current_case = record.CASE_NUMBER
+        if self.is_section_one_or_two:
+            self.case_has_errors = case_has_errors
+            if record.CASE_NUMBER != self.current_case and self.current_case is not None:
+                self.validate()
+                self.records = [record]
+                self.has_validated = True
+            else:
+                self.records.append(record)
+                self.has_validated = False
+            self.current_case = record.CASE_NUMBER
     
     # TODO: this should be moved to util.py. We already have this as part of 2699
     @staticmethod
@@ -645,23 +647,24 @@ class CatFourValidator:
         return [int(f"{year}{month}") for month in months]
 
     def validate(self):
-        if not self.case_has_errors:
-            num_errors = 0
-            if self.program_type == "TAN" and self.section == "A" and "state_fips" in self.header:
-                return self.__validate_tanf_s1_case(num_errors)
-            elif self.program_type == "TAN" and self.section == "C" and "state_fips" in self.header:
-                return self.__validate_tanf_s2_case(num_errors)
-            elif self.program_type == "TAN" and self.section == "A" and "tribe_code" in self.header:
-                return self.__validate_tribal_tanf_s1_case(num_errors)
-            elif self.program_type == "TAN" and self.section == "C" and "tribe_code" in self.header:
-                return self.__validate_tribal_tanf_s2_case(num_errors)
-            elif self.program_type == "SSP" and self.section == "A":
-                return self.__validate_ssp_s1_case(num_errors)
-            elif self.program_type == "SSP" and self.section == "C":
-                return self.__validate_ssp_s2_case(num_errors)
-        else:
-            logger.debug(f"Case: {self.current_case} has errors associated with it's records. Skipping Cat4 validation")
-            return 0
+        num_errors = 0
+        if self.is_section_one_or_two:
+            if not self.case_has_errors:
+                if self.program_type == "TAN" and self.section == "A" and "state_fips" in self.header:
+                    return self.__validate_tanf_s1_case(num_errors)
+                elif self.program_type == "TAN" and self.section == "C" and "state_fips" in self.header:
+                    return self.__validate_tanf_s2_case(num_errors)
+                elif self.program_type == "TAN" and self.section == "A" and "tribe_code" in self.header:
+                    return self.__validate_tribal_tanf_s1_case(num_errors)
+                elif self.program_type == "TAN" and self.section == "C" and "tribe_code" in self.header:
+                    return self.__validate_tribal_tanf_s2_case(num_errors)
+                elif self.program_type == "SSP" and self.section == "A":
+                    return self.__validate_ssp_s1_case(num_errors)
+                elif self.program_type == "SSP" and self.section == "C":
+                    return self.__validate_ssp_s2_case(num_errors)
+            else:
+                logger.debug(f"Case: {self.current_case} has errors associated with it's records. Skipping Cat4 validation")
+        return num_errors
     
     def __validate_tanf_s1_case(self, num_errors):
         num_errors += self.__validate_tanf_s1_header_with_records()

@@ -169,7 +169,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four
     line_number = 0
 
     unsaved_records = {}
-    unsaved_parser_errors = {-1: []}
+    unsaved_parser_errors = {}
 
     header_count = 0
     trailer_count = 0
@@ -246,7 +246,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four
                 cat_four_validator.add_record(record, len(record_errors) > 0)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
-        unsaved_parser_errors[-1] = unsaved_parser_errors[-1] + cat_four_validator.get_generated_errors()
+        unsaved_parser_errors[-1] = unsaved_parser_errors.get(-1, []) + cat_four_validator.get_generated_errors()
         cat_four_validator.clear_errors()
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count,)

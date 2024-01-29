@@ -1,5 +1,8 @@
 from .. import schema_defs
 from tdpservice.data_files.models import DataFile
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_schema_options(program, section, query=None, model=None, model_name=None):
     """Centralized function to return the appropriate schema for a given program, section, and query.
