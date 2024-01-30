@@ -1282,8 +1282,8 @@ class TestCat4Validator:
         for record in tanf_s1_records:
             cat_four_validator.add_record(record, True)
 
-        assert cat_four_validator.has_validated == False
-        assert cat_four_validator.case_has_errors == True
+        assert cat_four_validator.has_validated is False
+        assert cat_four_validator.case_has_errors is True
         assert len(cat_four_validator.records) == 4
         assert cat_four_validator.total_cases_cached == 0
         assert cat_four_validator.total_cases_validated == 0
@@ -1292,8 +1292,8 @@ class TestCat4Validator:
         t1 = TanfT1Factory.create()
         t1.CASE_NUMBER = 2
         cat_four_validator.add_record(t1, False)
-        assert cat_four_validator.has_validated == False
-        assert cat_four_validator.case_has_errors == False
+        assert cat_four_validator.has_validated is False
+        assert cat_four_validator.case_has_errors is False
         assert len(cat_four_validator.records) == 1
         assert cat_four_validator.total_cases_cached == 1
         assert cat_four_validator.total_cases_validated == 0
@@ -1305,12 +1305,12 @@ class TestCat4Validator:
         t3.CASE_NUMBER = 2
         cat_four_validator.add_record(t2, False)
         cat_four_validator.add_record(t3, False)
-        assert cat_four_validator.case_has_errors == False
+        assert cat_four_validator.case_has_errors is False
 
         cat_four_validator.add_record(tanf_s1_records[0], True)
 
-        assert cat_four_validator.has_validated == True
-        assert cat_four_validator.case_has_errors == True
+        assert cat_four_validator.has_validated is True
+        assert cat_four_validator.case_has_errors is True
         assert len(cat_four_validator.records) == 1
         assert cat_four_validator.total_cases_cached == 2
         assert cat_four_validator.total_cases_validated == 1
