@@ -286,6 +286,9 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four
 
     cat_four_validate(cat_four_validator)
 
+    logger.debug(f"Cat4 validator cached {cat_four_validator.total_cases_cached} cases and "
+                 f"validated {cat_four_validator.total_cases_validated} of them.")
+
     return errors
 
 
