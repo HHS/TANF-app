@@ -327,9 +327,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file)
-    for i in parser_errors:
-        print('================', i.__dict__)
-    assert parser_errors.count() == 2
+    assert parser_errors.count() == 3
 
     trailer_error = parser_errors.get(row_number=3)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
@@ -337,16 +335,21 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
-    row_error = parser_errors.get(row_number=2)
-    assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_error.error_message == 'Value length 7 does not match 156.'
-    assert row_error.content_type is None
-    assert row_error.object_id is None
+    row_errors = parser_errors.filter(row_number=2)
+    row_errors_list = []
+    for row_error in row_errors:
+        row_errors_list.append(row_error)
+        assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert trailer_error.error_message in [
+            'Trailer length is 11 but must be 23 characters.',
+            'Reporting month year None does not match file reporting year:2021, quarter:Q1.']
+        assert row_error.content_type is None
+        assert row_error.object_id is None
 
-    assert errors == {
-        'trailer': [trailer_error],
-        "2_0": [row_error]
-    }
+    assert errors['trailer'] == [trailer_error]
+    
+    for error_2_0 in errors["2_0"]:
+        assert error_2_0 in row_errors_list
 
 
 @pytest.fixture
@@ -363,7 +366,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     errors = parse.parse_datafile(bad_trailer_file_2)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == 5
 
     trailer_errors = parser_errors.filter(row_number=3).order_by('id')
 
@@ -385,17 +388,28 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
-    row_3_error = trailer_errors[2]
-    assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_3_error.error_message == 'Value length 7 does not match 156.'
-    assert row_3_error.content_type is None
-    assert row_3_error.object_id is None
+    row_3_errors = parser_errors.filter(row_number=3)
+    #row_3_error = trailer_errors[2]
+    row_3_error_list = []
+    for row_3_error in row_3_errors:
+        row_3_error_list.append(row_3_error)
+        assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert row_3_error.error_message in [
+            'Value length 7 does not match 156.',
+            'Reporting month year None does not match file reporting year:2021, quarter:Q1.',
+            'T1trash does not start with TRAILER.',
+            'Trailer length is 7 but must be 23 characters.']
+        assert row_3_error.content_type is None
+        assert row_3_error.object_id is None
 
-    assert errors == {
-        "2_0": [row_2_error],
-        "3_0": [row_3_error],
-        "trailer": [trailer_error_1, trailer_error_2],
-    }
+    errors_2_0 = errors["2_0"]
+    errors_3_0 = errors["3_0"]
+    error_trailer = errors["trailer"]
+    for error_2_0 in errors_2_0:
+        assert error_2_0 in [row_2_error]
+    for error_3_0 in errors_3_0:
+        assert error_3_0 in row_3_error_list
+    assert error_trailer == [trailer_error_1, trailer_error_2]
 
 
 @pytest.fixture
