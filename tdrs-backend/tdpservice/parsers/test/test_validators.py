@@ -1277,7 +1277,7 @@ class TestCat4Validator:
     def test_add_record(self, small_correct_file_header, small_correct_file, tanf_s1_records):
         """Test add_record logic."""
         cat_four_validator = validators.CatFourValidator(small_correct_file_header,
-                                                         util.make_generate_parser_error(small_correct_file, -1))
+                                                         util.make_generate_parser_error(small_correct_file, None))
 
         for record in tanf_s1_records:
             cat_four_validator.add_record(record, True)
@@ -1319,7 +1319,7 @@ class TestCat4Validator:
     def test_section1_fail(self, small_correct_file_header, small_correct_file, tanf_s1_records):
         """Test TANF Section 1 records RPT_MONTH_YEAR don't align with header year and quarter."""
         cat_four_validator = validators.CatFourValidator(small_correct_file_header,
-                                                         util.make_generate_parser_error(small_correct_file, -1))
+                                                         util.make_generate_parser_error(small_correct_file, None))
 
         for record in tanf_s1_records:
             cat_four_validator.add_record(record, False)
@@ -1332,7 +1332,7 @@ class TestCat4Validator:
     def test_section1_pass(self, small_correct_file_header, small_correct_file, tanf_s1_records):
         """Test TANF Section 1 records RPT_MONTH_YEAR do align with header year and quarter."""
         cat_four_validator = validators.CatFourValidator(small_correct_file_header,
-                                                         util.make_generate_parser_error(small_correct_file, -1))
+                                                         util.make_generate_parser_error(small_correct_file, None))
 
         for record in tanf_s1_records:
             record.RPT_MONTH_YEAR = 202010

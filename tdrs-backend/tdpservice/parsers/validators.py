@@ -675,23 +675,23 @@ class CatFourValidator:
 
     def __validate_tanf_s2_case(self, num_errors):
         """Perform TANF Section 2 category four validation on all cached records."""
-        pass
+        return 0
 
     def __validate_tribal_tanf_s1_case(self, num_errors):
         """Perform Tribal TANF Section 1 category four validation on all cached records."""
-        pass
+        return 0
 
     def __validate_tribal_tanf_s2_case(self, num_errors):
         """Perform Tribal TANF Section 2 category four validation on all cached records."""
-        pass
+        return 0
 
     def __validate_ssp_s1_case(self, num_errors):
         """Perform SSP Section 1 category four validation on all cached records."""
-        pass
+        return 0
 
     def __validate_ssp_s2_case(self, num_errors):
         """Perform SSP Section 2 category four validation on all cached records."""
-        pass
+        return 0
 
     def __validate_tanf_s1_header_with_records(self):
         """Header YEAR + header QUARTER must be consistent with RPT_MONTH_YEAR for all T1, T2, and T3 records."""

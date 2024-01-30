@@ -30,7 +30,7 @@ def parse_datafile(datafile):
         return errors
 
     # TODO: write a test for this line
-    cat_four_validator = validators.CatFourValidator(header, util.make_generate_parser_error(datafile, -1))
+    cat_four_validator = validators.CatFourValidator(header, util.make_generate_parser_error(datafile, None))
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
@@ -251,7 +251,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four
                 cat_four_validator.add_record(record, len(record_errors) > 0)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
-        unsaved_parser_errors[-1] = unsaved_parser_errors.get(-1, []) + cat_four_validator.get_generated_errors()
+        unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + cat_four_validator.get_generated_errors()
         cat_four_validator.clear_errors()
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count,)
