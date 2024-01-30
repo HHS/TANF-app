@@ -1250,7 +1250,7 @@ class TestCat4Validator:
         )
 
     @pytest.fixture
-    def s1_records(self):
+    def tanf_s1_records(self):
         """Return group of TANF Section 1 records."""
         t1 = TanfT1Factory.create()
         t2 = TanfT2Factory.create()
@@ -1274,12 +1274,12 @@ class TestCat4Validator:
         return header
 
     @pytest.mark.django_db
-    def test_section1_fail(self, small_correct_file_header, small_correct_file, s1_records):
+    def test_section1_fail(self, small_correct_file_header, small_correct_file, tanf_s1_records):
         """Test TANF Section 1 records RPT_MONTH_YEAR don't align with header year and quarter."""
         cat_four_validator = validators.CatFourValidator(small_correct_file_header,
                                                          util.make_generate_parser_error(small_correct_file, -1))
 
-        for record in s1_records:
+        for record in tanf_s1_records:
             record.data_file = small_correct_file
             cat_four_validator.add_record(record, False)
 
@@ -1288,12 +1288,12 @@ class TestCat4Validator:
         assert 4 == num_errors
 
     @pytest.mark.django_db
-    def test_section1_pass(self, small_correct_file_header, small_correct_file, s1_records):
+    def test_section1_pass(self, small_correct_file_header, small_correct_file, tanf_s1_records):
         """Test TANF Section 1 records RPT_MONTH_YEAR do align with header year and quarter."""
         cat_four_validator = validators.CatFourValidator(small_correct_file_header,
                                                          util.make_generate_parser_error(small_correct_file, -1))
 
-        for record in s1_records:
+        for record in tanf_s1_records:
             record.RPT_MONTH_YEAR = 202010
             record.data_file = small_correct_file
             cat_four_validator.add_record(record, False)
