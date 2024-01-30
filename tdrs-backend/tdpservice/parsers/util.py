@@ -133,3 +133,17 @@ def transform_to_months(quarter):
 def month_to_int(month):
     """Return the integer value of a month."""
     return datetime.strptime(month, '%b').strftime('%m')
+
+def get_rpt_month_year_list(year, quarter):
+    """Convert year and quarter to RPT_MONTH_YEAR."""
+    months = None
+    if quarter == "1":
+        months = ["01", "02", "03"]
+    if quarter == "2":
+        months = ["04", "05", "06"]
+    if quarter == "3":
+        months = ["07", "08", "09"]
+    if quarter == "4":
+        months = ["10", "11", "12"]
+
+    return [int(f"{year}{month}") for month in months]

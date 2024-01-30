@@ -161,6 +161,11 @@ def rollback_parser_errors(datafile):
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
+def cat_four_validate(cat_four_validator):
+    """Force category four validation if we have reached the last case in the file."""
+    if not cat_four_validator.has_validated:
+        cat_four_validator.validate()
+
 def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four_validator):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
@@ -279,8 +284,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
-    if not cat_four_validator.has_validated:
-        cat_four_validator.validate()
+    cat_four_validate(cat_four_validator)
 
     return errors
 

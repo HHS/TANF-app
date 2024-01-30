@@ -1,7 +1,7 @@
 """Generic parser validator functions for use in schema definitions."""
 
 from .models import ParserErrorCategoryChoices
-from .util import fiscal_to_calendar
+from .util import fiscal_to_calendar, get_rpt_month_year_list
 from datetime import date
 import logging
 
@@ -600,6 +600,7 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
     return is_valid, error
 
 class CatFourValidator:
+    """Caches records of the same case to perform category four validation while actively parsing."""
 
     def __init__(self, header, generate_error):
         self.header = header
@@ -612,14 +613,17 @@ class CatFourValidator:
         self.has_validated = False
         self.generate_error = generate_error
         self.generated_errors = []
-    
+
     def clear_errors(self):
+        """Reset generated errors."""
         self.generated_errors = []
-    
+
     def get_generated_errors(self):
+        """Return all errors generated for the current case."""
         return self.generated_errors
 
     def add_record(self, record, case_has_errors):
+        """Add record to cache and validate if new case is detected."""
         if self.is_section_one_or_two:
             self.case_has_errors = case_has_errors
             if record.CASE_NUMBER != self.current_case and self.current_case is not None:
@@ -630,23 +634,9 @@ class CatFourValidator:
                 self.records.append(record)
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
-    
-    # TODO: this should be moved to util.py. We already have this as part of 2699
-    @staticmethod
-    def get_rpt_month_year_list(year, quarter):
-        months = None
-        if quarter == "1":
-            months = ["01", "02", "03"]
-        if quarter == "2":
-            months = ["04", "05", "06"]
-        if quarter == "3":
-            months = ["07", "08", "09"]
-        if quarter == "4":
-            months = ["10", "11", "12"]
-        
-        return [int(f"{year}{month}") for month in months]
 
     def validate(self):
+        """Perform category four validation on all cached records."""
         num_errors = 0
         if self.is_section_one_or_two:
             if not self.case_has_errors:
@@ -663,43 +653,54 @@ class CatFourValidator:
                 elif self.program_type == "SSP" and self.section == "C":
                     return self.__validate_ssp_s2_case(num_errors)
             else:
-                logger.debug(f"Case: {self.current_case} has errors associated with it's records. Skipping Cat4 validation")
+                logger.debug(f"Case: {self.current_case} has errors associated with it's records. " +
+                             "Skipping Cat4 validation")
         return num_errors
-    
+
     def __validate_tanf_s1_case(self, num_errors):
+        """Perform TANF Section 1 category four validation on all cached records."""
         num_errors += self.__validate_tanf_s1_header_with_records()
         return num_errors
 
     def __validate_tanf_s2_case(self, num_errors):
+        """Perform TANF Section 2 category four validation on all cached records."""
         pass
 
     def __validate_tribal_tanf_s1_case(self, num_errors):
+        """Perform Tribal TANF Section 1 category four validation on all cached records."""
         pass
 
     def __validate_tribal_tanf_s2_case(self, num_errors):
+        """Perform Tribal TANF Section 2 category four validation on all cached records."""
         pass
 
     def __validate_ssp_s1_case(self, num_errors):
+        """Perform SSP Section 1 category four validation on all cached records."""
         pass
 
     def __validate_ssp_s2_case(self, num_errors):
+        """Perform SSP Section 2 category four validation on all cached records."""
         pass
 
     def __validate_tanf_s1_header_with_records(self):
+        """Header YEAR + header QUARTER must be consistent with RPT_MONTH_YEAR for all T1, T2, and T3 records."""
         year = self.header["year"]
         quarter = self.header["quarter"]
-        header_rpt_month_year_list = CatFourValidator.get_rpt_month_year_list(year, quarter)
+        header_rpt_month_year_list = get_rpt_month_year_list(year, quarter)
         num_errors = 0
         for record in self.records:
             if record.RPT_MONTH_YEAR not in header_rpt_month_year_list:
                 num_errors += 1
-                err_msg = f"Fail for RecordType={record.RecordType} and CASE_NUMBER=" + \
-                f"{record.CASE_NUMBER}. If YEAR={year} and QUARTER={quarter}, then RPT_MONTH_YEAR must be in " + \
-                f"{header_rpt_month_year_list}."
-                self.generated_errors.append(self.generate_error(schema=None,
-                                                                 error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                                                                 error_message=err_msg,
-                                                                 record=None,
-                                                                 field=None
-                                                                 ))
+                err_msg = (f"Fail for RecordType={record.RecordType} and CASE_NUMBER="
+                           f"{record.CASE_NUMBER}. If YEAR={year} and QUARTER={quarter}, "
+                           "then RPT_MONTH_YEAR must be in "
+                           f"{header_rpt_month_year_list}.")
+                self.generated_errors.append(
+                    self.generate_error(schema=None,
+                                        error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
+                                        error_message=err_msg,
+                                        record=None,
+                                        field=None
+                                        )
+                                    )
         return num_errors
