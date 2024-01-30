@@ -608,11 +608,13 @@ class CatFourValidator:
         self.current_case = None
         self.case_has_errors = False
         self.section = header["type"]
-        self.is_section_one_or_two = self.section in {'A', 'C'}
+        self.case_is_section_one_or_two = self.section in {'A', 'C'}
         self.program_type = header["program_type"]
         self.has_validated = False
         self.generate_error = generate_error
         self.generated_errors = []
+        self.total_cases_cached = 0
+        self.total_cases_validated = 0
 
     def clear_errors(self):
         """Reset generated errors."""
@@ -624,13 +626,13 @@ class CatFourValidator:
 
     def add_record(self, record, case_has_errors):
         """Add record to cache and validate if new case is detected."""
-        if self.is_section_one_or_two:
-            self.case_has_errors = case_has_errors
+        if self.case_is_section_one_or_two:
             if record.CASE_NUMBER != self.current_case and self.current_case is not None:
                 self.validate()
                 self.records = [record]
-                self.has_validated = True
+                self.case_has_errors = case_has_errors
             else:
+                self.case_has_errors = self.case_has_errors if self.case_has_errors else case_has_errors
                 self.records.append(record)
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
@@ -638,22 +640,31 @@ class CatFourValidator:
     def validate(self):
         """Perform category four validation on all cached records."""
         num_errors = 0
-        if self.is_section_one_or_two:
+        if self.case_is_section_one_or_two:
+            self.total_cases_cached += 1
             if not self.case_has_errors:
+                self.total_cases_validated += 1
+                self.has_validated = True
+                logger.debug(f"Attempting to execute Cat4 validation for case: {self.current_case}.")
                 if self.program_type == "TAN" and self.section == "A" and "state_fips" in self.header:
-                    return self.__validate_tanf_s1_case(num_errors)
+                    num_errors += self.__validate_tanf_s1_case(num_errors)
                 elif self.program_type == "TAN" and self.section == "C" and "state_fips" in self.header:
-                    return self.__validate_tanf_s2_case(num_errors)
+                    num_errors += self.__validate_tanf_s2_case(num_errors)
                 elif self.program_type == "TAN" and self.section == "A" and "tribe_code" in self.header:
-                    return self.__validate_tribal_tanf_s1_case(num_errors)
+                    num_errors += self.__validate_tribal_tanf_s1_case(num_errors)
                 elif self.program_type == "TAN" and self.section == "C" and "tribe_code" in self.header:
-                    return self.__validate_tribal_tanf_s2_case(num_errors)
+                    num_errors += self.__validate_tribal_tanf_s2_case(num_errors)
                 elif self.program_type == "SSP" and self.section == "A":
-                    return self.__validate_ssp_s1_case(num_errors)
+                    num_errors += self.__validate_ssp_s1_case(num_errors)
                 elif self.program_type == "SSP" and self.section == "C":
-                    return self.__validate_ssp_s2_case(num_errors)
+                    num_errors += self.__validate_ssp_s2_case(num_errors)
+                else:
+                    self.total_cases_validated -= 1
+                    logger.warn(f"Case: {self.current_case} has no errors but has either an incorrect program type: "
+                                f"{self.program_type} or an incorrect section: {self.section}. No validation occurred.")
+                    self.has_validated = False
             else:
-                logger.debug(f"Case: {self.current_case} has errors associated with it's records. " +
+                logger.debug(f"Case: {self.current_case} has errors associated with it's records. "
                              "Skipping Cat4 validation")
         return num_errors
 

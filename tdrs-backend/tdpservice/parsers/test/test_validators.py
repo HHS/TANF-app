@@ -1274,13 +1274,54 @@ class TestCat4Validator:
         return header
 
     @pytest.mark.django_db
+    def test_add_record(self, small_correct_file_header, small_correct_file, tanf_s1_records):
+        """Test add_record logic."""
+        cat_four_validator = validators.CatFourValidator(small_correct_file_header,
+                                                         util.make_generate_parser_error(small_correct_file, -1))
+
+        for record in tanf_s1_records:
+            cat_four_validator.add_record(record, True)
+
+        assert cat_four_validator.has_validated == False
+        assert cat_four_validator.case_has_errors == True
+        assert len(cat_four_validator.records) == 4
+        assert cat_four_validator.total_cases_cached == 0
+        assert cat_four_validator.total_cases_validated == 0
+
+        # Add record with different case number to proc validation again and start caching a new case.
+        t1 = TanfT1Factory.create()
+        t1.CASE_NUMBER = 2
+        cat_four_validator.add_record(t1, False)
+        assert cat_four_validator.has_validated == False
+        assert cat_four_validator.case_has_errors == False
+        assert len(cat_four_validator.records) == 1
+        assert cat_four_validator.total_cases_cached == 1
+        assert cat_four_validator.total_cases_validated == 0
+
+        # Complete the case to proc validation and verify that it occured. Even if the next case has errors.
+        t2 = TanfT2Factory.create()
+        t3 = TanfT3Factory.create()
+        t2.CASE_NUMBER = 2
+        t3.CASE_NUMBER = 2
+        cat_four_validator.add_record(t2, False)
+        cat_four_validator.add_record(t3, False)
+        assert cat_four_validator.case_has_errors == False
+
+        cat_four_validator.add_record(tanf_s1_records[0], True)
+
+        assert cat_four_validator.has_validated == True
+        assert cat_four_validator.case_has_errors == True
+        assert len(cat_four_validator.records) == 1
+        assert cat_four_validator.total_cases_cached == 2
+        assert cat_four_validator.total_cases_validated == 1
+
+    @pytest.mark.django_db
     def test_section1_fail(self, small_correct_file_header, small_correct_file, tanf_s1_records):
         """Test TANF Section 1 records RPT_MONTH_YEAR don't align with header year and quarter."""
         cat_four_validator = validators.CatFourValidator(small_correct_file_header,
                                                          util.make_generate_parser_error(small_correct_file, -1))
 
         for record in tanf_s1_records:
-            record.data_file = small_correct_file
             cat_four_validator.add_record(record, False)
 
         num_errors = cat_four_validator.validate()
@@ -1295,7 +1336,6 @@ class TestCat4Validator:
 
         for record in tanf_s1_records:
             record.RPT_MONTH_YEAR = 202010
-            record.data_file = small_correct_file
             cat_four_validator.add_record(record, False)
 
         num_errors = cat_four_validator.validate()
