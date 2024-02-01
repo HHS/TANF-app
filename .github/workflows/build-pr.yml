@@ -43,6 +43,7 @@ jobs:
           branch: ${{ (github.event_name == 'pull_request') && github.head_ref || github.ref_name }}
           payload: '{
             "run_owasp_scan": true,
+            "run_nightly_owasp_scan": true,
             "build_and_test_all": true,
             "triggered": true
           }'
