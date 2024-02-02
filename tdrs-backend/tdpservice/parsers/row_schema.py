@@ -41,7 +41,6 @@ class RowSchema:
 
     def parse_and_validate(self, line, generate_error):
         """Run all validation steps in order, and parse the given line into a record."""
-
         errors = []
 
         # run preparsing validators
@@ -55,7 +54,6 @@ class RowSchema:
 
         # parse line to model
         record = self.parse_line(line)
-
 
         # run field validators
         fields_are_valid, field_errors = self.run_field_validators(record, generate_error)

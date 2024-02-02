@@ -324,7 +324,6 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     dfs.save()
 
     errors = parse.parse_datafile(bad_trailer_file)
-    
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file)
     assert parser_errors.count() == 3
@@ -347,7 +346,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
         assert row_error.object_id is None
 
     assert errors['trailer'] == [trailer_error]
-    
+
     for error_2_0 in errors["2_0"]:
         assert error_2_0 in row_errors_list
 
@@ -389,7 +388,6 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     assert row_2_error.object_id is None
 
     row_3_errors = parser_errors.filter(row_number=3)
-    #row_3_error = trailer_errors[2]
     row_3_error_list = []
     for row_3_error in row_3_errors:
         row_3_error_list.append(row_3_error)
@@ -737,13 +735,13 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
         file=bad_tanf_s1__row_missing_required_field)
     assert parser_errors.count() == 4
 
-    error_message = 'RPT_MONTH_YEAR is required but a value was not provided.'
+    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_2_error = parser_errors.get(row_number=2, error_message=error_message)
-    assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_2_error.error_message == error_message
-    assert row_2_error.content_type.model == 'tanf_t1'
-    assert row_2_error.object_id is not None
+    assert row_2_error.object_id is None
 
+    error_message = 'RPT_MONTH_YEAR is required but a value was not provided.'
     row_3_error = parser_errors.get(row_number=3, error_message=error_message)
     assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_3_error.error_message == error_message

@@ -1,3 +1,5 @@
+"""Utility functions for schema definitions."""
+
 from .. import schema_defs
 from tdpservice.data_files.models import DataFile
 
@@ -143,3 +145,8 @@ def get_section_reference(str_prog, str_section):
 def get_text_from_df(df):
     """Return the short-hand text for program, section for a given datafile."""
     return get_schema_options("", section=df.section, query='text')
+
+def get_schema(line, section, program_type):
+    """Return the appropriate schema for the line."""
+    line_type = line[0:2]
+    return get_schema_options(program_type, section, query='models', model_name=line_type)

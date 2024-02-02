@@ -158,6 +158,7 @@ def rollback_parser_errors(datafile):
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
+
 def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
