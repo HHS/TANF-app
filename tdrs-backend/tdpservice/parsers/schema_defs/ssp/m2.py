@@ -14,6 +14,7 @@ m2 = SchemaManager(
             document=SSP_M2DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(150),
+                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[
                 validators.validate__FAM_AFF__SSN(),

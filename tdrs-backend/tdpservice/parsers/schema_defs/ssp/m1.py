@@ -12,6 +12,7 @@ m1 = SchemaManager(
             document=SSP_M1DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(150),
+                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[
                 validators.if_then_validator(

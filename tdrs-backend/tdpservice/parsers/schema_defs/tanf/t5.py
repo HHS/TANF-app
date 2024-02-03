@@ -14,6 +14,7 @@ t5 = SchemaManager(
             document=TANF_T5DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(71),
+                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[
                 validators.if_then_validator(

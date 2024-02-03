@@ -12,6 +12,7 @@ s1 = RowSchema(
     document=Tribal_TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
@@ -217,6 +218,7 @@ s2 = RowSchema(
     document=Tribal_TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
@@ -416,6 +418,7 @@ s3 = RowSchema(
     document=Tribal_TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
