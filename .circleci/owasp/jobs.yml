@@ -58,7 +58,7 @@
         default: tanf-staging
       cf_org:
         type: string
-        default: CF_ORG
+        default: "hhs-acf-ofa"
       target_env:
         type: enum
         enum: [ "staging", "develop", "prod" ]
