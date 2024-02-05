@@ -70,7 +70,7 @@
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf_password>>
           cf-space: <<parameters.cf_space>>
-          cf-org: <<parameters.cf-org>>
+          cf-org: <<parameters.cf_org>>
           cf-username: <<parameters.cf_username>>
       - run-owasp-scan:
           environment: nightly
