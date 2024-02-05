@@ -105,3 +105,7 @@
             cf run-task tdp-backend-<< parameters.target_env >> \
               --command "$CMD" \
               --name nightly-owasp-scan
+      - run:
+          name: Check against EOF
+          command: |
+            echo "Upload of scan data completed."
