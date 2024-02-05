@@ -56,6 +56,9 @@
       cf_space:
         type: string
         default: tanf-staging
+      cf_org:
+        type: string
+        default: CF_ORG
       target_env:
         type: enum
         enum: [ "staging", "develop", "prod" ]
