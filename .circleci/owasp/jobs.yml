@@ -61,7 +61,7 @@
         default: "CF_ORG"
       target_env:
         type: string #was enum
-        enum: "raft" #[ "staging", "develop", "prod" ]
+        default: "raft" #[ "staging", "develop", "prod" ]
     steps:
       - checkout
       - sudo-check
