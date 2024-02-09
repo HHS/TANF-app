@@ -14,7 +14,7 @@ header = RowSchema(
             lambda value, length: f"Header length is {len(value)} but must be {length} characters.",
         ),
         validators.startsWith("HEADER",
-                              lambda value: f"Your file does not begin with a {value} record"),
+                              lambda value: f"Your file does not begin with a {value} record."),
     ],
     postparsing_validators=[],
     fields=[

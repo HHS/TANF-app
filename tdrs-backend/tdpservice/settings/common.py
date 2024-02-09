@@ -473,3 +473,5 @@ class Common(Configuration):
     }
 
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
+
+    GENERATE_TRAILER_ERRORS = strtobool(os.getenv("GENERATE_TRAILER_ERRORS", "no"))

@@ -12,6 +12,9 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
+from django.conf import settings
+
+settings.GENERATE_TRAILER_ERRORS = True
 
 import logging
 
@@ -335,7 +338,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
 
     row_error = parser_errors.get(row_number=2)
     assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_error.error_message == 'Value length 7 does not match 156.'
+    assert row_error.error_message == 'Record length is 7 characters but must be 156.'
     assert row_error.content_type is None
     assert row_error.object_id is None
 
@@ -371,19 +374,19 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
 
     trailer_error_2 = trailer_errors[1]
     assert trailer_error_2.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_2.error_message == 'T1trash does not start with TRAILER.'
+    assert trailer_error_2.error_message == "Your file does not end with a TRAILER record."
     assert trailer_error_2.content_type is None
     assert trailer_error_2.object_id is None
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_2_error.error_message == 'Value length 117 does not match 156.'
+    assert row_2_error.error_message == 'Record length is 117 characters but must be 156.'
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
     row_3_error = trailer_errors[2]
     assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_3_error.error_message == 'Value length 7 does not match 156.'
+    assert row_3_error.error_message == 'Record length is 7 characters but must be 156.'
     assert row_3_error.content_type is None
     assert row_3_error.object_id is None
 
