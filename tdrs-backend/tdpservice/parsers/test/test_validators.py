@@ -235,7 +235,7 @@ def test_hasLength_returns_invalid():
     is_valid, error = validator(value)
 
     assert is_valid is False
-    assert error == 'Value length 7 does not match 22.'
+    assert error == 'Record length is 7 characters but must be 22.'
 
 
 def test_contains_returns_valid():
