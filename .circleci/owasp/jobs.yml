@@ -60,7 +60,7 @@
         type: string
         default: "CF_ORG"
       target_env:
-        type: enum
+        type: string #was enum
         enum: "raft" #[ "staging", "develop", "prod" ]
     steps:
       - checkout
