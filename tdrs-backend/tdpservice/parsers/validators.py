@@ -225,7 +225,7 @@ def hasLength(length, error_func=None):
         lambda value: len(value) == length,
         lambda value: error_func(value, length)
         if error_func
-        else f"Value length {len(value)} does not match {length}.",
+        else f"Record length is {len(value)} characters but must be {length}.",
     )
 
 
@@ -237,11 +237,13 @@ def contains(substring):
     )
 
 
-def startsWith(substring):
+def startsWith(substring, error_func=None):
     """Validate that string value starts with the given substring param."""
     return make_validator(
         lambda value: value.startswith(substring),
-        lambda value: f"{value} does not start with {substring}.",
+        lambda value: error_func(value)
+        if error_func
+        else f"{value} does not start with {substring}.",
     )
 
 
