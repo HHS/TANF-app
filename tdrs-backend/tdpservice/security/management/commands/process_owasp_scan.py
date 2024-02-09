@@ -113,4 +113,4 @@ class Command(BaseCommand):
                     pass_count,
                     warn_count
                 )
-        return True
+        return response

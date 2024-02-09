@@ -49,19 +49,19 @@
     parameters:
       cf_password:
         type: string
-        default: CF_PASSWORD_STAGING
+        default: CF_PASSWORD #_STAGING
       cf_username:
         type: string
-        default: CF_USERNAME_STAGING
+        default: CF_USERNAME #_STAGING
       cf_space:
         type: string
-        default: tanf-staging
+        default: tanf-dev #changed from -staging
       cf_org:
         type: string
         default: "CF_ORG"
       target_env:
         type: enum
-        enum: [ "staging", "develop", "prod" ]
+        enum: "raft" #[ "staging", "develop", "prod" ]
     steps:
       - checkout
       - sudo-check
@@ -102,11 +102,9 @@
             # get improperly interpolated by Cloud.gov.
             CMD="python manage.py process_owasp_scan ${CMD_ARGS[@]}"
             echo "$CMD"
+            cf a
             # Submit a CF Task for execution that will run the necessary command
             cf run-task tdp-backend-<< parameters.target_env >> \
               --command "$CMD" \
               --name nightly-owasp-scan
-      - run:
-          name: Check against EOF
-          command: |
-            echo "Upload of scan data completed."
+
