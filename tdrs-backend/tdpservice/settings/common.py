@@ -465,12 +465,15 @@ class Common(Configuration):
         }
     }
 
-    # Elastic
+    # Elastic/Kibana
     ELASTICSEARCH_DSL = {
         'default': {
             'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
+            'http_auth': ('elastic', os.getenv('ELASTIC_PASSWORD', 'changeme'))
         },
     }
+    KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://localhost:5601')
+    BYPASS_KIBANA_AUTH = strtobool(os.getenv("BYPASS_KIBANA_AUTH", "no"))
 
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
 

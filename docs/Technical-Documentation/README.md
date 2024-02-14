@@ -19,7 +19,7 @@ This directory contains system and architecture documentation including diagrams
 - [jwt-key-rotation.md](./jwt-key-rotation.md) : Describes the process for rotating JWT keys in Login.gov.
 - [nexus-repo.md](./nexus-repo.md) : Setup, connection information, and how to use our Nexus Artifact Repository
 - [openid-connect.md](./openid-connect.md) : Provides an architecture-level view of the OpenID Connect prototocol.
-- [rafts-accessibility-dos-and-donts.md](./rafts-accessibility-dos-and-donts.md) : A succint list of UX guidelines for frontend accessibility.
+- [accessibility-guide.md](./accessibility-guide.md) : A guide on getting started with accessibility testing tools and TDP-relevant resources.
 - [remote-development.md](./remote-development.md) : A guide on doing live remote development in Cloud.gov.
 - [unit-tests.md](./unit-tests.md) : Outlines our unit testing frameworks and how to run these manually.
 - [user_role_management.md](./user_role_management.md) : Provides an overview of our user management in Django Administrator Console.
