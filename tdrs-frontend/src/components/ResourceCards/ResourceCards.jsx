@@ -70,7 +70,7 @@ function ResourceCards() {
                 buttonId="viewACFFormInstructions"
                 title="ACF-199 and ACF-209 Instructions"
                 body="Instructions and definitions for completion of forms ACF-199 (TANF Data Report) and ACF-209 (SSP-MOE Data Report)."
-                link="https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_reports_tan_ssp_instructions_definitions.pdf"
+                link="https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04"
                 linkText="View ACF Form Instructions"
               />
             </li>

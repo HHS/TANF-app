@@ -11,7 +11,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
 
 
-from .users.api.authorization_check import AuthorizationCheck
+from .users.api.authorization_check import AuthorizationCheck, KibanaAuthorizationCheck
 from .users.api.login import TokenAuthorizationLoginDotGov, TokenAuthorizationAMS
 from .users.api.login import CypressLoginDotGovAuthenticationOverride
 from .users.api.login_redirect_oidc import LoginRedirectAMS, LoginRedirectLoginDotGov
@@ -52,6 +52,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 urlpatterns = [
     path("v1/", include(urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
+    path("kibana/", KibanaAuthorizationCheck.as_view(), name="kibana-authorization-check"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # TODO: Supply `terms_of_service` argument in OpenAPI Info once implemented
