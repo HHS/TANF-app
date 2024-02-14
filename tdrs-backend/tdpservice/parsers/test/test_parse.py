@@ -12,11 +12,9 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
-from django.conf import settings
 import logging
 
 
-settings.GENERATE_TRAILER_ERRORS = True
 es_logger = logging.getLogger('elasticsearch')
 es_logger.setLevel(logging.WARNING)
 
