@@ -7,6 +7,7 @@ import logging
 from .models import ParserErrorCategoryChoices, ParserError
 from . import schema_defs, validators, util
 from .schema_defs.utils import get_section_reference, get_program_model
+from .case_consistency_validator import CaseConsistencyValidator
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ def parse_datafile(datafile):
         return errors
 
     # TODO: write a test for this line
-    cat_four_validator = validators.CatFourValidator(header, util.make_generate_parser_error(datafile, None))
+    case_consistency_validator = CaseConsistencyValidator(header, util.make_generate_parser_error(datafile, None))
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
@@ -85,7 +86,7 @@ def parse_datafile(datafile):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    line_errors = parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four_validator)
+    line_errors = parse_datafile_lines(datafile, program_type, section, is_encrypted, case_consistency_validator)
 
     errors = errors | line_errors
 
@@ -248,7 +249,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 unsaved_records.setdefault(s.document, []).append(record)
-                cat_four_validator.add_record(record, len(record_errors) > 0)
+                cat_four_validator.add_record(record, s, len(record_errors) > 0)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + cat_four_validator.get_generated_errors()
