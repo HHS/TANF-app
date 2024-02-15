@@ -13,6 +13,11 @@ class DocumentBase(Document):
                       'version': fields.IntegerField(),
                       'quarter': fields.TextField(),
                       'year': fields.IntegerField(),
+                      'stt': fields.ObjectField(properties={
+                          'name': fields.TextField(),
+                          'type': fields.TextField(),
+                          'stt_code': fields.TextField()
+                      })
                   })
 
     def get_instances_from_related(self, related_instance):

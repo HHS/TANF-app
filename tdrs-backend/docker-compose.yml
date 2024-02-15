@@ -46,40 +46,15 @@ services:
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   kibana:
-    image: elastic/kibana:7.17.10
+    image: docker.elastic.co/kibana/kibana-oss:7.4.2
     ports:
       - 5601:5601
     environment:
-      - xpack.security.encryptionKey=${KIBANA_ENCRYPTION_KEY:-something_at_least_32_characters}
-      - xpack.security.session.idleTimeout="1h"
-      - xpack.security.session.lifespan="30d"
-    volumes:
-      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
-    depends_on:
-      - elastic
-
-  # This task only needs to be performed once, during the *initial* startup of
-  # the stack. Any subsequent run will reset the passwords of existing users to
-  # the values defined inside the '.env' file, and the built-in roles to their
-  # default permissions.
-  #
-  # By default, it is excluded from the services started by 'docker compose up'
-  # due to the non-default profile it belongs to. To run it, either provide the
-  # '--profile=elastic_setup' CLI flag to Compose commands, or "up" the service by name
-  # such as 'docker compose up elastic_setup'.
-  elastic_setup:
-    profiles:
-      - elastic_setup
-    build:
-      context: elastic_setup/
-      args:
-        ELASTIC_VERSION: "7.17.6"
-    init: true
-    environment:
-      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
-      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-changeme}
-      OFA_ADMIN_PASSWORD: ${OFA_ADMIN_PASSWORD:-changeme}
-      ELASTICSEARCH_HOST: ${ELASTICSEARCH_HOST:-elastic}
+      - ELASTICSEARCH_HOSTS="http://elastic:9200"
+      - SERVER_HOST=kibana
+      - SERVER_BASEPATH=/kibana
+      - SERVER_SECURITYRESPONSEHEADERS_REFERRERPOLICY=no-referrer
+      - CSP_WARNLEGACYBROWSERS=false
     depends_on:
       - elastic
 
@@ -88,12 +63,7 @@ services:
     environment:
       - discovery.type=single-node
       - logger.discovery.level=debug
-      - xpack.security.enabled=true
-      - xpack.security.authc.anonymous.username="ofa_admin"
-      - xpack.security.authc.anonymous.roles="ofa_admin"
-      - xpack.security.authc.anonymous.authz_exception=true
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
-      - KIBANA_SYSTEM_PASSWORD=${KIBANA_SYSTEM_PASSWORD:-changeme}
+      - xpack.security.enabled=false
     ports:
       - 9200:9200
       - 9300:9300
