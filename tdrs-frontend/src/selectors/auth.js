@@ -62,4 +62,6 @@ export const accountCanViewAdmin = (state) =>
 
 export const accountCanViewKibana = (state) =>
   accountStatusIsApproved(state) &&
-  ['Developer', 'OFA System Admin'].includes(selectPrimaryUserRole(state)?.name)
+  (selectUser(state)?.email?.includes('@acf.hhs.gov') ||
+    process.env.REACT_APP_DEV_KIBANA) &&
+  ['OFA System Admin'].includes(selectPrimaryUserRole(state)?.name)

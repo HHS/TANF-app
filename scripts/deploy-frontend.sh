@@ -8,14 +8,21 @@ DEPLOY_STRATEGY=${1}
 #The application name  defined via the manifest yml for the frontend
 CGHOSTNAME_FRONTEND=${2}
 CGHOSTNAME_BACKEND=${3}
-CF_SPACE=${4}
-ENVIRONMENT=${5}
+CGAPPNAME_KIBANA=${4}
+CF_SPACE=${5}
+ENVIRONMENT=${6}
+
+backend_app_name=$(echo $CGHOSTNAME_BACKEND | cut -d"-" -f3)
+
+# Update the Kibana name to include the environment
+KIBANA_BASE_URL="${CGAPPNAME_KIBANA}-${backend_app_name}.apps.internal"
 
 update_frontend()
 {
     echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
     echo FRONTEND_HOST: "$CGHOSTNAME_FRONTEND"
     echo BACKEND_HOST: "$CGHOSTNAME_BACKEND"
+    echo KIBANA_BASE_URL: "$KIBANA_BASE_URL"
     cd tdrs-frontend || exit
 
     if [ "$CF_SPACE" = "tanf-prod" ]; then
@@ -44,6 +51,7 @@ update_frontend()
     fi
 
     cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
+    cf set-env "$CGHOSTNAME_FRONTEND" KIBANA_BASE_URL "$KIBANA_BASE_URL"
     
     npm run build:$ENVIRONMENT
     unlink .env.production

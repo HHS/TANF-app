@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from ..serializers import UserProfileSerializer
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -66,6 +66,8 @@ class KibanaAuthorizationCheck(APIView):
         user_in_valid_group = user.is_ofa_sys_admin
 
         if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_KIBANA_AUTH:
-            return HttpResponseRedirect(settings.KIBANA_BASE_URL)
+            logger.debug(f"User: {user} has correct authentication credentials. Allowing access to Kibana.")
+            return HttpResponse(status=200)
         else:
-            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
+            logger.debug(f"User: {user} has incorrect authentication credentials. Not allowing access to Kibana.")
+            return HttpResponse(status=401)
