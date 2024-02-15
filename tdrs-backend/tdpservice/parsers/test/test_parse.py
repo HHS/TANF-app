@@ -514,9 +514,9 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile):
     ssp_section1_datafile.year = 2019
     ssp_section1_datafile.quarter = 'Q1'
 
-    expected_m1_record_count = 7849
-    expected_m2_record_count = 9373
-    expected_m3_record_count = 16764
+    expected_m1_record_count = 820
+    expected_m2_record_count = 992
+    expected_m3_record_count = 1757
 
     parse.parse_datafile(ssp_section1_datafile)
 
@@ -529,7 +529,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile):
     assert err.error_message == '3 is not larger or equal to 1 and smaller or equal to 2.'
     assert err.content_type is not None
     assert err.object_id is not None
-    assert parser_errors.count() == 19846
+    assert parser_errors.count() == 32486
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
@@ -741,18 +741,14 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
     assert row_2_error.error_message == error_message
     assert row_2_error.object_id is None
 
-    error_message = 'RPT_MONTH_YEAR is required but a value was not provided.'
+    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_3_error = parser_errors.get(row_number=3, error_message=error_message)
-    assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_3_error.error_message == error_message
-    assert row_3_error.content_type.model == 'tanf_t2'
-    assert row_3_error.object_id is not None
 
     row_4_error = parser_errors.get(row_number=4, error_message=error_message)
-    assert row_4_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_4_error.error_message == error_message
-    assert row_4_error.content_type.model == 'tanf_t3'
-    assert row_4_error.object_id is not None
 
     error_message = 'Unknown Record_Type was found.'
     row_5_error = parser_errors.get(row_number=5, error_message=error_message)
@@ -777,31 +773,25 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     parse.parse_datafile(bad_ssp_s1__row_missing_required_field)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
-    assert parser_errors.count() == 9
+    assert parser_errors.count() == 5
 
     row_2_error = parser_errors.get(
         row_number=2,
-        error_message='RPT_MONTH_YEAR is required but a value was not provided.'
+        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
-    assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_2_error.content_type.model == 'ssp_m1'
-    assert row_2_error.object_id is not None
+    assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_3_error = parser_errors.get(
         row_number=3,
-        error_message='RPT_MONTH_YEAR is required but a value was not provided.'
+        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
-    assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_3_error.content_type.model == 'ssp_m2'
-    assert row_3_error.object_id is not None
+    assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_4_error = parser_errors.get(
         row_number=4,
-        error_message='RPT_MONTH_YEAR is required but a value was not provided.'
+        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
-    assert row_4_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_4_error.content_type.model == 'ssp_m3'
-    assert row_4_error.object_id is not None
+    assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_5_error = parser_errors.get(
         row_number=5,
@@ -1064,7 +1054,7 @@ def test_parse_ssp_section4_file(ssp_section4_file):
 
 @pytest.fixture
 def ssp_section2_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP4.TS06."""
+    """Fixture for ADS.E2J.NDM2.MS24."""
     return util.create_test_datafile('ADS.E2J.NDM2.MS24', stt_user, stt, 'SSP Closed Case Data')
 
 @pytest.mark.django_db()
@@ -1078,8 +1068,8 @@ def test_parse_ssp_section2_file(ssp_section2_file):
     m4_objs = SSP_M4.objects.all().order_by('id')
     m5_objs = SSP_M5.objects.all().order_by('AMOUNT_EARNED_INCOME')
 
-    expected_m4_count = 2205
-    expected_m5_count = 6736
+    expected_m4_count = 231
+    expected_m5_count = 703
 
     assert SSP_M4.objects.all().count() == expected_m4_count
     assert SSP_M5.objects.all().count() == expected_m5_count
@@ -1287,7 +1277,7 @@ def tribal_section_4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_4_file(tribal_section_4_file):
     """Test parsing Tribal TANF Section 4 submission."""
-    tribal_section_4_file.year = 2020
+    tribal_section_4_file.year = 2021
     tribal_section_4_file.quarter = 'Q1'
     parse.parse_datafile(tribal_section_4_file)
 

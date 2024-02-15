@@ -223,10 +223,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
 
         schema_manager = get_schema_manager(line, section, program_type)
 
-        if type(schema_manager) is row_schema.SchemaManager:
-            schema_manager.datafile = datafile
-
-        records = manager_parse_line(line, schema_manager, generate_error, is_encrypted)
+        records = manager_parse_line(line, schema_manager, generate_error, datafile, is_encrypted)
 
         record_number = 0
         for i in range(len(records)):
@@ -278,8 +275,10 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     return errors
 
 
-def manager_parse_line(line, schema_manager, generate_error, is_encrypted=False):
+def manager_parse_line(line, schema_manager, generate_error, datafile, is_encrypted=False):
     """Parse and validate a datafile line using SchemaManager."""
+    if type(schema_manager) is row_schema.SchemaManager:
+        schema_manager.datafile = datafile
     try:
         schema_manager.update_encrypted_fields(is_encrypted)
         records = schema_manager.parse_and_validate(line, generate_error)
