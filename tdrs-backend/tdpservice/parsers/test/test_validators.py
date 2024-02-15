@@ -1293,7 +1293,7 @@ class TestCaseConsistencyValidator:
 
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.records) == 4
+        assert len(case_consistency_validator.record_schema_pairs) == 4
         assert case_consistency_validator.total_cases_cached == 0
         assert case_consistency_validator.total_cases_validated == 0
 
@@ -1303,7 +1303,7 @@ class TestCaseConsistencyValidator:
         case_consistency_validator.add_record(t1, tanf_s1_schemas[0], False)
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is False
-        assert len(case_consistency_validator.records) == 1
+        assert len(case_consistency_validator.record_schema_pairs) == 1
         assert case_consistency_validator.total_cases_cached == 1
         assert case_consistency_validator.total_cases_validated == 0
 
@@ -1320,7 +1320,7 @@ class TestCaseConsistencyValidator:
 
         assert case_consistency_validator.has_validated is True
         assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.records) == 1
+        assert len(case_consistency_validator.record_schema_pairs) == 1
         assert case_consistency_validator.total_cases_cached == 2
         assert case_consistency_validator.total_cases_validated == 1
 
@@ -1334,6 +1334,11 @@ class TestCaseConsistencyValidator:
             case_consistency_validator.add_record(record, schema, False)
 
         num_errors = case_consistency_validator.validate()
+        errors = case_consistency_validator.get_generated_errors()
+        for e in errors:
+            assert e.error_message == ("Failed to validate record with CASE_NUMBER=1 and RPT_MONTH_YEAR=1 against "
+                                       "header. If YEAR=2020 and QUARTER=4, then RPT_MONTH_YEAR must be in [202010, "
+                                       "202011, 202012].")
 
         assert 4 == num_errors
 

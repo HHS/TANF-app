@@ -162,12 +162,12 @@ def rollback_parser_errors(datafile):
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
-def cat_four_validate(cat_four_validator):
+def validate_case_consistency(case_consistency_validator):
     """Force category four validation if we have reached the last case in the file."""
-    if not cat_four_validator.has_validated:
-        cat_four_validator.validate()
+    if not case_consistency_validator.has_validated:
+        case_consistency_validator.validate()
 
-def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four_validator):
+def parse_datafile_lines(datafile, program_type, section, is_encrypted, case_consistency_validator):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
     errors = {}
@@ -249,11 +249,11 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 unsaved_records.setdefault(s.document, []).append(record)
-                cat_four_validator.add_record(record, s, len(record_errors) > 0)
+                case_consistency_validator.add_record(record, s, len(record_errors) > 0)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
-        unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + cat_four_validator.get_generated_errors()
-        cat_four_validator.clear_errors()
+        unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + case_consistency_validator.get_generated_errors()
+        case_consistency_validator.clear_errors()
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count,)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
@@ -285,10 +285,10 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted, cat_four
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
-    cat_four_validate(cat_four_validator)
+    validate_case_consistency(case_consistency_validator)
 
-    logger.debug(f"Cat4 validator cached {cat_four_validator.total_cases_cached} cases and "
-                 f"validated {cat_four_validator.total_cases_validated} of them.")
+    logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
+                 f"validated {case_consistency_validator.total_cases_validated} of them.")
 
     return errors
 

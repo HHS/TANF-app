@@ -11,8 +11,7 @@ class CaseConsistencyValidator:
 
     def __init__(self, header, generate_error):
         self.header = header
-        self.records = []
-        self.schemas = []
+        self.record_schema_pairs = []
         self.current_case = None
         self.case_has_errors = False
         self.section = header["type"]
@@ -37,13 +36,11 @@ class CaseConsistencyValidator:
         if self.case_is_section_one_or_two:
             if record.CASE_NUMBER != self.current_case and self.current_case is not None:
                 self.validate()
-                self.records = [record]
-                self.schemas = [schema]
+                self.record_schema_pairs = [(record, schema)]
                 self.case_has_errors = case_has_errors
             else:
                 self.case_has_errors = self.case_has_errors if self.case_has_errors else case_has_errors
-                self.records.append(record)
-                self.schemas.append(schema)
+                self.record_schema_pairs.append((record, schema))
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
 
@@ -109,13 +106,12 @@ class CaseConsistencyValidator:
         quarter = self.header["quarter"]
         header_rpt_month_year_list = get_rpt_month_year_list(year, quarter)
         num_errors = 0
-        for record, schema in zip(self.records, self.schemas):
+        for record, schema in self.record_schema_pairs:
             if record.RPT_MONTH_YEAR not in header_rpt_month_year_list:
                 num_errors += 1
-                err_msg = (f"Fail for RecordType={record.RecordType} and CASE_NUMBER="
-                           f"{record.CASE_NUMBER}. If YEAR={year} and QUARTER={quarter}, "
-                           "then RPT_MONTH_YEAR must be in "
-                           f"{header_rpt_month_year_list}.")
+                err_msg = (f"Failed to validate record with CASE_NUMBER={record.CASE_NUMBER} and "
+                           f"RPT_MONTH_YEAR={record.RPT_MONTH_YEAR} against header. If YEAR={year} and "
+                           f"QUARTER={quarter}, then RPT_MONTH_YEAR must be in {header_rpt_month_year_list}.")
                 self.generated_errors.append(
                     self.generate_error(schema=schema,
                                         error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
