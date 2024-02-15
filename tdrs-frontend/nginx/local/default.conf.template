@@ -68,8 +68,8 @@ http {
         # CSP header options. All options are set either to none or self except
 
         set $CSP "default-src 'none';";
-        set $CSP "${CSP}script-src 'self';";
-        set $CSP "${CSP}style-src 'self' 'unsafe-inline' http://localhost:3000;";
+        set $CSP "${CSP}script-src 'self' 'unsafe-eval' 'unsafe-inline' http://${KIBANA}:5601;";
+        set $CSP "${CSP}style-src 'self' 'unsafe-inline' http://localhost:3000 http://${KIBANA}:5601;";
         set $CSP "${CSP}img-src 'self' data:;";
         set $CSP "${CSP}font-src 'self';";
         set $CSP "${CSP}connect-src 'self' localhost:*;";
@@ -79,12 +79,11 @@ http {
         set $CSP "${CSP}frame-ancestors 'none';";
         set $CSP "${CSP}child-src 'none';";
         set $CSP "${CSP}media-src 'none';";
-        set $CSP "${CSP}prefetch-src 'none';";
         set $CSP "${CSP}form-action *;";
-        set $CSP "${CSP}script-src-elem 'self' http://localhost:* http://www.w3.org;";
-        set $CSP "${CSP}script-src-attr 'self' 'unsafe-inline';";
-        set $CSP "${CSP}style-src-elem 'self' 'unsafe-inline';";
-        set $CSP "${CSP}style-src-attr 'self';";
+        set $CSP "${CSP}script-src-elem 'self' 'unsafe-inline' http://localhost:* http://www.w3.org http://${KIBANA}:5601;";
+        set $CSP "${CSP}script-src-attr 'self' 'unsafe-inline' http://${KIBANA}:5601;";
+        set $CSP "${CSP}style-src-elem 'self' 'unsafe-inline' http://${KIBANA}:5601;";
+        set $CSP "${CSP}style-src-attr 'self' 'unsafe-inline' http://${KIBANA}:5601;";
         set $CSP "${CSP}worker-src 'none';";
         add_header Content-Security-Policy $CSP;
 
@@ -136,7 +135,6 @@ http {
             set $CSP "${CSP}frame-src 'None';";
             set $CSP "${CSP}child-src 'none';";
             set $CSP "${CSP}media-src 'none';";
-            set $CSP "${CSP}prefetch-src 'none';";
             set $CSP "${CSP}style-src 'self' 'unsafe-inline';";
             set $CSP "${CSP}style-src-elem 'self' 'unsafe-inline';";
             set $CSP "${CSP}style-src-attr 'self' 'unsafe-inline';";

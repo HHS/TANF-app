@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSttList } from '../../actions/sttList'
 import ComboBox from '../ComboBox'
-import Button from '../Button'
 import Modal from '../Modal'
 
 /**
@@ -38,8 +37,6 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
     }
   }, [dispatch, sttListRequest.sttList, numTries, reachedMaxTries])
 
-  const modalRef = useRef()
-  const headerRef = useRef()
   const onSignOut = () => {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/logout/oidc`
   }

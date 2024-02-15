@@ -23,7 +23,6 @@ function Home() {
   const errorRef = useRef(null)
 
   const user = useSelector((state) => state.auth.user)
-  const role = useSelector(selectPrimaryUserRole)
 
   const [errors, setErrors] = useState({})
   const [profileInfo, setProfileInfo] = useState({
