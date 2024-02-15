@@ -1332,9 +1332,12 @@ class TestCaseConsistencyValidator:
 
         for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
             case_consistency_validator.add_record(record, schema, False)
+            assert [] == case_consistency_validator.get_generated_errors()
 
         num_errors = case_consistency_validator.validate()
         errors = case_consistency_validator.get_generated_errors()
+
+        assert len(errors) == 4
         for e in errors:
             assert e.error_message == ("Failed to validate record with CASE_NUMBER=1 and RPT_MONTH_YEAR=1 against "
                                        "header. If YEAR=2020 and QUARTER=4, then RPT_MONTH_YEAR must be in [202010, "

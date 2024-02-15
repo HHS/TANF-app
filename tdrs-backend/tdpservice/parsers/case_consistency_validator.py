@@ -28,8 +28,10 @@ class CaseConsistencyValidator:
         self.generated_errors = []
 
     def get_generated_errors(self):
-        """Return all errors generated for the current case."""
-        return self.generated_errors
+        """Return all errors generated for the current validated case."""
+        if self.has_validated:
+            return self.generated_errors
+        return []
 
     def add_record(self, record, schema, case_has_errors):
         """Add record to cache and validate if new case is detected."""
