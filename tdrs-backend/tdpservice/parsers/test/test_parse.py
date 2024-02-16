@@ -325,7 +325,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     errors = parse.parse_datafile(bad_trailer_file)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file)
-    assert parser_errors.count() == 2
+    assert parser_errors.count() == 3
 
     trailer_error = parser_errors.get(row_number=3)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
@@ -333,15 +333,16 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
-    row_error = parser_errors.get(row_number=2)
-    assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_error.error_message == 'Value length 7 does not match 156.'
-    assert row_error.content_type is None
-    assert row_error.object_id is None
+    row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
+    length_error = row_errors[0]
+    assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.content_type is None
+    assert length_error.object_id is None
 
     assert errors == {
         'trailer': [trailer_error],
-        "2_0": [row_error]
+        "2_0": row_errors
     }
 
 
@@ -359,7 +360,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     errors = parse.parse_datafile(bad_trailer_file_2)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == 5
 
     trailer_errors = parser_errors.filter(row_number=3).order_by('id')
 
@@ -381,15 +382,16 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
-    row_3_error = trailer_errors[2]
-    assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_3_error.error_message == 'Value length 7 does not match 156.'
-    assert row_3_error.content_type is None
-    assert row_3_error.object_id is None
+    row_3_errors = [trailer_errors[2], trailer_errors[3]]
+    length_error = row_3_errors[0]
+    assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.content_type is None
+    assert length_error.object_id is None
 
     assert errors == {
         "2_0": [row_2_error],
-        "3_0": [row_3_error],
+        "3_0": row_3_errors,
         "trailer": [trailer_error_1, trailer_error_2],
     }
 

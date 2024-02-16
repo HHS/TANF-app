@@ -13,6 +13,7 @@ child_one = RowSchema(
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
         validators.hasLength(122),
+        validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
         validators.if_then_validator(
@@ -117,7 +118,7 @@ child_one = RowSchema(
             startIndex=8,
             endIndex=19,
             required=True,
-            validators=[validators.isAlphaNumeric()],
+            validators=[validators.notEmpty()],
         ),
         Field(
             item="66",
@@ -318,6 +319,7 @@ child_two = RowSchema(
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
         validators.hasLength(122),
+        validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
         validators.if_then_validator(
@@ -422,7 +424,7 @@ child_two = RowSchema(
             startIndex=8,
             endIndex=19,
             required=True,
-            validators=[validators.isAlphaNumeric()],
+            validators=[validators.notEmpty()],
         ),
         Field(
             item="66",

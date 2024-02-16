@@ -14,6 +14,7 @@ m2 = SchemaManager(
             document=SSP_M2DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(150),
+                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
                 validators.validate__FAM_AFF__SSN(),
@@ -152,7 +153,7 @@ m2 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.isAlphaNumeric()]
+                    validators=[validators.notEmpty()]
                 ),
                 Field(
                     item="26",

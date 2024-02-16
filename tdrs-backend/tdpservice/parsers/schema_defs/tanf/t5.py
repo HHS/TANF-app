@@ -14,6 +14,7 @@ t5 = SchemaManager(
             document=TANF_T5DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(71),
+                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
                 validators.if_then_validator(
@@ -132,7 +133,7 @@ t5 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.isAlphaNumeric()],
+                    validators=[validators.notEmpty()],
                 ),
                 Field(
                     item="14",
