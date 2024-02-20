@@ -161,7 +161,7 @@ t5 = SchemaManager(
                     startIndex=28,
                     endIndex=37,
                     required=True,
-                    validators=[validators.validateSSN()],
+                    validators=[validators.isNumber()],
                     is_encrypted=False,
                 ),
                 Field(
