@@ -12,6 +12,7 @@ child_one = RowSchema(
     document=TANF_T3DataSubmissionDocument(),
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
+        validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
         validators.if_then_validator(
@@ -116,7 +117,7 @@ child_one = RowSchema(
             startIndex=8,
             endIndex=19,
             required=True,
-            validators=[validators.isAlphaNumeric()],
+            validators=[validators.notEmpty()],
         ),
         Field(
             item="67",
@@ -150,7 +151,7 @@ child_one = RowSchema(
             startIndex=28,
             endIndex=37,
             required=True,
-            validators=[validators.validateSSN()],
+            validators=[validators.isNumber()],
             is_encrypted=False,
         ),
         Field(
@@ -316,6 +317,7 @@ child_two = RowSchema(
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
+        validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
         validators.if_then_validator(
@@ -420,7 +422,7 @@ child_two = RowSchema(
             startIndex=8,
             endIndex=19,
             required=True,
-            validators=[validators.isAlphaNumeric()],
+            validators=[validators.notEmpty()],
         ),
         Field(
             item="67",
@@ -454,7 +456,7 @@ child_two = RowSchema(
             startIndex=69,
             endIndex=78,
             required=True,
-            validators=[validators.validateSSN()],
+            validators=[validators.isNumber()],
             is_encrypted=False,
         ),
         Field(
