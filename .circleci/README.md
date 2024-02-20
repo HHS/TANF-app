@@ -79,7 +79,7 @@ updated along with the secondary apps running in CF.
 
 ### Frontend/Backend
  - Before updating, make sure the current buildpacks that these apps use are supported by the latest OS. If they aren't you can update the manifest to point them to the correct buildpacks.
- - To update the apps you can either deploy each of the environments (sandbox, raft, qasp, etc) from CircleCi or you can use the `tdrs-deploy <ENVIRONMENT>` command from `commands.sh`. Assuming the buildpacks are up to date, that is all you need to do.
+ - To update the apps you can either deploy each of the environments (raft, qasp, etc) from CircleCi or you can use the `tdrs-deploy <ENVIRONMENT>` command from `commands.sh`. Assuming the buildpacks are up to date, that is all you need to do.
 
 ### Secondary apps
  - Before you can make the update, you need to ensure you have the CF plugin that allows you to do so. Download the binary for your respective OS [HERE](https://github.com/cloudfoundry/stack-auditor/releases) and follow the installation instructions [HERE](https://docs.cloudfoundry.org/adminguide/stack-auditor.html#install).
