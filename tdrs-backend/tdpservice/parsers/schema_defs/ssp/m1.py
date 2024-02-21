@@ -12,6 +12,7 @@ m1 = SchemaManager(
             document=SSP_M1DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(150),
+                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
                 validators.if_then_validator(
@@ -125,7 +126,7 @@ m1 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.isAlphaNumeric()]
+                    validators=[validators.notEmpty()]
                 ),
                 Field(
                     item="2",

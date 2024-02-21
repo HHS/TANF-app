@@ -12,6 +12,7 @@ t4 = SchemaManager(
             document=Tribal_TANF_T4DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(71),
+                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[],
             fields=[
@@ -46,7 +47,7 @@ t4 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.isAlphaNumeric()],
+                    validators=[validators.notEmpty()],
                 ),
                 Field(
                     item="2",

@@ -1,5 +1,7 @@
 //This file contains modified versions of code from:
 //https://github.com/uswds/uswds/blob/develop/src/js/components/file-input.js
+import escapeHtml from '../../utils/escapeHtml'
+
 export const PREFIX = 'usa'
 
 export const PREVIEW_HEADING_CLASS = `${PREFIX}-file-input__preview-heading`
@@ -78,7 +80,7 @@ export const handlePreview = (fileName, targetClassName) => {
     'afterend',
     `<div class="${PREVIEW_CLASS}" aria-hidden="true">
       <img onerror="this.onerror=null;this.src="${SPACER_GIF}"; this.classList.add("${GENERIC_PREVIEW_CLASS}")" src="${SPACER_GIF}" alt="" class="${GENERIC_PREVIEW_CLASS_NAME} ${GENERIC_PREVIEW_CLASS}"/>
-      ${fileName}
+      ${escapeHtml(fileName)}
     <div>`
   )
 
