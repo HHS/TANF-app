@@ -7,6 +7,7 @@ from ..case_consistency_validator import CaseConsistencyValidator
 from .. import schema_defs, util
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
 from tdpservice.parsers.test.factories import SSPM5Factory
+from tdpservice.parsers.models import ParserErrorCategoryChoices
 
 logger = logging.getLogger(__name__)
 
@@ -1293,7 +1294,7 @@ class TestCaseConsistencyValidator:
 
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.record_schema_pairs) == 4
+        assert len(case_consistency_validator.records) == 4
         assert case_consistency_validator.total_cases_cached == 0
         assert case_consistency_validator.total_cases_validated == 0
 
@@ -1303,7 +1304,7 @@ class TestCaseConsistencyValidator:
         case_consistency_validator.add_record(t1, tanf_s1_schemas[0], False)
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is False
-        assert len(case_consistency_validator.record_schema_pairs) == 1
+        assert len(case_consistency_validator.records) == 1
         assert case_consistency_validator.total_cases_cached == 1
         assert case_consistency_validator.total_cases_validated == 0
 
@@ -1320,7 +1321,7 @@ class TestCaseConsistencyValidator:
 
         assert case_consistency_validator.has_validated is True
         assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.record_schema_pairs) == 1
+        assert len(case_consistency_validator.records) == 1
         assert case_consistency_validator.total_cases_cached == 2
         assert case_consistency_validator.total_cases_validated == 1
 
@@ -1332,16 +1333,8 @@ class TestCaseConsistencyValidator:
 
         for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
             case_consistency_validator.add_record(record, schema, False)
-            assert [] == case_consistency_validator.get_generated_errors()
 
         num_errors = case_consistency_validator.validate()
-        errors = case_consistency_validator.get_generated_errors()
-
-        assert len(errors) == 4
-        for e in errors:
-            assert e.error_message == ("Failed to validate record with CASE_NUMBER=1 and RPT_MONTH_YEAR=1 against "
-                                       "header. If YEAR=2020 and QUARTER=4, then RPT_MONTH_YEAR must be in [202010, "
-                                       "202011, 202012].")
 
         assert 4 == num_errors
 
@@ -1358,3 +1351,266 @@ class TestCaseConsistencyValidator:
         num_errors = case_consistency_validator.validate()
 
         assert 0 == num_errors
+
+    @pytest.mark.django_db
+    def test_records_are_related_validator_pass(self, small_correct_file_header, small_correct_file):
+        case_consistency_validator = CaseConsistencyValidator(
+            small_correct_file_header,
+            util.make_generate_parser_error(small_correct_file, None)
+        )
+
+        t1s = [
+            TanfT1Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+            ),
+            TanfT1Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123'
+            ),
+        ]
+        for t1 in t1s:
+            case_consistency_validator.add_record(
+                t1,
+                schema_defs.tanf.t1.schemas[0],
+                False
+            )
+
+        t2s = [
+            TanfT2Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=1,
+            ),
+            TanfT2Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=2,
+            ),
+        ]
+        for t2 in t2s:
+            case_consistency_validator.add_record(
+                t2,
+                schema_defs.tanf.t2.schemas[0],
+                False
+            )
+
+        t3s = [
+            TanfT3Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=1,
+            ),
+            TanfT3Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=2,
+            ),
+        ]
+        for t3 in t3s:
+            case_consistency_validator.add_record(
+                t3,
+                schema_defs.tanf.t3.schemas[0],
+                False
+            )
+
+        num_errors = case_consistency_validator.validate()
+
+        errors = case_consistency_validator.get_generated_errors()
+
+        assert len(errors) == 0
+        assert num_errors == 0
+
+    @pytest.mark.django_db
+    def test_records_are_related_validator_fail_no_t2_or_t3(self, small_correct_file_header, small_correct_file):
+        case_consistency_validator = CaseConsistencyValidator(
+            small_correct_file_header,
+            util.make_generate_parser_error(small_correct_file, None)
+        )
+
+        t1s = [
+            TanfT1Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123'
+            ),
+            TanfT1Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123'
+            ),
+        ]
+        for t1 in t1s:
+            case_consistency_validator.add_record(
+                t1,
+                schema_defs.tanf.t1.schemas[0],
+                False
+            )
+
+        num_errors = case_consistency_validator.validate()
+
+        errors = case_consistency_validator.get_generated_errors()
+
+        assert len(errors) == 2
+        assert num_errors == 2
+        assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[0].error_message == (
+            'Every T1 record should have at least one corresponding '
+            'T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+        )
+        assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[1].error_message == (
+            'Every T1 record should have at least one corresponding '
+            'T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+        )
+
+    @pytest.mark.django_db
+    def test_records_are_related_validator_fail_no_t1(self, small_correct_file_header, small_correct_file):
+        case_consistency_validator = CaseConsistencyValidator(
+            small_correct_file_header,
+            util.make_generate_parser_error(small_correct_file, None)
+        )
+
+        t2s = [
+            TanfT2Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=1,
+            ),
+            TanfT2Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=2,
+            ),
+        ]
+        for t2 in t2s:
+            case_consistency_validator.add_record(
+                t2,
+                schema_defs.tanf.t2.schemas[0],
+                False
+            )
+
+        t3s = [
+            TanfT3Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=1,
+            ),
+            TanfT3Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=2,
+            ),
+        ]
+        for t3 in t3s:
+            case_consistency_validator.add_record(
+                t3,
+                schema_defs.tanf.t3.schemas[0],
+                False
+            )
+
+        num_errors = case_consistency_validator.validate()
+
+        errors = case_consistency_validator.get_generated_errors()
+
+        assert len(errors) == 4
+        assert num_errors == 4
+        assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[0].error_message == (
+            'Every T2 record should have at least one corresponding '
+            'T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+        )
+        assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[1].error_message == (
+            'Every T2 record should have at least one corresponding '
+            'T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+        )
+        assert errors[2].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[2].error_message == (
+            'Every T3 record should have at least one corresponding '
+            'T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+        )
+        assert errors[3].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[3].error_message == (
+            'Every T3 record should have at least one corresponding '
+            'T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+        )
+
+    @pytest.mark.django_db
+    def test_records_are_related_validator_fail_no_family_affiliation(self, small_correct_file_header, small_correct_file):
+        case_consistency_validator = CaseConsistencyValidator(
+            small_correct_file_header,
+            util.make_generate_parser_error(small_correct_file, None)
+        )
+
+        t1s = [
+            TanfT1Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123'
+            ),
+            TanfT1Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123'
+            ),
+        ]
+        for t1 in t1s:
+            case_consistency_validator.add_record(
+                t1,
+                schema_defs.tanf.t1.schemas[0],
+                False
+            )
+
+        t2s = [
+            TanfT2Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=2,
+            ),
+            TanfT2Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=2,
+            ),
+        ]
+        for t2 in t2s:
+            case_consistency_validator.add_record(
+                t2,
+                schema_defs.tanf.t2.schemas[0],
+                False
+            )
+
+        t3s = [
+            TanfT3Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=2,
+            ),
+            TanfT3Factory.create(
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                FAMILY_AFFILIATION=2,
+            ),
+        ]
+        for t3 in t3s:
+            case_consistency_validator.add_record(
+                t3,
+                schema_defs.tanf.t3.schemas[0],
+                False
+            )
+
+        num_errors = case_consistency_validator.validate()
+
+        errors = case_consistency_validator.get_generated_errors()
+
+        assert len(errors) == 2
+        assert num_errors == 2
+        assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[0].error_message == (
+            'Every T1 record should have at least one corresponding '
+            'T2 or T3 record with the same RPT_MONTH_YEAR and '
+            'CASE_NUMBER, where FAMILY_AFFILIATION==1'
+        )
+        assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        assert errors[1].error_message == (
+            'Every T1 record should have at least one corresponding '
+            'T2 or T3 record with the same RPT_MONTH_YEAR and '
+            'CASE_NUMBER, where FAMILY_AFFILIATION==1'
+        )

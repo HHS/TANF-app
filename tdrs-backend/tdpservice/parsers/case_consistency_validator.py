@@ -2,6 +2,7 @@
 
 from .models import ParserErrorCategoryChoices
 from .util import get_rpt_month_year_list
+from tdpservice.parsers.schema_defs.utils import get_program_models, get_program_model
 import logging
 
 logger = logging.getLogger(__name__)
@@ -80,6 +81,7 @@ class CaseConsistencyValidator:
     def __validate_tanf_s1_case(self, num_errors):
         """Perform TANF Section 1 category four validation on all cached records."""
         num_errors += self.__validate_tanf_s1_header_with_records()
+        num_errors += self.__validate_tanf_s1_records_are_related()
         return num_errors
 
     def __validate_tanf_s2_case(self, num_errors):
@@ -122,4 +124,128 @@ class CaseConsistencyValidator:
                                         field="RPT_MONTH_YEAR"
                                         )
                                     )
+        return num_errors
+
+    def __validate_tanf_s1_records_are_related(self):
+        """Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER."""
+        def get_model(model_str):
+            """Return a model for the current program type/section given the model's string name."""
+            manager = get_program_model(self.program_type, self.section, model_str)
+            return manager.schemas[0].document.Django.model
+
+        def generate_and_add_error(schema, record, field, msg):
+            """Generate a ParserError and add it to the `generated_errors` list."""
+            err = self.generate_error(
+                error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
+                schema=schema,
+                record=record,
+                field=field,
+                error_message=msg,
+            )
+            self.generated_errors.append(err)
+
+        num_errors = 0
+        cases = {}
+
+        is_ssp = self.program_type == 'SSP'
+        t1_model = get_model('M1' if is_ssp else 'T1')
+        t2_model = get_model('M2' if is_ssp else 'T2')
+        t3_model = get_model('M3' if is_ssp else 'T3')
+
+        logger.debug('validating records are related')
+        logger.debug(f'program type: {self.program_type}')
+        logger.debug(f'section: {self.section}')
+        logger.debug(f'is_ssp: {is_ssp}')
+        logger.debug(f'models - T1: {t1_model}; T2: {t2_model}; T3: {t3_model}')
+
+        for record, schema in self.record_schema_pairs:
+            rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
+
+            reporting_year_cases = cases.get(rpt_month_year, {})
+            records = reporting_year_cases.get(type(record), [])
+            records.append((record, schema))
+
+            reporting_year_cases[type(record)] = records
+            cases[rpt_month_year] = reporting_year_cases
+
+        logger.debug(f'cases obj: {cases}')
+
+        for rpt_month_year, reporting_year_cases in cases.items():
+            t1s = reporting_year_cases.get(t1_model, [])
+            t2s = reporting_year_cases.get(t2_model, [])
+            t3s = reporting_year_cases.get(t3_model, [])
+
+            logger.debug(f't1s: {t1s}')
+            logger.debug(f't2s: {t2s}')
+            logger.debug(f't3s: {t3s}')
+
+            if len(t1s) > 0:
+                logger.debug('t1s')
+                if len(t2s) == 0 and len(t3s) == 0:
+                    logger.debug('no t2s or t3s')
+                    for record, schema in t1s:
+                        generate_and_add_error(
+                            schema,
+                            record,
+                            field='RPT_MONTH_YEAR',
+                            msg=(
+                                'Every T1 record should have at least one corresponding '
+                                'T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                            )
+                        )
+                        num_errors += 1
+
+                else:
+                    logger.debug('t2s/t3s')
+                    # loop through all t2s and t3s
+                    # to find record where FAMILY_AFFILIATION == 1
+                    passed = False
+                    for record, schema in t2s + t3s:
+                        family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
+                        if family_affiliation == 1:
+                            passed = True
+                            break
+
+                    if not passed:
+                        for record, schema in t1s:
+                            generate_and_add_error(
+                                schema,
+                                record,
+                                field='FAMILY_AFFILIATION',
+                                msg=(
+                                    'Every T1 record should have at least one corresponding '
+                                    'T2 or T3 record with the same RPT_MONTH_YEAR and '
+                                    'CASE_NUMBER, where FAMILY_AFFILIATION==1'
+                                )
+                            )
+                            num_errors += 1
+
+                    # the successful route
+                    # pass
+            else:
+                logger.debug('no t1s')
+                for record, schema in t2s:
+                    generate_and_add_error(
+                        schema,
+                        record,
+                        field='RPT_MONTH_YEAR',
+                        msg=(
+                            'Every T2 record should have at least one corresponding '
+                            'T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                        )
+                    )
+                    num_errors += 1
+
+                for record, schema in t3s:
+                    generate_and_add_error(
+                        schema,
+                        record,
+                        field='RPT_MONTH_YEAR',
+                        msg=(
+                            'Every T3 record should have at least one corresponding '
+                            'T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                        )
+                    )
+                    num_errors += 1
+
         return num_errors
