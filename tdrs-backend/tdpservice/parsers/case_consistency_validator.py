@@ -24,6 +24,36 @@ class CaseConsistencyValidator:
         self.total_cases_cached = 0
         self.total_cases_validated = 0
 
+    def __get_model(self, model_str):
+        """Return a model for the current program type/section given the model's string name."""
+        manager = get_program_model(self.program_type, self.section, model_str)
+        return manager.schemas[0].document.Django.model
+
+    def __generate_and_add_error(self, schema, record, field, msg):
+        """Generate a ParserError and add it to the `generated_errors` list."""
+        err = self.generate_error(
+            error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
+            schema=schema,
+            record=record,
+            field=field,
+            error_message=msg,
+        )
+        self.generated_errors.append(err)
+
+    def __get_records_by_rpt_month_year_and_model_type(self):
+        cases = {}
+        for record, schema in self.record_schema_pairs:
+            rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
+
+            reporting_year_cases = cases.get(rpt_month_year, {})
+            records = reporting_year_cases.get(type(record), [])
+            records.append((record, schema))
+
+            reporting_year_cases[type(record)] = records
+            cases[rpt_month_year] = reporting_year_cases
+
+        return cases
+
     def clear_errors(self):
         """Reset generated errors."""
         self.generated_errors = []
@@ -59,12 +89,8 @@ class CaseConsistencyValidator:
 
                 if self.section == "A":
                     num_errors += self.__validate_section1(num_errors)
-                elif self.program_type == "TAN" and self.section == "C" and "state_fips" in self.header:
-                    num_errors += self.__validate_tanf_s2_case(num_errors)
-                elif self.program_type == "TAN" and self.section == "C" and "tribe_code" in self.header:
-                    num_errors += self.__validate_tribal_tanf_s2_case(num_errors)
-                elif self.program_type == "SSP" and self.section == "C":
-                    num_errors += self.__validate_ssp_s2_case(num_errors)
+                elif self.section == "C":
+                    num_errors += self.__validate_section2(num_errors)
                 else:
                     self.total_cases_validated -= 1
                     logger.warn(f"Case: {self.current_case} has no errors but has either an incorrect program type: "
@@ -77,23 +103,17 @@ class CaseConsistencyValidator:
 
     def __validate_section1(self, num_errors):
         """Perform TANF Section 1 category four validation on all cached records."""
-        num_errors += self.__validate_s1_header_with_records()
+        num_errors += self.__validate_header_with_records()
         num_errors += self.__validate_s1_records_are_related()
         return num_errors
 
-    def __validate_tanf_s2_case(self, num_errors):
+    def __validate_section2(self, num_errors):
         """Perform TANF Section 2 category four validation on all cached records."""
-        return 0
+        num_errors += self.__validate_header_with_records()
+        num_errors += self.__validate_s2_records_are_related()
+        return num_errors
 
-    def __validate_tribal_tanf_s2_case(self, num_errors):
-        """Perform Tribal TANF Section 2 category four validation on all cached records."""
-        return 0
-
-    def __validate_ssp_s2_case(self, num_errors):
-        """Perform SSP Section 2 category four validation on all cached records."""
-        return 0
-
-    def __validate_s1_header_with_records(self):
+    def __validate_header_with_records(self):
         """Header YEAR + header QUARTER must be consistent with RPT_MONTH_YEAR for all T1, T2, and T3 records."""
         year = self.header["year"]
         quarter = self.header["quarter"]
@@ -117,29 +137,15 @@ class CaseConsistencyValidator:
 
     def __validate_s1_records_are_related(self):
         """Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER."""
-        def get_model(model_str):
-            """Return a model for the current program type/section given the model's string name."""
-            manager = get_program_model(self.program_type, self.section, model_str)
-            return manager.schemas[0].document.Django.model
-
-        def generate_and_add_error(schema, record, field, msg):
-            """Generate a ParserError and add it to the `generated_errors` list."""
-            err = self.generate_error(
-                error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                schema=schema,
-                record=record,
-                field=field,
-                error_message=msg,
-            )
-            self.generated_errors.append(err)
-
         num_errors = 0
-        cases = {}
-
         is_ssp = self.program_type == 'SSP'
-        t1_model = get_model('M1' if is_ssp else 'T1')
-        t2_model = get_model('M2' if is_ssp else 'T2')
-        t3_model = get_model('M3' if is_ssp else 'T3')
+
+        t1_model_name = 'M1' if is_ssp else 'T1'
+        t1_model = self.__get_model(t1_model_name)
+        t2_model_name = 'M2' if is_ssp else 'T2'
+        t2_model = self.__get_model(t2_model_name)
+        t3_model_name = 'M3' if is_ssp else 'T3'
+        t3_model = self.__get_model(t3_model_name)
 
         logger.debug('validating records are related')
         logger.debug(f'program type: {self.program_type}')
@@ -147,16 +153,7 @@ class CaseConsistencyValidator:
         logger.debug(f'is_ssp: {is_ssp}')
         logger.debug(f'models - T1: {t1_model}; T2: {t2_model}; T3: {t3_model}')
 
-        for record, schema in self.record_schema_pairs:
-            rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
-
-            reporting_year_cases = cases.get(rpt_month_year, {})
-            records = reporting_year_cases.get(type(record), [])
-            records.append((record, schema))
-
-            reporting_year_cases[type(record)] = records
-            cases[rpt_month_year] = reporting_year_cases
-
+        cases = self.__get_records_by_rpt_month_year_and_model_type()
         logger.debug(f'cases obj: {cases}')
 
         for rpt_month_year, reporting_year_cases in cases.items():
@@ -173,13 +170,13 @@ class CaseConsistencyValidator:
                 if len(t2s) == 0 and len(t3s) == 0:
                     logger.debug('no t2s or t3s')
                     for record, schema in t1s:
-                        generate_and_add_error(
+                        self.__generate_and_add_error(
                             schema,
                             record,
                             field='RPT_MONTH_YEAR',
                             msg=(
-                                'Every T1 record should have at least one corresponding '
-                                'T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                                f'Every {t1_model_name} record should have at least one corresponding '
+                                f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
                             )
                         )
                         num_errors += 1
@@ -197,14 +194,14 @@ class CaseConsistencyValidator:
 
                     if not passed:
                         for record, schema in t1s:
-                            generate_and_add_error(
+                            self.__generate_and_add_error(
                                 schema,
                                 record,
                                 field='FAMILY_AFFILIATION',
                                 msg=(
-                                    'Every T1 record should have at least one corresponding '
-                                    'T2 or T3 record with the same RPT_MONTH_YEAR and '
-                                    'CASE_NUMBER, where FAMILY_AFFILIATION==1'
+                                    f'Every {t1_model_name} record should have at least one corresponding '
+                                    f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and '
+                                    f'CASE_NUMBER, where FAMILY_AFFILIATION==1'
                                 )
                             )
                             num_errors += 1
@@ -214,25 +211,84 @@ class CaseConsistencyValidator:
             else:
                 logger.debug('no t1s')
                 for record, schema in t2s:
-                    generate_and_add_error(
+                    self.__generate_and_add_error(
                         schema,
                         record,
                         field='RPT_MONTH_YEAR',
                         msg=(
-                            'Every T2 record should have at least one corresponding '
-                            'T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                            f'Every {t2_model_name} record should have at least one corresponding '
+                            f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
                         )
                     )
                     num_errors += 1
 
                 for record, schema in t3s:
-                    generate_and_add_error(
+                    self.__generate_and_add_error(
                         schema,
                         record,
                         field='RPT_MONTH_YEAR',
                         msg=(
-                            'Every T3 record should have at least one corresponding '
-                            'T1 record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                            f'Every {t3_model_name} record should have at least one corresponding '
+                            f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                        )
+                    )
+                    num_errors += 1
+
+        return num_errors
+
+    def __validate_s2_records_are_related(self):
+        """Every T4 record should have at least one corresponding T5 record with the same RPT_MONTH_YEAR and CASE_NUMBER."""
+        num_errors = 0
+        is_ssp = self.program_type == 'SSP'
+
+        t4_model_name = 'M4' if is_ssp else 'T4'
+        t4_model = self.__get_model(t4_model_name)
+        t5_model_name = 'M5' if is_ssp else 'T5'
+        t5_model = self.__get_model(t5_model_name)
+
+        logger.debug('validating records are related')
+        logger.debug(f'program type: {self.program_type}')
+        logger.debug(f'section: {self.section}')
+        logger.debug(f'is_ssp: {is_ssp}')
+        logger.debug(f'models - T4: {t4_model}; T5: {t5_model};')
+
+        cases = self.__get_records_by_rpt_month_year_and_model_type()
+        logger.debug(f'cases obj: {cases}')
+
+        for rpt_month_year, reporting_year_cases in cases.items():
+            t4s = reporting_year_cases.get(t4_model, [])
+            t5s = reporting_year_cases.get(t5_model, [])
+
+            logger.debug(f't4s: {t4s}')
+            logger.debug(f't5s: {t5s}')
+
+            if len(t4s) > 0:
+                if len(t5s) == 0:
+                    logger.debug('no t5s')
+                    for record, schema in t4s:
+                        self.__generate_and_add_error(
+                            schema,
+                            record,
+                            field='RPT_MONTH_YEAR',
+                            msg=(
+                                f'Every {t4_model_name} record should have at least one corresponding '
+                                f'{t5_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                            )
+                        )
+                        num_errors += 1
+                else:
+                    # success
+                    pass
+            else:
+                logger.debug('no t4s')
+                for record, schema in t5s:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='RPT_MONTH_YEAR',
+                        msg=(
+                            f'Every {t5_model_name} record should have at least one corresponding '
+                            f'{t4_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
                         )
                     )
                     num_errors += 1
