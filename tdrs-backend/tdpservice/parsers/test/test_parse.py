@@ -2,6 +2,7 @@
 
 
 import pytest
+from django.contrib.admin.models import LogEntry
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
@@ -12,6 +13,7 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
+from elasticsearch.helpers.errors import BulkIndexError
 
 import logging
 
@@ -1293,3 +1295,38 @@ def test_parse_tribal_section_4_file(tribal_section_4_file):
 
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
+
+
+@pytest.mark.django_db
+def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_datafile, mocker):
+    """Test bulk_create_records returns (False, [unsaved_records]) on BulkIndexException."""
+    mocker.patch(
+        'tdpservice.search_indexes.documents.tanf.TANF_T1DataSubmissionDocument.update',
+        side_effect=BulkIndexError('indexing exception')
+    )
+
+    # create some records, don't save them
+    records = {
+        documents.tanf.TANF_T1DataSubmissionDocument: [TANF_T1()],
+        documents.tanf.TANF_T2DataSubmissionDocument: [TANF_T2()],
+        documents.tanf.TANF_T3DataSubmissionDocument: [TANF_T3()]
+    }
+
+    all_created, unsaved_records = parse.bulk_create_records(
+        records,
+        line_number=1,
+        header_count=1,
+        datafile=test_datafile,
+        flush=True
+    )
+
+    assert LogEntry.objects.all().count() == 1
+
+    log = LogEntry.objects.get()
+    assert log.change_message == "Encountered error while indexing datafile documents: indexing exception"
+
+    assert all_created is False
+    assert len(unsaved_records.items()) == 3
+    assert TANF_T1.objects.all().count() == 1
+    assert TANF_T2.objects.all().count() == 0
+    assert TANF_T3.objects.all().count() == 0
