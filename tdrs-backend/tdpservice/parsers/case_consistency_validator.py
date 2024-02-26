@@ -56,16 +56,13 @@ class CaseConsistencyValidator:
                 self.total_cases_validated += 1
                 self.has_validated = True
                 logger.debug(f"Attempting to execute Cat4 validation for case: {self.current_case}.")
-                if self.program_type == "TAN" and self.section == "A" and "state_fips" in self.header:
-                    num_errors += self.__validate_tanf_s1_case(num_errors)
+
+                if self.section == "A":
+                    num_errors += self.__validate_section1(num_errors)
                 elif self.program_type == "TAN" and self.section == "C" and "state_fips" in self.header:
                     num_errors += self.__validate_tanf_s2_case(num_errors)
-                elif self.program_type == "TAN" and self.section == "A" and "tribe_code" in self.header:
-                    num_errors += self.__validate_tribal_tanf_s1_case(num_errors)
                 elif self.program_type == "TAN" and self.section == "C" and "tribe_code" in self.header:
                     num_errors += self.__validate_tribal_tanf_s2_case(num_errors)
-                elif self.program_type == "SSP" and self.section == "A":
-                    num_errors += self.__validate_ssp_s1_case(num_errors)
                 elif self.program_type == "SSP" and self.section == "C":
                     num_errors += self.__validate_ssp_s2_case(num_errors)
                 else:
@@ -78,33 +75,25 @@ class CaseConsistencyValidator:
                              "Skipping Cat4 validation")
         return num_errors
 
-    def __validate_tanf_s1_case(self, num_errors):
+    def __validate_section1(self, num_errors):
         """Perform TANF Section 1 category four validation on all cached records."""
-        num_errors += self.__validate_tanf_s1_header_with_records()
-        num_errors += self.__validate_tanf_s1_records_are_related()
+        num_errors += self.__validate_s1_header_with_records()
+        num_errors += self.__validate_s1_records_are_related()
         return num_errors
 
     def __validate_tanf_s2_case(self, num_errors):
         """Perform TANF Section 2 category four validation on all cached records."""
         return 0
 
-    def __validate_tribal_tanf_s1_case(self, num_errors):
-        """Perform Tribal TANF Section 1 category four validation on all cached records."""
-        return 0
-
     def __validate_tribal_tanf_s2_case(self, num_errors):
         """Perform Tribal TANF Section 2 category four validation on all cached records."""
-        return 0
-
-    def __validate_ssp_s1_case(self, num_errors):
-        """Perform SSP Section 1 category four validation on all cached records."""
         return 0
 
     def __validate_ssp_s2_case(self, num_errors):
         """Perform SSP Section 2 category four validation on all cached records."""
         return 0
 
-    def __validate_tanf_s1_header_with_records(self):
+    def __validate_s1_header_with_records(self):
         """Header YEAR + header QUARTER must be consistent with RPT_MONTH_YEAR for all T1, T2, and T3 records."""
         year = self.header["year"]
         quarter = self.header["quarter"]
@@ -126,7 +115,7 @@ class CaseConsistencyValidator:
                                     )
         return num_errors
 
-    def __validate_tanf_s1_records_are_related(self):
+    def __validate_s1_records_are_related(self):
         """Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER."""
         def get_model(model_str):
             """Return a model for the current program type/section given the model's string name."""
