@@ -3,10 +3,14 @@
 
 from django.conf import settings
 from django.db import DatabaseError
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.contrib.contenttypes.models import ContentType
 import itertools
 import logging
 from .models import ParserErrorCategoryChoices, ParserError
 from . import schema_defs, validators, util
+from elasticsearch.helpers.errors import BulkIndexError
+from tdpservice.data_files.models import DataFile
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +92,7 @@ def parse_datafile(datafile):
 
     return errors
 
-def bulk_create_records(unsaved_records, line_number, header_count, batch_size=10000, flush=False):
+def bulk_create_records(unsaved_records, line_number, header_count, datafile, batch_size=10000, flush=False):
     """Bulk create passed in records."""
     if (line_number % batch_size == 0 and header_count > 0) or flush:
         logger.debug("Bulk creating records.")
@@ -113,6 +117,17 @@ def bulk_create_records(unsaved_records, line_number, header_count, batch_size=1
                 num_elastic_records_created == num_expected_db_records, {}
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
+            return False, unsaved_records
+        except BulkIndexError as e:
+            logger.error(f"Encountered error while indexing datafile documents: {e}")
+            LogEntry.objects.log_action(
+                user_id=datafile.user.pk,
+                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                object_id=datafile,
+                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+                action_flag=ADDITION,
+                change_message=f"Encountered error while indexing datafile documents: {e}",
+            )
             return False, unsaved_records
     return True, unsaved_records
 
@@ -251,7 +266,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
                 record.datafile = datafile
                 unsaved_records.setdefault(s.document, []).append(record)
 
-        all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count,)
+        all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
 
     if header_count == 0:
@@ -272,7 +287,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
 
     # Only checking "all_created" here because records remained cached if bulk create fails. This is the last chance to
     # successfully create the records.
-    all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, flush=True)
+    all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile, flush=True)
     if not all_created:
         logger.error(f"Not all parsed records created for file: {datafile.id}!")
         rollback_records(unsaved_records, datafile)

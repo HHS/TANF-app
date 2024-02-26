@@ -117,7 +117,7 @@ const SubmissionHistoryRow = ({ file }) => {
   const returned_errors = async () => {
     try {
       const promise = axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/parsing/parsing_errors/?file=${file.id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/data_files/${file.id}/download_error_report/`,
         {
           responseType: 'json',
         }
