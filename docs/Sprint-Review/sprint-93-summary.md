@@ -54,7 +54,7 @@ Velocity (Dev): 18
 * [#2509 As a data analyst I need to know when my data has been processed with or w/o errors](https://github.com/raft-tech/TANF-app/issues/2509)
 * [#2814 Aggregate cloud.gov ES instances](https://github.com/raft-tech/TANF-app/issues/2814)
 * [#2842 Complete cat4 validation implementation](https://github.com/raft-tech/TANF-app/issues/2842)
-* [#2848 ]
+
 
 
 
