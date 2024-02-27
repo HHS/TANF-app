@@ -516,7 +516,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile):
     assert err.error_message == '3 is not larger or equal to 1 and smaller or equal to 2.'
     assert err.content_type is not None
     assert err.object_id is not None
-    assert parser_errors.count() == 19846
+    assert parser_errors.count() == 20186
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count

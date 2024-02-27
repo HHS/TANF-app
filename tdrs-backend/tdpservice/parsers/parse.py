@@ -31,7 +31,7 @@ def parse_datafile(datafile):
         return errors
 
     # TODO: write a test for this line
-    case_consistency_validator = CaseConsistencyValidator(header, util.make_generate_parser_error(datafile, None))
+    case_consistency_validator = CaseConsistencyValidator(header, util.make_generate_parser_error(datafile, -1))
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
