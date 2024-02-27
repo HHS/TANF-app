@@ -136,7 +136,7 @@ class CaseConsistencyValidator:
                                     )
         return num_errors
 
-    def validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
+    def __validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
         """Validate at least one record in t2s+t3s has FAMILY_AFFILIATION == 1."""
         passed = False
         for record, schema in t2s + t3s:
@@ -213,7 +213,7 @@ class CaseConsistencyValidator:
                     logger.debug('t2s/t3s')
                     # loop through all t2s and t3s
                     # to find record where FAMILY_AFFILIATION == 1
-                    num_errors += self.validate_family_affiliation(num_errors, t1s, t2s, t3s, (
+                    num_errors += self.__validate_family_affiliation(num_errors, t1s, t2s, t3s, (
                             f'Every {t1_model_name} record should have at least one corresponding '
                             f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and '
                             f'CASE_NUMBER, where FAMILY_AFFILIATION==1'
