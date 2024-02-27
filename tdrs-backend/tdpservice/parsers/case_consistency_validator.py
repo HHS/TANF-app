@@ -126,14 +126,13 @@ class CaseConsistencyValidator:
                 err_msg = (f"Failed to validate record with CASE_NUMBER={record.CASE_NUMBER} and "
                            f"RPT_MONTH_YEAR={record.RPT_MONTH_YEAR} against header. If YEAR={year} and "
                            f"QUARTER={quarter}, then RPT_MONTH_YEAR must be in {header_rpt_month_year_list}.")
-                self.generated_errors.append(
-                    self.generate_error(schema=schema,
-                                        error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                                        error_message=err_msg,
-                                        record=record,
-                                        field="RPT_MONTH_YEAR"
-                                        )
-                                    )
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='RPT_MONTH_YEAR',
+                    msg=err_msg
+                )
+
         return num_errors
 
     def __validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
