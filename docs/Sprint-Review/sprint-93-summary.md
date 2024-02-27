@@ -25,7 +25,9 @@ Velocity (Dev): 18
 * [#2824 Resolve issues raised in pen testing findings](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2824)
 
 ### Ready to Merge
-* N/A
+* [#1350 As an OFA staff member I want to access Kibana from TDP](https://github.com/raft-tech/TANF-app/issues/1350)
+* [#2757 Generate preparser errors when multirecord rows are the wrong length](https://github.com/raft-tech/TANF-app/issues/2757)
+
 
 
 
@@ -35,6 +37,9 @@ Velocity (Dev): 18
 * [#2820 [bug] Uncaught exception re: parsing error preventing feedback report generation](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2820)
 * [#2746 As an STT, I need to know if there are issues with the DOBs reported in my data files](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2746)
 * [#2729 As a developer, I want to move migration commands in the pipeline to CircleCI](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2729)
+* [#2853 - Database Backup Bug](https://github.com/raft-tech/TANF-app/pull/2853)
+* [#2681 TANF Section 1 Validation cleanup](https://github.com/raft-tech/TANF-app/issues/2681)
+
 
 
 
@@ -46,7 +51,10 @@ Velocity (Dev): 18
 
 ## Moved to Next Sprint (In Progress, Blocked, Raft Review)
 ### In Progress
-
+* [#2509 As a data analyst I need to know when my data has been processed with or w/o errors](https://github.com/raft-tech/TANF-app/issues/2509)
+* [#2814 Aggregate cloud.gov ES instances](https://github.com/raft-tech/TANF-app/issues/2814)
+* [#2842 Complete cat4 validation implementation](https://github.com/raft-tech/TANF-app/issues/2842)
+* [#2848 ]
 
 
 
@@ -56,6 +64,7 @@ Velocity (Dev): 18
 
 ### Raft Review
 * [#2799 Generate error mismatching field rpt_month_year w/ header](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2799)
+* [#2793 update dateYearIsLargerThan() validator logic for rpt_month_year](https://github.com/raft-tech/TANF-app/issues/2793)
 * [#2536 [spike] Cat 4 validation](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2536)
 * [#1441 As tech lead I need new permissions group for OFA data analysts](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/1441)
 * [#2536 Spike / Attempt to implement cat4 validation](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2536)
