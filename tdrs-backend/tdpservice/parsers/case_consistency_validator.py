@@ -2,7 +2,7 @@
 
 from .models import ParserErrorCategoryChoices
 from .util import get_rpt_month_year_list
-from tdpservice.parsers.schema_defs.utils import get_program_models, get_program_model
+from tdpservice.parsers.schema_defs.utils import get_program_model
 import logging
 
 logger = logging.getLogger(__name__)
@@ -41,6 +41,7 @@ class CaseConsistencyValidator:
         self.generated_errors.append(err)
 
     def __get_records_by_rpt_month_year_and_model_type(self):
+        """Get an object of the records sorted by model type, with RPT_MONTH_YEAR as the key."""
         cases = {}
         for record, schema in self.record_schema_pairs:
             rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
@@ -135,8 +136,34 @@ class CaseConsistencyValidator:
                                     )
         return num_errors
 
+    def validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
+        """Validate at least one record in t2s+t3s has FAMILY_AFFILIATION == 1."""
+        passed = False
+        for record, schema in t2s + t3s:
+            family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
+            if family_affiliation == 1:
+                passed = True
+                break
+
+        if not passed:
+            for record, schema in t1s:
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='FAMILY_AFFILIATION',
+                    msg=error_msg
+                )
+                num_errors += 1
+
+        return num_errors
+
     def __validate_s1_records_are_related(self):
-        """Every T1 record should have at least one corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER."""
+        """
+        Validate section 1 records are related.
+
+        Every T1 record should have at least one corresponding T2 or T3
+        record with the same RPT_MONTH_YEAR and CASE_NUMBER.
+        """
         num_errors = 0
         is_ssp = self.program_type == 'SSP'
 
@@ -175,8 +202,9 @@ class CaseConsistencyValidator:
                             record,
                             field='RPT_MONTH_YEAR',
                             msg=(
-                                f'Every {t1_model_name} record should have at least one corresponding '
-                                f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                                f'Every {t1_model_name} record should have at least one '
+                                f'corresponding {t2_model_name} or {t3_model_name} record '
+                                f'with the same RPT_MONTH_YEAR and CASE_NUMBER.'
                             )
                         )
                         num_errors += 1
@@ -185,26 +213,11 @@ class CaseConsistencyValidator:
                     logger.debug('t2s/t3s')
                     # loop through all t2s and t3s
                     # to find record where FAMILY_AFFILIATION == 1
-                    passed = False
-                    for record, schema in t2s + t3s:
-                        family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
-                        if family_affiliation == 1:
-                            passed = True
-                            break
-
-                    if not passed:
-                        for record, schema in t1s:
-                            self.__generate_and_add_error(
-                                schema,
-                                record,
-                                field='FAMILY_AFFILIATION',
-                                msg=(
-                                    f'Every {t1_model_name} record should have at least one corresponding '
-                                    f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and '
-                                    f'CASE_NUMBER, where FAMILY_AFFILIATION==1'
-                                )
-                            )
-                            num_errors += 1
+                    num_errors += self.validate_family_affiliation(num_errors, t1s, t2s, t3s, (
+                            f'Every {t1_model_name} record should have at least one corresponding '
+                            f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and '
+                            f'CASE_NUMBER, where FAMILY_AFFILIATION==1'
+                        ))
 
                     # the successful route
                     # pass
@@ -237,7 +250,12 @@ class CaseConsistencyValidator:
         return num_errors
 
     def __validate_s2_records_are_related(self):
-        """Every T4 record should have at least one corresponding T5 record with the same RPT_MONTH_YEAR and CASE_NUMBER."""
+        """
+        Validate section 2 records are related.
+
+        Every T4 record should have at least one corresponding T5 record
+        with the same RPT_MONTH_YEAR and CASE_NUMBER.
+        """
         num_errors = 0
         is_ssp = self.program_type == 'SSP'
 
