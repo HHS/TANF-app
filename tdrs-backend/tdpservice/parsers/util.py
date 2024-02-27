@@ -117,7 +117,7 @@ def fiscal_to_calendar(year, fiscal_quarter):
     return year, "Q{}".format(array[ind_qtr - 1])  # return the previous quarter
 
 def transform_to_months(quarter):
-    """Return a list of months in a quarter."""
+    """Return a list of months in a quarter depending the quarter's format."""
     match quarter:
         case "Q1":
             return ["Jan", "Feb", "Mar"]
