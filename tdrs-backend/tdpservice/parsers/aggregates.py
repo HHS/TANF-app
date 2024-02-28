@@ -56,3 +56,28 @@ def case_aggregates_by_month(df, dfs_status):
     aggregate_data['rejected'] = ParserError.objects.filter(file=df).filter(case_number=None).count()
 
     return aggregate_data
+
+
+def total_errors_by_month(df, dfs_status):
+    """Return total errors for each month in the reporting period."""
+    calendar_year, calendar_qtr = fiscal_to_calendar(df.year, df.quarter)
+    month_list = transform_to_months(calendar_qtr)
+
+    total_errors_data = {"months": []}
+
+    errors = ParserError.objects.all().filter(file=df)
+
+    for month in month_list:
+        if dfs_status == "Rejected":
+            total_errors_data["months"].append(
+                {"month": month, "total_errors": "N/A"})
+            continue
+
+        month_int = month_to_int(month)
+        rpt_month_year = int(f"{calendar_year}{month_int}")
+
+        error_count = errors.filter(rpt_month_year=rpt_month_year).count()
+        total_errors_data["months"].append(
+            {"month": month, "total_errors": error_count})
+
+    return total_errors_data
