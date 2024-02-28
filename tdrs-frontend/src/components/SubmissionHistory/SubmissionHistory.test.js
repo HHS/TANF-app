@@ -341,76 +341,139 @@ describe('SubmissionHistory', () => {
   it.each([
     ['Pending', 'Active Case Data'],
     ['Pending', 'Closed Case Data'],
-    ['Pending', 'Aggregate Data'],
     ['Accepted', 'Active Case Data'],
     ['Accepted', 'Closed Case Data'],
-    ['Accepted', 'Aggregate Data'],
     ['Accepted with Errors', 'Active Case Data'],
     ['Accepted with Errors', 'Closed Case Data'],
-    ['Accepted with Errors', 'Aggregate Data'],
     ['Partially Accepted with Errors', 'Active Case Data'],
     ['Partially Accepted with Errors', 'Closed Case Data'],
-    ['Partially Accepted with Errors', 'Aggregate Data'],
     ['Rejected', 'Active Case Data'],
     ['Rejected', 'Closed Case Data'],
-    ['Rejected', 'Aggregate Data'],
     [null, 'Active Case Data'],
     [null, 'Closed Case Data'],
-    [null, 'Aggregate Data'],
-  ])('Shows the submission acceptance status section 3', (status, section) => {
-    const state = {
-      reports: {
-        files: [
-          {
-            id: '123',
-            fileName: 'test1.txt',
-            fileType: 'TANF',
-            quarter: 'Q1',
-            section: section,
-            uuid: '123-4-4-321',
-            year: '2023',
-            s3_version_id: '321-0-0-123',
-            createdAt: '12/12/2012 12:12',
-            submittedBy: 'test@teamraft.com',
-            summary: {
-              datafile: '123',
-              status: status,
-              case_aggregates: {
-                Oct: {
-                  total: 0,
-                  accepted: 0,
-                  rejected: 0,
-                },
-                Nov: {
-                  total: 0,
-                  accepted: 0,
-                  rejected: 0,
-                },
-                Dec: {
-                  total: 0,
-                  accepted: 0,
+  ])(
+    'Shows the submission acceptance status section 1+2',
+    (status, section) => {
+      const state = {
+        reports: {
+          files: [
+            {
+              id: '123',
+              fileName: 'test1.txt',
+              fileType: 'TANF',
+              quarter: 'Q1',
+              section: section,
+              uuid: '123-4-4-321',
+              year: '2023',
+              s3_version_id: '321-0-0-123',
+              createdAt: '12/12/2012 12:12',
+              submittedBy: 'test@teamraft.com',
+              summary: {
+                datafile: '123',
+                status: status,
+                case_aggregates: {
+                  months: [
+                    {
+                      accepted_without_errors: 0,
+                      accepted_with_errors: 58,
+                      month: 'Oct',
+                    },
+                    {
+                      accepted_without_errors: 0,
+                      accepted_with_errors: 52,
+                      month: 'Nov',
+                    },
+                    {
+                      accepted_without_errors: 0,
+                      accepted_with_errors: 40,
+                      month: 'Dec',
+                    },
+                  ],
                   rejected: 0,
                 },
               },
             },
-          },
-        ],
-      },
+          ],
+        },
+      }
+
+      const store = appConfigureStore(state)
+      const dispatch = jest.fn(store.dispatch)
+      store.dispatch = dispatch
+
+      setup(store)
+
+      expect(screen.queryByText('Status')).toBeInTheDocument()
+      expect(screen.queryByText('test1.txt')).toBeInTheDocument()
+
+      if (status && status !== 'Pending') {
+        expect(screen.queryByText(status)).toBeInTheDocument()
+      } else {
+        expect(screen.queryAllByText('Pending')).toHaveLength(2)
+      }
     }
+  )
 
-    const store = appConfigureStore(state)
-    const dispatch = jest.fn(store.dispatch)
-    store.dispatch = dispatch
+  it.each([
+    ['Pending', 'Aggregate Data'],
+    ['Pending', 'Stratum Data'],
+    ['Accepted', 'Aggregate Data'],
+    ['Accepted', 'Stratum Data'],
+    ['Accepted with Errors', 'Aggregate Data'],
+    ['Accepted with Errors', 'Stratum Data'],
+    ['Partially Accepted with Errors', 'Aggregate Data'],
+    ['Partially Accepted with Errors', 'Stratum Data'],
+    ['Rejected', 'Aggregate Data'],
+    ['Rejected', 'Stratum Data'],
+    [null, 'Aggregate Data'],
+    [null, 'Stratum Data'],
+  ])(
+    'Shows the submission acceptance status section 3+4',
+    (status, section) => {
+      const state = {
+        reports: {
+          files: [
+            {
+              id: '123',
+              fileName: 'test1.txt',
+              fileType: 'TANF',
+              quarter: 'Q1',
+              section: section,
+              uuid: '123-4-4-321',
+              year: '2023',
+              s3_version_id: '321-0-0-123',
+              createdAt: '12/12/2012 12:12',
+              submittedBy: 'test@teamraft.com',
+              summary: {
+                datafile: '123',
+                status: status,
+                case_aggregates: {
+                  months: [
+                    { month: 'Oct', total_errors: 0 },
+                    { month: 'Nov', total_errors: 0 },
+                    { month: 'Dec', total_errors: 0 },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      }
 
-    setup(store)
+      const store = appConfigureStore(state)
+      const dispatch = jest.fn(store.dispatch)
+      store.dispatch = dispatch
 
-    expect(screen.queryByText('Status')).toBeInTheDocument()
-    expect(screen.queryByText('test1.txt')).toBeInTheDocument()
+      setup(store)
 
-    if (status && status !== 'Pending') {
-      expect(screen.queryByText(status)).toBeInTheDocument()
-    } else {
-      expect(screen.queryAllByText('Pending')).toHaveLength(2)
+      expect(screen.queryByText('Status')).toBeInTheDocument()
+      expect(screen.queryByText('test1.txt')).toBeInTheDocument()
+
+      if (status && status !== 'Pending') {
+        expect(screen.queryByText(status)).toBeInTheDocument()
+      } else {
+        expect(screen.queryAllByText('Pending')).toHaveLength(2)
+      }
     }
-  })
+  )
 })

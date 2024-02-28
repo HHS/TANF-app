@@ -5,7 +5,7 @@ import logging
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.parse import parse_datafile
 from tdpservice.parsers.models import DataFileSummary
-from tdpservice.parsers.aggregates import case_aggregates_by_month
+from tdpservice.parsers.aggregates import case_aggregates_by_month, total_errors_by_month
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,8 @@ def parse(data_file_id):
 
     if "Case Data" in data_file.section:
         dfs.case_aggregates = case_aggregates_by_month(data_file, dfs.status)
+    else:
+        dfs.case_aggregates = total_errors_by_month(data_file, dfs.status)
 
     dfs.save()
 
