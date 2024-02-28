@@ -23,10 +23,16 @@ Velocity (Dev): 18
 * [#2813 Reduce dev environment count](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2813)
 * [#2790 Kibana deployment](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2790)
 * [#2824 Resolve issues raised in pen testing findings](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2824)
+* [#2832 Accessibility Guide update](https://github.com/raft-tech/TANF-app/pull/2832)
+* [#2794 Make Case Number validators accept spaces and special characters](https://github.com/raft-tech/TANF-app/issues/2794)
+* [#2771 Update validateSSN to allow for all 0s, 1s,...9s as valid values except in cat3 scenarios](https://github.com/raft-tech/TANF-app/issues/2771)
+* [#2855 Update Failed Deployment Troubleshooting](https://github.com/raft-tech/TANF-app/pull/2855)
+* [#2768 Fix production OWASP scan reporting](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2768)
+* [#2835 Handle elastic BulkIndexException in bulk create records](https://github.com/raft-tech/TANF-app/pull/2835)
 
 ### Ready to Merge
-* [#1350 As an OFA staff member I want to access Kibana from TDP](https://github.com/raft-tech/TANF-app/issues/1350)
-* [#2757 Generate preparser errors when multirecord rows are the wrong length](https://github.com/raft-tech/TANF-app/issues/2757)
+
+
 
 
 
@@ -43,6 +49,7 @@ Velocity (Dev): 18
 
 
 
+
 ### Closed (not merged)
 * N/A
 
@@ -51,15 +58,16 @@ Velocity (Dev): 18
 
 ## Moved to Next Sprint (In Progress, Blocked, Raft Review)
 ### In Progress
+* [#2757 Generate preparser errors when multirecord rows are the wrong length](https://github.com/raft-tech/TANF-app/issues/2757)
 * [#2509 As a data analyst I need to know when my data has been processed with or w/o errors](https://github.com/raft-tech/TANF-app/issues/2509)
 * [#2814 Aggregate cloud.gov ES instances](https://github.com/raft-tech/TANF-app/issues/2814)
 * [#2842 Complete cat4 validation implementation](https://github.com/raft-tech/TANF-app/issues/2842)
+* [#1350 As an OFA staff member I want to access Kibana from TDP](https://github.com/raft-tech/TANF-app/issues/1350)
 
 
 
 
 ### Blocked
-* [#2768 Fix production OWASP scan reporting](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2768)
 * [#2592 Deploy celery as a separate cloud.gov app](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2592)
 
 ### Raft Review
@@ -69,3 +77,4 @@ Velocity (Dev): 18
 * [#1441 As tech lead I need new permissions group for OFA data analysts](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/1441)
 * [#2536 Spike / Attempt to implement cat4 validation](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2536)
 * [#2673 Cat 1 errors audit fixes](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2673)
+
