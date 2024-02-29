@@ -2,8 +2,8 @@
 
 import pytest
 from ..fields import Field
-from ..row_schema import RowSchema
-from ..util import SchemaManager, make_generate_parser_error, create_test_datafile
+from ..row_schema import RowSchema, SchemaManager
+from ..util import make_generate_parser_error, create_test_datafile
 
 
 def passing_validator():
@@ -478,7 +478,7 @@ def test_multi_record_schema_parses_and_validates():
 
 @pytest.fixture
 def test_datafile_empty_file(stt_user, stt):
-    """Fixture for small_correct_file."""
+    """Fixture for empty_file."""
     return create_test_datafile('empty_file', stt_user, stt)
 
 @pytest.mark.django_db()

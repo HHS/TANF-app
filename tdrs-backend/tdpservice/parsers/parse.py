@@ -69,6 +69,18 @@ def parse_datafile(datafile):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
+    rpt_month_year_is_valid, rpt_month_year_error = validators.validate_header_rpt_month_year(
+        datafile,
+        header,
+        util.make_generate_parser_error(datafile, 1)
+    )
+    if not rpt_month_year_is_valid:
+        logger.info(f"Preparser Error -> Rpt Month Year is not valid: {rpt_month_year_error.error_message}")
+        errors['document'] = [rpt_month_year_error]
+        unsaved_parser_errors = {1: [rpt_month_year_error]}
+        bulk_create_errors(unsaved_parser_errors, 1, flush=True)
+        return errors
+
     line_errors = parse_datafile_lines(datafile, program_type, section, is_encrypted)
 
     errors = errors | line_errors

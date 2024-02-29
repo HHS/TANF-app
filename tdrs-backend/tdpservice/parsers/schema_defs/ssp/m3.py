@@ -1,10 +1,9 @@
 """Schema for SSP M1 record type."""
 
 
-from tdpservice.parsers.util import SchemaManager
 from tdpservice.parsers.transforms import ssp_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
 
