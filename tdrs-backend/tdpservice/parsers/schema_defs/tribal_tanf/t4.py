@@ -12,7 +12,7 @@ t4 = SchemaManager(
             document=Tribal_TANF_T4DataSubmissionDocument(),
             preparsing_validators=[
                 validators.recordHasLength(71, "T4"),
-                validators.caseNumberNotEmpty(8, 19),
+                validators.notEmpty(8, 19),
                 validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[],
