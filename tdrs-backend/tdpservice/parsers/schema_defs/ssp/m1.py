@@ -11,7 +11,7 @@ m1 = SchemaManager(
         RowSchema(
             document=SSP_M1DataSubmissionDocument(),
             preparsing_validators=[
-                validators.recordHasLength(150, "M1"),
+                validators.hasLength(150),
                 validators.notEmpty(8, 19),
                 validators.field_year_month_with_header_year_quarter(),
             ],

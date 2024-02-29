@@ -215,7 +215,7 @@ def test_parse_bad_test_file(bad_test_file):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Header record length is 24 characters but must be 23.'
+    assert err.error_message == 'Header length is 24 but must be 23 characters.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -244,7 +244,7 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Header record length is 14 characters but must be 23.'
+    assert err.error_message == 'Header length is 14 but must be 23 characters.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -326,7 +326,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
 
     trailer_error = parser_errors.get(row_number=3)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error.error_message == 'Trailer record length is 11 characters but must be 23.'
+    assert trailer_error.error_message == 'Trailer length is 11 but must be 23 characters.'
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
@@ -336,7 +336,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
         row_errors_list.append(row_error)
         assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert trailer_error.error_message in [
-            'Trailer record length is 11 characters but must be 23.',
+            'Trailer length is 11 but must be 23 characters.',
             'Reporting month year None does not match file reporting year:2021, quarter:Q1.']
         assert row_error.content_type is None
         assert row_error.object_id is None
@@ -365,7 +365,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_2_error.error_message == 'T1 record length is 117 characters but must be 156.'
+    assert row_2_error.error_message == 'Record length is 117 characters but must be 156.'
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
@@ -375,10 +375,10 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
         row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert row_3_error.error_message in [
-            'T1 record length is 7 characters but must be 156.',
+            'Record length is 7 characters but must be 156.',
             'Reporting month year None does not match file reporting year:2021, quarter:Q1.',
             'T1trash does not start with TRAILER.',
-            'Trailer record length is 7 characters but must be 23.',
+            'Trailer length is 7 but must be 23 characters.',
             'Your file does not end with a TRAILER record.',
             'T1trash contains blanks between positions 8 and 19.']
         assert row_3_error.content_type is None
@@ -430,7 +430,7 @@ def test_parse_empty_file(empty_file, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Header record length is 0 characters but must be 23.'
+    assert err.error_message == 'Header length is 0 but must be 23 characters.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -784,7 +784,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
 
     trailer_error = parser_errors.get(
         row_number=6,
-        error_message='Trailer record length is 15 characters but must be 23.'
+        error_message='Trailer length is 15 but must be 23 characters.'
     )
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error.content_type is None

@@ -238,11 +238,13 @@ def between(min, max):
     )
 
 
-def recordHasLength(length, record_type):
+def hasLength(length, error_func=None):
     """Validate that value (string or array) has a length matching length param."""
     return make_validator(
         lambda value: len(value) == length,
-        lambda value: f"{record_type} record length is {len(value)} characters but must be {length}.",
+        lambda value: error_func(value, length)
+        if error_func
+        else f"Record length is {len(value)} characters but must be {length}.",
     )
 
 
