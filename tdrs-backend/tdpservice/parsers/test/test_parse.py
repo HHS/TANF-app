@@ -385,7 +385,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     for row_3_error in row_3_errors:
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert row_3_error.error_message in [
-            'Case number cannot be blank.',
+            'Case number cannot contain blanks.',
             'T1 record length is 7 characters but must be 156.',
             'Your file does not end with a TRAILER record.',
             'Trailer record length is 7 characters but must be 23.',
