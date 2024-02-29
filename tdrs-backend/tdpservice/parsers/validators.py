@@ -314,6 +314,14 @@ def notEmpty(start=0, end=None):
     )
 
 
+def caseNumberNotEmpty(start=0, end=None):
+    """Validate that string value isn't only blanks."""
+    return make_validator(
+        lambda value: not _is_empty(value, start, end),
+        lambda value: 'Case number cannot be blank.'
+    )
+
+
 def isEmpty(start=0, end=None):
     """Validate that string value is only blanks."""
     return make_validator(
