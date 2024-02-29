@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 import itertools
 import logging
 from .models import ParserErrorCategoryChoices, ParserError
-from . import schema_defs, row_schema, validators, util
+from . import schema_defs, validators, util
 from elasticsearch.helpers.errors import BulkIndexError
 from tdpservice.data_files.models import DataFile
 from .schema_defs.util import get_section_reference, get_program_model
