@@ -259,7 +259,7 @@ def contains(substring):
 def startsWith(substring, error_func=None):
     """Validate that string value starts with the given substring param."""
     return make_validator(
-        lambda value: value.startswith(substring),
+        lambda value, instance=None: value.startswith(substring),
         lambda value: error_func(substring) if error_func else f"{value} does not start with {substring}.",
     )
 
