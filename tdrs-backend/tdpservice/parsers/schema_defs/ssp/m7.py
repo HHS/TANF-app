@@ -1,7 +1,8 @@
 """Schema for TANF T7 Row."""
 
+from ...util import SchemaManager
 from ...fields import Field, TransformField
-from ...row_schema import RowSchema, SchemaManager
+from ...row_schema import RowSchema
 from ...transforms import calendar_quarter_to_rpt_month_year
 from ... import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M7DataSubmissionDocument

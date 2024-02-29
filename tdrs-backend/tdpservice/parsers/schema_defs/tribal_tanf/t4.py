@@ -1,7 +1,8 @@
 """Schema for Tribal TANF T4 record types."""
 
+from ...util import SchemaManager
 from ...fields import Field
-from ...row_schema import RowSchema, SchemaManager
+from ...row_schema import RowSchema
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T4DataSubmissionDocument
 

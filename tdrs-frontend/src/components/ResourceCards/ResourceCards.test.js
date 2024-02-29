@@ -83,7 +83,8 @@ describe('ResourceCards', () => {
   it('redirects to ACF Form Instructions when View ACF Form Instructions clicked', () => {
     const store = mockStore(initialState)
 
-    const url = 'https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04'
+    const url =
+      'https://www.acf.hhs.gov/sites/default/files/documents/ofa/tanf_data_reports_tan_ssp_instructions_definitions.pdf'
 
     const wrapper = mount(
       <Provider store={store}>

@@ -1,9 +1,10 @@
 """Schema for HEADER row of all submission types."""
 
 
+from ...util import SchemaManager
 from ...transforms import calendar_quarter_to_rpt_month_year
 from ...fields import Field, TransformField
-from ...row_schema import RowSchema, SchemaManager
+from ...row_schema import RowSchema
 from ... import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M6DataSubmissionDocument
 
