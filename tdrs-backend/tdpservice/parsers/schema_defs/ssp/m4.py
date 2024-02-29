@@ -12,8 +12,7 @@ m4 = SchemaManager(
             document=SSP_M4DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(66),
-                validators.notEmpty(8, 19),
-                validators.field_year_month_with_header_year_quarter(),
+                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[],
             fields=[

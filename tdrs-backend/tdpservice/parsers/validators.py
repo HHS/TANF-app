@@ -1,7 +1,7 @@
 """Generic parser validator functions for use in schema definitions."""
 
 from .models import ParserErrorCategoryChoices
-from .util import fiscal_to_calendar, year_month_to_year_quarter
+from .util import fiscal_to_calendar
 from datetime import date
 import logging
 
@@ -21,12 +21,12 @@ def value_is_empty(value, length, extra_vals={}):
 
     return value is None or value in empty_values
 
-# higher order validator functions
+# higher order validator func
+
 
 def make_validator(validator_func, error_func):
     """Return a function accepting a value input and returning (bool, string) to represent validation state."""
-
-    def validator(value, instance=None):
+    def validator(value):
         try:
             if validator_func(value):
                 return (True, None)
@@ -158,25 +158,6 @@ def sumIsEqual(condition_field, sum_fields=[]):
     return lambda value: sumIsEqualFunc(value)
 
 
-def field_year_month_with_header_year_quarter():
-    """Validate that the field year and month match the header year and quarter."""
-    def validate_reporting_month_year_fields_header(line, row_schema_instance):
-
-        field_month_year = row_schema_instance.get_field_values_by_names(line, ['RPT_MONTH_YEAR']).get('RPT_MONTH_YEAR')
-        df_quarter = row_schema_instance.datafile.quarter
-        df_year = row_schema_instance.datafile.year
-
-        # get reporting month year from header
-        field_year, field_quarter = year_month_to_year_quarter(f"{field_month_year}")
-        file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
-        return (True, None) if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter else (
-            False, f"Reporting month year {field_month_year} " +
-            f"does not match file reporting year:{df_year}, quarter:{df_quarter}.",
-            )
-
-    return lambda value, row_schema_instance: validate_reporting_month_year_fields_header(value, row_schema_instance)
-
-
 def sumIsLarger(fields, val):
     """Validate that the sum of the fields is larger than val."""
 
@@ -259,8 +240,10 @@ def contains(substring):
 def startsWith(substring, error_func=None):
     """Validate that string value starts with the given substring param."""
     return make_validator(
-        lambda value, instance=None: value.startswith(substring),
-        lambda value, instance=None: f"{value} does not start with {substring}.",
+        lambda value: value.startswith(substring),
+        lambda value: error_func(substring)
+        if error_func
+        else f"{value} does not start with {substring}.",
     )
 
 

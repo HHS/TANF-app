@@ -11,8 +11,7 @@ first_part_schema = RowSchema(
     document=SSP_M3DataSubmissionDocument(),
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
-        validators.notEmpty(8, 19),
-        validators.field_year_month_with_header_year_quarter(),
+        validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
         validators.if_then_validator(
