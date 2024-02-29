@@ -13,7 +13,7 @@ m2 = SchemaManager(
         RowSchema(
             document=SSP_M2DataSubmissionDocument(),
             preparsing_validators=[
-                validators.hasLength(150),
+                validators.recordHasLength(150, "M2"),
                 validators.notEmpty(8, 19),
                 validators.field_year_month_with_header_year_quarter(),
             ],
