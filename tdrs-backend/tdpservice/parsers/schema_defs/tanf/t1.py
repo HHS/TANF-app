@@ -11,8 +11,9 @@ t1 = SchemaManager(
         RowSchema(
             document=TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
-                validators.hasLength(156),
-                validators.notEmpty(8, 19)
+                validators.recordHasLength(156, "T1"),
+                validators.notEmpty(8, 19),
+                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[
                 validators.if_then_validator(

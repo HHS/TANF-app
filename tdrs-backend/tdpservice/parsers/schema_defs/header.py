@@ -9,9 +9,9 @@ from .. import validators
 header = RowSchema(
     document=None,
     preparsing_validators=[
-        validators.hasLength(
+        validators.recordHasLength(
             23,
-            lambda value, length: f"Header length is {len(value)} but must be {length} characters.",
+            "Header",
         ),
         validators.startsWith("HEADER",
                               lambda value: f"Your file does not begin with a {value} record."),

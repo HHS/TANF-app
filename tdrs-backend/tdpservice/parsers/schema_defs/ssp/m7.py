@@ -22,7 +22,7 @@ for i in range(1, 31):
             document=SSP_M7DataSubmissionDocument(),
             quiet_preparser_errors=i > 1,
             preparsing_validators=[
-                validators.hasLength(247),
+                validators.recordHasLength(247, "M7"),
                 validators.notEmpty(0, 7),
                 validators.notEmpty(validator_index, validator_index + 24),
             ],

@@ -12,8 +12,8 @@ child_one = RowSchema(
     document=Tribal_TANF_T3DataSubmissionDocument(),
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
-        validators.hasLength(122),
-        validators.notEmpty(8, 19)
+        validators.notEmpty(8, 19),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.if_then_validator(
@@ -318,8 +318,8 @@ child_two = RowSchema(
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
-        validators.hasLength(122),
-        validators.notEmpty(8, 19)
+        validators.notEmpty(8, 19),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.if_then_validator(

@@ -13,8 +13,9 @@ t2 = SchemaManager(
         RowSchema(
             document=Tribal_TANF_T2DataSubmissionDocument(),
             preparsing_validators=[
-                validators.hasLength(122),
-                validators.notEmpty(8, 19)
+                validators.recordHasLength(122, "T2"),
+                validators.notEmpty(8, 19),
+                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[
                 validators.validate__FAM_AFF__SSN(),

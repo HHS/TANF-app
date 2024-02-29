@@ -216,26 +216,26 @@ def test_between_returns_invalid_for_string_value():
     assert error == '047 is not between 100 and 400.'
 
 
-def test_hasLength_returns_valid():
-    """Test `hasLength` gives a valid result."""
+def test_recordHasLength_returns_valid():
+    """Test `recordHasLength` gives a valid result."""
     value = 'abcd123'
 
-    validator = validators.hasLength(7)
+    validator = validators.recordHasLength(7, "T1")
     is_valid, error = validator(value)
 
     assert is_valid is True
     assert error is None
 
 
-def test_hasLength_returns_invalid():
-    """Test `hasLength` gives an invalid result."""
+def test_recordHasLength_returns_invalid():
+    """Test `recordHasLength` gives an invalid result."""
     value = 'abcd123'
 
-    validator = validators.hasLength(22)
+    validator = validators.recordHasLength(22, "T1")
     is_valid, error = validator(value)
 
     assert is_valid is False
-    assert error == 'Record length is 7 characters but must be 22.'
+    assert error == 'T1 record length is 7 characters but must be 22.'
 
 
 def test_contains_returns_valid():

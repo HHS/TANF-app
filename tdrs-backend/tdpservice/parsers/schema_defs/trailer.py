@@ -9,9 +9,9 @@ from .. import validators
 trailer = RowSchema(
     document=None,
     preparsing_validators=[
-        validators.hasLength(
+        validators.recordHasLength(
             23,
-            lambda value, length: f"Trailer length is {len(value)} but must be {length} characters.",
+            "Trailer",
         ),
         validators.startsWith("TRAILER",
                               lambda value: f"Your file does not end with a {value} record."),
