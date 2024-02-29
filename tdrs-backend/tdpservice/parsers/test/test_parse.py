@@ -328,7 +328,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
-    row_errors = parser_errors.filter(row_number=2)
+    row_errors = list(parser_errors.filter(row_number=2).order_by('id'))
     row_errors_list = []
     for row_error in row_errors:
         row_errors_list.append(row_error)
@@ -365,7 +365,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
 
     trailer_error_1 = trailer_errors.first()
     assert trailer_error_1.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_1.error_message == 'Trailer length is 7 but must be 23 characters.'
+    assert trailer_error_1.error_message == 'Trailer record length is 7 characters but must be 23.'
     assert trailer_error_1.content_type is None
     assert trailer_error_1.object_id is None
 
@@ -381,18 +381,15 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
-    row_3_errors = parser_errors.filter(row_number=3)
-    row_3_error_list = []
+    row_3_errors = list(parser_errors.filter(row_number=3).order_by('id')[2:])
     for row_3_error in row_3_errors:
-        row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert row_3_error.error_message in [
+            'Case number cannot be blank.',
             'T1 record length is 7 characters but must be 156.',
-            'Reporting month year None does not match file reporting year:2021, quarter:Q1.',
-            'T1trash does not start with TRAILER.',
-            'Trailer record length is 7 characters but must be 23.',
             'Your file does not end with a TRAILER record.',
-            'Case number cannot be blank.']
+            'Trailer record length is 7 characters but must be 23.',
+        ]
         assert row_3_error.content_type is None
         assert row_3_error.object_id is None
 

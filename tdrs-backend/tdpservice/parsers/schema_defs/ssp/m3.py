@@ -12,7 +12,6 @@ first_part_schema = RowSchema(
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
         validators.caseNumberNotEmpty(8, 19),
-        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.if_then_validator(

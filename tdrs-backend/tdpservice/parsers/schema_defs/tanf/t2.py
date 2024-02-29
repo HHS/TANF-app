@@ -15,7 +15,6 @@ t2 = SchemaManager(
             preparsing_validators=[
                 validators.recordHasLength(156, "T2"),
                 validators.caseNumberNotEmpty(8, 19),
-                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[
                 validators.validate__FAM_AFF__SSN(),

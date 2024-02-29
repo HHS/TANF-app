@@ -13,7 +13,6 @@ m1 = SchemaManager(
             preparsing_validators=[
                 validators.recordHasLength(150, "M1"),
                 validators.caseNumberNotEmpty(8, 19),
-                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[
                 validators.if_then_validator(
