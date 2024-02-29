@@ -322,7 +322,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     errors = parse.parse_datafile(bad_trailer_file)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file)
-    assert parser_errors.count() == 3
+    assert parser_errors.count() == 4
 
     trailer_error = parser_errors.get(row_number=3)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
@@ -361,21 +361,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     errors = parse.parse_datafile(bad_trailer_file_2)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
-    assert parser_errors.count() == 5
-
-    trailer_errors = parser_errors.filter(row_number=3).order_by('id')
-
-    trailer_error_1 = trailer_errors.first()
-    assert trailer_error_1.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_1.error_message == 'Trailer length is 7 but must be 23 characters.'
-    assert trailer_error_1.content_type is None
-    assert trailer_error_1.object_id is None
-
-    trailer_error_2 = trailer_errors[1]
-    assert trailer_error_2.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_2.error_message == "Your file does not end with a TRAILER record."
-    assert trailer_error_2.content_type is None
-    assert trailer_error_2.object_id is None
+    assert parser_errors.count() == 6
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
@@ -389,10 +375,12 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
         row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert row_3_error.error_message in [
-            'Value length 7 does not match 156.',
+            'Record length is 7 characters but must be 156.',
             'Reporting month year None does not match file reporting year:2021, quarter:Q1.',
             'T1trash does not start with TRAILER.',
-            'Trailer length is 7 but must be 23 characters.']
+            'Trailer length is 7 but must be 23 characters.',
+            'Your file does not end with a TRAILER record.',
+            'T1trash contains blanks between positions 8 and 19.']
         assert row_3_error.content_type is None
         assert row_3_error.object_id is None
 
@@ -403,7 +391,6 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
         assert error_2_0 in [row_2_error]
     for error_3_0 in errors_3_0:
         assert error_3_0 in row_3_error_list
-    assert error_trailer == [trailer_error_1, trailer_error_2]
 
 
 @pytest.fixture
