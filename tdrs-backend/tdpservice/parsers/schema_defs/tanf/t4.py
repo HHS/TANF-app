@@ -13,7 +13,8 @@ t4 = SchemaManager(
             document=TANF_T4DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(71),
-                validators.notEmpty(8, 19)
+                validators.notEmpty(8, 19),
+                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[],
             fields=[

@@ -14,6 +14,8 @@ from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
 from elasticsearch.helpers.errors import BulkIndexError
+from ..schema_defs.util import get_section_reference, get_program_models, get_program_model
+
 import logging
 
 
@@ -328,17 +330,21 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
-    row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
-    length_error = row_errors[0]
-    assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'Record length is 7 characters but must be 156.'
-    assert length_error.content_type is None
-    assert length_error.object_id is None
+    row_errors = parser_errors.filter(row_number=2)
+    row_errors_list = []
+    for row_error in row_errors:
+        row_errors_list.append(row_error)
+        assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert trailer_error.error_message in [
+            'Trailer length is 11 but must be 23 characters.',
+            'Reporting month year None does not match file reporting year:2021, quarter:Q1.']
+        assert row_error.content_type is None
+        assert row_error.object_id is None
 
-    assert errors == {
-        'trailer': [trailer_error],
-        "2_0": row_errors
-    }
+    assert errors['trailer'] == [trailer_error]
+
+    for error_2_0 in errors["2_0"]:
+        assert error_2_0 in row_errors_list
 
 
 @pytest.fixture
@@ -377,18 +383,27 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
-    row_3_errors = [trailer_errors[2], trailer_errors[3]]
-    length_error = row_3_errors[0]
-    assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'Record length is 7 characters but must be 156.'
-    assert length_error.content_type is None
-    assert length_error.object_id is None
+    row_3_errors = parser_errors.filter(row_number=3)
+    row_3_error_list = []
+    for row_3_error in row_3_errors:
+        row_3_error_list.append(row_3_error)
+        assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+        assert row_3_error.error_message in [
+            'Value length 7 does not match 156.',
+            'Reporting month year None does not match file reporting year:2021, quarter:Q1.',
+            'T1trash does not start with TRAILER.',
+            'Trailer length is 7 but must be 23 characters.']
+        assert row_3_error.content_type is None
+        assert row_3_error.object_id is None
 
-    assert errors == {
-        "2_0": [row_2_error],
-        "3_0": row_3_errors,
-        "trailer": [trailer_error_1, trailer_error_2],
-    }
+    errors_2_0 = errors["2_0"]
+    errors_3_0 = errors["3_0"]
+    error_trailer = errors["trailer"]
+    for error_2_0 in errors_2_0:
+        assert error_2_0 in [row_2_error]
+    for error_3_0 in errors_3_0:
+        assert error_3_0 in row_3_error_list
+    assert error_trailer == [trailer_error_1, trailer_error_2]
 
 
 @pytest.fixture
@@ -494,9 +509,9 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile):
     ssp_section1_datafile.year = 2019
     ssp_section1_datafile.quarter = 'Q1'
 
-    expected_m1_record_count = 7849
-    expected_m2_record_count = 9373
-    expected_m3_record_count = 16764
+    expected_m1_record_count = 820
+    expected_m2_record_count = 992
+    expected_m3_record_count = 1757
 
     parse.parse_datafile(ssp_section1_datafile)
 
@@ -509,7 +524,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile):
     assert err.error_message == '3 is not larger or equal to 1 and smaller or equal to 2.'
     assert err.content_type is not None
     assert err.object_id is not None
-    assert parser_errors.count() == 19846
+    assert parser_errors.count() == 32486
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
@@ -714,24 +729,20 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     assert parser_errors.count() == 4
 
-    error_message = 'RPT_MONTH_YEAR is required but a value was not provided.'
+    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_2_error = parser_errors.get(row_number=2, error_message=error_message)
-    assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_2_error.error_message == error_message
-    assert row_2_error.content_type.model == 'tanf_t1'
-    assert row_2_error.object_id is not None
+    assert row_2_error.object_id is None
 
+    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_3_error = parser_errors.get(row_number=3, error_message=error_message)
-    assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_3_error.error_message == error_message
-    assert row_3_error.content_type.model == 'tanf_t2'
-    assert row_3_error.object_id is not None
 
     row_4_error = parser_errors.get(row_number=4, error_message=error_message)
-    assert row_4_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_4_error.error_message == error_message
-    assert row_4_error.content_type.model == 'tanf_t3'
-    assert row_4_error.object_id is not None
 
     error_message = 'Unknown Record_Type was found.'
     row_5_error = parser_errors.get(row_number=5, error_message=error_message)
@@ -756,31 +767,25 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     parse.parse_datafile(bad_ssp_s1__row_missing_required_field)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
-    assert parser_errors.count() == 9
+    assert parser_errors.count() == 5
 
     row_2_error = parser_errors.get(
         row_number=2,
-        error_message='RPT_MONTH_YEAR is required but a value was not provided.'
+        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
-    assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_2_error.content_type.model == 'ssp_m1'
-    assert row_2_error.object_id is not None
+    assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_3_error = parser_errors.get(
         row_number=3,
-        error_message='RPT_MONTH_YEAR is required but a value was not provided.'
+        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
-    assert row_3_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_3_error.content_type.model == 'ssp_m2'
-    assert row_3_error.object_id is not None
+    assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_4_error = parser_errors.get(
         row_number=4,
-        error_message='RPT_MONTH_YEAR is required but a value was not provided.'
+        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
-    assert row_4_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_4_error.content_type.model == 'ssp_m3'
-    assert row_4_error.object_id is not None
+    assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_5_error = parser_errors.get(
         row_number=5,
@@ -840,17 +845,17 @@ def test_get_schema_options(dfs):
     assert schema == schema_defs.tanf.t1
 
     # get model
-    models = util.get_program_models('TAN', 'A')
+    models = get_program_models('TAN', 'A')
     assert models == {
         'T1': schema_defs.tanf.t1,
         'T2': schema_defs.tanf.t2,
         'T3': schema_defs.tanf.t3,
     }
 
-    model = util.get_program_model('TAN', 'A', 'T1')
+    model = get_program_model('TAN', 'A', 'T1')
     assert model == schema_defs.tanf.t1
     # get section
-    section = util.get_section_reference('TAN', 'C')
+    section = get_section_reference('TAN', 'C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
 
     # from datafile:
@@ -1077,7 +1082,7 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
 
 @pytest.fixture
 def ssp_section2_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP4.TS06."""
+    """Fixture for ADS.E2J.NDM2.MS24."""
     return util.create_test_datafile('ADS.E2J.NDM2.MS24', stt_user, stt, 'SSP Closed Case Data')
 
 @pytest.mark.django_db()
@@ -1108,8 +1113,8 @@ def test_parse_ssp_section2_file(ssp_section2_file, dfs):
     m4_objs = SSP_M4.objects.all().order_by('id')
     m5_objs = SSP_M5.objects.all().order_by('AMOUNT_EARNED_INCOME')
 
-    expected_m4_count = 2205
-    expected_m5_count = 6736
+    expected_m4_count = 231
+    expected_m5_count = 703
 
     assert SSP_M4.objects.all().count() == expected_m4_count
     assert SSP_M5.objects.all().count() == expected_m5_count
@@ -1359,7 +1364,7 @@ def tribal_section_4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     """Test parsing Tribal TANF Section 4 submission."""
-    tribal_section_4_file.year = 2020
+    tribal_section_4_file.year = 2021
     tribal_section_4_file.quarter = 'Q1'
     dfs.datafile = tribal_section_4_file
 
