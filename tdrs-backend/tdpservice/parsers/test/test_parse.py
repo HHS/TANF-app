@@ -392,7 +392,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
             'T1trash does not start with TRAILER.',
             'Trailer record length is 7 characters but must be 23.',
             'Your file does not end with a TRAILER record.',
-            'T1trash contains blanks between positions 8 and 19.']
+            'Case number cannot be blank.']
         assert row_3_error.content_type is None
         assert row_3_error.object_id is None
 
