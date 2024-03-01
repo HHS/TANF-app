@@ -2,7 +2,7 @@
 
 02/14/2024 - 02/27/2024
 
-Velocity (Dev): 18
+Velocity (Dev): 27
 
 ## Sprint Goal
 * Dev:
