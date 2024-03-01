@@ -452,7 +452,7 @@ class Common(Configuration):
     CELERY_TIMEZONE = 'UTC'
 
     CELERY_BEAT_SCHEDULE = {
-        'name': {
+        'Database Backup': {
             'task': 'tdpservice.scheduling.tasks.postgres_backup',
             'schedule': crontab(minute='0', hour='4'), # Runs at midnight EST
             'args': "-b",
@@ -460,8 +460,8 @@ class Common(Configuration):
                 'expires': 15.0,
             },
         },
-        'name': {
-            'task': 'tdpservice.scheduling.tasks.check_for_accounts_needing_deactivation_warning',
+        'Account Deactivation Warning': {
+            'task': 'tdpservice.email.tasks.check_for_accounts_needing_deactivation_warning',
             'schedule': crontab(day_of_week='*', hour='13', minute='0'), # Every day at 1pm UTC (9am EST)
 
             'options': {
@@ -469,7 +469,7 @@ class Common(Configuration):
             },
         },
         'Email Admin Number of Access Requests' : {
-            'task': 'tdpservice.scheduling.tasks.email_admin_num_access_requests',
+            'task': 'tdpservice.email.tasks.email_admin_num_access_requests',
             'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
         }
     }
