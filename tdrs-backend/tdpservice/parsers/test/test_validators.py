@@ -23,7 +23,6 @@ def test_value_is_empty_returns_true(value, length):
     result = validators.value_is_empty(value, length)
     assert result is True
 
-
 @pytest.mark.parametrize("value,length", [
     (0, 1),
     (1, 1),
@@ -341,7 +340,7 @@ def test_notEmpty_returns_nonexistent_substring():
     assert error == "111  333 contains blanks between positions 10 and 12."
 
 def test_validate_update_indicator_returns_True_if_update_is_D():
-    """Test 'D' returns true with no error when validating update_indicator"""
+    """Test 'D' returns true with no error when validating update_indicator."""
     is_valid, error = validators.validate_update_indicator(update_indicator="D", generate_error=None)
 
     assert is_valid is True
@@ -349,7 +348,7 @@ def test_validate_update_indicator_returns_True_if_update_is_D():
 
 @pytest.mark.django_db
 def test_validate_update_indicator_returns_error_if_update_is_not_D(test_datafile):
-    """Test 'U" throws an error when validating update_indicator"""
+    """Test 'U" throws an error when validating update_indicator."""
     generate_error = util.make_generate_parser_error(test_datafile, 1)
     is_valid, error = validators.validate_update_indicator(update_indicator="U", generate_error=generate_error)
 
@@ -367,7 +366,7 @@ class TestCat3ValidatorsBase:
         This fixture must be overridden in all child classes.
         """
         raise NotImplementedError()
-    
+
 
 class TestT1Cat3Validators(TestCat3ValidatorsBase):
     """Test category three validators for TANF T1 records."""
@@ -1249,4 +1248,3 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         assert result == (False, 'if FAMILY_AFFILIATION :1 validator1 passed then REC_FEDERAL_DISABILITY 0 is not ' +
                           'larger or equal to 1 and smaller or equal to 2.',
                           ['FAMILY_AFFILIATION', 'REC_FEDERAL_DISABILITY'])
-        

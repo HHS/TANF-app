@@ -32,25 +32,24 @@ def parse_datafile(datafile):
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
 
-
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips", "update"})
 
     generate_error = util.make_generate_parser_error(datafile, 1)
 
     # Validate header update code is "D"
-    
+
     update_indicator_is_valid, update_indicator_error = validators.validate_update_indicator(field_values["update"],
                                                                                              generate_error)
-    
+
     if not update_indicator_is_valid:
         logger.info(f"Update Indicator ({field_values['update']}) is not D")
         errors['header'] = [update_indicator_error]
         bulk_create_errors({1: [update_indicator_error]}, 1, flush=True)
-        return errors       
+        return errors
 
     # Validate tribe code in submission across program type and fips code
-    
+
     tribe_is_valid, tribe_error = validators.validate_tribe_fips_program_agree(header['program_type'],
                                                                                field_values["tribe_code"],
                                                                                field_values["state_fips"],

@@ -1472,7 +1472,7 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
 def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
     """Fixture for tanf_section_1_file_with_bad_update_indicator."""
     return util.create_test_datafile('tanf_s1_bad_update_indicator.txt', stt_user, stt, "Active Case Data")
-  
+
 @pytest.mark.django_db()
 def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file_with_bad_update_indicator, dfs):
     """Test parsing TANF Section 1 submission update indicator."""
