@@ -1,10 +1,14 @@
 """Tests for generic validator functions."""
 
 import pytest
-from .. import validators
+from .. import validators, util
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
 from tdpservice.parsers.test.factories import SSPM5Factory
 
+@pytest.fixture
+def test_datafile(stt_user, stt):
+    """Fixture for small_correct_file."""
+    return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
 
 @pytest.mark.parametrize("value,length", [
     (None, 0),
@@ -336,6 +340,22 @@ def test_notEmpty_returns_nonexistent_substring():
     assert is_valid is False
     assert error == "111  333 contains blanks between positions 10 and 12."
 
+def test_validate_update_indicator_returns_True_if_update_is_D():
+    """Test 'D' returns true with no error when validating update_indicator"""
+    is_valid, error = validators.validate_update_indicator(update_indicator="D", generate_error=None)
+
+    assert is_valid is True
+    assert error is None
+
+@pytest.mark.django_db
+def test_validate_update_indicator_returns_error_if_update_is_not_D(test_datafile):
+    """Test 'U" throws an error when validating update_indicator"""
+    generate_error = util.make_generate_parser_error(test_datafile, 1)
+    is_valid, error = validators.validate_update_indicator(update_indicator="U", generate_error=generate_error)
+
+    assert is_valid is False
+    assert error.error_message == "Update indicator (U) is not 'D'"
+
 @pytest.mark.usefixtures('db')
 class TestCat3ValidatorsBase:
     """A base test class for tests that evaluate category three validators."""
@@ -347,7 +367,7 @@ class TestCat3ValidatorsBase:
         This fixture must be overridden in all child classes.
         """
         raise NotImplementedError()
-
+    
 
 class TestT1Cat3Validators(TestCat3ValidatorsBase):
     """Test category three validators for TANF T1 records."""
@@ -1229,3 +1249,4 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         assert result == (False, 'if FAMILY_AFFILIATION :1 validator1 passed then REC_FEDERAL_DISABILITY 0 is not ' +
                           'larger or equal to 1 and smaller or equal to 2.',
                           ['FAMILY_AFFILIATION', 'REC_FEDERAL_DISABILITY'])
+        

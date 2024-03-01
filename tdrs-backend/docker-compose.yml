@@ -64,6 +64,7 @@ services:
       - discovery.type=single-node
       - logger.discovery.level=debug
       - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
     ports:
       - 9200:9200
       - 9300:9300
@@ -113,7 +114,7 @@ services:
       ./manage.py populate_stts &&
       ./gunicorn_start.sh && celery -A tdpservice.settings worker -l info"
     ports:
-      - "5555:5555"
+      - "5556:5555"
     tty: true
     depends_on:
       - clamav-rest
