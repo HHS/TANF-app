@@ -7,12 +7,46 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+class SortedRecordSchemaPairs:
+    """Maintains list of case record-schema-pairs and a copy object sorted by rpt_month_year and model_type."""
+
+    def __init__(self):
+        self.cases = []
+        self.sorted_cases = {}
+
+    def clear(self, seed_record_schema_pair=None):
+        """Reset both the list and sorted object. Optionally add a seed record for the next run."""
+        self.cases = []
+        self.sorted_cases = {}
+
+        if seed_record_schema_pair:
+            self.add_record(seed_record_schema_pair)
+
+    def add_record(self, record_schema_pair):
+        """Add a record_schema_pair to both the cases list and sorted_cases object."""
+        self.__add_record_to_sorted_object(record_schema_pair)
+        self.cases.append(record_schema_pair)
+
+    def __add_record_to_sorted_object(self, record_schema_pair):
+        """Add a record_schema_pair to the sorted_cases object."""
+        record, schema = record_schema_pair
+        rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
+
+        reporting_year_cases = self.sorted_cases.get(rpt_month_year, {})
+        records = reporting_year_cases.get(type(record), [])
+        records.append(record_schema_pair)
+
+        reporting_year_cases[type(record)] = records
+        self.sorted_cases[rpt_month_year] = reporting_year_cases
+
+
 class CaseConsistencyValidator:
     """Caches records of the same case to perform category four validation while actively parsing."""
 
     def __init__(self, header, generate_error):
         self.header = header
-        self.record_schema_pairs = []
+        self.record_schema_pairs = SortedRecordSchemaPairs()
         self.current_case = None
         self.case_has_errors = False
         self.section = header["type"]
@@ -40,21 +74,6 @@ class CaseConsistencyValidator:
         )
         self.generated_errors.append(err)
 
-    def __get_records_by_rpt_month_year_and_model_type(self):
-        """Get an object of the records sorted by model type, with RPT_MONTH_YEAR as the key."""
-        cases = {}
-        for record, schema in self.record_schema_pairs:
-            rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
-
-            reporting_year_cases = cases.get(rpt_month_year, {})
-            records = reporting_year_cases.get(type(record), [])
-            records.append((record, schema))
-
-            reporting_year_cases[type(record)] = records
-            cases[rpt_month_year] = reporting_year_cases
-
-        return cases
-
     def clear_errors(self):
         """Reset generated errors."""
         self.generated_errors = []
@@ -70,11 +89,11 @@ class CaseConsistencyValidator:
         if self.case_is_section_one_or_two:
             if record.CASE_NUMBER != self.current_case and self.current_case is not None:
                 self.validate()
-                self.record_schema_pairs = [(record, schema)]
+                self.record_schema_pairs.clear((record, schema))
                 self.case_has_errors = case_has_errors
             else:
                 self.case_has_errors = self.case_has_errors if self.case_has_errors else case_has_errors
-                self.record_schema_pairs.append((record, schema))
+                self.record_schema_pairs.add_record((record, schema))
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
 
@@ -120,7 +139,7 @@ class CaseConsistencyValidator:
         quarter = self.header["quarter"]
         header_rpt_month_year_list = get_rpt_month_year_list(year, quarter)
         num_errors = 0
-        for record, schema in self.record_schema_pairs:
+        for record, schema in self.record_schema_pairs.cases:
             if record.RPT_MONTH_YEAR not in header_rpt_month_year_list:
                 num_errors += 1
                 err_msg = (f"Failed to validate record with CASE_NUMBER={record.CASE_NUMBER} and "
@@ -179,7 +198,7 @@ class CaseConsistencyValidator:
         logger.debug(f'is_ssp: {is_ssp}')
         logger.debug(f'models - T1: {t1_model}; T2: {t2_model}; T3: {t3_model}')
 
-        cases = self.__get_records_by_rpt_month_year_and_model_type()
+        cases = self.record_schema_pairs.sorted_cases
         logger.debug(f'cases obj: {cases}')
 
         for rpt_month_year, reporting_year_cases in cases.items():
@@ -269,7 +288,7 @@ class CaseConsistencyValidator:
         logger.debug(f'is_ssp: {is_ssp}')
         logger.debug(f'models - T4: {t4_model}; T5: {t5_model};')
 
-        cases = self.__get_records_by_rpt_month_year_and_model_type()
+        cases = self.record_schema_pairs.sorted_cases
         logger.debug(f'cases obj: {cases}')
 
         for rpt_month_year, reporting_year_cases in cases.items():
