@@ -7,12 +7,10 @@ from .. import validators
 
 
 trailer = RowSchema(
+    record_type="TRAILER",
     document=None,
     preparsing_validators=[
-        validators.recordHasLength(
-            23,
-            "Trailer",
-        ),
+        validators.recordHasLength(23),
         validators.startsWith("TRAILER",
                               lambda value: f"Your file does not end with a {value} record."),
     ],

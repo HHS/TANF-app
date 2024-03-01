@@ -9,9 +9,10 @@ from tdpservice.search_indexes.documents.tanf import TANF_T6DataSubmissionDocume
 
 
 s1 = RowSchema(
+    record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.recordHasLength(379, "T6"),
+        validators.recordHasLength(379),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -226,9 +227,10 @@ s1 = RowSchema(
 )
 
 s2 = RowSchema(
+    record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.recordHasLength(379, "T6"),
+        validators.recordHasLength(379),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -437,9 +439,10 @@ s2 = RowSchema(
 )
 
 s3 = RowSchema(
+    record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.recordHasLength(379, "T6"),
+        validators.recordHasLength(379),
     ],
     postparsing_validators=[
         validators.sumIsEqual(

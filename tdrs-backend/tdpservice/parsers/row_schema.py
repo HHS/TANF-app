@@ -11,7 +11,8 @@ class RowSchema:
 
     def __init__(
             self,
-            document,
+            record_type="T1",
+            document=None,
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
@@ -22,6 +23,7 @@ class RowSchema:
         self.postparsing_validators = postparsing_validators
         self.fields = fields
         self.quiet_preparser_errors = quiet_preparser_errors
+        self.record_type = record_type
 
     def _add_field(self, item, name, length, start, end, type):
         """Add a field to the schema."""
@@ -71,7 +73,8 @@ class RowSchema:
         errors = []
 
         for validator in self.preparsing_validators:
-            validator_is_valid, validator_error = validator(line)
+            validator_is_valid, validator_error = validator(line, self.record_type,
+                                                            "record type", "0")
             is_valid = False if not validator_is_valid else is_valid
 
             if validator_error and not self.quiet_preparser_errors:
@@ -118,7 +121,8 @@ class RowSchema:
             should_validate = not field.required and not is_empty
             if (field.required and not is_empty) or should_validate:
                 for validator in field.validators:
-                    validator_is_valid, validator_error = validator(value)
+                    validator_is_valid, validator_error = validator(value, self.record_type,
+                                                                    field.friendly_name, field.item)
                     is_valid = False if not validator_is_valid else is_valid
                     if validator_error:
                         errors.append(
@@ -150,7 +154,7 @@ class RowSchema:
         errors = []
 
         for validator in self.postparsing_validators:
-            validator_is_valid, validator_error, field_names = validator(instance)
+            validator_is_valid, validator_error, field_names = validator(instance, self.record_type)
             is_valid = False if not validator_is_valid else is_valid
             if validator_error:
                 # get field from field name

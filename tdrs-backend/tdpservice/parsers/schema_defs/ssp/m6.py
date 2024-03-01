@@ -8,9 +8,10 @@ from ... import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M6DataSubmissionDocument
 
 s1 = RowSchema(
+    record_type="M6",
     document=SSP_M6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.recordHasLength(259, "M6"),
+        validators.recordHasLength(259),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -169,9 +170,10 @@ s1 = RowSchema(
 )
 
 s2 = RowSchema(
+    record_type="M6",
     document=SSP_M6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.recordHasLength(259, "M6"),
+        validators.recordHasLength(259),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -330,9 +332,10 @@ s2 = RowSchema(
 )
 
 s3 = RowSchema(
+    record_type="M6",
     document=SSP_M6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.recordHasLength(259, "M6"),
+        validators.recordHasLength(259),
     ],
     postparsing_validators=[
         validators.sumIsEqual(

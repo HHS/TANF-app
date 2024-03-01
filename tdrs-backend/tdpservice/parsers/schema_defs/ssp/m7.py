@@ -19,10 +19,11 @@ families_item_numbers = [sub_item_labels[i % 3] for i in range(30)]
 for i in range(1, 31):
     schemas.append(
         RowSchema(
+            record_type="M7",
             document=SSP_M7DataSubmissionDocument(),
             quiet_preparser_errors=i > 1,
             preparsing_validators=[
-                validators.recordHasLength(247, "M7"),
+                validators.recordHasLength(247),
                 validators.notEmpty(0, 7),
                 validators.notEmpty(validator_index, validator_index + 24),
             ],

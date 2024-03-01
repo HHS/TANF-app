@@ -9,9 +9,10 @@ from tdpservice.search_indexes.documents.ssp import SSP_M4DataSubmissionDocument
 m4 = SchemaManager(
     schemas=[
         RowSchema(
+            record_type="M4",
             document=SSP_M4DataSubmissionDocument(),
             preparsing_validators=[
-                validators.recordHasLength(66, "M4"),
+                validators.recordHasLength(66),
                 validators.caseNumberNotEmpty(8, 19),
             ],
             postparsing_validators=[],

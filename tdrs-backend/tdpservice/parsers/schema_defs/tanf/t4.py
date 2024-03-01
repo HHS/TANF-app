@@ -10,9 +10,10 @@ from tdpservice.search_indexes.documents.tanf import TANF_T4DataSubmissionDocume
 t4 = SchemaManager(
     schemas=[
         RowSchema(
+            record_type="T4",
             document=TANF_T4DataSubmissionDocument(),
             preparsing_validators=[
-                validators.recordHasLength(71, "T4"),
+                validators.recordHasLength(71),
                 validators.caseNumberNotEmpty(8, 19),
             ],
             postparsing_validators=[],
