@@ -49,8 +49,6 @@ def test_parse_small_correct_file(test_datafile, dfs):
 
     parse.parse_datafile(test_datafile)
 
-    errors = ParserError.objects.filter(file=test_datafile)
-
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)

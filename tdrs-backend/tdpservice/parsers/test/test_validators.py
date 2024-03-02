@@ -41,7 +41,7 @@ def test_or_validators():
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")))
     assert validator(value, "T1", "friendly_name", "item_no") == (True, None)
     assert validator("3", "T1", "friendly_name", "item_no") == (True, None)
-    assert validator("5", "T1", "friendly_name", "item_no") == (False, 
+    assert validator("5", "T1", "friendly_name", "item_no") == (False,
                                                                 "T1: 5 does not match 2. or T1: 5 does not match 3.")
 
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")),
@@ -55,13 +55,13 @@ def test_or_validators():
     assert validator(value, "T1", "friendly_name", "item_no") == (True, None)
 
     value = "5"
-    assert validator(value, "T1", "friendly_name", "item_no") == (False, 
+    assert validator(value, "T1", "friendly_name", "item_no") == (False,
                                                                   "T1: 5 does not match 2. or T1: 5 does not match 3. "
                                                                   "or T1: 5 does not match 4.")
 
     validator = validators.or_validators(validators.matches((2)), validators.matches((3)), validators.isLargerThan(4))
     assert validator(5, "T1", "friendly_name", "item_no") == (True, None)
-    assert validator(1, "T1", "friendly_name", "item_no") == (False, 
+    assert validator(1, "T1", "friendly_name", "item_no") == (False,
                                                               "T1: 1 does not match 2. or T1: 1 does not match 3. "
                                                               "or T1: 1 is not larger than 4.")
 
@@ -98,7 +98,8 @@ def test_validate__FAM_AFF__SSN():
     }
     result = validators.validate__FAM_AFF__SSN()(instance, "T1")
     assert result == (False,
-                      'T1: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, then SSN != 000000000 -- 999999999.',
+                      ('T1: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, '
+                       'then SSN != 000000000 -- 999999999.'),
                       ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
     instance['SSN'] = '1'*8 + '0'
     result = validators.validate__FAM_AFF__SSN()(instance, "T1")
@@ -374,7 +375,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
 
         record.AMT_FOOD_STAMP_ASSISTANCE = 0
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_subsidized_child_care(self, record):
         """Test cat3 validator for subsidized child care."""
@@ -390,7 +391,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
         record.RECEIVES_SUB_CC = 4
         record.AMT_SUB_CC = 0
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_cash_amount_and_nbr_months(self, record):
         """Test cat3 validator for cash amount and number of months."""
@@ -404,7 +405,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
         record.CASH_AMOUNT = 1
         record.NBR_MONTHS = -1
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_child_care(self, record):
         """Test cat3 validator for child care."""
@@ -418,7 +419,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
         record.CC_AMOUNT = 1
         record.CHILDREN_COVERED = -1
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
         val = validators.if_then_validator(
           condition_field_name='CC_AMOUNT', condition_function=validators.isLargerThan(0),
@@ -427,7 +428,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
         record.CC_AMOUNT = 10
         record.CC_NBR_MONTHS = -1
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_transportation(self, record):
         """Test cat3 validator for transportation."""
@@ -441,7 +442,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
         record.TRANSP_AMOUNT = 1
         record.TRANSP_NBR_MONTHS = -1
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_transitional_services(self, record):
         """Test cat3 validator for transitional services."""
@@ -455,7 +456,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
         record.TRANSITION_SERVICES_AMOUNT = 1
         record.TRANSITION_NBR_MONTHS = -1
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_other(self, record):
         """Test cat3 validator for other."""
@@ -469,7 +470,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
         record.OTHER_AMOUNT = 1
         record.OTHER_NBR_MONTHS = -1
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_reasons_for_amount_of_assistance_reductions(self, record):
         """Test cat3 validator for assistance reductions."""
@@ -484,7 +485,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
         record.SANC_REDUCTION_AMT = 10
         record.WORK_REQ_SANCTION = -1
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_sum(self, record):
         """Test cat3 validator for sum of cash fields."""
@@ -501,7 +502,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
         record.TRANSITION_SERVICES_AMOUNT = 0
         record.OTHER_AMOUNT = 0
         result = val(record, "T1")
-        assert result[0] == False
+        assert result[0] is False
 
 
 class TestT2Cat3Validators(TestCat3ValidatorsBase):
@@ -517,9 +518,9 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         val = validators.if_then_validator(
                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
                   result_field_name='SSN', result_function=validators.notOneOf(("000000000", "111111111", "222222222",
-                                                                           "333333333", "444444444", "555555555",
-                                                                           "666666666", "777777777", "888888888",
-                                                                           "999999999")),
+                                                                                "333333333", "444444444", "555555555",
+                                                                                "666666666", "777777777", "888888888",
+                                                                                "999999999")),
             )
         record.SSN = "999989999"
         record.FAMILY_AFFILIATION = 1
@@ -529,7 +530,7 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 1
         record.SSN = "999999999"
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_race_ethnicity(self, record):
         """Test cat3 validator for race/ethnicity."""
@@ -565,7 +566,7 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 3
         record.MARITAL_STATUS = 0
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_parent_with_minor(self, record):
         """Test cat3 validator for parent with a minor child."""
@@ -578,16 +579,17 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
 
         record.PARENT_MINOR_CHILD = 0
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_education_level(self, record):
         """Test cat3 validator for education level."""
         val = validators.if_then_validator(
                       condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2, 3)),
-                      result_field_name='EDUCATION_LEVEL', result_function=validators.oneOf(("01", "02", "03", "04", "05",
-                                                                                        "06", "07", "08", "09", "10",
-                                                                                        "11", "12", "13", "14", "15",
-                                                                                        "16", "98", "99")),
+                      result_field_name='EDUCATION_LEVEL', result_function=validators.oneOf(("01", "02", "03", "04",
+                                                                                             "05", "06", "07", "08",
+                                                                                             "09", "10", "11", "12",
+                                                                                             "13", "14", "15", "16",
+                                                                                             "98", "99")),
                 )
         record.FAMILY_AFFILIATION = 3
         result = val(record, "T2")
@@ -596,7 +598,7 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 1
         record.EDUCATION_LEVEL = "00"
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_citizenship(self, record):
         """Test cat3 validator for citizenship."""
@@ -611,7 +613,7 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 1
         record.CITIZENSHIP_STATUS = 0
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_cooperation_with_child_support(self, record):
         """Test cat3 validator for cooperation with child support."""
@@ -626,7 +628,7 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 1
         record.COOPERATION_CHILD_SUPPORT = 0
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_months_federal_time_limit(self, record):
         """Test cat3 validator for federal time limit."""
@@ -640,7 +642,7 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.MONTHS_FED_TIME_LIMIT = "000"
         record.RELATIONSHIP_HOH = "01"
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_employment_status(self, record):
         """Test cat3 validator for employment status."""
@@ -655,7 +657,7 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 3
         record.EMPLOYMENT_STATUS = 4
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_work_eligible_indicator(self, record):
         """Test cat3 validator for work eligibility."""
@@ -673,15 +675,15 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 1
         record.WORK_ELIGIBLE_INDICATOR = "00"
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_work_participation(self, record):
         """Test cat3 validator for work participation."""
         val = validators.if_then_validator(
                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
-                        result_field_name='WORK_PART_STATUS', result_function=validators.oneOf(['01', '02', '05', '07', '09',
-                                                                                           '15', '17', '18', '19', '99']
-                                                                                          ),
+                        result_field_name='WORK_PART_STATUS', result_function=validators.oneOf(['01', '02', '05', '07',
+                                                                                                '09', '15', '17', '18',
+                                                                                                '19', '99']),
                     )
         record.FAMILY_AFFILIATION = 0
         result = val(record, "T2")
@@ -690,16 +692,18 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 2
         record.WORK_PART_STATUS = "04"
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
         val = validators.if_then_validator(
-                        condition_field_name='WORK_ELIGIBLE_INDICATOR', condition_function=validators.isInStringRange(1, 5),
-                        result_field_name='WORK_PART_STATUS', result_function=validators.notMatches('99'),
+                        condition_field_name='WORK_ELIGIBLE_INDICATOR',
+                        condition_function=validators.isInStringRange(1, 5),
+                        result_field_name='WORK_PART_STATUS',
+                        result_function=validators.notMatches('99'),
                     )
         record.WORK_PART_STATUS = "99"
         record.WORK_ELIGIBLE_INDICATOR = "01"
         result = val(record, "T2")
-        assert result[0] == False
+        assert result[0] is False
 
 
 class TestT3Cat3Validators(TestCat3ValidatorsBase):
@@ -724,7 +728,7 @@ class TestT3Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 1
         record.SSN = "999999999"
         result = val(record, "T3")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_t3_race_ethnicity(self, record):
         """Test cat3 validator for race/ethnicity."""
@@ -761,7 +765,7 @@ class TestT3Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 1
         record.RELATIONSHIP_HOH = "01"
         result = val(record, "T3")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_t3_education_level(self, record):
         """Test cat3 validator for education level."""
@@ -776,7 +780,7 @@ class TestT3Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 1
         record.EDUCATION_LEVEL = "99"
         result = val(record, "T3")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_t3_citizenship(self, record):
         """Test cat3 validator for citizenship."""
@@ -791,7 +795,7 @@ class TestT3Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 1
         record.CITIZENSHIP_STATUS = 3
         result = val(record, "T3")
-        assert result[0] == False
+        assert result[0] is False
 
         val = validators.if_then_validator(
                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(2),
@@ -800,7 +804,7 @@ class TestT3Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 2
         record.CITIZENSHIP_STATUS = 3
         result = val(record, "T3")
-        assert result[0] == False
+        assert result[0] is False
 
 
 class TestT5Cat3Validators(TestCat3ValidatorsBase):
@@ -825,7 +829,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.FAMILY_AFFILIATION = 2
 
         result = val(record, "T5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_ssn_citizenship(self, record):
         """Test cat3 validator for SSN/citizenship."""
@@ -838,7 +842,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.SSN = "000000000"
 
         result = val(record, "T5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_race_ethnicity(self, record):
         """Test cat3 validator for race/ethnicity."""
@@ -865,7 +869,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
                     result_field_name=race, result_function=validators.isInLimits(1, 2)
                   )
             result = val(record, "T5")
-            assert result[0] == False
+            assert result[0] is False
 
     def test_validate_marital_status(self, record):
         """Test cat3 validator for marital status."""
@@ -882,7 +886,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.MARITAL_STATUS = 6
 
         result = val(record, "T5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_parent_minor(self, record):
         """Test cat3 validator for parent with minor."""
@@ -899,7 +903,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.PARENT_MINOR_CHILD = 0
 
         result = val(record, "T5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_education(self, record):
         """Test cat3 validator for education level."""
@@ -919,7 +923,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.EDUCATION_LEVEL = "0"
 
         result = val(record, "T5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_citizenship_status(self, record):
         """Test cat3 validator for citizenship status."""
@@ -936,7 +940,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.CITIZENSHIP_STATUS = 0
 
         result = val(record, "T5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_hoh_fed_time(self, record):
         """Test cat3 validator for federal disability."""
@@ -951,7 +955,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.COUNTABLE_MONTH_FED_TIME = 0
 
         result = val(record, "T5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_oasdi_insurance(self, record):
         """Test cat3 validator for OASDI insurance."""
@@ -968,7 +972,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.REC_OASDI_INSURANCE = 0
 
         result = val(record, "T5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_federal_disability(self, record):
         """Test cat3 validator for federal disability."""
@@ -985,7 +989,7 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.REC_FEDERAL_DISABILITY = 0
 
         result = val(record, "T5")
-        assert result[0] == False
+        assert result[0] is False
 
 
 class TestT6Cat3Validators(TestCat3ValidatorsBase):
@@ -1008,7 +1012,7 @@ class TestT6Cat3Validators(TestCat3ValidatorsBase):
         record.NUM_APPLICATIONS = 1
         result = val(record, "T6")
 
-        assert result[0] == False
+        assert result[0] is False
 
     def test_sum_of_families(self, record):
         """Test cat3 validator for sum of families."""
@@ -1022,7 +1026,7 @@ class TestT6Cat3Validators(TestCat3ValidatorsBase):
         record.NUM_FAMILIES = 1
         result = val(record, "T6")
 
-        assert result[0] == False
+        assert result[0] is False
 
     def test_sum_of_recipients(self, record):
         """Test cat3 validator for sum of recipients."""
@@ -1036,7 +1040,7 @@ class TestT6Cat3Validators(TestCat3ValidatorsBase):
         record.NUM_RECIPIENTS = 1
         result = val(record, "T6")
 
-        assert result[0] == False
+        assert result[0] is False
 
 class TestM5Cat3Validators(TestCat3ValidatorsBase):
     """Test category three validators for TANF T6 records."""
@@ -1059,7 +1063,7 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         record.SSN = '111111111'
         result = val(record, "M5")
 
-        assert result[0] == False
+        assert result[0] is False
 
     def test_validate_race_ethnicity(self, record):
         """Test cat3 validator for race/ethnicity."""
@@ -1085,7 +1089,7 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         record.MARITAL_STATUS = 0
 
         result = val(record, "M5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_fam_affil_parent_with_minor(self, record):
         """Test cat3 validator for family affiliation, and parent with minor child."""
@@ -1100,7 +1104,7 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         record.PARENT_MINOR_CHILD = 0
 
         result = val(record, "M5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_fam_affil_ed_level(self, record):
         """Test cat3 validator for family affiliation, and education level."""
@@ -1116,7 +1120,7 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         record.EDUCATION_LEVEL = 0
 
         result = val(record, "M5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_fam_affil_citz_stat(self, record):
         """Test cat3 validator for family affiliation, and citizenship status."""
@@ -1131,7 +1135,7 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         record.CITIZENSHIP_STATUS = 0
 
         result = val(record, "M5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_dob_oasdi_insur(self, record):
         """Test cat3 validator for dob, and REC_OASDI_INSURANCE."""
@@ -1146,7 +1150,7 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         record.REC_OASDI_INSURANCE = 0
 
         result = val(record, "M5")
-        assert result[0] == False
+        assert result[0] is False
 
     def test_fam_affil_fed_disability(self, record):
         """Test cat3 validator for family affiliation, and REC_FEDERAL_DISABILITY."""
@@ -1161,4 +1165,4 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         record.REC_FEDERAL_DISABILITY = 0
 
         result = val(record, "M5")
-        assert result[0] == False
+        assert result[0] is False

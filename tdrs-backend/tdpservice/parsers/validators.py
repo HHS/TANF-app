@@ -50,7 +50,8 @@ def and_validators(validator1, validator2):
     """Return a validator that is true only if both validators are true."""
     return (
         lambda value, record_type, friendly_name, item_num: (True, None)
-        if (validator1(value, record_type, friendly_name, item_num)[0] and validator2(value, record_type, friendly_name, item_num)[0])
+        if (validator1(value, record_type, friendly_name, item_num)[0] and validator2(value, record_type,
+                                                                                      friendly_name, item_num)[0])
         else (
             False,
             (validator1(value, record_type, friendly_name, item_num)[1])
@@ -70,7 +71,9 @@ def extended_and_validators(*args, **kwargs):
         else:
             return (False, "".join(
                 [
-                    " and " + validator(value, record_type, friendly_name, item_num)[1] if validator(value, record_type, friendly_name, item_num)[0] else ""
+                    " and " + validator(value, record_type,
+                                        friendly_name, item_num)[1] if validator(value, record_type,
+                                                                                 friendly_name, item_num)[0] else ""
                     for validator in args
                 ]
             ))
@@ -119,7 +122,8 @@ def if_then_validator(
                 else:
                     ending_error = "validator2 passed"
 
-                error_message = f"if {condition_field_name} " + (center_error) + f" then {result_field_name} " + ending_error
+                error_message = (f"if {condition_field_name} " + (center_error) +
+                                 f" then {result_field_name} " + ending_error)
             else:
                 error_message = None
 
@@ -187,28 +191,32 @@ def sumIsLarger(fields, val):
 def matches(option):
     """Validate that value is equal to option."""
     return make_validator(
-        lambda value: value == option, lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} does not match {option}."
+        lambda value: value == option,
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} does not match {option}."
     )
 
 
 def notMatches(option):
     """Validate that value is not equal to option."""
     return make_validator(
-        lambda value: value != option, lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} matches {option}."
+        lambda value: value != option,
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} matches {option}."
     )
 
 
 def oneOf(options=[]):
     """Validate that value does not exist in the provided options array."""
     return make_validator(
-        lambda value: value in options, lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not in {options}."
+        lambda value: value in options,
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not in {options}."
     )
 
 
 def notOneOf(options=[]):
     """Validate that value exists in the provided options array."""
     return make_validator(
-        lambda value: value not in options, lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is in {options}."
+        lambda value: value not in options,
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is in {options}."
     )
 
 
@@ -224,7 +232,8 @@ def recordHasLength(length):
     """Validate that value (string or array) has a length matching length param."""
     return make_validator(
         lambda value: len(value) == length,
-        lambda value, record_type, friendly_name, item_num: f"{record_type} record length is {len(value)} characters but must be {length}.",
+        lambda value, record_type,
+        friendly_name, item_num: f"{record_type} record length is {len(value)} characters but must be {length}.",
     )
 
 
@@ -249,21 +258,24 @@ def startsWith(substring, error_func=None):
 def isNumber():
     """Validate that value can be casted to a number."""
     return make_validator(
-        lambda value: value.isnumeric(), lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not a number."
+        lambda value: value.isnumeric(),
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not a number."
     )
 
 
 def isAlphaNumeric():
     """Validate that value is alphanumeric."""
     return make_validator(
-        lambda value: value.isalnum(), lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not alphanumeric."
+        lambda value: value.isalnum(),
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not alphanumeric."
     )
 
 
 def isBlank():
     """Validate that string value is blank."""
     return make_validator(
-        lambda value: value.isspace(), lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not blank."
+        lambda value: value.isspace(),
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not blank."
     )
 
 
@@ -271,7 +283,8 @@ def isInStringRange(lower, upper):
     """Validate that string value is in a specific range."""
     return make_validator(
         lambda value: int(value) >= lower and int(value) <= upper,
-        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not in range [{lower}, {upper}].",
+        lambda value, record_type,
+        friendly_name, item_num: f"{record_type}: {value} is not in range [{lower}, {upper}].",
     )
 
 
@@ -294,7 +307,9 @@ def notEmpty(start=0, end=None):
     """Validate that string value isn't only blanks."""
     return make_validator(
         lambda value: not _is_empty(value, start, end),
-        lambda value, record_type, friendly_name, item_num: f'{record_type}: {str(value)} contains blanks between positions {start} and {end if end else len(str(value))}.'
+        lambda value, record_type,
+        friendly_name, item_num: (f'{record_type}: {str(value)} contains blanks between positions {start} and '
+                                  '{end if end else len(str(value))}.')
     )
 
 
@@ -302,7 +317,8 @@ def caseNumberNotEmpty(start=0, end=None):
     """Validate that string value isn't only blanks."""
     return make_validator(
         lambda value: not _is_empty(value, start, end),
-        lambda value, record_type, friendly_name, item_num: f'{record_type}: Case number {str(value)} cannot contain blanks.'
+        lambda value, record_type,
+        friendly_name, item_num: f'{record_type}: Case number {str(value)} cannot contain blanks.'
     )
 
 
@@ -310,14 +326,16 @@ def isEmpty(start=0, end=None):
     """Validate that string value is only blanks."""
     return make_validator(
         lambda value: _is_empty(value, start, end),
-        lambda value, record_type, friendly_name, item_num: f'{value} is not blank between positions {start} and {end if end else len(value)}.'
+        lambda value, record_type,
+        friendly_name, item_num: f'{value} is not blank between positions {start} and {end if end else len(value)}.'
     )
 
 
 def notZero(number_of_zeros=1):
     """Validate that value is not zero."""
     return make_validator(
-        lambda value: value != "0" * number_of_zeros, lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is zero."
+        lambda value: value != "0" * number_of_zeros,
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is zero."
     )
 
 
@@ -357,7 +375,9 @@ def isInLimits(LowerBound, UpperBound):
     """Validate that value is in a range including the limits."""
     return make_validator(
         lambda value: value >= LowerBound and value <= UpperBound,
-        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not larger or equal to {LowerBound} and smaller or equal to {UpperBound}.",
+        lambda value, record_type,
+        friendly_name, item_num: (f"{record_type}: {value} is not larger or equal to {LowerBound} and "
+                                  "smaller or equal to {UpperBound}.",)
     )
 
 
@@ -376,7 +396,9 @@ def olderThan(min_age):
     """Validate that value is larger than min_age."""
     return make_validator(
         lambda value: date.today().year - int(str(value)[:4]) > min_age,
-        lambda value, record_type, friendly_name, item_num: f"{record_type}: {date.today().year - int(str(value)[:4])} is not larger than {min_age}.",
+        lambda value, record_type,
+        friendly_name, item_num: (f"{record_type}: {date.today().year - int(str(value)[:4])} is not "
+                                  f"larger than {min_age}.",)
     )
 
 
@@ -384,7 +406,8 @@ def dateYearIsLargerThan(year):
     """Validate that in a monthyear combination, the year is larger than the given year."""
     return make_validator(
         lambda value: int(str(value)[:4]) > year,
-        lambda value, record_type, friendly_name, item_num: f"{record_type}: {str(value)[:4]} year must be larger than {year}.",
+        lambda value, record_type,
+        friendly_name, item_num: f"{record_type}: {str(value)[:4]} year must be larger than {year}.",
     )
 
 
@@ -400,7 +423,8 @@ def validateSSN():
     """Validate that SSN value is not a repeating digit."""
     options = [str(i) * 9 for i in range(0, 10)]
     return make_validator(
-        lambda value: value not in options, lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is in {options}."
+        lambda value: value not in options,
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is in {options}."
     )
 
 
@@ -408,7 +432,9 @@ def validateRace():
     """Validate race."""
     return make_validator(
         lambda value: value >= 0 and value <= 2,
-        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} is not greater than or equal to 0 or smaller than or equal to 1.",
+        lambda value, record_type,
+        friendly_name, item_num: (f"{record_type}: {value} is not greater than or equal to 0 "
+                                  "or smaller than or equal to 1.",)
     )
 
 
@@ -439,7 +465,8 @@ def validate__FAM_AFF__SSN():
             if SSN in [str(i) * 9 for i in range(10)]:
                 return (
                     False,
-                    f"{record_type}: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, then SSN != 000000000 -- 999999999.",
+                    (f"{record_type}: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, "
+                     "then SSN != 000000000 -- 999999999."),
                     ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"],
                 )
             else:
