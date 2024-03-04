@@ -560,7 +560,7 @@ def validate_update_indicator(update_indicator, generate_error):
         error = generate_error(
             schema=None,
             error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message=f"Update indicator ({update_indicator}) is not 'D'",
+            error_message=f"The provided Update Indicator ({update_indicator}) in the Header record must be 'D'",
             record=None,
             field=None
         )

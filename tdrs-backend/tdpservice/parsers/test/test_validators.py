@@ -353,7 +353,7 @@ def test_validate_update_indicator_returns_error_if_update_is_not_D(test_datafil
     is_valid, error = validators.validate_update_indicator(update_indicator="U", generate_error=generate_error)
 
     assert is_valid is False
-    assert error.error_message == "Update indicator (U) is not 'D'"
+    assert error.error_message == "The provided Update Indicator (U) in the Header record must be 'D'"
 
 @pytest.mark.usefixtures('db')
 class TestCat3ValidatorsBase:
