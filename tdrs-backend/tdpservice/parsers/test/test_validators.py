@@ -98,8 +98,8 @@ def test_validate__FAM_AFF__SSN():
     }
     result = validators.validate__FAM_AFF__SSN()(instance, "T1")
     assert result == (False,
-                      ('T1: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, '
-                       'then SSN != 000000000 -- 999999999.'),
+                      'T1: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, ' +
+                      'then SSN != 000000000 -- 999999999.',
                       ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
     instance['SSN'] = '1'*8 + '0'
     result = validators.validate__FAM_AFF__SSN()(instance, "T1")

@@ -308,8 +308,8 @@ def notEmpty(start=0, end=None):
     return make_validator(
         lambda value: not _is_empty(value, start, end),
         lambda value, record_type,
-        friendly_name, item_num: (f'{record_type}: {str(value)} contains blanks between positions {start} and '
-                                  '{end if end else len(str(value))}.')
+        friendly_name, item_num: f'{record_type}: {str(value)} contains blanks between positions {start} and '
+                                 f'{end if end else len(str(value))}.'
     )
 
 
@@ -376,8 +376,8 @@ def isInLimits(LowerBound, UpperBound):
     return make_validator(
         lambda value: value >= LowerBound and value <= UpperBound,
         lambda value, record_type,
-        friendly_name, item_num: (f"{record_type}: {value} is not larger or equal to {LowerBound} and "
-                                  "smaller or equal to {UpperBound}.",)
+        friendly_name, item_num: f"{record_type}: {value} is not larger or equal to {LowerBound} and "
+                                 f"smaller or equal to {UpperBound}."
     )
 
 
@@ -397,8 +397,8 @@ def olderThan(min_age):
     return make_validator(
         lambda value: date.today().year - int(str(value)[:4]) > min_age,
         lambda value, record_type,
-        friendly_name, item_num: (f"{record_type}: {date.today().year - int(str(value)[:4])} is not "
-                                  f"larger than {min_age}.",)
+        friendly_name, item_num: f"{record_type}: {date.today().year - int(str(value)[:4])} is not "
+                                 f"larger than {min_age}."
     )
 
 
@@ -433,8 +433,8 @@ def validateRace():
     return make_validator(
         lambda value: value >= 0 and value <= 2,
         lambda value, record_type,
-        friendly_name, item_num: (f"{record_type}: {value} is not greater than or equal to 0 "
-                                  "or smaller than or equal to 1.",)
+        friendly_name, item_num: f"{record_type}: {value} is not greater than or equal to 0 "
+                                 "or smaller than or equal to 1."
     )
 
 
@@ -465,8 +465,8 @@ def validate__FAM_AFF__SSN():
             if SSN in [str(i) * 9 for i in range(10)]:
                 return (
                     False,
-                    (f"{record_type}: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, "
-                     "then SSN != 000000000 -- 999999999."),
+                    f"{record_type}: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, "
+                    "then SSN != 000000000 -- 999999999.",
                     ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"],
                 )
             else:
