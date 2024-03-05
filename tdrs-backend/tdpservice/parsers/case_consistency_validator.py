@@ -201,7 +201,7 @@ class CaseConsistencyValidator:
         cases = self.record_schema_pairs.sorted_cases
         logger.debug(f'cases obj: {cases}')
 
-        for rpt_month_year, reporting_year_cases in cases.items():
+        for reporting_year_cases in cases.values():
             t1s = reporting_year_cases.get(t1_model, [])
             t2s = reporting_year_cases.get(t2_model, [])
             t3s = reporting_year_cases.get(t3_model, [])
@@ -291,7 +291,7 @@ class CaseConsistencyValidator:
         cases = self.record_schema_pairs.sorted_cases
         logger.debug(f'cases obj: {cases}')
 
-        for rpt_month_year, reporting_year_cases in cases.items():
+        for reporting_year_cases in cases.values():
             t4s = reporting_year_cases.get(t4_model, [])
             t5s = reporting_year_cases.get(t5_model, [])
 
