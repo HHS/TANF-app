@@ -113,3 +113,4 @@ class Command(BaseCommand):
                     pass_count,
                     warn_count
                 )
+        return response.text

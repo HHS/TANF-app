@@ -31,9 +31,6 @@ export default function startMirage(
       // if/when we add integration/e2e tests, the rest of these
       // routes will need some work done on them
 
-      this.patch('/users/set_profile', () => {
-        return {}
-      })
       this.get('/stts/alpha', () => STT_ALPHA_DATA)
       this.get('/reports/', () => REPORTS_DATA)
       this.get('/reports/data-files/:year/:quarter/:section', () => {

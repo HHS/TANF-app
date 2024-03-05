@@ -2,6 +2,7 @@
 
 
 import pytest
+from django.contrib.admin.models import LogEntry
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
@@ -12,6 +13,7 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
+from elasticsearch.helpers.errors import BulkIndexError
 
 import logging
 logger = logging.getLogger(__name__)
@@ -45,7 +47,6 @@ def test_parse_small_correct_file(test_datafile, dfs):
     test_datafile.quarter = 'Q1'
     test_datafile.save()
     dfs.datafile = test_datafile
-    dfs.save()
 
     parse.parse_datafile(test_datafile)
 
@@ -84,7 +85,6 @@ def test_parse_section_mismatch(test_datafile, dfs):
     test_datafile.save()
 
     dfs.datafile = test_datafile
-    dfs.save()
 
     errors = parse.parse_datafile(test_datafile)
     dfs.status = dfs.get_status()
@@ -125,7 +125,6 @@ def test_parse_wrong_program_type(test_datafile, dfs):
     test_datafile.save()
 
     dfs.datafile = test_datafile
-    dfs.save()
     errors = parse.parse_datafile(test_datafile)
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
@@ -158,7 +157,6 @@ def test_parse_big_file(test_big_file, dfs):
     expected_t3_record_count = 1376
 
     dfs.datafile = test_big_file
-    dfs.save()
 
     parse.parse_datafile(test_big_file)
     dfs.status = dfs.get_status()
@@ -235,7 +233,6 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
     """Test parsing of bad_missing_header."""
     errors = parse.parse_datafile(bad_file_missing_header)
     dfs.datafile = bad_file_missing_header
-    dfs.save()
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_file_missing_header).order_by('created_at')
@@ -268,7 +265,6 @@ def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
     bad_file_multiple_headers.save()
     errors = parse.parse_datafile(bad_file_multiple_headers)
     dfs.datafile = bad_file_multiple_headers
-    dfs.save()
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
     parser_errors = ParserError.objects.filter(file=bad_file_multiple_headers)
@@ -321,7 +317,6 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     bad_trailer_file.year = 2021
     bad_trailer_file.quarter = 'Q1'
     dfs.datafile = bad_trailer_file
-    dfs.save()
 
     errors = parse.parse_datafile(bad_trailer_file)
 
@@ -407,7 +402,6 @@ def empty_file(stt_user, stt):
 def test_parse_empty_file(empty_file, dfs):
     """Test parsing of empty_file."""
     dfs.datafile = empty_file
-    dfs.save()
     errors = parse.parse_datafile(empty_file)
 
     dfs.status = dfs.get_status()
@@ -460,7 +454,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
     expected_m3_record_count = 8
 
     dfs.datafile = small_ssp_section1_datafile
-    dfs.save()
+
     parse.parse_datafile(small_ssp_section1_datafile)
 
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
@@ -535,7 +529,6 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     small_tanf_section1_datafile.year = 2021
     small_tanf_section1_datafile.quarter = 'Q1'
     dfs.datafile = small_tanf_section1_datafile
-    dfs.save()
 
     parse.parse_datafile(small_tanf_section1_datafile)
 
@@ -715,7 +708,6 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
     bad_tanf_s1__row_missing_required_field.quarter = 'Q1'
 
     dfs.datafile = bad_tanf_s1__row_missing_required_field
-    dfs.save()
 
     parse.parse_datafile(bad_tanf_s1__row_missing_required_field)
 
@@ -820,11 +812,9 @@ def test_dfs_set_case_aggregates(test_datafile, dfs):
     # this still needs to execute to create db objects to be queried
     parse.parse_datafile(test_datafile)
     dfs.file = test_datafile
-    dfs.save()
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         test_datafile, dfs.status)
-    dfs.save()
 
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
@@ -940,12 +930,25 @@ def tanf_section3_file(stt_user, stt):
 
 
 @pytest.mark.django_db()
-def test_parse_tanf_section3_file(tanf_section3_file):
+def test_parse_tanf_section3_file(tanf_section3_file, dfs):
     """Test parsing TANF Section 3 submission."""
     tanf_section3_file.year = 2021
     tanf_section3_file.quarter = 'Q1'
 
+    dfs.datafile = tanf_section3_file
+
     parse.parse_datafile(tanf_section3_file)
+
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = aggregates.total_errors_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {"months": [
+        {"month": "Oct", "total_errors": 0},
+        {"month": "Nov", "total_errors": 0},
+        {"month": "Dec", "total_errors": 0}
+    ]}
+
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
     assert TANF_T6.objects.all().count() == 3
 
@@ -1006,12 +1009,25 @@ def tanf_section4_file(stt_user, stt):
 
 
 @pytest.mark.django_db()
-def test_parse_tanf_section4_file(tanf_section4_file):
+def test_parse_tanf_section4_file(tanf_section4_file, dfs):
     """Test parsing TANF Section 4 submission."""
     tanf_section4_file.year = 2021
     tanf_section4_file.quarter = 'Q1'
 
+    dfs.datafile = tanf_section4_file
+
     parse.parse_datafile(tanf_section4_file)
+
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = aggregates.total_errors_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {"months": [
+        {"month": "Oct", "total_errors": 0},
+        {"month": "Nov", "total_errors": 0},
+        {"month": "Dec", "total_errors": 0}
+    ]}
+
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
     assert TANF_T7.objects.all().count() == 18
 
@@ -1038,14 +1054,24 @@ def ssp_section4_file(stt_user, stt):
     return util.create_test_datafile('ADS.E2J.NDM4.MS24', stt_user, stt, "SSP Stratum Data")
 
 @pytest.mark.django_db()
-def test_parse_ssp_section4_file(ssp_section4_file):
+def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     """Test parsing SSP Section 4 submission."""
     ssp_section4_file.year = 2019
     ssp_section4_file.quarter = 'Q1'
 
+    dfs.datafile = ssp_section4_file
     parse.parse_datafile(ssp_section4_file)
 
     m7_objs = SSP_M7.objects.all().order_by('FAMILIES_MONTH')
+
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = aggregates.total_errors_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {"months": [
+        {"month": "Oct", "total_errors": 0},
+        {"month": "Nov", "total_errors": 0},
+        {"month": "Dec", "total_errors": 0}
+    ]}
 
     assert m7_objs.count() == 12
 
@@ -1059,12 +1085,29 @@ def ssp_section2_file(stt_user, stt):
     return util.create_test_datafile('ADS.E2J.NDM2.MS24', stt_user, stt, 'SSP Closed Case Data')
 
 @pytest.mark.django_db()
-def test_parse_ssp_section2_file(ssp_section2_file):
+def test_parse_ssp_section2_file(ssp_section2_file, dfs):
     """Test parsing SSP Section 2 submission."""
     ssp_section2_file.year = 2019
     ssp_section2_file.quarter = 'Q1'
 
+    dfs.datafile = ssp_section2_file
+
     parse.parse_datafile(ssp_section2_file)
+
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {'rejected': 0,
+                                   'months': [
+                                       {'accepted_without_errors': 0,
+                                           'accepted_with_errors': 78, 'month': 'Oct'},
+                                       {'accepted_without_errors': 0,
+                                           'accepted_with_errors': 78, 'month': 'Nov'},
+                                       {'accepted_without_errors': 0,
+                                           'accepted_with_errors': 75, 'month': 'Dec'}
+                                   ]}
+
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
     m4_objs = SSP_M4.objects.all().order_by('id')
     m5_objs = SSP_M5.objects.all().order_by('AMOUNT_EARNED_INCOME')
@@ -1104,11 +1147,24 @@ def ssp_section3_file(stt_user, stt):
     return util.create_test_datafile('ADS.E2J.NDM3.MS24', stt_user, stt, "SSP Aggregate Data")
 
 @pytest.mark.django_db()
-def test_parse_ssp_section3_file(ssp_section3_file):
+def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     """Test parsing TANF Section 3 submission."""
     ssp_section3_file.year = 2019
     ssp_section3_file.quarter = 'Q1'
+    dfs.datafile = ssp_section3_file
+
     parse.parse_datafile(ssp_section3_file)
+
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = aggregates.total_errors_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {"months": [
+        {"month": "Oct", "total_errors": 0},
+        {"month": "Nov", "total_errors": 0},
+        {"month": "Dec", "total_errors": 0}
+    ]}
+
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
     m6_objs = SSP_M6.objects.all().order_by('RPT_MONTH_YEAR')
     assert m6_objs.count() == 3
@@ -1175,7 +1231,6 @@ def test_parse_tribal_section_1_file(tribal_section_1_file, dfs):
     tribal_section_1_file.save()
 
     dfs.datafile = tribal_section_1_file
-    dfs.save()
 
     parse.parse_datafile(tribal_section_1_file)
 
@@ -1229,11 +1284,28 @@ def tribal_section_2_file(stt_user, stt):
     return util.create_test_datafile('ADS.E2J.FTP2.TS142.txt', stt_user, stt, "Tribal Closed Case Data")
 
 @pytest.mark.django_db()
-def test_parse_tribal_section_2_file(tribal_section_2_file):
+def test_parse_tribal_section_2_file(tribal_section_2_file, dfs):
     """Test parsing Tribal TANF Section 2 submission."""
     tribal_section_2_file.year = 2020
     tribal_section_2_file.quarter = 'Q1'
+    dfs.datafile = tribal_section_2_file
+
     parse.parse_datafile(tribal_section_2_file)
+
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {'rejected': 0,
+                                   'months': [
+                                       {'accepted_without_errors': 0,
+                                           'accepted_with_errors': 3, 'month': 'Oct'},
+                                       {'accepted_without_errors': 0,
+                                           'accepted_with_errors': 3, 'month': 'Nov'},
+                                       {'accepted_without_errors': 0,
+                                           'accepted_with_errors': 0, 'month': 'Dec'}
+                                   ]}
+
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
     assert Tribal_TANF_T4.objects.all().count() == 6
     assert Tribal_TANF_T5.objects.all().count() == 13
@@ -1253,12 +1325,25 @@ def tribal_section_3_file(stt_user, stt):
     return util.create_test_datafile('ADS.E2J.FTP3.TS142', stt_user, stt, "Tribal Aggregate Data")
 
 @pytest.mark.django_db()
-def test_parse_tribal_section_3_file(tribal_section_3_file):
+def test_parse_tribal_section_3_file(tribal_section_3_file, dfs):
     """Test parsing Tribal TANF Section 3 submission."""
     tribal_section_3_file.year = 2020
     tribal_section_3_file.quarter = 'Q1'
 
+    dfs.datafile = tribal_section_3_file
+
     parse.parse_datafile(tribal_section_3_file)
+
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = aggregates.total_errors_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {"months": [
+        {"month": "Oct", "total_errors": 0},
+        {"month": "Nov", "total_errors": 0},
+        {"month": "Dec", "total_errors": 0}
+    ]}
+
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
     assert Tribal_TANF_T6.objects.all().count() == 3
 
@@ -1276,11 +1361,22 @@ def tribal_section_4_file(stt_user, stt):
     return util.create_test_datafile('tribal_section_4_fake.txt', stt_user, stt, "Tribal Stratum Data")
 
 @pytest.mark.django_db()
-def test_parse_tribal_section_4_file(tribal_section_4_file):
+def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     """Test parsing Tribal TANF Section 4 submission."""
     tribal_section_4_file.year = 2020
     tribal_section_4_file.quarter = 'Q1'
+    dfs.datafile = tribal_section_4_file
+
     parse.parse_datafile(tribal_section_4_file)
+
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = aggregates.total_errors_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {"months": [
+        {"month": "Oct", "total_errors": 0},
+        {"month": "Nov", "total_errors": 0},
+        {"month": "Dec", "total_errors": 0}
+    ]}
 
     assert Tribal_TANF_T7.objects.all().count() == 18
 
@@ -1297,3 +1393,81 @@ def test_parse_tribal_section_4_file(tribal_section_4_file):
 
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
+
+
+@pytest.mark.django_db
+def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_datafile, mocker):
+    """Test bulk_create_records returns (False, [unsaved_records]) on BulkIndexException."""
+    mocker.patch(
+        'tdpservice.search_indexes.documents.tanf.TANF_T1DataSubmissionDocument.update',
+        side_effect=BulkIndexError('indexing exception')
+    )
+
+    # create some records, don't save them
+    records = {
+        documents.tanf.TANF_T1DataSubmissionDocument: [TANF_T1()],
+        documents.tanf.TANF_T2DataSubmissionDocument: [TANF_T2()],
+        documents.tanf.TANF_T3DataSubmissionDocument: [TANF_T3()]
+    }
+
+    all_created, unsaved_records = parse.bulk_create_records(
+        records,
+        line_number=1,
+        header_count=1,
+        datafile=test_datafile,
+        flush=True
+    )
+
+    assert LogEntry.objects.all().count() == 1
+
+    log = LogEntry.objects.get()
+    assert log.change_message == "Encountered error while indexing datafile documents: indexing exception"
+
+    assert all_created is False
+    assert len(unsaved_records.items()) == 3
+    assert TANF_T1.objects.all().count() == 1
+    assert TANF_T2.objects.all().count() == 0
+    assert TANF_T3.objects.all().count() == 0
+
+
+@pytest.fixture
+def tanf_section_4_file_with_errors(stt_user, stt):
+    """Fixture for tanf_section4_with_errors."""
+    return util.create_test_datafile('tanf_section4_with_errors.txt', stt_user, stt, "Stratum Data")
+
+@pytest.mark.django_db()
+def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, dfs):
+    """Test parsing TANF Section 4 submission."""
+    dfs.datafile = tanf_section_4_file_with_errors
+
+    parse.parse_datafile(tanf_section_4_file_with_errors)
+
+    dfs.status = dfs.get_status()
+    dfs.case_aggregates = aggregates.total_errors_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {"months": [
+        {"month": "Oct", "total_errors": 2},
+        {"month": "Nov", "total_errors": 2},
+        {"month": "Dec", "total_errors": 2}
+    ]}
+
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+
+    assert TANF_T7.objects.all().count() == 18
+
+    parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
+    assert parser_errors.count() == 6
+
+    t7_objs = TANF_T7.objects.all().order_by('FAMILIES_MONTH')
+
+    first = t7_objs.first()
+    sixth = t7_objs[5]
+
+    assert first.RPT_MONTH_YEAR == 202011
+    assert sixth.RPT_MONTH_YEAR == 202010
+
+    assert first.TDRS_SECTION_IND == '1'
+    assert sixth.TDRS_SECTION_IND == '1'
+
+    assert first.FAMILIES_MONTH == 0
+    assert sixth.FAMILIES_MONTH == 446
