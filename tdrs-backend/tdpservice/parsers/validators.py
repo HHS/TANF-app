@@ -552,20 +552,6 @@ def validate_header_section_matches_submission(datafile, section, generate_error
 
     return is_valid, error
 
-def validate_update_indicator(update_indicator, generate_error):
-    """Validate header section update indicator only conaints D."""
-    if update_indicator == "D":
-        return True, None
-    else:
-        error = generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message=f"The provided Update Indicator ({update_indicator}) in the Header record must be 'D'",
-            record=None,
-            field=None
-        )
-        return False, error
-
 
 def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code, generate_error):
     """Validate tribe code, fips code, and program type all agree with eachother."""

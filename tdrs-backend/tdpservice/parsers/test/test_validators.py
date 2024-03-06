@@ -339,21 +339,6 @@ def test_notEmpty_returns_nonexistent_substring():
     assert is_valid is False
     assert error == "111  333 contains blanks between positions 10 and 12."
 
-def test_validate_update_indicator_returns_True_if_update_is_D():
-    """Test 'D' returns true with no error when validating update_indicator."""
-    is_valid, error = validators.validate_update_indicator(update_indicator="D", generate_error=None)
-
-    assert is_valid is True
-    assert error is None
-
-@pytest.mark.django_db
-def test_validate_update_indicator_returns_error_if_update_is_not_D(test_datafile):
-    """Test 'U" throws an error when validating update_indicator."""
-    generate_error = util.make_generate_parser_error(test_datafile, 1)
-    is_valid, error = validators.validate_update_indicator(update_indicator="U", generate_error=generate_error)
-
-    assert is_valid is False
-    assert error.error_message == "The provided Update Indicator (U) in the Header record must be 'D'"
 
 @pytest.mark.usefixtures('db')
 class TestCat3ValidatorsBase:

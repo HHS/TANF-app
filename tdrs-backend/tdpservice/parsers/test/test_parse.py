@@ -1481,9 +1481,10 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file
     parse.parse_datafile(tanf_section_1_file_with_bad_update_indicator)
 
     parser_errors = ParserError.objects.filter(file=tanf_section_1_file_with_bad_update_indicator)
+
     assert parser_errors.count() == 1
 
     error = parser_errors.first()
 
-    assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert error.error_message == "The provided Update Indicator (U) in the Header record must be 'D'"
+    assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert error.error_message == "U is not in ['D']."
