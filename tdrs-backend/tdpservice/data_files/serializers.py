@@ -1,7 +1,6 @@
 """Serialize stt data."""
 import logging
 from rest_framework import serializers
-
 from tdpservice.parsers.models import ParserError
 from tdpservice.data_files.errors import ImmutabilityError
 from tdpservice.data_files.models import DataFile

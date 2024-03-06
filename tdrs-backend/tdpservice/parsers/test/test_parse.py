@@ -2,6 +2,7 @@
 
 
 import pytest
+from django.contrib.admin.models import LogEntry
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
@@ -12,6 +13,7 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
+from elasticsearch.helpers.errors import BulkIndexError
 
 import logging
 
@@ -325,7 +327,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     errors = parse.parse_datafile(bad_trailer_file)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file)
-    assert parser_errors.count() == 2
+    assert parser_errors.count() == 3
 
     trailer_error = parser_errors.get(row_number=3)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
@@ -333,15 +335,16 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
-    row_error = parser_errors.get(row_number=2)
-    assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_error.error_message == 'Value length 7 does not match 156.'
-    assert row_error.content_type is None
-    assert row_error.object_id is None
+    row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
+    length_error = row_errors[0]
+    assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.content_type is None
+    assert length_error.object_id is None
 
     assert errors == {
         'trailer': [trailer_error],
-        "2_0": [row_error]
+        "2_0": row_errors
     }
 
 
@@ -359,7 +362,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     errors = parse.parse_datafile(bad_trailer_file_2)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == 5
 
     trailer_errors = parser_errors.filter(row_number=3).order_by('id')
 
@@ -381,15 +384,16 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
-    row_3_error = trailer_errors[2]
-    assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_3_error.error_message == 'Value length 7 does not match 156.'
-    assert row_3_error.content_type is None
-    assert row_3_error.object_id is None
+    row_3_errors = [trailer_errors[2], trailer_errors[3]]
+    length_error = row_3_errors[0]
+    assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.content_type is None
+    assert length_error.object_id is None
 
     assert errors == {
         "2_0": [row_2_error],
-        "3_0": [row_3_error],
+        "3_0": row_3_errors,
         "trailer": [trailer_error_1, trailer_error_2],
     }
 
@@ -717,6 +721,7 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     parser_errors = ParserError.objects.filter(
         file=bad_tanf_s1__row_missing_required_field)
+
     assert parser_errors.count() == 4
 
     error_message = 'RPT_MONTH_YEAR is required but a value was not provided.'
@@ -1290,3 +1295,38 @@ def test_parse_tribal_section_4_file(tribal_section_4_file):
 
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
+
+
+@pytest.mark.django_db
+def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_datafile, mocker):
+    """Test bulk_create_records returns (False, [unsaved_records]) on BulkIndexException."""
+    mocker.patch(
+        'tdpservice.search_indexes.documents.tanf.TANF_T1DataSubmissionDocument.update',
+        side_effect=BulkIndexError('indexing exception')
+    )
+
+    # create some records, don't save them
+    records = {
+        documents.tanf.TANF_T1DataSubmissionDocument: [TANF_T1()],
+        documents.tanf.TANF_T2DataSubmissionDocument: [TANF_T2()],
+        documents.tanf.TANF_T3DataSubmissionDocument: [TANF_T3()]
+    }
+
+    all_created, unsaved_records = parse.bulk_create_records(
+        records,
+        line_number=1,
+        header_count=1,
+        datafile=test_datafile,
+        flush=True
+    )
+
+    assert LogEntry.objects.all().count() == 1
+
+    log = LogEntry.objects.get()
+    assert log.change_message == "Encountered error while indexing datafile documents: indexing exception"
+
+    assert all_created is False
+    assert len(unsaved_records.items()) == 3
+    assert TANF_T1.objects.all().count() == 1
+    assert TANF_T2.objects.all().count() == 0
+    assert TANF_T3.objects.all().count() == 0
