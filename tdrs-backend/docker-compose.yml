@@ -114,7 +114,7 @@ services:
       ./manage.py populate_stts &&
       ./gunicorn_start.sh && celery -A tdpservice.settings worker -l info"
     ports:
-      - "5556:5555"
+      - "5555:5555"
     tty: true
     depends_on:
       - clamav-rest
