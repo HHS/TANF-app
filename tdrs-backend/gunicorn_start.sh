@@ -26,6 +26,7 @@ else
 fi
 
 #python manage.py collectstatic --noinput
+python manage.py search_index --rebuild -f
 
 celery -A tdpservice.settings worker -c 1 &
 sleep 5
