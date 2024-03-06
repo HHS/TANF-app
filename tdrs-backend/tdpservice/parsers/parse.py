@@ -33,7 +33,7 @@ def parse_datafile(datafile):
         return errors
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
-                                                                {"encryption", "tribe_code", "state_fips", "update"})
+                                                                {"encryption", "tribe_code", "state_fips"})
 
     generate_error = util.make_generate_parser_error(datafile, 1)
 
