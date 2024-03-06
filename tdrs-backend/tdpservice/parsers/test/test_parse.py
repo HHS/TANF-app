@@ -1487,4 +1487,4 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file
     error = parser_errors.first()
 
     assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert error.error_message == "U is not in ['D']."
+    assert error.error_message == "U does not match D."

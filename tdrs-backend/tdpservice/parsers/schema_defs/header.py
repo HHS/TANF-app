@@ -127,7 +127,7 @@ header = RowSchema(
             startIndex=22,
             endIndex=23,
             required=True,
-            validators=[validators.oneOf(["D"])],
+            validators=[validators.matches("D")],
         ),
     ],
 )
