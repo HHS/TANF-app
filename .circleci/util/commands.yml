@@ -16,7 +16,7 @@
       - run:
           name: Build and spin-up Django API service
           command: cd tdrs-backend; docker network create external-net; docker-compose --profile elastic_setup up -d --build
-      -run:
+      - run:
           name: Reindex elasticsearch
           command: docker-compose exec web python manage.py search_index --rebuild -f
 
