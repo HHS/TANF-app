@@ -286,21 +286,21 @@ class CaseConsistencyValidator:
         t5_model_name = 'M5' if is_ssp else 'T5'
         t5_model = self.__get_model(t5_model_name)
 
-        # logger.debug('validating records are related')
-        # logger.debug(f'program type: {self.program_type}')
-        # logger.debug(f'section: {self.section}')
-        # logger.debug(f'is_ssp: {is_ssp}')
-        # logger.debug(f'models - T4: {t4_model}; T5: {t5_model};')
+        logger.debug('validating records are related')
+        logger.debug(f'program type: {self.program_type}')
+        logger.debug(f'section: {self.section}')
+        logger.debug(f'is_ssp: {is_ssp}')
+        logger.debug(f'models - T4: {t4_model}; T5: {t5_model};')
 
         cases = self.record_schema_pairs.sorted_cases
-        # logger.debug(f'cases obj: {cases}')
+        logger.debug(f'cases obj: {cases}')
 
         for reporting_year_cases in cases.values():
             t4s = reporting_year_cases.get(t4_model, [])
             t5s = reporting_year_cases.get(t5_model, [])
 
-            # logger.debug(f't4s: {t4s}')
-            # logger.debug(f't5s: {t5s}')
+            logger.debug(f't4s: {t4s}')
+            logger.debug(f't5s: {t5s}')
 
             if len(t4s) > 0:
                 if len(t5s) == 0:
