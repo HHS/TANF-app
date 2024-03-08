@@ -192,28 +192,15 @@ class CaseConsistencyValidator:
         t3_model_name = 'M3' if is_ssp else 'T3'
         t3_model = self.__get_model(t3_model_name)
 
-        logger.debug('validating records are related')
-        logger.debug(f'program type: {self.program_type}')
-        logger.debug(f'section: {self.section}')
-        logger.debug(f'is_ssp: {is_ssp}')
-        logger.debug(f'models - T1: {t1_model}; T2: {t2_model}; T3: {t3_model}')
-
         cases = self.record_schema_pairs.sorted_cases
-        logger.debug(f'cases obj: {cases}')
 
         for reporting_year_cases in cases.values():
             t1s = reporting_year_cases.get(t1_model, [])
             t2s = reporting_year_cases.get(t2_model, [])
             t3s = reporting_year_cases.get(t3_model, [])
 
-            logger.debug(f't1s: {t1s}')
-            logger.debug(f't2s: {t2s}')
-            logger.debug(f't3s: {t3s}')
-
             if len(t1s) > 0:
-                logger.debug('t1s')
                 if len(t2s) == 0 and len(t3s) == 0:
-                    logger.debug('no t2s or t3s')
                     for record, schema in t1s:
                         self.__generate_and_add_error(
                             schema,
@@ -228,7 +215,6 @@ class CaseConsistencyValidator:
                         num_errors += 1
 
                 else:
-                    logger.debug('t2s/t3s')
                     # loop through all t2s and t3s
                     # to find record where FAMILY_AFFILIATION == 1
                     num_errors += self.__validate_family_affiliation(num_errors, t1s, t2s, t3s, (
@@ -240,7 +226,6 @@ class CaseConsistencyValidator:
                     # the successful route
                     # pass
             else:
-                logger.debug('no t1s')
                 for record, schema in t2s:
                     self.__generate_and_add_error(
                         schema,
@@ -282,25 +267,14 @@ class CaseConsistencyValidator:
         t5_model_name = 'M5' if is_ssp else 'T5'
         t5_model = self.__get_model(t5_model_name)
 
-        logger.debug('validating records are related')
-        logger.debug(f'program type: {self.program_type}')
-        logger.debug(f'section: {self.section}')
-        logger.debug(f'is_ssp: {is_ssp}')
-        logger.debug(f'models - T4: {t4_model}; T5: {t5_model};')
-
         cases = self.record_schema_pairs.sorted_cases
-        logger.debug(f'cases obj: {cases}')
 
         for reporting_year_cases in cases.values():
             t4s = reporting_year_cases.get(t4_model, [])
             t5s = reporting_year_cases.get(t5_model, [])
 
-            logger.debug(f't4s: {t4s}')
-            logger.debug(f't5s: {t5s}')
-
             if len(t4s) > 0:
                 if len(t5s) == 0:
-                    logger.debug('no t5s')
                     for record, schema in t4s:
                         self.__generate_and_add_error(
                             schema,
@@ -316,7 +290,6 @@ class CaseConsistencyValidator:
                     # success
                     pass
             else:
-                logger.debug('no t4s')
                 for record, schema in t5s:
                     self.__generate_and_add_error(
                         schema,
