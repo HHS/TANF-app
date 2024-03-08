@@ -1,7 +1,9 @@
 """Class definition for Category Four validator."""
 
+from datetime import datetime
 from .models import ParserErrorCategoryChoices
 from .util import get_rpt_month_year_list
+from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
 import logging
 
@@ -44,7 +46,7 @@ class SortedRecordSchemaPairs:
 class CaseConsistencyValidator:
     """Caches records of the same case to perform category four validation while actively parsing."""
 
-    def __init__(self, header, generate_error):
+    def __init__(self, header, stt_type, generate_error):
         self.header = header
         self.record_schema_pairs = SortedRecordSchemaPairs()
         self.current_case = None
@@ -57,6 +59,7 @@ class CaseConsistencyValidator:
         self.generated_errors = []
         self.total_cases_cached = 0
         self.total_cases_validated = 0
+        self.stt_type = stt_type
 
     def __get_model(self, model_str):
         """Return a model for the current program type/section given the model's string name."""
@@ -131,6 +134,7 @@ class CaseConsistencyValidator:
         """Perform TANF Section 2 category four validation on all cached records."""
         num_errors += self.__validate_header_with_records()
         num_errors += self.__validate_s2_records_are_related()
+        num_errors += self.__validate_t5_aabd_and_ssi()
         return num_errors
 
     def __validate_header_with_records(self):
@@ -282,21 +286,21 @@ class CaseConsistencyValidator:
         t5_model_name = 'M5' if is_ssp else 'T5'
         t5_model = self.__get_model(t5_model_name)
 
-        logger.debug('validating records are related')
-        logger.debug(f'program type: {self.program_type}')
-        logger.debug(f'section: {self.section}')
-        logger.debug(f'is_ssp: {is_ssp}')
-        logger.debug(f'models - T4: {t4_model}; T5: {t5_model};')
+        # logger.debug('validating records are related')
+        # logger.debug(f'program type: {self.program_type}')
+        # logger.debug(f'section: {self.section}')
+        # logger.debug(f'is_ssp: {is_ssp}')
+        # logger.debug(f'models - T4: {t4_model}; T5: {t5_model};')
 
         cases = self.record_schema_pairs.sorted_cases
-        logger.debug(f'cases obj: {cases}')
+        # logger.debug(f'cases obj: {cases}')
 
         for rpt_month_year, reporting_year_cases in cases.items():
             t4s = reporting_year_cases.get(t4_model, [])
             t5s = reporting_year_cases.get(t5_model, [])
 
-            logger.debug(f't4s: {t4s}')
-            logger.debug(f't5s: {t5s}')
+            # logger.debug(f't4s: {t4s}')
+            # logger.debug(f't5s: {t5s}')
 
             if len(t4s) > 0:
                 if len(t5s) == 0:
@@ -325,6 +329,77 @@ class CaseConsistencyValidator:
                         msg=(
                             f'Every {t5_model_name} record should have at least one corresponding '
                             f'{t4_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                        )
+                    )
+                    num_errors += 1
+
+        return num_errors
+
+    def __validate_t5_aabd_and_ssi(self):
+        print('validate t5')
+        num_errors = 0
+        is_ssp = self.program_type == 'SSP'
+
+        t5_model_name = 'M5' if is_ssp else 'T5'
+        t5_model = self.__get_model(t5_model_name)
+
+        is_state = self.stt_type == STT.EntityType.STATE
+        is_territory = self.stt_type == STT.EntityType.TERRITORY
+
+        for rpt_month_year, reporting_year_cases in self.record_schema_pairs.sorted_cases.items():
+            t5s = reporting_year_cases.get(t5_model, [])
+
+            for record, schema in t5s:
+                rec_aabd = getattr(record, 'REC_AID_TOTALLY_DISABLED')
+                rec_ssi = getattr(record, 'REC_SSI')
+                family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
+                dob = getattr(record, 'DATE_OF_BIRTH')
+
+                rpt_month_year_dd = f'{rpt_month_year}01'
+                rpt_date = datetime.strptime(rpt_month_year_dd, '%Y%m%d')
+                dob_date = datetime.strptime(dob, '%Y%m%d')
+                delta = rpt_date - dob_date
+                age = delta.days/365.25
+                is_adult = age >= 18
+
+                if is_territory and is_adult and rec_aabd != 1:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='REC_AID_TOTALLY_DISABLED',
+                        msg=(
+                            f'{t5_model_name} Adults in territories must have a valid value for 19C.'
+                        )
+                    )
+                    num_errors += 1
+                elif is_state and rec_aabd != 2:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='REC_AID_TOTALLY_DISABLED',
+                        msg=(
+                            f'{t5_model_name} People in states shouldn\'t have a value of 1.'
+                        )
+                    )
+                    num_errors += 1
+
+                if is_territory and rec_ssi != 2:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='REC_SSI',
+                        msg=(
+                            f'{t5_model_name} People in territories must have a valid value for 19E.'
+                        )
+                    )
+                    num_errors += 1
+                elif is_state and family_affiliation == 1 and rec_ssi != 1:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='REC_SSI',
+                        msg=(
+                            f'{t5_model_name} People in states must have a valid value.'
                         )
                     )
                     num_errors += 1

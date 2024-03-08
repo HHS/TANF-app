@@ -284,7 +284,7 @@ class TanfT5Factory(factory.django.DjangoModelFactory):
     RPT_MONTH_YEAR = 202301
     CASE_NUMBER = "1"
     FAMILY_AFFILIATION = 1
-    DATE_OF_BIRTH = "02091997"
+    DATE_OF_BIRTH = "19970209"
     SSN = "123456789"
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
@@ -530,7 +530,7 @@ class TribalTanfT5Factory(factory.django.DjangoModelFactory):
     RPT_MONTH_YEAR = 202301
     CASE_NUMBER = "1"
     FAMILY_AFFILIATION = 1
-    DATE_OF_BIRTH = "02091997"
+    DATE_OF_BIRTH = "19970209"
     SSN = "123456789"
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
