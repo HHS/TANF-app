@@ -1401,9 +1401,9 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_data
 
     # create some records, don't save them
     records = {
-        documents.tanf.TANF_T1DataSubmissionDocument: [TANF_T1()],
-        documents.tanf.TANF_T2DataSubmissionDocument: [TANF_T2()],
-        documents.tanf.TANF_T3DataSubmissionDocument: [TANF_T3()]
+        documents.tanf.TANF_T1DataSubmissionDocument(): [TANF_T1()],
+        documents.tanf.TANF_T2DataSubmissionDocument(): [TANF_T2()],
+        documents.tanf.TANF_T3DataSubmissionDocument(): [TANF_T3()]
     }
 
     all_created, unsaved_records = parse.bulk_create_records(
@@ -1419,11 +1419,11 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_data
     log = LogEntry.objects.get()
     assert log.change_message == "Encountered error while indexing datafile documents: indexing exception"
 
-    assert all_created is False
-    assert len(unsaved_records.items()) == 3
+    assert all_created is True
+    assert len(unsaved_records.items()) == 0
     assert TANF_T1.objects.all().count() == 1
-    assert TANF_T2.objects.all().count() == 0
-    assert TANF_T3.objects.all().count() == 0
+    assert TANF_T2.objects.all().count() == 1
+    assert TANF_T3.objects.all().count() == 1
 
 
 @pytest.fixture

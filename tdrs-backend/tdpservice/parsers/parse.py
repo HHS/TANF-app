@@ -102,8 +102,22 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, ba
             for document, records in unsaved_records.items():
                 num_expected_db_records += len(records)
                 created_objs = document.Django.model.objects.bulk_create(records)
-                num_elastic_records_created += document.update(created_objs)[0]
                 num_db_records_created += len(created_objs)
+
+                try:
+                    num_elastic_records_created += document.update(created_objs)[0]
+                except BulkIndexError as e:
+                    logger.error(f"Encountered error while indexing datafile documents: {e}")
+                    LogEntry.objects.log_action(
+                        user_id=datafile.user.pk,
+                        content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                        object_id=datafile,
+                        object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+                        action_flag=ADDITION,
+                        change_message=f"Encountered error while indexing datafile documents: {e}",
+                    )
+                    continue
+
             if num_db_records_created != num_expected_db_records:
                 logger.error(f"Bulk Django record creation only created {num_db_records_created}/" +
                              f"{num_expected_db_records}!")
@@ -112,21 +126,9 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, ba
                              f"{num_expected_db_records}!")
             else:
                 logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
-            return num_db_records_created == num_expected_db_records and \
-                num_elastic_records_created == num_expected_db_records, {}
+            return num_db_records_created == num_expected_db_records, {}
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
-            return False, unsaved_records
-        except BulkIndexError as e:
-            logger.error(f"Encountered error while indexing datafile documents: {e}")
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while indexing datafile documents: {e}",
-            )
             return False, unsaved_records
     return True, unsaved_records
 
