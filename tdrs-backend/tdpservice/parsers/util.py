@@ -117,7 +117,7 @@ def fiscal_to_calendar(year, fiscal_quarter):
     return year, "Q{}".format(array[ind_qtr - 1])  # return the previous quarter
 
 def transform_to_months(quarter):
-    """Return a list of months in a quarter."""
+    """Return a list of months in a quarter depending the quarter's format."""
     match quarter:
         case "Q1":
             return ["Jan", "Feb", "Mar"]
@@ -127,6 +127,14 @@ def transform_to_months(quarter):
             return ["Jul", "Aug", "Sep"]
         case "Q4":
             return ["Oct", "Nov", "Dec"]
+        case "1":
+            return ["01", "02", "03"]
+        case "2":
+            return ["04", "05", "06"]
+        case "3":
+            return ["07", "08", "09"]
+        case "4":
+            return ["10", "11", "12"]
         case _:
             raise ValueError("Invalid quarter value.")
 
@@ -136,14 +144,5 @@ def month_to_int(month):
 
 def get_rpt_month_year_list(year, quarter):
     """Convert year and quarter to RPT_MONTH_YEAR."""
-    months = None
-    if quarter == "1":
-        months = ["01", "02", "03"]
-    if quarter == "2":
-        months = ["04", "05", "06"]
-    if quarter == "3":
-        months = ["07", "08", "09"]
-    if quarter == "4":
-        months = ["10", "11", "12"]
-
+    months = transform_to_months(quarter)
     return [int(f"{year}{month}") for month in months]
