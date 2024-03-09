@@ -188,11 +188,13 @@ def sumIsLarger(fields, val):
 # generic validators
 
 
-def matches(option):
+def matches(option, error_func):
     """Validate that value is equal to option."""
     return make_validator(
         lambda value: value == option,
-        lambda value, record_type, friendly_name, item_num: f"{record_type}: {value} does not match {option}."
+        lambda value, record_type, friendly_name, item_num: error_func(option)
+        if error_func
+        else f"{record_type}: {value} does not match {option}.",
     )
 
 
