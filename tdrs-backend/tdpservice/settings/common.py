@@ -471,7 +471,11 @@ class Common(Configuration):
         'Email Admin Number of Access Requests' : {
             'task': 'tdpservice.email.tasks.email_admin_num_access_requests',
             'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
-        }
+        },
+        'Reindex elasticsearch documents': {
+            'task': 'tdpservice.search_indexes.tasks.reindex_elastic_documents',
+            'schedule': crontab(minute='0', hour='5', day_of_week='*', day_of_month='*', month_of_year='*'),  # Every day at 5am UTC (1am EST)
+        },
     }
 
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
