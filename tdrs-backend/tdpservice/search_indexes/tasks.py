@@ -11,7 +11,6 @@ from django.core.management import call_command
 @shared_task
 def reindex_elastic_documents():
     """Run the django-elasticsearch-dsl management command to reindex the elastic instance."""
-
     system_user, created = User.objects.get_or_create(username='system')
     if created:
         log('Created reserved system user.')
