@@ -3,6 +3,7 @@
 02/28/2024 - 03/12/2024
 
 Velocity (Dev): 16
+
 Velocity (UX): 2
 
 ## Sprint Goal
