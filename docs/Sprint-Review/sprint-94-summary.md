@@ -38,7 +38,6 @@ Velocity (Dev): 16
 
 
 ### Submitted (QASP Review, OCIO Review)
-* [#2820 [bug] Uncaught exception re: parsing error preventing feedback report generation](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2820) — **ANDREW TO UPDATE**
 * [#2681 TANF Section 1 Validation cleanup](https://github.com/raft-tech/TANF-app/issues/2681)
 * [#2799 Generate error mismatching field rpt_month_year w/ header](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2799)
 * [#2793 update dateYearIsLargerThan() validator logic for rpt_month_year](https://github.com/raft-tech/TANF-app/issues/2793)
