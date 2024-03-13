@@ -30,10 +30,11 @@ Velocity (UX): 2
 * [#2646 - Populate data file summary case aggregates differently per section](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2646)
 * [#2853 - Database Backup Bug](https://github.com/raft-tech/TANF-app/pull/2853)
 
+
 ### Ready to Merge
 * [#2746 As an STT, I need to know if there are issues with the DOBs reported in my data files](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2746)
 * [#2729 As a developer, I want to move migration commands in the pipeline to CircleCI](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2729)
-
+* [#2835 - DOB validator updates](https://github.com/raft-tech/TANF-app/pull/2825)
 
 
 
@@ -44,7 +45,7 @@ Velocity (UX): 2
 * [#2799 Generate error mismatching field rpt_month_year w/ header](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2799)
 * [#2793 update dateYearIsLargerThan() validator logic for rpt_month_year](https://github.com/raft-tech/TANF-app/issues/2793)
 * [#1441 As tech lead I need new permissions group for OFA data analysts](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/1441)
-* [#2673 Cat 1 errors audit fixes](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2673)
+
 
 
 
@@ -74,6 +75,7 @@ Velocity (UX): 2
 
 ### Raft Review
 * [#2814 Aggregate cloud.gov ES instances](https://github.com/raft-tech/TANF-app/issues/2814)
+* [#2673 Cat 1 errors audit fixes](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2673)
 * [#2536 [spike] Cat 4 validation](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2536)
 * [#2870 As tech lead I need elastic re-indexing to be automated](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2870)
 * [#2754 As tech lead I need sections 3,4 rejected if T6, T7, M7 records can't be parsed](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2754)
