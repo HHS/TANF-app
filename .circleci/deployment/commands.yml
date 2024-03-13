@@ -98,6 +98,10 @@
             sudo add-apt-repository ppa:rmescandon/yq
             sudo apt-get install yq
       - run:
+          name: Apply database migrations
+          command: |
+            bash ./scripts/apply-remote-migrations.sh <<parameters.backend-appname>>
+      - run:
           name: Deploy backend application
           command: |
             bash ./scripts/deploy-backend.sh \
