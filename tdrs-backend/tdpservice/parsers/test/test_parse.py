@@ -10,7 +10,7 @@ from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from tdpservice.search_indexes import documents
-from .factories import DataFileSummaryFactory
+from .factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
 from elasticsearch.helpers.errors import BulkIndexError
@@ -37,6 +37,22 @@ def test_header_datafile(stt_user, stt):
 def dfs():
     """Fixture for DataFileSummary."""
     return DataFileSummaryFactory.create()
+
+
+@pytest.fixture
+def t2_invalid_dob_file():
+    """Fixture for T2 file with an invalid DOB."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q2',
+        file__name='t2_invalid_dob_file.txt',
+        file__section='Active Case Data',
+        file__data=(b'HEADER20211A25   TAN1EU\n'
+                    b'T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000'
+                    b'0000000000000000000000000000000000000000000000000000000000291\n'
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
 
 
 @pytest.mark.django_db
@@ -1389,6 +1405,21 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
 
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
+
+@pytest.mark.django_db()
+def test_parse_t2_invalid_dob(t2_invalid_dob_file):
+    """Test parsing a TANF T2 record with an invalid DOB."""
+    parse.parse_datafile(t2_invalid_dob_file)
+
+    parser_errors = ParserError.objects.filter(file=t2_invalid_dob_file).order_by("pk")
+
+    month_error = parser_errors[2]
+    year_error = parser_errors[1]
+    digits_error = parser_errors[0]
+
+    assert month_error.error_message == "$9 is not a valid month."
+    assert year_error.error_message == "Q897 must be larger than year 1900."
+    assert digits_error.error_message == "Q897$9 3 does not have exactly 8 digits."
 
 
 @pytest.mark.django_db
