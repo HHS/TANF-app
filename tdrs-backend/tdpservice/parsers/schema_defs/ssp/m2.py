@@ -14,6 +14,7 @@ m2 = SchemaManager(
             document=SSP_M2DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(150),
+                validators.validateRptMonthYear(),
                 validators.notEmpty(8, 19)
             ],
             postparsing_validators=[

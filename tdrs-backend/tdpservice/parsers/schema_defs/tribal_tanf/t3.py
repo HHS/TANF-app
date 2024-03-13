@@ -13,6 +13,7 @@ child_one = RowSchema(
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
         validators.hasLength(122),
+        validators.validateRptMonthYear(),
         validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
@@ -320,6 +321,7 @@ child_two = RowSchema(
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
         validators.hasLength(122),
+        validators.validateRptMonthYear(),
         validators.notEmpty(8, 19)
     ],
     postparsing_validators=[

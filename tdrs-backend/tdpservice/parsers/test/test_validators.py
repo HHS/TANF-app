@@ -102,6 +102,62 @@ def test_validate__FAM_AFF__SSN():
     assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
 
 
+def test_quarterIsValid():
+    """Test `quarterIsValid`."""
+    value = "20204"
+    val = validators.quarterIsValid()
+    result = val(value)
+    assert result == (True, None)
+
+    value = "20205"
+    result = val(value)
+    assert result == (False, "5 is not a valid quarter.")
+
+def test_validateSSN():
+    """Test `validateSSN`."""
+    value = "123456789"
+    val = validators.validateSSN()
+    result = val(value)
+    assert result == (True, None)
+
+    value = "111111111"
+    options = [str(i) * 9 for i in range(0, 10)]
+    result = val(value)
+    assert result == (False, f"{value} is in {options}.")
+
+def test_validateRace():
+    """Test `validateRace`."""
+    value = 1
+    val = validators.validateRace()
+    result = val(value)
+    assert result == (True, None)
+
+    value = 3
+    result = val(value)
+    assert result == (False, f"{value} is not greater than or equal to 0 or smaller than or equal to 2.")
+
+def test_validateRptMonthYear():
+    """Test `validateRptMonthYear`."""
+    value = "T1202012"
+    val = validators.validateRptMonthYear()
+    result = val(value)
+    assert result == (True, None)
+
+    value = "T1      "
+    result = val(value)
+    assert result == (False, f"The value: {value[2:8]}, does not follow the YYYYMM format for Reporting Year and "
+                      "Month.")
+
+    value = "T1189912"
+    result = val(value)
+    assert result == (False, f"The value: {value[2:8]}, does not follow the YYYYMM format for Reporting Year and "
+                      "Month.")
+
+    value = "T1202013"
+    result = val(value)
+    assert result == (False, f"The value: {value[2:8]}, does not follow the YYYYMM format for Reporting Year and "
+                      "Month.")
+
 def test_matches_returns_valid():
     """Test `matches` gives a valid result."""
     value = 'TEST'

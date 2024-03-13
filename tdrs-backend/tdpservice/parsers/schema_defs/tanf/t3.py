@@ -12,6 +12,7 @@ child_one = RowSchema(
     document=TANF_T3DataSubmissionDocument(),
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
+        validators.validateRptMonthYear(),
         validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
@@ -318,6 +319,7 @@ child_two = RowSchema(
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
+        validators.validateRptMonthYear(),
         validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
