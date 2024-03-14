@@ -14,6 +14,7 @@ t1 = SchemaManager(
             preparsing_validators=[
                 validators.recordHasLength(156),
                 validators.caseNumberNotEmpty(8, 19),
+                validators.validateRptMonthYear(),
             ],
             postparsing_validators=[
                 validators.if_then_validator(

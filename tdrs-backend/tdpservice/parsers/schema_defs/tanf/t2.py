@@ -16,6 +16,7 @@ t2 = SchemaManager(
             preparsing_validators=[
                 validators.recordHasLength(156),
                 validators.caseNumberNotEmpty(8, 19),
+                validators.validateRptMonthYear(),
             ],
             postparsing_validators=[
                 validators.validate__FAM_AFF__SSN(),
@@ -182,14 +183,15 @@ t2 = SchemaManager(
                     item="32",
                     name="DATE_OF_BIRTH",
                     friendly_name="date of birth",
-                    type="number",
+                    type="string",
                     startIndex=21,
                     endIndex=29,
                     required=True,
-                    validators=[
-                        validators.dateYearIsLargerThan(1900),
-                        validators.dateMonthIsValid(),
-                    ],
+                    validators=[validators.intHasLength(8),
+                                validators.dateYearIsLargerThan(1900),
+                                validators.dateMonthIsValid(),
+                                validators.dateDayIsValid()
+                                ]
                 ),
                 TransformField(
                     transform_func=tanf_ssn_decryption_func,

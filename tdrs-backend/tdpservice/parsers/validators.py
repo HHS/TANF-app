@@ -239,6 +239,14 @@ def recordHasLength(length):
     )
 
 
+def intHasLength(num_digits):
+    """Validate the number of digits in an integer."""
+    return make_validator(
+        lambda value: sum(c.isdigit() for c in str(value)) == num_digits,
+        lambda value: f"{value} does not have exactly {num_digits} digits.",
+    )
+
+
 def contains(substring):
     """Validate that string value contains the given substring param."""
     return make_validator(
@@ -385,12 +393,18 @@ def isInLimits(LowerBound, UpperBound):
 
 # custom validators
 
-
 def dateMonthIsValid():
     """Validate that in a monthyear combination, the month is a valid month."""
     return make_validator(
         lambda value: int(str(value)[4:6]) in range(1, 13),
         lambda value, record_type, friendly_name, item_num: f"{record_type}: {str(value)[4:6]} is not a valid month.",
+    )
+
+def dateDayIsValid():
+    """Validate that in a monthyearday combination, the day is a valid day."""
+    return make_validator(
+        lambda value: int(str(value)[6:]) in range(1, 32),
+        lambda value: f"{str(value)[6:]} is not a valid day.",
     )
 
 
@@ -436,7 +450,19 @@ def validateRace():
         lambda value: value >= 0 and value <= 2,
         lambda value, record_type,
         friendly_name, item_num: f"{record_type}: {value} is not greater than or equal to 0 "
-                                 "or smaller than or equal to 1."
+                                 "or smaller than or equal to 2."
+    )
+
+
+def validateRptMonthYear():
+    """Validate RPT_MONTH_YEAR."""
+    return make_validator(
+        lambda value: value[2:8].isdigit() and int(value[2:6]) > 1900 and value[6:8] in {"01", "02", "03", "04", "05",
+                                                                                         "06", "07", "08", "09", "10",
+                                                                                         "11", "12"},
+        lambda value, record_type,
+        friendly_name, item_num: f"{record_type}: The value: {value[2:8]}, does not follow the YYYYMM "
+                                 "format for Reporting Year and Month.",
     )
 
 
