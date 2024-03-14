@@ -21,6 +21,7 @@ tdrs-backend/coverage.xml
 tdrs-backend/htmlcov/*
 tdrs-backend/.env
 tdrs-backend/.env.production
+tdrs-backend/.env.ci
 tdrs-backend/ADS*
 tdrs-backend/temp_key_file
 tdrs-backend/test
