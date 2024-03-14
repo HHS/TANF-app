@@ -106,13 +106,6 @@ def test_validate__FAM_AFF__SSN():
     result = validators.validate__FAM_AFF__SSN()(instance, "T1")
     assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
 
-def test_dateYearIsLargerThan():
-    """Test `dateYearIsLargerThan` gives a valid result."""
-    value = "199806"
-    validator = validators.dateYearIsLargerThan(1999)
-    result = validator(value, "T1", "friendly_name", "item_no")
-    assert result == (False, 'T1: 1998 year must be larger than 1999.')
-
 def test_quarterIsValid():
     """Test `quarterIsValid`."""
     value = "20204"
@@ -305,7 +298,7 @@ def test_dateYearIsLargerThan():
     assert validator(value) == (True, None)
 
     value = 18990101
-    assert validator(value, "T1", "friendly_name", "item_no") == (False, 
+    assert validator(value, "T1", "friendly_name", "item_no") == (False,
                                                                   f"T1: Year {str(value)[:4]} must be larger than "
                                                                   f"{year}.")
 
