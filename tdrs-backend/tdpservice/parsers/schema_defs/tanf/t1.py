@@ -12,6 +12,7 @@ t1 = SchemaManager(
             document=TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(156),
+                validators.validateRptMonthYear(),
                 validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
