@@ -323,7 +323,7 @@ second_part_schema = RowSchema(
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
-        validators.caseNumberNotEmpty(8, 19)
+        validators.caseNumberNotEmpty(8, 19),
         validators.validateRptMonthYear(),
     ],
     postparsing_validators=[

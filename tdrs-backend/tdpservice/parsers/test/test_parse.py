@@ -345,18 +345,9 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     assert trailer_error.object_id is None
 
     row_errors = list(parser_errors.filter(row_number=2).order_by('id'))
-    # row_errors_list = []
-    # for row_error in row_errors:
-    #     row_errors_list.append(row_error)
-    #     assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    #     assert trailer_error.error_message in [
-    #         'TRAILER record length is 11 characters but must be 23.',
-    #         'Reporting month year None does not match file reporting year:2021, quarter:Q1.']
-    #     assert row_error.content_type is None
-    #     assert row_error.object_id is None
     row_error = row_errors[0]
     assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_error.error_message == 'Value length 7 does not match 156.'
+    assert row_error.error_message == 'T1 record length is 7 characters but must be 156.'
     assert row_error.content_type is None
     assert row_error.object_id is None
 
@@ -402,28 +393,23 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
-    row_3_errors = list(parser_errors.filter(row_number=3).order_by('id')[2:])
-    for row_3_error in row_3_errors:
-        assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert row_3_error.error_message in [
-            'T1: Case number T1trash cannot contain blanks.',
-            'T1 record length is 7 characters but must be 156.',
-            'Your file does not end with a TRAILER record.',
-            'TRAILER record length is 7 characters but must be 23.',
-        ]
-        assert row_3_error.content_type is None
-        assert row_3_error.object_id is None
+    row_3_errors = [trailer_errors[2], trailer_errors[3]]
+    length_error = row_3_errors[0]
+    assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert length_error.error_message == 'T1 record length is 7 characters but must be 156.'
+    assert length_error.content_type is None
+    assert length_error.object_id is None
 
     trailer_error_3 = trailer_errors[3]
     assert trailer_error_3.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_3.error_message == ('The value: trash, does not follow the YYYYMM format for '
-                                             'Reporting Year and Month.')
+    assert trailer_error_3.error_message == 'T1: Case number T1trash cannot contain blanks.'
     assert trailer_error_3.content_type is None
     assert trailer_error_3.object_id is None
 
     trailer_error_4 = trailer_errors[4]
     assert trailer_error_4.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_4.error_message == 'T1trash contains blanks between positions 8 and 19.'
+    assert trailer_error_4.error_message == ('T1: The value: trash, does not follow the YYYYMM '
+                                             'format for Reporting Year and Month.')
     assert trailer_error_4.content_type is None
     assert trailer_error_4.object_id is None
 
@@ -432,7 +418,6 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
         "3_0": [length_error, trailer_error_3, trailer_error_4],
         "trailer": [trailer_error_1, trailer_error_2],
     }
-
 
 @pytest.fixture
 def empty_file(stt_user, stt):
