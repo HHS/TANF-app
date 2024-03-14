@@ -742,15 +742,17 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     assert parser_errors.count() == 4
 
-    error_message = 'The value:       , does not follow the YYYYMM format for Reporting Year and Month.'
+    error_message = 'T1: The value:       , does not follow the YYYYMM format for Reporting Year and Month.'
     row_2_error = parser_errors.get(row_number=2, error_message=error_message)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_2_error.error_message == error_message
 
+    error_message = 'T2: The value:       , does not follow the YYYYMM format for Reporting Year and Month.'
     row_3_error = parser_errors.get(row_number=3, error_message=error_message)
     assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_3_error.error_message == error_message
 
+    error_message = 'T3: The value:       , does not follow the YYYYMM format for Reporting Year and Month.'
     row_4_error = parser_errors.get(row_number=4, error_message=error_message)
     assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_4_error.error_message == error_message
@@ -780,12 +782,13 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
     assert parser_errors.count() == 5
 
-    error_message = 'The value:       , does not follow the YYYYMM format for Reporting Year and Month.'
-    rpt_month_errors = parser_errors.filter(error_message=error_message)
+    content = ', does not follow the YYYYMM format for Reporting Year and Month.'
+    error_message = 'M{}: The value:       ' + content
+    rpt_month_errors = parser_errors.filter(error_message__contains=content).order_by('id')
     assert len(rpt_month_errors) == 3
-    for e in rpt_month_errors:
+    for i, e in enumerate(rpt_month_errors):
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert e.error_message == error_message
+        assert e.error_message == error_message.format(i + 1)
         assert e.object_id is None
 
     row_5_error = parser_errors.get(
@@ -1407,9 +1410,9 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file):
     year_error = parser_errors[1]
     digits_error = parser_errors[0]
 
-    assert month_error.error_message == "$9 is not a valid month."
-    assert year_error.error_message == "Q897 must be larger than year 1900."
-    assert digits_error.error_message == "Q897$9 3 does not have exactly 8 digits."
+    assert month_error.error_message == "T2: $9 is not a valid month."
+    assert year_error.error_message == "T2: Year Q897 must be larger than 1900."
+    assert digits_error.error_message == "T2: Q897$9 3 does not have exactly 8 digits."
 
 
 @pytest.mark.django_db
