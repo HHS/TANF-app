@@ -243,7 +243,8 @@ def intHasLength(num_digits):
     """Validate the number of digits in an integer."""
     return make_validator(
         lambda value: sum(c.isdigit() for c in str(value)) == num_digits,
-        lambda value: f"{value} does not have exactly {num_digits} digits.",
+        lambda value, record_type,
+        friendly_name, item_num: f"{record_type}: {value} does not have exactly {num_digits} digits.",
     )
 
 
@@ -404,7 +405,7 @@ def dateDayIsValid():
     """Validate that in a monthyearday combination, the day is a valid day."""
     return make_validator(
         lambda value: int(str(value)[6:]) in range(1, 32),
-        lambda value: f"{str(value)[6:]} is not a valid day.",
+        lambda value, record_type, friendly_name, item_num: f"{record_type}: {str(value)[6:]} is not a valid day.",
     )
 
 
@@ -413,8 +414,8 @@ def olderThan(min_age):
     return make_validator(
         lambda value: date.today().year - int(str(value)[:4]) > min_age,
         lambda value, record_type,
-        friendly_name, item_num: f"{record_type}: {date.today().year - int(str(value)[:4])} is not "
-                                 f"larger than {min_age}."
+        friendly_name, item_num: (f"{record_type}: {str(value)[:4]} must be less than or equal to "
+                                  f"{date.today().year - min_age} to meet the minimum age requirement.")
     )
 
 
@@ -423,7 +424,7 @@ def dateYearIsLargerThan(year):
     return make_validator(
         lambda value: int(str(value)[:4]) > year,
         lambda value, record_type,
-        friendly_name, item_num: f"{record_type}: {str(value)[:4]} year must be larger than {year}.",
+        friendly_name, item_num: f"{record_type}: Year {str(value)[:4]} must be larger than {year}.",
     )
 
 
