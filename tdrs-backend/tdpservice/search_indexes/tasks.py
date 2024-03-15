@@ -25,8 +25,8 @@ def reindex_elastic_documents():
     call_command('tdp_search_index', '--rebuild', '--use-alias', '--parallel', '-f')
 
     end = time.time()
-    elapsed_seconds = end-start
-    elapsed_minutes = int(elapsed_seconds/60)
+    elapsed_seconds = int(end-start)
+    elapsed_minutes = elapsed_seconds // 60
     remainder_seconds = int(elapsed_seconds - (elapsed_minutes*60))
     remainder_seconds = remainder_seconds if elapsed_minutes > 0 else elapsed_seconds
 
