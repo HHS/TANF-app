@@ -22,7 +22,7 @@ def reindex_elastic_documents():
         'object_repr': 'Exception in search_index --rebuild'
     })
 
-    call_command('search_index', '--rebuild', '-f', '--parallel')
+    call_command('tdp_search_index', '--rebuild', '--use-alias', '--parallel', '-f')
 
     end = time.time()
     elapsed_seconds = end-start
