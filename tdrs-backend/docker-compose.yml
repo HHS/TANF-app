@@ -46,15 +46,15 @@ services:
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   kibana:
-    image: elastic/kibana:7.17.10
+    image: docker.elastic.co/kibana/kibana-oss:7.4.2
     ports:
       - 5601:5601
     environment:
-      - xpack.security.encryptionKey="something_at_least_32_characters"
-      - xpack.security.session.idleTimeout="1h"
-      - xpack.security.session.lifespan="30d"
-    volumes:
-      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ELASTICSEARCH_HOSTS="http://elastic:9200"
+      - SERVER_HOST=kibana
+      - SERVER_BASEPATH=/kibana
+      - SERVER_SECURITYRESPONSEHEADERS_REFERRERPOLICY=no-referrer
+      - CSP_WARNLEGACYBROWSERS=false
     depends_on:
       - elastic
 
@@ -101,6 +101,7 @@ services:
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
+      - BYPASS_KIBANA_AUTH
     volumes:
       - .:/tdpapp
     image: tdp

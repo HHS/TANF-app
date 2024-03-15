@@ -16,6 +16,15 @@ fi
 echo "Applying database migrations"
 python manage.py migrate
 #python manage.py populate_stts
+
+# Collect static files. This is needed for swagger to work in local environment
+if [[ $DISABLE_COLLECTSTATIC ]]; then 
+    echo "DISABLE_COLLECTSTATIC is set to true, skipping collectstatic"
+else
+    echo "Collecting static files"
+    python manage.py collectstatic --noinput
+fi
+
 #python manage.py collectstatic --noinput
 
 celery -A tdpservice.settings worker -c 1 &

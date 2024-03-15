@@ -1,8 +1,7 @@
 """Schema for Tribal TANF T1 record types."""
 
-from ...util import SchemaManager
 from ...fields import Field
-from ...row_schema import RowSchema
+from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T1DataSubmissionDocument
 
@@ -13,6 +12,7 @@ t1 = SchemaManager(
             document=Tribal_TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(122),
+                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
                 validators.if_then_validator(
@@ -150,7 +150,7 @@ t1 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.isAlphaNumeric()],
+                    validators=[validators.notEmpty()],
                 ),
                 Field(
                     item="2",

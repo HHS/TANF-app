@@ -13,6 +13,7 @@ In preparation for production-ready infrastructure, we wanted to create a living
 + [CircleCI failures](./Failed-Deployment-Troubleshooting.md#circleci-failures)
 + [Runtime failures](./Failed-Deployment-Troubleshooting.md#compilationruntime-failure)
 + [App Connectivity issues](./Failed-Deployment-Troubleshooting.md#app-connectivity-issues)
++ [App roll-back](./Failed-Deployment-Troubleshooting.md#revision-rollback)
 
 ## CircleCI failures
 **Symptom:** I deployed new code (via merging) but the app in Cloud.gov didn't update and is still running old code.
@@ -78,3 +79,25 @@ export LOGGING_LEVEL=DEBUG
 [...]
 bash scripts/deploy-backend.sh rebuild tdp-backend-raft tanf-dev
 ```
+
+## Revision Rollback
+
+First we need to get list of revisions and select a stable revision id.
+```cf revisions {app-name}```
+
+Then use the last successful guid, we can populate this reversion command:
+```
+cf curl v3/deployments \        
+-X POST \
+-d '{
+  "revision": {
+    "guid": "{last stable guid from list above}"
+  },
+  "relationships": {
+    "app": {
+      "data": {
+        "guid": "{current app guid}"
+      }
+    }
+  }
+}'```

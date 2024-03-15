@@ -1,10 +1,9 @@
 """Schema for Tribal TANF T5 row of all submission types."""
 
 
-from ...util import SchemaManager
 from ...transforms import tanf_ssn_decryption_func
 from ...fields import TransformField, Field
-from ...row_schema import RowSchema
+from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T5DataSubmissionDocument
 
@@ -15,6 +14,7 @@ t5 = SchemaManager(
             document=Tribal_TANF_T5DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(71),
+                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
                 validators.if_then_validator(
@@ -127,7 +127,7 @@ t5 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.isAlphaNumeric()],
+                    validators=[validators.notEmpty()],
                 ),
                 Field(
                     item="14",
@@ -161,7 +161,7 @@ t5 = SchemaManager(
                     startIndex=28,
                     endIndex=37,
                     required=True,
-                    validators=[validators.validateSSN()],
+                    validators=[validators.isNumber()],
                     is_encrypted=False,
                 ),
                 Field(

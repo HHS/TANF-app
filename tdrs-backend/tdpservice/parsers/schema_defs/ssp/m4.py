@@ -1,9 +1,8 @@
 """Schema for SSP M1 record type."""
 
 
-from tdpservice.parsers.util import SchemaManager
 from tdpservice.parsers.fields import Field
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M4DataSubmissionDocument
 
@@ -13,6 +12,7 @@ m4 = SchemaManager(
             document=SSP_M4DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(66),
+                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[],
             fields=[
@@ -47,7 +47,7 @@ m4 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.isAlphaNumeric()],
+                    validators=[validators.notEmpty()],
                 ),
                 Field(
                     item="2",

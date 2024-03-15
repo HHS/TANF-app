@@ -7,6 +7,7 @@
 	allowed = [A-Z]+_KEY=..echo \".{S3_CREDENTIALS}\" [|] jq -r .+
 	allowed = ./tdrs-backend/.env.example:.*
 	allowed = ./tdrs-backend/docker-compose.yml:57:.*
+	allowed = ./tdrs-backend/manifest.proxy.yml:*
 	allowed = regexes.json:.*
 	allowed = ./scripts/copy-login-gov-keypair.sh:14:JWT_KEY=.*
 	allowed = scripts/deploy-backend.sh:.+:DJANGO_SECRET_KEY=..python -c .from secrets import token_urlsafe. print.token_urlsafe..*

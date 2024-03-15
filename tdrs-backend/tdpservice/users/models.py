@@ -181,6 +181,11 @@ class User(AbstractUser):
         return self.is_in_group("ACF OCIO")
 
     @property
+    def is_ofa_sys_admin(self) -> bool:
+        """Return whether or not the user is in the OFA System Admin Group."""
+        return self.is_in_group("OFA System Admin")
+
+    @property
     def is_deactivated(self):
         """Check if the user's account status has been set to 'Deactivated'."""
         return self.account_approval_status == AccountApprovalStatusChoices.DEACTIVATED

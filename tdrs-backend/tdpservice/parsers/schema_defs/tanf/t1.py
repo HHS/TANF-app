@@ -1,8 +1,7 @@
 """Schema for t1 record types."""
 
-from tdpservice.parsers.util import SchemaManager
 from tdpservice.parsers.fields import Field
-from tdpservice.parsers.row_schema import RowSchema
+from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T1DataSubmissionDocument
 
@@ -13,6 +12,7 @@ t1 = SchemaManager(
             document=TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(156),
+                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
                 validators.if_then_validator(
@@ -150,7 +150,7 @@ t1 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.isAlphaNumeric()],
+                    validators=[validators.notEmpty()],
                 ),
                 Field(
                     item="2",
