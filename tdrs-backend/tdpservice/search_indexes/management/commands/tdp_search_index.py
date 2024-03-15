@@ -1,5 +1,6 @@
 from django_elasticsearch_dsl.management.commands import search_index
 from django_elasticsearch_dsl.registries import registry
+from django.conf import settings
 
 
 class Command(search_index.Command):
@@ -19,6 +20,6 @@ class Command(search_index.Command):
                 qs,
                 parallel=parallel,
                 refresh=options['refresh'],
-                thread_count=3,
-                chunk_size=500,
+                thread_count=settings.ELASTICSEARCH_REINDEX_THREAD_COUNT,
+                chunk_size=settings.ELASTICSEARCH_REINDEX_CHUNK_SIZE,
             )
