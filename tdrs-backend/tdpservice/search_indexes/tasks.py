@@ -19,7 +19,7 @@ def reindex_elastic_documents():
     log('Starting elastic reindex.', {
         'user_id': system_user.pk,
         'object_id': None,
-        'object_repr': 'Exception in search_index --rebuild'
+        'object_repr': ''
     })
 
     call_command('tdp_search_index', '--rebuild', '--use-alias', '--parallel', '-f')
@@ -33,5 +33,5 @@ def reindex_elastic_documents():
     log(f'Elastic reindex complete, took {elapsed_minutes} minutes and {remainder_seconds} seconds.', {
         'user_id': system_user.pk,
         'object_id': None,
-        'object_repr': 'Exception in search_index --rebuild'
+        'object_repr': ''
     })
