@@ -475,7 +475,7 @@ class Common(Configuration):
         },
         'Reindex elasticsearch documents': {
             'task': 'tdpservice.search_indexes.tasks.reindex_elastic_documents',
-            'schedule': crontab(minute='0', hour='5', day_of_week='*', day_of_month='*', month_of_year='*'),  # Every day at 5am UTC (1am EST)
+            'schedule': crontab(minute='0', hour='5', day_of_week='6'),  # Every Saturday at 5am UTC (1am EST)
         },
     }
 
