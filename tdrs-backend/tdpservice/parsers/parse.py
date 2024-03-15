@@ -236,24 +236,40 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
 
         schema_manager = get_schema_manager(line, section, program_type)
 
-        records = manager_parse_line(line, schema_manager, generate_error, is_encrypted)
+        try:
+            records = manager_parse_line(line, schema_manager, generate_error, is_encrypted)
 
-        record_number = 0
-        for i in range(len(records)):
-            r = records[i]
-            record_number += 1
-            record, record_is_valid, record_errors = r
-            if not record_is_valid:
-                logger.debug(f"Record #{i} from line {line_number} is invalid.")
-                line_errors = errors.get(f"{line_number}_{i}", {})
-                line_errors.update({record_number: record_errors})
-                errors.update({f"{line_number}_{i}": record_errors})
-                unsaved_parser_errors.update({f"{line_number}_{i}": record_errors})
-                num_errors += len(record_errors)
-            if record:
-                s = schema_manager.schemas[i]
-                record.datafile = datafile
-                unsaved_records.setdefault(s.document, []).append(record)
+            # this bubbles up when uyploading a file on port 3000 in the history (XLS)
+            # get the errors in this structure
+            record_number = 0
+            for i in range(len(records)):
+                r = records[i]
+                record_number += 1
+                record, record_is_valid, record_errors = r
+                if not record_is_valid:
+                    logger.debug(f"Record #{i} from line {line_number} is invalid.")
+                    line_errors = errors.get(f"{line_number}_{i}", {})
+                    line_errors.update({record_number: record_errors})
+                    errors.update({f"{line_number}_{i}": record_errors})
+                    unsaved_parser_errors.update({f"{line_number}_{i}": record_errors})
+                    num_errors += len(record_errors)
+                if record:
+                    s = schema_manager.schemas[i]
+                    record.datafile = datafile
+                    unsaved_records.setdefault(s.document, []).append(record)
+
+        except ValueError as ex:
+            err = generate_error(
+                schema=None,
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                error_message=ex,
+                record=None,
+                field="Record_Type"
+            )
+
+            errors.update({f"{line_number}_0": [err]})
+            unsaved_parser_errors.update({f"{line_number}_0": [err]})
+            num_errors += 1
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)

@@ -1489,3 +1489,26 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
 
     assert first.FAMILIES_MONTH == 0
     assert sixth.FAMILIES_MONTH == 446
+
+@pytest.fixture
+def tribal_section_4_bad_quarter(stt_user, stt):
+    """Fixture for tribal_section_4_bad_quarter."""
+    return util.create_test_datafile('tribal_section_4_fake_bad_quarter.txt', stt_user, stt, "Tribal Stratum Data")
+
+@pytest.mark.django_db()
+def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
+    """Test parsing invalid quarter value"""
+    tribal_section_4_bad_quarter.year = 2020
+    tribal_section_4_bad_quarter.quarter = 'Q1'
+    dfs.datafile = tribal_section_4_bad_quarter
+
+    parse.parse_datafile(tribal_section_4_bad_quarter)
+    parser_errors = ParserError.objects.filter(file=tribal_section_4_bad_quarter)
+    
+    assert parser_errors.count() == 1
+    error = parser_errors.first()
+
+    print(error.error_message)
+
+    assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert error.error_message == "Invalid quarter value."
