@@ -1,9 +1,18 @@
+"""
+Overrides the `search_index` management command provided by django_elasticsearch_dsl.
+
+Adds in the configurable `thread_count` and `chunk_size` that can be set
+as environment variables.
+"""
+
 from django_elasticsearch_dsl.management.commands import search_index
 from django_elasticsearch_dsl.registries import registry
 from django.conf import settings
 
 
 class Command(search_index.Command):
+    """Override django_elasticsearch_dsl `search_index` command to add configurable options."""
+
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
 
