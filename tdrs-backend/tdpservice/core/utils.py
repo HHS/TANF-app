@@ -28,10 +28,8 @@ class ReadOnlyAdminMixin:
         return False
 
 
-def log(msg, logger_context=None, level='info'):
+def log(msg, logger_context={}, level='info'):
     """Create a log in the terminal and django admin console, for email tasks."""
-    from tdpservice.users.models import User
-
     log_func = logger.info
 
     match level:
@@ -50,10 +48,10 @@ def log(msg, logger_context=None, level='info'):
 
     if logger_context:
         LogEntry.objects.log_action(
-            user_id=logger_context['user_id'],
+            user_id=logger_context.get('user_id'),
             change_message=msg,
-            action_flag=CHANGE,
-            content_type_id=ContentType.objects.get_for_model(User).pk,
-            object_id=logger_context['object_id'],
-            object_repr=logger_context['object_repr']
+            action_flag=logger_context.get('action_flag', CHANGE),
+            content_type_id=ContentType.objects.get_for_model(logger_context.get('content_type', LogEntry)).pk,
+            object_id=logger_context.get('object_id', None),
+            object_repr=logger_context.get('object_repr', '')
         )
