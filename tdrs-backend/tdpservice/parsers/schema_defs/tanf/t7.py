@@ -47,7 +47,7 @@ for i in range(1, 31):
                     endIndex=7,
                     required=True,
                     validators=[
-                        validators.dateYearIsLargerThan(1998),
+                        validators.dateYearIsLargerThan(2019),
                         validators.quarterIsValid(),
                     ],
                 ),
