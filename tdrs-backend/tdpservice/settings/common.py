@@ -346,6 +346,7 @@ class Common(Configuration):
             'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
         },
     }
+    ELASTICSEARCH_DSL_PARALLEL = True
     KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
     BYPASS_KIBANA_AUTH = os.getenv("BYPASS_KIBANA_AUTH", False)
 
