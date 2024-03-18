@@ -47,7 +47,7 @@ def t2_invalid_dob_file():
         quarter='Q2',
         file__name='t2_invalid_dob_file.txt',
         file__section='Active Case Data',
-        file__data=(b'HEADER20211A25   TAN1EU\n'
+        file__data=(b'HEADER20211A25   TAN1ED\n'
                     b'T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000'
                     b'0000000000000000000000000000000000000000000000000000000000291\n'
                     b'TRAILER0000001         ')
@@ -1403,6 +1403,8 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file):
     parse.parse_datafile(t2_invalid_dob_file)
 
     parser_errors = ParserError.objects.filter(file=t2_invalid_dob_file).order_by("pk")
+
+    print(f"{parser_errors}")
 
     month_error = parser_errors[2]
     year_error = parser_errors[1]

@@ -6,11 +6,6 @@ from .. import validators, util
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
 from tdpservice.parsers.test.factories import SSPM5Factory
 
-@pytest.fixture
-def test_datafile(stt_user, stt):
-    """Fixture for small_correct_file."""
-    return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
-
 @pytest.mark.parametrize("value,length", [
     (None, 0),
     (None, 10),
