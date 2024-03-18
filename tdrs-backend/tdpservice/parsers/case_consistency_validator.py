@@ -49,32 +49,36 @@ class CaseConsistencyValidator:
     def validate(self):
         """Perform category four validation on all cached records."""
         num_errors = 0
-        if self.case_is_section_one_or_two:
-            self.total_cases_cached += 1
-            if not self.case_has_errors:
-                self.total_cases_validated += 1
-                self.has_validated = True
-                logger.debug(f"Attempting to execute Cat4 validation for case: {self.current_case}.")
-                if self.program_type == "TAN" and self.section == "A" and "state_fips" in self.header:
-                    num_errors += self.__validate_tanf_s1_case(num_errors)
-                elif self.program_type == "TAN" and self.section == "C" and "state_fips" in self.header:
-                    num_errors += self.__validate_tanf_s2_case(num_errors)
-                elif self.program_type == "TAN" and self.section == "A" and "tribe_code" in self.header:
-                    num_errors += self.__validate_tribal_tanf_s1_case(num_errors)
-                elif self.program_type == "TAN" and self.section == "C" and "tribe_code" in self.header:
-                    num_errors += self.__validate_tribal_tanf_s2_case(num_errors)
-                elif self.program_type == "SSP" and self.section == "A":
-                    num_errors += self.__validate_ssp_s1_case(num_errors)
-                elif self.program_type == "SSP" and self.section == "C":
-                    num_errors += self.__validate_ssp_s2_case(num_errors)
+        try:
+            if self.case_is_section_one_or_two:
+                self.total_cases_cached += 1
+                if not self.case_has_errors:
+                    self.total_cases_validated += 1
+                    self.has_validated = True
+                    logger.debug(f"Attempting to execute Cat4 validation for case: {self.current_case}.")
+                    if self.program_type == "TAN" and self.section == "A" and "state_fips" in self.header:
+                        num_errors += self.__validate_tanf_s1_case(num_errors)
+                    elif self.program_type == "TAN" and self.section == "C" and "state_fips" in self.header:
+                        num_errors += self.__validate_tanf_s2_case(num_errors)
+                    elif self.program_type == "TAN" and self.section == "A" and "tribe_code" in self.header:
+                        num_errors += self.__validate_tribal_tanf_s1_case(num_errors)
+                    elif self.program_type == "TAN" and self.section == "C" and "tribe_code" in self.header:
+                        num_errors += self.__validate_tribal_tanf_s2_case(num_errors)
+                    elif self.program_type == "SSP" and self.section == "A":
+                        num_errors += self.__validate_ssp_s1_case(num_errors)
+                    elif self.program_type == "SSP" and self.section == "C":
+                        num_errors += self.__validate_ssp_s2_case(num_errors)
+                    else:
+                        self.total_cases_validated -= 1
+                        logger.warn(f"Case: {self.current_case} has no errors but has either an incorrect program type: "
+                                    f"{self.program_type} or an incorrect section: {self.section}. No validation occurred.")
+                        self.has_validated = False
                 else:
-                    self.total_cases_validated -= 1
-                    logger.warn(f"Case: {self.current_case} has no errors but has either an incorrect program type: "
-                                f"{self.program_type} or an incorrect section: {self.section}. No validation occurred.")
-                    self.has_validated = False
-            else:
-                logger.debug(f"Case: {self.current_case} has errors associated with it's records. "
-                             "Skipping Cat4 validation")
+                    logger.debug(f"Case: {self.current_case} has errors associated with it's records. "
+                                "Skipping Cat4 validation.")
+        except Exception as e:
+            logger.error(f"Uncaught exception during category four validation: {e}")
+            return num_errors
         return num_errors
 
     def __validate_tanf_s1_case(self, num_errors):
