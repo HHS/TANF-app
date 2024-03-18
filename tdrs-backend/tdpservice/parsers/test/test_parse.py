@@ -1404,8 +1404,6 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file):
 
     parser_errors = ParserError.objects.filter(file=t2_invalid_dob_file).order_by("pk")
 
-    print(f"{parser_errors}")
-
     month_error = parser_errors[2]
     year_error = parser_errors[1]
     digits_error = parser_errors[0]
