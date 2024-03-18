@@ -239,8 +239,6 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
         try:
             records = manager_parse_line(line, schema_manager, generate_error, is_encrypted)
 
-            # this bubbles up when uyploading a file on port 3000 in the history (XLS)
-            # get the errors in this structure
             record_number = 0
             for i in range(len(records)):
                 r = records[i]
@@ -258,18 +256,21 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
                     record.datafile = datafile
                     unsaved_records.setdefault(s.document, []).append(record)
 
-        except ValueError as ex:
-            err = generate_error(
+        except ValueError as ex:        
+            err_obj = generate_error(
                 schema=None,
                 error_category=ParserErrorCategoryChoices.PRE_CHECK,
                 error_message=ex,
                 record=None,
-                field="Record_Type"
+                field=None
             )
-
-            errors.update({f"{line_number}_0": [err]})
-            unsaved_parser_errors.update({f"{line_number}_0": [err]})
             num_errors += 1
+            parse_error = {line_number: [err_obj]}
+            unsaved_parser_errors.update(parse_error)
+            rollback_records(unsaved_records, datafile)
+            rollback_parser_errors(datafile)
+            bulk_create_errors(parse_error, num_errors, flush=True)
+            return errors
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)

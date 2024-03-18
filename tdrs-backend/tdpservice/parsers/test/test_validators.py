@@ -101,17 +101,25 @@ def test_validate__FAM_AFF__SSN():
     result = validators.validate__FAM_AFF__SSN()(instance)
     assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
 
-
-def test_quarterIsValid():
+@pytest.mark.parametrize(
+        "value, valid", 
+        [
+            ("20201", True),
+            ("20202", True),
+            ("20203", True),
+            ("20204", True),
+            ("20200", False),
+            ("20205", False),
+            ("2020 ", False),
+            ("2020A", False)
+        ])
+def test_quarterIsValid(value, valid):
     """Test `quarterIsValid`."""
-    value = "20204"
     val = validators.quarterIsValid()
     result = val(value)
-    assert result == (True, None)
 
-    value = "20205"
-    result = val(value)
-    assert result == (False, "5 is not a valid quarter.")
+    errorText = None if valid else f"{value[-1:]} is not a valid quarter."
+    assert result == (valid, errorText)
 
 def test_validateSSN():
     """Test `validateSSN`."""
