@@ -40,7 +40,6 @@ Velocity (Dev): 27
 
 ### Submitted (QASP Review, OCIO Review)
 * [#2646 - Populate data file summary case aggregates differently per section](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2646)
-* [#2820 [bug] Uncaught exception re: parsing error preventing feedback report generation](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2820)
 * [#2746 As an STT, I need to know if there are issues with the DOBs reported in my data files](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2746)
 * [#2729 As a developer, I want to move migration commands in the pipeline to CircleCI](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2729)
 * [#2853 - Database Backup Bug](https://github.com/raft-tech/TANF-app/pull/2853)
