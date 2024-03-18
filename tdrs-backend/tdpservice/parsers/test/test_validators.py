@@ -2,7 +2,7 @@
 
 import pytest
 from datetime import date
-from .. import validators, util 
+from .. import validators
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
 from tdpservice.parsers.test.factories import SSPM5Factory
 
