@@ -5,8 +5,7 @@ import time
 from tdpservice.users.models import User
 from celery import shared_task
 from tdpservice.core.utils import log
-from django.core.management import call_command
-
+import subprocess
 
 @shared_task
 def reindex_elastic_documents():
@@ -22,7 +21,13 @@ def reindex_elastic_documents():
         'object_repr': ''
     })
 
-    call_command('tdp_search_index', '--rebuild', '--use-alias', '--parallel', '-f')
+    reindex_cmd = subprocess.Popen(
+        ['python', 'manage.py', 'search_index', '--rebuild', '--use-alias', '--parallel', '-f'],
+        stderr=subprocess.DEVNULL, stdout=subprocess.PIPE,
+    )
+    reindex_cmd.wait()
+    reindex_cmd_out, reindex_cmd_error = reindex_cmd.communicate()
+    log(reindex_cmd_out)
 
     end = time.time()
     elapsed_seconds = int(end-start)
