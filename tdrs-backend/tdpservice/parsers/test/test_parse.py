@@ -1059,7 +1059,7 @@ def ssp_section4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     """Test parsing SSP Section 4 submission."""
-    ssp_section4_file.year = 2019
+    ssp_section4_file.year = 2021
     ssp_section4_file.quarter = 'Q1'
 
     dfs.datafile = ssp_section4_file
@@ -1079,7 +1079,7 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     assert m7_objs.count() == 12
 
     first = m7_objs.first()
-    assert first.RPT_MONTH_YEAR == 201810
+    assert first.RPT_MONTH_YEAR == 202010
     assert first.FAMILIES_MONTH == 748
 
 @pytest.fixture
@@ -1152,7 +1152,7 @@ def ssp_section3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     """Test parsing TANF Section 3 submission."""
-    ssp_section3_file.year = 2019
+    ssp_section3_file.year = 2021
     ssp_section3_file.quarter = 'Q1'
     dfs.datafile = ssp_section3_file
 
@@ -1179,9 +1179,9 @@ def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     second = m6_objs[1]
     third = m6_objs[2]
 
-    assert first.RPT_MONTH_YEAR == 201810
-    assert second.RPT_MONTH_YEAR == 201811
-    assert third.RPT_MONTH_YEAR == 201812
+    assert first.RPT_MONTH_YEAR == 202010
+    assert second.RPT_MONTH_YEAR == 202011
+    assert third.RPT_MONTH_YEAR == 202012
 
     assert first.SSPMOE_FAMILIES == 15869
     assert second.SSPMOE_FAMILIES == 16008
@@ -1330,7 +1330,7 @@ def tribal_section_3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_3_file(tribal_section_3_file, dfs):
     """Test parsing Tribal TANF Section 3 submission."""
-    tribal_section_3_file.year = 2020
+    tribal_section_3_file.year = 2021
     tribal_section_3_file.quarter = 'Q1'
 
     dfs.datafile = tribal_section_3_file
