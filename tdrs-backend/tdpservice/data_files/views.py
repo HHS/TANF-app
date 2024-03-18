@@ -132,11 +132,6 @@ class DataFileViewSet(ModelViewSet):
     def get_queryset(self):
         """Apply custom queryset filters."""
         queryset = super().get_queryset().order_by('-created_at')
-        if self.request.query_params.get('file_type') == 'ssp-moe':
-            queryset = queryset.filter(section__contains='SSP')
-        else:
-            queryset = queryset.exclude(section__contains='SSP')
-
         return queryset
 
     def filter_queryset(self, queryset):
