@@ -82,7 +82,7 @@ ___
 
 Jump to: 
 * [Collapsed columns in the Error Report created extra steps for participants when first opening the CSV-based prototype](#Collapsed-columns-in-the-error-report-created-extra-steps-for-participants-when-first-opening-the-csv-based-prototype)
-* [We identified which columns should be included—and in what order—to maximize the actionable : extraneous data ratio of reports](#We-identified-which-columns-should-be-included-and-in-what-order-to-maximize-the-actionable-extraneous-data-ratio-of-reports)
+* [We identified which columns should be included—and in what order—to maximize the actionable : extraneous data ratio of reports](#we-identified-which-columns-should-be-includedand-in-what-orderto-maximize-the-actionable--extraneous-data-ratio-of-reports)
 * [Participants use the coding instructions in conjunction with the Error Report for error definition, but it can be challenging to know whether all information is available](#Participants-use-the-coding-instructions-in-conjunction-with-the-error-report-for-error-definition-but-it-can-be-challenging-to-know-whether-all-information-is-available)
 * [Item number and field name represent an area where the language used in TANF documentation has shifted over time](#Item-number-and-field-name-represent-an-area-where-the-language-used-in-TANF-documentation-has-shifted-over-time)
 * [We further validated the utility of submission history and notification emails as ways for TANF programs to show proof of transmission for audit purposes](#We-further-validated-the-utility-of-submission-history-and-notification-emails-as-ways-for-tanf-programs-to-show-proof-of-transmission-for-audit-purposes)
