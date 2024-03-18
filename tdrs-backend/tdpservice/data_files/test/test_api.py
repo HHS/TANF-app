@@ -76,6 +76,7 @@ class DataFileAPITestBase:
 
     @staticmethod
     def get_spreadsheet(response):
+        """Return error report."""
         decoded_response = base64.b64decode(response.data['xls_report'])
 
         # write the excel file to disk
@@ -98,7 +99,7 @@ class DataFileAPITestBase:
             + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
         assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "if cash amount :873 validator1 passed" \
             + " then number of months 0 is not larger than 0."
-    
+
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
         """Assert the error report file contents match expected with friendly names."""
@@ -273,7 +274,7 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
 
         assert response.status_code == status.HTTP_200_OK
         self.assert_error_report_tanf_file_content_matches_with_friendly_names(response)
-    
+
     def test_download_error_report_ssp_file_for_own_stt(self, api_client, test_ssp_datafile):
         """Test that the error report file for an SSP file is downloaded as expected for a Data Analyst's set STT."""
         parse.parse_datafile(test_ssp_datafile)
