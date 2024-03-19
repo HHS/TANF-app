@@ -90,7 +90,7 @@ Based on the task scenarios defined for v2.2 the pilot expansion program was a s
 
 ### Retest observed gaps from August 2022 pilot program 
 
-In addition to reviewing new functionality, we wanted to revisit and retest the areas noted from the August 2022 pilot program. Please reference [August 2022](https://tdp-project-updates.app.cloud.gov/august-2022-update.html) for full details 
+In addition to reviewing new functionality, we wanted to revisit and retest the areas noted from the August 2022 pilot program. Please reference [August 2022](https://github.com/HHS/TANF-app/blob/main/docs/User-Experience/Research-Syntheses/2022%2C%20Summer%20-%20TDP%202.0%20Pilot%20Program.md) for full details 
 - Tribal programs listed in the STT selection combobox may pose a discoverability issue
     - To aide with locating the correct STT for tribal programs, we added content within the Knowledge Center as a short term resolution. We did *still* observe this occurrence during our moderated session with one of two tribal STTs. 
     -  OFA staff held a tribal division staff meeting and together propose changing the request access form such that users must select the STT type (tribe, state, territory), first. Based on this selection, the relevant STT combo-box options would appear.

@@ -120,7 +120,7 @@ Our Error Data workshops also identified linking element errors (which are relat
 **Project Impact(s)**
 
 - We prioritized Dan and Malcolm for use in short term follow-on workshops; these could potentially include stakeholders from outside the project team so as to better identify risks and collaborate on controls.  
-- The [evil user journey maps]() :lock: synthesized from both workshops can be used to generate acceptance criteria for continued work on TDP. 
+- The [evil user journey maps](https://github.com/HHS/TANF-app/blob/main/docs/User-Experience/Research-Syntheses/2021%2C%20Spring%20-%20Evil%20User%20Journeys%20%26%20TANF%20Data%20Errors.md) synthesized from both workshops can be used to generate acceptance criteria for continued work on TDP. 
 
 ---
 
