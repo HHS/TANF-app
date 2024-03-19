@@ -102,6 +102,9 @@ services:
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
       - BYPASS_KIBANA_AUTH
+      - ELASTICSEARCH_REINDEX_THREAD_COUNT
+      - ELASTICSEARCH_REINDEX_CHUNK_SIZE
+      - ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT
     volumes:
       - .:/tdpapp
     image: tdp

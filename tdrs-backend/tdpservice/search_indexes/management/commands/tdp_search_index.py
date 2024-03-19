@@ -31,4 +31,5 @@ class Command(search_index.Command):
                 refresh=options['refresh'],
                 thread_count=settings.ELASTICSEARCH_REINDEX_THREAD_COUNT,
                 chunk_size=settings.ELASTICSEARCH_REINDEX_CHUNK_SIZE,
+                request_timeout=settings.ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT,
             )

@@ -349,6 +349,7 @@ class Common(Configuration):
     ELASTICSEARCH_DSL_PARALLEL = True
     ELASTICSEARCH_REINDEX_THREAD_COUNT = int(os.getenv('ELASTICSEARCH_REINDEX_THREAD_COUNT', 3))
     ELASTICSEARCH_REINDEX_CHUNK_SIZE = int(os.getenv('ELASTICSEARCH_REINDEX_CHUNK_SIZE', 500))
+    ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT = int(os.getenv('ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT', 10))
     KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
     BYPASS_KIBANA_AUTH = os.getenv("BYPASS_KIBANA_AUTH", False)
 
@@ -477,7 +478,7 @@ class Common(Configuration):
         },
         'Reindex Elasticsearch Documents': {
             'task': 'tdpservice.search_indexes.tasks.reindex_elastic_documents',
-            'schedule': crontab(minute='0', hour='5', day_of_week='6'),  # Every Saturday at 5am UTC (1am EST)
+            'schedule': crontab(minute='*/2', hour='*', day_of_week='*'),  # Every Saturday at 5am UTC (1am EST)
         },
     }
 
