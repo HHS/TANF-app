@@ -31,14 +31,19 @@ def reindex_elastic_documents():
     })
 
     try:
-        reindex_cmd = subprocess.Popen(
-            ['python', 'manage.py', 'search_index', '--rebuild', '--use-alias', '--parallel', '-f'],
-            stderr=subprocess.DEVNULL, stdout=subprocess.PIPE,
-        )
-        reindex_cmd.wait()
+        reindex_cmd = subprocess.Popen(['python', 'manage.py', 'search_index', '--rebuild', '--use-alias','--parallel',
+                                        '-f'], stderr=subprocess.DEVNULL, stdout=subprocess.PIPE,)
         reindex_cmd_out, reindex_cmd_error = reindex_cmd.communicate()
+        reindex_cmd_out = "" if reindex_cmd_out is None else reindex_cmd_out.decode("utf-8")
+        if reindex_cmd.returncode != 0:
+            log(f'Received non-zero return code during Elastic re-index. Received code: {reindex_cmd.returncode}.',
+                {
+                    'user_id': system_user.pk,
+                    'object_id': None,
+                    'object_repr': ''
+                },
+                level='error')
         log(reindex_cmd_out)
-        log(reindex_cmd_error)
     except Exception as e:
         end = time.time()
         min, sec = prettify_time_delta(start, end)
@@ -46,7 +51,7 @@ def reindex_elastic_documents():
             'user_id': system_user.pk,
             'object_id': None,
             'object_repr': ''
-        })
+        }, level='error')
         return
 
     end = time.time()
