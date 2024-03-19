@@ -266,7 +266,7 @@ class TanfT4Factory(factory.django.DjangoModelFactory):
     STRATUM = 1
     ZIP_CODE = "11111"
     DISPOSITION = 1
-    CLOSURE_REASON = '01'
+    CLOSURE_REASON = '02'
     REC_SUB_HOUSING = 1
     REC_MED_ASSIST = 1
     REC_FOOD_STAMPS = 1
@@ -512,7 +512,7 @@ class TribalTanfT4Factory(factory.django.DjangoModelFactory):
     STRATUM = 1
     ZIP_CODE = "11111"
     DISPOSITION = 1
-    CLOSURE_REASON = '01'
+    CLOSURE_REASON = '02'
     REC_SUB_HOUSING = 1
     REC_MED_ASSIST = 1
     REC_FOOD_STAMPS = 1
@@ -770,7 +770,7 @@ class SSPM4Factory(factory.django.DjangoModelFactory):
     STRATUM = 1
     ZIP_CODE = "11111"
     DISPOSITION = 1
-    CLOSURE_REASON = '01'
+    CLOSURE_REASON = '02'
     REC_SUB_HOUSING = 1
     REC_MED_ASSIST = 1
     REC_FOOD_STAMPS = 1

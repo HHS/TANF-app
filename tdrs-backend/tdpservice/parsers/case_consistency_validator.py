@@ -158,8 +158,9 @@ class CaseConsistencyValidator:
 
         return num_errors
 
-    def __validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
+    def __validate_family_affiliation(self, t1s, t2s, t3s, error_msg):
         """Validate at least one record in t2s+t3s has FAMILY_AFFILIATION == 1."""
+        num_errors = 0
         passed = False
         for record, schema in t2s + t3s:
             family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
@@ -172,7 +173,7 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field='FAMILY_AFFILIATION',
+                    field='FAMILY_AFFILIATION',  # technically not a field on t4
                     msg=error_msg
                 )
                 num_errors += 1
@@ -204,6 +205,19 @@ class CaseConsistencyValidator:
             t3s = reporting_year_cases.get(t3_model, [])
 
             if len(t1s) > 0:
+                if len(t1s) > 1:  # likely to be captured by "no duplicates" validator
+                    for record, schema in t1s[1:]:
+                        self.__generate_and_add_error(
+                            schema,
+                            record,
+                            field='RPT_MONTH_YEAR',
+                            msg=(
+                                f'There should only be one {t1_model_name} record '
+                                f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
+                            )
+                        )
+                        num_errors += 1
+
                 if len(t2s) == 0 and len(t3s) == 0:
                     for record, schema in t1s:
                         self.__generate_and_add_error(
@@ -221,7 +235,7 @@ class CaseConsistencyValidator:
                 else:
                     # loop through all t2s and t3s
                     # to find record where FAMILY_AFFILIATION == 1
-                    num_errors += self.__validate_family_affiliation(num_errors, t1s, t2s, t3s, (
+                    num_errors += self.__validate_family_affiliation(t1s, t2s, t3s, (
                             f'Every {t1_model_name} record should have at least one corresponding '
                             f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and '
                             f'CASE_NUMBER, where FAMILY_AFFILIATION==1'
@@ -256,6 +270,65 @@ class CaseConsistencyValidator:
 
         return num_errors
 
+    def __validate_case_closure_employment(self, t4, t5s, error_msg):
+        """
+        Validate case closure.
+
+        If case closure reason = 01:employment, then at least one person on
+        the case must have employment status = 1:Yes in the same month.
+        """
+        num_errors = 0
+        t4_record, t4_schema = t4
+
+        passed = False
+        for record, schema in t5s:
+            employment_status = getattr(record, 'EMPLOYMENT_STATUS')
+
+            if employment_status == 1:
+                passed = True
+                break
+
+        if not passed:
+            self.__generate_and_add_error(
+                t4_schema,
+                t4_record,
+                'EMPLOYMENT_STATUS',  # technically not a field on t4
+                error_msg
+            )
+            num_errors += 1
+
+        return num_errors
+
+    def __validate_case_closure_ftl(self, t4, t5s, error_msg):
+        """
+        Validate case closure.
+
+        If closure reason = FTL, then at least one person who is HoH
+        or spouse of HoH on case must have FTL months >=60.
+        """
+        num_errors = 0
+        t4_record, t4_schema = t4
+
+        passed = False
+        for record, schema in t5s:
+            relationship_hoh = getattr(record, 'RELATIONSHIP_HOH')
+            ftl_months = getattr(record, 'COUNTABLE_MONTH_FED_TIME')  # does not exist on m5, only validate ftl for tribal/tanf (employment for all sections)
+
+            if (relationship_hoh == '01' or relationship_hoh == '02') and int(ftl_months) >= 60:  # convert COUNTABLE_MONTH_FED_TIME to number (potential migration, put in cat 1 cleanup)
+                passed = True
+                break
+
+        if not passed:
+            self.__generate_and_add_error(
+                t4_schema,
+                t4_record,
+                'COUNTABLE_MONTH_FED_TIME',  # technically not a field on t4
+                error_msg
+            )
+            num_errors += 1
+
+        return num_errors
+
     def __validate_s2_records_are_related(self):
         """
         Validate section 2 records are related.
@@ -278,6 +351,31 @@ class CaseConsistencyValidator:
             t5s = reporting_year_cases.get(t5_model, [])
 
             if len(t4s) > 0:
+                if len(t4s) > 1:
+                    for record, schema in t4s[1:]:
+                        self.__generate_and_add_error(
+                            schema,
+                            record,
+                            field='RPT_MONTH_YEAR',
+                            msg=(
+                                f'There should only be one {t4_model_name} record  '
+                                f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
+                            )
+                        )
+                        num_errors += 1
+                else:
+                    t4 = t4s[0]
+                    t4_record, t4_schema = t4
+                    closure_reason = getattr(t4_record, 'CLOSURE_REASON')
+
+                    if closure_reason == '01':
+                        num_errors += self.__validate_case_closure_employment(t4, t5s, (
+                            'At least one person on the case must have employment status = 1:Yes in the same month.'
+                        ))
+                    elif closure_reason == '99' and not is_ssp:  # ?
+                        num_errors += self.__validate_case_closure_ftl(t4, t5s, (
+                            'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
+                        ))
                 if len(t5s) == 0:
                     for record, schema in t4s:
                         self.__generate_and_add_error(
