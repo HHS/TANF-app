@@ -256,7 +256,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
                     record.datafile = datafile
                     unsaved_records.setdefault(s.document, []).append(record)
 
-        except ValueError as ex:        
+        except ValueError as ex:
             err_obj = generate_error(
                 schema=None,
                 error_category=ParserErrorCategoryChoices.PRE_CHECK,

@@ -102,7 +102,7 @@ def test_validate__FAM_AFF__SSN():
     assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
 
 @pytest.mark.parametrize(
-        "value, valid", 
+        "value, valid",
         [
             ("20201", True),
             ("20202", True),
@@ -458,24 +458,22 @@ def test_notEmpty_returns_nonexistent_substring():
     assert error == "111  333 contains blanks between positions 10 and 12."
 
 
-@pytest.mark.parametrize("test_input", [1,2,3,4])
+@pytest.mark.parametrize("test_input", [1, 2, 3, 4])
 def test_quarterIsValid_returns_true_if_valid(test_input):
-    """Test `quarterIsValid` gives a valid result for values 1-4"""
-
+    """Test `quarterIsValid` gives a valid result for values 1-4."""
     validator = validators.quarterIsValid()
     is_valid, error = validator(test_input)
-    
+
     assert is_valid is True
     assert error is None
 
 
 @pytest.mark.parametrize("test_input", [" ", 0, 5, "A"])
 def test_quarterIsValid_returns_false_if_invalid(test_input):
-    """Test `quarterIsValid` gives an invalid result for values not 1-4"""
-
+    """Test `quarterIsValid` gives an invalid result for values not 1-4."""
     validator = validators.quarterIsValid()
     is_valid, error = validator(test_input)
-    
+
     assert is_valid is False
     assert error == f"{test_input} is not a valid quarter."
 

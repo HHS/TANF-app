@@ -8,7 +8,7 @@ from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T6DataSubmissionDocument
 import datetime
 
-minYear = datetime.date.today().year - 5;
+minYear = datetime.date.today().year - 5
 
 s1 = RowSchema(
     document=TANF_T6DataSubmissionDocument(),

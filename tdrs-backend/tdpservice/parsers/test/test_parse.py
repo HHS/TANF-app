@@ -1497,14 +1497,14 @@ def tribal_section_4_bad_quarter(stt_user, stt):
 
 @pytest.mark.django_db()
 def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
-    """Test handling invalid quarter value that raises a ValueError exception"""
+    """Test handling invalid quarter value that raises a ValueError exception."""
     tribal_section_4_bad_quarter.year = 2020
     tribal_section_4_bad_quarter.quarter = 'Q1'
     dfs.datafile = tribal_section_4_bad_quarter
 
     parse.parse_datafile(tribal_section_4_bad_quarter)
     parser_errors = ParserError.objects.filter(file=tribal_section_4_bad_quarter)
-    
+
     assert parser_errors.count() == 1
     error = parser_errors.first()
 

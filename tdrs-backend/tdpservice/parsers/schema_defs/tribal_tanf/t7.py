@@ -7,7 +7,7 @@ from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T7DataSubmissionDocument
 import datetime
 
-minYear = datetime.date.today().year - 5;
+minYear = datetime.date.today().year - 5
 schemas = []
 
 validator_index = 7

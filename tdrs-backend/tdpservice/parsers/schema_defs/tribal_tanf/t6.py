@@ -8,7 +8,7 @@ from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T6DataSubmissionDocument
 import datetime
 
-minYear = datetime.date.today().year - 5;
+minYear = datetime.date.today().year - 5
 
 s1 = RowSchema(
     document=Tribal_TANF_T6DataSubmissionDocument(),

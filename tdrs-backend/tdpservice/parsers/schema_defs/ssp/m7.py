@@ -7,7 +7,7 @@ from ... import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M7DataSubmissionDocument
 import datetime
 
-minYear = datetime.date.today().year - 5;
+minYear = datetime.date.today().year - 5
 
 schemas = []
 
