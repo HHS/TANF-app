@@ -35,9 +35,8 @@ def parse_datafile(datafile):
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
 
-    generate_error = util.make_generate_parser_error(datafile, 1)
-
     # Validate tribe code in submission across program type and fips code
+    generate_error = util.make_generate_parser_error(datafile, 1)
     tribe_is_valid, tribe_error = validators.validate_tribe_fips_program_agree(header['program_type'],
                                                                                field_values["tribe_code"],
                                                                                field_values["state_fips"],

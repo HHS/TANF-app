@@ -6,6 +6,7 @@ from .. import validators
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
 from tdpservice.parsers.test.factories import SSPM5Factory
 
+
 @pytest.mark.parametrize("value,length", [
     (None, 0),
     (None, 10),
@@ -18,6 +19,7 @@ def test_value_is_empty_returns_true(value, length):
     """Test value_is_empty returns valid."""
     result = validators.value_is_empty(value, length)
     assert result is True
+
 
 @pytest.mark.parametrize("value,length", [
     (0, 1),
@@ -446,7 +448,6 @@ def test_notEmpty_returns_nonexistent_substring():
 
     assert is_valid is False
     assert error == "111  333 contains blanks between positions 10 and 12."
-
 
 @pytest.mark.usefixtures('db')
 class TestCat3ValidatorsBase:
