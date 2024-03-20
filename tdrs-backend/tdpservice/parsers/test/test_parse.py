@@ -1505,8 +1505,14 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
     parse.parse_datafile(tribal_section_4_bad_quarter)
     parser_errors = ParserError.objects.filter(file=tribal_section_4_bad_quarter)
 
-    assert parser_errors.count() == 1
-    error = parser_errors.first()
+    assert parser_errors.count() == 36
 
-    assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert error.error_message == "Invalid quarter value."
+    for error in parser_errors:
+        assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+
+        if (error.field_name == "RPT_MONTH_YEAR"):
+            assert error.error_message == "RPT_MONTH_YEAR is required but a value was not provided."
+        elif (error.field_name == "CALENDAR_QUARTER"):
+            assert error.error_message == "0 is not a valid quarter."
+        else:
+            assert False, f"Unexpected field name {error.field_name}"
