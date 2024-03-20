@@ -31,7 +31,7 @@ tdrs-backend/test
 /staticfiles/*
 /mediafiles/*
 __pycache__/
-/.vscode/
+.vscode/
 venv
 *.sqlite3
 *.sqlite3-journal
