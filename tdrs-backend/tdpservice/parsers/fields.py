@@ -80,5 +80,4 @@ class TransformField(Field):
     def parse_value(self, line):
         """Parse and transform the value for a field given a line, startIndex, endIndex, and field type."""
         value = super().parse_value(line)
-        # wrap in try catch return none to avoid db write
         return self.transform_func(value, **self.kwargs)
