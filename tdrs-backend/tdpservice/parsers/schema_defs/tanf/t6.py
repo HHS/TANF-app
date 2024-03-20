@@ -6,7 +6,9 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T6DataSubmissionDocument
+import datetime
 
+minYear = datetime.date.today().year - 5;
 
 s1 = RowSchema(
     document=TANF_T6DataSubmissionDocument(),
@@ -54,7 +56,7 @@ s1 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(2019),
+                validators.dateYearIsLargerThan(minYear),
                 validators.quarterIsValid(),
             ],
         ),
