@@ -9,6 +9,7 @@ import subprocess
 
 
 def prettify_time_delta(start, end):
+    """Calculate minutes and seconds."""
     elapsed_seconds = int(end-start)
     elapsed_minutes = elapsed_seconds // 60
     remainder_seconds = int(elapsed_seconds - (elapsed_minutes*60))
@@ -31,7 +32,7 @@ def reindex_elastic_documents():
     })
 
     try:
-        reindex_cmd = subprocess.Popen(['python', 'manage.py', 'search_index', '--rebuild', '--use-alias','--parallel',
+        reindex_cmd = subprocess.Popen(['python', 'manage.py', 'search_index', '--rebuild', '--use-alias', '--parallel',
                                         '-f'], stderr=subprocess.DEVNULL, stdout=subprocess.PIPE,)
         reindex_cmd_out, reindex_cmd_error = reindex_cmd.communicate()
         reindex_cmd_out = "" if reindex_cmd_out is None else reindex_cmd_out.decode("utf-8")
