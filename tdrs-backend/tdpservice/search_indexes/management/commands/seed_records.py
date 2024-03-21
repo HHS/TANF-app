@@ -118,4 +118,16 @@ class Command(BaseCommand):
             self._clear(models)
             time.sleep(5)
 
-        self._populate(models, num)
+        if num > 10000:
+            batches = int(num / 10000)
+            remainder = num - (batches * 10000)
+
+            for b in range(0, batches):
+                print(f'batch {b+1} of {batches}')
+                self._populate(models, 10000)
+
+            if remainder > 0:
+                print(f'remaining {remainder}')
+                self._populate(models, remainder)
+        else:
+            self._populate(models, num)
