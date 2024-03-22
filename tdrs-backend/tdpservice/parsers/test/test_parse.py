@@ -1083,6 +1083,26 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     assert first.FAMILIES_MONTH == 748
 
 @pytest.fixture
+def ssp_section2_rec_oadsi_file(stt_user, stt):
+    """Fixture for sp_section2_rec_oadsi_file."""
+    return util.create_test_datafile('ssp_section2_rec_oadsi_file.txt', stt_user, stt, 'SSP Closed Case Data')
+
+
+@pytest.mark.django_db()
+def test_parse_ssp_section2_rec_oadsi_file(ssp_section2_rec_oadsi_file, dfs):
+    """Test parsing SSP Section 2 REC_OADSI."""
+    ssp_section2_rec_oadsi_file.year = 2019
+    ssp_section2_rec_oadsi_file.quarter = 'Q1'
+
+    dfs.datafile = ssp_section2_rec_oadsi_file
+
+    parse.parse_datafile(ssp_section2_rec_oadsi_file)
+    parser_errors = ParserError.objects.filter(file=ssp_section2_rec_oadsi_file)
+
+    assert parser_errors.count() == 0
+
+
+@pytest.fixture
 def ssp_section2_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP4.TS06."""
     return util.create_test_datafile('ADS.E2J.NDM2.MS24', stt_user, stt, 'SSP Closed Case Data')
