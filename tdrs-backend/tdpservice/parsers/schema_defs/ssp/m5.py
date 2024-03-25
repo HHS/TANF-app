@@ -89,6 +89,12 @@ m5 = SchemaManager(
                     result_function=validators.isInLimits(1, 3),
                 ),
                 validators.if_then_validator(
+                    condition_field="DATE_OF_BIRTH",
+                    condition_function=validators.olderThan(18),
+                    result_field="REC_OASDI_INSURANCE",
+                    result_function=validators.isInLimits(1, 2),
+                ),
+                validators.if_then_validator(
                     condition_field="FAMILY_AFFILIATION",
                     condition_function=validators.matches(1),
                     result_field="REC_FEDERAL_DISABILITY",
