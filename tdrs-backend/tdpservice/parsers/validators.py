@@ -66,13 +66,14 @@ def or_priority_validators(validators=[]):
 
     validators: ordered list of validators to be checked
     """
-    def or_priority_validators_func(value, rows_schema_instance):
+    def or_priority_validators_func(value, rows_schema_instance, record_type="", friendly_name=None, item_num=None):
         for validator in validators:
             if not validator(value, rows_schema_instance)[0]:
-                return (False, validator(value, rows_schema_instance)[1])
+                return (False, validator(value, rows_schema_instance, record_type,
+                                         friendly_name, item_num)[1])
         return (True, None)
 
-    return lambda value, rows_schema_instance: or_priority_validators_func(value, rows_schema_instance)
+    return or_priority_validators_func
 
 
 def extended_and_validators(*args, **kwargs):
