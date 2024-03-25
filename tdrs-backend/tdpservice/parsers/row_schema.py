@@ -24,6 +24,7 @@ class RowSchema:
         self.fields = fields
         self.quiet_preparser_errors = quiet_preparser_errors
         self.record_type = record_type
+        self.datafile = None
 
     def _add_field(self, item, name, length, start, end, type):
         """Add a field to the schema."""
@@ -192,12 +193,14 @@ class SchemaManager:
 
     def __init__(self, schemas):
         self.schemas = schemas
+        self.datafile = None
 
     def parse_and_validate(self, line, generate_error):
         """Run `parse_and_validate` for each schema provided and bubble up errors."""
         records = []
 
         for schema in self.schemas:
+            schema.datafile = self.datafile
             record, is_valid, errors = schema.parse_and_validate(line, generate_error)
             records.append((record, is_valid, errors))
 
