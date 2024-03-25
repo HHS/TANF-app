@@ -14,7 +14,10 @@ m5 = SchemaManager(
             document=SSP_M5DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(66),
-                validators.validateRptMonthYear(),
+                validators.or_priority_validators([
+                    validators.field_year_month_with_header_year_quarter(),
+                    validators.validateRptMonthYear(),
+                ]),
                 validators.notEmpty(8, 19)
             ],
             postparsing_validators=[

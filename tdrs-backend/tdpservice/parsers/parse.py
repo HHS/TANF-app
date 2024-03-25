@@ -7,7 +7,8 @@ from django.contrib.contenttypes.models import ContentType
 import itertools
 import logging
 from .models import ParserErrorCategoryChoices, ParserError
-from . import schema_defs, validators, util
+from . import schema_defs, validators, util, row_schema
+from .schema_defs.util import get_section_reference, get_program_model
 from elasticsearch.helpers.errors import BulkIndexError
 from tdpservice.data_files.models import DataFile
 
@@ -62,7 +63,7 @@ def parse_datafile(datafile):
 
     section_is_valid, section_error = validators.validate_header_section_matches_submission(
         datafile,
-        util.get_section_reference(program_type, section),
+        get_section_reference(program_type, section),
         util.make_generate_parser_error(datafile, 1)
     )
 
@@ -172,6 +173,7 @@ def rollback_parser_errors(datafile):
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
+
 def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
@@ -236,7 +238,7 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
 
         schema_manager = get_schema_manager(line, section, program_type)
 
-        records = manager_parse_line(line, schema_manager, generate_error, is_encrypted)
+        records = manager_parse_line(line, schema_manager, generate_error, datafile, is_encrypted)
 
         record_number = 0
         for i in range(len(records)):
@@ -288,8 +290,10 @@ def parse_datafile_lines(datafile, program_type, section, is_encrypted):
     return errors
 
 
-def manager_parse_line(line, schema_manager, generate_error, is_encrypted=False):
+def manager_parse_line(line, schema_manager, generate_error, datafile, is_encrypted=False):
     """Parse and validate a datafile line using SchemaManager."""
+    if type(schema_manager) is row_schema.SchemaManager:
+        schema_manager.datafile = datafile
     try:
         schema_manager.update_encrypted_fields(is_encrypted)
         records = schema_manager.parse_and_validate(line, generate_error)
@@ -309,4 +313,4 @@ def manager_parse_line(line, schema_manager, generate_error, is_encrypted=False)
 def get_schema_manager(line, section, program_type):
     """Return the appropriate schema for the line."""
     line_type = line[0:2]
-    return util.get_program_model(program_type, section, line_type)
+    return get_program_model(program_type, section, line_type)
