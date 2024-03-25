@@ -1551,7 +1551,6 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
     assert sixth.FAMILIES_MONTH == 446
 
 
-
 @pytest.fixture
 def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
     """Fixture for tanf_section_1_file_with_bad_update_indicator."""
