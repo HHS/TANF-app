@@ -5,6 +5,7 @@ Adds in the configurable `thread_count` and `chunk_size` that can be set
 as environment variables.
 """
 
+import time
 from django_elasticsearch_dsl.management.commands import search_index
 from django_elasticsearch_dsl.registries import registry
 from django.conf import settings
@@ -33,3 +34,4 @@ class Command(search_index.Command):
                 chunk_size=settings.ELASTICSEARCH_REINDEX_CHUNK_SIZE,
                 request_timeout=settings.ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT,
             )
+            time.sleep(10)
