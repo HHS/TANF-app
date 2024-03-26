@@ -770,7 +770,6 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
 
     def test_validate_months_federal_time_limit(self, record):
         """Test cat3 validator for federal time limit."""
-        # TODO THIS ISNT EXACTLY RIGHT SINCE FED TIME LIMIT IS A STRING.
         val = validators.validate__FAM_AFF__HOH__Fed_Time()
         record.FAMILY_AFFILIATION = 0
         result = val(record)
@@ -780,9 +779,11 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         record.MONTHS_FED_TIME_LIMIT = "000"
         record.RELATIONSHIP_HOH = "01"
         result = val(record)
-        assert result == (False, 'If FAMILY_AFFILIATION == 2 and MONTHS_FED_TIME_LIMIT== 1 or 2, ' +
-                          'then MONTHS_FED_TIME_LIMIT > 1.',
-                          ['FAMILY_AFFILIATION', 'MONTHS_FED_TIME_LIMIT'])
+        assert result == (False,
+                          "If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then "
+                          + "MONTHS_FED_TIME_LIMIT >= 1.",
+                          ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "MONTHS_FED_TIME_LIMIT",],
+                          )
 
     def test_validate_employment_status(self, record):
         """Test cat3 validator for employment status."""
@@ -1116,9 +1117,11 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         record.COUNTABLE_MONTH_FED_TIME = 0
 
         result = val(record)
-        assert result == (False, 'If FAMILY_AFFILIATION == 2 and COUNTABLE_MONTH_FED_TIME== 1 or 2, then ' +
-                          'COUNTABLE_MONTH_FED_TIME > 1.',
-                          ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'COUNTABLE_MONTH_FED_TIME'])
+        assert result == (False,
+                          "If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then "
+                          + "COUNTABLE_MONTH_FED_TIME >= 1.",
+                          ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "COUNTABLE_MONTH_FED_TIME",],
+                          )
 
     def test_validate_oasdi_insurance(self, record):
         """Test cat3 validator for OASDI insurance."""
