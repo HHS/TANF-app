@@ -713,9 +713,9 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
 def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     """If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
     # value is instance
-    def validate(instance):
+    def validate(instance, row_schema):
         false_case = (False,
-                      "If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1",
+                      f"{row_schema.record_type}: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1",
                       ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
                       )
         true_case = (True,
@@ -723,7 +723,6 @@ def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
                      ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
                      )
         try:
-            print("INSIDE: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE")
             WORK_ELIGIBLE_INDICATOR = (
                 instance["WORK_ELIGIBLE_INDICATOR"]
                 if type(instance) is dict
@@ -772,4 +771,4 @@ def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
             # confusing the STTs.
             return true_case
 
-    return lambda instance: validate(instance)
+    return validate
