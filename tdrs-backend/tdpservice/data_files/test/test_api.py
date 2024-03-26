@@ -31,7 +31,11 @@ class DataFileAPITestBase:
     @pytest.fixture
     def test_datafile(self, stt_user, stt):
         """Fixture for small_incorrect_file_cross_validator."""
-        return util.create_test_datafile('small_incorrect_file_cross_validator.txt', stt_user, stt)
+        test_datafile = util.create_test_datafile('small_incorrect_file_cross_validator.txt', stt_user, stt)
+        test_datafile.year = 2021
+        test_datafile.quarter = 'Q1'
+        test_datafile.save()
+        return test_datafile
 
     @pytest.fixture
     def api_client(self, api_client, user):

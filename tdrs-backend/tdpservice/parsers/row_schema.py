@@ -74,8 +74,7 @@ class RowSchema:
         errors = []
 
         for validator in self.preparsing_validators:
-            validator_is_valid, validator_error = validator(line, self.record_type,
-                                                            "record type", "0")
+            validator_is_valid, validator_error = validator(line, self, "record type", "0")
             is_valid = False if not validator_is_valid else is_valid
 
             if validator_error and not self.quiet_preparser_errors:
@@ -122,8 +121,7 @@ class RowSchema:
             should_validate = not field.required and not is_empty
             if (field.required and not is_empty) or should_validate:
                 for validator in field.validators:
-                    validator_is_valid, validator_error = validator(value, self.record_type,
-                                                                    field.friendly_name, field.item)
+                    validator_is_valid, validator_error = validator(value, self, field.friendly_name, field.item)
                     is_valid = False if not validator_is_valid else is_valid
                     if validator_error:
                         errors.append(
@@ -155,7 +153,7 @@ class RowSchema:
         errors = []
 
         for validator in self.postparsing_validators:
-            validator_is_valid, validator_error, field_names = validator(instance, self.record_type)
+            validator_is_valid, validator_error, field_names = validator(instance, self)
             is_valid = False if not validator_is_valid else is_valid
             if validator_error:
                 # get field from field name
