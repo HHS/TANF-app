@@ -12,7 +12,10 @@ t1 = SchemaManager(
             document=TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(156),
-                validators.validateRptMonthYear(),
+                validators.or_priority_validators([
+                    validators.field_year_month_with_header_year_quarter(),
+                    validators.validateRptMonthYear(),
+                ]),
                 validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
@@ -113,8 +116,6 @@ t1 = SchemaManager(
                         "CASH_AMOUNT",
                         "CC_AMOUNT",
                         "TRANSP_AMOUNT",
-                        "TRANSITION_SERVICES_AMOUNT",
-                        "OTHER_AMOUNT",
                     ),
                     0,
                 ),
@@ -198,7 +199,7 @@ t1 = SchemaManager(
                     endIndex=30,
                     required=True,
                     validators=[
-                        validators.isInLimits(1, 3),
+                        validators.isInLimits(1, 2),
                     ],
                 ),
                 Field(
@@ -210,7 +211,7 @@ t1 = SchemaManager(
                     endIndex=31,
                     required=True,
                     validators=[
-                        validators.oneOf([1, 2]),
+                        validators.matches(1)
                     ],
                 ),
                 Field(
@@ -258,7 +259,7 @@ t1 = SchemaManager(
                     endIndex=36,
                     required=True,
                     validators=[
-                        validators.isInLimits(1, 3),
+                        validators.isInLimits(1, 2),
                     ],
                 ),
                 Field(
