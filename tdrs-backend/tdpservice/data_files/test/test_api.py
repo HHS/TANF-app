@@ -8,6 +8,7 @@ from tdpservice.data_files.models import DataFile
 from tdpservice.users.models import AccountApprovalStatusChoices
 from tdpservice.parsers import parse, util
 from tdpservice.parsers.models import ParserError
+from tdpservice.parsers.test.factories import DataFileSummaryFactory
 
 
 @pytest.mark.usefixtures('db')
@@ -239,6 +240,11 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         """Override the default user with data_analyst for our tests."""
         return data_analyst
 
+    @pytest.fixture
+    def dfs(self):
+        """Fixture for DataFileSummary."""
+        return DataFileSummaryFactory.create()
+
     def test_data_files_data_analyst_permission(self, api_client, data_file_data, user):
         """Test that a Data Analyst is allowed to add data_files to their own STT."""
         response = self.post_data_file_file(api_client, data_file_data)
@@ -266,10 +272,10 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self.assert_data_file_content_matches(response, data_file_id)
 
     def test_download_error_report_file_for_own_stt(
-        self, api_client, test_datafile
+        self, api_client, test_datafile, dfs
     ):
         """Test that the error report file is downloaded as expected for a Data Analyst's set STT."""
-        parse.parse_datafile(test_datafile)
+        parse.parse_datafile(test_datafile, dfs)
         response = self.download_error_report_file(api_client, test_datafile.id)
 
         assert response.status_code == status.HTTP_200_OK
@@ -284,10 +290,10 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         self.assert_error_report_ssp_file_content_matches_with_friendly_names(response)
 
     def test_download_error_report_file_for_own_stt_no_fields_json(
-        self, api_client, test_datafile
+        self, api_client, test_datafile, dfs
     ):
         """Test that the error report file is downloaded as expected when no fields_json is added to ParserErrors."""
-        parse.parse_datafile(test_datafile)
+        parse.parse_datafile(test_datafile, dfs)
 
         # remove the fields' friendly names for all parser errors
         for error in ParserError.objects.all():

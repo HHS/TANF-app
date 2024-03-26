@@ -8,12 +8,12 @@ from ..util import make_generate_parser_error, create_test_datafile
 
 def passing_validator():
     """Fake validator that always returns valid."""
-    return lambda _: (True, None)
+    return lambda _, instance=None: (True, None)
 
 
 def failing_validator():
     """Fake validator that always returns invalid."""
-    return lambda _: (False, 'Value is not valid.')
+    return lambda _, instance=None: (False, 'Value is not valid.')
 
 def passing_postparsing_validator():
     """Fake validator that always returns valid."""
