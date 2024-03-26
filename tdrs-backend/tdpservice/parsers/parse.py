@@ -6,9 +6,9 @@ from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 import itertools
 import logging
-import row_schema
 from .models import ParserErrorCategoryChoices, ParserError
 from . import schema_defs, validators, util
+from . import row_schema
 from .schema_defs.utils import get_section_reference, get_program_model
 from .case_consistency_validator import CaseConsistencyValidator
 from elasticsearch.helpers.errors import BulkIndexError
