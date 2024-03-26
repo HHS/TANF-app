@@ -3,6 +3,7 @@
 
 import pytest
 from django.contrib.admin.models import LogEntry
+from django.conf import settings
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
@@ -21,6 +22,7 @@ import logging
 es_logger = logging.getLogger('elasticsearch')
 es_logger.setLevel(logging.WARNING)
 
+settings.GENERATE_TRAILER_ERRORS = True
 
 @pytest.fixture
 def test_datafile(stt_user, stt):
@@ -841,7 +843,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     parse.parse_datafile(bad_ssp_s1__row_missing_required_field, dfs)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
-    assert parser_errors.count() == 6
+    assert parser_errors.count() == 7
 
     row_2_error = parser_errors.get(
         row_number=2,
