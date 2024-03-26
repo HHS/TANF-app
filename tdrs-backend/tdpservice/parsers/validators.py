@@ -715,7 +715,8 @@ def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     # value is instance
     def validate(instance, row_schema):
         false_case = (False,
-                      f"{row_schema.record_type}: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1",
+                      f"{row_schema.record_type}: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, "
+                      "then RELATIONSHIP_HOH != 1",
                       ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
                       )
         true_case = (True,
