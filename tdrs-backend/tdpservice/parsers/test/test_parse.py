@@ -464,8 +464,8 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
 
     trailer_error_4 = trailer_errors[4]
     assert trailer_error_4.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_4.error_message == ('T1: Reporting month year None does not ' + \
-                                            'match file reporting year:2021, quarter:Q1.')
+    assert trailer_error_4.error_message == ('T1: Reporting month year None does not '
+                                             'match file reporting year:2021, quarter:Q1.')
     assert trailer_error_4.content_type is None
     assert trailer_error_4.object_id is None
 

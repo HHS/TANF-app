@@ -44,7 +44,8 @@ def test_or_validators():
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("3", RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("5", RowSchema(), "friendly_name", "item_no") == (False,
-                                                                "T1: 5 does not match 2. or T1: 5 does not match 3.")
+                                                                       "T1: 5 does not match 2. or T1: 5 does not "
+                                                                       "match 3.")
 
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")),
                                          validators.matches(("4")))
@@ -58,14 +59,14 @@ def test_or_validators():
 
     value = "5"
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                  "T1: 5 does not match 2. or T1: 5 does not match 3. "
-                                                                  "or T1: 5 does not match 4.")
+                                                                         "T1: 5 does not match 2. or T1: 5 does not "
+                                                                         "match 3. or T1: 5 does not match 4.")
 
     validator = validators.or_validators(validators.matches((2)), validators.matches((3)), validators.isLargerThan(4))
     assert validator(5, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator(1, RowSchema(), "friendly_name", "item_no") == (False,
-                                                              "T1: 1 does not match 2. or T1: 1 does not match 3. "
-                                                              "or T1: 1 is not larger than 4.")
+                                                                     "T1: 1 does not match 2. or T1: 1 does not "
+                                                                     "match 3. or T1: 1 is not larger than 4.")
 
 def test_if_validators():
     """Test `if_then_validator` gives a valid result."""
@@ -300,8 +301,8 @@ def test_dateYearIsLargerThan():
 
     value = 18990101
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                  f"T1: Year {str(value)[:4]} must be larger than "
-                                                                  f"{year}.")
+                                                                         f"T1: Year {str(value)[:4]} must be larger "
+                                                                         f"than  {year}.")
 
 
 def test_between_returns_invalid_for_string_value():
