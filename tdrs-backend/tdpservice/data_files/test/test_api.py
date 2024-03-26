@@ -281,9 +281,9 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         assert response.status_code == status.HTTP_200_OK
         self.assert_error_report_tanf_file_content_matches_with_friendly_names(response)
 
-    def test_download_error_report_ssp_file_for_own_stt(self, api_client, test_ssp_datafile):
+    def test_download_error_report_ssp_file_for_own_stt(self, api_client, test_ssp_datafile, dfs):
         """Test that the error report file for an SSP file is downloaded as expected for a Data Analyst's set STT."""
-        parse.parse_datafile(test_ssp_datafile)
+        parse.parse_datafile(test_ssp_datafile, dfs)
         response = self.download_error_report_file(api_client, test_ssp_datafile.id)
 
         assert response.status_code == status.HTTP_200_OK
