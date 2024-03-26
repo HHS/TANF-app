@@ -352,8 +352,8 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
         row_errors_list.append(row_error)
         assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert trailer_error.error_message in [
-            'Trailer length is 11 but must be 23 characters.',
-            'Reporting month year None does not match file reporting year:2021, quarter:Q1.']
+            'TRAILER record length is 11 characters but must be 23.',
+            'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.']
         assert row_error.content_type is None
         assert row_error.object_id is None
 
@@ -366,7 +366,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
     length_error = row_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.error_message == 'T1 record length is 7 characters but must be 156.'
     assert length_error.content_type is None
     assert length_error.object_id is None
     assert errors == {
@@ -414,16 +414,17 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     # catch-rpt-month-year-mismatches
     row_3_errors = parser_errors.filter(row_number=3)
     row_3_error_list = []
+
     for row_3_error in row_3_errors:
         row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert row_3_error.error_message in [
-            'Value length 7 does not match 156.',
-            'Reporting month year None does not match file reporting year:2021, quarter:Q1.',
+        assert row_3_error.error_message in {
+            'T1 record length is 7 characters but must be 156.',
+            'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.',
             'T1trash does not start with TRAILER.',
-            'Trailer length is 7 but must be 23 characters.',
-            'T1trash contains blanks between positions 8 and 19.',
-            'The value: trash, does not follow the YYYYMM format for Reporting Year and Month.']
+            'TRAILER record length is 7 characters but must be 23.',
+            'T1: Case number T1trash cannot contain blanks.',
+            'Your file does not end with a TRAILER record.'}
         assert row_3_error.content_type is None
         assert row_3_error.object_id is None
 
@@ -454,15 +455,14 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2):
     assert error_trailer == [trailer_error_1, trailer_error_2]
     trailer_error_3 = trailer_errors[3]
     assert trailer_error_3.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_3.error_message == 'Reporting month year None does not ' + \
-                                            'match file reporting year:2021, quarter:Q1.'
+    assert trailer_error_3.error_message == 'T1: Case number T1trash cannot contain blanks.'
     assert trailer_error_3.content_type is None
     assert trailer_error_3.object_id is None
 
     trailer_error_4 = trailer_errors[4]
     assert trailer_error_4.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_4.error_message == ('T1: The value: trash, does not follow the YYYYMM '
-                                             'format for Reporting Year and Month.')
+    assert trailer_error_4.error_message == ('T1: Reporting month year None does not ' + \
+                                            'match file reporting year:2021, quarter:Q1.')
     assert trailer_error_4.content_type is None
     assert trailer_error_4.object_id is None
 
@@ -789,17 +789,17 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     assert parser_errors.count() == 4
 
-    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
+    error_message = 'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_2_error = parser_errors.get(row_number=2, error_message=error_message)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_2_error.error_message == error_message
 
-    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
+    error_message = 'T2: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_3_error = parser_errors.get(row_number=3, error_message=error_message)
     assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_3_error.error_message == error_message
 
-    error_message = 'T3: The value:       , does not follow the YYYYMM format for Reporting Year and Month.'
+    error_message = 'T3: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_4_error = parser_errors.get(row_number=4, error_message=error_message)
     assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_4_error.error_message == error_message
@@ -827,32 +827,32 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     parse.parse_datafile(bad_ssp_s1__row_missing_required_field)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
-    assert parser_errors.count() == 5
+    assert parser_errors.count() == 6
 
     row_2_error = parser_errors.get(
         row_number=2,
-        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
+        error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_3_error = parser_errors.get(
         row_number=3,
-        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
+        error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
     assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_4_error = parser_errors.get(
         row_number=4,
-        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
+        error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
     assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     error_message = 'Reporting month year None does not match file reporting year:2019, quarter:Q1.'
-    rpt_month_errors = parser_errors.filter(error_message=error_message)
+    rpt_month_errors = parser_errors.filter(error_message__contains=error_message)
     assert len(rpt_month_errors) == 3
     for i, e in enumerate(rpt_month_errors):
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert e.error_message == error_message.format(i + 1)
+        assert error_message.format(i + 1) in e.error_message
         assert e.object_id is None
 
     row_5_error = parser_errors.get(
