@@ -173,6 +173,7 @@ s1 = RowSchema(
 s2 = RowSchema(
     record_type="M6",
     document=SSP_M6DataSubmissionDocument(),
+    quiet_preparser_errors=True,
     preparsing_validators=[
         validators.recordHasLength(259),
         validators.field_year_month_with_header_year_quarter(),
@@ -336,6 +337,7 @@ s2 = RowSchema(
 s3 = RowSchema(
     record_type="M6",
     document=SSP_M6DataSubmissionDocument(),
+    quiet_preparser_errors=True,
     preparsing_validators=[
         validators.recordHasLength(259),
         validators.field_year_month_with_header_year_quarter(),

@@ -2,7 +2,7 @@
 
 from .models import ParserErrorCategoryChoices
 from .util import fiscal_to_calendar, year_month_to_year_quarter
-from datetime import date
+import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -539,96 +539,98 @@ def validate__FAM_AFF__SSN():
 
 
 def validate__FAM_AFF__HOH__Fed_Time():
-    """If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH== 1 or 2, then MONTHS_FED_TIME_LIMIT >= 1."""
+    """If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then MONTHS_FED_TIME_LIMIT >= 1."""
     # value is instance
     def validate(instance, row_schema):
-        FAMILY_AFFILIATION = (
-            instance["FAMILY_AFFILIATION"]
-            if type(instance) is dict
-            else getattr(instance, "FAMILY_AFFILIATION")
-        )
-        RELATIONSHIP_HOH = (
-            instance["RELATIONSHIP_HOH"]
-            if type(instance) is dict
-            else getattr(instance, "RELATIONSHIP_HOH")
-        )
-        RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
-        MONTHS_FED_TIME_LIMIT = (
-            instance["MONTHS_FED_TIME_LIMIT"]
-            if type(instance) is dict
-            else getattr(instance, "MONTHS_FED_TIME_LIMIT")
-        )
-        if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
-            if MONTHS_FED_TIME_LIMIT is None or int(MONTHS_FED_TIME_LIMIT) < 1:
-                return (False,
-                        f"{row_schema.record_type}: If FAMILY_AFFILIATION == 2 and MONTHS_FED_TIME_LIMIT== 1 or 2,"
-                        + " then MONTHS_FED_TIME_LIMIT > 1.",
-                        ['FAMILY_AFFILIATION', 'MONTHS_FED_TIME_LIMIT']
-                        )
-            else:
-                return (
-                    True,
-                    None,
-                    ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "MONTHS_FED_TIME_LIMIT"],
-                )
-        else:
-            return (
-                True,
-                None,
-                ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "MONTHS_FED_TIME_LIMIT"],
+        false_case = (False,
+                      f"{row_schema.record_type}: If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then "
+                      + "MONTHS_FED_TIME_LIMIT >= 1.",
+                      ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "MONTHS_FED_TIME_LIMIT",],
+                      )
+        true_case = (True,
+                     None,
+                     ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "MONTHS_FED_TIME_LIMIT",],
+                     )
+        try:
+            FAMILY_AFFILIATION = (
+                instance["FAMILY_AFFILIATION"]
+                if type(instance) is dict
+                else getattr(instance, "FAMILY_AFFILIATION")
             )
+            RELATIONSHIP_HOH = (
+                instance["RELATIONSHIP_HOH"]
+                if type(instance) is dict
+                else getattr(instance, "RELATIONSHIP_HOH")
+            )
+            RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
+            MONTHS_FED_TIME_LIMIT = (
+                instance["MONTHS_FED_TIME_LIMIT"]
+                if type(instance) is dict
+                else getattr(instance, "MONTHS_FED_TIME_LIMIT")
+            )
+            if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
+                if MONTHS_FED_TIME_LIMIT is None or int(MONTHS_FED_TIME_LIMIT) < 1:
+                    return false_case
+                else:
+                    return true_case
+            else:
+                return true_case
+        except Exception:
+            vals = {"FAMILY_AFFILIATION": FAMILY_AFFILIATION,
+                    "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
+                    "MONTHS_FED_TIME_LIMIT": MONTHS_FED_TIME_LIMIT}
+            logger.debug("Caught exception in validator: validate__FAM_AFF__HOH__Fed_Time. With field values: " +
+                         f"{vals}.")
+            return false_case
 
     return validate
 
 
 def validate__FAM_AFF__HOH__Count_Fed_Time():
-    """If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH== 1 or 2, then COUNTABLE_MONTH_FED_TIME >= 1."""
+    """If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then COUNTABLE_MONTH_FED_TIME >= 1."""
     # value is instance
     def validate(instance, row_schema):
-        FAMILY_AFFILIATION = (
-            instance["FAMILY_AFFILIATION"]
-            if type(instance) is dict
-            else getattr(instance, "FAMILY_AFFILIATION")
-        )
-        RELATIONSHIP_HOH = (
-            instance["RELATIONSHIP_HOH"]
-            if type(instance) is dict
-            else getattr(instance, "RELATIONSHIP_HOH")
-        )
-        RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
-        COUNTABLE_MONTH_FED_TIME = (
-            instance["COUNTABLE_MONTH_FED_TIME"]
-            if type(instance) is dict
-            else getattr(instance, "COUNTABLE_MONTH_FED_TIME")
-        )
-        if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
-            if int(COUNTABLE_MONTH_FED_TIME) < 1:
-                return (
-                    False,
-                    f"{row_schema.record_type}: If FAMILY_AFFILIATION == 2 and COUNTABLE_MONTH_FED_TIME== 1 or 2, then "
-                    + "COUNTABLE_MONTH_FED_TIME > 1.",
-                    [
-                        "FAMILY_AFFILIATION",
-                        "RELATIONSHIP_HOH",
-                        "COUNTABLE_MONTH_FED_TIME",
-                    ],
-                )
-            else:
-                return (
-                    True,
-                    None,
-                    [
-                        "FAMILY_AFFILIATION",
-                        "RELATIONSHIP_HOH",
-                        "COUNTABLE_MONTH_FED_TIME",
-                    ],
-                )
-        else:
-            return (
-                True,
-                None,
-                ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "COUNTABLE_MONTH_FED_TIME"],
+        false_case = (False,
+                      f"{row_schema.record_type}: If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then "
+                      + "COUNTABLE_MONTH_FED_TIME >= 1.",
+                      ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "COUNTABLE_MONTH_FED_TIME",],
+                      )
+        true_case = (True,
+                     None,
+                     ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "COUNTABLE_MONTH_FED_TIME",],
+                     )
+        try:
+            FAMILY_AFFILIATION = (
+                instance["FAMILY_AFFILIATION"]
+                if type(instance) is dict
+                else getattr(instance, "FAMILY_AFFILIATION")
             )
+            RELATIONSHIP_HOH = (
+                instance["RELATIONSHIP_HOH"]
+                if type(instance) is dict
+                else getattr(instance, "RELATIONSHIP_HOH")
+            )
+            RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
+            COUNTABLE_MONTH_FED_TIME = (
+                instance["COUNTABLE_MONTH_FED_TIME"]
+                if type(instance) is dict
+                else getattr(instance, "COUNTABLE_MONTH_FED_TIME")
+            )
+            if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
+                if int(COUNTABLE_MONTH_FED_TIME) < 1:
+                    return false_case
+                else:
+                    return true_case
+            else:
+                return true_case
+        except Exception:
+            vals = {"FAMILY_AFFILIATION": FAMILY_AFFILIATION,
+                    "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
+                    "COUNTABLE_MONTH_FED_TIME": COUNTABLE_MONTH_FED_TIME
+                    }
+            logger.debug("Caught exception in validator: validate__FAM_AFF__HOH__Count_Fed_Time. With field values: " +
+                         f"{vals}.")
+            return false_case
 
     return validate
 
@@ -695,3 +697,67 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
             field=None,
         )
     return is_valid, error
+
+def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
+    """If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
+    # value is instance
+    def validate(instance):
+        false_case = (False,
+                      "If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1",
+                      ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
+                      )
+        true_case = (True,
+                     None,
+                     ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
+                     )
+        try:
+            print("INSIDE: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE")
+            WORK_ELIGIBLE_INDICATOR = (
+                instance["WORK_ELIGIBLE_INDICATOR"]
+                if type(instance) is dict
+                else getattr(instance, "WORK_ELIGIBLE_INDICATOR")
+            )
+            RELATIONSHIP_HOH = (
+                instance["RELATIONSHIP_HOH"]
+                if type(instance) is dict
+                else getattr(instance, "RELATIONSHIP_HOH")
+            )
+            RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
+
+            DOB = str(
+                instance["DATE_OF_BIRTH"]
+                if type(instance) is dict
+                else getattr(instance, "DATE_OF_BIRTH")
+            )
+
+            RPT_MONTH_YEAR = str(
+                instance["RPT_MONTH_YEAR"]
+                if type(instance) is dict
+                else getattr(instance, "RPT_MONTH_YEAR")
+            )
+
+            RPT_MONTH_YEAR += "01"
+
+            DOB_datetime = datetime.datetime.strptime(DOB, '%Y%m%d')
+            RPT_MONTH_YEAR_datetime = datetime.datetime.strptime(RPT_MONTH_YEAR, '%Y%m%d')
+            AGE = (RPT_MONTH_YEAR_datetime - DOB_datetime).days / 365.25
+
+            if WORK_ELIGIBLE_INDICATOR == "11" and AGE < 19:
+                if RELATIONSHIP_HOH == 1:
+                    return false_case
+                else:
+                    return true_case
+            else:
+                return true_case
+        except Exception:
+            vals = {"WORK_ELIGIBLE_INDICATOR": WORK_ELIGIBLE_INDICATOR,
+                    "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
+                    "DOB": DOB
+                    }
+            logger.debug("Caught exception in validator: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE. " +
+                         f"With field values: {vals}.")
+            # Per conversation with Alex on 03/26/2024, returning the true case during exception handling to avoid
+            # confusing the STTs.
+            return true_case
+
+    return lambda instance: validate(instance)

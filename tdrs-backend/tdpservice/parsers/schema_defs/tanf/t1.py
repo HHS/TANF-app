@@ -117,8 +117,6 @@ t1 = SchemaManager(
                         "CASH_AMOUNT",
                         "CC_AMOUNT",
                         "TRANSP_AMOUNT",
-                        "TRANSITION_SERVICES_AMOUNT",
-                        "OTHER_AMOUNT",
                     ),
                     0,
                 ),
@@ -202,7 +200,7 @@ t1 = SchemaManager(
                     endIndex=30,
                     required=True,
                     validators=[
-                        validators.isInLimits(1, 3),
+                        validators.isInLimits(1, 2),
                     ],
                 ),
                 Field(
@@ -214,7 +212,7 @@ t1 = SchemaManager(
                     endIndex=31,
                     required=True,
                     validators=[
-                        validators.oneOf([1, 2]),
+                        validators.matches(1)
                     ],
                 ),
                 Field(
@@ -262,7 +260,7 @@ t1 = SchemaManager(
                     endIndex=36,
                     required=True,
                     validators=[
-                        validators.isInLimits(1, 3),
+                        validators.isInLimits(1, 2),
                     ],
                 ),
                 Field(

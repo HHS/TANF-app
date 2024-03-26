@@ -748,7 +748,6 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
 
     def test_validate_months_federal_time_limit(self, record):
         """Test cat3 validator for federal time limit."""
-        # TODO THIS ISNT EXACTLY RIGHT SINCE FED TIME LIMIT IS A STRING.
         val = validators.validate__FAM_AFF__HOH__Fed_Time()
         record.FAMILY_AFFILIATION = 0
         result = val(record, RowSchema())
