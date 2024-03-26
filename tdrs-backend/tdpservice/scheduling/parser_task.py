@@ -22,7 +22,7 @@ def parse(data_file_id):
     logger.info(f"DataFile parsing started for file {data_file.filename}")
 
     dfs = DataFileSummary.objects.create(datafile=data_file, status=DataFileSummary.Status.PENDING)
-    errors = parse_datafile(data_file)
+    errors = parse_datafile(data_file, dfs)
     dfs.status = dfs.get_status()
 
     if "Case Data" in data_file.section:
