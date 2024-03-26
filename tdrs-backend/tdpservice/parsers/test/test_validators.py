@@ -302,7 +302,7 @@ def test_dateYearIsLargerThan():
     value = 18990101
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
                                                                          f"T1: Year {str(value)[:4]} must be larger "
-                                                                         f"than  {year}.")
+                                                                         f"than {year}.")
 
 
 def test_between_returns_invalid_for_string_value():
