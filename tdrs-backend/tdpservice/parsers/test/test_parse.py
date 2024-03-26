@@ -181,10 +181,9 @@ def test_parse_big_file(test_big_file, dfs):
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'months': [
-            {'month': 'Oct', 'accepted_without_errors': 129, 'accepted_with_errors': 141},
-            {'month': 'Nov', 'accepted_without_errors': 143, 'accepted_with_errors': 130},
-            {'month': 'Dec', 'accepted_without_errors': 131, 'accepted_with_errors': 141}
-        ],
+        {'month': 'Oct', 'accepted_without_errors': 25, 'accepted_with_errors': 245},
+        {'month': 'Nov', 'accepted_without_errors': 18, 'accepted_with_errors': 255},
+        {'month': 'Dec', 'accepted_without_errors': 27, 'accepted_with_errors': 245}],
         'rejected': 0}
 
     assert TANF_T1.objects.count() == expected_t1_record_count
@@ -614,18 +613,14 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     parse.parse_datafile(small_tanf_section1_datafile, dfs)
 
     dfs.status = dfs.get_status()
-    assert dfs.status == DataFileSummary.Status.ACCEPTED
+    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'rejected': 0,
-                                   'months': [
-                                       {'accepted_without_errors': 5,
-                                           'accepted_with_errors': 0, 'month': 'Oct'},
-                                       {'accepted_without_errors': 0,
-                                           'accepted_with_errors': 0, 'month': 'Nov'},
-                                       {'accepted_without_errors': 0,
-                                           'accepted_with_errors': 0, 'month': 'Dec'}
-                                   ]}
+    assert dfs.case_aggregates == {'months': [
+        {'month': 'Oct', 'accepted_without_errors': 4, 'accepted_with_errors': 1},
+        {'month': 'Nov', 'accepted_without_errors': 0, 'accepted_with_errors': 0},
+        {'month': 'Dec', 'accepted_without_errors': 0, 'accepted_with_errors': 0}],
+        'rejected': 0}
 
     assert TANF_T2.objects.count() == 5
 
