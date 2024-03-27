@@ -6,9 +6,6 @@ from ...fields import Field, TransformField
 from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M6DataSubmissionDocument
-import datetime
-
-minYear = datetime.date.today().year - 5
 
 s1 = RowSchema(
     document=SSP_M6DataSubmissionDocument(),
@@ -50,7 +47,7 @@ s1 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(minYear),
+                validators.dateYearIsLargerThan(2019),
                 validators.quarterIsValid()
             ]
         ),
@@ -211,7 +208,7 @@ s2 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(minYear),
+                validators.dateYearIsLargerThan(2019),
                 validators.quarterIsValid()
             ]
         ),
@@ -372,7 +369,7 @@ s3 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(minYear),
+                validators.dateYearIsLargerThan(2019),
                 validators.quarterIsValid()
             ]
         ),
