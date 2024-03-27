@@ -22,6 +22,7 @@ Velocity (Dev): 6
 * [#2751 Resource Card updated with latest coding instructions](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2751)
 * [#1858 Spike: Secure Kibana access](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/1858)
 * [#2781 As a developer,  I want to have documentation on django migration best practices](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2781)
+* [#2820 [bug] Uncaught exception re: parsing error preventing feedback report generation](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2820)
 
 ### Ready to Merge
 
@@ -47,7 +48,6 @@ Velocity (Dev): 6
 ### In Progress
 * [#1350 Kibana access from TDP](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/1350)
 * [#2646 - Populate data file summary case aggregates differently per section](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2646)
-* [#2820 [bug] Uncaught exception re: parsing error preventing feedback report generation](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2820)
 * [#2768 Fix production OWASP scan reporting](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2768)
 * [#2799 Generate error mismatching field rpt_month_year w/ header](https://app.zenhub.com/workspaces/sprint-board-5f18ab06dfd91c000f7e682e/issues/gh/raft-tech/tanf-app/2799)
 

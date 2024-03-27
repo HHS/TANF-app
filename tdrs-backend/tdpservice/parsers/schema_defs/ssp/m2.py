@@ -14,6 +14,10 @@ m2 = SchemaManager(
             document=SSP_M2DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(150),
+                validators.or_priority_validators([
+                    validators.field_year_month_with_header_year_quarter(),
+                    validators.validateRptMonthYear(),
+                ]),
                 validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
@@ -179,11 +183,14 @@ m2 = SchemaManager(
                     item="28",
                     name='DATE_OF_BIRTH',
                     friendly_name="date of birth",
-                    type='number',
+                    type='string',
                     startIndex=21,
                     endIndex=29,
                     required=True,
-                    validators=[validators.isLargerThan(0)]
+                    validators=[validators.intHasLength(8),
+                                validators.dateYearIsLargerThan(1900),
+                                validators.dateMonthIsValid(),
+                                validators.dateDayIsValid()]
                 ),
                 TransformField(
                     transform_func=ssp_ssn_decryption_func,

@@ -111,7 +111,7 @@ We matched our errors were matched with grantee participants accordingly to whic
 > | Adult Record | T2             |
 > | Child Record | T3             |
 >
-> For more details, refer to the Section 1 (Active Cases) [Transmission Layout]()
+> For more details, refer to the Section 1 (Active Cases) [Transmission Layout](https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits)
 
 ### Error Two
 

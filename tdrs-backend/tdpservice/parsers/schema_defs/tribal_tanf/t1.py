@@ -5,13 +5,16 @@ from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T1DataSubmissionDocument
 
-
 t1 = SchemaManager(
     schemas=[
         RowSchema(
             document=Tribal_TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(122),
+                validators.or_priority_validators([
+                    validators.field_year_month_with_header_year_quarter(),
+                    validators.validateRptMonthYear(),
+                ]),
                 validators.notEmpty(8, 19)
             ],
             postparsing_validators=[

@@ -14,6 +14,10 @@ t2 = SchemaManager(
             document=TANF_T2DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(156),
+                validators.or_priority_validators([
+                    validators.field_year_month_with_header_year_quarter(),
+                    validators.validateRptMonthYear(),
+                ]),
                 validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
@@ -122,6 +126,7 @@ t2 = SchemaManager(
                     result_field="WORK_PART_STATUS",
                     result_function=validators.notMatches("99"),
                 ),
+                validators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(),
             ],
             fields=[
                 Field(
@@ -181,14 +186,15 @@ t2 = SchemaManager(
                     item="32",
                     name="DATE_OF_BIRTH",
                     friendly_name="date of birth",
-                    type="number",
+                    type="string",
                     startIndex=21,
                     endIndex=29,
                     required=True,
-                    validators=[
-                        validators.dateYearIsLargerThan(1900),
-                        validators.dateMonthIsValid(),
-                    ],
+                    validators=[validators.intHasLength(8),
+                                validators.dateYearIsLargerThan(1900),
+                                validators.dateMonthIsValid(),
+                                validators.dateDayIsValid()
+                                ]
                 ),
                 TransformField(
                     transform_func=tanf_ssn_decryption_func,
@@ -488,7 +494,7 @@ t2 = SchemaManager(
                     type="string",
                     startIndex=68,
                     endIndex=70,
-                    required=False,
+                    required=True,
                     validators=[
                         validators.oneOf(
                             [
@@ -501,7 +507,6 @@ t2 = SchemaManager(
                                 "16",
                                 "17",
                                 "18",
-                                "19",
                                 "99",
                             ]
                         )
