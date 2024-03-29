@@ -170,14 +170,14 @@ def deactivated_user():
 @pytest.fixture
 def stt(region):
     """Return an STT."""
-    stt, _ = STT.objects.get_or_create(name="first", region=region)
+    stt, _ = STT.objects.get_or_create(name="Wisconsin", region=region, stt_code="55")
     return stt
 
 
 @pytest.fixture
 def region():
     """Return a region."""
-    region, _ = Region.objects.get_or_create(id=1)
+    region, _ = Region.objects.get_or_create(id=5)
     return region
 
 
