@@ -46,7 +46,7 @@ services:
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:7.4.2
+    image: kibana:7.10.2
     ports:
       - 5601:5601
     environment:
@@ -59,11 +59,10 @@ services:
       - elastic
 
   elastic:
-    image: elasticsearch:7.17.6
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
     environment:
       - discovery.type=single-node
       - logger.discovery.level=debug
-      - xpack.security.enabled=false
     ports:
       - 9200:9200
       - 9300:9300
