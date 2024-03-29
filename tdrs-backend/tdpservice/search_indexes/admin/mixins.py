@@ -22,3 +22,11 @@ class ExportCsvMixin:
         return response
 
     export_as_csv.short_description = "Export Selected as CSV"
+
+
+class SttCodeMixin:
+    """Mixin class to display a record's associated stt code."""
+
+    def stt_code(self, obj):
+        """Return stt code."""
+        return obj.datafile.stt.stt_code

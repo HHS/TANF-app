@@ -1,6 +1,6 @@
 """ModelAdmin classes for parsed TRIBAL data files."""
 from django.contrib import admin
-from .filter import CreationDateFilter
+from .filters import CreationDateFilter
 
 
 class Tribal_TANF_T1Admin(admin.ModelAdmin):

@@ -1,6 +1,6 @@
 """ModelAdmin classes for parsed SSP data files."""
 from django.contrib import admin
-from .filter import CreationDateFilter
+from .filters import CreationDateFilter
 
 
 class SSP_M1Admin(admin.ModelAdmin):
