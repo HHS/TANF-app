@@ -4,7 +4,7 @@
 
 Parity with the legacy system includes categories 1-4
 
-1. **Pre-parsing errors** — These types of errors are considered to be violations of the expected record layout, so the records are not "eligible" to be parsed or validated. See existing reference material (in UX murals and parsing notebooks) about what these errors are and how to detect them.
+1. **Pre-parsing errors** — These types of errors are considered to be violations of the expected record layout, so the records are not "eligible" to be parsed or validated. See [TDP's parsing directory](https://github.com/raft-tech/TANF-app/tree/develop/tdrs-backend/tdpservice/parsers) for current and complete pre-parsing logic.
 
    Ex:
 
@@ -12,7 +12,7 @@ Parity with the legacy system includes categories 1-4
 
    ```Header length is 2 characters but must be 23```
 
-2. **Out-of-range value errors –** These are based on the abovementioned instructions.
+2. **Out-of-range value errors –** These are based on [TANF, SSP](https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04), and [Tribal TANF](https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions) coding instructions.
 
    Ex:
 
@@ -20,7 +20,7 @@ Parity with the legacy system includes categories 1-4
 
    ```Item 2 (County FIPS Code) must be 3 digits```
 
-3. **Errors re: inconsistent values across data elements within a record –** These are also based on the abovementioned instructions (e.g. If SSI recipient = yes, then SSI amount received > $0).
+3. **Errors re: inconsistent values across data elements within a record –** These are based on [TANF, SSP](https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04), and [Tribal TANF](https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions) coding instructions. (e.g. If SSI recipient = yes, then SSI amount received > $0).
 
    Ex:
 
@@ -33,14 +33,13 @@ Parity with the legacy system includes categories 1-4
 4. **Errors re: inconsistent values across related records within a section file –** These errors are also based on the abovementioned instructions (e.g. For every family (T1) record for a given month, there is no evidence that at least one adult (T2) or child (T3) associated with the family's case (T1) is a TANF recipient)
 
     Ex:
-   
-   ```If Item 9 (Reason for Closure) is 3 then at least one T5 (Closed Person) on the case should have Item 21 (Relationship to Head-of-Household) as 1-2 and Item 26 (Number of Months Countable toward Federal Time Limit) of 60 or greater.```
+```If Item 9 (Reason for Closure) is 3 then at least one T5 (Closed Person) on the case should have Item 21 (Relationship to Head-of-Household) as 1-2 and Item 26 (Number of Months Countable toward Federal Time Limit) of 60 or greater.```
 
 
 
-6. **Errors re: inconsistent values across related sections of data –** These errors are based on DIGIT-generated checks, and some reference material included in abovementioned feedback rpts. Because sections of data can be submitted at different points in time, current thinking around these checks suggest that these errors would need to be checked against data from the dB (e.g. total #of families reported in Section 1 > total # families reported in Section 3)
+5. **Errors re: inconsistent values across related sections of data –** These errors are based on DIGIT-generated checks, and some reference material included in abovementioned feedback rpts. Because sections of data can be submitted at different points in time, current thinking around these checks suggest that these errors would need to be checked against data from the dB (e.g. total #of families reported in Section 1 > total # families reported in Section 3)
 
-7. **Errors re: inconsistent values across related records and/or sections over time** — Also based on DIGIT-generated checks and would benefit from checks against data from the dB (e.g. state did not submit enough case records to meet annual sample size requirements)
+6. **Errors re: inconsistent values across related records and/or sections over time** — Also based on DIGIT-generated checks and would benefit from checks against data from the dB (e.g. state did not submit enough case records to meet annual sample size requirements)
 
 ## Plain language category names
 
@@ -57,9 +56,9 @@ Parity with the legacy system includes categories 1-4
 
 ### Program types
 
-1. TANF
-2. SSP-MOE
-3. Tribal TANF
+1. TANF (associated with T`x` record types)
+2. SSP-MOE (associated with M`x` record types)
+3. Tribal TANF ((associated with Tribal T`x` record types))
 
 ### Sections
 
@@ -72,11 +71,11 @@ Parity with the legacy system includes categories 1-4
 
 | Record Type Indicator | Record Type Name            |
 | --------------------- | --------------------------- |
-| T1                    | Family Case Characteristics |
-| T2                    | Adult                       |
-| T3                    | Child                       |
-| T4                    | Closed Family Case          |
-| T5                    | Closed Person               |
-| T6                    | Aggregate Count             |
-| T7                    | Count by Stratum            |
+| T1/M1/Tribal T1                    | Family Case Characteristics |
+| T2/M2/Tribal T2                    | Adult                       |
+| T3/M3/Tribal T3                    | Child                       |
+| T4/M4/Tribal T4                    | Closed Family Case          |
+| T5/M5/Tribal T5                    | Closed Person               |
+| T6/M6/Tribal T6                    | Aggregate Count             |
+| T7/M7/Tribal T7                    | Count by Stratum            |
 
