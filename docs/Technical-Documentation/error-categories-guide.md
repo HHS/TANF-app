@@ -33,13 +33,14 @@ Parity with the legacy system includes categories 1-4
 4. **Errors re: inconsistent values across related records within a section file –** These errors are also based on the abovementioned instructions (e.g. For every family (T1) record for a given month, there is no evidence that at least one adult (T2) or child (T3) associated with the family's case (T1) is a TANF recipient)
 
     Ex:
-```If Item 9 (Reason for Closure) is 3 then at least one T5 (Closed Person) on the case should have Item 21 (Relationship to Head-of-Household) as 1-2 and Item 26 (Number of Months Countable toward Federal Time Limit) of 60 or greater.```
+   
+   ```If Item 9 (Reason for Closure) is 3 then at least one T5 (Closed Person) on the case should have Item 21 (Relationship to Head-of-Household) as 1-2 and Item 26 (Number of Months Countable toward Federal Time Limit) of 60 or greater.```
 
 
 
-5. **Errors re: inconsistent values across related sections of data –** These errors are based on DIGIT-generated checks, and some reference material included in abovementioned feedback rpts. Because sections of data can be submitted at different points in time, current thinking around these checks suggest that these errors would need to be checked against data from the dB (e.g. total #of families reported in Section 1 > total # families reported in Section 3)
+6. **Errors re: inconsistent values across related sections of data –** These errors are based on DIGIT-generated checks, and some reference material included in abovementioned feedback rpts. Because sections of data can be submitted at different points in time, current thinking around these checks suggest that these errors would need to be checked against data from the dB (e.g. total #of families reported in Section 1 > total # families reported in Section 3)
 
-6. **Errors re: inconsistent values across related records and/or sections over time** — Also based on DIGIT-generated checks and would benefit from checks against data from the dB (e.g. state did not submit enough case records to meet annual sample size requirements)
+7. **Errors re: inconsistent values across related records and/or sections over time** — Also based on DIGIT-generated checks and would benefit from checks against data from the dB (e.g. state did not submit enough case records to meet annual sample size requirements)
 
 ## Plain language category names
 
