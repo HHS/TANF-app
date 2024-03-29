@@ -46,7 +46,7 @@ services:
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   kibana:
-    image: kibana:7.10.1
+    image: docker.elastic.co/kibana/kibana-oss:7.10.2
     ports:
       - 5601:5601
     environment:
