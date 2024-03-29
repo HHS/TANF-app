@@ -131,10 +131,10 @@ update_backend()
     cf unset-env "$CGAPPNAME_BACKEND" "AV_SCAN_URL"
     
     if [ "$CF_SPACE" = "tanf-prod" ]; then
-      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"
+      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan/"
     else
       # Add environment varilables for clamav
-      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tdp-clamav-nginx-$env.apps.internal:9000/scan"
+      cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tdp-clamav-nginx-$env.apps.internal:9000/scan/"
     fi
 
     if [ "$1" = "rolling" ] ; then
