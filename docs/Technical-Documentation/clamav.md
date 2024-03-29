@@ -23,7 +23,7 @@ The instance name then will be set as an environment variable to redirect each i
 First, set the environment variable __AV_SCAN_URL__ as follows:
 ```
 Environment variable name: AV_SCAN_URL
-Environment variable value: http://{nginx_instance}.apps.internal:9000/scan
+Environment variable value: http://{nginx_instance}.apps.internal:9000/scan/
 ```
 
 ### Add network policy from _{tdp-clamav-nginx}_ to clamav in prod
