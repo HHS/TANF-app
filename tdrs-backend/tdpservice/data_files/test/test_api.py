@@ -114,7 +114,8 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
             + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "Trailer length is 15 but must be 23 characters."
+        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "TRAILER record length is 15 characters " + \
+            "but must be 23."
 
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
