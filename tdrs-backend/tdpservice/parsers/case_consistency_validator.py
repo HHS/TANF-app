@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class CaseConsistencyValidator:
-    """Caches records of the same case to perform category four validation while actively parsing."""
+    """Caches records of the same case and month to perform category four validation while actively parsing."""
 
     def __init__(self, header, generate_error):
         self.header = header
