@@ -1227,7 +1227,7 @@ def test_parse_ssp_section2_rec_oadsi_file(ssp_section2_rec_oadsi_file, dfs):
 
     dfs.datafile = ssp_section2_rec_oadsi_file
 
-    parse.parse_datafile(ssp_section2_rec_oadsi_file)
+    parse.parse_datafile(ssp_section2_rec_oadsi_file, dfs)
     parser_errors = ParserError.objects.filter(file=ssp_section2_rec_oadsi_file)
 
     assert parser_errors.count() == 0
