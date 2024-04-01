@@ -3,24 +3,25 @@
 from django.http import StreamingHttpResponse
 import csv
 
-class Echo:
-    """An object that implements just the write method of the file-like
-    interface.
-    """
-
-    def write(self, value):
-        """Write the value by returning it, instead of storing in a buffer."""
-        return value
 
 class ExportCsvMixin:
     """Mixin class to support CSV exporting."""
+
+    class Echo:
+        """An object that implements just the write method of the file-like
+        interface.
+        """
+
+        def write(self, value):
+            """Write the value by returning it, instead of storing in a buffer."""
+            return value
 
     def export_as_csv(self, request, queryset):
         """Convert queryset to CSV."""
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]
 
-        pseudo_buffer = Echo()
+        pseudo_buffer = ExportCsvMixin.Echo()
 
         writer = csv.writer(pseudo_buffer)
         writer.writerow(field_names)
