@@ -1,6 +1,6 @@
 """ModelAdmin classes for parsed TRIBAL data files."""
 from django.contrib import admin
-from .filters import CreationDateFilter
+from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
 
 
 class Tribal_TANF_T1Admin(admin.ModelAdmin):
@@ -17,6 +17,8 @@ class Tribal_TANF_T1Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
         'ZIP_CODE',
@@ -35,6 +37,8 @@ class Tribal_TANF_T2Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -51,6 +55,8 @@ class Tribal_TANF_T3Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -66,6 +72,8 @@ class Tribal_TANF_T4Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -80,6 +88,8 @@ class Tribal_TANF_T5Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -96,6 +106,8 @@ class Tribal_TANF_T6Admin(admin.ModelAdmin):
 
     list_filter = [
         'CALENDAR_QUARTER',
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR'
     ]
@@ -115,6 +127,8 @@ class Tribal_TANF_T7Admin(admin.ModelAdmin):
 
     list_filter = [
         'CALENDAR_QUARTER',
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]

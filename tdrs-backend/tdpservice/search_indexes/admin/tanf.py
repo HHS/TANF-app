@@ -1,6 +1,6 @@
 """ModelAdmin classes for parsed TANF data files."""
 from django.contrib import admin
-from .filters import CreationDateFilter, FiscalYearFilter, STTFilter
+from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
 from .mixins import ExportCsvMixin, SttCodeMixin
 
 
@@ -22,7 +22,7 @@ class TANF_T1Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
 
     list_filter = [
         STTFilter,
-        FiscalYearFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
         'ZIP_CODE',
@@ -41,6 +41,8 @@ class TANF_T2Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -57,6 +59,8 @@ class TANF_T3Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -73,6 +77,8 @@ class TANF_T4Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -89,6 +95,8 @@ class TANF_T5Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -106,6 +114,8 @@ class TANF_T6Admin(admin.ModelAdmin):
 
     list_filter = [
         'CALENDAR_QUARTER',
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR'
     ]
@@ -126,6 +136,8 @@ class TANF_T7Admin(admin.ModelAdmin):
 
     list_filter = [
         'CALENDAR_QUARTER',
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]

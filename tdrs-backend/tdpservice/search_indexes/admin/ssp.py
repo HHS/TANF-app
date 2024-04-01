@@ -1,6 +1,6 @@
 """ModelAdmin classes for parsed SSP data files."""
 from django.contrib import admin
-from .filters import CreationDateFilter
+from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
 
 
 class SSP_M1Admin(admin.ModelAdmin):
@@ -17,6 +17,8 @@ class SSP_M1Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
         'ZIP_CODE',
@@ -35,6 +37,8 @@ class SSP_M2Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -51,6 +55,8 @@ class SSP_M3Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -66,6 +72,8 @@ class SSP_M4Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -81,6 +89,8 @@ class SSP_M5Admin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]
@@ -97,6 +107,8 @@ class SSP_M6Admin(admin.ModelAdmin):
 
     list_filter = [
         'CALENDAR_QUARTER',
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR'
     ]
@@ -116,6 +128,8 @@ class SSP_M7Admin(admin.ModelAdmin):
 
     list_filter = [
         'CALENDAR_QUARTER',
+        STTFilter,
+        FiscalPeriodFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
     ]

@@ -71,12 +71,12 @@ class STTFilter(SimpleListFilter):
             queryset = queryset.filter(datafile__stt__stt_code=val)
         return queryset
 
-class FiscalYearFilter(SimpleListFilter):
+class FiscalPeriodFilter(SimpleListFilter):
     """Simple filter class to filter records based on datafile fiscal year."""
 
-    title = _('Fiscal Year')
+    title = _('Fiscal Period')
 
-    parameter_name = 'fiscal_year'
+    parameter_name = 'fiscal_period'
 
     def lookups(self, request, model_admin):
         """Available options in dropdown."""
