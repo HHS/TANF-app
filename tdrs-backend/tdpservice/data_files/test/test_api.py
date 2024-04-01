@@ -39,6 +39,14 @@ class DataFileAPITestBase:
         return test_datafile
 
     @pytest.fixture
+    def test_ssp_datafile(self, stt_user, stt):
+        """Fixture for small_ssp_section1."""
+        df = util.create_test_datafile('small_ssp_section1.txt', stt_user, stt, 'SSP Active Case Data')
+        df.year = 2024
+        df.quarter = 'Q1'
+        return df
+
+    @pytest.fixture
     def api_client(self, api_client, user):
         """Provide an API client that is logged in with the specified user."""
         api_client.login(username=user.username, password='test_password')
@@ -72,8 +80,8 @@ class DataFileAPITestBase:
         assert b''.join(response.streaming_content) == data_file_file.file.read()
 
     @staticmethod
-    def assert_error_report_file_content_matches_with_friendly_names(response):
-        """Assert the error report file contents match expected with friendly names."""
+    def get_spreadsheet(response):
+        """Return error report."""
         decoded_response = base64.b64decode(response.data['xls_report'])
 
         # write the excel file to disk
@@ -83,6 +91,12 @@ class DataFileAPITestBase:
         # read the excel file from disk
         wb = openpyxl.load_workbook('mycls.xlsx')
         ws = wb.get_sheet_by_name('Sheet1')
+        return ws
+
+    @staticmethod
+    def assert_error_report_tanf_file_content_matches_with_friendly_names(response):
+        """Assert the error report file contents match expected with friendly names."""
+        ws = DataFileAPITestBase.get_spreadsheet(response)
 
         COL_ERROR_MESSAGE = 5
 
@@ -90,6 +104,17 @@ class DataFileAPITestBase:
             + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
         assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "if cash amount :873 validator1 passed" \
             + " then number of months T1: 0 is not larger than 0."
+
+    @staticmethod
+    def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
+        """Assert the error report file contents match expected with friendly names."""
+        ws = DataFileAPITestBase.get_spreadsheet(response)
+
+        COL_ERROR_MESSAGE = 5
+
+        assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
+            + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
+        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "Trailer length is 15 but must be 23 characters."
 
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
@@ -258,7 +283,15 @@ class TestDataFileAPIAsDataAnalyst(DataFileAPITestBase):
         response = self.download_error_report_file(api_client, test_datafile.id)
 
         assert response.status_code == status.HTTP_200_OK
-        self.assert_error_report_file_content_matches_with_friendly_names(response)
+        self.assert_error_report_tanf_file_content_matches_with_friendly_names(response)
+
+    def test_download_error_report_ssp_file_for_own_stt(self, api_client, test_ssp_datafile, dfs):
+        """Test that the error report file for an SSP file is downloaded as expected for a Data Analyst's set STT."""
+        parse.parse_datafile(test_ssp_datafile, dfs)
+        response = self.download_error_report_file(api_client, test_ssp_datafile.id)
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_error_report_ssp_file_content_matches_with_friendly_names(response)
 
     def test_download_error_report_file_for_own_stt_no_fields_json(
         self, api_client, test_datafile, dfs
