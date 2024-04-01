@@ -1,6 +1,6 @@
 """ModelAdmin classes for parsed TANF data files."""
 from django.contrib import admin
-from .filters import CreationDateFilter, STTFilter
+from .filters import CreationDateFilter, FiscalYearFilter, STTFilter
 from .mixins import ExportCsvMixin, SttCodeMixin
 
 
@@ -22,6 +22,7 @@ class TANF_T1Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
 
     list_filter = [
         STTFilter,
+        FiscalYearFilter,
         CreationDateFilter,
         'RPT_MONTH_YEAR',
         'ZIP_CODE',
