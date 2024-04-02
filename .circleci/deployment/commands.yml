@@ -95,8 +95,8 @@
           name: Install dependencies
           command: |
             sudo apt update
-            sudo add-apt-repository ppa:rmescandon/yq
-            sudo apt-get install yq
+            sudo apt-get install -y wget
+            sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.42.1/yq_linux_amd64 && chmod +x /usr/local/bin/yq
       - run:
           name: Apply database migrations
           command: |
@@ -275,7 +275,7 @@
           cf-space: <<parameters.cf-space>>
       - run:
           name: Ensure s3 versioning key exists
-          # use cf to check if a service key exists for tdp-datafiles-dev(or prod) 
+          # use cf to check if a service key exists for tdp-datafiles-dev(or prod)
           # exit 0 if it does, create it if it doesn't
           command: |
             chmod +x ./scripts/create_s3_versioning_key.sh
