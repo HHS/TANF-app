@@ -13,7 +13,6 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
-from ..schema_defs.util import get_section_reference, get_program_models, get_program_model
 from elasticsearch.helpers.errors import BulkIndexError
 
 import logging

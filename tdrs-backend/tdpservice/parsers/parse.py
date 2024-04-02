@@ -7,7 +7,8 @@ from django.contrib.contenttypes.models import ContentType
 import itertools
 import logging
 from .models import ParserErrorCategoryChoices, ParserError
-from . import schema_defs, validators, util, row_schema
+from . import schema_defs, validators, util
+from . import row_schema
 from .schema_defs.utils import get_section_reference, get_program_model
 from .case_consistency_validator import CaseConsistencyValidator
 from elasticsearch.helpers.errors import BulkIndexError
@@ -323,12 +324,11 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
-    dfs.save()
-
     validate_case_consistency(case_consistency_validator)
 
     logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
                  f"validated {case_consistency_validator.total_cases_validated} of them.")
+    dfs.save()
 
     return errors
 

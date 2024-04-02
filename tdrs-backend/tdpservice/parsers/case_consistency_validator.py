@@ -42,7 +42,7 @@ class SortedRecordSchemaPairs:
 
 
 class CaseConsistencyValidator:
-    """Caches records of the same case to perform category four validation while actively parsing."""
+    """Caches records of the same case and month to perform category four validation while actively parsing."""
 
     def __init__(self, header, generate_error):
         self.header = header
@@ -99,6 +99,22 @@ class CaseConsistencyValidator:
 
     def validate(self):
         """Perform category four validation on all cached records."""
+        num_errors = 0
+        try:
+            if self.case_is_section_one_or_two:
+                self.total_cases_cached += 1
+                if not self.case_has_errors:
+                    num_errors = self.__validate()
+                else:
+                    logger.debug(f"Case: {self.current_case} has errors associated with it's records. "
+                                 "Skipping Cat4 validation.")
+            return num_errors
+        except Exception as e:
+            logger.error(f"Uncaught exception during category four validation: {e}")
+            return num_errors
+
+    def __validate(self):
+        """Private validate, lint complexity."""
         num_errors = 0
         if self.case_is_section_one_or_two:
             self.total_cases_cached += 1

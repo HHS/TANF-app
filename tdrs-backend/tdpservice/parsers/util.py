@@ -156,6 +156,11 @@ def month_to_int(month):
     """Return the integer value of a month."""
     return datetime.strptime(month, '%b').strftime('%m')
 
+def get_rpt_month_year_list(year, quarter):
+    """Convert year and quarter to RPT_MONTH_YEAR."""
+    months = transform_to_months(quarter)
+    return [int(f"{year}{month}") for month in months]
+
 def year_month_to_year_quarter(year_month):
     """Return the year and quarter from a year_month string."""
     def get_quarter_from_month(month):
@@ -175,8 +180,3 @@ def year_month_to_year_quarter(year_month):
     month = year_month[4:]
     quarter = get_quarter_from_month(month)
     return year, quarter
-
-def get_rpt_month_year_list(year, quarter):
-    """Convert year and quarter to RPT_MONTH_YEAR."""
-    months = transform_to_months(quarter)
-    return [int(f"{year}{month}") for month in months]
