@@ -116,25 +116,19 @@ class CaseConsistencyValidator:
     def __validate(self):
         """Private validate, lint complexity."""
         num_errors = 0
-        if self.case_is_section_one_or_two:
-            self.total_cases_cached += 1
-            if not self.case_has_errors:
-                self.total_cases_validated += 1
-                self.has_validated = True
-                logger.debug(f"Attempting to execute Cat4 validation for case: {self.current_case}.")
+        self.total_cases_validated += 1
+        self.has_validated = True
+        logger.debug(f"Attempting to execute Cat4 validation for case: {self.current_case}.")
 
-                if self.section == "A":
-                    num_errors += self.__validate_section1(num_errors)
-                elif self.section == "C":
-                    num_errors += self.__validate_section2(num_errors)
-                else:
-                    self.total_cases_validated -= 1
-                    logger.warn(f"Case: {self.current_case} has no errors but has either an incorrect program type: "
-                                f"{self.program_type} or an incorrect section: {self.section}. No validation occurred.")
-                    self.has_validated = False
-            else:
-                logger.debug(f"Case: {self.current_case} has errors associated with it's records. "
-                             "Skipping Cat4 validation")
+        if self.section == "A":
+            num_errors += self.__validate_section1(num_errors)
+        elif self.section == "C":
+            num_errors += self.__validate_section2(num_errors)
+        else:
+            self.total_cases_validated -= 1
+            logger.warn(f"Case: {self.current_case} has no errors but has either an incorrect program type: "
+                        f"{self.program_type} or an incorrect section: {self.section}. No validation occurred.")
+            self.has_validated = False
         return num_errors
 
     def __validate_section1(self, num_errors):
