@@ -8,14 +8,12 @@ class ExportCsvMixin:
     """Mixin class to support CSV exporting."""
 
     class Echo:
-        """An object that implements just the write method of the file-like
-        interface.
-        """
+        """An object that implements just the write method of the file-like interface."""
 
         def write(self, value):
             """Write the value by returning it, instead of storing in a buffer."""
             return value
-    
+
     class RowIterator:
         """Iterator class to support custom CSV row generation."""
 
@@ -34,10 +32,9 @@ class ExportCsvMixin:
                 if name == "datafile":
                     header_row.append("STT")
             return header_row
-                    
-        
+
         def __iter__(self):
-            """Yield the next row in the csv export.""" 
+            """Yield the next row in the csv export."""
             for obj in self.queryset:
                 row = []
 
