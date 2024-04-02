@@ -30,14 +30,17 @@ class TANF_T1Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
 
-class TANF_T2Admin(admin.ModelAdmin):
+class TANF_T2Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T2 data files."""
 
+    actions = ["export_as_csv"]
+
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
@@ -48,14 +51,17 @@ class TANF_T2Admin(admin.ModelAdmin):
     ]
 
 
-class TANF_T3Admin(admin.ModelAdmin):
+class TANF_T3Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T3 data files."""
 
+    actions = ["export_as_csv"]
+
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
@@ -66,14 +72,17 @@ class TANF_T3Admin(admin.ModelAdmin):
     ]
 
 
-class TANF_T4Admin(admin.ModelAdmin):
+class TANF_T4Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T4 data files."""
 
+    actions = ["export_as_csv"]
+
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
@@ -84,14 +93,17 @@ class TANF_T4Admin(admin.ModelAdmin):
     ]
 
 
-class TANF_T5Admin(admin.ModelAdmin):
+class TANF_T5Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T5 data files."""
 
+    actions = ["export_as_csv"]
+
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
         'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
@@ -102,14 +114,17 @@ class TANF_T5Admin(admin.ModelAdmin):
     ]
 
 
-class TANF_T6Admin(admin.ModelAdmin):
+class TANF_T6Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T6 data files."""
+
+    actions = ["export_as_csv"]
 
     list_display = [
         'RecordType',
         'CALENDAR_QUARTER',
         'RPT_MONTH_YEAR',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
@@ -121,8 +136,10 @@ class TANF_T6Admin(admin.ModelAdmin):
     ]
 
 
-class TANF_T7Admin(admin.ModelAdmin):
+class TANF_T7Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T7 data files."""
+
+    actions = ["export_as_csv"]
 
     list_display = [
         'RecordType',
@@ -132,6 +149,7 @@ class TANF_T7Admin(admin.ModelAdmin):
         'STRATUM',
         'FAMILIES_MONTH',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
