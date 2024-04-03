@@ -54,7 +54,8 @@ def case_aggregates_by_month(df, dfs_status):
                                          "accepted_without_errors": accepted,
                                          "accepted_with_errors": cases_with_errors})
 
-    aggregate_data['rejected'] = ParserError.objects.filter(file=df).filter(case_number=None).count()
+    aggregate_data['rejected'] = ParserError.objects.filter(file=df).filter(case_number=None).distinct("row_number")\
+        .exclude(row_number=0).count()
 
     return aggregate_data
 

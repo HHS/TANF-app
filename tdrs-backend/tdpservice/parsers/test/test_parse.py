@@ -1650,3 +1650,37 @@ def test_parse_no_records_file(no_records_file, dfs):
     assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert error.content_type is None
     assert error.object_id is None
+
+@pytest.fixture
+def aggregates_rejected_datafile(stt_user, stt):
+    """Fixture for aggregates_rejected."""
+    return util.create_test_datafile('aggregates_rejected.txt', stt_user, stt)
+
+
+@pytest.mark.django_db
+def test_parse_aggregates_rejected_datafile(aggregates_rejected_datafile, dfs):
+    """Test record rejection counting when record has more than one preparsing error."""
+    aggregates_rejected_datafile.year = 2021
+    aggregates_rejected_datafile.quarter = 'Q1'
+    dfs.datafile = aggregates_rejected_datafile
+
+    parse.parse_datafile(aggregates_rejected_datafile, dfs)
+
+    dfs.status = dfs.get_status()
+    assert dfs.status == DataFileSummary.Status.REJECTED
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {'months': [
+        {'month': 'Oct', 'accepted_without_errors': "N/A", 'accepted_with_errors': "N/A"},
+        {'month': 'Nov', 'accepted_without_errors': "N/A", 'accepted_with_errors': "N/A"},
+        {'month': 'Dec', 'accepted_without_errors': "N/A", 'accepted_with_errors': "N/A"}],
+        'rejected': 1}
+
+    errors = ParserError.objects.filter(file=aggregates_rejected_datafile)
+
+    assert errors.count() == 3
+    for error in errors:
+        assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert errors.filter(row_number=2).count() == 2
+
+    assert TANF_T2.objects.count() == 0
