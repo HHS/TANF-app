@@ -1,9 +1,9 @@
 """ModelAdmin classes for parsed TANF data files."""
 from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
-from .mixins import DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
+from .mixins import ExportCsvMixin, ReadOnlyAdmin, SttCodeMixin
 
 
-class TANF_T1Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class TANF_T1Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T1 data files."""
 
     actions = ["export_as_csv"]
@@ -30,7 +30,7 @@ class TANF_T1Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     ]
 
 
-class TANF_T2Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class TANF_T2Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T2 data files."""
 
     actions = ["export_as_csv"]
@@ -52,7 +52,7 @@ class TANF_T2Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     ]
 
 
-class TANF_T3Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class TANF_T3Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T3 data files."""
 
     actions = ["export_as_csv"]
@@ -74,7 +74,7 @@ class TANF_T3Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     ]
 
 
-class TANF_T4Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class TANF_T4Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T4 data files."""
 
     actions = ["export_as_csv"]
@@ -96,7 +96,7 @@ class TANF_T4Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     ]
 
 
-class TANF_T5Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class TANF_T5Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T5 data files."""
 
     actions = ["export_as_csv"]
@@ -118,7 +118,7 @@ class TANF_T5Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     ]
 
 
-class TANF_T6Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class TANF_T6Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T6 data files."""
 
     actions = ["export_as_csv"]
@@ -141,7 +141,7 @@ class TANF_T6Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     ]
 
 
-class TANF_T7Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class TANF_T7Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T7 data files."""
 
     actions = ["export_as_csv"]

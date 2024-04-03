@@ -1,9 +1,9 @@
 """ModelAdmin classes for parsed TRIBAL data files."""
 from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
-from .mixins import DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
+from .mixins import ExportCsvMixin, SttCodeMixin, ReadOnlyAdmin
 
 
-class Tribal_TANF_T1Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T1Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T1 data files."""
 
     actions = ["export_as_csv"]
@@ -30,7 +30,7 @@ class Tribal_TANF_T1Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
     ]
 
 
-class Tribal_TANF_T2Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T2Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T2 data files."""
 
     actions = ["export_as_csv"]
@@ -52,7 +52,7 @@ class Tribal_TANF_T2Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
     ]
 
 
-class Tribal_TANF_T3Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T3Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T3 data files."""
 
     actions = ["export_as_csv"]
@@ -73,7 +73,7 @@ class Tribal_TANF_T3Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
         'RPT_MONTH_YEAR',
     ]
 
-class Tribal_TANF_T4Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T4Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T4 data files."""
 
     actions = ["export_as_csv"]
@@ -93,7 +93,7 @@ class Tribal_TANF_T4Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
         STTFilter,
         'RPT_MONTH_YEAR',
     ]
-class Tribal_TANF_T5Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T5Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T5 data files."""
 
     actions = ["export_as_csv"]
@@ -114,7 +114,7 @@ class Tribal_TANF_T5Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
         'RPT_MONTH_YEAR',
     ]
 
-class Tribal_TANF_T6Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T6Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal T6 data files."""
 
     actions = ["export_as_csv"]
@@ -136,7 +136,7 @@ class Tribal_TANF_T6Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
         'RPT_MONTH_YEAR'
     ]
 
-class Tribal_TANF_T7Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T7Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal T7 data files."""
 
     actions = ["export_as_csv"]

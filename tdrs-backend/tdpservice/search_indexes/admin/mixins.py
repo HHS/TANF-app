@@ -78,12 +78,22 @@ class AdminModelMixin(admin.ModelAdmin):
 
     pass
 
-class DisableDeleteActionMixin(AdminModelMixin):
-    """Mixin class to disable model deletion."""
 
-    def get_actions(self, request):
-        """Toggle the delete action."""
-        actions = super().get_actions(request)
-        if 'delete_selected' in actions:
-            del actions['delete_selected']
-        return actions
+class ReadOnlyAdmin(AdminModelMixin):
+    """Force ModelAdmin to be READ only."""
+    readonly_fields = []
+
+    def get_readonly_fields(self, request, obj=None):
+        """Force all fields to read only."""
+        return list(self.readonly_fields) + \
+               [field.name for field in obj._meta.fields] + \
+               [field.name for field in obj._meta.many_to_many]
+
+
+    def has_add_permission(self, request):
+        """Deny add permisison."""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Deny delete permission."""
+        return False
