@@ -170,3 +170,34 @@ def test_data_analyst_permissions(data_analyst):
     }
     group_permissions = data_analyst.get_group_permissions()
     assert group_permissions == expected_permissions
+
+@pytest.mark.django_db
+def test_digit_team_permissions(digit_team):
+    """Test that a DIGIT Team user inherits the correct permissions."""
+    expected_permissions = {'parsers.view_parsererror',
+                            'parsers.view_datafilesummary',
+                            'data_files.view_datafile',
+                            'search_indexes.view_ssp_m3',
+                            'search_indexes.view_tribal_tanf_t5',
+                            'search_indexes.view_tribal_tanf_t3',
+                            'search_indexes.view_ssp_m4',
+                            'search_indexes.view_tanf_t5',
+                            'search_indexes.view_tanf_t3',
+                            'search_indexes.view_tanf_t1',
+                            'search_indexes.view_tribal_tanf_t7',
+                            'search_indexes.view_tribal_tanf_t6',
+                            'search_indexes.view_ssp_m7',
+                            'search_indexes.view_tanf_t7',
+                            'search_indexes.view_ssp_m2',
+                            'search_indexes.view_tribal_tanf_t1',
+                            'search_indexes.view_tribal_tanf_t4',
+                            'search_indexes.view_ssp_m1',
+                            'search_indexes.view_ssp_m5',
+                            'search_indexes.view_tanf_t2',
+                            'search_indexes.view_tanf_t4',
+                            'search_indexes.view_ssp_m6',
+                            'search_indexes.view_tribal_tanf_t2',
+                            'search_indexes.view_tanf_t6'
+                            }
+    group_permissions = digit_team.get_group_permissions()
+    assert group_permissions == expected_permissions
