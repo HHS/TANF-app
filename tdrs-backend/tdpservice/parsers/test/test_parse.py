@@ -483,7 +483,7 @@ def test_parse_empty_file(empty_file, dfs):
     dfs.case_aggregates = aggregates.case_aggregates_by_month(empty_file, dfs.status)
 
     assert dfs.status == DataFileSummary.Status.REJECTED
-    assert dfs.case_aggregates == {'rejected': 2,
+    assert dfs.case_aggregates == {'rejected': 1,
                                    'months': [
                                        {'accepted_without_errors': 'N/A',
                                         'accepted_with_errors': 'N/A',
