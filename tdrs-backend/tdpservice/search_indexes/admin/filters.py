@@ -127,17 +127,6 @@ class FiscalPeriodFilter(SimpleListFilter):
 
         return options
 
-    def choices(self, cl):
-        """Update query string based on selection."""
-        for lookup, title in self.lookup_choices:
-            yield {
-                'selected': self.value() == lookup,
-                'query_string': cl.get_query_string({
-                    self.parameter_name: lookup,
-                }, []),
-                'display': title,
-            }
-
     def queryset(self, request, queryset):
         """Filter queryset to show records matching selected fiscal year."""
         if self.value() is not None and queryset.exists():
