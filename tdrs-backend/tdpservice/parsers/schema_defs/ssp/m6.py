@@ -48,7 +48,7 @@ s1 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(2019),
+                validators.dateYearIsLargerThan(2020),
                 validators.quarterIsValid()
             ]
         ),
@@ -211,7 +211,7 @@ s2 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(2019),
+                validators.dateYearIsLargerThan(2020),
                 validators.quarterIsValid()
             ]
         ),
@@ -374,7 +374,7 @@ s3 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(2019),
+                validators.dateYearIsLargerThan(2020),
                 validators.quarterIsValid()
             ]
         ),

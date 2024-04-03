@@ -182,7 +182,6 @@ def field_year_month_with_header_year_quarter():
         # get reporting month year from header
         field_year, field_quarter = year_month_to_year_quarter(f"{field_month_year}")
         file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
-
         return (True, None) if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter else (
             False, f"Reporting month year {field_month_year} " +
             f"does not match file reporting year:{df_year}, quarter:{df_quarter}.",

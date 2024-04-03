@@ -5,9 +5,7 @@ from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T7DataSubmissionDocument
-import datetime
 
-minYear = datetime.date.today().year - 5
 schemas = []
 
 validator_index = 7
@@ -50,7 +48,7 @@ for i in range(1, 31):
                     endIndex=7,
                     required=True,
                     validators=[
-                        validators.dateYearIsLargerThan(minYear),
+                        validators.dateYearIsLargerThan(2020),
                         validators.quarterIsValid(),
                     ],
                 ),

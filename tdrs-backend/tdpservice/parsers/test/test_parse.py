@@ -1020,7 +1020,7 @@ def tanf_section3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section3_file(tanf_section3_file, dfs):
     """Test parsing TANF Section 3 submission."""
-    tanf_section3_file.year = 2021
+    tanf_section3_file.year = 2022
     tanf_section3_file.quarter = 'Q1'
 
     dfs.datafile = tanf_section3_file
@@ -1049,9 +1049,9 @@ def test_parse_tanf_section3_file(tanf_section3_file, dfs):
     second = t6_objs[1]
     third = t6_objs[2]
 
-    assert first.RPT_MONTH_YEAR == 202012
-    assert second.RPT_MONTH_YEAR == 202011
-    assert third.RPT_MONTH_YEAR == 202010
+    assert first.RPT_MONTH_YEAR == 202112
+    assert second.RPT_MONTH_YEAR == 202111
+    assert third.RPT_MONTH_YEAR == 202110
 
     assert first.NUM_APPROVED == 3924
     assert second.NUM_APPROVED == 3977
@@ -1102,7 +1102,7 @@ def tanf_section4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section4_file(tanf_section4_file, dfs):
     """Test parsing TANF Section 4 submission."""
-    tanf_section4_file.year = 2021
+    tanf_section4_file.year = 2022
     tanf_section4_file.quarter = 'Q1'
 
     dfs.datafile = tanf_section4_file
@@ -1130,8 +1130,8 @@ def test_parse_tanf_section4_file(tanf_section4_file, dfs):
     first = t7_objs.first()
     sixth = t7_objs[5]
 
-    assert first.RPT_MONTH_YEAR == 202011
-    assert sixth.RPT_MONTH_YEAR == 202012
+    assert first.RPT_MONTH_YEAR == 202111
+    assert sixth.RPT_MONTH_YEAR == 202112
 
     assert first.TDRS_SECTION_IND == '2'
     assert sixth.TDRS_SECTION_IND == '2'
@@ -1189,7 +1189,7 @@ def ssp_section4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     """Test parsing SSP Section 4 submission."""
-    ssp_section4_file.year = 2021
+    ssp_section4_file.year = 2022
     ssp_section4_file.quarter = 'Q1'
 
     dfs.datafile = ssp_section4_file
@@ -1210,7 +1210,7 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     assert m7_objs.count() == 12
 
     first = m7_objs.first()
-    assert first.RPT_MONTH_YEAR == 202010
+    assert first.RPT_MONTH_YEAR == 202110
     assert first.FAMILIES_MONTH == 748
 
 @pytest.fixture
@@ -1277,7 +1277,7 @@ def ssp_section3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     """Test parsing TANF Section 3 submission."""
-    ssp_section3_file.year = 2021
+    ssp_section3_file.year = 2022
     ssp_section3_file.quarter = 'Q1'
 
     dfs.datafile = ssp_section3_file
@@ -1305,9 +1305,9 @@ def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     second = m6_objs[1]
     third = m6_objs[2]
 
-    assert first.RPT_MONTH_YEAR == 202010
-    assert second.RPT_MONTH_YEAR == 202011
-    assert third.RPT_MONTH_YEAR == 202012
+    assert first.RPT_MONTH_YEAR == 202110
+    assert second.RPT_MONTH_YEAR == 202111
+    assert third.RPT_MONTH_YEAR == 202112
 
     assert first.SSPMOE_FAMILIES == 15869
     assert second.SSPMOE_FAMILIES == 16008
@@ -1460,7 +1460,7 @@ def tribal_section_3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_3_file(tribal_section_3_file, dfs):
     """Test parsing Tribal TANF Section 3 submission."""
-    tribal_section_3_file.year = 2021
+    tribal_section_3_file.year = 2022
     tribal_section_3_file.quarter = 'Q1'
 
     dfs.datafile = tribal_section_3_file
@@ -1496,7 +1496,7 @@ def tribal_section_4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     """Test parsing Tribal TANF Section 4 submission."""
-    tribal_section_4_file.year = 2021
+    tribal_section_4_file.year = 2022
     tribal_section_4_file.quarter = 'Q1'
 
     dfs.datafile = tribal_section_4_file
@@ -1519,8 +1519,8 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     first = t7_objs.first()
     sixth = t7_objs[5]
 
-    assert first.RPT_MONTH_YEAR == 202011
-    assert sixth.RPT_MONTH_YEAR == 202012
+    assert first.RPT_MONTH_YEAR == 202111
+    assert sixth.RPT_MONTH_YEAR == 202112
 
     assert first.TDRS_SECTION_IND == '2'
     assert sixth.TDRS_SECTION_IND == '2'
@@ -1593,6 +1593,8 @@ def tanf_section_4_file_with_errors(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, dfs):
     """Test parsing TANF Section 4 submission."""
+    tanf_section_4_file_with_errors.year = 2022
+    tanf_section_4_file_with_errors.quarter = 'Q1'
     dfs.datafile = tanf_section_4_file_with_errors
 
     parse.parse_datafile(tanf_section_4_file_with_errors, dfs)
@@ -1611,6 +1613,7 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
     assert TANF_T7.objects.all().count() == 18
 
     parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
+
     assert parser_errors.count() == 6
 
     t7_objs = TANF_T7.objects.all().order_by('FAMILIES_MONTH')
@@ -1618,8 +1621,8 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
     first = t7_objs.first()
     sixth = t7_objs[5]
 
-    assert first.RPT_MONTH_YEAR == 202011
-    assert sixth.RPT_MONTH_YEAR == 202010
+    assert first.RPT_MONTH_YEAR == 202111
+    assert sixth.RPT_MONTH_YEAR == 202110
 
     assert first.TDRS_SECTION_IND == '1'
     assert sixth.TDRS_SECTION_IND == '1'

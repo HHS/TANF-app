@@ -5,9 +5,6 @@ from ...row_schema import RowSchema, SchemaManager
 from ...transforms import calendar_quarter_to_rpt_month_year
 from ... import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M7DataSubmissionDocument
-import datetime
-
-minYear = datetime.date.today().year - 5
 
 schemas = []
 
@@ -51,7 +48,7 @@ for i in range(1, 31):
                     endIndex=7,
                     required=True,
                     validators=[
-                        validators.dateYearIsLargerThan(minYear),
+                        validators.dateYearIsLargerThan(2020),
                         validators.quarterIsValid(),
                     ],
                 ),
