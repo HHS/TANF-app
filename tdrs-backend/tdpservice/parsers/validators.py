@@ -178,7 +178,7 @@ def field_year_month_with_header_year_quarter():
         field_month_year = row_schema_instance.get_field_values_by_names(line, ['RPT_MONTH_YEAR']).get('RPT_MONTH_YEAR')
         df_quarter = row_schema_instance.datafile.quarter
         df_year = row_schema_instance.datafile.year
-        
+
         # get reporting month year from header
         field_year, field_quarter = year_month_to_year_quarter(f"{field_month_year}")
         file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
