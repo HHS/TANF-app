@@ -7,6 +7,7 @@ class SSP_M1Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M1 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -33,6 +34,7 @@ class SSP_M2Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M2 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -54,6 +56,7 @@ class SSP_M3Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M3 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -74,6 +77,7 @@ class SSP_M4Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M3 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -94,6 +98,7 @@ class SSP_M5Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M3 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -114,6 +119,7 @@ class SSP_M6Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M6 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -135,6 +141,7 @@ class SSP_M7Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M7 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',

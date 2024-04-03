@@ -7,6 +7,7 @@ class Tribal_TANF_T1Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
     """ModelAdmin class for parsed Tribal_T1 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -33,6 +34,7 @@ class Tribal_TANF_T2Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
     """ModelAdmin class for parsed Tribal_T2 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -54,6 +56,7 @@ class Tribal_TANF_T3Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
     """ModelAdmin class for parsed Tribal_T3 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -74,6 +77,7 @@ class Tribal_TANF_T4Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
     """ModelAdmin class for parsed Tribal_T4 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -93,6 +97,7 @@ class Tribal_TANF_T5Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
     """ModelAdmin class for parsed Tribal_T5 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -113,6 +118,7 @@ class Tribal_TANF_T6Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
     """ModelAdmin class for parsed Tribal T6 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -134,6 +140,7 @@ class Tribal_TANF_T7Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
     """ModelAdmin class for parsed Tribal T7 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',

@@ -72,22 +72,14 @@ class CreationDateFilter(SimpleListFilter):
             ('all', _('All')),
         )
 
-    def choices(self, cl):
-        """Update query string based on selection."""
-        for lookup, title in self.lookup_choices:
-            yield {
-                'selected': self.value() == lookup,
-                'query_string': cl.get_query_string({
-                    self.parameter_name: lookup,
-                }, []),
-                'display': title,
-            }
-
     def queryset(self, request, queryset):
         """Sort queryset to show latest records."""
         if self.value() is None and queryset.exists():
-            datafile = queryset.order_by("-datafile__id").first().datafile
-            return queryset.filter(datafile=datafile)
+            datafiles = []
+            for record in queryset.order_by("datafile__stt__stt_code", "-datafile__id")\
+                .distinct("datafile__stt__stt_code"):
+                datafiles.append(record.datafile)
+            return queryset.filter(datafile__in=datafiles)
         return queryset
 
 

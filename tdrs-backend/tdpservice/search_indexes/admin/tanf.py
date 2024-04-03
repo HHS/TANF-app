@@ -7,6 +7,7 @@ class TANF_T1Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T1 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -33,6 +34,7 @@ class TANF_T2Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T2 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -54,6 +56,7 @@ class TANF_T3Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T3 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -75,6 +78,7 @@ class TANF_T4Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T4 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -96,6 +100,7 @@ class TANF_T5Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T5 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -117,6 +122,7 @@ class TANF_T6Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T6 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -139,6 +145,7 @@ class TANF_T7Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed T7 data files."""
 
     actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
