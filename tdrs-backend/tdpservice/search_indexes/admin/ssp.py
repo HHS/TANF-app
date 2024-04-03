@@ -1,10 +1,10 @@
 """ModelAdmin classes for parsed SSP data files."""
 from django.contrib import admin
 from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
-from .mixins import ExportCsvMixin, SttCodeMixin
+from .mixins import AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
 
 
-class SSP_M1Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class SSP_M1Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M1 data files."""
 
     actions = ["export_as_csv"]
@@ -21,16 +21,16 @@ class SSP_M1Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
         'ZIP_CODE',
         'STRATUM',
     ]
 
 
-class SSP_M2Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class SSP_M2Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M2 data files."""
 
     actions = ["export_as_csv"]
@@ -44,14 +44,14 @@ class SSP_M2Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]
 
 
-class SSP_M3Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class SSP_M3Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M3 data files."""
 
     actions = ["export_as_csv"]
@@ -65,13 +65,13 @@ class SSP_M3Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]
 
-class SSP_M4Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class SSP_M4Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M3 data files."""
 
     actions = ["export_as_csv"]
@@ -85,13 +85,13 @@ class SSP_M4Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]
 
-class SSP_M5Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class SSP_M5Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M3 data files."""
 
     actions = ["export_as_csv"]
@@ -105,13 +105,13 @@ class SSP_M5Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]
 
-class SSP_M6Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class SSP_M6Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M6 data files."""
 
     actions = ["export_as_csv"]
@@ -126,13 +126,13 @@ class SSP_M6Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
 
     list_filter = [
         'CALENDAR_QUARTER',
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR'
     ]
 
-class SSP_M7Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class SSP_M7Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed M7 data files."""
 
     actions = ["export_as_csv"]
@@ -150,8 +150,8 @@ class SSP_M7Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
 
     list_filter = [
         'CALENDAR_QUARTER',
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]

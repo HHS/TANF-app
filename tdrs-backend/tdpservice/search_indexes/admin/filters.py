@@ -4,6 +4,58 @@ from django.contrib.admin import SimpleListFilter
 from tdpservice.stts.models import STT
 import datetime
 
+
+class MultipleChoiceListFilter(SimpleListFilter):
+    template = 'multiselectlistfilter.html'
+
+    def lookups(self, request, model_admin):
+        """
+        Must be overridden to return a list of tuples (value, verbose value)
+        """
+        raise NotImplementedError(
+            'The MultipleChoiceListFilter.lookups() method must be overridden to '
+            'return a list of tuples (value, verbose value).'
+        )
+
+    def queryset(self, request, queryset):
+        if request.GET.get(self.parameter_name):
+            kwargs = {self.parameter_name: request.GET[self.parameter_name].split(',')}
+            queryset = queryset.filter(**kwargs)
+        return queryset
+
+    def value_as_list(self):
+        return self.value().split(',') if self.value() else []
+
+    def choices(self, changelist):
+
+        def amend_query_string(include=None, exclude=None):
+            selections = self.value_as_list()
+            if include and include not in selections:
+                selections.append(include)
+            if exclude and exclude in selections:
+                selections.remove(exclude)
+            if selections:
+                csv = ','.join(selections)
+                return changelist.get_query_string({self.parameter_name: csv})
+            else:
+                return changelist.get_query_string(remove=[self.parameter_name])
+
+        yield {
+            'selected': self.value() is None,
+            'query_string': changelist.get_query_string(remove=[self.parameter_name]),
+            'display': 'All',
+            'reset': True,
+        }
+        for lookup, title in self.lookup_choices:
+            yield {
+                'selected': str(lookup) in self.value_as_list(),
+                'query_string': changelist.get_query_string({self.parameter_name: lookup}),
+                'include_query_string': amend_query_string(include=str(lookup)),
+                'exclude_query_string': amend_query_string(exclude=str(lookup)),
+                'display': title,
+            }
+
+
 class CreationDateFilter(SimpleListFilter):
     """Simple filter class to show newest created datafile records."""
 
@@ -37,7 +89,7 @@ class CreationDateFilter(SimpleListFilter):
         return queryset
 
 
-class STTFilter(SimpleListFilter):
+class STTFilter(MultipleChoiceListFilter):
     """Simple filter class to show records based on stt."""
 
     title = _('STT Code')
@@ -46,29 +98,20 @@ class STTFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         """Available options in dropdown."""
-        options = [(None, _('All'))]
+        options = []
         for obj in STT.objects.all():
             options.append((obj.stt_code, _(obj.name)))
         return options
 
-    def choices(self, cl):
-        """Update query string based on selection."""
-        for lookup, title in self.lookup_choices:
-            yield {
-                'selected': self.value() == lookup,
-                'query_string': cl.get_query_string({
-                    self.parameter_name: lookup,
-                }, []),
-                'display': title,
-            }
-
     def queryset(self, request, queryset):
         """Return queryset of records based on stt code."""
-        val = self.value()
-        if val is not None and queryset.exists():
-            if len(val) == 1:
-                val = f"0{val}"
-            queryset = queryset.filter(datafile__stt__stt_code=val)
+
+        if self.value() is not None and queryset.exists():
+            stts = self.value().split(',')
+            print(stts)
+            print(queryset.count())
+            queryset = queryset.filter(datafile__stt__stt_code__in=stts)
+            print(queryset.count())
         return queryset
 
 class FiscalPeriodFilter(SimpleListFilter):

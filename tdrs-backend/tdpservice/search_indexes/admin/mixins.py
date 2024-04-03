@@ -1,5 +1,5 @@
 """Mixin classes supproting custom functionality."""
-
+from django.contrib import admin
 from django.http import StreamingHttpResponse
 import csv
 
@@ -71,3 +71,18 @@ class SttCodeMixin:
     def stt_code(self, obj):
         """Return stt code."""
         return obj.datafile.stt.stt_code
+
+
+class AdminModelActionMixinBase(admin.ModelAdmin):
+    pass
+
+class AdminModelDisableDeleteActionMixin(AdminModelActionMixinBase):
+    """Mixin class to conditionally disable model deletion."""
+
+    def get_actions(self, request):
+        """Toggle the delete action."""
+        print("\n\nINSIDE GET ACTIONS\n\n")
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions

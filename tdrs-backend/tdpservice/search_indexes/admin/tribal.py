@@ -1,10 +1,10 @@
 """ModelAdmin classes for parsed TRIBAL data files."""
 from django.contrib import admin
 from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
-from .mixins import ExportCsvMixin, SttCodeMixin
+from .mixins import AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
 
 
-class Tribal_TANF_T1Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T1Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T1 data files."""
 
     actions = ["export_as_csv"]
@@ -21,16 +21,16 @@ class Tribal_TANF_T1Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
         'ZIP_CODE',
         'STRATUM',
     ]
 
 
-class Tribal_TANF_T2Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T2Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T2 data files."""
 
     actions = ["export_as_csv"]
@@ -44,14 +44,14 @@ class Tribal_TANF_T2Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]
 
 
-class Tribal_TANF_T3Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T3Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T3 data files."""
 
     actions = ["export_as_csv"]
@@ -65,13 +65,13 @@ class Tribal_TANF_T3Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]
 
-class Tribal_TANF_T4Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T4Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T4 data files."""
 
     actions = ["export_as_csv"]
@@ -85,12 +85,12 @@ class Tribal_TANF_T4Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]
-class Tribal_TANF_T5Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T5Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal_T5 data files."""
 
     actions = ["export_as_csv"]
@@ -104,13 +104,13 @@ class Tribal_TANF_T5Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
     list_filter = [
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]
 
-class Tribal_TANF_T6Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T6Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal T6 data files."""
 
     actions = ["export_as_csv"]
@@ -125,13 +125,13 @@ class Tribal_TANF_T6Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
 
     list_filter = [
         'CALENDAR_QUARTER',
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR'
     ]
 
-class Tribal_TANF_T7Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T7Admin(AdminModelDisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):
     """ModelAdmin class for parsed Tribal T7 data files."""
 
     actions = ["export_as_csv"]
@@ -149,8 +149,8 @@ class Tribal_TANF_T7Admin(admin.ModelAdmin, ExportCsvMixin, SttCodeMixin):
 
     list_filter = [
         'CALENDAR_QUARTER',
-        STTFilter,
         FiscalPeriodFilter,
         CreationDateFilter,
+        STTFilter,
         'RPT_MONTH_YEAR',
     ]
