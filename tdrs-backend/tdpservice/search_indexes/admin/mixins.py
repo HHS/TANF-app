@@ -73,15 +73,15 @@ class SttCodeMixin:
         return obj.datafile.stt.stt_code
 
 
-class AdminModelActionMixinBase(admin.ModelAdmin):
+class AdminModelMixin(admin.ModelAdmin):
+    """Base class for all mixin classes needing to modify ModelAdmin methods."""
     pass
 
-class AdminModelDisableDeleteActionMixin(AdminModelActionMixinBase):
-    """Mixin class to conditionally disable model deletion."""
+class DisableDeleteActionMixin(AdminModelMixin):
+    """Mixin class to disable model deletion."""
 
     def get_actions(self, request):
         """Toggle the delete action."""
-        print("\n\nINSIDE GET ACTIONS\n\n")
         actions = super().get_actions(request)
         if 'delete_selected' in actions:
             del actions['delete_selected']
