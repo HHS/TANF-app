@@ -1,5 +1,4 @@
 """ModelAdmin classes for parsed TRIBAL data files."""
-from django.contrib import admin
 from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
 from .mixins import DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
 
