@@ -77,7 +77,7 @@ class CreationDateFilter(SimpleListFilter):
         if self.value() is None and queryset.exists():
             datafiles = []
             for record in queryset.order_by("datafile__stt__stt_code", "-datafile__id")\
-                .distinct("datafile__stt__stt_code"):
+                    .distinct("datafile__stt__stt_code"):
                 datafiles.append(record.datafile)
             return queryset.filter(datafile__in=datafiles)
         return queryset
