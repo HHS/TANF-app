@@ -6,28 +6,30 @@ import datetime
 
 
 class MultipleChoiceListFilter(SimpleListFilter):
+    """Filter class allowing multiple filter options."""
+
     template = 'multiselectlistfilter.html'
 
     def lookups(self, request, model_admin):
-        """
-        Must be overridden to return a list of tuples (value, verbose value)
-        """
+        """Must be overridden to return a list of tuples (value, verbose value)."""
         raise NotImplementedError(
             'The MultipleChoiceListFilter.lookups() method must be overridden to '
             'return a list of tuples (value, verbose value).'
         )
 
     def queryset(self, request, queryset):
+        """Return queryset based on selected parameters."""
         if request.GET.get(self.parameter_name):
             kwargs = {self.parameter_name: request.GET[self.parameter_name].split(',')}
             queryset = queryset.filter(**kwargs)
         return queryset
 
     def value_as_list(self):
+        """Convert multiple filter fields to list."""
         return self.value().split(',') if self.value() else []
 
     def choices(self, changelist):
-
+        """Overriden choices method."""
         def amend_query_string(include=None, exclude=None):
             selections = self.value_as_list()
             if include and include not in selections:
@@ -104,14 +106,10 @@ class STTFilter(MultipleChoiceListFilter):
         return options
 
     def queryset(self, request, queryset):
-        """Return queryset of records based on stt code."""
-
+        """Return queryset of records based on stt code(s)."""
         if self.value() is not None and queryset.exists():
             stts = self.value().split(',')
-            print(stts)
-            print(queryset.count())
             queryset = queryset.filter(datafile__stt__stt_code__in=stts)
-            print(queryset.count())
         return queryset
 
 class FiscalPeriodFilter(SimpleListFilter):

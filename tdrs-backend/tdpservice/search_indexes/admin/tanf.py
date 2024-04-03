@@ -1,6 +1,6 @@
 """ModelAdmin classes for parsed TANF data files."""
 from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
-from .mixins import DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin, AdminModelMixin
+from .mixins import DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin
 
 
 class TANF_T1Admin(DisableDeleteActionMixin, ExportCsvMixin, SttCodeMixin):

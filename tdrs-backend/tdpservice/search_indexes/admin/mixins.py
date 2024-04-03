@@ -75,6 +75,7 @@ class SttCodeMixin:
 
 class AdminModelMixin(admin.ModelAdmin):
     """Base class for all mixin classes needing to modify ModelAdmin methods."""
+
     pass
 
 class DisableDeleteActionMixin(AdminModelMixin):
