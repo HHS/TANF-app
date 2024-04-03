@@ -1,6 +1,6 @@
 # Error Categories Guide
 
-TDP checks submitted data files (and data therein) for errors by _first_ checking if the data file being uploaded is the correct [file type](https://tdp-project-updates.app.cloud.gov/knowledge-center/file-extension-guide) [(see PR for technical detail)](https://github.com/raft-tech/TANF-app/pull/2725), _then_ proceeding with a sequence of checks designed to determine if the data in the file can be parsed, and if so, find any issues with the data values reported. 
+TDP checks submitted data files (and data therein) for errors by _first_ checking if the data file being uploaded is the correct [file type](https://tdp-project-updates.app.cloud.gov/knowledge-center/file-extension-guide) (see [PR for technical detail)](https://github.com/raft-tech/TANF-app/pull/2725), _then_ proceeding with a sequence of checks designed to determine if the data in the file can be parsed, and if so, find any issues with the data values reported. 
 
 This guide provides a high-level overview of these types of errors. For more specific details, see [TDP's parsing directory](https://github.com/raft-tech/TANF-app/tree/develop/tdrs-backend/tdpservice/parsers) for current pre- and post-parsing validation logic.
 
