@@ -14,6 +14,7 @@ s1 = RowSchema(
     document=TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
         validators.hasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -229,8 +230,10 @@ s1 = RowSchema(
 
 s2 = RowSchema(
     document=TANF_T6DataSubmissionDocument(),
+    quiet_preparser_errors=True,
     preparsing_validators=[
         validators.hasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -440,8 +443,10 @@ s2 = RowSchema(
 
 s3 = RowSchema(
     document=TANF_T6DataSubmissionDocument(),
+    quiet_preparser_errors=True,
     preparsing_validators=[
         validators.hasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
