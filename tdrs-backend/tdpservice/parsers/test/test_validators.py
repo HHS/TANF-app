@@ -329,6 +329,32 @@ def test_hasLength_returns_invalid():
     assert error == 'Value length 7 does not match 22.'
 
 
+def test_hasLengthBetween_returns_valid():
+    """Test `hasLengthBetween` gives a valid result."""
+    value = 'abcd123'
+    lower = 0
+    upper = 15
+
+    validator = validators.hasLengthBetween(lower, upper)
+    is_valid, error = validator(value)
+
+    assert is_valid is True
+    assert error is None
+
+
+def test_hasLengthBetween_returns_invalid():
+    """Test `hasLengthBetween` gives an invalid result."""
+    value = 'abcd123'
+    lower = 0
+    upper = 1
+
+    validator = validators.hasLengthBetween(lower, upper)
+    is_valid, error = validator(value)
+
+    assert is_valid is False
+    assert error == f"Value length {len(value)} is not on the range [{lower}, {upper}]."
+
+
 def test_intHasLength_returns_valid():
     """Test `intHasLength` gives a valid result."""
     value = '123'

@@ -10,7 +10,7 @@ t1 = SchemaManager(
         RowSchema(
             document=Tribal_TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
-                validators.hasLength(122),
+                validators.hasLengthBetween(117, 122),
                 validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
                     validators.validateRptMonthYear(),

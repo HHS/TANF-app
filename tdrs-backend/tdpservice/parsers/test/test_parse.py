@@ -366,7 +366,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
     length_error = row_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.error_message == "Value length 7 is not on the range [117, 156]."
     assert length_error.content_type is None
     assert length_error.object_id is None
     assert errors == {
@@ -392,7 +392,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     errors = parse.parse_datafile(bad_trailer_file_2, dfs)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
-    assert parser_errors.count() == 7
+    assert parser_errors.count() == 6
 
     trailer_errors = list(parser_errors.filter(row_number=3).order_by('id'))
 
@@ -409,10 +409,8 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     assert trailer_error_2.object_id is None
 
     row_2_error = parser_errors.get(row_number=2)
-    assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_2_error.error_message == 'Value length 117 does not match 156.'
-    assert row_2_error.content_type is None
-    assert row_2_error.object_id is None
+    assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_2_error.error_message == '3 is not larger or equal to 1 and smaller or equal to 2.'
 
     # catch-rpt-month-year-mismatches
     row_3_errors = parser_errors.filter(row_number=3)
@@ -421,7 +419,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
         row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert row_3_error.error_message in [
-            'Value length 7 does not match 156.',
+            'Value length 7 is not on the range [117, 156].',
             'Reporting month year None does not match file reporting year:2021, quarter:Q1.',
             'T1trash does not start with TRAILER.',
             'Trailer length is 7 but must be 23 characters.',
@@ -443,7 +441,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     row_3_errors = [trailer_errors[2], trailer_errors[3]]
     length_error = row_3_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.error_message == 'Value length 7 is not on the range [117, 156].'
     assert length_error.content_type is None
     assert length_error.object_id is None
 

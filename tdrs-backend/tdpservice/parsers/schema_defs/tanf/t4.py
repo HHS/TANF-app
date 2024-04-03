@@ -12,7 +12,7 @@ t4 = SchemaManager(
         RowSchema(
             document=TANF_T4DataSubmissionDocument(),
             preparsing_validators=[
-                validators.hasLength(71),
+                validators.hasLengthBetween(36, 71),
                 validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
                     validators.validateRptMonthYear(),

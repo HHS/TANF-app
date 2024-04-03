@@ -260,6 +260,14 @@ def hasLength(length, error_func=None):
         else f"Value length {len(value)} does not match {length}.",
     )
 
+def hasLengthBetween(lower, upper, error_func=None):
+    """Validate that value (string or array) has a length matching length param."""
+    return make_validator(
+        lambda value: len(value) >= lower and len(value) <= upper,
+        lambda value: error_func(value, lower, upper)
+        if error_func
+        else f"Value length {len(value)} is not on the range [{lower}, {upper}].",
+    )
 
 def intHasLength(num_digits):
     """Validate the number of digits in an integer."""
