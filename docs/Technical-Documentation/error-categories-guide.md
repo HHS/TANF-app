@@ -8,7 +8,13 @@ This guide provides a high-level overview of these types of errors. For more spe
 
 Parity with the legacy system includes categories 1-4
 
-1. **Pre-parsing errors** — These types of errors are considered to be violations of the expected record layout, so the records are not "eligible" to be parsed or validated. See [TDP's parsing directory](https://github.com/raft-tech/TANF-app/tree/develop/tdrs-backend/tdpservice/parsers) for current and complete pre-parsing logic.
+1. **Pre-parsing errors** — These types of errors are considered to be violations of the expected record layout, so the records are not "eligible" to be parsed or validated. 
+
+- [Header and Trailer record layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf)
+- [TANF and SSP record layouts](https://www.acf.hhs.gov/sites/default/files/documents/ofa/ACF-199-%26amp%3B-209-TANF-SSP-data-report-layouts-thru-2026-10.xlsx)
+- [Tribal TANF Section 1 record layout](https://www.acf.hhs.gov/sites/default/files/documents/ofa/tribal_layout_for_section1.pdf)
+  - Note: Tribal TANF Sections 2 through 4 are the same as TANF Sections 2 - 4 (referenced above). 
+
 
    Ex:
 
