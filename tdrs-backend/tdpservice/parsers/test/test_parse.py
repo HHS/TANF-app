@@ -1673,13 +1673,13 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
 
     assert parser_errors.count() == 2
 
-    error1 = parser_errors[0]
-    error2 = parser_errors[1]
+    msg = "Reporting month year None does not match file reporting year:2020, quarter:Q1."
+    for error in parser_errors:
+        assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
-    assert error1.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert error1.field_name is None
-    assert error1.error_message == "No records created."
-
-    assert error2.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert error2.field_name == "Record_Type"
-    assert error2.error_message == "Reporting month year None does not match file reporting year:2020, quarter:Q1."
+        if (error.field_name is None):
+            assert error.error_message == "No records created."
+        elif (error.field_name == "Record_Type"):
+            assert error.error_message == msg
+        else:
+            assert False, f"Unexpected field name {error.field_name}"
