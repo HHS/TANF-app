@@ -1,4 +1,4 @@
-"""Test the CaseConsistencyValidator."""
+"""Test the CaseConsistencyValidator and SortedRecordSchemaPairs classes."""
 
 import pytest
 import logging
