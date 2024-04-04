@@ -144,6 +144,16 @@ def data_analyst(stt):
 
 
 @pytest.fixture
+def digit_team(stt):
+    """Return a DIGIT Team user."""
+    user = UserFactory.create(groups=(Group.objects.get(name="DIGIT Team"),),)
+    user.stt = stt
+    user.account_approval_status = AccountApprovalStatusChoices.APPROVED
+    user.save()
+    return user
+
+
+@pytest.fixture
 def admin_user():
     """Return an admin user."""
     return AdminUserFactory.create()
