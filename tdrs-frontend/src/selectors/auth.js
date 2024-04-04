@@ -56,12 +56,18 @@ export const accountIsMissingAccessRequest = (state) =>
 
 export const accountCanViewAdmin = (state) =>
   accountStatusIsApproved(state) &&
-  ['Developer', 'OFA System Admin', 'ACF OCIO', 'OFA Admin'].includes(
-    selectPrimaryUserRole(state)?.name
-  )
+  [
+    'Developer',
+    'OFA System Admin',
+    'ACF OCIO',
+    'OFA Admin',
+    'DIGIT Team',
+  ].includes(selectPrimaryUserRole(state)?.name)
 
 export const accountCanViewKibana = (state) =>
   accountStatusIsApproved(state) &&
   (selectUser(state)?.email?.includes('@acf.hhs.gov') ||
     process.env.REACT_APP_DEV_KIBANA) &&
-  ['OFA System Admin'].includes(selectPrimaryUserRole(state)?.name)
+  ['OFA System Admin', 'DIGIT Team'].includes(
+    selectPrimaryUserRole(state)?.name
+  )
