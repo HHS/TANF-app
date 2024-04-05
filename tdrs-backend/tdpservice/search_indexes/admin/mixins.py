@@ -80,6 +80,7 @@ class AdminModelMixin(admin.ModelAdmin):
 
 class CsvExportAdminMixin(AdminModelMixin, ExportCsvMixin, SttCodeMixin):
     """Class to encapsulate CSV related mixins."""
+
     actions = ["export_as_csv"]
     ordering = ['datafile__stt__stt_code']
 

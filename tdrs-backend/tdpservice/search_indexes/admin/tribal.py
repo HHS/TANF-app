@@ -121,7 +121,6 @@ class Tribal_TANF_T6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
 class Tribal_TANF_T7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal T7 data files."""
 
-
     list_display = [
         'RecordType',
         'CALENDAR_QUARTER',
