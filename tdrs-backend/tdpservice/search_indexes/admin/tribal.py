@@ -1,13 +1,10 @@
 """ModelAdmin classes for parsed TRIBAL data files."""
 from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
-from .mixins import ExportCsvMixin, SttCodeMixin, ReadOnlyAdmin
+from .mixins import CsvExportAdminMixin, ReadOnlyAdminMixin
 
 
-class Tribal_TANF_T1Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T1 data files."""
-
-    actions = ["export_as_csv"]
-    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -30,12 +27,9 @@ class Tribal_TANF_T1Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
 
-class Tribal_TANF_T2Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T2 data files."""
 
-    actions = ["export_as_csv"]
-    ordering = ['datafile__stt__stt_code']
-
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
@@ -52,12 +46,9 @@ class Tribal_TANF_T2Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
     ]
 
 
-class Tribal_TANF_T3Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T3 data files."""
 
-    actions = ["export_as_csv"]
-    ordering = ['datafile__stt__stt_code']
-
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
@@ -73,12 +64,9 @@ class Tribal_TANF_T3Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
         'RPT_MONTH_YEAR',
     ]
 
-class Tribal_TANF_T4Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T4 data files."""
 
-    actions = ["export_as_csv"]
-    ordering = ['datafile__stt__stt_code']
-
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
@@ -93,12 +81,9 @@ class Tribal_TANF_T4Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
         STTFilter,
         'RPT_MONTH_YEAR',
     ]
-class Tribal_TANF_T5Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T5 data files."""
 
-    actions = ["export_as_csv"]
-    ordering = ['datafile__stt__stt_code']
-
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
@@ -114,11 +99,8 @@ class Tribal_TANF_T5Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
         'RPT_MONTH_YEAR',
     ]
 
-class Tribal_TANF_T6Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal T6 data files."""
-
-    actions = ["export_as_csv"]
-    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',
@@ -136,11 +118,9 @@ class Tribal_TANF_T6Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
         'RPT_MONTH_YEAR'
     ]
 
-class Tribal_TANF_T7Admin(ReadOnlyAdmin, ExportCsvMixin, SttCodeMixin):
+class Tribal_TANF_T7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal T7 data files."""
 
-    actions = ["export_as_csv"]
-    ordering = ['datafile__stt__stt_code']
 
     list_display = [
         'RecordType',

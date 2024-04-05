@@ -74,12 +74,17 @@ class SttCodeMixin:
 
 
 class AdminModelMixin(admin.ModelAdmin):
-    """Base class for all mixin classes needing to modify ModelAdmin methods."""
+    """Base class for all mixin classes needing to modify ModelAdmin methods. Needed to satisfy Python MRO."""
 
     pass
 
+class CsvExportAdminMixin(AdminModelMixin, ExportCsvMixin, SttCodeMixin):
+    """Class to encapsulate CSV related mixins."""
+    actions = ["export_as_csv"]
+    ordering = ['datafile__stt__stt_code']
 
-class ReadOnlyAdmin(AdminModelMixin):
+
+class ReadOnlyAdminMixin(AdminModelMixin):
     """Force ModelAdmin to be READ only."""
 
     readonly_fields = []
