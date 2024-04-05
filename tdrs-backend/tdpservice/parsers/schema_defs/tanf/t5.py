@@ -14,10 +14,6 @@ t5 = SchemaManager(
             document=TANF_T5DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(71),
-                validators.or_priority_validators([
-                    validators.field_year_month_with_header_year_quarter(),
-                    validators.validateRptMonthYear(),
-                ]),
                 validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
@@ -109,7 +105,7 @@ t5 = SchemaManager(
                 Field(
                     item="0",
                     name="RecordType",
-                    friendly_name="record type",
+                    friendly_name="Record Type",
                     type="string",
                     startIndex=0,
                     endIndex=2,
@@ -119,7 +115,7 @@ t5 = SchemaManager(
                 Field(
                     item="4",
                     name="RPT_MONTH_YEAR",
-                    friendly_name="reporting month and year",
+                    friendly_name="Reporting Year and Month",
                     type="number",
                     startIndex=2,
                     endIndex=8,
@@ -132,7 +128,7 @@ t5 = SchemaManager(
                 Field(
                     item="6",
                     name="CASE_NUMBER",
-                    friendly_name="case number",
+                    friendly_name="Case Number",
                     type="string",
                     startIndex=8,
                     endIndex=19,
@@ -142,7 +138,7 @@ t5 = SchemaManager(
                 Field(
                     item="14",
                     name="FAMILY_AFFILIATION",
-                    friendly_name="family affiliation",
+                    friendly_name="Family Affiliation",
                     type="number",
                     startIndex=19,
                     endIndex=20,
@@ -152,22 +148,21 @@ t5 = SchemaManager(
                 Field(
                     item="15",
                     name="DATE_OF_BIRTH",
-                    friendly_name="date of birth",
-                    type="string",
+                    friendly_name="Date of Birth",
+                    type="number",
                     startIndex=20,
                     endIndex=28,
                     required=True,
-                    validators=[validators.intHasLength(8),
-                                validators.dateYearIsLargerThan(1900),
-                                validators.dateMonthIsValid(),
-                                validators.dateDayIsValid()
-                                ]
+                    validators=[
+                        validators.dateYearIsLargerThan(1900),
+                        validators.dateMonthIsValid(),
+                    ],
                 ),
                 TransformField(
                     transform_func=tanf_ssn_decryption_func,
                     item="16",
                     name="SSN",
-                    friendly_name="social security number",
+                    friendly_name="Social Security Number",
                     type="string",
                     startIndex=28,
                     endIndex=37,
@@ -178,7 +173,7 @@ t5 = SchemaManager(
                 Field(
                     item="17A",
                     name="RACE_HISPANIC",
-                    friendly_name="race hispanic",
+                    friendly_name="Ethnicity/Race: Hisapic or Latino",
                     type="number",
                     startIndex=37,
                     endIndex=38,
@@ -188,7 +183,7 @@ t5 = SchemaManager(
                 Field(
                     item="17B",
                     name="RACE_AMER_INDIAN",
-                    friendly_name="race american-indian",
+                    friendly_name="Ethnicity/Race: American Indian or Alaska Native ",
                     type="number",
                     startIndex=38,
                     endIndex=39,
@@ -198,7 +193,7 @@ t5 = SchemaManager(
                 Field(
                     item="17C",
                     name="RACE_ASIAN",
-                    friendly_name="race asian",
+                    friendly_name="Ethnicity/Race: Asian",
                     type="number",
                     startIndex=39,
                     endIndex=40,
@@ -208,7 +203,7 @@ t5 = SchemaManager(
                 Field(
                     item="17D",
                     name="RACE_BLACK",
-                    friendly_name="race black",
+                    friendly_name="Ethnicity/Race: Black or African American",
                     type="number",
                     startIndex=40,
                     endIndex=41,
@@ -218,7 +213,7 @@ t5 = SchemaManager(
                 Field(
                     item="17E",
                     name="RACE_HAWAIIAN",
-                    friendly_name="race hawaiian",
+                    friendly_name="Ethnicity/Race: Native Hawaiian or Other Pacific Islander",
                     type="number",
                     startIndex=41,
                     endIndex=42,
@@ -228,7 +223,7 @@ t5 = SchemaManager(
                 Field(
                     item="17F",
                     name="RACE_WHITE",
-                    friendly_name="race white",
+                    friendly_name="Ethnicity/Race: White",
                     type="number",
                     startIndex=42,
                     endIndex=43,
@@ -238,7 +233,7 @@ t5 = SchemaManager(
                 Field(
                     item="18",
                     name="GENDER",
-                    friendly_name="gender",
+                    friendly_name="Gender",
                     type="number",
                     startIndex=43,
                     endIndex=44,
@@ -248,7 +243,7 @@ t5 = SchemaManager(
                 Field(
                     item="19A",
                     name="REC_OASDI_INSURANCE",
-                    friendly_name="receives old-age survivors and disability insurance",
+                    friendly_name="Received Disability Benefits: OASDI Program",
                     type="number",
                     startIndex=44,
                     endIndex=45,
@@ -258,7 +253,7 @@ t5 = SchemaManager(
                 Field(
                     item="19B",
                     name="REC_FEDERAL_DISABILITY",
-                    friendly_name="receives federal disability",
+                    friendly_name="Received Disability Benefits: Federal Disability Status",
                     type="number",
                     startIndex=45,
                     endIndex=46,
@@ -268,7 +263,7 @@ t5 = SchemaManager(
                 Field(
                     item="19C",
                     name="REC_AID_TOTALLY_DISABLED",
-                    friendly_name="receives aid for totally disabled",
+                    friendly_name="Received Disability Benefits: Permanently and Totally Disabled Under Title XIV-APDT",
                     type="number",
                     startIndex=46,
                     endIndex=47,
@@ -278,7 +273,7 @@ t5 = SchemaManager(
                 Field(
                     item="19D",
                     name="REC_AID_AGED_BLIND",
-                    friendly_name="receives from the aid to the aged, blind, and disabled program",
+                    friendly_name="Received Disability Benefits: Aged, Blind, and Disabled Under Title XVI-AABD",
                     type="number",
                     startIndex=47,
                     endIndex=48,
@@ -288,7 +283,7 @@ t5 = SchemaManager(
                 Field(
                     item="19E",
                     name="REC_SSI",
-                    friendly_name="receives SSI",
+                    friendly_name="Received Disability Benefits: Supplemental Security Income Under Title XVI-SSI",
                     type="number",
                     startIndex=48,
                     endIndex=49,
@@ -298,7 +293,7 @@ t5 = SchemaManager(
                 Field(
                     item="20",
                     name="MARITAL_STATUS",
-                    friendly_name="marital status",
+                    friendly_name="Marital Status",
                     type="number",
                     startIndex=49,
                     endIndex=50,
@@ -308,7 +303,7 @@ t5 = SchemaManager(
                 Field(
                     item="21",
                     name="RELATIONSHIP_HOH",
-                    friendly_name="relationship to head of household",
+                    friendly_name="Relationship to Head-of-Household",
                     type="string",
                     startIndex=50,
                     endIndex=52,
@@ -318,7 +313,7 @@ t5 = SchemaManager(
                 Field(
                     item="22",
                     name="PARENT_MINOR_CHILD",
-                    friendly_name="parent of minor child",
+                    friendly_name="Parent with Minor Child in the Family",
                     type="number",
                     startIndex=52,
                     endIndex=53,
@@ -328,7 +323,7 @@ t5 = SchemaManager(
                 Field(
                     item="23",
                     name="NEEDS_OF_PREGNANT_WOMAN",
-                    friendly_name="needs of pregnant woman",
+                    friendly_name="Needs of a Pregnant Woman",
                     type="number",
                     startIndex=53,
                     endIndex=54,
@@ -338,7 +333,7 @@ t5 = SchemaManager(
                 Field(
                     item="24",
                     name="EDUCATION_LEVEL",
-                    friendly_name="educational level",
+                    friendly_name="Educational Level",
                     type="string",
                     startIndex=54,
                     endIndex=56,
@@ -353,7 +348,7 @@ t5 = SchemaManager(
                 Field(
                     item="25",
                     name="CITIZENSHIP_STATUS",
-                    friendly_name="citizenship status",
+                    friendly_name="Citizenship/Immigration Status",
                     type="number",
                     startIndex=56,
                     endIndex=57,
@@ -368,7 +363,7 @@ t5 = SchemaManager(
                 Field(
                     item="26",
                     name="COUNTABLE_MONTH_FED_TIME",
-                    friendly_name="countable months toward federal time",
+                    friendly_name="Number of Months Countable Toward Federal Time Limit",
                     type="string",
                     startIndex=57,
                     endIndex=60,
@@ -378,7 +373,7 @@ t5 = SchemaManager(
                 Field(
                     item="27",
                     name="COUNTABLE_MONTHS_STATE_TRIBE",
-                    friendly_name="countable months remaining under state tribe",
+                    friendly_name="Number of Countable Months Remaining Under State's Time Limit",
                     type="string",
                     startIndex=60,
                     endIndex=62,
@@ -388,7 +383,7 @@ t5 = SchemaManager(
                 Field(
                     item="28",
                     name="EMPLOYMENT_STATUS",
-                    friendly_name="employment status",
+                    friendly_name="Employment Status",
                     type="number",
                     startIndex=62,
                     endIndex=63,
@@ -398,7 +393,7 @@ t5 = SchemaManager(
                 Field(
                     item="29",
                     name="AMOUNT_EARNED_INCOME",
-                    friendly_name="amount of earned income",
+                    friendly_name="Amount of Earned Income",
                     type="string",
                     startIndex=63,
                     endIndex=67,
@@ -408,7 +403,7 @@ t5 = SchemaManager(
                 Field(
                     item="30",
                     name="AMOUNT_UNEARNED_INCOME",
-                    friendly_name="amount of unearned income",
+                    friendly_name="Amount of Unearned Income",
                     type="string",
                     startIndex=67,
                     endIndex=71,

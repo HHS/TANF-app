@@ -25,14 +25,13 @@ for i in range(1, 31):
                 validators.hasLength(247),
                 validators.notEmpty(0, 7),
                 validators.notEmpty(validator_index, validator_index + 24),
-                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[],
             fields=[
                 Field(
                     item="0",
                     name="RecordType",
-                    friendly_name="record type",
+                    friendly_name="Record Type",
                     type="string",
                     startIndex=0,
                     endIndex=2,
@@ -42,7 +41,7 @@ for i in range(1, 31):
                 Field(
                     item="2",
                     name="CALENDAR_QUARTER",
-                    friendly_name="calendar quarter",
+                    friendly_name="Calendar Quarter",
                     type="number",
                     startIndex=2,
                     endIndex=7,
@@ -56,7 +55,7 @@ for i in range(1, 31):
                     transform_func=calendar_quarter_to_rpt_month_year((i - 1) % 3),
                     item="2A",
                     name="RPT_MONTH_YEAR",
-                    friendly_name="reporting month and year",
+                    friendly_name="Reporting Year and Month",
                     type="number",
                     startIndex=2,
                     endIndex=7,
@@ -69,7 +68,7 @@ for i in range(1, 31):
                 Field(
                     item="3",
                     name="TDRS_SECTION_IND",
-                    friendly_name="tdrs section indicator",
+                    friendly_name="TDRS Section Indicator",
                     type="string",
                     startIndex=section_ind_index,
                     endIndex=section_ind_index + 1,
@@ -79,7 +78,7 @@ for i in range(1, 31):
                 Field(
                     item="4",
                     name="STRATUM",
-                    friendly_name="stratum",
+                    friendly_name="Stratum",
                     type="string",
                     startIndex=stratum_index,
                     endIndex=stratum_index + 2,
@@ -89,7 +88,7 @@ for i in range(1, 31):
                 Field(
                     item=families_item_numbers[i - 1],
                     name="FAMILIES_MONTH",
-                    friendly_name="families month",
+                    friendly_name="Families Month",
                     type="number",
                     startIndex=families_index,
                     endIndex=families_index + 7,
