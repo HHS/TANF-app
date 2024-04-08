@@ -32,7 +32,11 @@ class DataFileAPITestBase:
     @pytest.fixture
     def test_datafile(self, stt_user, stt):
         """Fixture for small_incorrect_file_cross_validator."""
-        return util.create_test_datafile('small_incorrect_file_cross_validator.txt', stt_user, stt)
+        test_datafile = util.create_test_datafile('small_incorrect_file_cross_validator.txt', stt_user, stt)
+        test_datafile.year = 2021
+        test_datafile.quarter = 'Q1'
+        test_datafile.save()
+        return test_datafile
 
     @pytest.fixture
     def test_ssp_datafile(self, stt_user, stt):
@@ -99,7 +103,7 @@ class DataFileAPITestBase:
         assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
             + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
         assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "if cash amount :873 validator1 passed" \
-            + " then number of months 0 is not larger than 0."
+            + " then number of months T1: 0 is not larger than 0."
 
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
@@ -110,7 +114,8 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
             + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "Trailer length is 15 but must be 23 characters."
+        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "TRAILER record length is 15 characters " + \
+            "but must be 23."
 
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
@@ -129,8 +134,8 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
             + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "if CASH_AMOUNT :873 validator1 passed" \
-            + " then NBR_MONTHS 0 is not larger than 0."
+        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == ("if CASH_AMOUNT :873 validator1 passed then "
+                                                                  "NBR_MONTHS T1: 0 is not larger than 0.")
 
     @staticmethod
     def assert_data_file_exists(data_file_data, version, user):

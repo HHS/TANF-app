@@ -9,9 +9,11 @@ from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T6DataSubmiss
 
 
 s1 = RowSchema(
+    record_type="T6",
     document=Tribal_TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.hasLength(379),
+        validators.recordHasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
@@ -214,9 +216,11 @@ s1 = RowSchema(
 )
 
 s2 = RowSchema(
+    record_type="T6",
     document=Tribal_TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.hasLength(379),
+        validators.recordHasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
@@ -413,9 +417,11 @@ s2 = RowSchema(
 )
 
 s3 = RowSchema(
+    record_type="T6",
     document=Tribal_TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.hasLength(379),
+        validators.recordHasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
     ],
     postparsing_validators=[
         validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"]),
