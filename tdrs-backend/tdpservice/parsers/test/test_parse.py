@@ -1675,12 +1675,9 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
     parse.parse_datafile(tribal_section_4_bad_quarter, dfs)
     parser_errors = ParserError.objects.filter(file=tribal_section_4_bad_quarter)
 
-    for error in parser_errors:
-        print(f"{error}")
-
     assert parser_errors.count() == 2
 
-    msg = "Reporting month year None does not match file reporting year:2020, quarter:Q1."
+    msg = "T7: Reporting month year None does not match file reporting year:2020, quarter:Q1."
     for error in parser_errors:
         assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
