@@ -1,6 +1,7 @@
 """Convert raw uploaded Datafile into a parsed model, and accumulate/return any errors."""
 
 
+from django.conf import settings
 from django.db import DatabaseError
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
@@ -174,6 +175,14 @@ def rollback_parser_errors(datafile):
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
+def generate_trailer_errors(trailer_errors, errors, unsaved_parser_errors, num_errors):
+    """Generate trailer errors if we care to see them."""
+    if settings.GENERATE_TRAILER_ERRORS:
+        errors['trailer'] = trailer_errors
+        unsaved_parser_errors.update({"trailer": trailer_errors})
+        num_errors += len(trailer_errors)
+    return errors, unsaved_parser_errors, num_errors
+
 def create_no_records_created_pre_check_error(datafile, dfs):
     """Generate a precheck error if no records were created."""
     errors = {}
@@ -224,9 +233,10 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted):
         if trailer_errors is not None:
             logger.debug(f"{len(trailer_errors)} trailer error(s) detected for file " +
                          f"'{datafile.original_filename}' on line {line_number}.")
-            errors['trailer'] = trailer_errors
-            unsaved_parser_errors.update({"trailer": trailer_errors})
-            num_errors += len(trailer_errors)
+            errors, unsaved_parser_errors, num_errors = generate_trailer_errors(trailer_errors,
+                                                                                errors,
+                                                                                unsaved_parser_errors,
+                                                                                num_errors)
 
         generate_error = util.make_generate_parser_error(datafile, line_number)
 

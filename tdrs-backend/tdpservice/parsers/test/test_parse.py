@@ -3,6 +3,7 @@
 
 import pytest
 from django.contrib.admin.models import LogEntry
+from django.conf import settings
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
@@ -15,12 +16,13 @@ from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
 from ..schema_defs.util import get_section_reference, get_program_models, get_program_model
 from elasticsearch.helpers.errors import BulkIndexError
-
 import logging
+
 
 es_logger = logging.getLogger('elasticsearch')
 es_logger.setLevel(logging.WARNING)
 
+settings.GENERATE_TRAILER_ERRORS = True
 
 @pytest.fixture
 def test_datafile(stt_user, stt):
@@ -230,7 +232,7 @@ def test_parse_bad_test_file(bad_test_file, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Header length is 24 but must be 23 characters.'
+    assert err.error_message == 'HEADER record length is 24 characters but must be 23.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -259,7 +261,7 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Header length is 14 but must be 23 characters.'
+    assert err.error_message == 'HEADER record length is 14 characters but must be 23.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -341,7 +343,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
 
     trailer_error = parser_errors.get(row_number=3)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error.error_message == 'Trailer length is 11 but must be 23 characters.'
+    assert trailer_error.error_message == 'TRAILER record length is 11 characters but must be 23.'
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
@@ -352,8 +354,8 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
         row_errors_list.append(row_error)
         assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert trailer_error.error_message in [
-            'Trailer length is 11 but must be 23 characters.',
-            'Reporting month year None does not match file reporting year:2021, quarter:Q1.']
+            'TRAILER record length is 11 characters but must be 23.',
+            'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.']
         assert row_error.content_type is None
         assert row_error.object_id is None
 
@@ -366,7 +368,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
     length_error = row_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.error_message == 'T1 record length is 7 characters but must be 156.'
     assert length_error.content_type is None
     assert length_error.object_id is None
     assert errors == {
@@ -398,35 +400,36 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
 
     trailer_error_1 = trailer_errors[0]
     assert trailer_error_1.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_1.error_message == 'Trailer length is 7 but must be 23 characters.'
+    assert trailer_error_1.error_message == 'TRAILER record length is 7 characters but must be 23.'
     assert trailer_error_1.content_type is None
     assert trailer_error_1.object_id is None
 
     trailer_error_2 = trailer_errors[1]
     assert trailer_error_2.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_2.error_message == 'T1trash does not start with TRAILER.'
+    assert trailer_error_2.error_message == "Your file does not end with a TRAILER record."
     assert trailer_error_2.content_type is None
     assert trailer_error_2.object_id is None
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_2_error.error_message == 'Value length 117 does not match 156.'
+    assert row_2_error.error_message == 'T1 record length is 117 characters but must be 156.'
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
     # catch-rpt-month-year-mismatches
     row_3_errors = parser_errors.filter(row_number=3)
     row_3_error_list = []
+
     for row_3_error in row_3_errors:
         row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert row_3_error.error_message in [
-            'Value length 7 does not match 156.',
-            'Reporting month year None does not match file reporting year:2021, quarter:Q1.',
+        assert row_3_error.error_message in {
+            'T1 record length is 7 characters but must be 156.',
+            'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.',
             'T1trash does not start with TRAILER.',
-            'Trailer length is 7 but must be 23 characters.',
-            'T1trash contains blanks between positions 8 and 19.',
-            'The value: trash, does not follow the YYYYMM format for Reporting Year and Month.']
+            'TRAILER record length is 7 characters but must be 23.',
+            'T1: Case number T1trash cannot contain blanks.',
+            'Your file does not end with a TRAILER record.'}
         assert row_3_error.content_type is None
         assert row_3_error.object_id is None
 
@@ -443,7 +446,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     row_3_errors = [trailer_errors[2], trailer_errors[3]]
     length_error = row_3_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.error_message == 'T1 record length is 7 characters but must be 156.'
     assert length_error.content_type is None
     assert length_error.object_id is None
 
@@ -457,14 +460,14 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     assert error_trailer == [trailer_error_1, trailer_error_2]
     trailer_error_3 = trailer_errors[3]
     assert trailer_error_3.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_3.error_message == 'Reporting month year None does not ' + \
-                                            'match file reporting year:2021, quarter:Q1.'
+    assert trailer_error_3.error_message == 'T1: Case number T1trash cannot contain blanks.'
     assert trailer_error_3.content_type is None
     assert trailer_error_3.object_id is None
 
     trailer_error_4 = trailer_errors[4]
     assert trailer_error_4.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_4.error_message == 'T1trash contains blanks between positions 8 and 19.'
+    assert trailer_error_4.error_message == ('T1: Reporting month year None does not '
+                                             'match file reporting year:2021, quarter:Q1.')
     assert trailer_error_4.content_type is None
     assert trailer_error_4.object_id is None
 
@@ -506,7 +509,7 @@ def test_parse_empty_file(empty_file, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Header length is 0 but must be 23 characters.'
+    assert err.error_message == 'HEADER record length is 0 characters but must be 23.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -587,7 +590,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
 
     assert err.row_number == 2
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert err.error_message == '3 is not larger or equal to 1 and smaller or equal to 2.'
+    assert err.error_message == 'M1: 3 is not larger or equal to 1 and smaller or equal to 2.'
     assert err.content_type is not None
     assert err.object_id is not None
     assert parser_errors.count() == 32486
@@ -799,16 +802,17 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     assert parser_errors.count() == 5
 
-    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
+    error_message = 'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_2_error = parser_errors.get(row_number=2, error_message=error_message)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_2_error.error_message == error_message
 
-    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
+    error_message = 'T2: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_3_error = parser_errors.get(row_number=3, error_message=error_message)
     assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_3_error.error_message == error_message
 
+    error_message = 'T3: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_4_error = parser_errors.get(row_number=4, error_message=error_message)
     assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_4_error.error_message == error_message
@@ -839,32 +843,32 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     parse.parse_datafile(bad_ssp_s1__row_missing_required_field, dfs)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
-    assert parser_errors.count() == 6
+    assert parser_errors.count() == 7
 
     row_2_error = parser_errors.get(
         row_number=2,
-        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
+        error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_3_error = parser_errors.get(
         row_number=3,
-        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
+        error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
     assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_4_error = parser_errors.get(
         row_number=4,
-        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
+        error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
     assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     error_message = 'Reporting month year None does not match file reporting year:2019, quarter:Q1.'
-    rpt_month_errors = parser_errors.filter(error_message=error_message)
+    rpt_month_errors = parser_errors.filter(error_message__contains=error_message)
     assert len(rpt_month_errors) == 3
-    for e in rpt_month_errors:
+    for i, e in enumerate(rpt_month_errors):
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert e.error_message == error_message
+        assert error_message.format(i + 1) in e.error_message
         assert e.object_id is None
 
     row_5_error = parser_errors.get(
@@ -877,7 +881,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
 
     trailer_error = parser_errors.get(
         row_number=6,
-        error_message='Trailer length is 15 but must be 23 characters.'
+        error_message='TRAILER record length is 15 characters but must be 23.'
     )
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error.content_type is None
@@ -1544,9 +1548,9 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
     year_error = parser_errors[1]
     digits_error = parser_errors[0]
 
-    assert month_error.error_message == "$9 is not a valid month."
-    assert year_error.error_message == "Q897 must be larger than year 1900."
-    assert digits_error.error_message == "Q897$9 3 does not have exactly 8 digits."
+    assert month_error.error_message == "T2: $9 is not a valid month."
+    assert year_error.error_message == "T2: Year Q897 must be larger than 1900."
+    assert digits_error.error_message == "T2: Q897$9 3 does not have exactly 8 digits."
 
 
 @pytest.mark.django_db
