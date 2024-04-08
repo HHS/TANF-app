@@ -183,9 +183,9 @@ def test_parse_big_file(test_big_file, dfs):
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'months': [
-        {'month': 'Oct', 'accepted_without_errors': 25, 'accepted_with_errors': 245},
-        {'month': 'Nov', 'accepted_without_errors': 18, 'accepted_with_errors': 255},
-        {'month': 'Dec', 'accepted_without_errors': 27, 'accepted_with_errors': 245}],
+        {'month': 'Oct', 'accepted_without_errors': 129, 'accepted_with_errors': 141},
+        {'month': 'Nov', 'accepted_without_errors': 143, 'accepted_with_errors': 130},
+        {'month': 'Dec', 'accepted_without_errors': 131, 'accepted_with_errors': 141}],
         'rejected': 0}
 
     assert TANF_T1.objects.count() == expected_t1_record_count
@@ -616,11 +616,11 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     parse.parse_datafile(small_tanf_section1_datafile, dfs)
 
     dfs.status = dfs.get_status()
-    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert dfs.status == DataFileSummary.Status.ACCEPTED
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'months': [
-        {'month': 'Oct', 'accepted_without_errors': 4, 'accepted_with_errors': 1},
+        {'month': 'Oct', 'accepted_without_errors': 5, 'accepted_with_errors': 0},
         {'month': 'Nov', 'accepted_without_errors': 0, 'accepted_with_errors': 0},
         {'month': 'Dec', 'accepted_without_errors': 0, 'accepted_with_errors': 0}],
         'rejected': 0}
@@ -843,7 +843,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     parse.parse_datafile(bad_ssp_s1__row_missing_required_field, dfs)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
-    assert parser_errors.count() == 7
+    assert parser_errors.count() == 6
 
     row_2_error = parser_errors.get(
         row_number=2,

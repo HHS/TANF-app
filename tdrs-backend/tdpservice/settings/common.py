@@ -194,7 +194,7 @@ class Common(Configuration):
 
     # Logging
     # set level as 'INFO' if env var is not set
-    LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
+    LOGGING_LEVEL = 'WARNING'#os.getenv('LOGGING_LEVEL', 'INFO')
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,

@@ -102,8 +102,8 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
             + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "if cash amount :873 validator1 passed" \
-            + " then number of months T1: 0 is not larger than 0."
+        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "if Cash and Cash Equivalents: Amount :873 " + \
+            "validator1 passed then Cash and Cash Equivalents: Number of Months T1: 0 is not larger than 0."
 
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):

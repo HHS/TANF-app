@@ -14,12 +14,12 @@ m2 = SchemaManager(
             record_type="M2",
             document=SSP_M2DataSubmissionDocument(),
             preparsing_validators=[
-                validators.hasLength(150),
+                validators.recordHasLength(150),
+                validators.caseNumberNotEmpty(8, 19),
                 validators.or_priority_validators([
                 validators.field_year_month_with_header_year_quarter(),
                 validators.validateRptMonthYear(),
                 ]),
-                validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
                 validators.validate__FAM_AFF__SSN(),
@@ -184,7 +184,7 @@ m2 = SchemaManager(
                     item="28",
                     name='DATE_OF_BIRTH',
                     friendly_name="Date of Birth",
-                    type='number',
+                    type='string',
                     startIndex=21,
                     endIndex=29,
                     required=True,
