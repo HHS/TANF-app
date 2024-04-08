@@ -26,6 +26,7 @@ for i in range(1, 31):
                 validators.recordHasLength(247),
                 validators.notEmpty(0, 7),
                 validators.notEmpty(validator_index, validator_index + 24),
+                validators.field_year_month_with_header_year_quarter(),
             ],
             postparsing_validators=[],
             fields=[

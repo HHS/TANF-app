@@ -127,6 +127,7 @@ t2 = SchemaManager(
                     result_field_name="WORK_PART_STATUS",
                     result_function=validators.notMatches("99"),
                 ),
+                validators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(),
             ],
             fields=[
                 Field(
@@ -190,10 +191,11 @@ t2 = SchemaManager(
                     startIndex=21,
                     endIndex=29,
                     required=True,
-                    validators=[
+                    validators=[validators.intHasLength(8),
                         validators.dateYearIsLargerThan(1900),
                         validators.dateMonthIsValid(),
-                    ],
+                        validators.dateDayIsValid()
+                        ]
                 ),
                 TransformField(
                     transform_func=tanf_ssn_decryption_func,

@@ -179,10 +179,11 @@ t2 = SchemaManager(
                     startIndex=21,
                     endIndex=29,
                     required=True,
-                    validators=[
+                    validators=[validators.intHasLength(8),
                         validators.dateYearIsLargerThan(1900),
                         validators.dateMonthIsValid(),
-                    ],
+                        validators.dateDayIsValid()
+                        ]
                 ),
                 TransformField(
                     transform_func=tanf_ssn_decryption_func,
