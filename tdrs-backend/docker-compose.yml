@@ -100,6 +100,7 @@ services:
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
+      - GENERATE_TRAILER_ERRORS=True
       - BYPASS_KIBANA_AUTH
     volumes:
       - .:/tdpapp
