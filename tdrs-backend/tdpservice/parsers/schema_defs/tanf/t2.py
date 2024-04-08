@@ -192,10 +192,10 @@ t2 = SchemaManager(
                     endIndex=29,
                     required=True,
                     validators=[validators.intHasLength(8),
-                        validators.dateYearIsLargerThan(1900),
-                        validators.dateMonthIsValid(),
-                        validators.dateDayIsValid()
-                        ]
+                                validators.dateYearIsLargerThan(1900),
+                                validators.dateMonthIsValid(),
+                                validators.dateDayIsValid()
+                                ]
                 ),
                 TransformField(
                     transform_func=tanf_ssn_decryption_func,
@@ -319,7 +319,8 @@ t2 = SchemaManager(
                 Field(
                     item="36D",
                     name="AID_AGED_BLIND",
-                    friendly_name="Receives Disability Benefits: Aid to the Aged, Blind, and Disabled Under Title XVI-AABD ",
+                    friendly_name="Receives Disability Benefits: Aid to the Aged, Blind, and Disabled Under " +
+                    "Title XVI-AABD ",
                     type="number",
                     startIndex=48,
                     endIndex=49,
@@ -745,7 +746,8 @@ t2 = SchemaManager(
                 Field(
                     item="59A",
                     name="ED_NO_HIGH_SCHOOL_DIPL_HOP",
-                    friendly_name="Education Directly Related to Employment for an Individual with NO High School Diploma or Certificate of High School Equivalency: Hours of Participation",
+                    friendly_name="Education Directly Related to Employment for an Individual with NO High " +
+                    "School Diploma or Certificate of High School Equivalency: Hours of Participation",
                     type="string",
                     startIndex=108,
                     endIndex=110,
@@ -757,7 +759,8 @@ t2 = SchemaManager(
                 Field(
                     item="59B",
                     name="ED_NO_HIGH_SCHOOL_DIPL_EA",
-                    friendly_name="Education Directly Related to Employment for an Individual with NO High School Diploma or Certificate: Hours of Excused Absences",
+                    friendly_name="Education Directly Related to Employment for an Individual with NO High " +
+                    "School Diploma or Certificate: Hours of Excused Absences",
                     type="string",
                     startIndex=110,
                     endIndex=112,
@@ -769,7 +772,8 @@ t2 = SchemaManager(
                 Field(
                     item="59C",
                     name="ED_NO_HIGH_SCHOOL_DIPL_HOL",
-                    friendly_name="Education Directly Related to Employment for an Individual with NO High School Diploma or Certificate: Hours of Holidays",
+                    friendly_name="Education Directly Related to Employment for an Individual with NO High " +
+                    "School Diploma or Certificate: Hours of Holidays",
                     type="string",
                     startIndex=112,
                     endIndex=114,
@@ -781,7 +785,8 @@ t2 = SchemaManager(
                 Field(
                     item="60A",
                     name="SCHOOL_ATTENDENCE_HOP",
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School Diploma or Certificate: Hours of Participation",
+                    friendly_name="Satisfactory School Attendance for Individuals with No High School " +
+                    "Diploma or Certificate: Hours of Participation",
                     type="string",
                     startIndex=114,
                     endIndex=116,
@@ -793,7 +798,8 @@ t2 = SchemaManager(
                 Field(
                     item="60B",
                     name="SCHOOL_ATTENDENCE_EA",
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School Diploma or Certificate: Hours of Ecused Absences",
+                    friendly_name="Satisfactory School Attendance for Individuals with No High School " +
+                    "Diploma or Certificate: Hours of Ecused Absences",
                     type="string",
                     startIndex=116,
                     endIndex=118,
@@ -805,7 +811,8 @@ t2 = SchemaManager(
                 Field(
                     item="60C",
                     name="SCHOOL_ATTENDENCE_HOL",
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School Diploma or Certificate: Hours of Holidays",
+                    friendly_name="Satisfactory School Attendance for Individuals with No High School " +
+                    "Diploma or Certificate: Hours of Holidays",
                     type="string",
                     startIndex=118,
                     endIndex=120,
@@ -817,7 +824,8 @@ t2 = SchemaManager(
                 Field(
                     item="61A",
                     name="PROVIDE_CC_HOP",
-                    friendly_name="Providing Child Care Services to an Individual Who Is Participating in a Community Service Program: Hours of Participation",
+                    friendly_name="Providing Child Care Services to an Individual Who Is Participating " +
+                    "in a Community Service Program: Hours of Participation",
                     type="string",
                     startIndex=120,
                     endIndex=122,
@@ -829,7 +837,8 @@ t2 = SchemaManager(
                 Field(
                     item="61B",
                     name="PROVIDE_CC_EA",
-                    friendly_name="Providing Child Care Services to an Individual Who Is Participating in a Community Service Program: Hours of Excused Absences",
+                    friendly_name="Providing Child Care Services to an Individual Who Is Participating " +
+                    "in a Community Service Program: Hours of Excused Absences",
                     type="string",
                     startIndex=122,
                     endIndex=124,
@@ -841,7 +850,8 @@ t2 = SchemaManager(
                 Field(
                     item="61C",
                     name="PROVIDE_CC_HOL",
-                    friendly_name="Providing Child Care Services to an Individual Who Is Participating in a Community Service Program: Hours of Holidays",
+                    friendly_name="Providing Child Care Services to an Individual Who Is Participating " +
+                    "in a Community Service Program: Hours of Holidays",
                     type="string",
                     startIndex=124,
                     endIndex=126,

@@ -180,10 +180,10 @@ t2 = SchemaManager(
                     endIndex=29,
                     required=True,
                     validators=[validators.intHasLength(8),
-                        validators.dateYearIsLargerThan(1900),
-                        validators.dateMonthIsValid(),
-                        validators.dateDayIsValid()
-                        ]
+                                validators.dateYearIsLargerThan(1900),
+                                validators.dateMonthIsValid(),
+                                validators.dateDayIsValid()
+                                ]
                 ),
                 TransformField(
                     transform_func=tanf_ssn_decryption_func,
@@ -588,7 +588,8 @@ t2 = SchemaManager(
                 Field(
                     item="58",
                     name="ED_NO_HIGH_SCHOOL_DIPLOMA",
-                    friendly_name="Education Directly Related to Employment for Individualswith no High School Diploma or Certificate of High SchoolEquivalency",
+                    friendly_name="Education Directly Related to Employment for Individuals with no High " +
+                    "School Diploma or Certificate of High SchoolEquivalency",
                     type="string",
                     startIndex=86,
                     endIndex=88,
@@ -600,7 +601,8 @@ t2 = SchemaManager(
                 Field(
                     item="59",
                     name="SCHOOL_ATTENDENCE",
-                    friendly_name="Satisfactory School Attendance for Individuals with No HighSchool Diploma or Certificate of High School Equivalency",
+                    friendly_name="Satisfactory School Attendance for Individuals with No High School " +
+                    "Diploma or Certificate of High School Equivalency",
                     type="string",
                     startIndex=88,
                     endIndex=90,
@@ -612,7 +614,8 @@ t2 = SchemaManager(
                 Field(
                     item="60",
                     name="PROVIDE_CC",
-                    friendly_name="Providing Child Care Services to an Individual Who Is Participating in a Community Service Program",
+                    friendly_name="Providing Child Care Services to an Individual Who Is Participating " +
+                    "in a Community Service Program",
                     type="string",
                     startIndex=90,
                     endIndex=92,

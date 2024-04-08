@@ -13,8 +13,8 @@ first_part_schema = RowSchema(
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
         validators.or_priority_validators([
-        validators.field_year_month_with_header_year_quarter(),
-        validators.validateRptMonthYear(),
+            validators.field_year_month_with_header_year_quarter(),
+            validators.validateRptMonthYear(),
         ]),
         validators.notEmpty(8, 19)
     ],
@@ -244,7 +244,8 @@ first_part_schema = RowSchema(
         Field(
             item="65B",
             name='RECEIVE_SSI',
-            friendly_name="Receives Disability Benefits: Supplemental Security Income Under Title XVI-SSI or Aged, Blind, and Disabled Under Title XVI-AABD",
+            friendly_name="Receives Disability Benefits: Supplemental Security Income Under Title XVI-SSI or " +
+            "Aged, Blind, and Disabled Under Title XVI-AABD",
             type='number',
             startIndex=45,
             endIndex=46,
@@ -557,7 +558,8 @@ second_part_schema = RowSchema(
         Field(
             item="65B",
             name='RECEIVE_SSI',
-            friendly_name="Receives Disability Benefits: Supplemental Security Income Under Title XVI-SSI or Aged, Blind, and Disabled Under Title XVI-AABD",
+            friendly_name="Receives Disability Benefits: Supplemental Security Income Under Title XVI-SSI or " +
+            "Aged, Blind, and Disabled Under Title XVI-AABD",
             type='number',
             startIndex=86,
             endIndex=87,
