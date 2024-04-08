@@ -368,7 +368,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
     length_error = row_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == "T1 record length of 7 is not on the range [117, 156]."
+    assert length_error.error_message == "T1 record length of 7 characters is not on the range [117, 156]."
     assert length_error.content_type is None
     assert length_error.object_id is None
     assert errors == {
@@ -412,7 +412,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_2_error.error_message == '3 is not larger or equal to 1 and smaller or equal to 2.'
+    assert row_2_error.error_message == 'T1: 3 is not larger or equal to 1 and smaller or equal to 2.'
 
     # catch-rpt-month-year-mismatches
     row_3_errors = parser_errors.filter(row_number=3)

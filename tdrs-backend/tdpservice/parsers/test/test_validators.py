@@ -344,7 +344,7 @@ def test_hasLengthBetween_returns_valid():
     lower = 0
     upper = 15
 
-    validator = validators.hasLengthBetween(lower, upper)
+    validator = validators.recordHasLengthBetween(lower, upper)
     is_valid, error = validator(value)
 
     assert is_valid is True
@@ -357,7 +357,7 @@ def test_hasLengthBetween_returns_invalid():
     lower = 0
     upper = 1
 
-    validator = validators.hasLengthBetween(lower, upper)
+    validator = validators.recordHasLengthBetween(lower, upper)
     is_valid, error = validator(value)
 
     assert is_valid is False

@@ -12,7 +12,7 @@ m4 = SchemaManager(
             record_type="M4",
             document=SSP_M4DataSubmissionDocument(),
             preparsing_validators=[
-                validators.hasLengthBetween(34, 66),
+                validators.recordHasLengthBetween(34, 66),
                 validators.caseNumberNotEmpty(8, 19),
                 validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
