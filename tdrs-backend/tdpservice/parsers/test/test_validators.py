@@ -123,9 +123,9 @@ def test_validate__FAM_AFF__SSN():
 def test_quarterIsValid(value, valid):
     """Test `quarterIsValid`."""
     val = validators.quarterIsValid()
-    result = val(value)
+    result = val(value, RowSchema(), "friendly_name", "item_no")
 
-    errorText = None if valid else f"{value[-1:]} is not a valid quarter."
+    errorText = None if valid else f"T1: {value[-1:]} is not a valid quarter."
     assert result == (valid, errorText)
 
 def test_validateSSN():
@@ -472,7 +472,7 @@ def test_notEmpty_returns_nonexistent_substring():
 def test_quarterIsValid_returns_true_if_valid(test_input):
     """Test `quarterIsValid` gives a valid result for values 1-4."""
     validator = validators.quarterIsValid()
-    is_valid, error = validator(test_input)
+    is_valid, error = validator(test_input, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is True
     assert error is None
@@ -482,10 +482,10 @@ def test_quarterIsValid_returns_true_if_valid(test_input):
 def test_quarterIsValid_returns_false_if_invalid(test_input):
     """Test `quarterIsValid` gives an invalid result for values not 1-4."""
     validator = validators.quarterIsValid()
-    is_valid, error = validator(test_input)
+    is_valid, error = validator(test_input, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == f"{test_input} is not a valid quarter."
+    assert error == f"T1: {test_input} is not a valid quarter."
 
 @pytest.mark.usefixtures('db')
 class TestCat3ValidatorsBase:
