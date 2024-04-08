@@ -338,30 +338,30 @@ def test_recordHasLength_returns_invalid():
     assert error == 'T1 record length is 7 characters but must be 22.'
 
 
-def test_hasLengthBetween_returns_valid():
+def test_recordHasLengthBetween_returns_valid():
     """Test `hasLengthBetween` gives a valid result."""
     value = 'abcd123'
     lower = 0
     upper = 15
 
     validator = validators.recordHasLengthBetween(lower, upper)
-    is_valid, error = validator(value)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is True
     assert error is None
 
 
-def test_hasLengthBetween_returns_invalid():
+def test_recordHasLengthBetween_returns_invalid():
     """Test `hasLengthBetween` gives an invalid result."""
     value = 'abcd123'
     lower = 0
     upper = 1
 
     validator = validators.recordHasLengthBetween(lower, upper)
-    is_valid, error = validator(value)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == f"Value length {len(value)} is not on the range [{lower}, {upper}]."
+    assert error == f"T1 record length of {len(value)} characters is not on the range [{lower}, {upper}]."
 
 
 def test_intHasLength_returns_valid():
