@@ -7,13 +7,12 @@ from .. import validators
 
 
 header = RowSchema(
+    record_type="HEADER",
     document=None,
     preparsing_validators=[
-        validators.hasLength(
-            23,
-            lambda value, length: f"Header length is {len(value)} but must be {length} characters.",
-        ),
-        validators.startsWith("HEADER"),
+        validators.recordHasLength(23),
+        validators.startsWith("HEADER",
+                              lambda value: f"Your file does not begin with a {value} record."),
     ],
     postparsing_validators=[],
     fields=[
@@ -68,15 +67,11 @@ header = RowSchema(
             endIndex=14,
             required=False,
             validators=[
-                validators.or_validators(
-                    validators.isInStringRange(0, 2),
-                    validators.isInStringRange(4, 6),
-                    validators.isInStringRange(8, 13),
-                    validators.isInStringRange(15, 42),
-                    validators.isInStringRange(44, 51),
-                    validators.isInStringRange(53, 56),
-                    validators.oneOf(["66", "72", "78"]),
-                )
+                validators.oneOf(["00", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13",
+                                  "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
+                                  "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36",
+                                  "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48",
+                                  "49", "50", "51", "53", "54", "55", "56", "66", "72", "78"]),
             ],
         ),
         Field(
