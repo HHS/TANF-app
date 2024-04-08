@@ -14,6 +14,10 @@ t2 = SchemaManager(
             document=Tribal_TANF_T2DataSubmissionDocument(),
             preparsing_validators=[
                 validators.hasLength(122),
+                validators.or_priority_validators([
+                validators.field_year_month_with_header_year_quarter(),
+                validators.validateRptMonthYear(),
+                ]),
                 validators.notEmpty(8, 19)
             ],
             postparsing_validators=[
@@ -174,10 +178,11 @@ t2 = SchemaManager(
                     startIndex=21,
                     endIndex=29,
                     required=True,
-                    validators=[
+                    validators=[validators.intHasLength(8),
                         validators.dateYearIsLargerThan(1900),
                         validators.dateMonthIsValid(),
-                    ],
+                        validators.dateDayIsValid()
+                        ]
                 ),
                 TransformField(
                     transform_func=tanf_ssn_decryption_func,
