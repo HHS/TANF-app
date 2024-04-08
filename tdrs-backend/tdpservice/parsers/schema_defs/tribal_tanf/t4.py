@@ -145,7 +145,7 @@ t4 = SchemaManager(
                 ),
                 Field(
                     item="14",
-                    name="BLANK",
+                    name="FAMILY_AFFILIATION",
                     friendly_name="Family Affiliation:",
                     type="string",
                     startIndex=36,
