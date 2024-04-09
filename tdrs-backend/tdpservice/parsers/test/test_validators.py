@@ -85,7 +85,8 @@ def test_if_validators():
           result_field_name="Field2", result_function=validators.matches('1'),
       )
     result = validator(value, RowSchema())
-    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1 Field2: 2 does not match 1.', ['Field1', 'Field2'])
+    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1 Field2: 2 does not match 1.',
+                      ['Field1', 'Field2'])
 
 
 def test_and_validators():
