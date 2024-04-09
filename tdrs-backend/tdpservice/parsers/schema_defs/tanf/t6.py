@@ -13,6 +13,7 @@ s1 = RowSchema(
     preparsing_validators=[
         validators.recordHasLength(379),
         validators.field_year_month_with_header_year_quarter(),
+        validators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -233,6 +234,7 @@ s2 = RowSchema(
     preparsing_validators=[
         validators.recordHasLength(379),
         validators.field_year_month_with_header_year_quarter(),
+        validators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -447,6 +449,7 @@ s3 = RowSchema(
     preparsing_validators=[
         validators.recordHasLength(379),
         validators.field_year_month_with_header_year_quarter(),
+        validators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
         validators.sumIsEqual(

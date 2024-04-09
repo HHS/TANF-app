@@ -1668,22 +1668,15 @@ def tribal_section_4_bad_quarter(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
     """Test handling invalid quarter value that raises a ValueError exception."""
-    tribal_section_4_bad_quarter.year = 2020
+    tribal_section_4_bad_quarter.year = 2021
     tribal_section_4_bad_quarter.quarter = 'Q1'
     dfs.datafile = tribal_section_4_bad_quarter
 
     parse.parse_datafile(tribal_section_4_bad_quarter, dfs)
-    parser_errors = ParserError.objects.filter(file=tribal_section_4_bad_quarter)
+    parser_errors = ParserError.objects.filter(file=tribal_section_4_bad_quarter).order_by('id')
 
-    assert parser_errors.count() == 2
+    assert parser_errors.count() == 3
 
-    msg = "T7: Reporting month year None does not match file reporting year:2020, quarter:Q1."
-    for error in parser_errors:
-        assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    parser_errors.first().error_message == "T7: 2020  is an invalid value for the CALENDAR_QUARTER field."
 
-        if (error.field_name is None):
-            assert error.error_message == "No records created."
-        elif (error.field_name == "Record_Type"):
-            assert error.error_message == msg
-        else:
-            assert False, f"Unexpected field name {error.field_name}"
+    Tribal_TANF_T7.objects.count() == 0

@@ -487,6 +487,25 @@ def test_quarterIsValid_returns_false_if_invalid(test_input):
     assert is_valid is False
     assert error == f"T1: {test_input} is not a valid quarter."
 
+@pytest.mark.parametrize("value", ["T72020 ", "T720194", "T720200", "T720207", "T72020$"])
+def test_calendarQuarterIsValid_returns_invalid(value):
+    """Test `calendarQuarterIsValid` returns false on invalid input."""
+    val = validators.calendarQuarterIsValid(2, 7)
+    is_valid, error_msg = val(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error_msg == f"T1: {value[2:7]} is an invalid value for the CALENDAR_QUARTER field."
+
+
+@pytest.mark.parametrize("value", ["T720201", "T720202", "T720203", "T720204"])
+def test_calendarQuarterIsValid_returns_valid(value):
+    """Test `calendarQuarterIsValid` returns false on invalid input."""
+    val = validators.calendarQuarterIsValid(2, 7)
+    is_valid, error_msg = val(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error_msg is None
+
 @pytest.mark.usefixtures('db')
 class TestCat3ValidatorsBase:
     """A base test class for tests that evaluate category three validators."""
