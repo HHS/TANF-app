@@ -1,6 +1,7 @@
 """Convert raw uploaded Datafile into a parsed model, and accumulate/return any errors."""
 
 
+from django.conf import settings
 from django.db import DatabaseError
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
@@ -103,8 +104,22 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
             for document, records in unsaved_records.items():
                 num_expected_db_records += len(records)
                 created_objs = document.Django.model.objects.bulk_create(records)
-                num_elastic_records_created += document.update(created_objs)[0]
                 num_db_records_created += len(created_objs)
+
+                try:
+                    num_elastic_records_created += document.update(created_objs)[0]
+                except BulkIndexError as e:
+                    logger.error(f"Encountered error while indexing datafile documents: {e}")
+                    LogEntry.objects.log_action(
+                        user_id=datafile.user.pk,
+                        content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                        object_id=datafile,
+                        object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+                        action_flag=ADDITION,
+                        change_message=f"Encountered error while indexing datafile documents: {e}",
+                    )
+                    continue
+
             dfs.total_number_of_records_created += num_db_records_created
             if num_db_records_created != num_expected_db_records:
                 logger.error(f"Bulk Django record creation only created {num_db_records_created}/" +
@@ -114,21 +129,9 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                              f"{num_expected_db_records}!")
             else:
                 logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
-            return num_db_records_created == num_expected_db_records and \
-                num_elastic_records_created == num_expected_db_records, {}
+            return num_db_records_created == num_expected_db_records, {}
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
-            return False, unsaved_records
-        except BulkIndexError as e:
-            logger.error(f"Encountered error while indexing datafile documents: {e}")
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while indexing datafile documents: {e}",
-            )
             return False, unsaved_records
     return True, unsaved_records
 
@@ -173,6 +176,14 @@ def rollback_parser_errors(datafile):
     logger.info("Rolling back created parser errors.")
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
+
+def generate_trailer_errors(trailer_errors, errors, unsaved_parser_errors, num_errors):
+    """Generate trailer errors if we care to see them."""
+    if settings.GENERATE_TRAILER_ERRORS:
+        errors['trailer'] = trailer_errors
+        unsaved_parser_errors.update({"trailer": trailer_errors})
+        num_errors += len(trailer_errors)
+    return errors, unsaved_parser_errors, num_errors
 
 def create_no_records_created_pre_check_error(datafile, dfs):
     """Generate a precheck error if no records were created."""
@@ -224,9 +235,10 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted):
         if trailer_errors is not None:
             logger.debug(f"{len(trailer_errors)} trailer error(s) detected for file " +
                          f"'{datafile.original_filename}' on line {line_number}.")
-            errors['trailer'] = trailer_errors
-            unsaved_parser_errors.update({"trailer": trailer_errors})
-            num_errors += len(trailer_errors)
+            errors, unsaved_parser_errors, num_errors = generate_trailer_errors(trailer_errors,
+                                                                                errors,
+                                                                                unsaved_parser_errors,
+                                                                                num_errors)
 
         generate_error = util.make_generate_parser_error(datafile, line_number)
 
