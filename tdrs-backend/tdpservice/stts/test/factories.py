@@ -1,6 +1,7 @@
 """Generate test data for stts."""
 
 import factory
+import random
 from ..models import STT, Region
 
 
@@ -12,7 +13,7 @@ class RegionFactory(factory.django.DjangoModelFactory):
 
         model = "stts.Region"
 
-    id = factory.Sequence(int)
+    id = random.randint(1, 1e9)
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -27,7 +28,7 @@ class STTFactory(factory.django.DjangoModelFactory):
 
         model = "stts.STT"
 
-    id = factory.Sequence(int)
+    id = random.randint(1, 1e9)
     name = factory.Sequence(lambda n: "teststt%d" % n)
     postal_code = "TT"
     type = "STATE"

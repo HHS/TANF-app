@@ -59,6 +59,9 @@ class DataFileSummaryFactory(factory.django.DjangoModelFactory):
 
     datafile = factory.SubFactory(DataFileFactory)
 
+    total_number_of_records_in_file = 0
+    total_number_of_records_created = 0
+
 
 fake = Faker()
 

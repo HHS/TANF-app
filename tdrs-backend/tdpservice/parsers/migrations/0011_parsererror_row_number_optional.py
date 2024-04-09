@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parsers', '0009_alter_datafilesummary_status'),
+        ('parsers', '0010_datafilesummary_record_counts'),
     ]
 
     operations = [

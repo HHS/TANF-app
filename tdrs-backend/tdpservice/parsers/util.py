@@ -92,6 +92,20 @@ def contains_encrypted_indicator(line, encryption_field):
     return False
 
 
+'''
+text -> section YES
+text -> models{} YES
+text -> model YES
+datafile -> model
+    ^ section -> program -> model
+datafile -> text
+model -> text YES
+section -> text
+
+text**: input string from the header/file
+'''
+
+
 def get_prog_from_section(str_section):
     """Return the program type for a given section."""
     # e.g., 'SSP Closed Case Data'
@@ -146,3 +160,23 @@ def get_rpt_month_year_list(year, quarter):
     """Convert year and quarter to RPT_MONTH_YEAR."""
     months = transform_to_months(quarter)
     return [int(f"{year}{month}") for month in months]
+
+def year_month_to_year_quarter(year_month):
+    """Return the year and quarter from a year_month string."""
+    def get_quarter_from_month(month):
+        """Return the quarter from a month."""
+        if month in ["01", "02", "03"]:
+            return "Q1"
+        elif month in ["04", "05", "06"]:
+            return "Q2"
+        elif month in ["07", "08", "09"]:
+            return "Q3"
+        elif month in ["10", "11", "12"]:
+            return "Q4"
+        else:
+            return "Invalid month value."
+
+    year = year_month[:4]
+    month = year_month[4:]
+    quarter = get_quarter_from_month(month)
+    return year, quarter
