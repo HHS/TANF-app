@@ -4,7 +4,7 @@ from django.utils import timezone
 import pytest
 import tdpservice
 from datetime import datetime, timedelta
-from tdpservice.scheduling.tasks import check_for_accounts_needing_deactivation_warning
+from tdpservice.email.tasks import check_for_accounts_needing_deactivation_warning
 from tdpservice.users.models import AccountApprovalStatusChoices
 
 import logging
@@ -19,7 +19,7 @@ def test_deactivation_email_10_days(user, mocker):
         return_value=None
     )
     mocker.patch(
-        'tdpservice.scheduling.tasks.users_to_deactivate',
+        'tdpservice.email.tasks.users_to_deactivate',
         return_value=[user]
     )
 
@@ -38,7 +38,7 @@ def test_deactivation_email_3_days(user, mocker):
         return_value=None
     )
     mocker.patch(
-        'tdpservice.scheduling.tasks.users_to_deactivate',
+        'tdpservice.email.tasks.users_to_deactivate',
         return_value=[user]
     )
 
@@ -57,7 +57,7 @@ def test_deactivation_email_1_days(user, mocker):
         return_value=None
     )
     mocker.patch(
-        'tdpservice.scheduling.tasks.users_to_deactivate',
+        'tdpservice.email.tasks.users_to_deactivate',
         return_value=[user]
     )
 
@@ -77,7 +77,7 @@ def test_no_users_to_warn(user, mocker):
         return_value=None
     )
     mocker.patch(
-        'tdpservice.scheduling.tasks.users_to_deactivate',
+        'tdpservice.email.tasks.users_to_deactivate',
         return_value=[user]
     )
 
@@ -94,5 +94,5 @@ def test_users_to_deactivate(user):
     user.first_name = 'UniqueName'
     user.account_approval_status = AccountApprovalStatusChoices.APPROVED
     user.save()
-    users = tdpservice.scheduling.tasks.users_to_deactivate(10)
+    users = tdpservice.email.tasks.users_to_deactivate(10)
     assert users[0].first_name == user.first_name
