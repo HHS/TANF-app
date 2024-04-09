@@ -373,8 +373,8 @@ def caseNumberNotEmpty(start=0, end=None):
 def calendarQuarterIsValid(start=0, end=None):
     """Validate that the calendar quarter value is valid."""
     return make_validator(
-        lambda value: value[start:end].isnumeric() and int(value[start:end - 1]) >= 2020 \
-              and int(value[end - 1:end]) > 0 and int(value[end - 1:end]) < 5,
+        lambda value: value[start:end].isnumeric() and int(value[start:end - 1]) >= 2020
+        and int(value[end - 1:end]) > 0 and int(value[end - 1:end]) < 5,
         lambda value,
         row_schema,
         friendly_name,
