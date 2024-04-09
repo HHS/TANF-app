@@ -4,7 +4,6 @@ import pytest
 import logging
 from datetime import date
 from .. import validators
-from ..case_consistency_validator import CaseConsistencyValidator
 from .. import schema_defs, util
 from ..row_schema import RowSchema
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
