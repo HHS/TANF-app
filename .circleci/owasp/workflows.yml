@@ -14,7 +14,7 @@
             branches:
               only:
                 - develop
-                - feat/2768-zap-pipeline 
+                - debug/zap-scanning
       - nightly-owasp-scan:
           target_env: staging
           filters:
