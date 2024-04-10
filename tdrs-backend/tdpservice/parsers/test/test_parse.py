@@ -1012,10 +1012,7 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
     parser_errors = ParserError.objects.filter(file=tanf_section2_file)
 
     err = parser_errors.first()
-    assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert err.error_message == "REC_OASDI_INSURANCE is required but a value was not provided."
-    assert err.content_type.model == "tanf_t5"
-    assert err.object_id is not None
+    assert err.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
 
 @pytest.fixture

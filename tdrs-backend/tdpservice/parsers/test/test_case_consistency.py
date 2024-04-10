@@ -460,7 +460,7 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'There should only be one {t1_model_name} record  '
+            f'There should only be one {t1_model_name} record '
             f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
         )
 
