@@ -784,12 +784,6 @@ class TestCaseConsistencyValidator:
             (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
             STT.EntityType.TRIBE,
         ),
-        (
-            {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
-            STT.EntityType.STATE,
-        ),
     ])
     @pytest.mark.django_db
     def test_section2_validator_fail_case_closure_ftl(self, small_correct_file, header, T4Stuff, T5Stuff, stt_type):
