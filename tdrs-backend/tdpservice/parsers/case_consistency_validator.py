@@ -183,7 +183,7 @@ class CaseConsistencyValidator:
                 self.__generate_and_add_error(
                     schema,
                     record,
-                    field='FAMILY_AFFILIATION',  # technically not a field on t4
+                    field='FAMILY_AFFILIATION',
                     msg=error_msg
                 )
                 num_errors += 1
@@ -302,7 +302,7 @@ class CaseConsistencyValidator:
             self.__generate_and_add_error(
                 t4_schema,
                 t4_record,
-                'EMPLOYMENT_STATUS',  # technically not a field on t4
+                'EMPLOYMENT_STATUS',
                 error_msg
             )
             num_errors += 1
@@ -322,9 +322,9 @@ class CaseConsistencyValidator:
         passed = False
         for record, schema in t5s:
             relationship_hoh = getattr(record, 'RELATIONSHIP_HOH')
-            ftl_months = getattr(record, 'COUNTABLE_MONTH_FED_TIME')  # does not exist on m5, only validate ftl for tribal/tanf (employment for all sections)
+            ftl_months = getattr(record, 'COUNTABLE_MONTH_FED_TIME')
 
-            if (relationship_hoh == '01' or relationship_hoh == '02') and int(ftl_months) >= 60:  # convert COUNTABLE_MONTH_FED_TIME to number (potential migration, put in cat 1 cleanup)
+            if (relationship_hoh == '01' or relationship_hoh == '02') and int(ftl_months) >= 60:
                 passed = True
                 break
 
@@ -332,7 +332,7 @@ class CaseConsistencyValidator:
             self.__generate_and_add_error(
                 t4_schema,
                 t4_record,
-                'COUNTABLE_MONTH_FED_TIME',  # technically not a field on t4
+                'COUNTABLE_MONTH_FED_TIME',
                 error_msg
             )
             num_errors += 1
