@@ -53,12 +53,12 @@
       - disable-npm-audit
       - install-nodejs-packages:
           app-dir: tdrs-frontend
-    #   - run:
-    #       name: Wait for backend to become available
-    #       command: cd tdrs-backend; docker-compose run --rm zaproxy bash -c \
-    #           "PATH=$PATH:/home/zap/.local/bin &&
-    #            pip install wait-for-it &&
-    #            wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
+      - run:
+          name: Wait for backend to become available
+          command: cd tdrs-backend; docker-compose run --rm zaproxy bash -c \
+              "PATH=$PATH:/home/zap/.local/bin &&
+               pip install wait-for-it &&
+               wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
       - run:
           name: apply the migrations
           command: cd tdrs-backend; docker-compose exec web bash -c "python manage.py makemigrations; python manage.py migrate"
