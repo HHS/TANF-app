@@ -72,10 +72,10 @@
           cf-space: <<parameters.cf_space>>
           cf-org: <<parameters.cf_org>>
           cf-username: <<parameters.cf_username>>
-      # - run-owasp-scan:
-      #     environment: nightly
-      #     target: backend
-      #     target_env: <<parameters.target_env>>
+      - run-owasp-scan:
+          environment: nightly
+          target: backend
+          target_env: <<parameters.target_env>>
       # - run-owasp-scan:
       #     environment: nightly
       #     target: frontend
