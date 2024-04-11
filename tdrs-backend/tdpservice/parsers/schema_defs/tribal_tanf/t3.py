@@ -13,6 +13,7 @@ child_one = RowSchema(
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
         validators.hasLength(122),
+        validators.validateRptMonthYear(),
         validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
@@ -134,14 +135,15 @@ child_one = RowSchema(
             item="67",
             name="DATE_OF_BIRTH",
             friendly_name="date of birth",
-            type="number",
+            type="string",
             startIndex=20,
             endIndex=28,
             required=True,
-            validators=[
-                validators.dateYearIsLargerThan(1900),
-                validators.dateMonthIsValid(),
-            ],
+            validators=[validators.intHasLength(8),
+                        validators.dateYearIsLargerThan(1900),
+                        validators.dateMonthIsValid(),
+                        validators.dateDayIsValid()
+                        ]
         ),
         TransformField(
             transform_func=tanf_ssn_decryption_func,
@@ -319,6 +321,7 @@ child_two = RowSchema(
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),
         validators.hasLength(122),
+        validators.validateRptMonthYear(),
         validators.notEmpty(8, 19)
     ],
     postparsing_validators=[
@@ -440,14 +443,15 @@ child_two = RowSchema(
             item="67",
             name="DATE_OF_BIRTH",
             friendly_name="date of birth",
-            type="number",
+            type="string",
             startIndex=61,
             endIndex=69,
             required=True,
-            validators=[
-                validators.dateYearIsLargerThan(1900),
-                validators.dateMonthIsValid(),
-            ],
+            validators=[validators.intHasLength(8),
+                        validators.dateYearIsLargerThan(1900),
+                        validators.dateMonthIsValid(),
+                        validators.dateDayIsValid()
+                        ]
         ),
         TransformField(
             transform_func=tanf_ssn_decryption_func,
