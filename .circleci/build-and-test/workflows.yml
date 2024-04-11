@@ -3,6 +3,7 @@
     when: << pipeline.parameters.build_and_test_all >>
     jobs:
       - secrets-check
+      # TODO: Revert back to tests after review
       - nightly-owasp-scan:
           target_env: develop
 
