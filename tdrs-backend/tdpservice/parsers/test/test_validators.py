@@ -1376,38 +1376,3 @@ class TestCaseConsistencyValidator:
         assert len(case_consistency_validator.record_schema_pairs) == 1
         assert case_consistency_validator.total_cases_cached == 2
         assert case_consistency_validator.total_cases_validated == 1
-
-    @pytest.mark.django_db
-    def test_section1_fail(self, small_correct_file_header, small_correct_file, tanf_s1_records, tanf_s1_schemas):
-        """Test TANF Section 1 records RPT_MONTH_YEAR don't align with header year and quarter."""
-        case_consistency_validator = CaseConsistencyValidator(small_correct_file_header,
-                                                              util.make_generate_parser_error(small_correct_file, None))
-
-        for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
-            case_consistency_validator.add_record(record, schema, False)
-            assert [] == case_consistency_validator.get_generated_errors()
-
-        num_errors = case_consistency_validator.validate()
-        errors = case_consistency_validator.get_generated_errors()
-
-        assert len(errors) == 4
-        for e in errors:
-            assert e.error_message == ("Failed to validate record with CASE_NUMBER=1 and RPT_MONTH_YEAR=1 against "
-                                       "header. If YEAR=2020 and QUARTER=4, then RPT_MONTH_YEAR must be in [202010, "
-                                       "202011, 202012].")
-
-        assert 4 == num_errors
-
-    @pytest.mark.django_db
-    def test_section1_pass(self, small_correct_file_header, small_correct_file, tanf_s1_records, tanf_s1_schemas):
-        """Test TANF Section 1 records RPT_MONTH_YEAR do align with header year and quarter."""
-        case_consistency_validator = CaseConsistencyValidator(small_correct_file_header,
-                                                              util.make_generate_parser_error(small_correct_file, None))
-
-        for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
-            record.RPT_MONTH_YEAR = 202010
-            case_consistency_validator.add_record(record, schema, False)
-
-        num_errors = case_consistency_validator.validate()
-
-        assert 0 == num_errors

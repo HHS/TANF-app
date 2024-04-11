@@ -90,8 +90,7 @@ class CaseConsistencyValidator:
 
     def __validate_tanf_s1_case(self, num_errors):
         """Perform TANF Section 1 category four validation on all cached records."""
-        num_errors += self.__validate_tanf_s1_header_with_records()
-        return num_errors
+        return 0
 
     def __validate_tanf_s2_case(self, num_errors):
         """Perform TANF Section 2 category four validation on all cached records."""
@@ -112,25 +111,3 @@ class CaseConsistencyValidator:
     def __validate_ssp_s2_case(self, num_errors):
         """Perform SSP Section 2 category four validation on all cached records."""
         return 0
-
-    def __validate_tanf_s1_header_with_records(self):
-        """Header YEAR + header QUARTER must be consistent with RPT_MONTH_YEAR for all T1, T2, and T3 records."""
-        year = self.header["year"]
-        quarter = self.header["quarter"]
-        header_rpt_month_year_list = get_rpt_month_year_list(year, quarter)
-        num_errors = 0
-        for record, schema in self.record_schema_pairs:
-            if record.RPT_MONTH_YEAR not in header_rpt_month_year_list:
-                num_errors += 1
-                err_msg = (f"Failed to validate record with CASE_NUMBER={record.CASE_NUMBER} and "
-                           f"RPT_MONTH_YEAR={record.RPT_MONTH_YEAR} against header. If YEAR={year} and "
-                           f"QUARTER={quarter}, then RPT_MONTH_YEAR must be in {header_rpt_month_year_list}.")
-                self.generated_errors.append(
-                    self.generate_error(schema=schema,
-                                        error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                                        error_message=err_msg,
-                                        record=record,
-                                        field="RPT_MONTH_YEAR"
-                                        )
-                                    )
-        return num_errors
