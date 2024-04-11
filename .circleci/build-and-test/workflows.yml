@@ -3,15 +3,8 @@
     when: << pipeline.parameters.build_and_test_all >>
     jobs:
       - secrets-check
-      - test-backend:
-          requires:
-            - secrets-check      
-      - test-frontend:
-          requires:
-            - secrets-check
-      - test-e2e:
-          requires:
-            - secrets-check
+      - nightly-owasp-scan:
+          target_env: develop
 
   ci-build-and-test-all:
     jobs:
@@ -30,7 +23,7 @@
                 - master
                 - /^release.*/
           requires:
-            - secrets-check      
+            - secrets-check
       - test-frontend:
           filters:
             branches:
