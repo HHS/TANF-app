@@ -171,7 +171,7 @@ else
 fi
 
 # Run the ZAP full scan and store output for further processing if needed.
-ZAP_OUTPUT=$(docker-compose run --rm zaproxy "$ZAP_SCRIPT" "${ZAP_ARGS[@]}" | tee /dev/tty)
+ZAP_OUTPUT=$(docker-compose run --rm zaproxy bash -c "pwd && ls" | tee /dev/tty)
 ZAP_EXIT=$?
 
 if [ "$ZAP_EXIT" -eq 0 ]; then
