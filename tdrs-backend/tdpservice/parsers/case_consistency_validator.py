@@ -1,7 +1,5 @@
 """Class definition for Category Four validator."""
 
-from .models import ParserErrorCategoryChoices
-from .util import get_rpt_month_year_list
 import logging
 
 logger = logging.getLogger(__name__)
