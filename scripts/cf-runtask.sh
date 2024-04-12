@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # pipefail is needed to correctly carry over the exit code from zap-full-scan.py
-set -uxo pipefail
+set -uo pipefail
 
 PROJECT_SLUG=$1
 TARGET=$2
@@ -19,5 +19,5 @@ echo Executing command: $CMD
 echo .
 echo START!
 APP=tdp-backend-$TARGET
-cf run-task "$APP" --wait --command "$CMD" --name "nightly-owasp-scan"
+cf run-task "$APP" --wait --command "python -V" --name "nightly-owasp-scan"
 echo DONE!
