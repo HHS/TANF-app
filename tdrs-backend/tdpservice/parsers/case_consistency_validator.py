@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from .models import ParserErrorCategoryChoices
-from .util import get_rpt_month_year_list
 from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
 import logging
