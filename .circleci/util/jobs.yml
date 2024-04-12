@@ -1,3 +1,4 @@
+# jobs:
   make_erd:
     executor: machine-executor
     working_directory: ~/tdp_apps
@@ -8,7 +9,7 @@
           name: Run graph_models
           command: |
             cd tdrs-backend
-            if [ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]; then
+            if [ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]; then 
             docker network create external-net
             fi
             docker-compose run --rm web bash -c \
