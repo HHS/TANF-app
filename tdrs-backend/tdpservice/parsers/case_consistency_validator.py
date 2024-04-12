@@ -144,8 +144,7 @@ class CaseConsistencyValidator:
         num_errors += self.__validate_t5_aabd_and_ssi()
         return num_errors
 
-
-    def __validate_family_affiliation(self, t1s, t2s, t3s, error_msg):
+    def __validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
         """Validate at least one record in t2s+t3s has FAMILY_AFFILIATION == 1."""
         num_errors = 0
         passed = False
