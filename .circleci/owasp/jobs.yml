@@ -97,10 +97,13 @@
               --frontend-fail-count "${ZAP_FRONTEND_FAIL_COUNT:-0}"
               --project-slug "$PROJECT_SLUG"
             )
+
+            ./scripts/cf-runtask.sh "$PROJECT_SLUG" "$CMD_ARGS" << parameters.target_env >>
+
             # Evaluate the full command before passing it in so it doesn't
             # get improperly interpolated by Cloud.gov.
-            CMD="python manage.py process_owasp_scan ${CMD_ARGS[*]}"
-            echo "$CMD"
+            # CMD="python manage.py process_owasp_scan ${CMD_ARGS[*]}"
+            # echo "$CMD"
 
             # Submit a CF Task for execution that will run the necessary command
-            echo START! && cf run-task tdp-backend-<< parameters.target_env >> --wait --command "$CMD" --name nightly-owasp-scan && echo DONE!
+            # echo START! && cf run-task tdp-backend-<< parameters.target_env >> --wait --command "$CMD" --name nightly-owasp-scan && echo DONE!
