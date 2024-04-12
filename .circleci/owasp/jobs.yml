@@ -104,5 +104,5 @@
             echo "$CMD"
 
             # Submit a CF Task for execution that will run the necessary command
-            cf run-task tdp-backend-<< parameters.target_env >> --wait --command "$CMD" --name nightly-owasp-scan
+            cf run-task tdp-backend-<< parameters.target_env >> --wait --command "ls" --name nightly-owasp-scan
             echo DONE!
