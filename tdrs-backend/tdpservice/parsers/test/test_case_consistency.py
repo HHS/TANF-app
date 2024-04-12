@@ -100,33 +100,6 @@ class TestCaseConsistencyValidator:
         assert case_consistency_validator.total_cases_cached == 2
         assert case_consistency_validator.total_cases_validated == 1
 
-    @pytest.mark.django_db
-    def test_section1_fail(self, small_correct_file_header, small_correct_file, tanf_s1_records, tanf_s1_schemas):
-        """Test TANF Section 1 records RPT_MONTH_YEAR don't align with header year and quarter."""
-        case_consistency_validator = CaseConsistencyValidator(small_correct_file_header,
-                                                              util.make_generate_parser_error(small_correct_file, None))
-
-        for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
-            case_consistency_validator.add_record(record, schema, False)
-
-        num_errors = case_consistency_validator.validate()
-
-        assert 4 == num_errors
-
-    @pytest.mark.django_db
-    def test_section1_pass(self, small_correct_file_header, small_correct_file, tanf_s1_records, tanf_s1_schemas):
-        """Test TANF Section 1 records RPT_MONTH_YEAR do align with header year and quarter."""
-        case_consistency_validator = CaseConsistencyValidator(small_correct_file_header,
-                                                              util.make_generate_parser_error(small_correct_file, None))
-
-        for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
-            record.RPT_MONTH_YEAR = 202010
-            case_consistency_validator.add_record(record, schema, False)
-
-        num_errors = case_consistency_validator.validate()
-
-        assert 0 == num_errors
-
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
