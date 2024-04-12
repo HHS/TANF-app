@@ -3,6 +3,7 @@
 from django_elasticsearch_dsl.registries import registry
 from ..models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from .document_base import DocumentBase
+from django.conf import settings
 
 
 @registry.register_document
@@ -12,7 +13,7 @@ class SSP_M1DataSubmissionDocument(DocumentBase):
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 'ssp_m1_submissions'
+        name = f'{settings.ELASTIC_INDEX_PREFIX}ssp_m1_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -76,7 +77,7 @@ class SSP_M2DataSubmissionDocument(DocumentBase):
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 'ssp_m2_submissions'
+        name = f'{settings.ELASTIC_INDEX_PREFIX}ssp_m2_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -164,7 +165,7 @@ class SSP_M3DataSubmissionDocument(DocumentBase):
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 'ssp_m3_submissions'
+        name = f'{settings.ELASTIC_INDEX_PREFIX}ssp_m3_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -206,7 +207,7 @@ class SSP_M4DataSubmissionDocument(DocumentBase):
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 'ssp_m4_submissions'
+        name = f'{settings.ELASTIC_INDEX_PREFIX}ssp_m4_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -238,7 +239,7 @@ class SSP_M5DataSubmissionDocument(DocumentBase):
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 'ssp_m5_submissions'
+        name = f'{settings.ELASTIC_INDEX_PREFIX}ssp_m5_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -285,7 +286,7 @@ class SSP_M6DataSubmissionDocument(DocumentBase):
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 'ssp_m6_submissions'
+        name = f'{settings.ELASTIC_INDEX_PREFIX}ssp_m6_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
@@ -318,7 +319,7 @@ class SSP_M7DataSubmissionDocument(DocumentBase):
     class Index:
         """ElasticSearch index generation settings."""
 
-        name = 'ssp_m7_submissions'
+        name = f'{settings.ELASTIC_INDEX_PREFIX}ssp_m7_submissions'
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0,
