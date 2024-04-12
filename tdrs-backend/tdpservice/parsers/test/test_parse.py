@@ -1221,6 +1221,26 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     assert first.FAMILIES_MONTH == 748
 
 @pytest.fixture
+def ssp_section2_rec_oadsi_file(stt_user, stt):
+    """Fixture for sp_section2_rec_oadsi_file."""
+    return util.create_test_datafile('ssp_section2_rec_oadsi_file.txt', stt_user, stt, 'SSP Closed Case Data')
+
+
+@pytest.mark.django_db()
+def test_parse_ssp_section2_rec_oadsi_file(ssp_section2_rec_oadsi_file, dfs):
+    """Test parsing SSP Section 2 REC_OADSI."""
+    ssp_section2_rec_oadsi_file.year = 2019
+    ssp_section2_rec_oadsi_file.quarter = 'Q1'
+
+    dfs.datafile = ssp_section2_rec_oadsi_file
+
+    parse.parse_datafile(ssp_section2_rec_oadsi_file, dfs)
+    parser_errors = ParserError.objects.filter(file=ssp_section2_rec_oadsi_file)
+
+    assert parser_errors.count() == 0
+
+
+@pytest.fixture
 def ssp_section2_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM2.MS24."""
     return util.create_test_datafile('ADS.E2J.NDM2.MS24', stt_user, stt, 'SSP Closed Case Data')
@@ -1566,9 +1586,9 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_data
 
     # create some records, don't save them
     records = {
-        documents.tanf.TANF_T1DataSubmissionDocument: [TANF_T1()],
-        documents.tanf.TANF_T2DataSubmissionDocument: [TANF_T2()],
-        documents.tanf.TANF_T3DataSubmissionDocument: [TANF_T3()]
+        documents.tanf.TANF_T1DataSubmissionDocument(): [TANF_T1()],
+        documents.tanf.TANF_T2DataSubmissionDocument(): [TANF_T2()],
+        documents.tanf.TANF_T3DataSubmissionDocument(): [TANF_T3()]
     }
 
     all_created, unsaved_records = parse.bulk_create_records(
@@ -1585,11 +1605,11 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_data
     log = LogEntry.objects.get()
     assert log.change_message == "Encountered error while indexing datafile documents: indexing exception"
 
-    assert all_created is False
-    assert len(unsaved_records.items()) == 3
+    assert all_created is True
+    assert len(unsaved_records.items()) == 0
     assert TANF_T1.objects.all().count() == 1
-    assert TANF_T2.objects.all().count() == 0
-    assert TANF_T3.objects.all().count() == 0
+    assert TANF_T2.objects.all().count() == 1
+    assert TANF_T3.objects.all().count() == 1
 
 
 @pytest.fixture

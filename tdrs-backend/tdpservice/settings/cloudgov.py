@@ -148,6 +148,7 @@ class CloudGov(Common):
             'connection_class': RequestsHttpConnection,
         },
     }
+    ELASTIC_INDEX_PREFIX = f'{APP_NAME}_'
 
 
 class Development(CloudGov):
@@ -210,3 +211,4 @@ class Production(CloudGov):
         "PATCH",
         "POST",
     )
+    ELASTIC_INDEX_PREFIX = ''
