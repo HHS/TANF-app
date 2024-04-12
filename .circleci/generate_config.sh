@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/sh
 
 cat base_config.yml > generated_config.yml
 

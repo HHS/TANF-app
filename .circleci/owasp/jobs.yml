@@ -103,4 +103,5 @@
             echo "$CMD"
 
             # Submit a CF Task for execution that will run the necessary command
+            cat .circleci/generated_config.yml
             echo START! && cf run-task tdp-backend-<< parameters.target_env >> --wait --command "$CMD" --name nightly-owasp-scan && echo DONE!
