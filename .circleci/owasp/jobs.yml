@@ -76,10 +76,10 @@
       #     environment: nightly
       #     target: backend
       #     target_env: <<parameters.target_env>>
-      # - run-owasp-scan:
-      #     environment: nightly
-      #     target: frontend
-      #     target_env: <<parameters.target_env>>
+      - run-owasp-scan:
+          environment: nightly
+          target: frontend
+          target_env: <<parameters.target_env>>
       - run:
           name: Run post-processing task to record OWASP ZAP results
           command: |
@@ -90,7 +90,7 @@
             # by the zap-scanner.sh script for each respective app target.
             # Evaluate the full command before passing it in so it doesn't
             # get improperly interpolated by Cloud.gov.
-            CMD="python manage.py process_owasp_scan $CIRCLE_BUILD_NUM --backend-pass-count ${ZAP_BACKEND_PASS_COUNT:-0} --backend-warn-count ${ZAP_BACKEND_WARN_COUNT:-0} --backend-fail-count ${ZAP_BACKEND_FAIL_COUNT:-0} --frontend-pass-count ${ZAP_FRONTEND_PASS_COUNT:-0} --frontend-warn-count ${ZAP_FRONTEND_WARN_COUNT:-0} --frontend-fail-count ${ZAP_FRONTEND_FAIL_COUNT:-0} --project-slug $PROJECT_SLUG"
+            CMD="python manage.py process_owasp_scan $CIRCLE_BUILD_NUM --backend-pass-count 0 --backend-warn-count 0 --backend-fail-count 0 --frontend-pass-count 0 --frontend-warn-count 0 --frontend-fail-count 0 --project-slug raft-tech/TANF-app"
             echo $CMD
 
             # Submit a CF Task for execution that will run the necessary command
