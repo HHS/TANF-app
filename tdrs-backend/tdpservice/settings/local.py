@@ -51,3 +51,4 @@ class Local(Common):
     The next line replaces the _ with EOL before using the PRIVATE KEY
     """
     ACFTITAN_SFTP_PYTEST = os.getenv("ACFTITAN_SFTP_PYTEST").replace('_', '\n')
+    APP_NAME = "tdrs-backend-local"
