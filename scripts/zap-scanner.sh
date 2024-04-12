@@ -198,5 +198,4 @@ if [ "$ENVIRONMENT" = "nightly" ]; then
     echo "export ZAP_${TARGET}_WARN_COUNT=$ZAP_WARN_COUNT"
     echo "export ZAP_${TARGET}_FAIL_COUNT=$ZAP_FAIL_COUNT"
   } >> "$BASH_ENV"
-  echo $BASH_ENV
 fi
