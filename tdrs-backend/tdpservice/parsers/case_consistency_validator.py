@@ -140,7 +140,6 @@ class CaseConsistencyValidator:
         num_errors += self.__validate_s2_records_are_related()
         return num_errors
 
-
     def __validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
         """Validate at least one record in t2s+t3s has FAMILY_AFFILIATION == 1."""
         passed = False
