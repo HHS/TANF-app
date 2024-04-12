@@ -1,0 +1,1084 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.1.0
+  terraform: circleci/terraform@2.1.0
+  jq: circleci/jq@2.2.0
+
+executors:
+  docker-executor:
+    docker:
+      - image: cimg/python:3.10.4
+        user: root
+  machine-executor:
+    machine:
+      docker_layer_caching: false
+      image: ubuntu-2204:2024.01.1
+  large-machine-executor:
+    machine:
+      docker_layer_caching: false
+      image: ubuntu-2204:2024.01.1
+    resource_class: large
+
+parameters:
+  build_and_test_all:
+    type: boolean
+    default: false
+  build_and_test_backend:
+    type: boolean
+    default: false
+  build_and_test_frontend:
+    type: boolean
+    default: false
+  deploy_infrastructure:
+    type: boolean
+    default: false
+  develop_branch_deploy:
+    type: boolean
+    default: false
+  run_dev_deployment:
+    type: boolean
+    default: false
+  run_nightly_owasp_scan:
+    type: boolean
+    default: false
+  run_owasp_scan:
+    type: boolean
+    default: false
+  target_env:
+    type: string
+    default: ''
+  triggered:
+    type: boolean
+    default: false
+  util_make_erd:
+    type: boolean
+    default: false
+commands:
+# commands:
+  upload-codecov:
+    description: Uploads testing code coverage results to Codecov
+    parameters:
+      component:
+        description: The component of the application being tested, either backend or frontend.
+        type: enum
+        enum: [ "backend", "frontend" ]
+      coverage-report:
+        description: The path to the coverage report being uploaded.
+        type: string
+    steps:
+      - run:
+          name: Ensure Codecov uploader is installed, otherwise install it.
+          command: ./scripts/codecov-check.sh
+      - run:
+          name: Determine Codecov metric flag
+          command: |
+            if [ "$CIRCLE_BRANCH" == "main" ] ; then
+              CURRENT_FLAG=main-<<parameters.component>>
+            elif [ "$CIRCLE_BRANCH" == "master" ] ; then
+              CURRENT_FLAG=master-<<parameters.component>>
+            else
+              CURRENT_FLAG=dev-<<parameters.component>>
+            fi
+            echo "export CURRENT_FLAG=$CURRENT_FLAG" >> $BASH_ENV
+      - run:
+          name: Upload code coverage report if target branch
+          command: codecov -t "$CODECOV_TOKEN" -f <<parameters.coverage-report>> -F "$CURRENT_FLAG"
+
+  install-nodejs-machine:
+    description: |
+      Installs our target version of Node.JS using NVM (Node Version Manager)
+      from the install location provided by machine executor images.
+    steps:
+      - run:
+          name: Install Node.JS
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libgbm-dev
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install v16.13
+            nvm alias default v16.13
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+
+  disable-npm-audit:
+    steps:
+      - run:
+          name: Disable npm audit warnings in CI
+          command: npm set audit false
+          
+  # This allows us to use the node orb to install packages within other commands
+  install-nodejs-packages: node/install-packages
+# commands:
+  deploy-cloud-dot-gov:
+    parameters:
+      environment:
+        description: The environment to deploy to.
+        type: enum
+        enum: [ "development", "production" ]
+        default: development
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-password:
+        default: CF_PASSWORD_DEV
+        type: env_var_name
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-username:
+        default: CF_USERNAME_DEV
+        type: env_var_name
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - deploy-backend:
+          backend-appname: <<parameters.backend-appname>>
+          frontend-appname: <<parameters.frontend-appname>>
+          cf-space: <<parameters.cf-space>>
+      - deploy-frontend:
+          environment: <<parameters.environment>>
+          backend-appname: <<parameters.backend-appname>>
+          frontend-appname: <<parameters.frontend-appname>>
+          cf-space: <<parameters.cf-space>>
+
+  clamav-cloud-dot-gov:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      cf-password:
+        default: CF_PASSWORD_DEV
+        type: env_var_name
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-username:
+        default: CF_USERNAME_DEV
+        type: env_var_name
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - deploy-clamav
+
+  deploy-backend:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+      kibana-appname:
+        default: tdp-kibana
+        type: string
+      proxy-appname:
+        default: tdp-elastic-proxy
+        type: string
+      cf-space:
+        default: tanf-dev
+        type: string
+    steps:
+      - get-app-deploy-strategy:
+          appname: <<parameters.backend-appname>>
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            sudo apt-get install -y wget
+            sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.42.1/yq_linux_amd64 && chmod +x /usr/local/bin/yq
+      - run:
+          name: Apply database migrations
+          command: |
+            bash ./scripts/apply-remote-migrations.sh <<parameters.backend-appname>>
+      - run:
+          name: Deploy backend application
+          command: |
+            bash ./scripts/deploy-backend.sh \
+              $DEPLOY_STRATEGY \
+              <<parameters.frontend-appname>> \
+              <<parameters.backend-appname>> \
+              <<parameters.kibana-appname>> \
+              <<parameters.proxy-appname>> \
+              <<parameters.cf-space>>
+
+  deploy-clamav:
+    steps:
+      - run:
+          name: Deploy ClamAV REST application
+          command: |
+            cf push clamav-rest -f tdrs-backend/manifest.clamav.yml \
+              --var cf-space=tanf-prod
+
+  deploy-frontend:
+    parameters:
+      environment:
+        description: The environment to deploy to.
+        type: enum
+        enum: [ "development", "production" ]
+        default: development
+      backend-appname:
+        default: tdp-backend
+        type: string
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+      kibana-appname:
+        default: tdp-kibana
+        type: string
+# So the frontend knows what space its in for the banner.
+# I am unclear if the domain is a reliable metric to make this function
+# It seems like it might not be working
+      cf-space:
+        default: dev
+        type: string
+    steps:
+      - install-nodejs:
+          node-version: "16.13"
+      - disable-npm-audit
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+      - get-app-deploy-strategy:
+          appname: <<parameters.frontend-appname>>
+      - run:
+          name: Deploy frontend application
+          command: |
+            bash ./scripts/deploy-frontend.sh \
+              $DEPLOY_STRATEGY \
+              <<parameters.frontend-appname>> \
+              <<parameters.backend-appname>> \
+              <<parameters.kibana-appname>> \
+              <<parameters.cf-space>> \
+              <<parameters.environment>>
+
+  get-app-deploy-strategy:
+    parameters:
+      appname:
+        type: string
+    steps:
+      - run:
+          name: Determine deploy strategy
+          command: |
+            # NOTE: The || true is a no-op included to suppress exit codes which
+            #       would cause the step to exit early due to use of pipefail
+            APP_GUID=$(cf app <<parameters.appname>> --guid || true)
+            if [ "$APP_GUID" == "FAILED" ]; then
+              echo "export DEPLOY_STRATEGY=initial" >> $BASH_ENV
+            else
+              echo "export DEPLOY_STRATEGY=rolling" >> $BASH_ENV
+            fi
+
+  deploy-infrastructure:
+    parameters:
+      tf-path:
+        type: string
+        default: ./terraform/dev
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
+      cf-app:
+        type: string
+        default: CF_APP
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk update
+            apk add jq
+            apk add curl
+            # TODO: Add Signature check
+            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
+            mv cf7 /usr/local/bin/cf
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-username: <<parameters.cf-username>>
+          cf-space: <<parameters.cf-space>>
+      - run:
+          name: Export S3 Credentials for TFState
+          command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
+            {
+              echo "access_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)\""
+              echo "secret_key = \"$(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)\""
+              echo "region = \"$(echo "${S3_CREDENTIALS}" | jq -r '.region')\""
+              echo "bucket = \"$(echo "${S3_CREDENTIALS}" | jq -r '.bucket')\""
+            } >> ./backend_config.tfvars
+      - run:
+          name: Prepare Terraform Variables
+          command: |
+            S3_CREDENTIALS=$(cf service-key tdp-tf-states tdp-tf-key | tail -n +2)
+            {
+              echo "cf_password = \"$<<parameters.cf-password>>\""
+              echo "cf_user = \"$<<parameters.cf-username>>\""
+              echo "cf_space_name = \"<<parameters.cf-space>>\""
+              echo "cf_app_name = \"<<parameters.cf-app>>\""
+            } >> ./variables.tfvars
+      - terraform/init:
+          path: <<parameters.tf-path>>
+          backend_config_file: ./backend_config.tfvars
+      - terraform/validate:
+          path: <<parameters.tf-path>>
+      - terraform/fmt:
+          path: <<parameters.tf-path>>
+      - terraform/plan:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+      - terraform/apply:
+          path: <<parameters.tf-path>>
+          var_file: ./variables.tfvars
+
+  enable-s3-versioning:
+    parameters:
+      target_env:
+        type: string
+      cf-password:
+        type: env_var_name
+      cf-username:
+        type: env_var_name
+      cf-space:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            sudo apt install jq
+            sudo apt install curl
+            # TODO: Add Signature check
+            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=v7&source=github" | tar -zx
+            sudo mv cf7 /usr/local/bin/cf
+            sudo chmod +x /usr/local/bin/cf
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-username: <<parameters.cf-username>>
+          cf-space: <<parameters.cf-space>>
+      - run:
+          name: Ensure s3 versioning key exists
+          # use cf to check if a service key exists for tdp-datafiles-dev(or prod)
+          # exit 0 if it does, create it if it doesn't
+          command: |
+            chmod +x ./scripts/create_s3_versioning_key.sh
+            ./scripts/create_s3_versioning_key.sh tdp-datafiles-<<parameters.target_env>> s3-versioning-key
+      - run:
+          name: Set up aws credentials
+          command: |
+            S3_CREDENTIALS=$(cf service-key tdp-datafiles-<<parameters.target_env>> s3-versioning-key | tail -n +2)
+            aws configure set aws_access_key_id $(echo "${S3_CREDENTIALS}" | jq -r .access_key_id)
+            aws configure set aws_secret_access_key $(echo "${S3_CREDENTIALS}" | jq -r .secret_access_key)
+            aws configure set default.region $(echo "${S3_CREDENTIALS}" | jq -r '.region')
+      - run:
+          name: Enable S3 Versioning
+          command: |
+            S3_BUCKET_ID=cg-$(cf service tdp-datafiles-<<parameters.target_env>> --guid)
+            aws s3api put-bucket-versioning --bucket ${S3_BUCKET_ID} --versioning-configuration Status=Enabled
+# commands:
+  run-owasp-scan:
+    description: Runs OWASP ZAP scanner and stores resulting artifacts.
+    parameters:
+      environment:
+        description: The environment this script is being run for.
+        type: enum
+        enum: ["circle", "nightly"] 
+      target:
+        description: The target application to be scanned.
+        type: enum
+        enum: ["backend", "frontend"]
+      target_env:
+        description: The target environment to be scanned.
+        type: enum
+        default: "develop"
+        enum: ["staging", "develop", "prod"]
+    steps:
+      - run:
+          name: Execute OWASP ZAP vulnerability scan
+          #wait up to 60min for scan
+          no_output_timeout: 60m
+          command: ./scripts/zap-scanner.sh <<parameters.target>> <<parameters.environment>> <<parameters.target_env>>
+      - store_artifacts:
+          path: tdrs-<<parameters.target>>/reports/owasp_report.html
+
+  docker-compose-up-frontend:
+    steps:
+      - run:
+          name: Build and spin-up React application
+          command: |
+            cd tdrs-frontend 
+            if [ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]; then 
+            docker network create external-net
+            fi
+            docker-compose up -d --build
+# commands:
+  docker-compose-check:
+    steps:
+      - run:
+          name: Ensure docker-compose exists, otherwise install it.
+          command: ./scripts/docker-compose-check.sh
+
+  docker-compose-up-backend:
+    steps:
+      - run:
+          name: Build and spin-up Django API service
+          command: cd tdrs-backend; docker network create external-net; docker-compose up -d --build
+
+  docker-compose-up-with-elastic-backend:
+    steps:
+      - run:
+          name: Build and spin-up Django API service
+          command: cd tdrs-backend; docker network create external-net; docker-compose --profile elastic_setup up -d --build
+
+  cf-check:
+    steps:
+      - run:
+          name: Ensure cf cli is installed, otherwise install it.
+          command: sudo ./scripts/cf-check.sh
+
+  # This allows us to use the orb stanza for node/install within other commands
+  # NOTE: This doesn't work correctly on machine executors
+  install-nodejs: node/install
+
+  sudo-check:
+    steps:
+      - run:
+          name: Ensure sudo is installed, otherwise install it.
+          command: ./scripts/sudo-check.sh
+
+  login-cloud-dot-gov:
+    description: Authenticates with Cloud.gov and sets org and space targets
+    parameters:
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-org:
+        type: env_var_name
+        default: CF_ORG
+      cf-space:
+        type: string
+        default: tanf-dev
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+    steps:
+      - run:
+          name: Login to Cloud.gov and set application targets
+          command: |
+            cf login -a https://api.fr.cloud.gov \
+              -u ${<<parameters.cf-username>>} \
+              -p ${<<parameters.cf-password>>} \
+              -o ${<<parameters.cf-org>>} \
+              -s <<parameters.cf-space>>
+jobs:
+  test-backend:
+    executor: machine-executor
+    steps:
+      - checkout
+      - docker-compose-check
+      - docker-compose-up-with-elastic-backend
+      - run:
+          name: Run Unit Tests And Create Code Coverage Report
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm web bash -c "./wait_for_services.sh && pytest --cov-report=xml"
+      - run:
+          name: Execute Python Linting Test
+          command: cd tdrs-backend; docker-compose run --rm web bash -c "flake8 ."
+      - upload-codecov:
+          component: backend
+          coverage-report: ./tdrs-backend/coverage.xml
+
+  test-frontend:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - install-nodejs-machine
+      - disable-npm-audit
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+      - run:
+          name: Run ESLint
+          command: cd tdrs-frontend; npm run lint
+      - run:
+          name: Run Pa11y Accessibility Tests
+          command: cd tdrs-frontend; mkdir pa11y-screenshots/; export NODE_OPTIONS=--openssl-legacy-provider; npm run test:accessibility
+      - run:
+          name: Run Jest Unit Tests
+          command: cd tdrs-frontend; npm run test:ci
+      - upload-codecov:
+          component: frontend
+          coverage-report: ./tdrs-frontend/coverage/lcov.info
+      - store_artifacts:
+          path: tdrs-frontend/pa11y-screenshots/
+
+  test-e2e:
+    executor: large-machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - docker-compose-check
+      - docker-compose-up-with-elastic-backend
+      - docker-compose-up-frontend
+      - install-nodejs-machine
+      - disable-npm-audit
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+      - run:
+          name: Wait for backend to become available
+          command: cd tdrs-backend; docker-compose run --rm zaproxy bash -c \
+              "PATH=$PATH:/home/zap/.local/bin &&
+               pip install wait-for-it &&
+               wait-for-it --service http://web:8080 --timeout 180 -- echo \"Django is ready\""
+      - run:
+          name: apply the migrations
+          command: cd tdrs-backend; docker-compose exec web bash -c "python manage.py makemigrations; python manage.py migrate"
+      - run:
+          name: Remove existing cypress test users
+          command: cd tdrs-backend; docker-compose exec web python manage.py delete_cypress_users -usernames new-cypress@teamraft.com cypress-admin@teamraft.com
+      - run:
+          name: Setup cypress test users
+          command: cd tdrs-backend; docker-compose exec web python manage.py generate_cypress_users
+      - run:
+          name: Run Cypress e2e tests
+          command: cd tdrs-frontend; npm run test:e2e-ci
+      - store_artifacts:
+          path: tdrs-frontend/cypress/screenshots/
+      - store_artifacts:
+          path: tdrs-frontend/cypress/videos/
+
+  secrets-check:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: "git-secrets: Scan repository for committed secrets"
+          command: ./scripts/git-secrets-check.sh
+      - run:
+          name: "trufflehog: Scan repository for committed secrets"
+          command: ./scripts/trufflehog-check.sh $CIRCLE_BRANCH
+  deploy-dev:
+    parameters:
+      target_env:
+        type: string
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-<< parameters.target_env >>
+          frontend-appname: tdp-frontend-<< parameters.target_env >>
+
+  deploy-staging:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-staging
+          frontend-appname: tdp-frontend-staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+
+  deploy-develop:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-develop
+          frontend-appname: tdp-frontend-develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-space: tanf-staging
+          cf-username: CF_USERNAME_STAGING
+
+  deploy-infrastructure-dev:
+    parameters:
+      target_env:
+        type: string
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+                cf-app: << parameters.target_env >>
+
+  deploy-infrastructure-staging:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          tf-path: ./terraform/staging
+
+  deploy-infrastructure-production:
+    executor: terraform/default
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-infrastructure:
+          cf-password: CF_PASSWORD_PROD
+          cf-username: CF_USERNAME_PROD
+          cf-space: tanf-prod
+          tf-path: ./terraform/production
+
+  deploy-project-updates-site:
+    parameters:
+      cf-org:
+        default: CF_ORG
+        type: env_var_name
+      cf-space:
+        default: tanf-dev
+        type: string
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf-password>>
+          cf-org: <<parameters.cf-org>>
+          cf-space: <<parameters.cf-space>>
+          cf-username: <<parameters.cf-username>>
+      - run:
+          name: Deploy TDP Project Updates Site
+          command: ./scripts/deploy-tdp-product-update-site.sh rolling tdp-project-updates
+
+  enable-versioning:
+    executor: machine-executor
+    parameters:
+      target_env:
+        type: string
+        default: dev
+      cf-password:
+        type: env_var_name
+        default: CF_PASSWORD_DEV
+      cf-username:
+        type: env_var_name
+        default: CF_USERNAME_DEV
+      cf-space:
+        type: string
+        default: tanf-dev
+    steps:
+      - enable-s3-versioning:
+          target_env: <<parameters.target_env>>
+          cf-password: <<parameters.cf-password>>
+          cf-username: <<parameters.cf-username>>
+          cf-space: <<parameters.cf-space>>
+
+  test-deployment-e2e:
+    executor: machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - install-nodejs-machine
+      - disable-npm-audit
+      - install-nodejs-packages:
+          app-dir: tdrs-frontend
+      - run:
+          name: Run Cypress e2e tests
+          command: cd tdrs-frontend; npm run test:e2e-ci -- --config baseUrl="https://tdp-frontend-develop.acf.hhs.gov" --env cypressToken=$CYPRESS_TOKEN,apiUrl="https://tdp-frontend-develop.acf.hhs.gov/v1",adminUrl="https://tdp-frontend-develop.acf.hhs.gov/admin"
+      - store_artifacts:
+          path: tdrs-frontend/cypress/screenshots/
+      - store_artifacts:
+          path: tdrs-frontend/cypress/videos/
+
+  deploy-production:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - deploy-cloud-dot-gov:
+          environment: production
+          backend-appname: tdp-backend-prod
+          frontend-appname: tdp-frontend-prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
+  prod-deploy-clamav:
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - clamav-cloud-dot-gov:
+          backend-appname: tdp-backend-prod
+          cf-password: CF_PASSWORD_PROD
+          cf-space: tanf-prod
+          cf-username: CF_USERNAME_PROD
+  backend-owasp-scan:
+    executor: large-machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - docker-compose-check
+      - docker-compose-up-backend
+      - docker-compose-up-frontend
+      - run:
+          name: Wait for Django to become available
+          command: |
+            cd tdrs-backend;
+            docker-compose run --rm zaproxy bash -c \
+              "PATH=$PATH:/home/zap/.local/bin &&
+               pip install wait-for-it &&
+               wait-for-it --service http://web:8080 \
+                           --timeout 60 \
+                           -- echo \"Django is ready\""
+      - run-owasp-scan:
+          environment: circle
+          target: backend
+
+  frontend-owasp-scan:
+    executor: large-machine-executor
+    working_directory: ~/tdp-apps
+    steps:
+      - checkout
+      - docker-compose-check
+      - docker-compose-up-backend
+      - docker-compose-up-frontend
+      - run:
+          name: Wait for frontend to become available
+          command: |
+            cd tdrs-frontend;
+            docker-compose run --rm zaproxy bash -c \
+              "PATH=$PATH:/home/zap/.local/bin &&
+               pip install wait-for-it &&
+               wait-for-it --service http://tdp-frontend/ \
+                           --timeout 60 \
+                           -- echo \"Frontend is ready\""
+      - run-owasp-scan:
+          environment: circle
+          target: frontend
+
+  nightly-owasp-scan:
+    executor: large-machine-executor
+    working_directory: ~/tdp-apps
+    parameters:
+      cf_password:
+        type: string
+        default: CF_PASSWORD_STAGING
+      cf_username:
+        type: string
+        default: CF_USERNAME_STAGING
+      cf_space:
+        type: string
+        default: tanf-staging
+      cf_org:
+        type: string
+        default: "CF_ORG"
+      target_env:
+        type: enum
+        enum: [ "staging", "develop", "prod" ]
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+      - docker-compose-check
+      - login-cloud-dot-gov:
+          cf-password: <<parameters.cf_password>>
+          cf-space: <<parameters.cf_space>>
+          cf-org: <<parameters.cf_org>>
+          cf-username: <<parameters.cf_username>>
+      # - run-owasp-scan:
+      #     environment: nightly
+      #     target: backend
+      #     target_env: <<parameters.target_env>>
+      - run-owasp-scan:
+          environment: nightly
+          target: frontend
+          target_env: <<parameters.target_env>>
+      - run:
+          name: Run post-processing task to record OWASP ZAP results
+          command: |
+            # Construct the project slug from the current branch name and user
+            PROJECT_SLUG=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+
+            # These environment variables are exported to Circle CI's BASH_ENV
+            # by the zap-scanner.sh script for each respective app target.
+            CMD_ARGS=(
+              "$CIRCLE_BUILD_NUM"
+              --backend-pass-count "${ZAP_BACKEND_PASS_COUNT:-0}"
+              --backend-warn-count "${ZAP_BACKEND_WARN_COUNT:-0}"
+              --backend-fail-count "${ZAP_BACKEND_FAIL_COUNT:-0}"
+              --frontend-pass-count "${ZAP_FRONTEND_PASS_COUNT:-0}"
+              --frontend-warn-count "${ZAP_FRONTEND_WARN_COUNT:-0}"
+              --frontend-fail-count "${ZAP_FRONTEND_FAIL_COUNT:-0}"
+              --project-slug "$PROJECT_SLUG"
+            )
+            # Evaluate the full command before passing it in so it doesn't
+            # get improperly interpolated by Cloud.gov.
+            CMD="python manage.py process_owasp_scan ${CMD_ARGS[*]}"
+            echo "$CMD"
+
+            # Submit a CF Task for execution that will run the necessary command
+            echo START! && cf run-task tdp-backend-<< parameters.target_env >> --wait --command "$CMD" --name nightly-owasp-scan && echo DONE!
+  make_erd:
+    executor: machine-executor
+    working_directory: ~/tdp_apps
+    steps:
+      - checkout
+      - docker-compose-check
+      - run:
+          name: Run graph_models
+          command: |
+            cd tdrs-backend
+            if [ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]; then
+            docker network create external-net
+            fi
+            docker-compose run --rm web bash -c \
+            "./manage.py graph_models -a -g -o tdp_erd.png"
+      - store_artifacts:
+          path: tdrs-backend/tdp_erd.png
+workflows:
+# workflows:
+  build-and-test-all:
+    when: << pipeline.parameters.build_and_test_all >>
+    jobs:
+      - secrets-check
+      # TODO: Revert back to tests after review
+      - nightly-owasp-scan:
+          target_env: staging
+
+  ci-build-and-test-all:
+    jobs:
+      - secrets-check:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
+      - test-backend:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
+          requires:
+            - secrets-check
+      - test-frontend:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
+          requires:
+            - secrets-check
+      - test-e2e:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
+          requires:
+            - secrets-check
+
+  build-and-test-backend:
+    when: << pipeline.parameters.build_and_test_backend >>
+    jobs:
+      - secrets-check
+      - test-backend:
+          requires:
+            - secrets-check
+
+  build-and-test-frontend:
+    when: << pipeline.parameters.build_and_test_frontend >>
+    jobs:
+      - secrets-check
+      - test-frontend:
+          requires:
+            - secrets-check
+#workflows:
+  deployment:
+    when:
+      and:
+        - or:
+            - equal: [ master, << pipeline.git.branch >> ]
+            - equal: [ main, << pipeline.git.branch >> ]
+            - equal: [ develop, << pipeline.git.branch >> ]
+            - << pipeline.parameters.run_dev_deployment >>
+        - not: << pipeline.parameters.run_nightly_owasp_scan >>
+
+    jobs:
+      - deploy-project-updates-site:
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-infrastructure-dev:
+          target_env: << pipeline.parameters.target_env >>
+          filters:
+            branches:
+              ignore:
+                - develop
+                - main
+                - master
+      - deploy-infrastructure-staging:
+          filters:
+            branches:
+              only:
+                - develop
+                - main
+      - deploy-infrastructure-production:
+          filters:
+            branches:
+              only:
+                - master
+      - enable-versioning:
+          requires:
+            - deploy-infrastructure-dev
+          filters:
+            branches:
+              ignore:
+                - develop
+                - main
+                - master
+      - enable-versioning:
+          requires:
+            - deploy-infrastructure-staging
+          target_env: develop
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          filters:
+            branches:
+              only:
+                - develop
+      - enable-versioning:
+          requires:
+            - deploy-infrastructure-staging
+          target_env: staging
+          cf-password: CF_PASSWORD_STAGING
+          cf-username: CF_USERNAME_STAGING
+          cf-space: tanf-staging
+          filters:
+            branches:
+              only:
+                - main
+      - enable-versioning:
+          requires:
+            - deploy-infrastructure-production
+          target_env: prod
+          cf-password: CF_PASSWORD_PROD
+          cf-username: CF_USERNAME_PROD
+          cf-space: tanf-prod
+          filters:
+            branches:
+              only:
+                - master
+      - prod-deploy-clamav:
+          requires:
+            - deploy-infrastructure-production
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-dev:
+          target_env: << pipeline.parameters.target_env >>
+          requires:
+            - deploy-infrastructure-dev
+          filters:
+            branches:
+              ignore:
+                - develop
+                - main
+                - master
+      - deploy-develop:
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - develop
+      - deploy-staging:
+          requires:
+            - deploy-infrastructure-staging
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-production:
+          requires:
+            - deploy-infrastructure-production
+          filters:
+            branches:
+              only:
+                - master
+      - test-deployment-e2e:
+          requires:
+            - deploy-develop
+          filters:
+            branches:
+              only:
+                - develop
+      - make_erd: # from ../util folder
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+# workflows:
+  owasp-scan:
+    when: << pipeline.parameters.run_owasp_scan >>
+    jobs:
+      - backend-owasp-scan
+      - frontend-owasp-scan
+  
+  nightly:
+    when: << pipeline.parameters.run_nightly_owasp_scan >>
+    jobs:
+      - nightly-owasp-scan:
+          target_env: develop
+          filters:
+            branches:
+              only:
+                - develop
+      - nightly-owasp-scan:
+          target_env: staging
+          filters:
+            branches:
+              only:
+                - main
+      - nightly-owasp-scan:
+          target_env: prod
+          cf_password: CF_PASSWORD_PROD
+          cf_username: CF_USERNAME_PROD
+          cf_space: tanf-prod
+          filters:
+            branches:
+              only:
+                - master
