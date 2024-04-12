@@ -139,7 +139,7 @@ ZAP_CLI_OPTIONS="\
 # How long ZAP will crawl the app with the spider process
 ZAP_SPIDER_MINS=2
 
-ZAP_ARGS=(-t "$APP_URL" -m "$ZAP_SPIDER_MINS" -r "$REPORT_NAME") # -z "$ZAP_CLI_OPTIONS")
+ZAP_ARGS=(-t "$APP_URL" -m "$ZAP_SPIDER_MINS" -r "$REPORT_NAME" -z "$ZAP_CLI_OPTIONS")
 if [ -z ${CONFIG_FILE+x} ]; then
     echo "No config file, defaulting all alerts to WARN"
 else
