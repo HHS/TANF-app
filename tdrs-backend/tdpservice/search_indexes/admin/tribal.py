@@ -9,10 +9,6 @@ class Tribal_TANF_T1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
-        'COUNTY_FIPS_CODE',
-        'ZIP_CODE',
-        'STRATUM',
         'datafile',
         'stt_code',
     ]
@@ -33,7 +29,6 @@ class Tribal_TANF_T2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -52,7 +47,6 @@ class Tribal_TANF_T3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -70,7 +64,6 @@ class Tribal_TANF_T4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -87,7 +80,6 @@ class Tribal_TANF_T5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]

@@ -9,10 +9,6 @@ class TANF_T1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
-        'COUNTY_FIPS_CODE',
-        'ZIP_CODE',
-        'STRATUM',
         'datafile',
         'stt_code',
     ]
@@ -33,7 +29,6 @@ class TANF_T2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -52,7 +47,6 @@ class TANF_T3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -71,7 +65,6 @@ class TANF_T4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -90,7 +83,6 @@ class TANF_T5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -109,7 +101,6 @@ class TANF_T6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'CALENDAR_QUARTER',
-        'RPT_MONTH_YEAR',
         'datafile',
         'stt_code',
     ]

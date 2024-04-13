@@ -9,10 +9,6 @@ class SSP_M1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
-        'COUNTY_FIPS_CODE',
-        'ZIP_CODE',
-        'STRATUM',
         'datafile',
         'stt_code',
     ]
@@ -33,7 +29,6 @@ class SSP_M2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -52,7 +47,6 @@ class SSP_M3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -70,7 +64,6 @@ class SSP_M4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
@@ -88,7 +81,6 @@ class SSP_M5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
         'stt_code',
     ]
