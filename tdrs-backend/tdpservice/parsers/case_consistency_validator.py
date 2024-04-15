@@ -221,7 +221,7 @@ class CaseConsistencyValidator:
                 else:
                     # loop through all t2s and t3s
                     # to find record where FAMILY_AFFILIATION == 1
-                    num_errors += self.__validate_family_affiliation(t1s, t2s, t3s, (
+                    num_errors += self.__validate_family_affiliation(num_errors, t1s, t2s, t3s, (
                             f'Every {t1_model_name} record should have at least one corresponding '
                             f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and '
                             f'CASE_NUMBER, where FAMILY_AFFILIATION==1'
