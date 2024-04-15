@@ -494,7 +494,8 @@ def test_calendarQuarterIsValid_returns_invalid(value):
     is_valid, error_msg = val(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error_msg == f"T1: {value[2:7]} is an invalid value for the CALENDAR_QUARTER field."
+    assert error_msg == f"T1: {value[2:7]} is invalid. Calendar Quarter must be a numeric " + \
+        "representing the Calendar Year and Quarter formatted as YYYYQ"
 
 
 @pytest.mark.parametrize("value", ["T720201", "T720202", "T720203", "T720204"])

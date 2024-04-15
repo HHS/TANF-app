@@ -1697,6 +1697,7 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
 
     assert parser_errors.count() == 3
 
-    parser_errors.first().error_message == "T7: 2020  is an invalid value for the CALENDAR_QUARTER field."
+    parser_errors.first().error_message == "T7: 2020  is invalid. Calendar Quarter must be a numeric" + \
+        "representing the Calendar Year and Quarter formatted as YYYYQ"
 
     Tribal_TANF_T7.objects.count() == 0

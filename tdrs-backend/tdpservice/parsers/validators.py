@@ -378,7 +378,8 @@ def calendarQuarterIsValid(start=0, end=None):
         lambda value,
         row_schema,
         friendly_name,
-        item_num: f"{row_schema.record_type}: {value[start:end]} is an invalid value for the CALENDAR_QUARTER field.",
+        item_num: f"{row_schema.record_type}: {value[start:end]} is invalid. Calendar Quarter must be a numeric "
+        "representing the Calendar Year and Quarter formatted as YYYYQ",
     )
 
 
