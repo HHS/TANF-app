@@ -100,7 +100,7 @@
             # get improperly interpolated by Cloud.gov.
             CMD="python manage.py process_owasp_scan ${CMD_ARGS[*]}"
             # Submit a CF Task for execution that will run the necessary command
-            sleep 300
+            sleep 180
             cf run-task tdp-backend-<< parameters.target_env >> \
               --command "$CMD" \
               --name nightly-owasp-scan
