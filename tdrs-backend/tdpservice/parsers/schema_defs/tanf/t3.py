@@ -293,7 +293,7 @@ child_one = RowSchema(
             startIndex=51,
             endIndex=52,
             required=False,
-            validators=[validators.oneOf([0, 1, 2, 9])],
+            validators=[validators.oneOf([1, 2, 9])],
         ),
         Field(
             item="77A",

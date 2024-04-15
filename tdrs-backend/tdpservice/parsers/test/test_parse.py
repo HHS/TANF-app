@@ -1676,3 +1676,38 @@ def test_parse_no_records_file(no_records_file, dfs):
     assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert error.content_type is None
     assert error.object_id is None
+
+
+@pytest.fixture
+def t3_cat2_invalid_citizenship_file():
+    """Fixture for T3 file with an invalid CITIZENSHIP_STATUS."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q1',
+        file__name='t2_invalid_dob_file.txt',
+        file__section='Active Case Data',
+        file__data=(b'HEADER20204A06   TAN1EN\n'
+                    b'T320201011111111112420190127WTTTT90W022212222204398000000000                                     '
+                    b'                                                           \n'
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.mark.django_db()
+# @pytest.mark.parametrize("")
+def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs):
+    """Test parsing a TANF T3 record with an invalid CITIZENSHIP_STATUS."""
+    dfs.datafile = t3_cat2_invalid_citizenship_file
+    t3_cat2_invalid_citizenship_file.year = 2021
+    t3_cat2_invalid_citizenship_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(t3_cat2_invalid_citizenship_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).order_by("pk")
+
+    assert parser_errors.count() == 1
+
+    citizenship_status_error = parser_errors.first()
+
+    assert citizenship_status_error.error_message == "T3: 0 is not in [1, 2, 9]."
