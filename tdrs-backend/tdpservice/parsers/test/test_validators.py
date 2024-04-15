@@ -361,7 +361,7 @@ def test_recordHasLengthBetween_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == f"T1 record length of {len(value)} characters is not on the range [{lower}, {upper}]."
+    assert error == f"T1 record length of {len(value)} characters is not in the range [{lower}, {upper}]."
 
 
 def test_intHasLength_returns_valid():
