@@ -17,9 +17,6 @@ class SSP_M1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         FiscalPeriodFilter,
         CreationDateFilter,
         STTFilter,
-        'RPT_MONTH_YEAR',
-        'ZIP_CODE',
-        'STRATUM',
     ]
 
 
@@ -37,7 +34,6 @@ class SSP_M2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         FiscalPeriodFilter,
         CreationDateFilter,
         STTFilter,
-        'RPT_MONTH_YEAR',
     ]
 
 
@@ -55,7 +51,6 @@ class SSP_M3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         FiscalPeriodFilter,
         CreationDateFilter,
         STTFilter,
-        'RPT_MONTH_YEAR',
     ]
 
 class SSP_M4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -72,7 +67,6 @@ class SSP_M4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         FiscalPeriodFilter,
         CreationDateFilter,
         STTFilter,
-        'RPT_MONTH_YEAR',
     ]
 
 class SSP_M5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -89,7 +83,6 @@ class SSP_M5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         FiscalPeriodFilter,
         CreationDateFilter,
         STTFilter,
-        'RPT_MONTH_YEAR',
     ]
 
 class SSP_M6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -104,11 +97,9 @@ class SSP_M6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     ]
 
     list_filter = [
-        'CALENDAR_QUARTER',
         FiscalPeriodFilter,
         CreationDateFilter,
         STTFilter,
-        'RPT_MONTH_YEAR'
     ]
 
 class SSP_M7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -126,9 +117,7 @@ class SSP_M7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     ]
 
     list_filter = [
-        'CALENDAR_QUARTER',
         FiscalPeriodFilter,
         CreationDateFilter,
         STTFilter,
-        'RPT_MONTH_YEAR',
     ]

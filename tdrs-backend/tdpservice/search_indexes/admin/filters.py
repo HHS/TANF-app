@@ -72,6 +72,17 @@ class CreationDateFilter(SimpleListFilter):
             ('all', _('All')),
         )
 
+    def choices(self, cl):
+        """Update query string based on selection."""
+        for lookup, title in self.lookup_choices:
+            yield {
+                'selected': self.value() == lookup,
+                'query_string': cl.get_query_string({
+                    self.parameter_name: lookup,
+                }, []),
+                'display': title,
+            }
+
     def queryset(self, request, queryset):
         """Sort queryset to show latest records."""
         if self.value() is None and queryset.exists():
@@ -113,10 +124,11 @@ class FiscalPeriodFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         """Available options in dropdown."""
-        current_year = datetime.date.today().year
+        today = datetime.date.today()
+        current_year =  today.year + 1 if datetime.date.today().month > 8 else today.year
         quarters = [1, 2, 3, 4]
         months = ["(Oct - Dec)", "(Jan - Mar)", "(Apr - Jun)", "(Jul - Sep)"]
-        years = [year for year in range(current_year - 3, current_year + 1)]
+        years = [year for year in range(current_year, 2020, -1)]
         options = [(None, _('All'))]
 
         for year in years:
