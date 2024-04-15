@@ -1,12 +1,16 @@
 """Tests for generic validator functions."""
 
 import pytest
+import logging
 from datetime import date
 from .. import validators
+from ..case_consistency_validator import CaseConsistencyValidator
+from .. import schema_defs, util
 from ..row_schema import RowSchema
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
 from tdpservice.parsers.test.factories import SSPM5Factory
 
+logger = logging.getLogger(__name__)
 
 @pytest.mark.parametrize("value,length", [
     (None, 0),
@@ -44,7 +48,8 @@ def test_or_validators():
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("3", RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("5", RowSchema(), "friendly_name", "item_no") == (False,
-                                                                       "T1: 5 does not match 2. or T1: 5 does not "
+                                                                       "T1 friendly_name: 5 does not match 2. or "
+                                                                       "T1 friendly_name: 5 does not "
                                                                        "match 3.")
 
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")),
@@ -59,13 +64,15 @@ def test_or_validators():
 
     value = "5"
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                         "T1: 5 does not match 2. or T1: 5 does not "
-                                                                         "match 3. or T1: 5 does not match 4.")
+                                                                         'T1 friendly_name: 5 does not match 2. or '
+                                                                         'T1 friendly_name: 5 does not match 3. or '
+                                                                         'T1 friendly_name: 5 does not match 4.')
 
     validator = validators.or_validators(validators.matches((2)), validators.matches((3)), validators.isLargerThan(4))
     assert validator(5, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator(1, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                     "T1: 1 does not match 2. or T1: 1 does not "
+                                                                     "T1 friendly_name: 1 does not match 2. "
+                                                                     "or T1 friendly_name: 1 does not "
                                                                      "match 3. or T1: 1 is not larger than 4.")
 
 def test_if_validators():
@@ -82,7 +89,8 @@ def test_if_validators():
           result_field_name="Field2", result_function=validators.matches('1'),
       )
     result = validator(value, RowSchema())
-    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1: 2 does not match 1.', ['Field1', 'Field2'])
+    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1 Field2: 2 does not match 1.',
+                      ['Field1', 'Field2'])
 
 
 def test_and_validators():
@@ -183,7 +191,7 @@ def test_matches_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: TEST does not match test.'
+    assert error == 'T1 friendly_name: TEST does not match test.'
 
 
 def test_oneOf_returns_valid():
@@ -1282,3 +1290,93 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
 
         result = val(record, RowSchema())
         assert result[0] is False
+
+
+class TestCaseConsistencyValidator:
+    """Test case consistency (cat4) validators."""
+
+    def parse_header(self, datafile):
+        """Parse datafile header into header object."""
+        rawfile = datafile.file
+
+        # parse header, trailer
+        rawfile.seek(0)
+        header_line = rawfile.readline().decode().strip()
+        return schema_defs.header.parse_and_validate(
+            header_line,
+            util.make_generate_file_precheck_parser_error(datafile, 1)
+        )
+
+    @pytest.fixture
+    def tanf_s1_records(self):
+        """Return group of TANF Section 1 records."""
+        t1 = TanfT1Factory.create()
+        t2 = TanfT2Factory.create()
+        t3 = TanfT3Factory.create()
+        t3_1 = TanfT3Factory.create()
+        return [t1, t2, t3, t3_1]
+
+    @pytest.fixture
+    def tanf_s1_schemas(self):
+        """Return group of TANF Section 1 schemas."""
+        s1 = schema_defs.tanf.t1.schemas[0]
+        s2 = schema_defs.tanf.t2.schemas[0]
+        s3 = schema_defs.tanf.t3.schemas[0]
+        return [s1, s2, s3, s3]
+
+    @pytest.fixture
+    def small_correct_file(self, stt_user, stt):
+        """Fixture for small_correct_file."""
+        return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
+
+    @pytest.fixture
+    def small_correct_file_header(self, small_correct_file):
+        """Return a valid header record."""
+        header, header_is_valid, header_errors = self.parse_header(small_correct_file)
+
+        if not header_is_valid:
+            logger.error('Header is not valid: %s', header_errors)
+            return None
+        return header
+
+    @pytest.mark.django_db
+    def test_add_record(self, small_correct_file_header, small_correct_file, tanf_s1_records, tanf_s1_schemas):
+        """Test add_record logic."""
+        case_consistency_validator = CaseConsistencyValidator(small_correct_file_header,
+                                                              util.make_generate_parser_error(small_correct_file, None))
+
+        for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
+            case_consistency_validator.add_record(record, schema, True)
+
+        assert case_consistency_validator.has_validated is False
+        assert case_consistency_validator.case_has_errors is True
+        assert len(case_consistency_validator.record_schema_pairs) == 4
+        assert case_consistency_validator.total_cases_cached == 0
+        assert case_consistency_validator.total_cases_validated == 0
+
+        # Add record with different case number to proc validation again and start caching a new case.
+        t1 = TanfT1Factory.create()
+        t1.CASE_NUMBER = 2
+        case_consistency_validator.add_record(t1, tanf_s1_schemas[0], False)
+        assert case_consistency_validator.has_validated is False
+        assert case_consistency_validator.case_has_errors is False
+        assert len(case_consistency_validator.record_schema_pairs) == 1
+        assert case_consistency_validator.total_cases_cached == 1
+        assert case_consistency_validator.total_cases_validated == 0
+
+        # Complete the case to proc validation and verify that it occured. Even if the next case has errors.
+        t2 = TanfT2Factory.create()
+        t3 = TanfT3Factory.create()
+        t2.CASE_NUMBER = 2
+        t3.CASE_NUMBER = 2
+        case_consistency_validator.add_record(t2, tanf_s1_schemas[1], False)
+        case_consistency_validator.add_record(t3, tanf_s1_schemas[2], False)
+        assert case_consistency_validator.case_has_errors is False
+
+        case_consistency_validator.add_record(tanf_s1_records[0], tanf_s1_schemas[0], True)
+
+        assert case_consistency_validator.has_validated is True
+        assert case_consistency_validator.case_has_errors is True
+        assert len(case_consistency_validator.record_schema_pairs) == 1
+        assert case_consistency_validator.total_cases_cached == 2
+        assert case_consistency_validator.total_cases_validated == 1
