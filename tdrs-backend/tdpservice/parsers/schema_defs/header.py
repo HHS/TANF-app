@@ -117,12 +117,12 @@ header = RowSchema(
         Field(
             item="10",
             name="update",
-            friendly_name="update",
+            friendly_name="update indicator",
             type="string",
             startIndex=22,
             endIndex=23,
             required=True,
-            validators=[validators.oneOf(["N", "D", "U"])],
+            validators=[validators.matches("D")],
         ),
     ],
 )
