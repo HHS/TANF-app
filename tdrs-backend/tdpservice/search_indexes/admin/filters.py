@@ -116,7 +116,7 @@ class FiscalPeriodFilter(SimpleListFilter):
         current_year = datetime.date.today().year
         quarters = [1, 2, 3, 4]
         months = ["(Oct - Dec)", "(Jan - Mar)", "(Apr - Jun)", "(Jul - Sep)"]
-        years = [year for year in range(current_year - 5, current_year + 1)]
+        years = [year for year in range(current_year - 3, current_year + 1)]
         options = [(None, _('All'))]
 
         for year in years:
