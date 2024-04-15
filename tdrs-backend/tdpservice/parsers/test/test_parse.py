@@ -50,7 +50,7 @@ def t2_invalid_dob_file():
         quarter='Q1',
         file__name='t2_invalid_dob_file.txt',
         file__section='Active Case Data',
-        file__data=(b'HEADER20204A25   TAN1EU\n'
+        file__data=(b'HEADER20204A25   TAN1ED\n'
                     b'T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000'
                     b'0000000000000000000000000000000000000000000000000000000000291\n'
                     b'TRAILER0000001         ')
@@ -1708,3 +1708,24 @@ def test_parse_aggregates_rejected_datafile(aggregates_rejected_datafile, dfs):
     assert errors.filter(row_number=2).count() == 2
 
     assert TANF_T2.objects.count() == 0
+
+@pytest.fixture
+def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
+    """Fixture for tanf_section_1_file_with_bad_update_indicator."""
+    return util.create_test_datafile('tanf_s1_bad_update_indicator.txt', stt_user, stt, "Active Case Data")
+
+@pytest.mark.django_db()
+def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file_with_bad_update_indicator, dfs):
+    """Test parsing TANF Section 1 submission update indicator."""
+    dfs.datafile = tanf_section_1_file_with_bad_update_indicator
+
+    parse.parse_datafile(tanf_section_1_file_with_bad_update_indicator, dfs)
+
+    parser_errors = ParserError.objects.filter(file=tanf_section_1_file_with_bad_update_indicator)
+
+    assert parser_errors.count() == 1
+
+    error = parser_errors.first()
+
+    assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert error.error_message == "HEADER update indicator: U does not match D."

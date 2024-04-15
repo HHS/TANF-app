@@ -44,7 +44,8 @@ def test_or_validators():
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("3", RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("5", RowSchema(), "friendly_name", "item_no") == (False,
-                                                                       "T1: 5 does not match 2. or T1: 5 does not "
+                                                                       "T1 friendly_name: 5 does not match 2. or "
+                                                                       "T1 friendly_name: 5 does not "
                                                                        "match 3.")
 
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")),
@@ -59,13 +60,15 @@ def test_or_validators():
 
     value = "5"
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                         "T1: 5 does not match 2. or T1: 5 does not "
-                                                                         "match 3. or T1: 5 does not match 4.")
+                                                                         'T1 friendly_name: 5 does not match 2. or '
+                                                                         'T1 friendly_name: 5 does not match 3. or '
+                                                                         'T1 friendly_name: 5 does not match 4.')
 
     validator = validators.or_validators(validators.matches((2)), validators.matches((3)), validators.isLargerThan(4))
     assert validator(5, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator(1, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                     "T1: 1 does not match 2. or T1: 1 does not "
+                                                                     "T1 friendly_name: 1 does not match 2. "
+                                                                     "or T1 friendly_name: 1 does not "
                                                                      "match 3. or T1: 1 is not larger than 4.")
 
 def test_if_validators():
@@ -82,7 +85,8 @@ def test_if_validators():
           result_field_name="Field2", result_function=validators.matches('1'),
       )
     result = validator(value, RowSchema())
-    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1: 2 does not match 1.', ['Field1', 'Field2'])
+    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1 Field2: 2 does not match 1.',
+                      ['Field1', 'Field2'])
 
 
 def test_and_validators():
@@ -183,7 +187,7 @@ def test_matches_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: TEST does not match test.'
+    assert error == 'T1 friendly_name: TEST does not match test.'
 
 
 def test_oneOf_returns_valid():
