@@ -99,7 +99,7 @@
             # Evaluate the full command before passing it in so it doesn't
             # get improperly interpolated by Cloud.gov.
             CMD="python manage.py process_owasp_scan ${CMD_ARGS[*]}"
-            # Submit a CF Task for execution that will run the necessary command
+            # Submit a CF Task for execution after a 4 minute sleep to ensure all of the scan's previous state has been closed.
             sleep 240
             cf run-task tdp-backend-<< parameters.target_env >> \
               --command "$CMD" \
