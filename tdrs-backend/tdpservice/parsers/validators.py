@@ -280,7 +280,7 @@ def recordHasLengthBetween(lower, upper, error_func=None):
         lambda value, row_schema, friendly_name, item_num: error_func(value, lower, upper)
         if error_func
         else
-        f"{row_schema.record_type} record length of {len(value)} characters is not on the range [{lower}, {upper}].",
+        f"{row_schema.record_type} record length of {len(value)} characters is not in the range [{lower}, {upper}].",
     )
 
 def intHasLength(num_digits):
