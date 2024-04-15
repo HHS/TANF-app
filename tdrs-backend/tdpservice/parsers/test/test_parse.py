@@ -368,7 +368,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
     length_error = row_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == "T1 record length of 7 characters is not on the range [117, 156]."
+    assert length_error.error_message == "T1 record length of 7 characters is not in the range [117, 156]."
     assert length_error.content_type is None
     assert length_error.object_id is None
     assert errors == {
@@ -422,7 +422,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
         row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert row_3_error.error_message in {
-            'T1 record length of 7 characters is not on the range [117, 156].',
+            'T1 record length of 7 characters is not in the range [117, 156].',
             'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.',
             'T1trash does not start with TRAILER.',
             'TRAILER record length is 7 characters but must be 23.',
@@ -444,7 +444,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     row_3_errors = [trailer_errors[2], trailer_errors[3]]
     length_error = row_3_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'T1 record length of 7 characters is not on the range [117, 156].'
+    assert length_error.error_message == 'T1 record length of 7 characters is not in the range [117, 156].'
     assert length_error.content_type is None
     assert length_error.object_id is None
 
