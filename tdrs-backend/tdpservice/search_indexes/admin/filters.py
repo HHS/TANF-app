@@ -125,7 +125,7 @@ class FiscalPeriodFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         """Available options in dropdown."""
         today = datetime.date.today()
-        current_year = today.year + 1 if datetime.date.today().month > 8 else today.year
+        current_year = today.year + 1 if today.month > 8 else today.year
         quarters = [1, 2, 3, 4]
         months = ["(Oct - Dec)", "(Jan - Mar)", "(Apr - Jun)", "(Jul - Sep)"]
         years = [year for year in range(current_year, 2020, -1)]
