@@ -5,7 +5,7 @@
       - secrets-check
       # TODO: Revert back to tests after review
       - nightly-owasp-scan:
-          target_env: staging
+          target_env: develop
 
   ci-build-and-test-all:
     jobs:
