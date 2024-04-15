@@ -17,7 +17,6 @@ CMD="python manage.py process_owasp_scan $CIRCLE_BUILD_NUM --backend-pass-count 
 echo .
 sleep 120
 echo .
-echo START!
+echo Executing command: $CMD
 APP=tdp-backend-$TARGET
-cf run-task "$APP" --wait --command "python -V" --name "nightly-owasp-scan"
-echo DONE!
+cf run-task "$APP" --wait --command "$CMD" --name "nightly-owasp-scan"
