@@ -14,9 +14,9 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
-from ..schema_defs.util import get_section_reference, get_program_models, get_program_model
 from elasticsearch.helpers.errors import BulkIndexError
 import logging
+logger = logging.getLogger(__name__)
 
 
 es_logger = logging.getLogger('elasticsearch')
@@ -50,7 +50,7 @@ def t2_invalid_dob_file():
         quarter='Q1',
         file__name='t2_invalid_dob_file.txt',
         file__section='Active Case Data',
-        file__data=(b'HEADER20204A25   TAN1EU\n'
+        file__data=(b'HEADER20204A25   TAN1ED\n'
                     b'T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000'
                     b'0000000000000000000000000000000000000000000000000000000000291\n'
                     b'TRAILER0000001         ')
@@ -697,6 +697,9 @@ def super_big_s1_file(stt_user, stt):
 @pytest.mark.skip(reason="long runtime")  # big_files
 def test_parse_super_big_s1_file(super_big_s1_file, dfs):
     """Test parsing of super_big_s1_file and validate all T1/T2/T3 records are created."""
+    super_big_s1_file.year = 2023
+    super_big_s1_file.quarter = 'Q2'
+
     parse.parse_datafile(super_big_s1_file, dfs)
 
     expected_t1_record_count = 96642
@@ -929,17 +932,17 @@ def test_get_schema_options(dfs):
     assert schema == schema_defs.tanf.t1
 
     # get model
-    models = get_program_models('TAN', 'A')
+    models = schema_defs.utils.get_program_models('TAN', 'A')
     assert models == {
         'T1': schema_defs.tanf.t1,
         'T2': schema_defs.tanf.t2,
         'T3': schema_defs.tanf.t3,
     }
 
-    model = get_program_model('TAN', 'A', 'T1')
+    model = schema_defs.utils.get_program_model('TAN', 'A', 'T1')
     assert model == schema_defs.tanf.t1
     # get section
-    section = get_section_reference('TAN', 'C')
+    section = schema_defs.utils.get_section_reference('TAN', 'C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
 
     # from datafile:
@@ -1676,3 +1679,25 @@ def test_parse_no_records_file(no_records_file, dfs):
     assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert error.content_type is None
     assert error.object_id is None
+
+
+@pytest.fixture
+def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
+    """Fixture for tanf_section_1_file_with_bad_update_indicator."""
+    return util.create_test_datafile('tanf_s1_bad_update_indicator.txt', stt_user, stt, "Active Case Data")
+
+@pytest.mark.django_db()
+def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file_with_bad_update_indicator, dfs):
+    """Test parsing TANF Section 1 submission update indicator."""
+    dfs.datafile = tanf_section_1_file_with_bad_update_indicator
+
+    parse.parse_datafile(tanf_section_1_file_with_bad_update_indicator, dfs)
+
+    parser_errors = ParserError.objects.filter(file=tanf_section_1_file_with_bad_update_indicator)
+
+    assert parser_errors.count() == 1
+
+    error = parser_errors.first()
+
+    assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert error.error_message == "HEADER update indicator: U does not match D."
