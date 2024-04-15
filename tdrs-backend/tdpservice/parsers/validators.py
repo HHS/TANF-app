@@ -226,7 +226,7 @@ def matches(option, error_func=None):
         lambda value: value == option,
         lambda value, row_schema, friendly_name, item_num: error_func(option)
         if error_func
-        else f"{row_schema.record_type}: {value} does not match {option}.",
+        else f"{row_schema.record_type} {friendly_name}: {value} does not match {option}.",
     )
 
 
