@@ -137,7 +137,7 @@ ZAP_CLI_OPTIONS="\
   -config globalexcludeurl.url_list.url\(21\).enabled=true \
   -config spider.postform=true"
 # How long ZAP will crawl the app with the spider process
-ZAP_SPIDER_MINS=2
+ZAP_SPIDER_MINS=10
 
 ZAP_ARGS=(-t "$APP_URL" -m "$ZAP_SPIDER_MINS" -r "$REPORT_NAME" -z "$ZAP_CLI_OPTIONS")
 if [ -z ${CONFIG_FILE+x} ]; then
