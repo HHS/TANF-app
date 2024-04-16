@@ -57,7 +57,7 @@ def t2_invalid_dob_file():
     )
     return parsing_file
 
-
+#TODO: the name of this test doesn't make perfect sense anymore since it will always have errors now.
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile, dfs):
     """Test parsing of small_correct_file."""
@@ -1366,15 +1366,16 @@ def test_rpt_month_year_mismatch(test_header_datafile, dfs):
     parse.parse_datafile(datafile, dfs)
 
     parser_errors = ParserError.objects.filter(file=datafile)
-    assert parser_errors.count() == 0
+    assert parser_errors.count() == 1
+    assert parser_errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
     datafile.year = 2023
     datafile.save()
 
     parse.parse_datafile(datafile, dfs)
 
-    parser_errors = ParserError.objects.filter(file=datafile)
-    assert parser_errors.count() == 1
+    parser_errors = ParserError.objects.filter(file=datafile).order_by('-id')
+    assert parser_errors.count() == 2
 
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
