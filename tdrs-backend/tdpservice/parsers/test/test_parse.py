@@ -68,18 +68,22 @@ def test_parse_small_correct_file(test_datafile, dfs):
 
     parse.parse_datafile(test_datafile, dfs)
 
+    errors = ParserError.objects.filter(file=test_datafile)
+    assert errors.count() == 1
+    assert errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
-            assert month['accepted_without_errors'] == 1
-            assert month['accepted_with_errors'] == 0
+            assert month['accepted_without_errors'] == 0
+            assert month['accepted_with_errors'] == 1
         else:
             assert month['accepted_without_errors'] == 0
             assert month['accepted_with_errors'] == 0
 
-    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     assert TANF_T1.objects.count() == 1
 
     # spot check
