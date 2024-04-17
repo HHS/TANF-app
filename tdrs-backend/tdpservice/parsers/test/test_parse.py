@@ -1713,8 +1713,9 @@ def t3_cat2_invalid_citizenship_file():
         file__section='Active Case Data',
         file__data=(b'HEADER20204A06   TAN1ED\n'
                     b'T320201011111111112420190127WTTTT90W022212222204398000000000\n'
-                    b'T320201011111111112420190127WTTTT90W02221222220439810000000042010010133333333300000001100000099998888\n'
-                    b'TRAILER0000001         ')
+                    b'T320201011111111112420190127WTTTT90W0222122222043981000000004201001013333333330000000'
+                    b'1100000099998888\n'
+                    b'TRAILER0000002         ')
     )
     return parsing_file
 
@@ -1767,9 +1768,9 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     assert parser_errors.count() == 3
 
-    education_level_error = parser_errors[0];
-    citizenship_status_error = parser_errors[1];
-    cooperation_child_support_error = parser_errors[2];
+    education_level_error = parser_errors[0]
+    citizenship_status_error = parser_errors[1]
+    cooperation_child_support_error = parser_errors[2]
 
     assert education_level_error.error_message == "M2: 00 matches 00."
     assert citizenship_status_error.error_message == "M2: 0 is not in [1, 2, 3, 9]."
@@ -1805,9 +1806,9 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     assert parser_errors.count() == 3
 
-    education_level_error = parser_errors[0];
-    citizenship_status_1_error = parser_errors[1];
-    citizenship_status_2_error = parser_errors[2];
+    education_level_error = parser_errors[0]
+    citizenship_status_1_error = parser_errors[1]
+    citizenship_status_2_error = parser_errors[2]
 
     assert education_level_error.error_message == "M3: 00 matches 00."
     assert citizenship_status_1_error.error_message == "M3: 0 is not in [1, 2, 3, 9]."
@@ -1838,11 +1839,11 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
     parse.parse_datafile(m5_cat2_invalid_23_24_file, dfs)
 
     parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).order_by("pk")
-    
+
     assert parser_errors.count() == 2
 
-    education_level_error = parser_errors[0];
-    citizenship_status_error = parser_errors[1];
+    education_level_error = parser_errors[0]
+    citizenship_status_error = parser_errors[1]
 
     assert education_level_error.error_message == "M5: 00 matches 00."
     assert citizenship_status_error.error_message == "M5: 0 is not in [1, 2, 3, 9]."
