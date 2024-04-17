@@ -29,3 +29,10 @@ def ssp_ssn_decryption_func(value, **kwargs):
         decryption_table = str.maketrans(decryption_dict)
         return value.translate(decryption_table)
     return value
+
+def zero_pad(digits):
+    """Zero pad a string"""
+    def transform(value, **kwargs):
+        return value.lstrip().zfill(digits)
+    return transform
+
