@@ -308,8 +308,9 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 duplicate_manager.add_record(record, line, line_number)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
+        num_errors += duplicate_manager.get_num_generated_errors()
         unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
-            case_consistency_validator.get_generated_errors() + duplicate_manager.generate_errors()
+            case_consistency_validator.get_generated_errors() + duplicate_manager.get_generated_errors()
         case_consistency_validator.clear_errors()
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs)
