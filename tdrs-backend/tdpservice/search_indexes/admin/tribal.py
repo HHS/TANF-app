@@ -1,90 +1,90 @@
 """ModelAdmin classes for parsed TRIBAL data files."""
-from django.contrib import admin
-from .filter import CreationDateFilter
+from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
+from .mixins import CsvExportAdminMixin, ReadOnlyAdminMixin
 
 
-class Tribal_TANF_T1Admin(admin.ModelAdmin):
+class Tribal_TANF_T1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T1 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
-        'COUNTY_FIPS_CODE',
-        'ZIP_CODE',
-        'STRATUM',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
-        'ZIP_CODE',
-        'STRATUM',
+        STTFilter,
     ]
 
 
-class Tribal_TANF_T2Admin(admin.ModelAdmin):
+class Tribal_TANF_T2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T2 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
 
 
-class Tribal_TANF_T3Admin(admin.ModelAdmin):
+class Tribal_TANF_T3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T3 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
 
-class Tribal_TANF_T4Admin(admin.ModelAdmin):
+class Tribal_TANF_T4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T4 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
-class Tribal_TANF_T5Admin(admin.ModelAdmin):
+class Tribal_TANF_T5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T5 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
 
-class Tribal_TANF_T6Admin(admin.ModelAdmin):
+class Tribal_TANF_T6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal T6 data files."""
 
     list_display = [
@@ -92,15 +92,16 @@ class Tribal_TANF_T6Admin(admin.ModelAdmin):
         'CALENDAR_QUARTER',
         'RPT_MONTH_YEAR',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
-        'CALENDAR_QUARTER',
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR'
+        STTFilter,
     ]
 
-class Tribal_TANF_T7Admin(admin.ModelAdmin):
+class Tribal_TANF_T7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal T7 data files."""
 
     list_display = [
@@ -111,10 +112,11 @@ class Tribal_TANF_T7Admin(admin.ModelAdmin):
         'STRATUM',
         'FAMILIES_MONTH',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
-        'CALENDAR_QUARTER',
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
