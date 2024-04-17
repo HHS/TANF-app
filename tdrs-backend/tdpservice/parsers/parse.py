@@ -12,6 +12,7 @@ from . import schema_defs, validators, util
 from . import row_schema
 from .schema_defs.utils import get_section_reference, get_program_model
 from .case_consistency_validator import CaseConsistencyValidator
+from .duplicate_manager import RecordDuplicateManager
 from elasticsearch.helpers.errors import BulkIndexError
 from tdpservice.data_files.models import DataFile
 
@@ -36,12 +37,14 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
 
-    # TODO: write a test for this line
+    cat4_error_generator = util.make_generate_parser_error(datafile, None)
     case_consistency_validator = CaseConsistencyValidator(
         header,
         datafile.stt.type,
-        util.make_generate_parser_error(datafile, None)
+        cat4_error_generator
     )
+
+    duplicate_manager = RecordDuplicateManager(cat4_error_generator)
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
@@ -96,7 +99,8 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator)
+    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator,
+                                       duplicate_manager)
 
     errors = errors | line_errors
 
@@ -214,7 +218,8 @@ def create_no_records_created_pre_check_error(datafile, dfs):
         errors["no_records_created"] = [err_obj]
     return errors
 
-def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator):
+def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator,
+                         duplicate_manager):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
     errors = {}
@@ -300,10 +305,11 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 record.datafile = datafile
                 unsaved_records.setdefault(s.document, []).append(record)
                 case_consistency_validator.add_record(record, s, len(record_errors) > 0)
+                duplicate_manager.add_record(record, line, line_number)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
-            case_consistency_validator.get_generated_errors()
+            case_consistency_validator.get_generated_errors() + duplicate_manager.generate_errors()
         case_consistency_validator.clear_errors()
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs)
