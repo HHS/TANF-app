@@ -340,14 +340,15 @@ m5 = SchemaManager(
                     name="EDUCATION_LEVEL",
                     friendly_name="education level",
                     type="string",
-                    startIndex=54,
+                    startIndex=54,  
                     endIndex=56,
                     required=False,
                     validators=[
                         validators.or_validators(
                             validators.isInStringRange(0, 16),
                             validators.isInStringRange(98, 99),
-                        )
+                        ),
+                        validators.notMatches("00")
                     ],
                 ),
                 Field(
@@ -359,10 +360,7 @@ m5 = SchemaManager(
                     endIndex=57,
                     required=False,
                     validators=[
-                        validators.or_validators(
-                            validators.isInLimits(0, 3),
-                            validators.matches(9)
-                        )
+                        validators.oneOf([1, 2, 3, 9]),
                     ],
                 ),
                 Field(

@@ -1787,3 +1787,37 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
     assert education_level_error.error_message == "M3: 00 matches 00."
     assert citizenship_status_1_error.error_message == "M3: 0 is not in [1, 2, 3, 9]."
     assert citizenship_status_2_error.error_message == "M3: 0 is not in [1, 2, 3, 9]."
+
+@pytest.fixture
+def m5_cat2_invalid_23_24_file():
+    """Fixture for M5 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
+    parsing_file = ParsingFileFactory(
+        year=2024,
+        quarter='Q1',
+        file__name='m5_cat2_invalid_23_24_file.txt',
+        section='SSP Closed Case Data',
+        file__data=(b'HEADER20184C24   SSP1ED\n'
+                    b'M520181011111111161519791106WTTTY0ZB922212222222210112000112970000\n'
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.mark.django_db()
+def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
+    """Test parsing an SSP M5 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
+    dfs.datafile = m5_cat2_invalid_23_24_file
+    m5_cat2_invalid_23_24_file.year = 2019
+    m5_cat2_invalid_23_24_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(m5_cat2_invalid_23_24_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).order_by("pk")
+    
+    assert parser_errors.count() == 2
+
+    education_level_error = parser_errors[0];
+    citizenship_status_error = parser_errors[1];
+
+    assert education_level_error.error_message == "M5: 00 matches 00."
+    assert citizenship_status_error.error_message == "M5: 0 is not in [1, 2, 3, 9]."
