@@ -79,10 +79,8 @@ class CaseConsistencyValidator:
 
     def get_generated_errors(self):
         """Return all errors generated for the current validated case."""
-        if self.has_validated:
-            return self.generated_errors
-        return []
-    
+        return self.generated_errors
+
     def num_generated_errors(self):
         """Return current number of generated errors."""
         return len(self.generated_errors)
@@ -94,6 +92,7 @@ class CaseConsistencyValidator:
                 self.validate()
                 self.record_schema_pairs.clear((record, schema))
                 self.case_has_errors = case_has_errors
+                self.has_validated = False
             else:
                 self.case_has_errors = self.case_has_errors if self.case_has_errors else case_has_errors
                 self.record_schema_pairs.add_record((record, schema))
