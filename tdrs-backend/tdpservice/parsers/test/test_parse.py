@@ -57,7 +57,7 @@ def t2_invalid_dob_file():
     )
     return parsing_file
 
-#TODO: the name of this test doesn't make perfect sense anymore since it will always have errors now.
+# TODO: the name of this test doesn't make perfect sense anymore since it will always have errors now.
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile, dfs):
     """Test parsing of small_correct_file."""
