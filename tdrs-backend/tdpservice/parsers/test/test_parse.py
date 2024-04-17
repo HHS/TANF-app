@@ -1687,8 +1687,8 @@ def t3_cat2_invalid_citizenship_file():
         file__name='t3_invalid_citizenship_file.txt',
         file__section='Active Case Data',
         file__data=(b'HEADER20204A06   TAN1ED\n'
-                    b'T320201011111111112420190127WTTTT90W022212222204398000000000                                     '
-                    b'                                                           \n'
+                    b'T320201011111111112420190127WTTTT90W022212222204398000000000\n'
+                    b'T320201011111111112420190127WTTTT90W02221222220439810000000042010010133333333300000001100000099998888\n'
                     b'TRAILER0000001         ')
     )
     return parsing_file
@@ -1705,11 +1705,13 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
 
     parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).order_by("pk")
 
-    assert parser_errors.count() == 1
+    assert parser_errors.count() == 2
 
-    citizenship_status_error = parser_errors.first()
+    citizenship_status_1_error = parser_errors[0]
+    citizenship_status_2_error = parser_errors[1]
 
-    assert citizenship_status_error.error_message == "T3: 0 is not in [1, 2, 9]."
+    assert citizenship_status_1_error.error_message == "T3: 0 is not in [1, 2, 9]."
+    assert citizenship_status_2_error.error_message == "T3: 0 is not in [1, 2, 9]."
 
 @pytest.fixture
 def m2_cat2_invalid_37_38_39_file():
@@ -1758,7 +1760,8 @@ def m3_cat2_invalid_68_69_file():
         section='SSP Active Case Data',
         file__data=(b'HEADER20234A24   SSP1ED\n'
                     b'M320231011111111127420110615WTTTP99B#22212222204300000000000\n'
-                    b'M320231011111111127120110615WTTTP99B#2221222220430110000000042010010133333333300000001100000099998888\n'
+                    b'M320231011111111127120110615WTTTP99B#222122222043011000000004201001013333333330000000110000009999'
+                    b'8888\n'
                     b'TRAILER0000002         ')
     )
     return parsing_file
@@ -1774,9 +1777,6 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
     parse.parse_datafile(m3_cat2_invalid_68_69_file, dfs)
 
     parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).order_by("pk")
-
-    for error in parser_errors:
-        print(f"{error}")
 
     assert parser_errors.count() == 3
 
