@@ -1684,9 +1684,9 @@ def t3_cat2_invalid_citizenship_file():
     parsing_file = ParsingFileFactory(
         year=2021,
         quarter='Q1',
-        file__name='t2_invalid_dob_file.txt',
+        file__name='t3_invalid_citizenship_file.txt',
         file__section='Active Case Data',
-        file__data=(b'HEADER20204A06   TAN1EN\n'
+        file__data=(b'HEADER20204A06   TAN1ED\n'
                     b'T320201011111111112420190127WTTTT90W022212222204398000000000                                     '
                     b'                                                           \n'
                     b'TRAILER0000001         ')
@@ -1694,7 +1694,6 @@ def t3_cat2_invalid_citizenship_file():
     return parsing_file
 
 @pytest.mark.django_db()
-# @pytest.mark.parametrize("")
 def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs):
     """Test parsing a TANF T3 record with an invalid CITIZENSHIP_STATUS."""
     dfs.datafile = t3_cat2_invalid_citizenship_file
@@ -1711,3 +1710,39 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
     citizenship_status_error = parser_errors.first()
 
     assert citizenship_status_error.error_message == "T3: 0 is not in [1, 2, 9]."
+
+@pytest.fixture
+def m2_cat2_invalid_37_38_39_file():
+    """Fixture for M2 file with an invaliud EDUCATION_LEVEL, CITIZENSHIP_STATUS, and COOPERATION_CHILD_SUPPORT."""
+    parsing_file = ParsingFileFactory(
+        year=2024,
+        quarter='Q1',
+        file__name='m2_cat2_invalid_37_38_39_file.txt',
+        section='SSP Active Case Data',
+        file__data=(b'HEADER20234A24   SSP1ED\n'
+                    b'M2202310111111111275219811103WTTT#PW@W2221222222225012200001011935000000000000000000000000000000000000000000000000000000000000225300000000000000000000\n'
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.mark.django_db()
+def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs):
+    """Test parsing an SSP M2 file with an invaliud EDUCATION_LEVEL, CITIZENSHIP_STATUS, and COOPERATION_CHILD_SUPPORT."""
+    dfs.datafile = m2_cat2_invalid_37_38_39_file
+    m2_cat2_invalid_37_38_39_file.year = 2024
+    m2_cat2_invalid_37_38_39_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(m2_cat2_invalid_37_38_39_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=m2_cat2_invalid_37_38_39_file).order_by("pk")
+
+    assert parser_errors.count() == 3
+
+    education_level_error = parser_errors[0];
+    citizenship_status_error = parser_errors[1];
+    cooperation_child_support_error = parser_errors[2];
+
+    assert education_level_error.error_message == "M2: 00 matches 00."
+    assert citizenship_status_error.error_message == "M2: 0 is not in [1, 2, 3, 9]."
+    assert cooperation_child_support_error.error_message == "M2: 0 is not in [1, 2, 9]."

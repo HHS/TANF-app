@@ -426,7 +426,7 @@ def isSmallerThanOrEqualTo(UpperBound):
 def isInLimits(LowerBound, UpperBound):
     """Validate that value is in a range including the limits."""
     return make_validator(
-        lambda value: value >= LowerBound and value <= UpperBound,
+        lambda value: int(value) >= LowerBound and int(value) <= UpperBound,
         lambda value, row_schema,
         friendly_name, item_num: f"{row_schema.record_type}: {value} is not larger or equal to {LowerBound} and "
                                  f"smaller or equal to {UpperBound}."
