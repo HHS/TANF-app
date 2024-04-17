@@ -130,7 +130,7 @@
 
 
 
-  <main id="main-top">
+
 
 <!-- Here begins mobile menu -->
 
@@ -288,7 +288,7 @@
         <div style="min-height: 22px;"></div>
 
         <p class="usa-intro">
-        The Submission History tab will allow access to all data files previously submitted via the TANF Data Portal (TDP) .
+        Submission History allows you to access all versions of data files previously submitted for a given quarter via the TANF Data Portal (TDP). 
         </p>
         <div style="min-height: 22px;"></div>
 
@@ -308,29 +308,156 @@
     </li>
 
     <li class="usa-process-list__item">
-      <h3 class="usa-process-list__heading">How to view Submission History</h3>
+      <h3 class="usa-process-list__heading">Select the "Submission History" tab</h3>
   <br>
       <p>After searching for the reporting period, a new button group labelled 'Current Submission' and 'Submission History’ will appear below the 'Search' button.</p>
       <p>The button ‘Current Submission’ is default selected. Navigate to the ‘Submission History’ button to view the data files previously submitted through TDP.</p>
       <a href="../img/getting-started/submission-history.png" data-lity data-lity-desc="Submission history page listing five visible previous submissions with more accessible via a pagination control below the current page of the table">
       <img src="../img/getting-started/submission-history.png" alt="Submission history page listing five visible previous submissions with more accessible via a pagination control below the current page of the table">
         </a>
-      The 'Submission History' table includes the following fields:
-      <ul>
-        <li>Submitted On: The date and time the data file(s) were submitted</li>
-        <li>Submitted By: The user who submitted the data file(s)</li>
-        <li>File Name: The name of the data file(s) are clickable and downloads the file</li>
-      </ul>
+ 
     </li>
 
-    <li class="usa-process-list__item">
-      <h3 class="usa-process-list__heading">How to retrieve your submitted data</h3>
-      <br>
-      <p>To access a file previously uploaded to TDP from 'Submission History', you can click the link in the ‘File Name’ column. Note: TDP will auto-rename files to specify the fiscal period and section (e.g. 2021.Q1.Active Case Data), so depending on your original file-naming conventions, the files you download may have a different name.</p>
-      <a href="../img/getting-started/click-file-name-download.png" data-lity data-lity-desc="Submission history page emphasizing the ability to click on the file name of a previously submitted file to download it">
-      <img src="../img/getting-started/click-file-name-download.png" alt="Submission history page emphasizing the ability to click on the file name of a previously submitted file to download it">
-      </a>
+
   </ol>
+
+   
+<hr style="border: none;
+    height: 1px;
+    background: #000;
+    margin-top: 32px;
+    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+    <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+
+   <h2>Download Error Reports and Previously Submitted Data Files</h2>
+  <div style="min-height: 22px;"></div>
+    
+
+      <p>To access error reports for each file you submit. Click on the link in the ‘Error Report’ column to view errors and data feedback associated with that version of the file. Depending on the completeness of your data and how soon you access the Submission History tab after submitting a file you may see other values in this column including "Pending" and "No Errors".</p>
+  <div style="min-height: 22px;"></div>
+       <p>To access a file previously uploaded to TDP from 'Submission History', you can click the link in the ‘File Name’ column. Note: TDP will auto-rename files to specify the fiscal period and section (e.g. 2021.Q1.Active Case Data), so depending on your original file-naming conventions, the files you download may have a different name.</p>
+         <div style="min-height: 22px;"></div>
+      <a href="../img/getting-started/click-file-name-download.png" data-lity data-lity-desc="Submission history table with the file name column emphasized">
+      <img src="../img/getting-started/click-file-name-download.png" alt="Submission history table with the file name column emphasized">
+      </a>
+
+<hr style="border: none;
+    height: 1px;
+    background: #000;
+    margin-top: 32px;
+    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+    <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+
+
+
+
+
+         <h2>Understanding File Statuses and Aggregate Data</h2>
+               <div style="min-height: 22px;"></div> 
+                     <p>The Submission History table includes a status which communicates the level of completeness of each file and related aggregate data about its contents including counts of cases with and without errors, counts of records unable to process within a file, and (for section 3 and 4 data) a count of total errors in the file.</p>
+                      <div style="min-height: 22px;"></div> 
+      <a href="../img/getting-started/submission-history-tables.png" data-lity data-lity-desc="Submission history table with the error report column emphasized">
+      <img src="../img/getting-started/submission-history-tables.png" alt="Submission history table with aggregate values and the status emphasized">
+      </a>
+  <div style="min-height: 22px;"></div>
+
+
+
+       <div style="min-height: 22px;"></div>
+
+  <table class="usa-table">
+  <caption>
+   File Statuses Key
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Status</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row"><img src="../img/alerts/clock.svg" alt="" aria-hidden="true" style="width: 20px; height: 20px; position: relative; top: 4px; margin-right: 5px;">Pending</th>
+      <td>
+        Your file is being processed by TDP. If this persists for more than two hours, please reach out to <a href="mailto:TANFdata@acf.hhs.gov">TANFdata@acf.hhs.gov</a> for support.  Data files submitted prior to February 2024 may show as Pending. No action is needed to correct this, but if you would like to receive an error report for affected files you may resubmit them.
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row"><img src="../img/alerts/success.svg" alt="" aria-hidden="true" style="width: 20px; height: 20px; position: relative; top: 4px; margin-right: 5px;">Accepted</th>
+      <td>
+        Your file has been processed and no errors were detected by TDP. Note that OFA may still reach out to you via email with additional feedback on your data.
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row"><img src="../img/alerts/error.svg" alt="" aria-hidden="true" style="width: 20px; height: 20px; position: relative; top: 4px; margin-right: 5px;">Accepted with errors</th>
+      <td>
+        Your file was processed but some cases within your data contain errors.
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row"><img src="../img/alerts/error.svg" alt="" aria-hidden="true" style="width: 20px; height: 20px; position: relative; top: 4px; margin-right: 5px;">Partially accepted with errors</th>
+      <td>
+        Your file was unable to fully process. This means that some of the records in the file were not accepted, and some records were accepted but contain errors. 
+      </td>
+
+    </tr>
+       <tr>
+      <th scope="row"><img src="../img/alerts/cancel.svg" alt="" aria-hidden="true" style="width: 24px; height: 24px; position: relative; top: 6px; margin-right: 5px;">Rejected</th>
+      <td>
+        Your file could not be processed and likely contains errors relating file structure/record layout.
+      </td>
+
+    </tr>
+  </tbody>
+</table>
+
+<table class="usa-table">
+  <caption>
+   Aggregate Data Columns Key
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Column Name</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Cases Without Errors</th>
+      <td>
+        The total number of unique cases for a given reporting month in your file which TDP did not detect any associated errors. Note that OFA may still reach out to you via email with additional feedback on your data.
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row">Cases With Errors</th>
+      <td>
+        The total number of unique cases for a given reporting month in your file that have one or more error associated with them. This likely indicates problems with your data, such as having values outside those defined in the <a href="">TANF/SSP Coding Instructions</a> or <a href="">Tribal TANF Coding Instructions</a>.
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row">Records Unable To Process</th>
+      <td>
+        The total number of records within your file that the system was not able to "read" to check for errors. This likely indicates problems with the layout and coding of data within your file. Common reasons that records are unable to be processed include: submitting files with an unexpected record layout (e.g. if an active file is submitted as a closed data file), or the submitted file has records that do not have the expected record length (e.g. if a T6 record has a record length that is less than 379 positions).
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row">Total Errors</th>
+      <td>
+        Since section 3 and 4 data contain aggregate values in one record (rather than case data with many records), TDP can only provide the total number of errors detected in the record. Errors here likely relate to values outside those defined in the <a href="">TANF/SSP Coding Instructions</a> or <a href="">Tribal TANF Coding Instructions</a> and/or inconsistencies in the values between related elements for a given reporting month. 
+      </td>
+
+    </tr>
+      
+  </tbody>
+</table>
+
+
 
       </main>
     </div>
