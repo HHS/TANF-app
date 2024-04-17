@@ -3,9 +3,15 @@
     when: << pipeline.parameters.build_and_test_all >>
     jobs:
       - secrets-check
-      # TODO: Revert back to tests after review
-      - nightly-owasp-scan:
-          target_env: develop
+      - test-backend:
+          requires:
+            - secrets-check
+      - test-frontend:
+          requires:
+            - secrets-check
+      - test-e2e:
+          requires:
+            - secrets-check
 
   ci-build-and-test-all:
     jobs:
