@@ -141,14 +141,6 @@ def transform_to_months(quarter):
             return ["Jul", "Aug", "Sep"]
         case "Q4":
             return ["Oct", "Nov", "Dec"]
-        case "1":
-            return ["01", "02", "03"]
-        case "2":
-            return ["04", "05", "06"]
-        case "3":
-            return ["07", "08", "09"]
-        case "4":
-            return ["10", "11", "12"]
         case _:
             raise ValueError("Invalid quarter value.")
 

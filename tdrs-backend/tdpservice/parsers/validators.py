@@ -226,7 +226,7 @@ def matches(option, error_func=None):
         lambda value: value == option,
         lambda value, row_schema, friendly_name, item_num: error_func(option)
         if error_func
-        else f"{row_schema.record_type}: {value} does not match {option}.",
+        else f"{row_schema.record_type} {friendly_name}: {value} does not match {option}.",
     )
 
 
@@ -367,6 +367,19 @@ def caseNumberNotEmpty(start=0, end=None):
         lambda value: not _is_empty(value, start, end),
         lambda value, row_schema,
         friendly_name, item_num: f'{row_schema.record_type}: Case number {str(value)} cannot contain blanks.'
+    )
+
+
+def calendarQuarterIsValid(start=0, end=None):
+    """Validate that the calendar quarter value is valid."""
+    return make_validator(
+        lambda value: value[start:end].isnumeric() and int(value[start:end - 1]) >= 2020
+        and int(value[end - 1:end]) > 0 and int(value[end - 1:end]) < 5,
+        lambda value,
+        row_schema,
+        friendly_name,
+        item_num: f"{row_schema.record_type}: {value[start:end]} is invalid. Calendar Quarter must be a numeric "
+        "representing the Calendar Year and Quarter formatted as YYYYQ",
     )
 
 
