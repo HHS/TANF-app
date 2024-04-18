@@ -60,7 +60,7 @@ class CaseHashtainer:
 
     def add_case_member(self, record, schema, line, line_number):
         """Add case member and generate errors if needed."""
-        self.record_ids.setdefault(schema.document.Django.model, []).append(record.id)
+        self.record_ids.setdefault(schema.document, []).append(record.id)
         line_hash = hash(line)
         partial_hash = None
         error_level = record.RecordType[1]

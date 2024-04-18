@@ -220,9 +220,12 @@ def create_no_records_created_pre_check_error(datafile, dfs):
 
 def delete_duplicates(duplicate_manager):
     total_deleted = 0
-    for model, ids in duplicate_manager.get_records_to_remove().items():
+    for document, ids in duplicate_manager.get_records_to_remove().items():
         try:
-            num_deleted, records = model.objects.filter(id__in=ids).delete()
+            model = document.Django.model
+            qset = model.objects.filter(id__in=ids)
+            num_deleted = qset._raw_delete(qset.db)
+            document.update(qset)
             total_deleted += num_deleted
             logger.debug(f"Deleted {num_deleted} records of type: {model}.")
         except Exception as e:
