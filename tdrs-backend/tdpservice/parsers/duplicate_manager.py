@@ -30,10 +30,17 @@ class CaseHashtainer:
         self.RPT_MONTH_YEAR = RPT_MONTH_YEAR
         self.manager_error_dict = manager_error_dict
         self.generate_error = generate_error
-        self.record_ids = set()
+        self.record_ids = dict()
         self.record_hashes = dict()
         self.partial_hashes = dict()
         self.error_precedence = ErrorPrecedence()
+        self.has_duplicate_errors = False
+
+    def get_records_to_delete(self):
+        """Return record ids if case has duplicate errors."""
+        if self.has_duplicate_errors:
+            return self.record_ids
+        return dict()
 
     def __generate_error(self, err_msg, is_new_max_precedence):
         """Add an error to the managers error dictionary."""
@@ -45,14 +52,15 @@ class CaseHashtainer:
                         field=None,
                         error_message=err_msg,
                     )
+            self.has_duplicate_errors = True
             if is_new_max_precedence:
                 self.manager_error_dict[self.my_hash] = [error]
             else:
                 self.manager_error_dict[self.my_hash].append(error)
 
-    def add_case_member(self, record, line, line_number):
+    def add_case_member(self, record, schema, line, line_number):
         """Add case member and generate errors if needed."""
-        self.record_ids.add(record.id)
+        self.record_ids.setdefault(schema.document.Django.model, []).append(record.id)
         line_hash = hash(line)
         partial_hash = None
         error_level = record.RecordType[1]
@@ -103,14 +111,14 @@ class RecordDuplicateManager:
         self.generate_error = generate_error
         self.generated_errors = dict()
 
-    def add_record(self, record, line, line_number):
-        """Add record to existing CaseHashtainer or create new one."""
+    def add_record(self, record, schema, line, line_number):
+        """Add record to existing CaseHashtainer or create new one and return whether the record's case has errors."""
         hash_val = hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
         if hash_val not in self.hashtainers:
             hashtainer = CaseHashtainer(hash_val, record.CASE_NUMBER, str(record.RPT_MONTH_YEAR),
                                         self.generated_errors, self.generate_error)
             self.hashtainers[hash_val] = hashtainer
-        self.hashtainers[hash_val].add_case_member(record, line, line_number)
+        self.hashtainers[hash_val].add_case_member(record, schema, line, line_number)
 
     def get_generated_errors(self):
         """Return all errors from all CaseHashtainers."""
@@ -118,3 +126,11 @@ class RecordDuplicateManager:
         for errors in self.generated_errors.values():
             generated_errors.extend(errors)
         return generated_errors
+
+    def get_records_to_remove(self):
+        records_to_remove = dict()
+        for hashtainer in self.hashtainers.values():
+            for model, ids in hashtainer.get_records_to_delete().items():
+                records_to_remove.setdefault(model, []).extend(ids)
+
+        return records_to_remove

@@ -218,6 +218,17 @@ def create_no_records_created_pre_check_error(datafile, dfs):
         errors["no_records_created"] = [err_obj]
     return errors
 
+def delete_duplicates(duplicate_manager):
+    total_deleted = 0
+    for model, ids in duplicate_manager.get_records_to_remove().items():
+        try:
+            num_deleted, records = model.objects.filter(id__in=ids).delete()
+            total_deleted += num_deleted
+            logger.debug(f"Deleted {num_deleted} records of type: {model}.")
+        except Exception as e:
+            logging.error(f"Encountered error while deleting records of type {model}. Error message: {e}")
+    logger.debug(f"Deleted a total of {total_deleted} records because of duplicate errors.")
+
 def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator,
                          duplicate_manager):
     """Parse lines with appropriate schema and return errors."""
@@ -303,9 +314,10 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
             if record:
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
+                record_has_errors = len(record_errors) > 0
+                duplicate_manager.add_record(record, s, line, line_number)
                 unsaved_records.setdefault(s.document, []).append(record)
-                case_consistency_validator.add_record(record, s, len(record_errors) > 0)
-                duplicate_manager.add_record(record, line, line_number)
+                case_consistency_validator.add_record(record, s, record_has_errors)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
@@ -355,6 +367,8 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
     case_consistency_validator.clear_errors()
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
+
+    delete_duplicates(duplicate_manager)
 
     logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
                  f"validated {case_consistency_validator.total_cases_validated} of them.")
