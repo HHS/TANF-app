@@ -181,13 +181,16 @@ def rollback_records(unsaved_records, datafile):
     logger.info("Rolling back created records.")
     for document in unsaved_records:
         model = document.Django.model
-        num_deleted, models = model.objects.filter(datafile=datafile).delete()
+        qset = model.objects.filter(datafile=datafile)
+        num_deleted = qset._raw_delete(qset.db)
+        document.update(qset)
         logger.debug(f"Deleted {num_deleted} records of type: {model}.")
 
 def rollback_parser_errors(datafile):
     """Delete created errors in the event of a failure."""
     logger.info("Rolling back created parser errors.")
-    num_deleted, models = ParserError.objects.filter(file=datafile).delete()
+    qset = ParserError.objects.filter(file=datafile)
+    num_deleted = qset._raw_delete(qset.db)
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
 def validate_case_consistency(case_consistency_validator):
