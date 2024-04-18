@@ -370,6 +370,19 @@ def caseNumberNotEmpty(start=0, end=None):
     )
 
 
+def calendarQuarterIsValid(start=0, end=None):
+    """Validate that the calendar quarter value is valid."""
+    return make_validator(
+        lambda value: value[start:end].isnumeric() and int(value[start:end - 1]) >= 2020
+        and int(value[end - 1:end]) > 0 and int(value[end - 1:end]) < 5,
+        lambda value,
+        row_schema,
+        friendly_name,
+        item_num: f"{row_schema.record_type}: {value[start:end]} is invalid. Calendar Quarter must be a numeric "
+        "representing the Calendar Year and Quarter formatted as YYYYQ",
+    )
+
+
 def isEmpty(start=0, end=None):
     """Validate that string value is only blanks."""
     return make_validator(
