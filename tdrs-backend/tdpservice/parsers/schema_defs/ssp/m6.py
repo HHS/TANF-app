@@ -13,6 +13,7 @@ s1 = RowSchema(
     preparsing_validators=[
         validators.recordHasLength(259),
         validators.field_year_month_with_header_year_quarter(),
+        validators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -49,7 +50,7 @@ s1 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
+                validators.dateYearIsLargerThan(2020),
                 validators.quarterIsValid()
             ]
         ),
@@ -177,6 +178,7 @@ s2 = RowSchema(
     preparsing_validators=[
         validators.recordHasLength(259),
         validators.field_year_month_with_header_year_quarter(),
+        validators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -213,7 +215,7 @@ s2 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
+                validators.dateYearIsLargerThan(2020),
                 validators.quarterIsValid()
             ]
         ),
@@ -341,6 +343,7 @@ s3 = RowSchema(
     preparsing_validators=[
         validators.recordHasLength(259),
         validators.field_year_month_with_header_year_quarter(),
+        validators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -377,7 +380,7 @@ s3 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
+                validators.dateYearIsLargerThan(2020),
                 validators.quarterIsValid()
             ]
         ),

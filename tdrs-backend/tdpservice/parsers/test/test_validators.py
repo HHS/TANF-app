@@ -116,16 +116,25 @@ def test_validate__FAM_AFF__SSN():
     result = validators.validate__FAM_AFF__SSN()(instance, RowSchema())
     assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
 
-def test_quarterIsValid():
+@pytest.mark.parametrize(
+        "value, valid",
+        [
+            ("20201", True),
+            ("20202", True),
+            ("20203", True),
+            ("20204", True),
+            ("20200", False),
+            ("20205", False),
+            ("2020 ", False),
+            ("2020A", False)
+        ])
+def test_quarterIsValid(value, valid):
     """Test `quarterIsValid`."""
-    value = "20204"
     val = validators.quarterIsValid()
-    result = val(value)
-    assert result == (True, None)
-
-    value = "20205"
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, "T1: 5 is not a valid quarter.")
+
+    errorText = None if valid else f"T1: {value[-1:]} is not a valid quarter."
+    assert result == (valid, errorText)
 
 def test_validateSSN():
     """Test `validateSSN`."""
@@ -491,6 +500,46 @@ def test_notEmpty_returns_nonexistent_substring():
 
     assert is_valid is False
     assert error == "T1: 111  333 contains blanks between positions 10 and 12."
+
+
+@pytest.mark.parametrize("test_input", [1, 2, 3, 4])
+def test_quarterIsValid_returns_true_if_valid(test_input):
+    """Test `quarterIsValid` gives a valid result for values 1-4."""
+    validator = validators.quarterIsValid()
+    is_valid, error = validator(test_input, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error is None
+
+
+@pytest.mark.parametrize("test_input", [" ", 0, 5, "A"])
+def test_quarterIsValid_returns_false_if_invalid(test_input):
+    """Test `quarterIsValid` gives an invalid result for values not 1-4."""
+    validator = validators.quarterIsValid()
+    is_valid, error = validator(test_input, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error == f"T1: {test_input} is not a valid quarter."
+
+@pytest.mark.parametrize("value", ["T72020 ", "T720194", "T720200", "T720207", "T72020$"])
+def test_calendarQuarterIsValid_returns_invalid(value):
+    """Test `calendarQuarterIsValid` returns false on invalid input."""
+    val = validators.calendarQuarterIsValid(2, 7)
+    is_valid, error_msg = val(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error_msg == f"T1: {value[2:7]} is invalid. Calendar Quarter must be a numeric " + \
+        "representing the Calendar Year and Quarter formatted as YYYYQ"
+
+
+@pytest.mark.parametrize("value", ["T720201", "T720202", "T720203", "T720204"])
+def test_calendarQuarterIsValid_returns_valid(value):
+    """Test `calendarQuarterIsValid` returns false on invalid input."""
+    val = validators.calendarQuarterIsValid(2, 7)
+    is_valid, error_msg = val(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error_msg is None
 
 @pytest.mark.usefixtures('db')
 class TestCat3ValidatorsBase:
