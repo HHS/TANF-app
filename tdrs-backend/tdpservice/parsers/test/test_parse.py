@@ -745,6 +745,9 @@ def test_parse_super_big_s1_file_with_rollback(super_big_s1_rollback_file, dfs):
 
     Validate all T1/T2/T3 records are not created due to multiple headers.
     """
+    super_big_s1_rollback_file.year = 2023
+    super_big_s1_rollback_file.quarter = 'Q2'
+
     parse.parse_datafile(super_big_s1_rollback_file, dfs)
 
     parser_errors = ParserError.objects.filter(file=super_big_s1_rollback_file)
@@ -779,6 +782,7 @@ def test_parse_super_big_s1_file_with_rollback(super_big_s1_rollback_file, dfs):
         datafile__id=super_big_s1_rollback_file.id
     )
     assert search.count() == 0
+    assert False
 
 
 @pytest.fixture
