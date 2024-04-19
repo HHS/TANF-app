@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from .models import ParserErrorCategoryChoices
+from .util import get_years_apart
 from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
 import logging
@@ -418,9 +419,7 @@ class CaseConsistencyValidator:
                 rpt_month_year_dd = f'{rpt_month_year}01'
                 rpt_date = datetime.strptime(rpt_month_year_dd, '%Y%m%d')
                 dob_date = datetime.strptime(dob, '%Y%m%d')
-                delta = rpt_date - dob_date
-                age = delta.days/365.25
-                is_adult = age >= 18
+                is_adult = get_years_apart(rpt_date, dob_date) >= 18
 
                 if is_territory and is_adult and (rec_aabd != 1 or rec_aabd != 2):
                     self.__generate_and_add_error(
