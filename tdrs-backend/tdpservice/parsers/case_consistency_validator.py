@@ -422,7 +422,7 @@ class CaseConsistencyValidator:
                 age = delta.days/365.25
                 is_adult = age >= 18
 
-                if is_territory and is_adult and rec_aabd != 1:
+                if is_territory and is_adult and (rec_aabd != 1 or rec_aabd != 2):
                     self.__generate_and_add_error(
                         schema,
                         record,
