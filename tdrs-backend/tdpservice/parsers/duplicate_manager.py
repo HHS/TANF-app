@@ -34,25 +34,25 @@ class CaseHashtainer:
         self.record_hashes = dict()
         self.partial_hashes = dict()
         self.error_precedence = ErrorPrecedence()
-        self.has_duplicate_errors = False
+        self.has_errors = False
 
     def get_records_to_delete(self):
         """Return record ids if case has duplicate errors."""
-        if self.has_duplicate_errors:
+        if self.has_errors:
             return self.record_ids
         return dict()
 
-    def __generate_error(self, err_msg, is_new_max_precedence):
+    def __generate_error(self, err_msg, record, schema, is_new_max_precedence):
         """Add an error to the managers error dictionary."""
         if err_msg is not None:
             error = self.generate_error(
                         error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                        schema=None,  # TODO: Do we need the right schema? Can this be None to avoid so much state?
-                        record=None,
+                        schema=schema,
+                        record=record,
                         field=None,
                         error_message=err_msg,
                     )
-            self.has_duplicate_errors = True
+            self.has_errors = True
             if is_new_max_precedence:
                 self.manager_error_dict[self.my_hash] = [error]
             else:
@@ -96,7 +96,7 @@ class CaseHashtainer:
         if not has_precedence:
             err_msg = None
 
-        self.__generate_error(err_msg, is_new_max_precedence)
+        self.__generate_error(err_msg, record, schema, is_new_max_precedence)
         if line_hash not in self.record_hashes:
             self.record_hashes[line_hash] = (record.id, line_number)
         if partial_hash not in self.partial_hashes:
