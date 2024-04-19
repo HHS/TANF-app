@@ -733,29 +733,28 @@ def test_parse_super_big_s1_file(super_big_s1_file, dfs):
 
 
 @pytest.fixture
-def super_big_s1_rollback_file(stt_user, stt):
+def big_s1_rollback_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM1.TS53_fake.rollback."""
     return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.rollback.txt', stt_user, stt)
 
 
 @pytest.mark.django_db()
-@pytest.mark.skip(reason="cuz")  # big_files
-def test_parse_super_big_s1_file_with_rollback(super_big_s1_rollback_file, dfs):
-    """Test parsing of super_big_s1_rollback_file.
+def test_parse_big_s1_file_with_rollback(big_s1_rollback_file, dfs):
+    """Test parsing of big_s1_rollback_file.
 
     Validate all T1/T2/T3 records are not created due to multiple headers.
     """
-    super_big_s1_rollback_file.year = 2023
-    super_big_s1_rollback_file.quarter = 'Q2'
+    big_s1_rollback_file.year = 2023
+    big_s1_rollback_file.quarter = 'Q2'
 
-    parse.parse_datafile(super_big_s1_rollback_file, dfs)
+    parse.parse_datafile(big_s1_rollback_file, dfs)
 
-    parser_errors = ParserError.objects.filter(file=super_big_s1_rollback_file)
+    parser_errors = ParserError.objects.filter(file=big_s1_rollback_file)
     assert parser_errors.count() == 1
 
     err = parser_errors.first()
 
-    assert err.row_number == 50022
+    assert err.row_number == 13609
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert err.error_message == 'Multiple headers found.'
     assert err.content_type is None
@@ -767,19 +766,19 @@ def test_parse_super_big_s1_file_with_rollback(super_big_s1_rollback_file, dfs):
 
     search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
         'match',
-        datafile__id=super_big_s1_rollback_file.id
+        datafile__id=big_s1_rollback_file.id
     )
     assert search.count() == 0
 
     search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
         'match',
-        datafile__id=super_big_s1_rollback_file.id
+        datafile__id=big_s1_rollback_file.id
     )
     assert search.count() == 0
 
     search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
         'match',
-        datafile__id=super_big_s1_rollback_file.id
+        datafile__id=big_s1_rollback_file.id
     )
     assert search.count() == 0
     assert False
