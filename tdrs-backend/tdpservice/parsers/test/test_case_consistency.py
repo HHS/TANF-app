@@ -1041,7 +1041,7 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=1,
-                REC_AID_TOTALLY_DISABLED=2,
+                REC_AID_TOTALLY_DISABLED=0,
                 REC_SSI=2
             ),
             T5Factory.create(
@@ -1049,7 +1049,7 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=2,
-                REC_AID_TOTALLY_DISABLED=2,
+                REC_AID_TOTALLY_DISABLED=0,
                 REC_SSI=2
             ),
         ]
