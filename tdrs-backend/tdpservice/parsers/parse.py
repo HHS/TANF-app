@@ -249,7 +249,7 @@ def delete_duplicates(duplicate_manager):
             logger.debug(f"Deleted {num_deleted} records of type: {model}.")
         except Exception as e:
             logging.error(f"Encountered error while deleting records of type {model}. Error message: {e}")
-    logger.debug(f"Deleted a total of {total_deleted} records because of duplicate errors.")
+    logger.info(f"Deleted a total of {total_deleted} records because of duplicate errors.")
 
 def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator,
                          duplicate_manager):
