@@ -691,7 +691,7 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile, dfs):
 def super_big_s1_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM1.TS53_fake."""
     return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.txt', stt_user, stt)
-
+import time
 
 @pytest.mark.django_db()
 @pytest.mark.skip(reason="long runtime")  # big_files
@@ -699,6 +699,10 @@ def test_parse_super_big_s1_file(super_big_s1_file, dfs):
     """Test parsing of super_big_s1_file and validate all T1/T2/T3 records are created."""
     super_big_s1_file.year = 2023
     super_big_s1_file.quarter = 'Q2'
+    super_big_s1_file.save()
+
+    dfs.datafile = super_big_s1_file
+    dfs.save()
 
     parse.parse_datafile(super_big_s1_file, dfs)
 
@@ -746,6 +750,10 @@ def test_parse_big_s1_file_with_rollback(big_s1_rollback_file, dfs):
     """
     big_s1_rollback_file.year = 2023
     big_s1_rollback_file.quarter = 'Q2'
+    big_s1_rollback_file.save()
+
+    dfs.datafile = big_s1_rollback_file
+    dfs.save()
 
     parse.parse_datafile(big_s1_rollback_file, dfs)
 
