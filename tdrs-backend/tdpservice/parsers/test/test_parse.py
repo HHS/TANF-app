@@ -691,7 +691,7 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile, dfs):
 def super_big_s1_file(stt_user, stt):
     """Fixture for ADS.E2J.NDM1.TS53_fake."""
     return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.txt', stt_user, stt)
-import time
+
 
 @pytest.mark.django_db()
 @pytest.mark.skip(reason="long runtime")  # big_files
