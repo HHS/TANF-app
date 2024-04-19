@@ -50,14 +50,14 @@ def t2_invalid_dob_file():
         quarter='Q1',
         file__name='t2_invalid_dob_file.txt',
         file__section='Active Case Data',
-        file__data=(b'HEADER20204A25   TAN1EU\n'
+        file__data=(b'HEADER20204A25   TAN1ED\n'
                     b'T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000'
                     b'0000000000000000000000000000000000000000000000000000000000291\n'
                     b'TRAILER0000001         ')
     )
     return parsing_file
 
-
+# TODO: the name of this test doesn't make perfect sense anymore since it will always have errors now.
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile, dfs):
     """Test parsing of small_correct_file."""
@@ -68,18 +68,22 @@ def test_parse_small_correct_file(test_datafile, dfs):
 
     parse.parse_datafile(test_datafile, dfs)
 
+    errors = ParserError.objects.filter(file=test_datafile)
+    assert errors.count() == 1
+    assert errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
-            assert month['accepted_without_errors'] == 1
-            assert month['accepted_with_errors'] == 0
+            assert month['accepted_without_errors'] == 0
+            assert month['accepted_with_errors'] == 1
         else:
             assert month['accepted_without_errors'] == 0
             assert month['accepted_with_errors'] == 0
 
-    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     assert TANF_T1.objects.count() == 1
 
     # spot check
@@ -1359,15 +1363,16 @@ def test_rpt_month_year_mismatch(test_header_datafile, dfs):
     parse.parse_datafile(datafile, dfs)
 
     parser_errors = ParserError.objects.filter(file=datafile)
-    assert parser_errors.count() == 0
+    assert parser_errors.count() == 1
+    assert parser_errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
     datafile.year = 2023
     datafile.save()
 
     parse.parse_datafile(datafile, dfs)
 
-    parser_errors = ParserError.objects.filter(file=datafile)
-    assert parser_errors.count() == 1
+    parser_errors = ParserError.objects.filter(file=datafile).order_by('-id')
+    assert parser_errors.count() == 2
 
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
@@ -1676,3 +1681,25 @@ def test_parse_no_records_file(no_records_file, dfs):
     assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert error.content_type is None
     assert error.object_id is None
+
+
+@pytest.fixture
+def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
+    """Fixture for tanf_section_1_file_with_bad_update_indicator."""
+    return util.create_test_datafile('tanf_s1_bad_update_indicator.txt', stt_user, stt, "Active Case Data")
+
+@pytest.mark.django_db()
+def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file_with_bad_update_indicator, dfs):
+    """Test parsing TANF Section 1 submission update indicator."""
+    dfs.datafile = tanf_section_1_file_with_bad_update_indicator
+
+    parse.parse_datafile(tanf_section_1_file_with_bad_update_indicator, dfs)
+
+    parser_errors = ParserError.objects.filter(file=tanf_section_1_file_with_bad_update_indicator)
+
+    assert parser_errors.count() == 1
+
+    error = parser_errors.first()
+
+    assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert error.error_message == "HEADER update indicator: U does not match D."

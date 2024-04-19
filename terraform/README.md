@@ -153,7 +153,35 @@ These instructions describe the creation of a new S3 bucket to hold Terraform's 
    ```bash
    cf service-key tdp-tf-states tdp-tf-key
    ```
-   
+
+### Update terraform remote state with the changes done outside of terraform
+
+If there are changes that are done directly in cloud.gov or using cf commands, then the remote config will be different from both config file and from the state config file.
+Below, we will use an example change that has been done on cloud.gov UI. Assume we have created a new elastic service in dev environment called "es-dev". To be able to sync everything with the remote changes follow the blow steps:
+
+1. update the config file with the resource/changes.
+       E.g: add the following lines to config file:
+       ```
+         data "cloudfoundry_service" "elasticsearch" {
+            name = "aws-elasticsearch"
+         }
+
+         resource "cloudfoundry_service_instance" "elasticsearch" {
+            name             = "es-dev"
+            space            = data.cloudfoundry_space.space.id
+            service_plan     = data.cloudfoundry_service.elasticsearch.service_plans["es-dev"]
+         }
+       ```
+
+If we try to run plan or deploy at this point, then it will fail since the state doesn't have new "es-dev" elastic search service, so it assumes this is a new deployment and tries to deploy the new instance, which will fail since the name is already taken.
+
+2. grab the id of remote change (in this case elastic service) by running ```cf``` commands. 
+      for the case of our example, we can run ```cf services```, and then run ```cf service es-dev --guid ``` which will show guid of newly created elasticsearch service instance, which is required for updating state with ES instance.
+
+3. run this command to update state: ```terraform import cloudfoundry_service_instance.elasticsearch <guid from previous step>```
+
+You should change ```cloudfoundry_service_instance.elasticsearch``` to your instance/service you added and trying to update the state file with.
+
 #### Security
    
    The Terraform State S3 instance is set to be encrypted (see `main.tf#backend`). Amazon S3 [protects data at rest][s3] using 256-bit Advanced Encryption Standard. 
