@@ -4,9 +4,11 @@ from enum import IntEnum
 from .models import ParserErrorCategoryChoices
 
 class ErrorLevel(IntEnum):
-    DUPLICATE=0
-    PARTIAL_DUPLICATE=1
-    NONE=2  # This should always be the last level in the list
+    """Error level enumerations for precedence."""
+
+    DUPLICATE = 0
+    PARTIAL_DUPLICATE = 1
+    NONE = 2  # This should always be the last level in the list
 
 class ErrorPrecedence:
     """Data structure to manage error precedence."""
@@ -133,9 +135,10 @@ class RecordDuplicateManager:
         return generated_errors
 
     def get_records_to_remove(self):
+        """Return dictionary of document:[errors]."""
         records_to_remove = dict()
         for hashtainer in self.hashtainers.values():
-            for model, ids in hashtainer.get_records_to_delete().items():
-                records_to_remove.setdefault(model, []).extend(ids)
+            for document, ids in hashtainer.get_records_to_delete().items():
+                records_to_remove.setdefault(document, []).extend(ids)
 
         return records_to_remove

@@ -183,11 +183,11 @@ def rollback_records(unsaved_records, datafile):
         try:
             model = document.Django.model
             qset = model.objects.filter(datafile=datafile)
-            # We must tell elastic to delete the documents first because after we call `_raw_delete` the queryset will be 
-            # empty which will tell elastic that nothing needs updated.
+            # We must tell elastic to delete the documents first because after we call `_raw_delete` the queryset will
+            # be empty which will tell elastic that nothing needs updated.
             document.update(qset, refresh=True, action="delete")
-            # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading dependencies. If
-            # that ever changes, we should NOT use `_raw_delete`.
+            # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
+            # dependencies. If that ever changes, we should NOT use `_raw_delete`.
             num_deleted = qset._raw_delete(qset.db)
             logger.debug(f"Deleted {num_deleted} records of type: {model}.")
         except Exception as e:
@@ -234,16 +234,17 @@ def create_no_records_created_pre_check_error(datafile, dfs):
     return errors
 
 def delete_duplicates(duplicate_manager):
+    """Delete all records with duplicate errors."""
     total_deleted = 0
     for document, ids in duplicate_manager.get_records_to_remove().items():
         try:
             model = document.Django.model
             qset = model.objects.filter(id__in=ids)
-            # We must tell elastic to delete the documents first because after we call `_raw_delete` the queryset will be 
-            # empty which will tell elastic that nothing needs updated.
+            # We must tell elastic to delete the documents first because after we call `_raw_delete` the queryset will
+            # be empty which will tell elastic that nothing needs updated.
             document.update(qset, action="delete")
-            # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading dependencies. If
-            # that ever changes, we should NOT use `_raw_delete`.
+            # WARNING: we can use `_raw_delete` in this case because our record models don't have cascading
+            # dependencies. If that ever changes, we should NOT use `_raw_delete`.
             num_deleted = qset._raw_delete(qset.db)
             total_deleted += num_deleted
             logger.debug(f"Deleted {num_deleted} records of type: {model}.")
