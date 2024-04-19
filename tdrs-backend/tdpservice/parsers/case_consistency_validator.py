@@ -421,7 +421,7 @@ class CaseConsistencyValidator:
                 dob_date = datetime.strptime(dob, '%Y%m%d')
                 is_adult = get_years_apart(rpt_date, dob_date) >= 18
 
-                if is_territory and is_adult and (rec_aabd != 1 or rec_aabd != 2):
+                if is_territory and is_adult and (rec_aabd != 1 and rec_aabd != 2):
                     self.__generate_and_add_error(
                         schema,
                         record,
