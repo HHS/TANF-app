@@ -386,7 +386,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
     # TODO: This is duplicate code. Can we extract this to a function?
     # Add any generated cat4 errors to our error data structure & clear our caches errors list
     duplicate_errors = duplicate_manager.get_generated_errors()
-    num_errors += len(duplicate_errors) + len(case_consistency_validator.get_generated_errors())
+    num_errors += len(duplicate_errors) + case_consistency_validator.num_generated_errors()
     unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
         case_consistency_validator.get_generated_errors() + duplicate_errors
     case_consistency_validator.clear_errors()
