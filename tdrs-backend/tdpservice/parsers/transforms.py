@@ -31,8 +31,7 @@ def ssp_ssn_decryption_func(value, **kwargs):
     return value
 
 def zero_pad(digits):
-    """Zero pad a string"""
+    """Zero pad a string."""
     def transform(value, **kwargs):
         return value.lstrip().zfill(digits)
     return transform
-
