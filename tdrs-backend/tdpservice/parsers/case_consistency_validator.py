@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from .models import ParserErrorCategoryChoices
+from .util import get_years_apart
 from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
 import logging
@@ -82,9 +83,11 @@ class CaseConsistencyValidator:
 
     def get_generated_errors(self):
         """Return all errors generated for the current validated case."""
-        if self.has_validated:
-            return self.generated_errors
-        return []
+        return self.generated_errors
+
+    def num_generated_errors(self):
+        """Return current number of generated errors."""
+        return len(self.generated_errors)
 
     def add_record(self, record, schema, case_has_errors):
         """Add record to cache and validate if new case is detected."""
@@ -93,6 +96,7 @@ class CaseConsistencyValidator:
                 self.validate()
                 self.record_schema_pairs.clear((record, schema))
                 self.case_has_errors = case_has_errors
+                self.has_validated = False
             else:
                 self.case_has_errors = self.case_has_errors if self.case_has_errors else case_has_errors
                 self.record_schema_pairs.add_record((record, schema))
@@ -415,11 +419,9 @@ class CaseConsistencyValidator:
                 rpt_month_year_dd = f'{rpt_month_year}01'
                 rpt_date = datetime.strptime(rpt_month_year_dd, '%Y%m%d')
                 dob_date = datetime.strptime(dob, '%Y%m%d')
-                delta = rpt_date - dob_date
-                age = delta.days/365.25
-                is_adult = age >= 18
+                is_adult = get_years_apart(rpt_date, dob_date) >= 18
 
-                if is_territory and is_adult and rec_aabd != 1:
+                if is_territory and is_adult and (rec_aabd != 1 and rec_aabd != 2):
                     self.__generate_and_add_error(
                         schema,
                         record,

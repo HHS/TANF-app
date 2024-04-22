@@ -343,6 +343,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 case_consistency_validator.add_record(record, s, record_has_errors)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
+        num_errors += case_consistency_validator.num_generated_errors()
         unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
             case_consistency_validator.get_generated_errors()
         case_consistency_validator.clear_errors()
@@ -382,6 +383,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     validate_case_consistency(case_consistency_validator)
 
+    # TODO: This is duplicate code. Can we extract this to a function?
     # Add any generated cat4 errors to our error data structure & clear our caches errors list
     duplicate_errors = duplicate_manager.get_generated_errors()
     num_errors += len(duplicate_errors) + len(case_consistency_validator.get_generated_errors())
@@ -392,6 +394,8 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
     delete_duplicates(duplicate_manager)
+
+    bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
     logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
                  f"validated {case_consistency_validator.total_cases_validated} of them.")

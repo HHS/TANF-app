@@ -98,7 +98,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator.add_record(tanf_s1_records[0], tanf_s1_schemas[0], True)
 
-        assert case_consistency_validator.has_validated is True
+        assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is True
         assert len(case_consistency_validator.record_schema_pairs.cases) == 1
         assert case_consistency_validator.total_cases_cached == 2
@@ -983,7 +983,7 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=2,
-                REC_AID_TOTALLY_DISABLED=1,
+                REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=2
             ),
         ]
@@ -1041,7 +1041,7 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=1,
-                REC_AID_TOTALLY_DISABLED=2,
+                REC_AID_TOTALLY_DISABLED=0,
                 REC_SSI=2
             ),
             T5Factory.create(
@@ -1049,7 +1049,7 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=2,
-                REC_AID_TOTALLY_DISABLED=2,
+                REC_AID_TOTALLY_DISABLED=0,
                 REC_SSI=2
             ),
         ]
