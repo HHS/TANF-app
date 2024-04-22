@@ -395,8 +395,6 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     delete_duplicates(duplicate_manager)
 
-    bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
-
     logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
                  f"validated {case_consistency_validator.total_cases_validated} of them.")
     dfs.save()
