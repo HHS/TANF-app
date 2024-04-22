@@ -8,7 +8,10 @@ def calendar_quarter_to_rpt_month_year(month_index):
         value = str(value)
         year = value[:4]
         quarter = f"Q{value[-1]}"
-        month = transform_to_months(quarter)[month_index]
+        try:
+            month = transform_to_months(quarter)[month_index]
+        except ValueError:
+            return None
         return f"{year}{month_to_int(month)}"
     return transform
 
