@@ -1,14 +1,17 @@
 """Convert raw uploaded Datafile into a parsed model, and accumulate/return any errors."""
 
 
+from django.conf import settings
 from django.db import DatabaseError
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 import itertools
 import logging
 from .models import ParserErrorCategoryChoices, ParserError
-from . import schema_defs, validators, util, row_schema
-from .schema_defs.util import get_section_reference, get_program_model
+from . import schema_defs, validators, util
+from . import row_schema
+from .schema_defs.utils import get_section_reference, get_program_model
+from .case_consistency_validator import CaseConsistencyValidator
 from elasticsearch.helpers.errors import BulkIndexError
 from tdpservice.data_files.models import DataFile
 
@@ -32,6 +35,8 @@ def parse_datafile(datafile, dfs):
         errors['header'] = header_errors
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
+
+    case_consistency_validator = CaseConsistencyValidator(header, util.make_generate_parser_error(datafile, None))
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
@@ -86,7 +91,7 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted)
+    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator)
 
     errors = errors | line_errors
 
@@ -103,8 +108,22 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
             for document, records in unsaved_records.items():
                 num_expected_db_records += len(records)
                 created_objs = document.Django.model.objects.bulk_create(records)
-                num_elastic_records_created += document.update(created_objs)[0]
                 num_db_records_created += len(created_objs)
+
+                try:
+                    num_elastic_records_created += document.update(created_objs)[0]
+                except BulkIndexError as e:
+                    logger.error(f"Encountered error while indexing datafile documents: {e}")
+                    LogEntry.objects.log_action(
+                        user_id=datafile.user.pk,
+                        content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                        object_id=datafile,
+                        object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+                        action_flag=ADDITION,
+                        change_message=f"Encountered error while indexing datafile documents: {e}",
+                    )
+                    continue
+
             dfs.total_number_of_records_created += num_db_records_created
             if num_db_records_created != num_expected_db_records:
                 logger.error(f"Bulk Django record creation only created {num_db_records_created}/" +
@@ -114,21 +133,9 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                              f"{num_expected_db_records}!")
             else:
                 logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
-            return num_db_records_created == num_expected_db_records and \
-                num_elastic_records_created == num_expected_db_records, {}
+            return num_db_records_created == num_expected_db_records, {}
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
-            return False, unsaved_records
-        except BulkIndexError as e:
-            logger.error(f"Encountered error while indexing datafile documents: {e}")
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while indexing datafile documents: {e}",
-            )
             return False, unsaved_records
     return True, unsaved_records
 
@@ -174,6 +181,19 @@ def rollback_parser_errors(datafile):
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
+def validate_case_consistency(case_consistency_validator):
+    """Force category four validation if we have reached the last case in the file."""
+    if not case_consistency_validator.has_validated:
+        case_consistency_validator.validate()
+
+def generate_trailer_errors(trailer_errors, errors, unsaved_parser_errors, num_errors):
+    """Generate trailer errors if we care to see them."""
+    if settings.GENERATE_TRAILER_ERRORS:
+        errors['trailer'] = trailer_errors
+        unsaved_parser_errors.update({"trailer": trailer_errors})
+        num_errors += len(trailer_errors)
+    return errors, unsaved_parser_errors, num_errors
+
 def create_no_records_created_pre_check_error(datafile, dfs):
     """Generate a precheck error if no records were created."""
     errors = {}
@@ -189,7 +209,7 @@ def create_no_records_created_pre_check_error(datafile, dfs):
         errors["no_records_created"] = [err_obj]
     return errors
 
-def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted):
+def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
     errors = {}
@@ -224,9 +244,10 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted):
         if trailer_errors is not None:
             logger.debug(f"{len(trailer_errors)} trailer error(s) detected for file " +
                          f"'{datafile.original_filename}' on line {line_number}.")
-            errors['trailer'] = trailer_errors
-            unsaved_parser_errors.update({"trailer": trailer_errors})
-            num_errors += len(trailer_errors)
+            errors, unsaved_parser_errors, num_errors = generate_trailer_errors(trailer_errors,
+                                                                                errors,
+                                                                                unsaved_parser_errors,
+                                                                                num_errors)
 
         generate_error = util.make_generate_parser_error(datafile, line_number)
 
@@ -273,6 +294,12 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted):
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 unsaved_records.setdefault(s.document, []).append(record)
+                case_consistency_validator.add_record(record, s, len(record_errors) > 0)
+
+        # Add any generated cat4 errors to our error data structure & clear our caches errors list
+        unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
+            case_consistency_validator.get_generated_errors()
+        case_consistency_validator.clear_errors()
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
@@ -309,6 +336,10 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted):
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
+    validate_case_consistency(case_consistency_validator)
+
+    logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
+                 f"validated {case_consistency_validator.total_cases_validated} of them.")
     dfs.save()
 
     return errors

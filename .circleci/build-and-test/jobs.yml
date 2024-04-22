@@ -1,10 +1,9 @@
-# jobs:
   test-backend:
     executor: machine-executor
     steps:
       - checkout
       - docker-compose-check
-      - docker-compose-up-with-elastic-backend
+      - docker-compose-up-backend
       - run:
           name: Run Unit Tests And Create Code Coverage Report
           command: |
@@ -47,7 +46,7 @@
     steps:
       - checkout
       - docker-compose-check
-      - docker-compose-up-with-elastic-backend
+      - docker-compose-up-backend
       - docker-compose-up-frontend
       - install-nodejs-machine
       - disable-npm-audit

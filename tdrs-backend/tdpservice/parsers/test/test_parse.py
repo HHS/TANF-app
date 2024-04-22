@@ -3,6 +3,7 @@
 
 import pytest
 from django.contrib.admin.models import LogEntry
+from django.conf import settings
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
@@ -13,14 +14,15 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
-from ..schema_defs.util import get_section_reference, get_program_models, get_program_model
 from elasticsearch.helpers.errors import BulkIndexError
-
 import logging
+logger = logging.getLogger(__name__)
+
 
 es_logger = logging.getLogger('elasticsearch')
 es_logger.setLevel(logging.WARNING)
 
+settings.GENERATE_TRAILER_ERRORS = True
 
 @pytest.fixture
 def test_datafile(stt_user, stt):
@@ -48,7 +50,7 @@ def t2_invalid_dob_file():
         quarter='Q1',
         file__name='t2_invalid_dob_file.txt',
         file__section='Active Case Data',
-        file__data=(b'HEADER20204A25   TAN1EU\n'
+        file__data=(b'HEADER20204A25   TAN1ED\n'
                     b'T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000'
                     b'0000000000000000000000000000000000000000000000000000000000291\n'
                     b'TRAILER0000001         ')
@@ -230,7 +232,7 @@ def test_parse_bad_test_file(bad_test_file, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Header length is 24 but must be 23 characters.'
+    assert err.error_message == 'HEADER record length is 24 characters but must be 23.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -259,7 +261,7 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Header length is 14 but must be 23 characters.'
+    assert err.error_message == 'HEADER record length is 14 characters but must be 23.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -341,7 +343,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
 
     trailer_error = parser_errors.get(row_number=3)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error.error_message == 'Trailer length is 11 but must be 23 characters.'
+    assert trailer_error.error_message == 'TRAILER record length is 11 characters but must be 23.'
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
@@ -352,8 +354,8 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
         row_errors_list.append(row_error)
         assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert trailer_error.error_message in [
-            'Trailer length is 11 but must be 23 characters.',
-            'Reporting month year None does not match file reporting year:2021, quarter:Q1.']
+            'TRAILER record length is 11 characters but must be 23.',
+            'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.']
         assert row_error.content_type is None
         assert row_error.object_id is None
 
@@ -366,7 +368,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
     length_error = row_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.error_message == 'T1 record length is 7 characters but must be 156.'
     assert length_error.content_type is None
     assert length_error.object_id is None
     assert errors == {
@@ -398,35 +400,36 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
 
     trailer_error_1 = trailer_errors[0]
     assert trailer_error_1.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_1.error_message == 'Trailer length is 7 but must be 23 characters.'
+    assert trailer_error_1.error_message == 'TRAILER record length is 7 characters but must be 23.'
     assert trailer_error_1.content_type is None
     assert trailer_error_1.object_id is None
 
     trailer_error_2 = trailer_errors[1]
     assert trailer_error_2.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_2.error_message == 'T1trash does not start with TRAILER.'
+    assert trailer_error_2.error_message == "Your file does not end with a TRAILER record."
     assert trailer_error_2.content_type is None
     assert trailer_error_2.object_id is None
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_2_error.error_message == 'Value length 117 does not match 156.'
+    assert row_2_error.error_message == 'T1 record length is 117 characters but must be 156.'
     assert row_2_error.content_type is None
     assert row_2_error.object_id is None
 
     # catch-rpt-month-year-mismatches
     row_3_errors = parser_errors.filter(row_number=3)
     row_3_error_list = []
+
     for row_3_error in row_3_errors:
         row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert row_3_error.error_message in [
-            'Value length 7 does not match 156.',
-            'Reporting month year None does not match file reporting year:2021, quarter:Q1.',
+        assert row_3_error.error_message in {
+            'T1 record length is 7 characters but must be 156.',
+            'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.',
             'T1trash does not start with TRAILER.',
-            'Trailer length is 7 but must be 23 characters.',
-            'T1trash contains blanks between positions 8 and 19.',
-            'The value: trash, does not follow the YYYYMM format for Reporting Year and Month.']
+            'TRAILER record length is 7 characters but must be 23.',
+            'T1: Case number T1trash cannot contain blanks.',
+            'Your file does not end with a TRAILER record.'}
         assert row_3_error.content_type is None
         assert row_3_error.object_id is None
 
@@ -443,7 +446,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     row_3_errors = [trailer_errors[2], trailer_errors[3]]
     length_error = row_3_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'Value length 7 does not match 156.'
+    assert length_error.error_message == 'T1 record length is 7 characters but must be 156.'
     assert length_error.content_type is None
     assert length_error.object_id is None
 
@@ -457,14 +460,14 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     assert error_trailer == [trailer_error_1, trailer_error_2]
     trailer_error_3 = trailer_errors[3]
     assert trailer_error_3.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_3.error_message == 'Reporting month year None does not ' + \
-                                            'match file reporting year:2021, quarter:Q1.'
+    assert trailer_error_3.error_message == 'T1: Case number T1trash cannot contain blanks.'
     assert trailer_error_3.content_type is None
     assert trailer_error_3.object_id is None
 
     trailer_error_4 = trailer_errors[4]
     assert trailer_error_4.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_4.error_message == 'T1trash contains blanks between positions 8 and 19.'
+    assert trailer_error_4.error_message == ('T1: Reporting month year None does not '
+                                             'match file reporting year:2021, quarter:Q1.')
     assert trailer_error_4.content_type is None
     assert trailer_error_4.object_id is None
 
@@ -506,7 +509,7 @@ def test_parse_empty_file(empty_file, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'Header length is 0 but must be 23 characters.'
+    assert err.error_message == 'HEADER record length is 0 characters but must be 23.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -587,7 +590,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
 
     assert err.row_number == 2
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert err.error_message == '3 is not larger or equal to 1 and smaller or equal to 2.'
+    assert err.error_message == 'M1: 3 is not larger or equal to 1 and smaller or equal to 2.'
     assert err.content_type is not None
     assert err.object_id is not None
     assert parser_errors.count() == 32486
@@ -694,6 +697,9 @@ def super_big_s1_file(stt_user, stt):
 @pytest.mark.skip(reason="long runtime")  # big_files
 def test_parse_super_big_s1_file(super_big_s1_file, dfs):
     """Test parsing of super_big_s1_file and validate all T1/T2/T3 records are created."""
+    super_big_s1_file.year = 2023
+    super_big_s1_file.quarter = 'Q2'
+
     parse.parse_datafile(super_big_s1_file, dfs)
 
     expected_t1_record_count = 96642
@@ -799,16 +805,17 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
 
     assert parser_errors.count() == 5
 
-    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
+    error_message = 'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_2_error = parser_errors.get(row_number=2, error_message=error_message)
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_2_error.error_message == error_message
 
-    error_message = 'Reporting month year None does not match file reporting year:2021, quarter:Q1.'
+    error_message = 'T2: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_3_error = parser_errors.get(row_number=3, error_message=error_message)
     assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_3_error.error_message == error_message
 
+    error_message = 'T3: Reporting month year None does not match file reporting year:2021, quarter:Q1.'
     row_4_error = parser_errors.get(row_number=4, error_message=error_message)
     assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert row_4_error.error_message == error_message
@@ -839,32 +846,32 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     parse.parse_datafile(bad_ssp_s1__row_missing_required_field, dfs)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
-    assert parser_errors.count() == 6
+    assert parser_errors.count() == 7
 
     row_2_error = parser_errors.get(
         row_number=2,
-        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
+        error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
     assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_3_error = parser_errors.get(
         row_number=3,
-        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
+        error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
     assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     row_4_error = parser_errors.get(
         row_number=4,
-        error_message='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
+        error_message__contains='Reporting month year None does not match file reporting year:2019, quarter:Q1.'
     )
     assert row_4_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
     error_message = 'Reporting month year None does not match file reporting year:2019, quarter:Q1.'
-    rpt_month_errors = parser_errors.filter(error_message=error_message)
+    rpt_month_errors = parser_errors.filter(error_message__contains=error_message)
     assert len(rpt_month_errors) == 3
-    for e in rpt_month_errors:
+    for i, e in enumerate(rpt_month_errors):
         assert e.error_type == ParserErrorCategoryChoices.PRE_CHECK
-        assert e.error_message == error_message
+        assert error_message.format(i + 1) in e.error_message
         assert e.object_id is None
 
     row_5_error = parser_errors.get(
@@ -877,7 +884,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
 
     trailer_error = parser_errors.get(
         row_number=6,
-        error_message='Trailer length is 15 but must be 23 characters.'
+        error_message='TRAILER record length is 15 characters but must be 23.'
     )
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error.content_type is None
@@ -925,17 +932,17 @@ def test_get_schema_options(dfs):
     assert schema == schema_defs.tanf.t1
 
     # get model
-    models = get_program_models('TAN', 'A')
+    models = schema_defs.utils.get_program_models('TAN', 'A')
     assert models == {
         'T1': schema_defs.tanf.t1,
         'T2': schema_defs.tanf.t2,
         'T3': schema_defs.tanf.t3,
     }
 
-    model = get_program_model('TAN', 'A', 'T1')
+    model = schema_defs.utils.get_program_model('TAN', 'A', 'T1')
     assert model == schema_defs.tanf.t1
     # get section
-    section = get_section_reference('TAN', 'C')
+    section = schema_defs.utils.get_section_reference('TAN', 'C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
 
     # from datafile:
@@ -1020,7 +1027,7 @@ def tanf_section3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section3_file(tanf_section3_file, dfs):
     """Test parsing TANF Section 3 submission."""
-    tanf_section3_file.year = 2021
+    tanf_section3_file.year = 2022
     tanf_section3_file.quarter = 'Q1'
 
     dfs.datafile = tanf_section3_file
@@ -1049,9 +1056,9 @@ def test_parse_tanf_section3_file(tanf_section3_file, dfs):
     second = t6_objs[1]
     third = t6_objs[2]
 
-    assert first.RPT_MONTH_YEAR == 202012
-    assert second.RPT_MONTH_YEAR == 202011
-    assert third.RPT_MONTH_YEAR == 202010
+    assert first.RPT_MONTH_YEAR == 202112
+    assert second.RPT_MONTH_YEAR == 202111
+    assert third.RPT_MONTH_YEAR == 202110
 
     assert first.NUM_APPROVED == 3924
     assert second.NUM_APPROVED == 3977
@@ -1102,7 +1109,7 @@ def tanf_section4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section4_file(tanf_section4_file, dfs):
     """Test parsing TANF Section 4 submission."""
-    tanf_section4_file.year = 2021
+    tanf_section4_file.year = 2022
     tanf_section4_file.quarter = 'Q1'
 
     dfs.datafile = tanf_section4_file
@@ -1130,8 +1137,8 @@ def test_parse_tanf_section4_file(tanf_section4_file, dfs):
     first = t7_objs.first()
     sixth = t7_objs[5]
 
-    assert first.RPT_MONTH_YEAR == 202011
-    assert sixth.RPT_MONTH_YEAR == 202012
+    assert first.RPT_MONTH_YEAR == 202111
+    assert sixth.RPT_MONTH_YEAR == 202112
 
     assert first.TDRS_SECTION_IND == '2'
     assert sixth.TDRS_SECTION_IND == '2'
@@ -1189,7 +1196,7 @@ def ssp_section4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     """Test parsing SSP Section 4 submission."""
-    ssp_section4_file.year = 2019
+    ssp_section4_file.year = 2022
     ssp_section4_file.quarter = 'Q1'
 
     dfs.datafile = ssp_section4_file
@@ -1210,8 +1217,28 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     assert m7_objs.count() == 12
 
     first = m7_objs.first()
-    assert first.RPT_MONTH_YEAR == 201810
+    assert first.RPT_MONTH_YEAR == 202110
     assert first.FAMILIES_MONTH == 748
+
+@pytest.fixture
+def ssp_section2_rec_oadsi_file(stt_user, stt):
+    """Fixture for sp_section2_rec_oadsi_file."""
+    return util.create_test_datafile('ssp_section2_rec_oadsi_file.txt', stt_user, stt, 'SSP Closed Case Data')
+
+
+@pytest.mark.django_db()
+def test_parse_ssp_section2_rec_oadsi_file(ssp_section2_rec_oadsi_file, dfs):
+    """Test parsing SSP Section 2 REC_OADSI."""
+    ssp_section2_rec_oadsi_file.year = 2019
+    ssp_section2_rec_oadsi_file.quarter = 'Q1'
+
+    dfs.datafile = ssp_section2_rec_oadsi_file
+
+    parse.parse_datafile(ssp_section2_rec_oadsi_file, dfs)
+    parser_errors = ParserError.objects.filter(file=ssp_section2_rec_oadsi_file)
+
+    assert parser_errors.count() == 0
+
 
 @pytest.fixture
 def ssp_section2_file(stt_user, stt):
@@ -1277,7 +1304,7 @@ def ssp_section3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     """Test parsing TANF Section 3 submission."""
-    ssp_section3_file.year = 2019
+    ssp_section3_file.year = 2022
     ssp_section3_file.quarter = 'Q1'
 
     dfs.datafile = ssp_section3_file
@@ -1305,9 +1332,9 @@ def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     second = m6_objs[1]
     third = m6_objs[2]
 
-    assert first.RPT_MONTH_YEAR == 201810
-    assert second.RPT_MONTH_YEAR == 201811
-    assert third.RPT_MONTH_YEAR == 201812
+    assert first.RPT_MONTH_YEAR == 202110
+    assert second.RPT_MONTH_YEAR == 202111
+    assert third.RPT_MONTH_YEAR == 202112
 
     assert first.SSPMOE_FAMILIES == 15869
     assert second.SSPMOE_FAMILIES == 16008
@@ -1460,7 +1487,7 @@ def tribal_section_3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_3_file(tribal_section_3_file, dfs):
     """Test parsing Tribal TANF Section 3 submission."""
-    tribal_section_3_file.year = 2020
+    tribal_section_3_file.year = 2022
     tribal_section_3_file.quarter = 'Q1'
 
     dfs.datafile = tribal_section_3_file
@@ -1496,7 +1523,7 @@ def tribal_section_4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     """Test parsing Tribal TANF Section 4 submission."""
-    tribal_section_4_file.year = 2021
+    tribal_section_4_file.year = 2022
     tribal_section_4_file.quarter = 'Q1'
 
     dfs.datafile = tribal_section_4_file
@@ -1519,8 +1546,8 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     first = t7_objs.first()
     sixth = t7_objs[5]
 
-    assert first.RPT_MONTH_YEAR == 202011
-    assert sixth.RPT_MONTH_YEAR == 202012
+    assert first.RPT_MONTH_YEAR == 202111
+    assert sixth.RPT_MONTH_YEAR == 202112
 
     assert first.TDRS_SECTION_IND == '2'
     assert sixth.TDRS_SECTION_IND == '2'
@@ -1544,9 +1571,9 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
     year_error = parser_errors[1]
     digits_error = parser_errors[0]
 
-    assert month_error.error_message == "$9 is not a valid month."
-    assert year_error.error_message == "Q897 must be larger than year 1900."
-    assert digits_error.error_message == "Q897$9 3 does not have exactly 8 digits."
+    assert month_error.error_message == "T2: $9 is not a valid month."
+    assert year_error.error_message == "T2: Year Q897 must be larger than 1900."
+    assert digits_error.error_message == "T2: Q897$9 3 does not have exactly 8 digits."
 
 
 @pytest.mark.django_db
@@ -1559,9 +1586,9 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_data
 
     # create some records, don't save them
     records = {
-        documents.tanf.TANF_T1DataSubmissionDocument: [TANF_T1()],
-        documents.tanf.TANF_T2DataSubmissionDocument: [TANF_T2()],
-        documents.tanf.TANF_T3DataSubmissionDocument: [TANF_T3()]
+        documents.tanf.TANF_T1DataSubmissionDocument(): [TANF_T1()],
+        documents.tanf.TANF_T2DataSubmissionDocument(): [TANF_T2()],
+        documents.tanf.TANF_T3DataSubmissionDocument(): [TANF_T3()]
     }
 
     all_created, unsaved_records = parse.bulk_create_records(
@@ -1578,11 +1605,11 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_data
     log = LogEntry.objects.get()
     assert log.change_message == "Encountered error while indexing datafile documents: indexing exception"
 
-    assert all_created is False
-    assert len(unsaved_records.items()) == 3
+    assert all_created is True
+    assert len(unsaved_records.items()) == 0
     assert TANF_T1.objects.all().count() == 1
-    assert TANF_T2.objects.all().count() == 0
-    assert TANF_T3.objects.all().count() == 0
+    assert TANF_T2.objects.all().count() == 1
+    assert TANF_T3.objects.all().count() == 1
 
 
 @pytest.fixture
@@ -1593,6 +1620,8 @@ def tanf_section_4_file_with_errors(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, dfs):
     """Test parsing TANF Section 4 submission."""
+    tanf_section_4_file_with_errors.year = 2022
+    tanf_section_4_file_with_errors.quarter = 'Q1'
     dfs.datafile = tanf_section_4_file_with_errors
 
     parse.parse_datafile(tanf_section_4_file_with_errors, dfs)
@@ -1611,6 +1640,7 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
     assert TANF_T7.objects.all().count() == 18
 
     parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
+
     assert parser_errors.count() == 6
 
     t7_objs = TANF_T7.objects.all().order_by('FAMILIES_MONTH')
@@ -1618,8 +1648,8 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
     first = t7_objs.first()
     sixth = t7_objs[5]
 
-    assert first.RPT_MONTH_YEAR == 202011
-    assert sixth.RPT_MONTH_YEAR == 202010
+    assert first.RPT_MONTH_YEAR == 202111
+    assert sixth.RPT_MONTH_YEAR == 202110
 
     assert first.TDRS_SECTION_IND == '1'
     assert sixth.TDRS_SECTION_IND == '1'
@@ -1652,3 +1682,47 @@ def test_parse_no_records_file(no_records_file, dfs):
     assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert error.content_type is None
     assert error.object_id is None
+
+
+@pytest.fixture
+def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
+    """Fixture for tanf_section_1_file_with_bad_update_indicator."""
+    return util.create_test_datafile('tanf_s1_bad_update_indicator.txt', stt_user, stt, "Active Case Data")
+
+@pytest.mark.django_db()
+def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file_with_bad_update_indicator, dfs):
+    """Test parsing TANF Section 1 submission update indicator."""
+    dfs.datafile = tanf_section_1_file_with_bad_update_indicator
+
+    parse.parse_datafile(tanf_section_1_file_with_bad_update_indicator, dfs)
+
+    parser_errors = ParserError.objects.filter(file=tanf_section_1_file_with_bad_update_indicator)
+
+    assert parser_errors.count() == 1
+
+    error = parser_errors.first()
+
+    assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert error.error_message == "HEADER update indicator: U does not match D."
+
+@pytest.fixture
+def tribal_section_4_bad_quarter(stt_user, stt):
+    """Fixture for tribal_section_4_bad_quarter."""
+    return util.create_test_datafile('tribal_section_4_fake_bad_quarter.txt', stt_user, stt, "Tribal Stratum Data")
+
+@pytest.mark.django_db()
+def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
+    """Test handling invalid quarter value that raises a ValueError exception."""
+    tribal_section_4_bad_quarter.year = 2021
+    tribal_section_4_bad_quarter.quarter = 'Q1'
+    dfs.datafile = tribal_section_4_bad_quarter
+
+    parse.parse_datafile(tribal_section_4_bad_quarter, dfs)
+    parser_errors = ParserError.objects.filter(file=tribal_section_4_bad_quarter).order_by('id')
+
+    assert parser_errors.count() == 3
+
+    parser_errors.first().error_message == "T7: 2020  is invalid. Calendar Quarter must be a numeric" + \
+        "representing the Calendar Year and Quarter formatted as YYYYQ"
+
+    Tribal_TANF_T7.objects.count() == 0
