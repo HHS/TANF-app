@@ -1,6 +1,7 @@
 """Class definition for Category Four validator."""
 
 from datetime import datetime
+from .duplicate_manager import RecordDuplicateManager
 from .models import ParserErrorCategoryChoices
 from .util import get_years_apart
 from tdpservice.stts.models import STT
@@ -35,12 +36,7 @@ class SortedRecordSchemaPairs:
         record, schema = record_schema_pair
         rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
 
-        reporting_year_cases = self.sorted_cases.get(rpt_month_year, {})
-        records = reporting_year_cases.get(type(record), [])
-        records.append(record_schema_pair)
-
-        reporting_year_cases[type(record)] = records
-        self.sorted_cases[rpt_month_year] = reporting_year_cases
+        self.sorted_cases.setdefault(type(record), []).append(record_schema_pair)
 
 
 class CaseConsistencyValidator:
@@ -49,7 +45,10 @@ class CaseConsistencyValidator:
     def __init__(self, header, stt_type, generate_error):
         self.header = header
         self.record_schema_pairs = SortedRecordSchemaPairs()
+        self.duplicate_manager = RecordDuplicateManager(generate_error)
+        self.current_rpt_month_year = None
         self.current_case = None
+        self.current_hash = None
         self.case_has_errors = False
         self.section = header["type"]
         self.case_is_section_one_or_two = self.section in {'A', 'C'}
@@ -60,6 +59,7 @@ class CaseConsistencyValidator:
         self.total_cases_cached = 0
         self.total_cases_validated = 0
         self.stt_type = stt_type
+        self.can_remove_case_from_memory = True
 
     def __get_model(self, model_str):
         """Return a model for the current program type/section given the model's string name."""
@@ -86,14 +86,19 @@ class CaseConsistencyValidator:
         return self.generated_errors
 
     def num_generated_errors(self):
-        """Return current number of generated errors."""
+        """Return current number of generated errors for the current case."""
         return len(self.generated_errors)
 
-    def add_record(self, record, schema, case_has_errors):
+    def add_record(self, record, schema, line, line_number, case_has_errors):
         """Add record to cache and validate if new case is detected."""
+        num_errors = 0
+        self.can_remove_case_from_memory &= record._state.adding
+        hash_val = None
+        self.current_rpt_month_year = record.RPT_MONTH_YEAR
         if self.case_is_section_one_or_two:
+            hash_val = hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
             if record.CASE_NUMBER != self.current_case and self.current_case is not None:
-                self.validate()
+                num_errors += self.validate()
                 self.record_schema_pairs.clear((record, schema))
                 self.case_has_errors = case_has_errors
                 self.has_validated = False
@@ -102,6 +107,17 @@ class CaseConsistencyValidator:
                 self.record_schema_pairs.add_record((record, schema))
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
+        else:
+            self.current_case = None
+            hash_val = hash(record.RecordType + str(record.RPT_MONTH_YEAR))
+
+        # TODO: Duplicate detection applies to all sections, however we need to implement a factory of some sort to
+        # get the correct duplicate manager based on the section. Sections 3 and 4 have different duplicate logic
+        # than 1 or 2 anyways. Some more care for handling section 1 and 2 together is still needed.
+        num_errors += self.duplicate_manager.add_record(record, hash_val, schema, line,
+                                                        line_number, self.can_remove_case_from_memory)
+
+        return num_errors > 0 and self.can_remove_case_from_memory
 
     def validate(self):
         """Perform category four validation on all cached records."""
@@ -189,74 +205,73 @@ class CaseConsistencyValidator:
 
         cases = self.record_schema_pairs.sorted_cases
 
-        for reporting_year_cases in cases.values():
-            t1s = reporting_year_cases.get(t1_model, [])
-            t2s = reporting_year_cases.get(t2_model, [])
-            t3s = reporting_year_cases.get(t3_model, [])
+        t1s = cases.get(t1_model, [])
+        t2s = cases.get(t2_model, [])
+        t3s = cases.get(t3_model, [])
 
-            if len(t1s) > 0:
-                if len(t1s) > 1:  # likely to be captured by "no duplicates" validator
-                    for record, schema in t1s[1:]:
-                        self.__generate_and_add_error(
-                            schema,
-                            record,
-                            field='RPT_MONTH_YEAR',
-                            msg=(
-                                f'There should only be one {t1_model_name} record '
-                                f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
-                            )
+        if len(t1s) > 0:
+            if len(t1s) > 1:  # likely to be captured by "no duplicates" validator
+                for record, schema in t1s[1:]:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='RPT_MONTH_YEAR',
+                        msg=(
+                            f'There should only be one {t1_model_name} record '
+                            f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
                         )
-                        num_errors += 1
+                    )
+                    num_errors += 1
 
-                if len(t2s) == 0 and len(t3s) == 0:
-                    for record, schema in t1s:
-                        self.__generate_and_add_error(
-                            schema,
-                            record,
-                            field='RPT_MONTH_YEAR',
-                            msg=(
-                                f'Every {t1_model_name} record should have at least one '
-                                f'corresponding {t2_model_name} or {t3_model_name} record '
-                                f'with the same RPT_MONTH_YEAR and CASE_NUMBER.'
-                            )
+            if len(t2s) == 0 and len(t3s) == 0:
+                for record, schema in t1s:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='RPT_MONTH_YEAR',
+                        msg=(
+                            f'Every {t1_model_name} record should have at least one '
+                            f'corresponding {t2_model_name} or {t3_model_name} record '
+                            f'with the same RPT_MONTH_YEAR and CASE_NUMBER.'
                         )
-                        num_errors += 1
+                    )
+                    num_errors += 1
 
-                else:
-                    # loop through all t2s and t3s
-                    # to find record where FAMILY_AFFILIATION == 1
-                    num_errors += self.__validate_family_affiliation(num_errors, t1s, t2s, t3s, (
-                            f'Every {t1_model_name} record should have at least one corresponding '
-                            f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and '
-                            f'CASE_NUMBER, where FAMILY_AFFILIATION==1'
-                        ))
-
-                    # the successful route
-                    # pass
             else:
-                for record, schema in t2s:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='RPT_MONTH_YEAR',
-                        msg=(
-                            f'Every {t2_model_name} record should have at least one corresponding '
-                            f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
-                        )
-                    )
-                    num_errors += 1
+                # loop through all t2s and t3s
+                # to find record where FAMILY_AFFILIATION == 1
+                num_errors += self.__validate_family_affiliation(num_errors, t1s, t2s, t3s, (
+                        f'Every {t1_model_name} record should have at least one corresponding '
+                        f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and '
+                        f'CASE_NUMBER, where FAMILY_AFFILIATION==1'
+                    ))
 
-                for record, schema in t3s:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='RPT_MONTH_YEAR',
-                        msg=(
-                            f'Every {t3_model_name} record should have at least one corresponding '
-                            f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
-                        )
+                # the successful route
+                # pass
+        else:
+            for record, schema in t2s:
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='RPT_MONTH_YEAR',
+                    msg=(
+                        f'Every {t2_model_name} record should have at least one corresponding '
+                        f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
                     )
-                    num_errors += 1
+                )
+                num_errors += 1
+
+            for record, schema in t3s:
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='RPT_MONTH_YEAR',
+                    msg=(
+                        f'Every {t3_model_name} record should have at least one corresponding '
+                        f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                    )
+                )
+                num_errors += 1
 
         return num_errors
 
@@ -336,63 +351,62 @@ class CaseConsistencyValidator:
 
         cases = self.record_schema_pairs.sorted_cases
 
-        for reporting_year_cases in cases.values():
-            t4s = reporting_year_cases.get(t4_model, [])
-            t5s = reporting_year_cases.get(t5_model, [])
+        t4s = cases.get(t4_model, [])
+        t5s = cases.get(t5_model, [])
 
-            if len(t4s) > 0:
-                if len(t4s) > 1:
-                    for record, schema in t4s[1:]:
-                        self.__generate_and_add_error(
-                            schema,
-                            record,
-                            field='RPT_MONTH_YEAR',
-                            msg=(
-                                f'There should only be one {t4_model_name} record  '
-                                f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
-                            )
-                        )
-                        num_errors += 1
-                else:
-                    t4 = t4s[0]
-                    t4_record, t4_schema = t4
-                    closure_reason = getattr(t4_record, 'CLOSURE_REASON')
-
-                    if closure_reason == '01':
-                        num_errors += self.__validate_case_closure_employment(t4, t5s, (
-                            'At least one person on the case must have employment status = 1:Yes in the same month.'
-                        ))
-                    elif closure_reason == '99' and not is_ssp:
-                        num_errors += self.__validate_case_closure_ftl(t4, t5s, (
-                            'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
-                        ))
-                if len(t5s) == 0:
-                    for record, schema in t4s:
-                        self.__generate_and_add_error(
-                            schema,
-                            record,
-                            field='RPT_MONTH_YEAR',
-                            msg=(
-                                f'Every {t4_model_name} record should have at least one corresponding '
-                                f'{t5_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
-                            )
-                        )
-                        num_errors += 1
-                else:
-                    # success
-                    pass
-            else:
-                for record, schema in t5s:
+        if len(t4s) > 0:
+            if len(t4s) > 1:
+                for record, schema in t4s[1:]:
                     self.__generate_and_add_error(
                         schema,
                         record,
                         field='RPT_MONTH_YEAR',
                         msg=(
-                            f'Every {t5_model_name} record should have at least one corresponding '
-                            f'{t4_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                            f'There should only be one {t4_model_name} record  '
+                            f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
                         )
                     )
                     num_errors += 1
+            else:
+                t4 = t4s[0]
+                t4_record, t4_schema = t4
+                closure_reason = getattr(t4_record, 'CLOSURE_REASON')
+
+                if closure_reason == '01':
+                    num_errors += self.__validate_case_closure_employment(t4, t5s, (
+                        'At least one person on the case must have employment status = 1:Yes in the same month.'
+                    ))
+                elif closure_reason == '99' and not is_ssp:
+                    num_errors += self.__validate_case_closure_ftl(t4, t5s, (
+                        'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
+                    ))
+            if len(t5s) == 0:
+                for record, schema in t4s:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='RPT_MONTH_YEAR',
+                        msg=(
+                            f'Every {t4_model_name} record should have at least one corresponding '
+                            f'{t5_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                        )
+                    )
+                    num_errors += 1
+            else:
+                # success
+                pass
+        else:
+            for record, schema in t5s:
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='RPT_MONTH_YEAR',
+                    msg=(
+                        f'Every {t5_model_name} record should have at least one corresponding '
+                        f'{t4_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                    )
+                )
+                num_errors += 1
 
         return num_errors
 
@@ -407,60 +421,60 @@ class CaseConsistencyValidator:
         is_state = self.stt_type == STT.EntityType.STATE
         is_territory = self.stt_type == STT.EntityType.TERRITORY
 
-        for rpt_month_year, reporting_year_cases in self.record_schema_pairs.sorted_cases.items():
-            t5s = reporting_year_cases.get(t5_model, [])
+        t5s = self.record_schema_pairs.sorted_cases.get(t5_model, [])
 
-            for record, schema in t5s:
-                rec_aabd = getattr(record, 'REC_AID_TOTALLY_DISABLED')
-                rec_ssi = getattr(record, 'REC_SSI')
-                family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
-                dob = getattr(record, 'DATE_OF_BIRTH')
+        for record, schema in t5s:
+            rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
+            rec_aabd = getattr(record, 'REC_AID_TOTALLY_DISABLED')
+            rec_ssi = getattr(record, 'REC_SSI')
+            family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
+            dob = getattr(record, 'DATE_OF_BIRTH')
 
-                rpt_month_year_dd = f'{rpt_month_year}01'
-                rpt_date = datetime.strptime(rpt_month_year_dd, '%Y%m%d')
-                dob_date = datetime.strptime(dob, '%Y%m%d')
-                is_adult = get_years_apart(rpt_date, dob_date) >= 18
+            rpt_month_year_dd = f'{rpt_month_year}01'
+            rpt_date = datetime.strptime(rpt_month_year_dd, '%Y%m%d')
+            dob_date = datetime.strptime(dob, '%Y%m%d')
+            is_adult = get_years_apart(rpt_date, dob_date) >= 18
 
-                if is_territory and is_adult and (rec_aabd != 1 and rec_aabd != 2):
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='REC_AID_TOTALLY_DISABLED',
-                        msg=(
-                            f'{t5_model_name} Adults in territories must have a valid value for 19C.'
-                        )
+            if is_territory and is_adult and (rec_aabd != 1 and rec_aabd != 2):
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='REC_AID_TOTALLY_DISABLED',
+                    msg=(
+                        f'{t5_model_name} Adults in territories must have a valid value for 19C.'
                     )
-                    num_errors += 1
-                elif is_state and rec_aabd != 2:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='REC_AID_TOTALLY_DISABLED',
-                        msg=(
-                            f'{t5_model_name} People in states shouldn\'t have a value of 1.'
-                        )
+                )
+                num_errors += 1
+            elif is_state and rec_aabd != 2:
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='REC_AID_TOTALLY_DISABLED',
+                    msg=(
+                        f'{t5_model_name} People in states shouldn\'t have a value of 1.'
                     )
-                    num_errors += 1
+                )
+                num_errors += 1
 
-                if is_territory and rec_ssi != 2:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='REC_SSI',
-                        msg=(
-                            f'{t5_model_name} People in territories must have a valid value for 19E.'
-                        )
+            if is_territory and rec_ssi != 2:
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='REC_SSI',
+                    msg=(
+                        f'{t5_model_name} People in territories must have a valid value for 19E.'
                     )
-                    num_errors += 1
-                elif is_state and family_affiliation == 1 and rec_ssi != 1:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='REC_SSI',
-                        msg=(
-                            f'{t5_model_name} People in states must have a valid value.'
-                        )
+                )
+                num_errors += 1
+            elif is_state and family_affiliation == 1 and rec_ssi != 1:
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='REC_SSI',
+                    msg=(
+                        f'{t5_model_name} People in states must have a valid value.'
                     )
-                    num_errors += 1
+                )
+                num_errors += 1
 
         return num_errors

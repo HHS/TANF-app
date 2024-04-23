@@ -44,8 +44,6 @@ def parse_datafile(datafile, dfs):
         cat4_error_generator
     )
 
-    duplicate_manager = RecordDuplicateManager(cat4_error_generator)
-
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
 
@@ -99,8 +97,7 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator,
-                                       duplicate_manager)
+    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator)
 
     errors = errors | line_errors
 
@@ -252,8 +249,7 @@ def delete_duplicates(duplicate_manager):
             logging.error(f"Encountered error while deleting records of type {model}. Error message: {e}")
     logger.info(f"Deleted a total of {total_deleted} records because of duplicate errors.")
 
-def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator,
-                         duplicate_manager):
+def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
     errors = {}
@@ -316,6 +312,11 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
             prev_sum = header_count + trailer_count
             continue
 
+        # We need to execute the bulk_create prior to the case_consistency_validator.add_record call to manage record
+        # removal in an easier manner.
+        all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs)
+        unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
+
         schema_manager = get_schema_manager(line, section, program_type)
 
         records = manager_parse_line(line, schema_manager, generate_error, datafile, is_encrypted)
@@ -338,18 +339,16 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 record_has_errors = len(record_errors) > 0
-                duplicate_manager.add_record(record, s, line, line_number)
-                unsaved_records.setdefault(s.document, []).append(record)
-                case_consistency_validator.add_record(record, s, record_has_errors)
+                should_remove = case_consistency_validator.add_record(record, s, line, line_number, record_has_errors)
+                # TODO: Will cause linter complexity issues
+                if not should_remove:
+                    unsaved_records.setdefault(s.document, []).append(record)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         num_errors += case_consistency_validator.num_generated_errors()
         unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
             case_consistency_validator.get_generated_errors()
         case_consistency_validator.clear_errors()
-
-        all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs)
-        unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
 
     if header_count == 0:
         logger.info(f"Preparser Error -> No headers found for file: {datafile.id}.")
@@ -385,7 +384,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     # TODO: This is duplicate code. Can we extract this to a function?
     # Add any generated cat4 errors to our error data structure & clear our caches errors list
-    duplicate_errors = duplicate_manager.get_generated_errors()
+    duplicate_errors = case_consistency_validator.duplicate_manager.get_generated_errors()
     num_errors += len(duplicate_errors) + case_consistency_validator.num_generated_errors()
     unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
         case_consistency_validator.get_generated_errors() + duplicate_errors
@@ -393,7 +392,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
-    delete_duplicates(duplicate_manager)
+    delete_duplicates(case_consistency_validator.duplicate_manager)
 
     logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
                  f"validated {case_consistency_validator.total_cases_validated} of them.")

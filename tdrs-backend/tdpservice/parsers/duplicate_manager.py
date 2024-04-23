@@ -35,21 +35,20 @@ class ErrorPrecedence:
 class CaseHashtainer:
     """Container class to manage hashed values for records of the same CASE_NUMBER and RPT_MONTH_YEAR."""
 
-    def __init__(self, my_hash, CASE_NUMBER, RPT_MONTH_YEAR, manager_error_dict, generate_error):
+    def __init__(self, my_hash, manager_error_dict, generate_error):
         self.my_hash = my_hash
-        self.CASE_NUMBER = CASE_NUMBER
-        self.RPT_MONTH_YEAR = RPT_MONTH_YEAR
         self.manager_error_dict = manager_error_dict
         self.generate_error = generate_error
         self.record_ids = dict()
         self.record_hashes = dict()
         self.partial_hashes = dict()
         self.error_precedence = ErrorPrecedence()
-        self.has_errors = False
+        self.num_errors = 0
+        self.should_remove_from_db = False
 
-    def get_records_to_delete(self):
+    def get_records_for_post_parse_deletion(self):
         """Return record ids if case has duplicate errors."""
-        if self.has_errors:
+        if self.num_errors > 0 and self.should_remove_from_db:
             return self.record_ids
         return dict()
 
@@ -63,20 +62,24 @@ class CaseHashtainer:
                         field=None,
                         error_message=err_msg,
                     )
-            self.has_errors = True
             if is_new_max_precedence:
                 self.manager_error_dict[self.my_hash] = [error]
             else:
                 self.manager_error_dict.setdefault(self.my_hash, []).append(error)
+            self.num_errors = len(self.manager_error_dict[self.my_hash])
 
-    def add_case_member(self, record, schema, line, line_number):
+    def add_case_member(self, record, schema, line, line_number, can_remove_case_from_memory):
         """Add case member and generate errors if needed."""
+        # TODO: Need to add support for T6 and T7 detection.
+
+        self.should_remove_from_db = self.should_remove_from_db if self.should_remove_from_db else \
+            can_remove_case_from_memory
         self.record_ids.setdefault(schema.document, []).append(record.id)
         line_hash = hash(line)
         partial_hash = None
-        if record.RecordType == "T1":
+        if record.RecordType in {"T1", "T4"}:
             partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
-        else:
+        elif record.RecordType in {"T2", "T3", "T5"}:
             partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER +
                                 str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
 
@@ -94,8 +97,13 @@ class CaseHashtainer:
             is_exact_dup = True
 
         skip_partial = False
-        if record.RecordType != "T1":
-            skip_partial = record.FAMILY_AFFILIATION == 3 or record.FAMILY_AFFILIATION == 5
+        if record.RecordType == "T2":
+            skip_partial = record.FAMILY_AFFILIATION in {3, 5}
+        if record.RecordType == "T3":
+            skip_partial = record.FAMILY_AFFILIATION in {2, 4, 5}
+        if record.RecordType == "T5":
+            skip_partial = record.FAMILY_AFFILIATION in {3, 4, 5}
+
         if not skip_partial and not is_exact_dup and partial_hash in self.partial_hashes:
             has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.PARTIAL_DUPLICATE)
             err_msg = (f"Partial duplicate record detected for record id {record.id} with record type "
@@ -106,8 +114,10 @@ class CaseHashtainer:
         self.__generate_error(err_msg, record, schema, has_precedence, is_new_max_precedence)
         if line_hash not in self.record_hashes:
             self.record_hashes[line_hash] = (record.id, line_number)
-        if partial_hash not in self.partial_hashes:
+        if partial_hash is not None and partial_hash not in self.partial_hashes:
             self.partial_hashes[partial_hash] = (record.id, line_number)
+
+        return self.num_errors
 
 
 class RecordDuplicateManager:
@@ -118,14 +128,13 @@ class RecordDuplicateManager:
         self.generate_error = generate_error
         self.generated_errors = dict()
 
-    def add_record(self, record, schema, line, line_number):
+    def add_record(self, record, hash_val, schema, line, line_number, can_remove_case_from_memory):
         """Add record to existing CaseHashtainer or create new one and return whether the record's case has errors."""
-        hash_val = hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
         if hash_val not in self.hashtainers:
-            hashtainer = CaseHashtainer(hash_val, record.CASE_NUMBER, str(record.RPT_MONTH_YEAR),
-                                        self.generated_errors, self.generate_error)
+            hashtainer = CaseHashtainer(hash_val, self.generated_errors, self.generate_error)
             self.hashtainers[hash_val] = hashtainer
-        self.hashtainers[hash_val].add_case_member(record, schema, line, line_number)
+        return self.hashtainers[hash_val].add_case_member(record, schema, line,
+                                                          line_number, can_remove_case_from_memory)
 
     def get_generated_errors(self):
         """Return all errors from all CaseHashtainers."""
@@ -138,7 +147,7 @@ class RecordDuplicateManager:
         """Return dictionary of document:[errors]."""
         records_to_remove = dict()
         for hashtainer in self.hashtainers.values():
-            for document, ids in hashtainer.get_records_to_delete().items():
+            for document, ids in hashtainer.get_records_for_post_parse_deletion().items():
                 records_to_remove.setdefault(document, []).extend(ids)
 
         return records_to_remove
