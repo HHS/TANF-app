@@ -1,91 +1,91 @@
 """ModelAdmin classes for parsed SSP data files."""
-from django.contrib import admin
-from .filter import CreationDateFilter
+from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
+from .mixins import CsvExportAdminMixin, ReadOnlyAdminMixin
 
 
-class SSP_M1Admin(admin.ModelAdmin):
+class SSP_M1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed M1 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
-        'COUNTY_FIPS_CODE',
-        'ZIP_CODE',
-        'STRATUM',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
-        'ZIP_CODE',
-        'STRATUM',
+        STTFilter,
     ]
 
 
-class SSP_M2Admin(admin.ModelAdmin):
+class SSP_M2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed M2 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
 
 
-class SSP_M3Admin(admin.ModelAdmin):
+class SSP_M3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed M3 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
 
-class SSP_M4Admin(admin.ModelAdmin):
+class SSP_M4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed M3 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
 
-class SSP_M5Admin(admin.ModelAdmin):
+class SSP_M5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed M3 data files."""
 
     list_display = [
         'RecordType',
         'RPT_MONTH_YEAR',
-        'CASE_NUMBER',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
 
-class SSP_M6Admin(admin.ModelAdmin):
+class SSP_M6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed M6 data files."""
 
     list_display = [
@@ -93,15 +93,16 @@ class SSP_M6Admin(admin.ModelAdmin):
         'CALENDAR_QUARTER',
         'RPT_MONTH_YEAR',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
-        'CALENDAR_QUARTER',
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR'
+        STTFilter,
     ]
 
-class SSP_M7Admin(admin.ModelAdmin):
+class SSP_M7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed M7 data files."""
 
     list_display = [
@@ -112,10 +113,11 @@ class SSP_M7Admin(admin.ModelAdmin):
         'STRATUM',
         'FAMILIES_MONTH',
         'datafile',
+        'stt_code',
     ]
 
     list_filter = [
-        'CALENDAR_QUARTER',
+        FiscalPeriodFilter,
         CreationDateFilter,
-        'RPT_MONTH_YEAR',
+        STTFilter,
     ]
