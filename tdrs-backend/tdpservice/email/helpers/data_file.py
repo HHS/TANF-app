@@ -49,12 +49,12 @@ def send_data_submitted_email(
         case DataFileSummary.Status.ACCEPTED:
             template_path = EmailType.DATA_SUBMITTED.value
             subject = f'{section_name} Processed Without Errors'
-            text_message = f'{stt_name} has successfully submitted {file_type} data files.'
+            text_message = f'{file_type} has been submitted and processed without errors.'
 
         case _:
             template_path = EmailType.DATA_SUBMITTED.value
             subject = f'{section_name} Processed With Errors'
-            text_message = f'{stt_name} has successfully submitted {file_type} data files.'
+            text_message = f'{file_type} has been submitted and processed with errors.'
 
     context.update({'subject': subject})
 

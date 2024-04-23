@@ -56,7 +56,7 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
 
     # ssp
     (
-        DataFile.Section.AGGREGATE_DATA, DataFileSummary.Status.ACCEPTED,
+        DataFile.Section.SSP_AGGREGATE_DATA, DataFileSummary.Status.ACCEPTED,
         'SSP Aggregate Data Processed Without Errors', 'SSP',
     ),
     (
@@ -91,7 +91,7 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
     ),
     (
         DataFile.Section.STRATUM_DATA, DataFileSummary.Status.PARTIALLY_ACCEPTED,
-        'Stratum Data Processed With Errors', 'TAN.',
+        'Stratum Data Processed With Errors', 'TAN',
     ),
     (
         DataFile.Section.STRATUM_DATA, DataFileSummary.Status.REJECTED,
@@ -118,6 +118,11 @@ def test_send_data_submitted_email(user, stt, section, status, subject, program_
 
     send_data_submitted_email(dfs, recipients)
 
+    has_errors = status != DataFileSummary.Status.ACCEPTED
+    has_errors_msg = f'{program_type} has been submitted and processed with errors.'
+    no_errors_msg = f'{program_type} has been submitted and processed without errors.'
+    msg = has_errors_msg if has_errors else no_errors_msg
+
     assert len(mail.outbox) == 1
     assert mail.outbox[0].subject == subject
-    assert mail.outbox[0].body == f'Wisconsin has successfully submitted {program_type} data files.'
+    assert mail.outbox[0].body == msg
