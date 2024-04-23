@@ -9,7 +9,6 @@ from tdpservice.parsers.models import DataFileSummary
 @pytest.mark.django_db
 def test_send_data_submitted_email_no_email_for_pending(user, stt):
     """Test that send_data_submitted_email sends nothing for PENDING datafiles."""
-
     df = DataFile(
         user=user,
         section=DataFile.Section.ACTIVE_CASE_DATA,
@@ -100,7 +99,6 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
 ])
 def test_send_data_submitted_email(user, stt, section, status, subject, program_type):
     """Test that the send_data_submitted_email function runs."""
-
     df = DataFile(
         user=user,
         section=section,

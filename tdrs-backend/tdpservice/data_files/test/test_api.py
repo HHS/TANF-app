@@ -3,9 +3,7 @@ from rest_framework import status
 import pytest
 import base64
 import openpyxl
-from django.core import mail
 from tdpservice.data_files.models import DataFile
-from tdpservice.users.models import AccountApprovalStatusChoices
 from tdpservice.parsers import parse, util
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.test.factories import DataFileSummaryFactory

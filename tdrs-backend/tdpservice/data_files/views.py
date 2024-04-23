@@ -3,7 +3,6 @@ import logging
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 from django.conf import settings
-from django.contrib.auth.models import Group
 from drf_yasg.openapi import Parameter
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser
@@ -15,13 +14,11 @@ from rest_framework.decorators import action
 from wsgiref.util import FileWrapper
 from rest_framework import status
 
-from tdpservice.users.models import AccountApprovalStatusChoices, User
 from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.util import get_xls_serialized_file
 from tdpservice.data_files.models import DataFile, get_s3_upload_path
 from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermission
 from tdpservice.scheduling import sftp_task, parser_task
-from tdpservice.email.helpers.data_file import send_data_submitted_email
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.serializers import ParsingErrorSerializer
@@ -67,7 +64,6 @@ class DataFileViewSet(ModelViewSet):
 
         logger.debug(f"{self.__class__.__name__}: status: {response.status_code}")
         if response.status_code == status.HTTP_201_CREATED or response.status_code == status.HTTP_200_OK:
-            user = request.user
             data_file_id = response.data.get('id')
             data_file = DataFile.objects.get(id=data_file_id)
 
