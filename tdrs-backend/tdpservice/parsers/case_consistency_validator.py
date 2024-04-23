@@ -97,7 +97,7 @@ class CaseConsistencyValidator:
         self.current_rpt_month_year = record.RPT_MONTH_YEAR
         if self.case_is_section_one_or_two:
             hash_val = hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
-            if record.CASE_NUMBER != self.current_case and self.current_case is not None:
+            if hash_val != self.current_hash and self.current_hash is not None:
                 num_errors += self.validate()
                 self.record_schema_pairs.clear((record, schema))
                 self.case_has_errors = case_has_errors
