@@ -94,26 +94,6 @@ class DataFileViewSet(ModelViewSet):
             data_file.s3_versioning_id = version_id
             data_file.save(update_fields=['s3_versioning_id'])
 
-            # Send email to user to notify them of the file upload status
-            subject = f"Data Submitted for {data_file.section}"
-            email_context = {
-                'stt_name': str(data_file.stt),
-                'submission_date': data_file.created_at,
-                'submitted_by': user.get_full_name(),
-                'fiscal_year': data_file.fiscal_year,
-                'section_name': data_file.section,
-                'subject': subject,
-            }
-
-            recipients = User.objects.filter(
-                stt=data_file.stt,
-                account_approval_status=AccountApprovalStatusChoices.APPROVED,
-                groups=Group.objects.get(name='Data Analyst')
-            ).values_list('username', flat=True).distinct()
-
-            if len(recipients) > 0:
-                send_data_submitted_email(list(recipients), data_file, email_context, subject)
-
         logger.debug(f"{self.__class__.__name__}: return val: {response}")
         return response
 
