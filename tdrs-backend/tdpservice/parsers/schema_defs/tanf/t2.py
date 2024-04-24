@@ -319,7 +319,7 @@ t2 = SchemaManager(
                 Field(
                     item="36D",
                     name="AID_AGED_BLIND",
-                    friendly_name="Receives Disability Benefits: Aid to the Aged, Blind, and Disabled Under " +
+                    friendly_name="Receives Disability Benefits: Aid to the Aged, Blind, and Disabled Under: Code no longer in use" +
                     "Title XVI-AABD ",
                     type="number",
                     startIndex=48,
@@ -441,7 +441,7 @@ t2 = SchemaManager(
                 Field(
                     item="45",
                     name="MONTHS_STATE_TIME_LIMIT",
-                    friendly_name="Number of Countable Months Remaining Under State's Time Limit",
+                    friendly_name="Number of Countable Months Remaining Under State’s Time Limit: Code no longer in use",
                     type="string",
                     startIndex=62,
                     endIndex=64,
@@ -863,7 +863,7 @@ t2 = SchemaManager(
                 Field(
                     item="62",
                     name="OTHER_WORK_ACTIVITIES",
-                    friendly_name="Hours of Other Work Activities  ",
+                    friendly_name="Hours of Other Work Activities",
                     type="string",
                     startIndex=126,
                     endIndex=128,
@@ -911,7 +911,7 @@ t2 = SchemaManager(
                 Field(
                     item="66A",
                     name="UNEARNED_INCOME_TAX_CREDIT",
-                    friendly_name="Amount of Unearned Income: Earned Income Tax Credit (EITC)",
+                    friendly_name="Amount of Unearned Income: Earned Income Tax Credit (EITC): Code no longer in use",
                     type="string",
                     startIndex=136,
                     endIndex=140,

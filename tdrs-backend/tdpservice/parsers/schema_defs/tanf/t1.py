@@ -127,7 +127,7 @@ t1 = SchemaManager(
                 Field(
                     item="0",
                     name="RecordType",
-                    friendly_name="record type",
+                    friendly_name="Record Type",
                     type="string",
                     startIndex=0,
                     endIndex=2,
@@ -651,7 +651,7 @@ t1 = SchemaManager(
                 Field(
                     item="29",
                     name="FAMILY_NEW_CHILD",
-                    friendly_name="TANF Family a New Child-Only Family",
+                    friendly_name="TANF Family a New Child-Only Family: Code no longer in use",
                     type="number",
                     startIndex=116,
                     endIndex=117,

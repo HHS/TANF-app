@@ -246,7 +246,7 @@ m1 = SchemaManager(
                 Field(
                     item="15",
                     name='RECEIVES_SUB_CC',
-                    friendly_name="Receives Subsidized Child Care:",
+                    friendly_name="Receives Subsidized Child Care: Code no longer in use",
                     type='number',
                     startIndex=41,
                     endIndex=42,
@@ -516,7 +516,7 @@ m1 = SchemaManager(
                 Field(
                     item="25",
                     name='WAIVER_EVAL_CONTROL_GRPS',
-                    friendly_name="Waiver Evaluation Experimental and Control Groups",
+                    friendly_name="Waiver Evaluation Experimental and Control Groups: Code no longer in use",
                     type='number',
                     startIndex=112,
                     endIndex=113,
