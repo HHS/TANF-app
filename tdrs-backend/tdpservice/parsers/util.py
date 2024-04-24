@@ -181,36 +181,39 @@ class SortedRecords:
 
     def __init__(self, section):
         self.records_are_s1_or_s2 = section in {'A', 'C'}
-        self.rpt_month_year_sorted_cases = dict()
+        self.hash_sorted_cases = dict()
+        self.cases_already_removed = set()
 
     def clear(self, seed_record_doc_pair=None):
         """Reset the sorted object. Optionally add a seed record for the next run."""
-        self.rpt_month_year_sorted_cases = dict()
+        self.hash_sorted_cases = dict()
 
         if seed_record_doc_pair:
             self.add_record(seed_record_doc_pair)
 
     def add_record(self, record_doc_pair):
-        """Add a record_doc_pair to the sorted object."""
+        """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
         record, document = record_doc_pair
         rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
+        hash_val = None
         if self.records_are_s1_or_s2:
             hash_val = hash(rpt_month_year + record.CASE_NUMBER)
         else:
             hash_val = hash(record.RecordType + rpt_month_year)
 
-        reporting_year_cases = self.rpt_month_year_sorted_cases.get(hash_val, {})
-        records = reporting_year_cases.get(document, [])
-        records.append(record)
+        if hash_val is not None and hash_val not in self.cases_already_removed:
+            hashed_case = self.hash_sorted_cases.get(hash_val, {})
+            records = hashed_case.get(document, [])
+            records.append(record)
 
-        reporting_year_cases[document] = records
-        self.rpt_month_year_sorted_cases[hash_val] = reporting_year_cases
+            hashed_case[document] = records
+            self.hash_sorted_cases[hash_val] = hashed_case
 
     def get_bulk_create_struct(self):
         """Return dict of form {document: [records]} for bulk_create_records to consume."""
         # TODO: This is slower, but saves memory. Can we do better?
         records = dict()
-        for dictionary in self.rpt_month_year_sorted_cases.values():
+        for dictionary in self.hash_sorted_cases.values():
             for key, val in dictionary.items():
                 records.setdefault(key, []).extend(val)
         return records
@@ -218,8 +221,15 @@ class SortedRecords:
     def clear(self, all_created):
         """Reset sorted structs if all records were created."""
         if all_created:
-            self.rpt_month_year_sorted_cases = dict()
+            self.hash_sorted_cases = dict()
 
-    def remove_case_due_to_errors(self, hash):
+    def remove_case_due_to_errors(self, should_remove, hash):
         """Remove all records from memory given the hash."""
-
+        if should_remove:
+            if hash in self.cases_already_removed:
+                return True
+            if hash in self.hash_sorted_cases:
+                self.cases_already_removed.add(hash)
+                self.hash_sorted_cases.pop(hash)
+                return True
+        return False

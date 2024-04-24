@@ -339,10 +339,11 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 record_has_errors = len(record_errors) > 0
-                should_remove = case_consistency_validator.add_record(record, s, line, line_number, record_has_errors)
-                # TODO: Will cause linter complexity issues
-                if not should_remove:
-                    unsaved_records.add_record((record, s.document))
+                should_remove, hash_val = case_consistency_validator.add_record(record, s, line,
+                                                                                line_number, record_has_errors)
+                unsaved_records.add_record((record, s.document))
+                was_removed = unsaved_records.remove_case_due_to_errors(should_remove, hash_val)
+                case_consistency_validator.update_removed(hash_val, was_removed)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         num_errors += case_consistency_validator.num_generated_errors()

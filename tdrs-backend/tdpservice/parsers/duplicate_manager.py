@@ -47,6 +47,12 @@ class CaseHashtainer:
         self.should_remove_from_db = False
         self.current_line_number = None
 
+    def set_should_remove_from_db(self, should_remove):
+        self.should_remove_from_db = should_remove
+
+    def has_errors(self):
+        return self.num_errors > 0
+
     def get_records_for_post_parse_deletion(self):
         """Return record ids if case has duplicate errors."""
         if self.num_errors > 0 and self.should_remove_from_db:
@@ -69,14 +75,12 @@ class CaseHashtainer:
                 self.manager_error_dict.setdefault(self.my_hash, []).append(error)
             self.num_errors = len(self.manager_error_dict[self.my_hash])
 
-    def add_case_member(self, record, schema, line, line_number, can_remove_case_from_memory):
+    def add_case_member(self, record, schema, line, line_number):
         """Add case member and generate errors if needed."""
         # TODO: Need to add support for T6 and T7 detection.
 
         if self.current_line_number is None or self.current_line_number != line_number:
             self.current_line_number = line_number
-            self.should_remove_from_db = self.should_remove_from_db if self.should_remove_from_db else \
-                can_remove_case_from_memory
             self.record_ids.setdefault(schema.document, []).append(record.id)
             line_hash = hash(line)
             partial_hash = None
@@ -131,13 +135,12 @@ class RecordDuplicateManager:
         self.generate_error = generate_error
         self.generated_errors = dict()
 
-    def add_record(self, record, hash_val, schema, line, line_number, can_remove_case_from_memory):
+    def add_record(self, record, hash_val, schema, line, line_number):
         """Add record to existing CaseHashtainer or create new one and return whether the record's case has errors."""
         if hash_val not in self.hashtainers:
             hashtainer = CaseHashtainer(hash_val, self.generated_errors, self.generate_error)
             self.hashtainers[hash_val] = hashtainer
-        return self.hashtainers[hash_val].add_case_member(record, schema, line,
-                                                          line_number, can_remove_case_from_memory)
+        return self.hashtainers[hash_val].add_case_member(record, schema, line, line_number)
 
     def get_generated_errors(self):
         """Return all errors from all CaseHashtainers."""
@@ -154,3 +157,10 @@ class RecordDuplicateManager:
                 records_to_remove.setdefault(document, []).extend(ids)
 
         return records_to_remove
+
+    def update_removed(self, hash_val, was_removed):
+        hashtainer = self.hashtainers.get(hash_val)
+        if was_removed:
+            hashtainer.set_should_remove_from_db(False)
+        if not was_removed and hashtainer.has_errors():
+            hashtainer.set_should_remove_from_db(True)

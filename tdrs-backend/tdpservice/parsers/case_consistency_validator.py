@@ -31,7 +31,6 @@ class CaseConsistencyValidator:
         self.total_cases_cached = 0
         self.total_cases_validated = 0
         self.stt_type = stt_type
-        self.can_remove_case_from_memory = True
 
     def __get_model(self, model_str):
         """Return a model for the current program type/section given the model's string name."""
@@ -72,11 +71,12 @@ class CaseConsistencyValidator:
         if seed_record_schema_pair:
             self.add_record_to_sorted_struct(seed_record_schema_pair)
 
+    def update_removed(self, hash_val, was_removed):
+        self.duplicate_manager.update_removed(hash_val, was_removed)
 
     def add_record(self, record, schema, line, line_number, case_has_errors):
         """Add record to cache and validate if new case is detected."""
         num_errors = 0
-        self.can_remove_case_from_memory &= record._state.adding
         hash_val = None
         self.current_rpt_month_year = record.RPT_MONTH_YEAR
         if self.case_is_section_one_or_two:
@@ -99,9 +99,9 @@ class CaseConsistencyValidator:
         # get the correct duplicate manager based on the section. Sections 3 and 4 have different duplicate logic
         # than 1 or 2 anyways. Some more care for handling section 1 and 2 together is still needed.
         num_errors += self.duplicate_manager.add_record(record, hash_val, schema, line,
-                                                        line_number, self.can_remove_case_from_memory)
+                                                        line_number)
 
-        return num_errors > 0 and self.can_remove_case_from_memory
+        return num_errors > 0, hash_val
 
     def validate(self):
         """Perform category four validation on all cached records."""
