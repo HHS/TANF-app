@@ -20,6 +20,16 @@ class Command(search_index.Command):
     def _populate(self, models, options):
         parallel = options['parallel']
         for doc in registry.get_documents(models):
+            self.stdout.write('setting log thresholds')
+            self.es_conn.indices.put_settings(
+                {
+                    "index.search.slowlog.threshold.query.warn": "1s",
+                    "index.search.slowlog.threshold.query.info": "500ms",
+                    "index.search.slowlog.threshold.query.trace": "0ms"
+                },
+                doc.Index.name
+            )
+
             self.stdout.write("Indexing {} '{}' objects {}".format(
                 doc().get_queryset().count() if options['count'] else "all",
                 doc.django.model.__name__,
