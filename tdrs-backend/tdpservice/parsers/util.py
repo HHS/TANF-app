@@ -181,11 +181,12 @@ class SortedRecordSchemaPairs:
 
     def __init__(self, section):
         self.records_are_s1_or_s2 = section in {'A', 'C'}
-        self.sorted_cases = {}
+        self.rpt_month_year_sorted_cases = dict()
+        self.document_sorted_cases = dict()
 
     def clear(self, seed_record_schema_pair=None):
         """Reset the sorted object. Optionally add a seed record for the next run."""
-        self.sorted_cases = {}
+        self.rpt_month_year_sorted_cases = dict()
 
         if seed_record_schema_pair:
             self.add_record(seed_record_schema_pair)
@@ -194,14 +195,32 @@ class SortedRecordSchemaPairs:
         """Add a record_schema_pair to the sorted object."""
         record, schema = record_schema_pair
         rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
-        if not self.records_are_s1_or_s2:
+        if self.records_are_s1_or_s2:
             hash_val = hash(rpt_month_year + record.CASE_NUMBER)
         else:
             hash_val = hash(record.RecordType + rpt_month_year)
 
-        reporting_year_cases = self.sorted_cases.get(hash_val, {})
+        reporting_year_cases = self.rpt_month_year_sorted_cases.get(hash_val, {})
         records = reporting_year_cases.get(type(record), [])
         records.append(record_schema_pair)
 
         reporting_year_cases[type(record)] = records
-        self.sorted_cases[hash_val] = reporting_year_cases
+        self.rpt_month_year_sorted_cases[hash_val] = reporting_year_cases
+
+        self.document_sorted_cases.setdefault(schema.document, []).append(record)
+
+    def merge_by_doctype(self):
+        """Merges sorted_cases into a dict of form {document, [records]}."""
+        records = dict()
+        for key, val in self.rpt_month_year_sorted_cases.values().items():
+            records.setdefault(key, []).extend(val)
+
+    def get_bulk_create_struct(self):
+        """Return dict of form {document: [records]}."""
+        return self.document_sorted_cases
+
+    def clear(self, all_created):
+        """Reset sorted structs if all records were created."""
+        if all_created:
+            self.document_sorted_cases = dict()
+            self.rpt_month_year_sorted_cases = dict()

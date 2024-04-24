@@ -141,8 +141,8 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
             return num_db_records_created == num_expected_db_records, {}
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
-            return False, unsaved_records
-    return True, unsaved_records
+            return False
+    return True
 
 def bulk_create_errors(unsaved_parser_errors, num_errors, batch_size=5000, flush=False):
     """Bulk create all ParserErrors."""
@@ -255,7 +255,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     line_number = 0
 
-    unsaved_records = {}
+    unsaved_records = util.SortedRecordSchemaPairs(section)
     unsaved_parser_errors = {}
 
     header_count = 0
@@ -313,7 +313,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
         # We need to execute the bulk_create prior to the case_consistency_validator.add_record call to manage record
         # removal in an easier manner.
-        all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs)
+        all_created = bulk_create_records(unsaved_records.get_bulk_create_struct(), line_number, header_count, datafile, dfs)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
 
         schema_manager = get_schema_manager(line, section, program_type)
@@ -341,7 +341,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 should_remove = case_consistency_validator.add_record(record, s, line, line_number, record_has_errors)
                 # TODO: Will cause linter complexity issues
                 if not should_remove:
-                    unsaved_records.setdefault(s.document, []).append(record)
+                    unsaved_records.add_record((record, s))
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         num_errors += case_consistency_validator.num_generated_errors()
@@ -367,8 +367,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     # Only checking "all_created" here because records remained cached if bulk create fails. This is the last chance to
     # successfully create the records.
-    all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs,
-                                                       flush=True)
+    all_created = bulk_create_records(unsaved_records.get_bulk_create_struct(), line_number, header_count, datafile, dfs, flush=True)
 
     no_records_created_error = create_no_records_created_pre_check_error(datafile, dfs)
     unsaved_parser_errors.update(no_records_created_error)
