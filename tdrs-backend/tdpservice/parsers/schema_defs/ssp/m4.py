@@ -9,11 +9,15 @@ from tdpservice.search_indexes.documents.ssp import SSP_M4DataSubmissionDocument
 m4 = SchemaManager(
     schemas=[
         RowSchema(
+            record_type="M4",
             document=SSP_M4DataSubmissionDocument(),
             preparsing_validators=[
-                validators.hasLength(66),
-                validators.validateRptMonthYear(),
-                validators.notEmpty(8, 19)
+                validators.recordHasLength(66),
+                validators.caseNumberNotEmpty(8, 19),
+                validators.or_priority_validators([
+                    validators.field_year_month_with_header_year_quarter(),
+                    validators.validateRptMonthYear(),
+                ]),
             ],
             postparsing_validators=[],
             fields=[

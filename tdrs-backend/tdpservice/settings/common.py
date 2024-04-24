@@ -271,6 +271,8 @@ class Common(Configuration):
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
     SESSION_TIMEOUT = 30
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+    SESSION_COOKIE_AGE = 30 * 60  # 30 minutes
     # The CSRF token Cookie holds no security benefits when confined to HttpOnly.
     # Setting this to false to allow the frontend to include it in the header
     # of API POST calls to prevent false negative authorization errors.
@@ -352,6 +354,7 @@ class Common(Configuration):
     ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT = int(os.getenv('ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT', 10))
     KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
     BYPASS_KIBANA_AUTH = os.getenv("BYPASS_KIBANA_AUTH", False)
+    ELASTIC_INDEX_PREFIX = APP_NAME + '_'
 
     s3_src = "s3-us-gov-west-1.amazonaws.com"
 
@@ -483,3 +486,5 @@ class Common(Configuration):
     }
 
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
+
+    GENERATE_TRAILER_ERRORS = os.getenv("GENERATE_TRAILER_ERRORS", False)
