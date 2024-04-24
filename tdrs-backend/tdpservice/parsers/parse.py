@@ -314,6 +314,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
         # We need to execute the bulk_create prior to the case_consistency_validator.add_record call to manage record
         # removal in an easier manner.
         all_created = bulk_create_records(unsaved_records.get_bulk_create_struct(), line_number, header_count, datafile, dfs)
+        unsaved_records.clear(all_created)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
 
         schema_manager = get_schema_manager(line, section, program_type)
@@ -368,6 +369,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
     # Only checking "all_created" here because records remained cached if bulk create fails. This is the last chance to
     # successfully create the records.
     all_created = bulk_create_records(unsaved_records.get_bulk_create_struct(), line_number, header_count, datafile, dfs, flush=True)
+    unsaved_records.clear(all_created)
 
     no_records_created_error = create_no_records_created_pre_check_error(datafile, dfs)
     unsaved_parser_errors.update(no_records_created_error)
