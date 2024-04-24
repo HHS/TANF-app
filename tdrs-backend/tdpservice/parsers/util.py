@@ -176,24 +176,23 @@ def get_years_apart(rpt_month_year_date, date):
     return age
 
 
-class SortedRecordDocumentPairs:
+class SortedRecords:
     """Maintains a dict sorted by hash(str(rpt_month_year) + case_number) and model_type."""
 
     def __init__(self, section):
         self.records_are_s1_or_s2 = section in {'A', 'C'}
         self.rpt_month_year_sorted_cases = dict()
-        self.document_sorted_cases = dict()
 
-    def clear(self, seed_record_schema_pair=None):
+    def clear(self, seed_record_doc_pair=None):
         """Reset the sorted object. Optionally add a seed record for the next run."""
         self.rpt_month_year_sorted_cases = dict()
 
-        if seed_record_schema_pair:
-            self.add_record(seed_record_schema_pair)
+        if seed_record_doc_pair:
+            self.add_record(seed_record_doc_pair)
 
-    def add_record(self, record_schema_pair):
-        """Add a record_schema_pair to the sorted object."""
-        record, schema = record_schema_pair
+    def add_record(self, record_doc_pair):
+        """Add a record_doc_pair to the sorted object."""
+        record, document = record_doc_pair
         rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
         if self.records_are_s1_or_s2:
             hash_val = hash(rpt_month_year + record.CASE_NUMBER)
@@ -201,16 +200,14 @@ class SortedRecordDocumentPairs:
             hash_val = hash(record.RecordType + rpt_month_year)
 
         reporting_year_cases = self.rpt_month_year_sorted_cases.get(hash_val, {})
-        records = reporting_year_cases.get(schema.document, [])
+        records = reporting_year_cases.get(document, [])
         records.append(record)
 
-        reporting_year_cases[schema.document] = records
+        reporting_year_cases[document] = records
         self.rpt_month_year_sorted_cases[hash_val] = reporting_year_cases
 
-        self.document_sorted_cases.setdefault(schema.document, []).append(record)
-
     def get_bulk_create_struct(self):
-        """Return dict of form {document: [records]}."""
+        """Return dict of form {document: [records]} for bulk_create_records to consume."""
         # TODO: This is slower, but saves memory. Can we do better?
         records = dict()
         for dictionary in self.rpt_month_year_sorted_cases.values():
@@ -221,7 +218,6 @@ class SortedRecordDocumentPairs:
     def clear(self, all_created):
         """Reset sorted structs if all records were created."""
         if all_created:
-            self.document_sorted_cases = dict()
             self.rpt_month_year_sorted_cases = dict()
 
     def remove_case_due_to_errors(self, hash):

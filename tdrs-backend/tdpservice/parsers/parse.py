@@ -255,7 +255,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     line_number = 0
 
-    unsaved_records = util.SortedRecordDocumentPairs(section)
+    unsaved_records = util.SortedRecords(section)
     unsaved_parser_errors = {}
 
     header_count = 0
@@ -342,7 +342,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 should_remove = case_consistency_validator.add_record(record, s, line, line_number, record_has_errors)
                 # TODO: Will cause linter complexity issues
                 if not should_remove:
-                    unsaved_records.add_record((record, s))
+                    unsaved_records.add_record((record, s.document))
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         num_errors += case_consistency_validator.num_generated_errors()
