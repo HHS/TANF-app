@@ -162,5 +162,5 @@ class RecordDuplicateManager:
         hashtainer = self.hashtainers.get(hash_val)
         if was_removed:
             hashtainer.set_should_remove_from_db(False)
-        if not was_removed and hashtainer.has_errors():
+        else:
             hashtainer.set_should_remove_from_db(True)
