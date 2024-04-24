@@ -142,7 +142,7 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
         except DatabaseError as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
             return False
-    return True
+    return False
 
 def bulk_create_errors(unsaved_parser_errors, num_errors, batch_size=5000, flush=False):
     """Bulk create all ParserErrors."""
@@ -255,7 +255,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     line_number = 0
 
-    unsaved_records = util.SortedRecordSchemaPairs(section)
+    unsaved_records = util.SortedRecordDocumentPairs(section)
     unsaved_parser_errors = {}
 
     header_count = 0

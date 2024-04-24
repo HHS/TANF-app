@@ -176,7 +176,7 @@ def get_years_apart(rpt_month_year_date, date):
     return age
 
 
-class SortedRecordSchemaPairs:
+class SortedRecordDocumentPairs:
     """Maintains a dict sorted by hash(str(rpt_month_year) + case_number) and model_type."""
 
     def __init__(self, section):
@@ -201,26 +201,29 @@ class SortedRecordSchemaPairs:
             hash_val = hash(record.RecordType + rpt_month_year)
 
         reporting_year_cases = self.rpt_month_year_sorted_cases.get(hash_val, {})
-        records = reporting_year_cases.get(type(record), [])
-        records.append(record_schema_pair)
+        records = reporting_year_cases.get(schema.document, [])
+        records.append(record)
 
-        reporting_year_cases[type(record)] = records
+        reporting_year_cases[schema.document] = records
         self.rpt_month_year_sorted_cases[hash_val] = reporting_year_cases
 
         self.document_sorted_cases.setdefault(schema.document, []).append(record)
 
-    def merge_by_doctype(self):
-        """Merges sorted_cases into a dict of form {document, [records]}."""
-        records = dict()
-        for key, val in self.rpt_month_year_sorted_cases.values().items():
-            records.setdefault(key, []).extend(val)
-
     def get_bulk_create_struct(self):
         """Return dict of form {document: [records]}."""
-        return self.document_sorted_cases
+        # TODO: This is slower, but saves memory. Can we do better?
+        records = dict()
+        for dictionary in self.rpt_month_year_sorted_cases.values():
+            for key, val in dictionary.items():
+                records.setdefault(key, []).extend(val)
+        return records
 
     def clear(self, all_created):
         """Reset sorted structs if all records were created."""
         if all_created:
             self.document_sorted_cases = dict()
             self.rpt_month_year_sorted_cases = dict()
+
+    def remove_case_due_to_errors(self, hash):
+        """Remove all records from memory given the hash."""
+
