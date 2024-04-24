@@ -179,7 +179,8 @@ def get_years_apart(rpt_month_year_date, date):
 class SortedRecordSchemaPairs:
     """Maintains a dict sorted by hash(str(rpt_month_year) + case_number) and model_type."""
 
-    def __init__(self):
+    def __init__(self, section):
+        self.records_are_s1_or_s2 = section in {'A', 'C'}
         self.sorted_cases = {}
 
     def clear(self, seed_record_schema_pair=None):
@@ -192,9 +193,11 @@ class SortedRecordSchemaPairs:
     def add_record(self, record_schema_pair):
         """Add a record_schema_pair to the sorted object."""
         record, schema = record_schema_pair
-        rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
-        case_number = getattr(record, 'CASE_NUMBER')
-        hash_val = hash(str(rpt_month_year) + case_number)
+        rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
+        if not self.records_are_s1_or_s2:
+            hash_val = hash(rpt_month_year + record.CASE_NUMBER)
+        else:
+            hash_val = hash(record.RecordType + rpt_month_year)
 
         reporting_year_cases = self.sorted_cases.get(hash_val, {})
         records = reporting_year_cases.get(type(record), [])
