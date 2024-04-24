@@ -12,7 +12,6 @@ from . import schema_defs, validators, util
 from . import row_schema
 from .schema_defs.utils import get_section_reference, get_program_model
 from .case_consistency_validator import CaseConsistencyValidator
-from .duplicate_manager import RecordDuplicateManager
 from elasticsearch.helpers.errors import BulkIndexError
 from tdpservice.data_files.models import DataFile
 
