@@ -45,6 +45,7 @@ class CaseHashtainer:
         self.error_precedence = ErrorPrecedence()
         self.num_errors = 0
         self.should_remove_from_db = False
+        self.current_line_number = None
 
     def get_records_for_post_parse_deletion(self):
         """Return record ids if case has duplicate errors."""
@@ -72,50 +73,52 @@ class CaseHashtainer:
         """Add case member and generate errors if needed."""
         # TODO: Need to add support for T6 and T7 detection.
 
-        self.should_remove_from_db = self.should_remove_from_db if self.should_remove_from_db else \
-            can_remove_case_from_memory
-        self.record_ids.setdefault(schema.document, []).append(record.id)
-        line_hash = hash(line)
-        partial_hash = None
-        if record.RecordType in {"T1", "T4"}:
-            partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
-        elif record.RecordType in {"T2", "T3", "T5"}:
-            partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER +
-                                str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
+        if self.current_line_number is None or self.current_line_number != line_number:
+            self.current_line_number = line_number
+            self.should_remove_from_db = self.should_remove_from_db if self.should_remove_from_db else \
+                can_remove_case_from_memory
+            self.record_ids.setdefault(schema.document, []).append(record.id)
+            line_hash = hash(line)
+            partial_hash = None
+            if record.RecordType in {"T1", "T4"}:
+                partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
+            elif record.RecordType in {"T2", "T3", "T5"}:
+                partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER +
+                                    str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
 
-        is_exact_dup = False
-        err_msg = None
-        has_precedence = False
-        is_new_max_precedence = False
+            is_exact_dup = False
+            err_msg = None
+            has_precedence = False
+            is_new_max_precedence = False
 
-        if line_hash in self.record_hashes:
-            has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
-            existing_record_id, existing_record_line_number = self.record_hashes[line_hash]
-            err_msg = (f"Duplicate record detected for record id {record.id} with record type {record.RecordType} at "
-                       f"line {line_number}. Record is a duplicate of the record at line number "
-                       f"{existing_record_line_number}, with record id {existing_record_id}")
-            is_exact_dup = True
+            if line_hash in self.record_hashes:
+                has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
+                existing_record_id, existing_record_line_number = self.record_hashes[line_hash]
+                err_msg = (f"Duplicate record detected for record id {record.id} with record type {record.RecordType} at "
+                        f"line {line_number}. Record is a duplicate of the record at line number "
+                        f"{existing_record_line_number}, with record id {existing_record_id}")
+                is_exact_dup = True
 
-        skip_partial = False
-        if record.RecordType == "T2":
-            skip_partial = record.FAMILY_AFFILIATION in {3, 5}
-        if record.RecordType == "T3":
-            skip_partial = record.FAMILY_AFFILIATION in {2, 4, 5}
-        if record.RecordType == "T5":
-            skip_partial = record.FAMILY_AFFILIATION in {3, 4, 5}
+            skip_partial = False
+            if record.RecordType == "T2":
+                skip_partial = record.FAMILY_AFFILIATION in {3, 5}
+            if record.RecordType == "T3":
+                skip_partial = record.FAMILY_AFFILIATION in {2, 4, 5}
+            if record.RecordType == "T5":
+                skip_partial = record.FAMILY_AFFILIATION in {3, 4, 5}
 
-        if not skip_partial and not is_exact_dup and partial_hash in self.partial_hashes:
-            has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.PARTIAL_DUPLICATE)
-            err_msg = (f"Partial duplicate record detected for record id {record.id} with record type "
-                       f"{record.RecordType} at line {line_number}. Record is a partial duplicate of the "
-                       f"record at line number {self.partial_hashes[partial_hash][1]}, with record id "
-                       f"{self.partial_hashes[partial_hash][0]}")
+            if not skip_partial and not is_exact_dup and partial_hash in self.partial_hashes:
+                has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.PARTIAL_DUPLICATE)
+                err_msg = (f"Partial duplicate record detected for record id {record.id} with record type "
+                        f"{record.RecordType} at line {line_number}. Record is a partial duplicate of the "
+                        f"record at line number {self.partial_hashes[partial_hash][1]}, with record id "
+                        f"{self.partial_hashes[partial_hash][0]}")
 
-        self.__generate_error(err_msg, record, schema, has_precedence, is_new_max_precedence)
-        if line_hash not in self.record_hashes:
-            self.record_hashes[line_hash] = (record.id, line_number)
-        if partial_hash is not None and partial_hash not in self.partial_hashes:
-            self.partial_hashes[partial_hash] = (record.id, line_number)
+            self.__generate_error(err_msg, record, schema, has_precedence, is_new_max_precedence)
+            if line_hash not in self.record_hashes:
+                self.record_hashes[line_hash] = (record.id, line_number)
+            if partial_hash is not None and partial_hash not in self.partial_hashes:
+                self.partial_hashes[partial_hash] = (record.id, line_number)
 
         return self.num_errors
 

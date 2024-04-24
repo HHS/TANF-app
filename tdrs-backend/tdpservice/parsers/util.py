@@ -174,3 +174,31 @@ def get_years_apart(rpt_month_year_date, date):
     delta = rpt_month_year_date - date
     age = delta.days/365.25
     return age
+
+
+class SortedRecordSchemaPairs:
+    """Maintains a dict sorted by hash(str(rpt_month_year) + case_number) and model_type."""
+
+    def __init__(self):
+        self.sorted_cases = {}
+
+    def clear(self, seed_record_schema_pair=None):
+        """Reset the sorted object. Optionally add a seed record for the next run."""
+        self.sorted_cases = {}
+
+        if seed_record_schema_pair:
+            self.add_record(seed_record_schema_pair)
+
+    def add_record(self, record_schema_pair):
+        """Add a record_schema_pair to the sorted object."""
+        record, schema = record_schema_pair
+        rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
+        case_number = getattr(record, 'CASE_NUMBER')
+        hash_val = hash(str(rpt_month_year) + case_number)
+
+        reporting_year_cases = self.sorted_cases.get(hash_val, {})
+        records = reporting_year_cases.get(type(record), [])
+        records.append(record_schema_pair)
+
+        reporting_year_cases[type(record)] = records
+        self.sorted_cases[hash_val] = reporting_year_cases

@@ -11,40 +11,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SortedRecordSchemaPairs:
-    """Maintains list of case record-schema-pairs and a copy object sorted by rpt_month_year and model_type."""
-
-    def __init__(self):
-        self.cases = []
-        self.sorted_cases = {}
-
-    def clear(self, seed_record_schema_pair=None):
-        """Reset both the list and sorted object. Optionally add a seed record for the next run."""
-        self.cases = []
-        self.sorted_cases = {}
-
-        if seed_record_schema_pair:
-            self.add_record(seed_record_schema_pair)
-
-    def add_record(self, record_schema_pair):
-        """Add a record_schema_pair to both the cases list and sorted_cases object."""
-        self.__add_record_to_sorted_object(record_schema_pair)
-        self.cases.append(record_schema_pair)
-
-    def __add_record_to_sorted_object(self, record_schema_pair):
-        """Add a record_schema_pair to the sorted_cases object."""
-        record, schema = record_schema_pair
-        rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
-
-        self.sorted_cases.setdefault(type(record), []).append(record_schema_pair)
-
-
 class CaseConsistencyValidator:
     """Caches records of the same case and month to perform category four validation while actively parsing."""
 
     def __init__(self, header, stt_type, generate_error):
         self.header = header
-        self.record_schema_pairs = SortedRecordSchemaPairs()
+        self.sorted_cases = dict()
         self.duplicate_manager = RecordDuplicateManager(generate_error)
         self.current_rpt_month_year = None
         self.current_case = None
@@ -89,6 +61,18 @@ class CaseConsistencyValidator:
         """Return current number of generated errors for the current case."""
         return len(self.generated_errors)
 
+    def add_record_to_sorted_struct(self, record_schema_pair):
+        """Add record_schema_pair to sorted structure."""
+        record = record_schema_pair[0]
+        self.sorted_cases.setdefault(type(record), []).append(record_schema_pair)
+
+    def clear_sorted_struct(self, seed_record_schema_pair=None):
+        """Reset and optionally seed the sorted stucture."""
+        self.sorted_cases = dict()
+        if seed_record_schema_pair:
+            self.add_record_to_sorted_struct(seed_record_schema_pair)
+
+
     def add_record(self, record, schema, line, line_number, case_has_errors):
         """Add record to cache and validate if new case is detected."""
         num_errors = 0
@@ -99,12 +83,12 @@ class CaseConsistencyValidator:
             hash_val = hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
             if hash_val != self.current_hash and self.current_hash is not None:
                 num_errors += self.validate()
-                self.record_schema_pairs.clear((record, schema))
+                self.clear_sorted_struct((record, schema))
                 self.case_has_errors = case_has_errors
                 self.has_validated = False
             else:
                 self.case_has_errors = self.case_has_errors if self.case_has_errors else case_has_errors
-                self.record_schema_pairs.add_record((record, schema))
+                self.add_record_to_sorted_struct((record, schema))
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
         else:
@@ -203,11 +187,10 @@ class CaseConsistencyValidator:
         t3_model_name = 'M3' if is_ssp else 'T3'
         t3_model = self.__get_model(t3_model_name)
 
-        cases = self.record_schema_pairs.sorted_cases
 
-        t1s = cases.get(t1_model, [])
-        t2s = cases.get(t2_model, [])
-        t3s = cases.get(t3_model, [])
+        t1s = self.sorted_cases.get(t1_model, [])
+        t2s = self.sorted_cases.get(t2_model, [])
+        t3s = self.sorted_cases.get(t3_model, [])
 
         if len(t1s) > 0:
             if len(t1s) > 1:  # likely to be captured by "no duplicates" validator
@@ -349,10 +332,8 @@ class CaseConsistencyValidator:
         t5_model_name = 'M5' if is_ssp else 'T5'
         t5_model = self.__get_model(t5_model_name)
 
-        cases = self.record_schema_pairs.sorted_cases
-
-        t4s = cases.get(t4_model, [])
-        t5s = cases.get(t5_model, [])
+        t4s = self.sorted_cases.get(t4_model, [])
+        t5s = self.sorted_cases.get(t5_model, [])
 
         if len(t4s) > 0:
             if len(t4s) > 1:
@@ -421,7 +402,7 @@ class CaseConsistencyValidator:
         is_state = self.stt_type == STT.EntityType.STATE
         is_territory = self.stt_type == STT.EntityType.TERRITORY
 
-        t5s = self.record_schema_pairs.sorted_cases.get(t5_model, [])
+        t5s = self.sorted_cases.get(t5_model, [])
 
         for record, schema in t5s:
             rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
