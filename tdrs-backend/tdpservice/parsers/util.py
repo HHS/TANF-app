@@ -184,13 +184,6 @@ class SortedRecords:
         self.hash_sorted_cases = dict()
         self.cases_already_removed = set()
 
-    def clear(self, seed_record_doc_pair=None):
-        """Reset the sorted object. Optionally add a seed record for the next run."""
-        self.hash_sorted_cases = dict()
-
-        if seed_record_doc_pair:
-            self.add_record(seed_record_doc_pair)
-
     def add_record(self, record_doc_pair):
         """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
         record, document = record_doc_pair

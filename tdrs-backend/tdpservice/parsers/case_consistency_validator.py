@@ -75,6 +75,7 @@ class CaseConsistencyValidator:
             self.add_record_to_structs(seed_record_schema_pair)
 
     def update_removed(self, hash_val, was_removed):
+        """Notify duplicate manager's hashtainers whether they need to be removed from DB."""
         self.duplicate_manager.update_removed(hash_val, was_removed)
 
     def add_record(self, record, schema, line, line_number, case_has_errors):
@@ -191,7 +192,6 @@ class CaseConsistencyValidator:
         t2_model = self.__get_model(t2_model_name)
         t3_model_name = 'M3' if is_ssp else 'T3'
         t3_model = self.__get_model(t3_model_name)
-
 
         t1s = self.sorted_cases.get(t1_model, [])
         t2s = self.sorted_cases.get(t2_model, [])

@@ -48,9 +48,11 @@ class CaseHashtainer:
         self.current_line_number = None
 
     def set_should_remove_from_db(self, should_remove):
+        """Set should remove from DB."""
         self.should_remove_from_db = should_remove
 
     def has_errors(self):
+        """Return case duplicate error state."""
         return self.num_errors > 0
 
     def get_records_for_post_parse_deletion(self):
@@ -98,9 +100,9 @@ class CaseHashtainer:
             if line_hash in self.record_hashes:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
                 existing_record_id, existing_record_line_number = self.record_hashes[line_hash]
-                err_msg = (f"Duplicate record detected for record id {record.id} with record type {record.RecordType} at "
-                        f"line {line_number}. Record is a duplicate of the record at line number "
-                        f"{existing_record_line_number}, with record id {existing_record_id}")
+                err_msg = (f"Duplicate record detected for record id {record.id} with record type "
+                           f"{record.RecordType} at line {line_number}. Record is a duplicate of the record at "
+                           f"line number {existing_record_line_number}, with record id {existing_record_id}")
                 is_exact_dup = True
 
             skip_partial = False
@@ -112,11 +114,12 @@ class CaseHashtainer:
                 skip_partial = record.FAMILY_AFFILIATION in {3, 4, 5}
 
             if not skip_partial and not is_exact_dup and partial_hash in self.partial_hashes:
-                has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.PARTIAL_DUPLICATE)
+                has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(
+                    ErrorLevel.PARTIAL_DUPLICATE)
                 err_msg = (f"Partial duplicate record detected for record id {record.id} with record type "
-                        f"{record.RecordType} at line {line_number}. Record is a partial duplicate of the "
-                        f"record at line number {self.partial_hashes[partial_hash][1]}, with record id "
-                        f"{self.partial_hashes[partial_hash][0]}")
+                           f"{record.RecordType} at line {line_number}. Record is a partial duplicate of the "
+                           f"record at line number {self.partial_hashes[partial_hash][1]}, with record id "
+                           f"{self.partial_hashes[partial_hash][0]}")
 
             self.__generate_error(err_msg, record, schema, has_precedence, is_new_max_precedence)
             if line_hash not in self.record_hashes:
@@ -159,6 +162,7 @@ class RecordDuplicateManager:
         return records_to_remove
 
     def update_removed(self, hash_val, was_removed):
+        """Notify hashtainers of DB removal."""
         hashtainer = self.hashtainers.get(hash_val)
         if was_removed:
             hashtainer.set_should_remove_from_db(False)
