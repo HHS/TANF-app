@@ -1,7 +1,6 @@
 """Test the CaseConsistencyValidator and SortedRecordSchemaPairs classes."""
 
 import pytest
-import itertools
 import logging
 from tdpservice.parsers.test import factories
 from .. import schema_defs, util
@@ -157,8 +156,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
             ),
         ]
+        line_number = 1
         for t1 in t1s:
-            case_consistency_validator.add_record(t1, t1_schema, False)
+            case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
+            line_number += 1
 
         t2s = [
             T2Factory.create(
@@ -173,7 +174,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t2 in t2s:
-            case_consistency_validator.add_record(t2, t2_schema, False)
+            case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
+            line_number += 1
 
         t3s = [
             T3Factory.create(
@@ -188,7 +190,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t3 in t3s:
-            case_consistency_validator.add_record(t3, t3_schema, False)
+            case_consistency_validator.add_record(t3, t3_schema, str(t3), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -240,8 +243,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123'
             ),
         ]
+        line_number = 1
         for t1 in t1s:
-            case_consistency_validator.add_record(t1, t1_schema, False)
+            case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -304,8 +309,10 @@ class TestCaseConsistencyValidator:
                 FAMILY_AFFILIATION=2,
             ),
         ]
+        line_number = 1
         for t2 in t2s:
-            case_consistency_validator.add_record(t2, t2_schema, False)
+            case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
+            line_number += 1
 
         t3s = [
             T3Factory.create(
@@ -320,7 +327,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t3 in t3s:
-            case_consistency_validator.add_record(t3, t3_schema, False)
+            case_consistency_validator.add_record(t3, t3_schema, str(t3), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -396,8 +404,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123'
             ),
         ]
+        line_number = 1
         for t1 in t1s:
-            case_consistency_validator.add_record(t1, t1_schema, False)
+            case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
+            line_number += 1
 
         t2s = [
             T2Factory.create(
@@ -412,7 +422,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t2 in t2s:
-            case_consistency_validator.add_record(t2, t2_schema, False)
+            case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
+            line_number += 1
 
         t3s = [
             T3Factory.create(
@@ -427,7 +438,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t3 in t3s:
-            case_consistency_validator.add_record(t3, t3_schema, False)
+            case_consistency_validator.add_record(t3, t3_schema, str(t3), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -484,8 +496,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123'
             ),
         ]
+        line_number = 1
         for t1 in t1s:
-            case_consistency_validator.add_record(t1, t1_schema, False)
+            case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
+            line_number += 1
 
         t2s = [
             T2Factory.create(
@@ -500,7 +514,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t2 in t2s:
-            case_consistency_validator.add_record(t2, t2_schema, False)
+            case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
+            line_number += 1
 
         t3s = [
             T3Factory.create(
@@ -515,7 +530,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t3 in t3s:
-            case_consistency_validator.add_record(t3, t3_schema, False)
+            case_consistency_validator.add_record(t3, t3_schema, str(t3), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -568,8 +584,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -588,7 +606,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -639,8 +658,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123'
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -659,7 +680,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -713,8 +735,10 @@ class TestCaseConsistencyValidator:
                 CLOSURE_REASON='01'
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -735,7 +759,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -781,8 +806,10 @@ class TestCaseConsistencyValidator:
                 CLOSURE_REASON='99'
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -805,7 +832,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -857,8 +885,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -921,8 +951,10 @@ class TestCaseConsistencyValidator:
                 REC_SSI=1
             ),
         ]
+        line_number = 1
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -976,8 +1008,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -998,7 +1032,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -1042,8 +1077,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -1064,7 +1101,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -1116,8 +1154,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -1138,7 +1178,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -1182,8 +1223,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -1204,7 +1247,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -1256,8 +1300,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -1278,7 +1324,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
@@ -1330,8 +1377,10 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
             ),
         ]
+        line_number = 1
         for t4 in t4s:
-            case_consistency_validator.add_record(t4, t4_schema, False)
+            case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+            line_number += 1
 
         t5s = [
             T5Factory.create(
@@ -1352,7 +1401,8 @@ class TestCaseConsistencyValidator:
             ),
         ]
         for t5 in t5s:
-            case_consistency_validator.add_record(t5, t5_schema, False)
+            case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+            line_number += 1
 
         num_errors = case_consistency_validator.validate()
 
