@@ -1,6 +1,7 @@
 """Test the CaseConsistencyValidator and SortedRecordSchemaPairs classes."""
 
 import pytest
+import itertools
 import logging
 from tdpservice.parsers.test import factories
 from .. import schema_defs, util
@@ -68,39 +69,48 @@ class TestCaseConsistencyValidator:
             util.make_generate_parser_error(small_correct_file, None)
         )
 
+        line_number = 1
         for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
-            case_consistency_validator.add_record(record, schema, True)
+            case_consistency_validator.add_record(record, schema, str(record), line_number, True)
+            line_number += 1
 
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.record_schema_pairs.cases) == 4
+        assert len(case_consistency_validator.cases) == 4
         assert case_consistency_validator.total_cases_cached == 0
         assert case_consistency_validator.total_cases_validated == 0
 
         # Add record with different case number to proc validation again and start caching a new case.
         t1 = factories.TanfT1Factory.create()
-        t1.CASE_NUMBER = 2
-        case_consistency_validator.add_record(t1, tanf_s1_schemas[0], False)
+        t1.CASE_NUMBER = '2'
+        t1.RPT_MONTH_YEAR = 2
+        line_number += 1
+        case_consistency_validator.add_record(t1, tanf_s1_schemas[0], str(t1), line_number, False)
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is False
-        assert len(case_consistency_validator.record_schema_pairs.cases) == 1
+        assert len(case_consistency_validator.cases) == 1
         assert case_consistency_validator.total_cases_cached == 1
         assert case_consistency_validator.total_cases_validated == 0
 
         # Complete the case to proc validation and verify that it occured. Even if the next case has errors.
         t2 = factories.TanfT2Factory.create()
         t3 = factories.TanfT3Factory.create()
-        t2.CASE_NUMBER = 2
-        t3.CASE_NUMBER = 2
-        case_consistency_validator.add_record(t2, tanf_s1_schemas[1], False)
-        case_consistency_validator.add_record(t3, tanf_s1_schemas[2], False)
+        t2.CASE_NUMBER = '2'
+        t2.RPT_MONTH_YEAR = 2
+        t3.CASE_NUMBER = '2'
+        t3.RPT_MONTH_YEAR = 2
+        line_number += 1
+        case_consistency_validator.add_record(t2, tanf_s1_schemas[1], str(t2), line_number, False)
+        line_number += 1
+        case_consistency_validator.add_record(t3, tanf_s1_schemas[2], str(t3), line_number, False)
         assert case_consistency_validator.case_has_errors is False
 
-        case_consistency_validator.add_record(tanf_s1_records[0], tanf_s1_schemas[0], True)
+        line_number += 1
+        case_consistency_validator.add_record(tanf_s1_records[0], tanf_s1_schemas[0], str(t3), line_number, True)
 
         assert case_consistency_validator.has_validated is False
         assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.record_schema_pairs.cases) == 1
+        assert len(case_consistency_validator.cases) == 1
         assert case_consistency_validator.total_cases_cached == 2
         assert case_consistency_validator.total_cases_validated == 1
 
