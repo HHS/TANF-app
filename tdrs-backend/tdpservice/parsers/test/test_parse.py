@@ -579,9 +579,9 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     ssp_section1_datafile.year = 2019
     ssp_section1_datafile.quarter = 'Q1'
 
-    expected_m1_record_count = 820
-    expected_m2_record_count = 992
-    expected_m3_record_count = 1757
+    expected_m1_record_count = 818
+    expected_m2_record_count = 989
+    expected_m3_record_count = 1748
 
     dfs.datafile = ssp_section1_datafile
     dfs.save()
@@ -597,7 +597,15 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert err.error_message == 'M1: 3 is not larger or equal to 1 and smaller or equal to 2.'
     assert err.content_type is not None
     assert err.object_id is not None
-    assert parser_errors.count() == 32486
+
+    dup_errors = parser_errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+    assert dup_errors.count() == 2
+    assert dup_errors[0].error_message == "Duplicate record detected with record type M3 at line 453. " + \
+        "Record is a duplicate of the record at line number 452."
+    assert dup_errors[1].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
+        "Record is a duplicate of the record at line number 3272."
+
+    assert parser_errors.count() == 32488
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
@@ -1019,8 +1027,8 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
 
     parse.parse_datafile(tanf_section2_file, dfs)
 
-    assert TANF_T4.objects.all().count() == 223
-    assert TANF_T5.objects.all().count() == 605
+    assert TANF_T4.objects.all().count() == 216
+    assert TANF_T5.objects.all().count() == 588
 
     parser_errors = ParserError.objects.filter(file=tanf_section2_file)
 

@@ -194,6 +194,10 @@ class SortedRecords:
         else:
             hash_val = hash(record.RecordType + rpt_month_year)
 
+        if hash_val in self.cases_already_removed:
+            logger.info("Record's case has already been removed due to category four errors. Not adding record with "
+                        f"info: ({record.RecordType}, {record.CASE_NUMBER}, {rpt_month_year})")
+
         if hash_val is not None and hash_val not in self.cases_already_removed:
             hashed_case = self.hash_sorted_cases.get(hash_val, {})
             records = hashed_case.get(document, [])
@@ -223,6 +227,13 @@ class SortedRecords:
                 return True
             if hash in self.hash_sorted_cases:
                 self.cases_already_removed.add(hash)
-                self.hash_sorted_cases.pop(hash)
+                removed = self.hash_sorted_cases.pop(hash)
+                case_ids = list()
+                # TODO: Can we do this without nested loops?
+                for l in removed.values():
+                    for record in l:
+                        case_ids.append((record.RecordType, record.CASE_NUMBER, record.RPT_MONTH_YEAR))
+                logger.info("Case consistency errors generated, removing case from in memory cache. "
+                            f"Record(s) info: {case_ids}.")
                 return True
         return False
