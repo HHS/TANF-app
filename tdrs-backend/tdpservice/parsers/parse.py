@@ -302,7 +302,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
             )
             preparse_error = {line_number: [err_obj]}
             unsaved_parser_errors.update(preparse_error)
-            rollback_records(unsaved_records, datafile)
+            rollback_records(unsaved_records.get_bulk_create_struct(), datafile)
             rollback_parser_errors(datafile)
             bulk_create_errors(preparse_error, num_errors, flush=True)
             return errors
@@ -362,7 +362,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
             record=None,
             field=None
         )
-        rollback_records(unsaved_records, datafile)
+        rollback_records(unsaved_records.get_bulk_create_struct(), datafile)
         rollback_parser_errors(datafile)
         preparse_error = {line_number: [err_obj]}
         bulk_create_errors(preparse_error, num_errors, flush=True)
@@ -379,7 +379,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     if not all_created:
         logger.error(f"Not all parsed records created for file: {datafile.id}!")
-        rollback_records(unsaved_records, datafile)
+        rollback_records(unsaved_records.get_bulk_create_struct(), datafile)
         bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
         return errors
 

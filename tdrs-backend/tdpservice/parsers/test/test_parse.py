@@ -793,8 +793,6 @@ def test_parse_big_s1_file_with_rollback(big_s1_rollback_file, dfs):
         datafile__id=big_s1_rollback_file.id
     )
     assert search.count() == 0
-    assert False
-
 
 @pytest.fixture
 def bad_tanf_s1__row_missing_required_field(stt_user, stt):
