@@ -17,6 +17,7 @@ class CaseConsistencyValidator:
     def __init__(self, header, stt_type, generate_error):
         self.header = header
         self.sorted_cases = dict()
+        self.cases = list()
         self.duplicate_manager = RecordDuplicateManager(generate_error)
         self.current_rpt_month_year = None
         self.current_case = None
@@ -60,16 +61,18 @@ class CaseConsistencyValidator:
         """Return current number of generated errors for the current case."""
         return len(self.generated_errors)
 
-    def add_record_to_sorted_struct(self, record_schema_pair):
+    def add_record_to_structs(self, record_schema_pair):
         """Add record_schema_pair to sorted structure."""
         record = record_schema_pair[0]
         self.sorted_cases.setdefault(type(record), []).append(record_schema_pair)
+        self.cases.append(record_schema_pair)
 
-    def clear_sorted_struct(self, seed_record_schema_pair=None):
+    def clear_structs(self, seed_record_schema_pair=None):
         """Reset and optionally seed the sorted stucture."""
         self.sorted_cases = dict()
+        self.cases = list()
         if seed_record_schema_pair:
-            self.add_record_to_sorted_struct(seed_record_schema_pair)
+            self.add_record_to_structs(seed_record_schema_pair)
 
     def update_removed(self, hash_val, was_removed):
         self.duplicate_manager.update_removed(hash_val, was_removed)
@@ -83,12 +86,12 @@ class CaseConsistencyValidator:
             hash_val = hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
             if hash_val != self.current_hash and self.current_hash is not None:
                 num_errors += self.validate()
-                self.clear_sorted_struct((record, schema))
+                self.clear_structs((record, schema))
                 self.case_has_errors = case_has_errors
                 self.has_validated = False
             else:
                 self.case_has_errors = self.case_has_errors if self.case_has_errors else case_has_errors
-                self.add_record_to_sorted_struct((record, schema))
+                self.add_record_to_structs((record, schema))
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
         else:
