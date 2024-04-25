@@ -397,7 +397,6 @@ class CaseConsistencyValidator:
         return num_errors
 
     def __validate_t5_aabd_and_ssi(self):
-        print('validate t5')
         num_errors = 0
         is_ssp = self.program_type == 'SSP'
 
