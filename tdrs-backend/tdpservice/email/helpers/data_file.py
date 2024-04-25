@@ -1,4 +1,5 @@
 """Helper functions for sending data file submission emails."""
+from django.conf import settings
 from tdpservice.email.email_enums import EmailType
 from tdpservice.email.email import automated_email, log
 from tdpservice.parsers.util import get_prog_from_section
@@ -38,6 +39,7 @@ def send_data_submitted_email(
         'submitted_by': submitted_by,
         'file_type': file_type,
         'has_errors': datafile_summary.status != DataFileSummary.Status.ACCEPTED,
+        "url": settings.FRONTEND_BASE_URL
     }
 
     log(f'Data file submitted; emailing Data Analysts {recipients}', logger_context=logger_context)
