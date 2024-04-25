@@ -95,6 +95,8 @@ class CaseConsistencyValidator:
             self.current_case = None
             hash_val = hash(record.RecordType + str(record.RPT_MONTH_YEAR))
 
+        self.current_hash = hash_val
+
         # TODO: Duplicate detection applies to all sections, however we need to implement a factory of some sort to
         # get the correct duplicate manager based on the section. Sections 3 and 4 have different duplicate logic
         # than 1 or 2 anyways. Some more care for handling section 1 and 2 together is still needed.
