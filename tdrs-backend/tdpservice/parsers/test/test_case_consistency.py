@@ -1580,3 +1580,107 @@ class TestCaseConsistencyValidator:
             expected_msg = f"Duplicate record detected with record type T{i + 1} at line 7. Record is a " + \
                 f"duplicate of the record at line number {i + 1}."
             assert error.error_message == expected_msg
+
+    @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
+        (
+            {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+        ),
+    ])
+    @pytest.mark.django_db
+    def test_section2_duplicate_records(self, small_correct_file, header, T4Stuff, T5Stuff):
+        """Test records are related validator section 2 success case."""
+        (T4Factory, t4_schema, t4_model_name) = T4Stuff
+        (T5Factory, t5_schema, t5_model_name) = T5Stuff
+
+        case_consistency_validator = CaseConsistencyValidator(
+            header,
+            STT.EntityType.STATE,
+            util.make_generate_parser_error(small_correct_file, None)
+        )
+
+        line_number = 1
+        t4 = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+        line_number += 1
+
+        t5 = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+                              SSN="111111111", DATE_OF_BIRTH="22222222")
+        case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+        line_number += 1
+
+        t4_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        case_consistency_validator.add_record(t4_dup, t4_schema, str(t4), line_number, False)
+        line_number += 1
+
+        t5_dup = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+        case_consistency_validator.add_record(t5_dup, t5_schema, str(t5), line_number, False)
+        line_number += 1
+
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 2
+        for i, error in enumerate(errors):
+            expected_msg = f"Duplicate record detected with record type T{i + 4} at line {i + 3}. Record is a " + \
+                f"duplicate of the record at line number {i + 1}."
+            assert error.error_message == expected_msg
+
+    @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
+        (
+            {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+        ),
+    ])
+    @pytest.mark.django_db
+    def test_section2_partial_duplicate_records_and_precedence(self, small_correct_file, header, T4Stuff, T5Stuff):
+        """Test records are related validator section 2 success case."""
+        (T4Factory, t4_schema, t4_model_name) = T4Stuff
+        (T5Factory, t5_schema, t5_model_name) = T5Stuff
+
+        case_consistency_validator = CaseConsistencyValidator(
+            header,
+            STT.EntityType.STATE,
+            util.make_generate_parser_error(small_correct_file, None)
+        )
+
+        line_number = 1
+        t4 = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
+        line_number += 1
+
+        t5 = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+                              SSN="111111111", DATE_OF_BIRTH="22222222")
+        case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
+        line_number += 1
+
+        t4_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        case_consistency_validator.add_record(t4_dup, t4_schema, str(t4_dup), line_number, False)
+        line_number += 1
+
+        t5_dup = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+        case_consistency_validator.add_record(t5_dup, t5_schema, str(t5_dup), line_number, False)
+        line_number += 1
+
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 2
+        for i, error in enumerate(errors):
+            expected_msg = f"Partial duplicate record detected with record type T{i + 4} at line {i + 3}. " + \
+                f"Record is a partial duplicate of the record at line number {i + 1}."
+            assert error.error_message == expected_msg
+
+        # We don't want to clear dup errors to show that when our errors change precedence, errors with lower precedence
+        # are automatically replaced with the errors of higher precedence.
+        case_consistency_validator.clear_errors(clear_dup=False)
+
+        t4_complete_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        has_errors, _ = case_consistency_validator.add_record(t4_complete_dup, t4_schema, str(t4), line_number, False)
+
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 1
+        for i, error in enumerate(errors):
+            expected_msg = f"Duplicate record detected with record type T{i + 4} at line 5. Record is a " + \
+                f"duplicate of the record at line number {i + 1}."
+            assert error.error_message == expected_msg
