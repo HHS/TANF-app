@@ -598,7 +598,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert err.content_type is not None
     assert err.object_id is not None
 
-    dup_errors = parser_errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+    dup_errors = parser_errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("id")
     assert dup_errors.count() == 2
     assert dup_errors[0].error_message == "Duplicate record detected with record type M3 at line 453. " + \
         "Record is a duplicate of the record at line number 452."
