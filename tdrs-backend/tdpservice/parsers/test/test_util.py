@@ -3,7 +3,7 @@
 import pytest
 from ..fields import Field
 from ..row_schema import RowSchema, SchemaManager
-from ..util import make_generate_parser_error, create_test_datafile
+from ..util import make_generate_parser_error, create_test_datafile, clean_options_string
 
 
 def passing_validator():
@@ -525,3 +525,17 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
     assert is_valid is False
     assert errors[0].fields_json == {'friendly_name': {'FIRST': 'first', 'SECOND': 'second'}}
     assert errors[0].error_message == "an Error"
+
+
+@pytest.mark.parametrize('options, expected', [
+    ([1, 2, 3, 4], '[1, 2, 3, 4]'),
+    (['1', '2', '3', '4'], '[1, 2, 3, 4]'),
+    (['a', 'b', 'c', 'd'], '[a, b, c, d]'),
+    (('a', 'b', 'c', 'd'), '[a, b, c, d]'),
+    (["'a'", "'b'", "'c'", "'d'"], "['a', 'b', 'c', 'd']"),
+    (['words', 'are very', 'weird'], '[words, are very, weird]'),
+])
+def test_clean_options_string(options, expected):
+    """Test `clean_options_string` util func."""
+    result = clean_options_string(options)
+    assert result == expected
