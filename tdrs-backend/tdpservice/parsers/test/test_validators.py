@@ -47,10 +47,11 @@ def test_or_validators():
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")))
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("3", RowSchema(), "friendly_name", "item_no") == (True, None)
-    assert validator("5", RowSchema(), "friendly_name", "item_no") == (False,
-                                                                       "T1 Item item_no friendly_name: 5 does not match 2. or "
-                                                                       "T1 Item item_no friendly_name: 5 does not "
-                                                                       "match 3.")
+    assert validator("5", RowSchema(), "friendly_name", "item_no") == (
+        False,
+        "T1 Item item_no friendly_name: 5 does not match 2. or "
+        "T1 Item item_no friendly_name: 5 does not match 3."
+    )
 
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")),
                                          validators.matches(("4")))
@@ -63,17 +64,21 @@ def test_or_validators():
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (True, None)
 
     value = "5"
-    assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                         'T1 Item item_no friendly_name: 5 does not match 2. or '
-                                                                         'T1 Item item_no friendly_name: 5 does not match 3. or '
-                                                                         'T1 Item item_no friendly_name: 5 does not match 4.')
+    assert validator(value, RowSchema(), "friendly_name", "item_no") == (
+        False,
+        'T1 Item item_no friendly_name: 5 does not match 2. or '
+        'T1 Item item_no friendly_name: 5 does not match 3. or '
+        'T1 Item item_no friendly_name: 5 does not match 4.'
+    )
 
     validator = validators.or_validators(validators.matches((2)), validators.matches((3)), validators.isLargerThan(4))
     assert validator(5, RowSchema(), "friendly_name", "item_no") == (True, None)
-    assert validator(1, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                     "T1 Item item_no friendly_name: 1 does not match 2. "
-                                                                     "or T1 Item item_no friendly_name: 1 does not "
-                                                                     "match 3. or T1 Item item_no friendly_name: 1 is not larger than 4.")
+    assert validator(1, RowSchema(), "friendly_name", "item_no") == (
+        False,
+        "T1 Item item_no friendly_name: 1 does not match 2. "
+        "or T1 Item item_no friendly_name: 1 does not "
+        "match 3. or T1 Item item_no friendly_name: 1 is not larger than 4."
+    )
 
 def test_if_validators():
     """Test `if_then_validator` gives a valid result."""
@@ -96,7 +101,10 @@ def test_if_validators():
 def test_and_validators():
     """Test `and_validators` gives a valid result."""
     validator = validators.and_validators(validators.isLargerThan(2), validators.isLargerThan(0))
-    assert validator(1, RowSchema(), "friendly_name", "item_no") == (False, 'T1 Item item_no friendly_name: 1 is not larger than 2.')
+    assert validator(1, RowSchema(), "friendly_name", "item_no") == (
+        False,
+        'T1 Item item_no friendly_name: 1 is not larger than 2.'
+    )
     assert validator(3, RowSchema(), "friendly_name", "item_no") == (True, None)
 
 
@@ -157,7 +165,10 @@ def test_validateRace():
 
     value = 3
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, f"T1 Item item_no friendly_name: {value} is not greater than or equal to 0 or smaller than or equal to 2.")
+    assert result == (
+        False,
+        f"T1 Item item_no friendly_name: {value} is not greater than or equal to 0 or smaller than or equal to 2."
+    )
 
 def test_validateRptMonthYear():
     """Test `validateRptMonthYear`."""
@@ -168,18 +179,27 @@ def test_validateRptMonthYear():
 
     value = "T1      "
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, f"T1 Item item_no friendly_name: The value: {value[2:8]}, does not follow the YYYYMM format for Reporting Year and "
-                      "Month.")
+    assert result == (
+        False,
+        f"T1 Item item_no friendly_name: The value: {value[2:8]}, does not "
+        "follow the YYYYMM format for Reporting Year and Month."
+    )
 
     value = "T1189912"
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, f"T1 Item item_no friendly_name: The value: {value[2:8]}, does not follow the YYYYMM format for Reporting Year and "
-                      "Month.")
+    assert result == (
+        False,
+        f"T1 Item item_no friendly_name: The value: {value[2:8]}, does not follow "
+        "the YYYYMM format for Reporting Year and Month."
+    )
 
     value = "T1202013"
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, f"T1 Item item_no friendly_name: The value: {value[2:8]}, does not follow the YYYYMM format for Reporting Year and "
-                      "Month.")
+    assert result == (
+        False,
+        f"T1 Item item_no friendly_name: The value: {value[2:8]}, does "
+        "not follow the YYYYMM format for Reporting Year and Month."
+    )
 
 def test_matches_returns_valid():
     """Test `matches` gives a valid result."""
@@ -329,8 +349,11 @@ def test_olderThan():
 
     value = 20240101
     result = validator(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, (f"T1 Item item_no friendly_name: {str(value)[:4]} must be less than or equal to {date.today().year - min_age} "
-                              "to meet the minimum age requirement."))
+    assert result == (
+        False,
+        f"T1 Item item_no friendly_name: {str(value)[:4]} must be less than or equal to "
+        f"{date.today().year - min_age} to meet the minimum age requirement."
+    )
 
 
 def test_dateYearIsLargerThan():
@@ -341,9 +364,10 @@ def test_dateYearIsLargerThan():
     assert validator(value) == (True, None)
 
     value = 18990101
-    assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                         f"T1 Item item_no friendly_name: Year {str(value)[:4]} must be larger "
-                                                                         f"than {year}.")
+    assert validator(value, RowSchema(), "friendly_name", "item_no") == (
+        False,
+        f"T1 Item item_no friendly_name: Year {str(value)[:4]} must be larger than {year}."
+    )
 
 
 def test_between_returns_invalid_for_string_value():
@@ -526,8 +550,10 @@ def test_calendarQuarterIsValid_returns_invalid(value):
     is_valid, error_msg = val(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error_msg == f"T1 Item item_no friendly_name: {value[2:7]} is invalid. Calendar Quarter must be a numeric " + \
+    assert error_msg == (
+        f"T1 Item item_no friendly_name: {value[2:7]} is invalid. Calendar Quarter must be a numeric "
         "representing the Calendar Year and Quarter formatted as YYYYQ"
+    )
 
 
 @pytest.mark.parametrize("value", ["T720201", "T720202", "T720203", "T720204"])
