@@ -400,7 +400,7 @@ def test_recordHasLength_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1 Item item_no friendly_name: record length is 7 characters but must be 22.'
+    assert error == 'T1: record length is 7 characters but must be 22.'
 
 
 def test_intHasLength_returns_valid():
@@ -551,7 +551,7 @@ def test_calendarQuarterIsValid_returns_invalid(value):
 
     assert is_valid is False
     assert error_msg == (
-        f"T1 Item item_no friendly_name: {value[2:7]} is invalid. Calendar Quarter must be a numeric "
+        f"T1: {value[2:7]} is invalid. Calendar Quarter must be a numeric "
         "representing the Calendar Year and Quarter formatted as YYYYQ"
     )
 
