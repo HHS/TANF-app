@@ -312,13 +312,6 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
             prev_sum = header_count + trailer_count
             continue
 
-        # We need to execute the bulk_create prior to the case_consistency_validator.add_record call to manage record
-        # removal in an easier manner.
-        all_created = bulk_create_records(unsaved_records.get_bulk_create_struct(), line_number, header_count,
-                                          datafile, dfs)
-        unsaved_records.clear(all_created)
-        unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
-
         schema_manager = get_schema_manager(line, section, program_type)
 
         records = manager_parse_line(line, schema_manager, generate_error, datafile, is_encrypted)
@@ -352,6 +345,11 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
         unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
             case_consistency_validator.get_generated_errors()
         case_consistency_validator.clear_errors()
+
+        all_created = bulk_create_records(unsaved_records.get_bulk_create_struct(), line_number, header_count,
+                                          datafile, dfs)
+        unsaved_records.clear(all_created)
+        unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
 
     if header_count == 0:
         logger.info(f"Preparser Error -> No headers found for file: {datafile.id}.")

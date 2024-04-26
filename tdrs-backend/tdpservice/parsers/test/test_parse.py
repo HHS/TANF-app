@@ -1767,19 +1767,19 @@ def s1_exact_dup_file():
     return parsing_file
 
 @pytest.mark.parametrize("file, batch_size", [
-    # ('s1_exact_dup_file', 10000),
-    ('s1_exact_dup_file', 1),
+    ('s1_exact_dup_file', 10000),
+    ('s1_exact_dup_file', 1), # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
 def test_parse_duplicate(file, batch_size, dfs, request):
     """Test handling invalid quarter value that raises a ValueError exception."""
-    df = request.getfixturevalue(file)
-    dfs.datafile = df
+    datafile = request.getfixturevalue(file)
+    dfs.datafile = datafile
 
     settings.BULK_CREATE_BATCH_SIZE = batch_size
 
-    parse.parse_datafile(df, dfs)
-    parser_errors = ParserError.objects.filter(file=df,
+    parse.parse_datafile(datafile, dfs)
+    parser_errors = ParserError.objects.filter(file=datafile,
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
@@ -1790,4 +1790,3 @@ def test_parse_duplicate(file, batch_size, dfs, request):
         "Record is a duplicate of the record at line number 2."
 
     TANF_T1.objects.count() == 0
-    assert False

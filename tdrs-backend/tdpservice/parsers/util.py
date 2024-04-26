@@ -183,6 +183,7 @@ class SortedRecords:
         self.records_are_s1_or_s2 = section in {'A', 'C'}
         self.hash_sorted_cases = dict()
         self.cases_already_removed = set()
+        self.serialized_cases = set()
 
     def add_record(self, record_doc_pair):
         """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
@@ -218,6 +219,7 @@ class SortedRecords:
     def clear(self, all_created):
         """Reset sorted structs if all records were created."""
         if all_created:
+            self.serialized_cases.update(set(self.hash_sorted_cases.keys()))
             self.hash_sorted_cases = dict()
 
     def remove_case_due_to_errors(self, should_remove, hash):
@@ -235,5 +237,5 @@ class SortedRecords:
                         case_ids.append((record.RecordType, record.CASE_NUMBER, record.RPT_MONTH_YEAR))
                 logger.info("Case consistency errors generated, removing case from in memory cache. "
                             f"Record(s) info: {case_ids}.")
-                return True
+                return True and hash not in self.serialized_cases
         return False
