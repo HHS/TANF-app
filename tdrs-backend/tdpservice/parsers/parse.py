@@ -102,8 +102,9 @@ def parse_datafile(datafile, dfs):
 
     return errors
 
-def bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs, batch_size=10000, flush=False):
+def bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs, flush=False):
     """Bulk create passed in records."""
+    batch_size = settings.BULK_CREATE_BATCH_SIZE
     if (line_number % batch_size == 0 and header_count > 0) or flush:
         logger.debug("Bulk creating records.")
         try:

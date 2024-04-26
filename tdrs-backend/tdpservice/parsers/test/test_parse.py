@@ -1745,3 +1745,49 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
         "representing the Calendar Year and Quarter formatted as YYYYQ"
 
     Tribal_TANF_T7.objects.count() == 0
+
+
+
+
+
+@pytest.fixture
+def s1_exact_dup_file():
+    """Fixture for a section 1 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q1',
+        file__name='s1_exact_duplicate.txt',
+        file__section='Active Case Data',
+        file__data=(b'HEADER20204A06   TAN1 D\n'
+                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000000000000000222222000000002229012                                       \n'
+                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000000000000000222222000000002229012                                       \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.mark.parametrize("file, batch_size", [
+    # ('s1_exact_dup_file', 10000),
+    ('s1_exact_dup_file', 1),
+])
+@pytest.mark.django_db()
+def test_parse_duplicate(file, batch_size, dfs, request):
+    """Test handling invalid quarter value that raises a ValueError exception."""
+    df = request.getfixturevalue(file)
+    dfs.datafile = df
+
+    settings.BULK_CREATE_BATCH_SIZE = batch_size
+
+    parse.parse_datafile(df, dfs)
+    parser_errors = ParserError.objects.filter(file=df,
+                                               error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
+    for e in parser_errors:
+        assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+    assert parser_errors.count() == 4
+
+    dup_error = parser_errors.first()
+    assert dup_error.error_message == "Duplicate record detected with record type T1 at line 3. " + \
+        "Record is a duplicate of the record at line number 2."
+
+    TANF_T1.objects.count() == 0
+    assert False
