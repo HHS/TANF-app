@@ -1766,12 +1766,31 @@ def s1_exact_dup_file():
     )
     return parsing_file
 
-@pytest.mark.parametrize("file, batch_size", [
-    ('s1_exact_dup_file', 10000),
-    ('s1_exact_dup_file', 1), # This forces an in memory and database deletion of records.
+@pytest.fixture
+def s2_exact_dup_file():
+    """Fixture for a section 2 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q1',
+        section = "Closed Case Data",
+        file__name='s2_exact_duplicate.txt',
+        file__section='Closed Case Data',
+        file__data=(b'HEADER20204C06   TAN1ED\n'
+                    b'T42020101111111115825301400141123113                                   \n'
+                    b'T42020101111111115825301400141123113                                   \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.mark.parametrize("file, batch_size, model, record_type", [
+    ('s1_exact_dup_file', 10000, TANF_T1, "T1"),
+    ('s1_exact_dup_file', 1, TANF_T1, "T1"), # This forces an in memory and database deletion of records.
+    ('s2_exact_dup_file', 10000, TANF_T4, "T4"),
+    ('s2_exact_dup_file', 1, TANF_T4, "T4"), # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
-def test_parse_duplicate(file, batch_size, dfs, request):
+def test_parse_duplicate(file, batch_size, model, record_type, dfs, request):
     """Test handling invalid quarter value that raises a ValueError exception."""
     datafile = request.getfixturevalue(file)
     dfs.datafile = datafile
@@ -1786,7 +1805,7 @@ def test_parse_duplicate(file, batch_size, dfs, request):
     assert parser_errors.count() == 4
 
     dup_error = parser_errors.first()
-    assert dup_error.error_message == "Duplicate record detected with record type T1 at line 3. " + \
+    assert dup_error.error_message == f"Duplicate record detected with record type {record_type} at line 3. " + \
         "Record is a duplicate of the record at line number 2."
 
-    TANF_T1.objects.count() == 0
+    model.objects.count() == 0
