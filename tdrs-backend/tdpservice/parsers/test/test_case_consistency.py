@@ -1422,6 +1422,7 @@ class TestCaseConsistencyValidator:
     ])
     @pytest.mark.django_db
     def test_section1_duplicate_records(self, small_correct_file, header, T1Stuff, T2Stuff, T3Stuff, stt_type):
+        """Test section 1 exact duplicate records."""
         (T1Factory, t1_schema, t1_model_name) = T1Stuff
         (T2Factory, t2_schema, t2_model_name) = T2Stuff
         (T3Factory, t3_schema, t3_model_name) = T3Stuff
@@ -1437,8 +1438,8 @@ class TestCaseConsistencyValidator:
         case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
         line_number += 1
 
-        t2 =T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
-                             SSN="111111111", DATE_OF_BIRTH="22222222")
+        t2 = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+                              SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
         line_number += 1
 
@@ -1483,7 +1484,8 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
         assert len(errors) == 3
         for i, error in enumerate(errors):
-            expected_msg = f"Duplicate record detected with record type T{i + 1} at line {i + 4}. Record is a duplicate of the record at line number {i + 1}."
+            expected_msg = f"Duplicate record detected with record type T{i + 1} at line {i + 4}. Record is a " + \
+                f"duplicate of the record at line number {i + 1}."
             assert error.error_message == expected_msg
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
@@ -1496,7 +1498,9 @@ class TestCaseConsistencyValidator:
         ),
     ])
     @pytest.mark.django_db
-    def test_section1_partial_duplicate_records_and_precedence(self, small_correct_file, header, T1Stuff, T2Stuff, T3Stuff, stt_type):
+    def test_section1_partial_duplicate_records_and_precedence(self, small_correct_file, header, T1Stuff, T2Stuff,
+                                                               T3Stuff, stt_type):
+        """Test section 1 partial duplicate records."""
         (T1Factory, t1_schema, t1_model_name) = T1Stuff
         (T2Factory, t2_schema, t2_model_name) = T2Stuff
         (T3Factory, t3_schema, t3_model_name) = T3Stuff
@@ -1512,8 +1516,8 @@ class TestCaseConsistencyValidator:
         case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
         line_number += 1
 
-        t2 =T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
-                             SSN="111111111", DATE_OF_BIRTH="22222222")
+        t2 = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+                              SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
         line_number += 1
 
@@ -1559,7 +1563,8 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
         assert len(errors) == 3
         for i, error in enumerate(errors):
-            expected_msg = f"Partial duplicate record detected with record type T{i + 1} at line {i + 4}. Record is a partial duplicate of the record at line number {i + 1}."
+            expected_msg = f"Partial duplicate record detected with record type T{i + 1} at line {i + 4}. " + \
+                f"Record is a partial duplicate of the record at line number {i + 1}."
             assert error.error_message == expected_msg
 
         # We don't want to clear dup errors to show that when our errors change precedence, errors with lower precedence
@@ -1572,5 +1577,6 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
         assert len(errors) == 1
         for i, error in enumerate(errors):
-            expected_msg = f"Duplicate record detected with record type T{i + 1} at line 7. Record is a duplicate of the record at line number {i + 1}."
+            expected_msg = f"Duplicate record detected with record type T{i + 1} at line 7. Record is a " + \
+                f"duplicate of the record at line number {i + 1}."
             assert error.error_message == expected_msg

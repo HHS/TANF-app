@@ -230,8 +230,8 @@ class SortedRecords:
                 removed = self.hash_sorted_cases.pop(hash)
                 case_ids = list()
                 # TODO: Can we do this without nested loops?
-                for l in removed.values():
-                    for record in l:
+                for records in removed.values():
+                    for record in records:
                         case_ids.append((record.RecordType, record.CASE_NUMBER, record.RPT_MONTH_YEAR))
                 logger.info("Case consistency errors generated, removing case from in memory cache. "
                             f"Record(s) info: {case_ids}.")

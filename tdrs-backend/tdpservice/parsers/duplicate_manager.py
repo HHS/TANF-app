@@ -160,6 +160,7 @@ class RecordDuplicateManager:
         return generated_errors
 
     def clear_errors(self):
+        """Clear all generated errors."""
         self.generated_errors = dict()
 
     def get_records_to_remove(self):
