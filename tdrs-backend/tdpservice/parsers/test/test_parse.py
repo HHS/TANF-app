@@ -1746,10 +1746,6 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
 
     Tribal_TANF_T7.objects.count() == 0
 
-
-
-
-
 @pytest.fixture
 def s1_exact_dup_file():
     """Fixture for a section 1 file containing an exact duplicate record."""
@@ -1807,5 +1803,69 @@ def test_parse_duplicate(file, batch_size, model, record_type, dfs, request):
     dup_error = parser_errors.first()
     assert dup_error.error_message == f"Duplicate record detected with record type {record_type} at line 3. " + \
         "Record is a duplicate of the record at line number 2."
+
+    model.objects.count() == 0
+
+
+
+
+
+@pytest.fixture
+def s1_partial_dup_file():
+    """Fixture for a section 1 file containing an partial duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q1',
+        file__name='s1_partial_duplicate.txt',
+        file__section='Active Case Data',
+        file__data=(b'HEADER20204A06   TAN1 D\n'
+                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000000000000000222222000000002229012                                       \n'
+                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000000000000000222222000000002229013                                       \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.fixture
+def s2_partial_dup_file():
+    """Fixture for a section 2 file containing an partial duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q1',
+        section = "Closed Case Data",
+        file__name='s2_partial_duplicate.txt',
+        file__section='Closed Case Data',
+        file__data=(b'HEADER20204C06   TAN1ED\n'
+                    b'T42020101111111115825301400141123113                                   \n'
+                    b'T42020101111111115825301400141123114                                   \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.mark.parametrize("file, batch_size, model, record_type", [
+    ('s1_partial_dup_file', 10000, TANF_T1, "T1"),
+    ('s1_partial_dup_file', 1, TANF_T1, "T1"), # This forces an in memory and database deletion of records.
+    ('s2_partial_dup_file', 10000, TANF_T4, "T4"),
+    ('s2_partial_dup_file', 1, TANF_T4, "T4"), # This forces an in memory and database deletion of records.
+])
+@pytest.mark.django_db()
+def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, request):
+    """Test handling invalid quarter value that raises a ValueError exception."""
+    datafile = request.getfixturevalue(file)
+    dfs.datafile = datafile
+
+    settings.BULK_CREATE_BATCH_SIZE = batch_size
+
+    parse.parse_datafile(datafile, dfs)
+    parser_errors = ParserError.objects.filter(file=datafile,
+                                               error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
+    for e in parser_errors:
+        assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+    assert parser_errors.count() == 1 # TODO: Why doesnt this generate 4 errors per run again?
+
+    dup_error = parser_errors.first()
+    assert dup_error.error_message == f"Partial duplicate record detected with record type {record_type} " + \
+        "at line 3. Record is a partial duplicate of the record at line number 2."
 
     model.objects.count() == 0
