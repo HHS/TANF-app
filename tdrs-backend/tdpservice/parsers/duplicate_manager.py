@@ -161,7 +161,9 @@ class RecordDuplicateManager:
 
     def clear_errors(self):
         """Clear all generated errors."""
-        self.generated_errors = dict()
+        # We must call .clear() here instead of re-assigning a new dict() because the hashtainers have a reference to
+        # this dictionary. Reassigning the dictionary means the hashtainers lose their reference.
+        self.generated_errors.clear()
 
     def get_records_to_remove(self):
         """Return dictionary of document:[errors]."""
