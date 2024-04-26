@@ -77,7 +77,7 @@ t4 = SchemaManager(
                 Field(
                     item="7",
                     name="ZIP_CODE",
-                    friendly_name="Zip Code",
+                    friendly_name="ZIP Code",
                     type="string",
                     startIndex=24,
                     endIndex=29,
@@ -121,7 +121,7 @@ t4 = SchemaManager(
                 Field(
                     item="11",
                     name="REC_MED_ASSIST",
-                    friendly_name="Received Medical Assistance:",
+                    friendly_name="Received Medical Assistance",
                     type="number",
                     startIndex=33,
                     endIndex=34,

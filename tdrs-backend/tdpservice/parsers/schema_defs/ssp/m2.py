@@ -787,7 +787,7 @@ m2 = SchemaManager(
                 Field(
                     item="59C",
                     name='UNEARNED_SSI',
-                    friendly_name="Amount of Unearned Income: Social Security: SSI Benefit",
+                    friendly_name="Amount of Unearned Income: SSI Benefit",
                     type='number',
                     startIndex=138,
                     endIndex=142,

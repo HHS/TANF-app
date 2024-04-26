@@ -243,7 +243,7 @@ t5 = SchemaManager(
                 Field(
                     item="19A",
                     name="REC_OASDI_INSURANCE",
-                    friendly_name="Receives Disability Benefits: OASDI Program",
+                    friendly_name="Received Disability Benefits: OASDI Program",
                     type="number",
                     startIndex=44,
                     endIndex=45,
@@ -253,7 +253,7 @@ t5 = SchemaManager(
                 Field(
                     item="19B",
                     name="REC_FEDERAL_DISABILITY",
-                    friendly_name="Received Disability Benefits: Federal Disability Status",
+                    friendly_name="Receives Disability Benefits: Federal Disability Status",
                     type="number",
                     startIndex=45,
                     endIndex=46,

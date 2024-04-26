@@ -388,7 +388,7 @@ m5 = SchemaManager(
                 Field(
                     item="27",
                     name="AMOUNT_UNEARNED_INCOME",
-                    friendly_name="Amount of Earned Income",
+                    friendly_name="Amount of Unearned Income",
                     type="string",
                     startIndex=62,
                     endIndex=66,
