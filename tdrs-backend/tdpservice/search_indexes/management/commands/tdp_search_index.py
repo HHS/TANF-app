@@ -25,7 +25,13 @@ class Command(search_index.Command):
                 {
                     "index.search.slowlog.threshold.query.warn": "1s",
                     "index.search.slowlog.threshold.query.info": "500ms",
-                    "index.search.slowlog.threshold.query.trace": "0ms"
+                    "index.search.slowlog.threshold.query.trace": "0ms",
+                    "index.search.slowlog.level": "info",
+
+                    "index.indexing.slowlog.threshold.index.warn": "1s",
+                    "index.indexing.slowlog.threshold.query.info": "500ms",
+                    "index.indexing.slowlog.threshold.query.trace": "0ms",
+                    "index.indexing.slowlog.level": "info",
                 },
                 doc.Index.name
             )
