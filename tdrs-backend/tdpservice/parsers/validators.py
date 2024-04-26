@@ -1,7 +1,7 @@
 """Generic parser validator functions for use in schema definitions."""
 
 from .models import ParserErrorCategoryChoices
-from .util import fiscal_to_calendar, year_month_to_year_quarter
+from .util import fiscal_to_calendar, year_month_to_year_quarter, clean_options_string
 import datetime
 import logging
 
@@ -217,52 +217,6 @@ def sumIsLarger(fields, val):
     return sumIsLargerFunc
 
 
-# generic validators
-
-
-def matches(option, error_func=None):
-    """Validate that value is equal to option."""
-    return make_validator(
-        lambda value: value == option,
-        lambda value, row_schema, friendly_name, item_num: error_func(option)
-        if error_func
-        else f"{row_schema.record_type} {friendly_name}: {value} does not match {option}.",
-    )
-
-
-def notMatches(option):
-    """Validate that value is not equal to option."""
-    return make_validator(
-        lambda value: value != option,
-        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} matches {option}."
-    )
-
-
-def oneOf(options=[]):
-    """Validate that value does not exist in the provided options array."""
-    return make_validator(
-        lambda value: value in options,
-        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} is not in {options}."
-    )
-
-
-def notOneOf(options=[]):
-    """Validate that value exists in the provided options array."""
-    return make_validator(
-        lambda value: value not in options,
-        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} is in {options}."
-    )
-
-
-def between(min, max):
-    """Validate value, when casted to int, is greater than min and less than max."""
-    return make_validator(
-        lambda value: int(value) > min and int(value) < max,
-        lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} is not between {min} and {max}.",
-    )
-
-
 def recordHasLength(length):
     """Validate that value (string or array) has a length matching length param."""
     return make_validator(
@@ -270,94 +224,7 @@ def recordHasLength(length):
         lambda value,
         row_schema,
         friendly_name,
-        item_num: f"{row_schema.record_type} record length is {len(value)} characters but must be {length}.",
-    )
-
-
-def intHasLength(num_digits):
-    """Validate the number of digits in an integer."""
-    return make_validator(
-        lambda value: sum(c.isdigit() for c in str(value)) == num_digits,
-        lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} does not have exactly {num_digits} digits.",
-    )
-
-
-def contains(substring):
-    """Validate that string value contains the given substring param."""
-    return make_validator(
-        lambda value: value.find(substring) != -1,
-        lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} does not contain {substring}.",
-    )
-
-
-def startsWith(substring, error_func=None):
-    """Validate that string value starts with the given substring param."""
-    return make_validator(
-        lambda value: value.startswith(substring),
-        lambda value, row_schema, friendly_name, item_num: error_func(substring)
-        if error_func
-        else f"{row_schema.record_type}: {value} does not start with {substring}.",
-    )
-
-
-def isNumber():
-    """Validate that value can be casted to a number."""
-    return make_validator(
-        lambda value: value.isnumeric(),
-        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} is not a number."
-    )
-
-
-def isAlphaNumeric():
-    """Validate that value is alphanumeric."""
-    return make_validator(
-        lambda value: value.isalnum(),
-        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} is not alphanumeric."
-    )
-
-
-def isBlank():
-    """Validate that string value is blank."""
-    return make_validator(
-        lambda value: value.isspace(),
-        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} is not blank."
-    )
-
-
-def isInStringRange(lower, upper):
-    """Validate that string value is in a specific range."""
-    return make_validator(
-        lambda value: int(value) >= lower and int(value) <= upper,
-        lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} is not in range [{lower}, {upper}].",
-    )
-
-
-def isStringLargerThan(val):
-    """Validate that string value is larger than val."""
-    return make_validator(
-        lambda value: int(value) > val,
-        lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} is not larger than {val}.",
-    )
-
-
-def _is_empty(value, start, end):
-    end = end if end else len(str(value))
-    vlen = end - start
-    subv = str(value)[start:end]
-    return value_is_empty(subv, vlen) or len(subv) < vlen
-
-
-def notEmpty(start=0, end=None):
-    """Validate that string value isn't only blanks."""
-    return make_validator(
-        lambda value: not _is_empty(value, start, end),
-        lambda value, row_schema,
-        friendly_name, item_num: f'{row_schema.record_type}: {str(value)} contains blanks between positions {start} '
-                                 f'and {end if end else len(str(value))}.'
+        item_num: f"{row_schema.record_type}: record length is {len(value)} characters but must be {length}.",
     )
 
 
@@ -383,12 +250,149 @@ def calendarQuarterIsValid(start=0, end=None):
     )
 
 
+# generic validators
+
+
+def format_error_context(row_schema, friendly_name, item_num):
+    return f'{row_schema.record_type} Item {item_num} {friendly_name}'
+
+
+def matches(option, error_func=None):
+    """Validate that value is equal to option."""
+    return make_validator(
+        lambda value: value == option,
+        lambda value, row_schema, friendly_name, item_num: error_func(option)
+        if error_func
+        else f"{format_error_context(row_schema, friendly_name, item_num)}: {value} does not match {option}.",
+    )
+
+
+def notMatches(option):
+    """Validate that value is not equal to option."""
+    return make_validator(
+        lambda value: value != option,
+        lambda value, row_schema, friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} matches {option}."
+    )
+
+
+def oneOf(options=[]):
+    """Validate that value does not exist in the provided options array."""
+    return make_validator(
+        lambda value: value in options,
+        lambda value, row_schema, friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} is not in {clean_options_string(options)}."
+    )
+
+
+def notOneOf(options=[]):
+    """Validate that value exists in the provided options array."""
+    return make_validator(
+        lambda value: value not in options,
+        lambda value, row_schema, friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} is in {clean_options_string(options)}."
+    )
+
+
+def between(min, max):
+    """Validate value, when casted to int, is greater than min and less than max."""
+    return make_validator(
+        lambda value: int(value) > min and int(value) < max,
+        lambda value, row_schema,
+        friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} is not between {min} and {max}.",
+    )
+
+
+def intHasLength(num_digits):
+    """Validate the number of digits in an integer."""
+    return make_validator(
+        lambda value: sum(c.isdigit() for c in str(value)) == num_digits,
+        lambda value, row_schema,
+        friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} does not have exactly {num_digits} digits.",
+    )
+
+
+def contains(substring):
+    """Validate that string value contains the given substring param."""
+    return make_validator(
+        lambda value: value.find(substring) != -1,
+        lambda value, row_schema,
+        friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} does not contain {substring}.",
+    )
+
+
+def startsWith(substring, error_func=None):
+    """Validate that string value starts with the given substring param."""
+    return make_validator(
+        lambda value: value.startswith(substring),
+        lambda value, row_schema, friendly_name, item_num: error_func(substring)
+        if error_func
+        else f"{format_error_context(row_schema, friendly_name, item_num)}: {value} does not start with {substring}.",
+    )
+
+
+def isNumber():
+    """Validate that value can be casted to a number."""
+    return make_validator(
+        lambda value: str(value).strip().isnumeric(),
+        lambda value, row_schema, friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} is not a number."
+    )
+
+
+def isAlphaNumeric():
+    """Validate that value is alphanumeric."""
+    return make_validator(
+        lambda value: value.isalnum(),
+        lambda value, row_schema, friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} is not alphanumeric."
+    )
+
+
+def isBlank():
+    """Validate that string value is blank."""
+    return make_validator(
+        lambda value: value.isspace(),
+        lambda value, row_schema, friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} is not blank."
+    )
+
+
+def isInStringRange(lower, upper):
+    """Validate that string value is in a specific range."""
+    return make_validator(
+        lambda value: int(value) >= lower and int(value) <= upper,
+        lambda value, row_schema,
+        friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} is not in range [{lower}, {upper}].",
+    )
+
+
+def isStringLargerThan(val):
+    """Validate that string value is larger than val."""
+    return make_validator(
+        lambda value: int(value) > val,
+        lambda value, row_schema,
+        friendly_name, item_num: f"{format_error_context(row_schema, friendly_name, item_num)}: {value} is not larger than {val}.",
+    )
+
+
+def _is_empty(value, start, end):
+    end = end if end else len(str(value))
+    vlen = end - start
+    subv = str(value)[start:end]
+    return value_is_empty(subv, vlen) or len(subv) < vlen
+
+
+def notEmpty(start=0, end=None):
+    """Validate that string value isn't only blanks."""
+    return make_validator(
+        lambda value: not _is_empty(value, start, end),
+        lambda value, row_schema,
+        friendly_name, item_num: f'{format_error_context(row_schema, friendly_name, item_num)}: {str(value)} contains blanks between positions {start} '
+                                 f'and {end if end else len(str(value))}.'
+    )
+
+
 def isEmpty(start=0, end=None):
     """Validate that string value is only blanks."""
     return make_validator(
         lambda value: _is_empty(value, start, end),
         lambda value, row_schema,
-        friendly_name, item_num: f'{value} is not blank between positions {start} and {end if end else len(value)}.'
+        friendly_name, item_num: f'{row_schema.record_type} Item {item_num} {friendly_name}: {value} is not blank between positions {start} and {end if end else len(value)}.'
     )
 
 
@@ -396,7 +400,7 @@ def notZero(number_of_zeros=1):
     """Validate that value is not zero."""
     return make_validator(
         lambda value: value != "0" * number_of_zeros,
-        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} is zero."
+        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {value} is zero."
     )
 
 
@@ -405,7 +409,7 @@ def isLargerThan(LowerBound):
     return make_validator(
         lambda value: float(value) > LowerBound if value is not None else False,
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} is not larger than {LowerBound}.",
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {value} is not larger than {LowerBound}.",
     )
 
 
@@ -414,7 +418,7 @@ def isSmallerThan(UpperBound):
     return make_validator(
         lambda value: value < UpperBound,
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} is not smaller than {UpperBound}.",
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {value} is not smaller than {UpperBound}.",
     )
 
 
@@ -423,7 +427,7 @@ def isLargerThanOrEqualTo(LowerBound):
     return make_validator(
         lambda value: value >= LowerBound,
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} is not larger than {LowerBound}.",
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {value} is not larger than {LowerBound}.",
     )
 
 
@@ -432,7 +436,7 @@ def isSmallerThanOrEqualTo(UpperBound):
     return make_validator(
         lambda value: value <= UpperBound,
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} is not smaller than {UpperBound}.",
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {value} is not smaller than {UpperBound}.",
     )
 
 
@@ -441,7 +445,7 @@ def isInLimits(LowerBound, UpperBound):
     return make_validator(
         lambda value: value >= LowerBound and value <= UpperBound,
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} is not larger or equal to {LowerBound} and "
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {value} is not larger or equal to {LowerBound} and "
                                  f"smaller or equal to {UpperBound}."
     )
 
@@ -453,7 +457,7 @@ def dateMonthIsValid():
     return make_validator(
         lambda value: int(str(value)[4:6]) in range(1, 13),
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {str(value)[4:6]} is not a valid month.",
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {str(value)[4:6]} is not a valid month.",
     )
 
 def dateDayIsValid():
@@ -461,7 +465,7 @@ def dateDayIsValid():
     return make_validator(
         lambda value: int(str(value)[6:]) in range(1, 32),
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {str(value)[6:]} is not a valid day.",
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {str(value)[6:]} is not a valid day.",
     )
 
 
@@ -470,7 +474,7 @@ def olderThan(min_age):
     return make_validator(
         lambda value: datetime.date.today().year - int(str(value)[:4]) > min_age,
         lambda value, row_schema,
-        friendly_name, item_num: (f"{row_schema.record_type}: {str(value)[:4]} must be less than or equal to "
+        friendly_name, item_num: (f"{row_schema.record_type} Item {item_num} {friendly_name}: {str(value)[:4]} must be less than or equal to "
                                   f"{datetime.date.today().year - min_age} to meet the minimum age requirement.")
     )
 
@@ -480,7 +484,7 @@ def dateYearIsLargerThan(year):
     return make_validator(
         lambda value: int(str(value)[:4]) > year,
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: Year {str(value)[:4]} must be larger than {year}.",
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: Year {str(value)[:4]} must be larger than {year}.",
     )
 
 
@@ -489,7 +493,7 @@ def quarterIsValid():
     return make_validator(
         lambda value: int(str(value)[-1]) > 0 and int(str(value)[-1]) < 5,
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {str(value)[-1]} is not a valid quarter.",
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {str(value)[-1]} is not a valid quarter.",
     )
 
 
@@ -498,7 +502,7 @@ def validateSSN():
     options = [str(i) * 9 for i in range(0, 10)]
     return make_validator(
         lambda value: value not in options,
-        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} is in {options}."
+        lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {value} is in {options}."
     )
 
 
@@ -507,7 +511,7 @@ def validateRace():
     return make_validator(
         lambda value: value >= 0 and value <= 2,
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: {value} is not greater than or equal to 0 "
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: {value} is not greater than or equal to 0 "
                                  "or smaller than or equal to 2."
     )
 
@@ -519,7 +523,7 @@ def validateRptMonthYear():
                                                                                          "06", "07", "08", "09", "10",
                                                                                          "11", "12"},
         lambda value, row_schema,
-        friendly_name, item_num: f"{row_schema.record_type}: The value: {value[2:8]}, does not follow the YYYYMM "
+        friendly_name, item_num: f"{row_schema.record_type} Item {item_num} {friendly_name}: The value: {value[2:8]}, does not follow the YYYYMM "
                                  "format for Reporting Year and Month.",
     )
 
