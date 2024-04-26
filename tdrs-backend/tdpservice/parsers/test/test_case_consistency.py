@@ -1442,7 +1442,6 @@ class TestCaseConsistencyValidator:
         case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
         line_number += 1
 
-        # T3's or any record on the same line as an existing record do not get checked as a duplicate even if they are.
         t3s = [
             T3Factory.create(
                 RecordType="T3",
@@ -1485,4 +1484,93 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 3
         for i, error in enumerate(errors):
             expected_msg = f"Duplicate record detected with record type T{i + 1} at line {i + 4}. Record is a duplicate of the record at line number {i + 1}."
+            assert error.error_message == expected_msg
+
+    @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
+        (
+            {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1'),
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
+            STT.EntityType.STATE,
+        ),
+    ])
+    @pytest.mark.django_db
+    def test_section1_partial_duplicate_records_and_precedence(self, small_correct_file, header, T1Stuff, T2Stuff, T3Stuff, stt_type):
+        (T1Factory, t1_schema, t1_model_name) = T1Stuff
+        (T2Factory, t2_schema, t2_model_name) = T2Stuff
+        (T3Factory, t3_schema, t3_model_name) = T3Stuff
+
+        case_consistency_validator = CaseConsistencyValidator(
+            header,
+            stt_type,
+            util.make_generate_parser_error(small_correct_file, None)
+        )
+
+        t1 = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        line_number = 1
+        case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
+        line_number += 1
+
+        t2 =T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+                             SSN="111111111", DATE_OF_BIRTH="22222222")
+        case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
+        line_number += 1
+
+        t3s = [
+            T3Factory.create(
+                RecordType="T3",
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                SSN="111111111",
+                DATE_OF_BIRTH="22222222"
+            ),
+            T3Factory.create(
+                RecordType="T3",
+                RPT_MONTH_YEAR=202010,
+                CASE_NUMBER='123',
+                SSN="111111111",
+                DATE_OF_BIRTH="22222222"
+            ),
+        ]
+
+        for t3 in t3s:
+            case_consistency_validator.add_record(t3, t3_schema, str(t3), line_number, False)
+
+        # Introduce partial dups
+        t1_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        line_number += 1
+        has_errors, _ = case_consistency_validator.add_record(t1_dup, t1_schema, str(t1_dup), line_number, False)
+        line_number += 1
+        assert has_errors
+
+        t2_dup = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+        has_errors, _ = case_consistency_validator.add_record(t2_dup, t2_schema, str(t2_dup), line_number, False)
+        line_number += 1
+        assert has_errors
+
+        t3_dup = T3Factory.create(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+        has_errors, _ = case_consistency_validator.add_record(t3_dup, t3_schema, str(t3_dup), line_number, False)
+        line_number += 1
+        assert has_errors
+
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 3
+        for i, error in enumerate(errors):
+            expected_msg = f"Partial duplicate record detected with record type T{i + 1} at line {i + 4}. Record is a partial duplicate of the record at line number {i + 1}."
+            assert error.error_message == expected_msg
+
+        # We don't want to clear dup errors to show that when our errors change precedence, errors with lower precedence
+        # are automatically replaced with the errors of higher precedence.
+        case_consistency_validator.clear_errors(clear_dup=False)
+
+        t1_complete_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        has_errors, _ = case_consistency_validator.add_record(t1_complete_dup, t1_schema, str(t1), line_number, False)
+
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 1
+        for i, error in enumerate(errors):
+            expected_msg = f"Duplicate record detected with record type T{i + 1} at line 7. Record is a duplicate of the record at line number {i + 1}."
             assert error.error_message == expected_msg

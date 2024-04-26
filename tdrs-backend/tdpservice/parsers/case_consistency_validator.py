@@ -49,10 +49,11 @@ class CaseConsistencyValidator:
         )
         self.generated_errors.append(err)
 
-    def clear_errors(self):
+    def clear_errors(self, clear_dup=True):
         """Reset generated errors."""
         self.generated_errors = []
-        self.duplicate_manager.clear_errors()
+        if clear_dup:
+            self.duplicate_manager.clear_errors()
 
     def get_generated_errors(self):
         """Return all errors generated for the current validated case."""
