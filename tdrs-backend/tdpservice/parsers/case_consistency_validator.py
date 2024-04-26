@@ -28,7 +28,7 @@ class CaseConsistencyValidator:
         self.program_type = header["program_type"]
         self.has_validated = False
         self.generate_error = generate_error
-        self.generated_errors = []
+        self.generated_errors = list()
         self.total_cases_cached = 0
         self.total_cases_validated = 0
         self.stt_type = stt_type
@@ -52,9 +52,12 @@ class CaseConsistencyValidator:
     def clear_errors(self):
         """Reset generated errors."""
         self.generated_errors = []
+        self.duplicate_manager.clear_errors()
 
     def get_generated_errors(self):
         """Return all errors generated for the current validated case."""
+        dup_errors = self.duplicate_manager.get_generated_errors()
+        self.generated_errors.extend(dup_errors)
         return self.generated_errors
 
     def num_generated_errors(self):
