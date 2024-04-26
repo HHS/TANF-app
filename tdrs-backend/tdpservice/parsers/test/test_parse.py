@@ -1755,8 +1755,10 @@ def s1_exact_dup_file():
         file__name='s1_exact_duplicate.txt',
         file__section='Active Case Data',
         file__data=(b'HEADER20204A06   TAN1 D\n'
-                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000000000000000222222000000002229012                                       \n'
-                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000000000000000222222000000002229012                                       \n'
+                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000' +
+                    b'000000000000222222000000002229012                                       \n'
+                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000' +
+                    b'000000000000222222000000002229012                                       \n'
                     b'TRAILER0000001         '
                     )
     )
@@ -1768,7 +1770,7 @@ def s2_exact_dup_file():
     parsing_file = ParsingFileFactory(
         year=2021,
         quarter='Q1',
-        section = "Closed Case Data",
+        section="Closed Case Data",
         file__name='s2_exact_duplicate.txt',
         file__section='Closed Case Data',
         file__data=(b'HEADER20204C06   TAN1ED\n'
@@ -1781,9 +1783,9 @@ def s2_exact_dup_file():
 
 @pytest.mark.parametrize("file, batch_size, model, record_type", [
     ('s1_exact_dup_file', 10000, TANF_T1, "T1"),
-    ('s1_exact_dup_file', 1, TANF_T1, "T1"), # This forces an in memory and database deletion of records.
+    ('s1_exact_dup_file', 1, TANF_T1, "T1"),  # This forces an in memory and database deletion of records.
     ('s2_exact_dup_file', 10000, TANF_T4, "T4"),
-    ('s2_exact_dup_file', 1, TANF_T4, "T4"), # This forces an in memory and database deletion of records.
+    ('s2_exact_dup_file', 1, TANF_T4, "T4"),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
 def test_parse_duplicate(file, batch_size, model, record_type, dfs, request):
@@ -1806,10 +1808,6 @@ def test_parse_duplicate(file, batch_size, model, record_type, dfs, request):
 
     model.objects.count() == 0
 
-
-
-
-
 @pytest.fixture
 def s1_partial_dup_file():
     """Fixture for a section 1 file containing an partial duplicate record."""
@@ -1819,8 +1817,10 @@ def s1_partial_dup_file():
         file__name='s1_partial_duplicate.txt',
         file__section='Active Case Data',
         file__data=(b'HEADER20204A06   TAN1 D\n'
-                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000000000000000222222000000002229012                                       \n'
-                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000000000000000222222000000002229013                                       \n'
+                    b'T120201011111111112230034033611102121200003000000000000087300100000000000000' +
+                    b'00000000000000000000222222000000002229012                                       \n'
+                    b'T1202010111111111122300340336111021212000030000000000000873001000000000000000' +
+                    b'0000000000000000000222222000000002229013                                       \n'
                     b'TRAILER0000001         '
                     )
     )
@@ -1832,7 +1832,7 @@ def s2_partial_dup_file():
     parsing_file = ParsingFileFactory(
         year=2021,
         quarter='Q1',
-        section = "Closed Case Data",
+        section="Closed Case Data",
         file__name='s2_partial_duplicate.txt',
         file__section='Closed Case Data',
         file__data=(b'HEADER20204C06   TAN1ED\n'
@@ -1845,9 +1845,9 @@ def s2_partial_dup_file():
 
 @pytest.mark.parametrize("file, batch_size, model, record_type", [
     ('s1_partial_dup_file', 10000, TANF_T1, "T1"),
-    ('s1_partial_dup_file', 1, TANF_T1, "T1"), # This forces an in memory and database deletion of records.
+    ('s1_partial_dup_file', 1, TANF_T1, "T1"),  # This forces an in memory and database deletion of records.
     ('s2_partial_dup_file', 10000, TANF_T4, "T4"),
-    ('s2_partial_dup_file', 1, TANF_T4, "T4"), # This forces an in memory and database deletion of records.
+    ('s2_partial_dup_file', 1, TANF_T4, "T4"),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
 def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, request):
@@ -1862,7 +1862,7 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, requ
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-    assert parser_errors.count() == 1 # TODO: Why doesnt this generate 4 errors per run again?
+    assert parser_errors.count() == 1  # TODO: Why doesnt this generate 4 errors per run again?
 
     dup_error = parser_errors.first()
     assert dup_error.error_message == f"Partial duplicate record detected with record type {record_type} " + \
