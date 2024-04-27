@@ -57,7 +57,7 @@ def t2_invalid_dob_file():
     )
     return parsing_file
 
-# TODO: the name of this test doesn't make perfect sense anymore since it will always have errors now.
+# TODO: the name of this test doesn't make perfect sense anymore since it will always have errors and no records now.
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile, dfs):
     """Test parsing of small_correct_file."""
@@ -68,36 +68,27 @@ def test_parse_small_correct_file(test_datafile, dfs):
 
     parse.parse_datafile(test_datafile, dfs)
 
-    errors = ParserError.objects.filter(file=test_datafile)
-    assert errors.count() == 1
+    errors = ParserError.objects.filter(file=test_datafile).order_by('id')
+    assert errors.count() == 2
     assert errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
     dfs.status = dfs.get_status()
-    dfs.case_aggregates = aggregates.case_aggregates_by_month(
-        dfs.datafile, dfs.status)
-    for month in dfs.case_aggregates['months']:
-        if month['month'] == 'Oct':
-            assert month['accepted_without_errors'] == 0
-            assert month['accepted_with_errors'] == 1
-        else:
-            assert month['accepted_without_errors'] == 0
-            assert month['accepted_with_errors'] == 0
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {'rejected': 1,
+                                   'months': [
+                                       {'accepted_without_errors': 'N/A',
+                                        'accepted_with_errors': 'N/A',
+                                        'month': 'Oct'},
+                                       {'accepted_without_errors': 'N/A',
+                                        'accepted_with_errors': 'N/A',
+                                        'month': 'Nov'},
+                                       {'accepted_without_errors': 'N/A',
+                                        'accepted_with_errors': 'N/A',
+                                        'month': 'Dec'}
+                                   ]}
 
-    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
-    assert TANF_T1.objects.count() == 1
-
-    # spot check
-    t1 = TANF_T1.objects.all().first()
-    assert t1.RPT_MONTH_YEAR == 202010
-    assert t1.CASE_NUMBER == '11111111112'
-    assert t1.COUNTY_FIPS_CODE == '230'
-    assert t1.ZIP_CODE == '40336'
-    assert t1.FUNDING_STREAM == 1
-    assert t1.NBR_FAMILY_MEMBERS == 2
-    assert t1.RECEIVES_SUB_CC == 3
-    assert t1.CASH_AMOUNT == 873
-    assert t1.SANC_REDUCTION_AMT == 0
-    assert t1.FAMILY_NEW_CHILD == 2
+    assert dfs.get_status() == DataFileSummary.Status.REJECTED
+    assert TANF_T1.objects.count() == 0
 
 
 @pytest.mark.django_db
@@ -1380,7 +1371,7 @@ def test_rpt_month_year_mismatch(test_header_datafile, dfs):
     parse.parse_datafile(datafile, dfs)
 
     parser_errors = ParserError.objects.filter(file=datafile)
-    assert parser_errors.count() == 1
+    assert parser_errors.count() == 2
     assert parser_errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
     datafile.year = 2023
@@ -1389,7 +1380,7 @@ def test_rpt_month_year_mismatch(test_header_datafile, dfs):
     parse.parse_datafile(datafile, dfs)
 
     parser_errors = ParserError.objects.filter(file=datafile).order_by('-id')
-    assert parser_errors.count() == 2
+    assert parser_errors.count() == 3
 
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK

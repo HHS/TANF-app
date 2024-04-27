@@ -205,7 +205,8 @@ def rollback_parser_errors(datafile):
 def validate_case_consistency(case_consistency_validator):
     """Force category four validation if we have reached the last case in the file."""
     if not case_consistency_validator.has_validated:
-        case_consistency_validator.validate()
+        return case_consistency_validator.validate() > 0
+    return False
 
 def generate_trailer_errors(trailer_errors, errors, unsaved_parser_errors, num_errors):
     """Generate trailer errors if we care to see them."""
@@ -269,6 +270,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
     # automatically starts back at the begining of the file.
     file_length = len(rawfile)
     offset = 0
+    hash_val = None
     for rawline in rawfile:
         line_number += 1
         offset += len(rawline)
@@ -367,6 +369,10 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
         bulk_create_errors(preparse_error, num_errors, flush=True)
         return errors
 
+    should_remove = validate_case_consistency(case_consistency_validator)
+    was_removed = unsaved_records.remove_case_due_to_errors(should_remove, hash_val)
+    case_consistency_validator.update_removed(hash_val, was_removed)
+
     # Only checking "all_created" here because records remained cached if bulk create fails. This is the last chance to
     # successfully create the records.
     all_created = bulk_create_records(unsaved_records.get_bulk_create_struct(), line_number, header_count, datafile,
@@ -381,8 +387,6 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
         rollback_records(unsaved_records.get_bulk_create_struct(), datafile)
         bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
         return errors
-
-    validate_case_consistency(case_consistency_validator)
 
     # TODO: This is duplicate code. Can we extract this to a function?
     # Add any generated cat4 errors to our error data structure & clear our caches errors list

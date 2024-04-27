@@ -176,8 +176,9 @@ class RecordDuplicateManager:
 
     def update_removed(self, hash_val, was_removed):
         """Notify hashtainers of DB removal."""
-        hashtainer = self.hashtainers.get(hash_val)
-        if was_removed:
-            hashtainer.set_should_remove_from_db(False)
-        else:
-            hashtainer.set_should_remove_from_db(True)
+        hashtainer = self.hashtainers.get(hash_val, False)
+        if hashtainer:
+            if was_removed:
+                hashtainer.set_should_remove_from_db(False)
+            else:
+                hashtainer.set_should_remove_from_db(True)
