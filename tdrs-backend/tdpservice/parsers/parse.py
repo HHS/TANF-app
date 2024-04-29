@@ -231,8 +231,8 @@ def create_no_records_created_pre_check_error(datafile, dfs):
         errors["no_records_created"] = [err_obj]
     return errors
 
-def delete_duplicates(duplicate_manager):
-    """Delete all records with duplicate errors."""
+def delete_serialized_records(duplicate_manager):
+    """Delete all records that have already been serialized to the DB that have cat4 errors."""
     total_deleted = 0
     for document, ids in duplicate_manager.get_records_to_remove().items():
         try:
@@ -343,9 +343,9 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 case_consistency_validator.update_removed(hash_val, was_removed)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
-        num_errors += case_consistency_validator.num_generated_errors()
-        unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
-            case_consistency_validator.get_generated_errors()
+        cat4_errors = case_consistency_validator.get_generated_errors()
+        num_errors += len(cat4_errors)
+        unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + cat4_errors
         case_consistency_validator.clear_errors()
 
         all_created = bulk_create_records(unsaved_records.get_bulk_create_struct(), line_number, header_count,
@@ -390,15 +390,14 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     # TODO: This is duplicate code. Can we extract this to a function?
     # Add any generated cat4 errors to our error data structure & clear our caches errors list
-    duplicate_errors = case_consistency_validator.duplicate_manager.get_generated_errors()
-    num_errors += len(duplicate_errors) + case_consistency_validator.num_generated_errors()
-    unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
-        case_consistency_validator.get_generated_errors() + duplicate_errors
+    cat4_errors = case_consistency_validator.get_generated_errors()
+    num_errors += len(cat4_errors)
+    unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + cat4_errors
     case_consistency_validator.clear_errors()
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
-    delete_duplicates(case_consistency_validator.duplicate_manager)
+    delete_serialized_records(case_consistency_validator.duplicate_manager)
 
     logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
                  f"validated {case_consistency_validator.total_cases_validated} of them.")

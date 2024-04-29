@@ -66,13 +66,13 @@ class CaseConsistencyValidator:
         return len(self.generated_errors)
 
     def add_record_to_structs(self, record_schema_pair):
-        """Add record_schema_pair to sorted structure."""
+        """Add record_schema_pair to structs."""
         record = record_schema_pair[0]
         self.sorted_cases.setdefault(type(record), []).append(record_schema_pair)
         self.cases.append(record_schema_pair)
 
     def clear_structs(self, seed_record_schema_pair=None):
-        """Reset and optionally seed the sorted stucture."""
+        """Reset and optionally seed the structs."""
         self.sorted_cases = dict()
         self.cases = list()
         if seed_record_schema_pair:
@@ -83,7 +83,7 @@ class CaseConsistencyValidator:
         self.duplicate_manager.update_removed(hash_val, was_removed)
 
     def add_record(self, record, schema, line, line_number, case_has_errors):
-        """Add record to cache and validate if new case is detected."""
+        """Add record to cache, validate if new case is detected, and check for duplicate errors."""
         num_errors = 0
         hash_val = None
         self.current_rpt_month_year = record.RPT_MONTH_YEAR
@@ -105,9 +105,10 @@ class CaseConsistencyValidator:
 
         self.current_hash = hash_val
 
-        # TODO: Duplicate detection applies to all sections, however we need to implement a factory of some sort to
-        # get the correct duplicate manager based on the section. Sections 3 and 4 have different duplicate logic
-        # than 1 or 2 anyways. Some more care for handling section 1 and 2 together is still needed.
+        # TODO: Duplicate detection applies to all sections, however we might need to implement a factory of some sort
+        # to get the correct duplicate manager based on the section. Sections 3 and 4 have different duplicate logic
+        # than 1 or 2 anyways. We also don't know if different program types are going to have different duplicate
+        # detection logic.
         num_errors += self.duplicate_manager.add_record(record, hash_val, schema, line,
                                                         line_number)
 
