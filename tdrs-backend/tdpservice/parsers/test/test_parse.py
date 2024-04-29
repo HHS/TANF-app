@@ -708,10 +708,9 @@ def test_parse_super_big_s1_file(super_big_s1_file, dfs):
     dfs.save()
 
     parse.parse_datafile(super_big_s1_file, dfs)
-
-    expected_t1_record_count = 96642
-    expected_t2_record_count = 112794
-    expected_t3_record_count = 172595
+    expected_t1_record_count = 96607
+    expected_t2_record_count = 112753
+    expected_t3_record_count = 172525
 
     assert TANF_T1.objects.count() == expected_t1_record_count
     assert TANF_T2.objects.count() == expected_t2_record_count

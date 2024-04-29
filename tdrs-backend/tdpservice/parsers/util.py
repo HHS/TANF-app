@@ -182,6 +182,7 @@ class SortedRecords:
     def __init__(self, section):
         self.records_are_s1_or_s2 = section in {'A', 'C'}
         self.hash_sorted_cases = dict()
+        self.cases = dict()
         self.cases_already_removed = set()
         self.serialized_cases = set()
 
@@ -206,21 +207,20 @@ class SortedRecords:
 
             hashed_case[document] = records
             self.hash_sorted_cases[hash_val] = hashed_case
+            # We treat the nested dictionary here as a set because dictionaries are sorted while sets aren't. If we
+            # don't have a sorted container we have test failures.
+            self.cases.setdefault(document, dict())[record] = None
 
     def get_bulk_create_struct(self):
-        """Return dict of form {document: [records]} for bulk_create_records to consume."""
-        # TODO: This is slower, but saves memory. Can we do better?
-        records = dict()
-        for dictionary in self.hash_sorted_cases.values():
-            for key, val in dictionary.items():
-                records.setdefault(key, []).extend(val)
-        return records
+        """Return dict of form {document: Iterable(records)} for bulk_create_records to consume."""
+        return self.cases
 
     def clear(self, all_created):
         """Reset sorted structs if all records were created."""
         if all_created:
             self.serialized_cases.update(set(self.hash_sorted_cases.keys()))
             self.hash_sorted_cases = dict()
+            self.cases = dict()
 
     def remove_case_due_to_errors(self, should_remove, hash):
         """Remove all records from memory given the hash."""
@@ -230,11 +230,14 @@ class SortedRecords:
             if hash in self.hash_sorted_cases:
                 self.cases_already_removed.add(hash)
                 removed = self.hash_sorted_cases.pop(hash)
-                case_ids = list()
+
                 # TODO: Can we do this without nested loops?
+                case_ids = list()
                 for records in removed.values():
                     for record in records:
                         case_ids.append((record.RecordType, record.CASE_NUMBER, record.RPT_MONTH_YEAR))
+                        for record_set in self.cases.values():
+                            record_set.pop(record, None)
                 logger.info("Case consistency errors generated, removing case from in memory cache. "
                             f"Record(s) info: {case_ids}.")
                 return True and hash not in self.serialized_cases
