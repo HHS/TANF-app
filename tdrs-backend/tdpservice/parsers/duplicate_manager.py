@@ -77,10 +77,8 @@ class CaseHashtainer:
                 self.manager_error_dict.setdefault(self.my_hash, []).append(error)
             self.num_errors = len(self.manager_error_dict[self.my_hash])
 
-    def __get_partial_hash(self, record, skip_partial):
+    def __get_partial_hash(self, record):
         partial_hash = None
-        if skip_partial:
-            return partial_hash
         if record.RecordType in {"T1", "T4"}:
             partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
         elif record.RecordType in {"T2", "T3", "T5"}:
@@ -88,7 +86,7 @@ class CaseHashtainer:
                                 str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
         return partial_hash
 
-    def __should_skip_partial(self, record):
+    def __skip_partial(self, record):
         skip_partial = False
         if record.RecordType == "T2":
             skip_partial = record.FAMILY_AFFILIATION in {3, 5}
@@ -113,26 +111,27 @@ class CaseHashtainer:
             line_hash = hash(line)
             if line_hash in self.record_hashes:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
-                existing_record_id, existing_record_line_number = self.record_hashes[line_hash]
+                existing_record_line_number = self.record_hashes[line_hash]
                 err_msg = (f"Duplicate record detected with record type "
                            f"{record.RecordType} at line {line_number}. Record is a duplicate of the record at "
                            f"line number {existing_record_line_number}.")
                 is_exact_dup = True
 
-            skip_partial = self.__should_skip_partial(record)
-            partial_hash = self.__get_partial_hash(record, skip_partial)
+            skip_partial = self.__skip_partial(record)
+            partial_hash = self.__get_partial_hash(record)
             if not skip_partial and not is_exact_dup and partial_hash in self.partial_hashes:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(
                     ErrorLevel.PARTIAL_DUPLICATE)
+                existing_record_line_number = self.partial_hashes[partial_hash]
                 err_msg = (f"Partial duplicate record detected with record type "
                            f"{record.RecordType} at line {line_number}. Record is a partial duplicate of the "
-                           f"record at line number {self.partial_hashes[partial_hash][1]}.")
+                           f"record at line number {existing_record_line_number}.")
 
             self.__generate_error(err_msg, record, schema, has_precedence, is_new_max_precedence)
             if line_hash not in self.record_hashes:
-                self.record_hashes[line_hash] = (record.id, line_number)
+                self.record_hashes[line_hash] = line_number
             if partial_hash is not None and partial_hash not in self.partial_hashes:
-                self.partial_hashes[partial_hash] = (record.id, line_number)
+                self.partial_hashes[partial_hash] = line_number
 
         return self.num_errors
 
