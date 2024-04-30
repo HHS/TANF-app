@@ -230,7 +230,7 @@ class SortedRecords:
                 case_ids = list()
                 for records in removed.values():
                     for record in records:
-                        case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None), 
+                        case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None),
                                          record.RPT_MONTH_YEAR))
                         for record_set in self.cases.values():
                             record_set.pop(record, None)
