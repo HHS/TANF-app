@@ -177,7 +177,7 @@ def get_years_apart(rpt_month_year_date, date):
 
 
 class SortedRecords:
-    """Maintains a dict sorted by hash(str(rpt_month_year) + case_number) and model_type."""
+    """Maintains a dict sorted by hash_val and model_type."""
 
     def __init__(self, section):
         self.records_are_s1_or_s2 = section in {'A', 'C'}
