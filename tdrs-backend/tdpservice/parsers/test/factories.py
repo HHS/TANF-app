@@ -157,7 +157,7 @@ class TanfT2Factory(factory.django.DjangoModelFactory):
     CASE_NUMBER = '1'
     FAMILY_AFFILIATION = 1
     NONCUSTODIAL_PARENT = 1
-    DATE_OF_BIRTH = 1
+    DATE_OF_BIRTH = '1'
     SSN = '1'
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
@@ -236,7 +236,7 @@ class TanfT3Factory(factory.django.DjangoModelFactory):
     CASE_NUMBER = '1'
 
     FAMILY_AFFILIATION = 1
-    DATE_OF_BIRTH = 1
+    DATE_OF_BIRTH = '1'
     SSN = '1'
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1

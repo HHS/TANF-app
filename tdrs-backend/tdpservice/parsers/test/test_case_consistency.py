@@ -1684,3 +1684,41 @@ class TestCaseConsistencyValidator:
             expected_msg = f"Duplicate record detected with record type T{i + 4} at line 5. Record is a " + \
                 f"duplicate of the record at line number {i + 1}."
             assert error.error_message == expected_msg
+
+    @pytest.mark.parametrize("header,record_stuff", [
+        (
+            {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
+        ),
+        (
+            {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
+        ),
+        (
+            {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+        ),
+    ])
+    @pytest.mark.django_db
+    def test_family_affiliation_negate_partial_duplicate(self, small_correct_file, header, record_stuff):
+        """Test records are related validator section 2 success case."""
+        (Factory, schema, model_name) = record_stuff
+
+        case_consistency_validator = CaseConsistencyValidator(
+            header,
+            STT.EntityType.STATE,
+            util.make_generate_parser_error(small_correct_file, None)
+        )
+
+        line_number = 1
+        first_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        case_consistency_validator.add_record(first_record, schema, str(first_record), line_number, False)
+        line_number += 1
+
+        second_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER='123',
+                                       FAMILY_AFFILIATION=5)
+        case_consistency_validator.add_record(second_record, schema, str(second_record), line_number, False)
+        line_number += 1
+
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 0
