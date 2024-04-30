@@ -62,7 +62,14 @@ class CaseHashtainer:
         return dict()
 
     def __generate_error(self, err_msg, record, schema, has_precedence, is_new_max_precedence):
-        """Add an error to the managers error dictionary."""
+        """Add an error to the managers error dictionary.
+
+        @param err_msg: string representation of the error message
+        @param record: a Django model representing a datafile record
+        @param schema: the schema from which the record was created
+        @param has_precedence: boolean indicating if this incoming error has equivalent precedence to current errors
+        @param is_new_max_precedence: boolean indicating if this error has the new max precedence
+        """
         if has_precedence:
             error = self.generate_error(
                         error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
@@ -97,7 +104,14 @@ class CaseHashtainer:
         return skip_partial
 
     def add_case_member(self, record, schema, line, line_number):
-        """Add case member and generate errors if needed."""
+        """Add case member and generate errors if needed.
+
+        @param record: a Django model representing a datafile record
+        @param schema: the schema from which the record was created
+        @param line: the raw string line representing the record
+        @param line_number: the line number the record was generated from in the datafile
+        @return: the number of duplicate errors
+        """
         # TODO: Need to add support for T6 and T7 detection.
 
         if self.current_line_number is None or self.current_line_number != line_number:
@@ -145,7 +159,15 @@ class RecordDuplicateManager:
         self.generated_errors = dict()
 
     def add_record(self, record, hash_val, schema, line, line_number):
-        """Add record to existing CaseHashtainer or create new one and return whether the record's case has errors."""
+        """Add record to existing CaseHashtainer or create new one and return whether the record's case has errors.
+
+        @param record: a Django model representing a datafile record
+        @param hash_val: a hash value generated from fields in the record based on the records section
+        @param schema: the schema from which the record was created
+        @param line: the raw string line representing the record
+        @param line_number: the line number the record was generated from in the datafile
+        @return: the number of duplicate errors
+        """
         if hash_val not in self.hashtainers:
             hashtainer = CaseHashtainer(hash_val, self.generated_errors, self.generate_error)
             self.hashtainers[hash_val] = hashtainer
@@ -174,7 +196,7 @@ class RecordDuplicateManager:
         return records_to_remove
 
     def update_removed(self, hash_val, was_removed):
-        """Notify hashtainers of DB removal."""
+        """Notify hashtainers whether case could or could not be removed from memory."""
         hashtainer = self.hashtainers.get(hash_val, False)
         if hashtainer:
             if was_removed:

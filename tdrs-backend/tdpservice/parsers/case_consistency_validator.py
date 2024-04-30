@@ -83,7 +83,16 @@ class CaseConsistencyValidator:
         self.duplicate_manager.update_removed(hash_val, was_removed)
 
     def add_record(self, record, schema, line, line_number, case_has_errors):
-        """Add record to cache, validate if new case is detected, and check for duplicate errors."""
+        """Add record to cache, validate if new case is detected, and check for duplicate errors.
+
+        @param record: a Django model representing a datafile record
+        @param schema: the schema from which the record was created
+        @param line: the raw string line representing the record
+        @param line_number: the line number the record was generated from in the datafile
+        @param case_has_errors: boolean indictating whether the record's case has any cat2 or cat3 errors
+        @return: (boolean indicating existence of cat4 errors, a hash value generated from fields in the record
+                 based on the records section)
+        """
         num_errors = 0
         hash_val = None
         self.current_rpt_month_year = record.RPT_MONTH_YEAR
