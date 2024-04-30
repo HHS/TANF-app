@@ -1771,14 +1771,52 @@ def s2_exact_dup_file():
     )
     return parsing_file
 
-@pytest.mark.parametrize("file, batch_size, model, record_type", [
-    ('s1_exact_dup_file', 10000, TANF_T1, "T1"),
-    ('s1_exact_dup_file', 1, TANF_T1, "T1"),  # This forces an in memory and database deletion of records.
-    ('s2_exact_dup_file', 10000, TANF_T4, "T4"),
-    ('s2_exact_dup_file', 1, TANF_T4, "T4"),  # This forces an in memory and database deletion of records.
+@pytest.fixture
+def s3_exact_dup_file():
+    """Fixture for a section 3 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2022,
+        quarter='Q1',
+        section="Aggregate Data",
+        file__name='s3_exact_duplicate.txt',
+        file__section='Aggregate Data',
+        file__data=(b'HEADER20214G06   TAN1 D\n'
+                    b'T620214000127470001104500011146000043010000397700003924000084460000706800007222000055042849000055141378000056643253000755810007592100075542000009810000097000000968000392980003934900038972000353020003560200035602001684470016904700168107000464480004649800046203001219990012254900121904000001630000014900000151000003440000033100000276000002580000024100000187000054530000388100003884\n'
+                    b'T620214000127470001104500011146000043010000397700003924000084460000706800007222000055042849000055141378000056643253000755810007592100075542000009810000097000000968000392980003934900038972000353020003560200035602001684470016904700168107000464480004649800046203001219990012254900121904000001630000014900000151000003440000033100000276000002580000024100000187000054530000388100003884\n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.fixture
+def s4_exact_dup_file():
+    """Fixture for a section 4 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2022,
+        quarter='Q1',
+        section="Stratum Data",
+        file__name='s4_exact_duplicate.txt',
+        file__section='Stratum Data',
+        file__data=(b'HEADER20214S06   TAN1 D\n'
+                    b'T720214101006853700680540068454103000312400037850003180104000347400036460003583106000044600004360000325299000506200036070003385202000039100002740000499                                                                                                \n'
+                    b'T720214101006853700680540068454103000312400037850003180104000347400036460003583106000044600004360000325299000506200036070003385202000039100002740000499                                                                                                \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.mark.parametrize("file, batch_size, model, record_type, num_errors", [
+    ('s1_exact_dup_file', 10000, TANF_T1, "T1", 4),
+    ('s1_exact_dup_file', 1, TANF_T1, "T1", 4),  # This forces an in memory and database deletion of records.
+    ('s2_exact_dup_file', 10000, TANF_T4, "T4", 4),
+    ('s2_exact_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
+    ('s3_exact_dup_file', 10000, TANF_T6, "T6", 1),
+    ('s3_exact_dup_file', 1, TANF_T6, "T6", 1),  # This forces an in memory and database deletion of records.
+    ('s4_exact_dup_file', 10000, TANF_T7, "T7", 1),
+    ('s4_exact_dup_file', 1, TANF_T7, "T7", 1),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
-def test_parse_duplicate(file, batch_size, model, record_type, dfs, request):
+def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, request):
     """Test handling invalid quarter value that raises a ValueError exception."""
     datafile = request.getfixturevalue(file)
     dfs.datafile = datafile
@@ -1790,7 +1828,7 @@ def test_parse_duplicate(file, batch_size, model, record_type, dfs, request):
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == num_errors
 
     dup_error = parser_errors.first()
     assert dup_error.error_message == f"Duplicate record detected with record type {record_type} at line 3. " + \

@@ -338,7 +338,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 record_has_errors = len(record_errors) > 0
                 should_remove, hash_val = case_consistency_validator.add_record(record, s, line,
                                                                                 line_number, record_has_errors)
-                unsaved_records.add_record((record, s.document))
+                unsaved_records.add_record(hash_val, (record, s.document))
                 was_removed = unsaved_records.remove_case_due_to_errors(should_remove, hash_val)
                 case_consistency_validator.update_removed(hash_val, was_removed)
 

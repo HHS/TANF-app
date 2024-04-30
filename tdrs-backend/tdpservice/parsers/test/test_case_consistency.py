@@ -1722,3 +1722,46 @@ class TestCaseConsistencyValidator:
 
         errors = case_consistency_validator.get_generated_errors()
         assert len(errors) == 0
+
+    @pytest.mark.parametrize("header,record_stuff", [
+        (
+            {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
+            (factories.TanfT6Factory, schema_defs.tanf.t6.schemas[0], 'T6'),
+        ),
+        (
+            {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
+            (factories.TanfT7Factory, schema_defs.tanf.t7.schemas[0], 'T7'),
+        ),
+    ])
+    @pytest.mark.django_db
+    def test_s3_s4_duplicates(self, small_correct_file, header, record_stuff):
+        """Test records are related validator section 2 success case."""
+        (Factory, schema, model_name) = record_stuff
+
+        case_consistency_validator = CaseConsistencyValidator(
+            header,
+            STT.EntityType.STATE,
+            util.make_generate_parser_error(small_correct_file, None)
+        )
+
+        line_number = 1
+        # Because the line number is not changing in the loop, we know these records are coming from a single record in
+        # the file. If the line number was changing, we would be flagging duplicate errors.
+        first_record = None
+        for i in range(5):
+            record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010)
+            if i == 0:
+                first_record = record
+            case_consistency_validator.add_record(record, schema, str(record), line_number, False)
+        line_number += 1
+
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 0
+
+        second_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010)
+        case_consistency_validator.add_record(second_record, schema, str(first_record), line_number, False)
+
+        errors = case_consistency_validator.get_generated_errors()
+        assert len(errors) == 1
+        assert errors[0].error_message == f"Duplicate record detected with record type {model_name} at line 2. " + \
+            "Record is a duplicate of the record at line number 1."

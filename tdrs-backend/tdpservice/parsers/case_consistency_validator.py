@@ -109,8 +109,9 @@ class CaseConsistencyValidator:
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
         else:
+            # Section 3/4 only require exact duplicate matching. Hashing the line is sufficient for that.
             self.current_case = None
-            hash_val = hash(record.RecordType + str(record.RPT_MONTH_YEAR))
+            hash_val = hash(line)
 
         self.current_hash = hash_val
 

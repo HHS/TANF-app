@@ -186,19 +186,14 @@ class SortedRecords:
         self.cases_already_removed = set()
         self.serialized_cases = set()
 
-    def add_record(self, record_doc_pair):
+    def add_record(self, hash_val, record_doc_pair):
         """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
         record, document = record_doc_pair
         rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
-        hash_val = None
-        if self.records_are_s1_or_s2:
-            hash_val = hash(rpt_month_year + record.CASE_NUMBER)
-        else:
-            hash_val = hash(record.RecordType + rpt_month_year)
 
         if hash_val in self.cases_already_removed:
             logger.info("Record's case has already been removed due to category four errors. Not adding record with "
-                        f"info: ({record.RecordType}, {record.CASE_NUMBER}, {rpt_month_year})")
+                        f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)}, {rpt_month_year})")
 
         if hash_val is not None and hash_val not in self.cases_already_removed:
             hashed_case = self.hash_sorted_cases.get(hash_val, {})
@@ -235,7 +230,8 @@ class SortedRecords:
                 case_ids = list()
                 for records in removed.values():
                     for record in records:
-                        case_ids.append((record.RecordType, record.CASE_NUMBER, record.RPT_MONTH_YEAR))
+                        case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None), 
+                                         record.RPT_MONTH_YEAR))
                         for record_set in self.cases.values():
                             record_set.pop(record, None)
                 logger.info("Case consistency errors generated, removing case from in memory cache. "

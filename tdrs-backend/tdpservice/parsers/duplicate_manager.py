@@ -112,8 +112,6 @@ class CaseHashtainer:
         @param line_number: the line number the record was generated from in the datafile
         @return: the number of duplicate errors
         """
-        # TODO: Need to add support for T6 and T7 detection.
-
         if self.current_line_number is None or self.current_line_number != line_number:
             self.current_line_number = line_number
             self.record_ids.setdefault(schema.document, []).append(record.id)
