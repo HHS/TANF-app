@@ -1737,7 +1737,7 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
     Tribal_TANF_T7.objects.count() == 0
 
 @pytest.fixture
-def s1_exact_dup_file():
+def tanf_s1_exact_dup_file():
     """Fixture for a section 1 file containing an exact duplicate record."""
     parsing_file = ParsingFileFactory(
         year=2021,
@@ -1755,7 +1755,7 @@ def s1_exact_dup_file():
     return parsing_file
 
 @pytest.fixture
-def s2_exact_dup_file():
+def tanf_s2_exact_dup_file():
     """Fixture for a section 2 file containing an exact duplicate record."""
     parsing_file = ParsingFileFactory(
         year=2021,
@@ -1772,7 +1772,7 @@ def s2_exact_dup_file():
     return parsing_file
 
 @pytest.fixture
-def s3_exact_dup_file():
+def tanf_s3_exact_dup_file():
     """Fixture for a section 3 file containing an exact duplicate record."""
     parsing_file = ParsingFileFactory(
         year=2022,
@@ -1797,7 +1797,7 @@ def s3_exact_dup_file():
     return parsing_file
 
 @pytest.fixture
-def s4_exact_dup_file():
+def tanf_s4_exact_dup_file():
     """Fixture for a section 4 file containing an exact duplicate record."""
     parsing_file = ParsingFileFactory(
         year=2022,
@@ -1817,15 +1817,99 @@ def s4_exact_dup_file():
     )
     return parsing_file
 
+@pytest.fixture
+def ssp_s1_exact_dup_file():
+    """Fixture for a section 1 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2019,
+        quarter='Q1',
+        section='SSP Active Case Data',
+        file__name='s1_exact_duplicate.txt',
+        file__section='SSP Active Case Data',
+        file__data=(b'HEADER20184A24   SSP1ED\n'
+                    b'M1201810111111111272140140035102133110027300000000000000010540000000000000000000000000000000000222222000000002229                                     \n'
+                    b'M1201810111111111272140140035102133110027300000000000000010540000000000000000000000000000000000222222000000002229                                     \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.fixture
+def ssp_s2_exact_dup_file():
+    """Fixture for a section 2 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2019,
+        quarter='Q1',
+        section="SSP Closed Case Data",
+        file__name='s2_exact_duplicate.txt',
+        file__section='SSP Closed Case Data',
+        file__data=(b'HEADER20184C24   SSP1ED\n'
+                    b'M42018101111111116120000406911161113                              \n'
+                    b'M42018101111111116120000406911161113                              \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.fixture
+def ssp_s3_exact_dup_file():
+    """Fixture for a section 3 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2022,
+        quarter='Q1',
+        section="SSP Aggregate Data",
+        file__name='s3_exact_duplicate.txt',
+        file__section='SSP Aggregate Data',
+        file__data=(b'HEADER20214G24   SSP1 D\n'
+                    b'M6202140001586900016008000159560000086100000851000008450001490500015055000150130000010300000'
+                    b'10200000098000513550005169600051348000157070001581400015766000356480003588200035582000000000'
+                    b'000000000000000000000000000000000000000000000000000000012020000118900001229\n'
+                    b'M6202140001586900016008000159560000086100000851000008450001490500015055000150130000010300000'
+                    b'10200000098000513550005169600051348000157070001581400015766000356480003588200035582000000000'
+                    b'000000000000000000000000000000000000000000000000000000012020000118900001229\n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.fixture
+def ssp_s4_exact_dup_file():
+    """Fixture for a section 4 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2022,
+        quarter='Q1',
+        section="SSP Stratum Data",
+        file__name='s4_exact_duplicate.txt',
+        file__section='SSP Stratum Data',
+        file__data=(b'HEADER20214S24   SSP1 D\n'
+                    b'M7202141010001769000131000011111020000748000076700007681030013352001393100140772000001202000'
+                    b'11890001229                                                                                 '
+                    b'                                                               \n'
+                    b'M7202141010001769000131000011111020000748000076700007681030013352001393100140772000001202000'
+                    b'11890001229                                                                                 '
+                    b'                                                               \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
 @pytest.mark.parametrize("file, batch_size, model, record_type, num_errors", [
-    ('s1_exact_dup_file', 10000, TANF_T1, "T1", 4),
-    ('s1_exact_dup_file', 1, TANF_T1, "T1", 4),  # This forces an in memory and database deletion of records.
-    ('s2_exact_dup_file', 10000, TANF_T4, "T4", 4),
-    ('s2_exact_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
-    ('s3_exact_dup_file', 10000, TANF_T6, "T6", 1),
-    ('s3_exact_dup_file', 1, TANF_T6, "T6", 1),  # This forces an in memory and database deletion of records.
-    ('s4_exact_dup_file', 10000, TANF_T7, "T7", 1),
-    ('s4_exact_dup_file', 1, TANF_T7, "T7", 1),  # This forces an in memory and database deletion of records.
+    ('tanf_s1_exact_dup_file', 10000, TANF_T1, "T1", 4),
+    ('tanf_s1_exact_dup_file', 1, TANF_T1, "T1", 4),  # This forces an in memory and database deletion of records.
+    ('tanf_s2_exact_dup_file', 10000, TANF_T4, "T4", 4),
+    ('tanf_s2_exact_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
+    ('tanf_s3_exact_dup_file', 10000, TANF_T6, "T6", 1),
+    ('tanf_s3_exact_dup_file', 1, TANF_T6, "T6", 1),  # This forces an in memory and database deletion of records.
+    ('tanf_s4_exact_dup_file', 10000, TANF_T7, "T7", 1),
+    ('tanf_s4_exact_dup_file', 1, TANF_T7, "T7", 1),  # This forces an in memory and database deletion of records.
+    ('ssp_s1_exact_dup_file', 10000, SSP_M1, "M1", 1),
+    ('ssp_s1_exact_dup_file', 1, SSP_M1, "M1", 1),  # This forces an in memory and database deletion of records.
+    ('ssp_s2_exact_dup_file', 10000, SSP_M4, "M4", 1),
+    ('ssp_s2_exact_dup_file', 1, SSP_M4, "M4", 1),  # This forces an in memory and database deletion of records.
+    ('ssp_s3_exact_dup_file', 10000, SSP_M6, "M6", 1),
+    ('ssp_s3_exact_dup_file', 1, SSP_M6, "M6", 1),  # This forces an in memory and database deletion of records.
+    ('ssp_s4_exact_dup_file', 10000, SSP_M7, "M7", 1),
+    ('ssp_s4_exact_dup_file', 1, SSP_M7, "M7", 1),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
 def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, request):
@@ -1849,7 +1933,7 @@ def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, 
     model.objects.count() == 0
 
 @pytest.fixture
-def s1_partial_dup_file():
+def tanf_s1_partial_dup_file():
     """Fixture for a section 1 file containing an partial duplicate record."""
     parsing_file = ParsingFileFactory(
         year=2021,
@@ -1867,7 +1951,7 @@ def s1_partial_dup_file():
     return parsing_file
 
 @pytest.fixture
-def s2_partial_dup_file():
+def tanf_s2_partial_dup_file():
     """Fixture for a section 2 file containing an partial duplicate record."""
     parsing_file = ParsingFileFactory(
         year=2021,
@@ -1883,11 +1967,49 @@ def s2_partial_dup_file():
     )
     return parsing_file
 
+@pytest.fixture
+def ssp_s1_partial_dup_file():
+    """Fixture for a section 1 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2019,
+        quarter='Q1',
+        section='SSP Active Case Data',
+        file__name='s1_exact_duplicate.txt',
+        file__section='SSP Active Case Data',
+        file__data=(b'HEADER20184A24   SSP1ED\n'
+                    b'M1201810111111111272140140035102133110027300000000000000010540000000000000000000000000000000000222222000000002229                                     \n'
+                    b'M1201810111111111272140140035102133110027300000000000000010540000000000000000000000000000000000222222000000002228                                     \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.fixture
+def ssp_s2_partial_dup_file():
+    """Fixture for a section 2 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2019,
+        quarter='Q1',
+        section="SSP Closed Case Data",
+        file__name='s2_exact_duplicate.txt',
+        file__section='SSP Closed Case Data',
+        file__data=(b'HEADER20184C24   SSP1ED\n'
+                    b'M42018101111111116120000406911161113                              \n'
+                    b'M42018101111111116120000406911161112                              \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
 @pytest.mark.parametrize("file, batch_size, model, record_type", [
-    ('s1_partial_dup_file', 10000, TANF_T1, "T1"),
-    ('s1_partial_dup_file', 1, TANF_T1, "T1"),  # This forces an in memory and database deletion of records.
-    ('s2_partial_dup_file', 10000, TANF_T4, "T4"),
-    ('s2_partial_dup_file', 1, TANF_T4, "T4"),  # This forces an in memory and database deletion of records.
+    ('tanf_s1_partial_dup_file', 10000, TANF_T1, "T1"),
+    ('tanf_s1_partial_dup_file', 1, TANF_T1, "T1"),  # This forces an in memory and database deletion of records.
+    ('tanf_s2_partial_dup_file', 10000, TANF_T4, "T4"),
+    ('tanf_s2_partial_dup_file', 1, TANF_T4, "T4"),  # This forces an in memory and database deletion of records.
+    ('ssp_s1_partial_dup_file', 10000, SSP_M1, "M1"),
+    ('ssp_s1_partial_dup_file', 1, SSP_M1, "M1"),  # This forces an in memory and database deletion of records.
+    ('ssp_s2_partial_dup_file', 10000, SSP_M4, "M4"),
+    ('ssp_s2_partial_dup_file', 1, SSP_M4, "M4"),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
 def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, request):
@@ -1902,7 +2024,10 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, requ
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-    assert parser_errors.count() == 1  # TODO: Why doesnt this generate 4 errors per run again?
+    
+    # This does not generate 4 errors similarly to above because the case has cat2/3 errors. Therefore, 
+    # normal cat4 validation is skipped.
+    assert parser_errors.count() == 1
 
     dup_error = parser_errors.first()
     assert dup_error.error_message == f"Partial duplicate record detected with record type {record_type} " + \
