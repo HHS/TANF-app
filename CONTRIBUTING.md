@@ -4,7 +4,7 @@ Thank you for taking the time to contribute!
 
 We're so thankful you're considering contributing to an [open source project of the U.S. government](https://code.gov/)! If you're unsure about anything, please feel free to reach out to the points of contact documented in the project readme. The worst that can happen is you'll be politely asked to change something. We appreciate all friendly contributions.
 
-We encourage you to read this project's [LICENSE](LICENSE.md), and its [README](README.md).
+We encourage you to read this project's [LICENSE](LICENSE.md), [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md), and its [README](README.md).
 
 ## How Can I Contribute?
 
