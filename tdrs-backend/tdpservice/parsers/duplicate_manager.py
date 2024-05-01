@@ -86,20 +86,22 @@ class CaseHashtainer:
 
     def __get_partial_hash(self, record):
         partial_hash = None
-        if record.RecordType in {"T1", "T4"}:
+        rec_num = record.RecordType[-1]
+        if rec_num in {"1", "4"}:
             partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
-        elif record.RecordType in {"T2", "T3", "T5"}:
+        elif rec_num in {"2", "3", "5"}:
             partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER +
                                 str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
         return partial_hash
 
     def __skip_partial(self, record):
         skip_partial = False
-        if record.RecordType == "T2":
+        rec_num = record.RecordType[-1]
+        if rec_num == "2":
             skip_partial = record.FAMILY_AFFILIATION in {3, 5}
-        if record.RecordType == "T3":
+        if rec_num == "3":
             skip_partial = record.FAMILY_AFFILIATION in {2, 4, 5}
-        if record.RecordType == "T5":
+        if rec_num == "5":
             skip_partial = record.FAMILY_AFFILIATION in {3, 4, 5}
         return skip_partial
 

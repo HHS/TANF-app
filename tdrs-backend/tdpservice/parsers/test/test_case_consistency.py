@@ -442,7 +442,7 @@ class TestCaseConsistencyValidator:
 
         errors = case_consistency_validator.get_generated_errors()
 
-        assert len(errors) == 1
+        assert len(errors) == 2
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
@@ -533,7 +533,7 @@ class TestCaseConsistencyValidator:
 
         errors = case_consistency_validator.get_generated_errors()
 
-        assert len(errors) == 1
+        assert len(errors) == 2
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
@@ -683,7 +683,7 @@ class TestCaseConsistencyValidator:
 
         errors = case_consistency_validator.get_generated_errors()
 
-        assert len(errors) == 1
+        assert len(errors) == 2
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
