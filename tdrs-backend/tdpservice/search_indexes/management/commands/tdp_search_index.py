@@ -21,17 +21,20 @@ class Command(search_index.Command):
         parallel = options['parallel']
         for doc in registry.get_documents(models):
             self.stdout.write('setting log thresholds')
+
             self.es_conn.indices.put_settings(
                 {
-                    "index.search.slowlog.threshold.query.warn": "1s",
-                    "index.search.slowlog.threshold.query.info": "500ms",
-                    "index.search.slowlog.threshold.query.trace": "0ms",
-                    "index.search.slowlog.level": "info",
+                    "index.search.slowlog.threshold.query.warn": settings.ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN,
+                    "index.search.slowlog.threshold.query.info": settings.ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO,
+                    "index.search.slowlog.threshold.query.trace":
+                        settings.ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE,
+                    "index.search.slowlog.level": settings.ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL,
 
-                    "index.indexing.slowlog.threshold.index.warn": "1s",
-                    "index.indexing.slowlog.threshold.index.info": "500ms",
-                    "index.indexing.slowlog.threshold.index.trace": "0ms",
-                    "index.indexing.slowlog.level": "info",
+                    "index.indexing.slowlog.threshold.index.warn": settings.ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN,
+                    "index.indexing.slowlog.threshold.index.info": settings.ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO,
+                    "index.indexing.slowlog.threshold.index.trace":
+                        settings.ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE,
+                    "index.indexing.slowlog.level": settings.ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL,
                 },
                 doc.Index.name
             )
