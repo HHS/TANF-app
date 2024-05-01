@@ -1615,7 +1615,7 @@ class TestCaseConsistencyValidator:
             (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
             (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
         ),
-                (
+        (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
             (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
             (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
