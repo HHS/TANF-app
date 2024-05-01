@@ -8,18 +8,15 @@ def test_datafile(stt_user, stt):
     """Fixture for small_correct_file."""
     return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
 
-
 @pytest.fixture
 def test_header_datafile(stt_user, stt):
     """Fixture for header test."""
     return util.create_test_datafile('tanf_section1_header_test.txt', stt_user, stt)
 
-
 @pytest.fixture
 def dfs():
     """Fixture for DataFileSummary."""
     return DataFileSummaryFactory.build()
-
 
 @pytest.fixture
 def t2_invalid_dob_file():
@@ -205,7 +202,6 @@ def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
 def tribal_section_4_bad_quarter(stt_user, stt):
     """Fixture for tribal_section_4_bad_quarter."""
     return util.create_test_datafile('tribal_section_4_fake_bad_quarter.txt', stt_user, stt, "Tribal Stratum Data")
-
 
 @pytest.fixture
 def tanf_s1_exact_dup_file():
