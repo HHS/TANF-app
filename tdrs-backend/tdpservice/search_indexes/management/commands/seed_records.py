@@ -3,7 +3,7 @@
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from tdpservice.search_indexes.models import ssp, tanf, tribal
+from tdpservice.search_indexes.models import tanf  # , ssp, tribal
 from tdpservice.parsers.test import factories
 import time
 import uuid
