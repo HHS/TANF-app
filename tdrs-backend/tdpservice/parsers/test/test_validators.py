@@ -286,7 +286,10 @@ def test_between_returns_invalid():
     ('7', True, None),
     ('234897', True, None),
     ('a', False, 'T1 Item item_no (friendly_name): a is not a number.'),
-    ('houston, we have a problem', False, 'T1 Item item_no (friendly_name): houston, we have a problem is not a number.'),
+    (
+        'houston, we have a problem', False,
+        'T1 Item item_no (friendly_name): houston, we have a problem is not a number.'
+    ),
     ('  test', False, 'T1 Item item_no (friendly_name):   test is not a number.'),
     (' 7 ', True, None),
     (' 8388323', True, None),
