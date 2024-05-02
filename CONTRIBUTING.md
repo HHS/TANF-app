@@ -32,28 +32,7 @@ In this issue, please describe the use case for the feature you would like to se
 
 ### Getting Started
 
-Please refer to readmes in the [project repo's root](https://github.com/HHS/TANF-app/blob/main/README.md), [how we work](https://github.com/HHS/TANF-app/blob/main/docs/How-We-Work/README.md), and [technical documentation](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/README.md) folders for detailed information on contributing to the project.
-
-### Workflow and Branching
-
-All contributions are directed toward the `main` branch.
-
-1.  Fork the project
-2.  Check out the `main` branch
-3.  Create a feature branch
-4.  Write code and tests for your change
-5.  From your branch, make a pull request against `hhs/TANF-app/main`
-6.  Work with repo maintainers to get your change reviewed
-7.  Wait for your change to be merged
-8.  Delete your feature branch
-
-### Issues
-
-External contributors should use the _Bug Report_ or _Feature Request_ [issue templates](https://github.com/HHS/TANF-app/issues/new/choose).
-
-### Pull Requests
-
-Pull requests should follow the conventions in [our-workflow.md](https://github.com/HHS/TANF-app/blob/main/docs/How-We-Work/our-workflow.md).
+Please refer to readmes in the [project repo's root](https://github.com/HHS/TANF-app/blob/main/README.md), [how we work](https://github.com/HHS/TANF-app/blob/main/docs/How-We-Work/README.md), and [technical documentation](https://github.com/HHS/TANF-app/blob/main/docs/Technical-Documentation/README.md) folders for detailed information on contributing to the project. Please see [our-workflow.md](https://github.com/HHS/TANF-app/blob/main/docs/How-We-Work/our-workflow.md) for details on current PR processes. 
 
 ## Policies
 
@@ -78,4 +57,3 @@ All contributions to this project will be released under the CC0 dedication. By 
 ### ACF Privacy Policy
 
 TDP operates under [ACF's Privacy Policy](https://www.acf.hhs.gov/privacy-policy). 
-
