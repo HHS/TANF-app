@@ -591,7 +591,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert err.row_number == 2
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert err.error_message == (
-        'M1 Item 11 receives subsidized housing: 3 is not larger or equal to 1 and smaller or equal to 2.'
+        'M1 Item 11 (receives subsidized housing): 3 is not larger or equal to 1 and smaller or equal to 2.'
     )
     assert err.content_type is not None
     assert err.object_id is not None
@@ -1573,9 +1573,9 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
     year_error = parser_errors[1]
     digits_error = parser_errors[0]
 
-    assert month_error.error_message == "T2 Item 32 date of birth: $9 is not a valid month."
-    assert year_error.error_message == "T2 Item 32 date of birth: Year Q897 must be larger than 1900."
-    assert digits_error.error_message == "T2 Item 32 date of birth: Q897$9 3 does not have exactly 8 digits."
+    assert month_error.error_message == "T2 Item 32 (date of birth): $9 is not a valid month."
+    assert year_error.error_message == "T2 Item 32 (date of birth): Year Q897 must be larger than 1900."
+    assert digits_error.error_message == "T2 Item 32 (date of birth): Q897$9 3 does not have exactly 8 digits."
 
 
 @pytest.mark.django_db
@@ -1705,7 +1705,7 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file
     error = parser_errors.first()
 
     assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert error.error_message == "HEADER Item 10 update indicator: U does not match D."
+    assert error.error_message == "HEADER Item 10 (update indicator): U does not match D."
 
 @pytest.fixture
 def tribal_section_4_bad_quarter(stt_user, stt):
