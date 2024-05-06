@@ -34,23 +34,23 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
     # tribal
     (
         DataFile.Section.TRIBAL_CLOSED_CASE_DATA, DataFileSummary.Status.ACCEPTED,
-        'Tribal Closed Case Data Processed Without Errors', 'Tribal TAN'
+        'Tribal Closed Case Data Processed Without Errors', 'Tribal TANF'
     ),
     (
         DataFile.Section.TRIBAL_ACTIVE_CASE_DATA, DataFileSummary.Status.ACCEPTED,
-        'Tribal Active Case Data Processed Without Errors', 'Tribal TAN'
+        'Tribal Active Case Data Processed Without Errors', 'Tribal TANF'
     ),
     (
         DataFile.Section.TRIBAL_AGGREGATE_DATA, DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
-        'Tribal Aggregate Data Processed With Errors', 'Tribal TAN',
+        'Tribal Aggregate Data Processed With Errors', 'Tribal TANF',
     ),
     (
         DataFile.Section.TRIBAL_STRATUM_DATA, DataFileSummary.Status.PARTIALLY_ACCEPTED,
-        'Tribal Stratum Data Processed With Errors', 'Tribal TAN',
+        'Tribal Stratum Data Processed With Errors', 'Tribal TANF',
     ),
     (
         DataFile.Section.TRIBAL_STRATUM_DATA, DataFileSummary.Status.REJECTED,
-        'Tribal Stratum Data Processed With Errors', 'Tribal TAN',
+        'Tribal Stratum Data Processed With Errors', 'Tribal TANF',
     ),
 
     # ssp
@@ -78,23 +78,23 @@ def test_send_data_submitted_email_no_email_for_pending(user, stt):
     # tanf
     (
         DataFile.Section.ACTIVE_CASE_DATA, DataFileSummary.Status.ACCEPTED,
-        'Active Case Data Processed Without Errors', 'TAN',
+        'Active Case Data Processed Without Errors', 'TANF',
     ),
     (
         DataFile.Section.CLOSED_CASE_DATA, DataFileSummary.Status.ACCEPTED,
-        'Closed Case Data Processed Without Errors', 'TAN',
+        'Closed Case Data Processed Without Errors', 'TANF',
     ),
     (
         DataFile.Section.AGGREGATE_DATA, DataFileSummary.Status.ACCEPTED_WITH_ERRORS,
-        'Aggregate Data Processed With Errors', 'TAN',
+        'Aggregate Data Processed With Errors', 'TANF',
     ),
     (
         DataFile.Section.STRATUM_DATA, DataFileSummary.Status.PARTIALLY_ACCEPTED,
-        'Stratum Data Processed With Errors', 'TAN',
+        'Stratum Data Processed With Errors', 'TANF',
     ),
     (
         DataFile.Section.STRATUM_DATA, DataFileSummary.Status.REJECTED,
-        'Stratum Data Processed With Errors', 'TAN',
+        'Stratum Data Processed With Errors', 'TANF',
     ),
 ])
 def test_send_data_submitted_email(user, stt, section, status, subject, program_type):
