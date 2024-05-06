@@ -6,6 +6,9 @@ from tdpservice.search_indexes.models import tanf  # , ssp, tribal
 from tdpservice.parsers.test import factories
 import time
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 AVAILABLE_MODELS = [
@@ -86,7 +89,7 @@ class Command(BaseCommand):
     def _clear(self, models):
         for m in models:
             Model = m['model']
-            print(f'deleting {Model._meta.model_name}')
+            logger.debug(f'deleting {Model._meta.model_name}')
             Model.objects.all().delete()
 
     def _populate(self, models, num):
@@ -94,7 +97,7 @@ class Command(BaseCommand):
             Model = m['model']
             Factory = m['factory']
 
-            print(f'creating {num} {Model._meta.model_name} objects')
+            logger.debug(f'creating {num} {Model._meta.model_name} objects')
 
             objects = []
             for i in range(0, num):
@@ -122,11 +125,11 @@ class Command(BaseCommand):
             remainder = num - (batches * 10000)
 
             for b in range(0, batches):
-                print(f'batch {b+1} of {batches}')
+                logger.debug(f'batch {b+1} of {batches}')
                 self._populate(models, 10000)
 
             if remainder > 0:
-                print(f'remaining {remainder}')
+                logger.debug(f'remaining {remainder}')
                 self._populate(models, remainder)
         else:
             self._populate(models, num)
