@@ -102,7 +102,6 @@ services:
       - SENDGRID_API_KEY
       - GENERATE_TRAILER_ERRORS=True
       - BYPASS_KIBANA_AUTH
-      - DISABLE_COLLECTSTATIC=1
     volumes:
       - .:/tdpapp
     image: tdp
