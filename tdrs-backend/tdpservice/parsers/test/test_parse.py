@@ -14,9 +14,9 @@ from tdpservice.search_indexes import documents
 from .factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.data_files.models import DataFile
 from .. import schema_defs, aggregates, util
-from ..schema_defs.util import get_section_reference, get_program_models, get_program_model
 from elasticsearch.helpers.errors import BulkIndexError
 import logging
+logger = logging.getLogger(__name__)
 
 
 es_logger = logging.getLogger('elasticsearch')
@@ -542,6 +542,7 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
+    assert dfs.case_aggregates["rejected"] == 1
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
             assert month['accepted_without_errors'] == 0
@@ -549,12 +550,6 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
         else:
             assert month['accepted_without_errors'] == 0
             assert month['accepted_with_errors'] == 0
-    assert dfs.case_aggregates == {'rejected': 1,
-                                   'months': [
-                                       {'accepted_without_errors': 0, 'accepted_with_errors': 5, 'month': 'Oct'},
-                                       {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Nov'},
-                                       {'accepted_without_errors': 0, 'accepted_with_errors': 0, 'month': 'Dec'}
-                                    ]}
 
     parser_errors = ParserError.objects.filter(file=small_ssp_section1_datafile)
     assert parser_errors.count() == 16
@@ -679,12 +674,12 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile, dfs):
     assert t3_1.GENDER == 2
     assert t3_1.EDUCATION_LEVEL == '98'
 
-    t3_6 = t3_models[5]
-    assert t3_6.RPT_MONTH_YEAR == 202010
-    assert t3_6.CASE_NUMBER == '11111111151'
-    assert t3_6.FAMILY_AFFILIATION == 1
-    assert t3_6.GENDER == 2
-    assert t3_6.EDUCATION_LEVEL == '98'
+    t3_5 = t3_models[4]
+    assert t3_5.RPT_MONTH_YEAR == 202010
+    assert t3_5.CASE_NUMBER == '11111111151'
+    assert t3_5.FAMILY_AFFILIATION == 1
+    assert t3_5.GENDER == 1
+    assert t3_5.EDUCATION_LEVEL == '98'
 
 
 @pytest.fixture
@@ -697,6 +692,9 @@ def super_big_s1_file(stt_user, stt):
 @pytest.mark.skip(reason="long runtime")  # big_files
 def test_parse_super_big_s1_file(super_big_s1_file, dfs):
     """Test parsing of super_big_s1_file and validate all T1/T2/T3 records are created."""
+    super_big_s1_file.year = 2023
+    super_big_s1_file.quarter = 'Q2'
+
     parse.parse_datafile(super_big_s1_file, dfs)
 
     expected_t1_record_count = 96642
@@ -929,17 +927,17 @@ def test_get_schema_options(dfs):
     assert schema == schema_defs.tanf.t1
 
     # get model
-    models = get_program_models('TAN', 'A')
+    models = schema_defs.utils.get_program_models('TAN', 'A')
     assert models == {
         'T1': schema_defs.tanf.t1,
         'T2': schema_defs.tanf.t2,
         'T3': schema_defs.tanf.t3,
     }
 
-    model = get_program_model('TAN', 'A', 'T1')
+    model = schema_defs.utils.get_program_model('TAN', 'A', 'T1')
     assert model == schema_defs.tanf.t1
     # get section
-    section = get_section_reference('TAN', 'C')
+    section = schema_defs.utils.get_section_reference('TAN', 'C')
     assert section == DataFile.Section.CLOSED_CASE_DATA
 
     # from datafile:
@@ -1024,7 +1022,7 @@ def tanf_section3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section3_file(tanf_section3_file, dfs):
     """Test parsing TANF Section 3 submission."""
-    tanf_section3_file.year = 2021
+    tanf_section3_file.year = 2022
     tanf_section3_file.quarter = 'Q1'
 
     dfs.datafile = tanf_section3_file
@@ -1053,9 +1051,9 @@ def test_parse_tanf_section3_file(tanf_section3_file, dfs):
     second = t6_objs[1]
     third = t6_objs[2]
 
-    assert first.RPT_MONTH_YEAR == 202012
-    assert second.RPT_MONTH_YEAR == 202011
-    assert third.RPT_MONTH_YEAR == 202010
+    assert first.RPT_MONTH_YEAR == 202112
+    assert second.RPT_MONTH_YEAR == 202111
+    assert third.RPT_MONTH_YEAR == 202110
 
     assert first.NUM_APPROVED == 3924
     assert second.NUM_APPROVED == 3977
@@ -1106,7 +1104,7 @@ def tanf_section4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section4_file(tanf_section4_file, dfs):
     """Test parsing TANF Section 4 submission."""
-    tanf_section4_file.year = 2021
+    tanf_section4_file.year = 2022
     tanf_section4_file.quarter = 'Q1'
 
     dfs.datafile = tanf_section4_file
@@ -1134,8 +1132,8 @@ def test_parse_tanf_section4_file(tanf_section4_file, dfs):
     first = t7_objs.first()
     sixth = t7_objs[5]
 
-    assert first.RPT_MONTH_YEAR == 202011
-    assert sixth.RPT_MONTH_YEAR == 202012
+    assert first.RPT_MONTH_YEAR == 202111
+    assert sixth.RPT_MONTH_YEAR == 202112
 
     assert first.TDRS_SECTION_IND == '2'
     assert sixth.TDRS_SECTION_IND == '2'
@@ -1193,7 +1191,7 @@ def ssp_section4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     """Test parsing SSP Section 4 submission."""
-    ssp_section4_file.year = 2019
+    ssp_section4_file.year = 2022
     ssp_section4_file.quarter = 'Q1'
 
     dfs.datafile = ssp_section4_file
@@ -1214,7 +1212,7 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     assert m7_objs.count() == 12
 
     first = m7_objs.first()
-    assert first.RPT_MONTH_YEAR == 201810
+    assert first.RPT_MONTH_YEAR == 202110
     assert first.FAMILIES_MONTH == 748
 
 @pytest.fixture
@@ -1301,7 +1299,7 @@ def ssp_section3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     """Test parsing TANF Section 3 submission."""
-    ssp_section3_file.year = 2019
+    ssp_section3_file.year = 2022
     ssp_section3_file.quarter = 'Q1'
 
     dfs.datafile = ssp_section3_file
@@ -1329,9 +1327,9 @@ def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     second = m6_objs[1]
     third = m6_objs[2]
 
-    assert first.RPT_MONTH_YEAR == 201810
-    assert second.RPT_MONTH_YEAR == 201811
-    assert third.RPT_MONTH_YEAR == 201812
+    assert first.RPT_MONTH_YEAR == 202110
+    assert second.RPT_MONTH_YEAR == 202111
+    assert third.RPT_MONTH_YEAR == 202112
 
     assert first.SSPMOE_FAMILIES == 15869
     assert second.SSPMOE_FAMILIES == 16008
@@ -1484,7 +1482,7 @@ def tribal_section_3_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_3_file(tribal_section_3_file, dfs):
     """Test parsing Tribal TANF Section 3 submission."""
-    tribal_section_3_file.year = 2020
+    tribal_section_3_file.year = 2022
     tribal_section_3_file.quarter = 'Q1'
 
     dfs.datafile = tribal_section_3_file
@@ -1520,7 +1518,7 @@ def tribal_section_4_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     """Test parsing Tribal TANF Section 4 submission."""
-    tribal_section_4_file.year = 2021
+    tribal_section_4_file.year = 2022
     tribal_section_4_file.quarter = 'Q1'
 
     dfs.datafile = tribal_section_4_file
@@ -1543,14 +1541,157 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     first = t7_objs.first()
     sixth = t7_objs[5]
 
-    assert first.RPT_MONTH_YEAR == 202011
-    assert sixth.RPT_MONTH_YEAR == 202012
+    assert first.RPT_MONTH_YEAR == 202111
+    assert sixth.RPT_MONTH_YEAR == 202112
 
     assert first.TDRS_SECTION_IND == '2'
     assert sixth.TDRS_SECTION_IND == '2'
 
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
+
+@pytest.fixture
+def second_child_only_space_t3_file():
+    """Fixture for misformatted_t3_file."""
+    # T3 record: second child is not space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q3',
+        original_filename='second_child_only_space_t3_file.txt',
+        file__name='second_child_only_space_t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T320210400028221R0112014122888175617622222112204398100000000' +
+                    b'                              \n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.fixture
+def one_child_t3_file():
+    """Fixture for one child_t3_file."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q3',
+        original_filename='one_child_t3_file.txt',
+        file__name='one_child_t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T320210400028221R0112014122888175617622222112204398100000000\n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.fixture
+def t3_file():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q3',
+        original_filename='t3_file.txt',
+        file__name='t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
+                    b'                                                            ' +
+                    b'                                    \n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+
+@pytest.fixture
+def t3_file_two_child():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q2',
+        original_filename='t3_file.txt',
+        file__name='t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
+                    b'420100125WTTTT9@TB1221222220430490000\n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.fixture
+def t3_file_two_child_with_space_filled():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q2',
+        original_filename='t3_file.txt',
+        file__name='t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
+                    b'420100125WTTTT9@TB1221222220430490000                       \n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+
+@pytest.fixture
+def two_child_second_filled():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q2',
+        original_filename='two_child_second_filled.txt',
+        file__name='two_child_second_filled.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T320210211111111115120160401WTTTT@BTB22212212204398100000000' +
+                    b'56      111111111                                           ' +
+                    b'                                    \n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.fixture
+def t3_file_zero_filled_second():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q3',
+        original_filename='t3_file_zero_filled_second.txt',
+        file__name='t3_file_zero_filled_second.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
+                    b'000000000000000000000000000000000000000000000000000000000000' +
+                    b'000000000000000000000000000000000000\n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.mark.parametrize('file_fixture, result, number_of_errors',
+                         [('second_child_only_space_t3_file', True, 0),
+                          ('one_child_t3_file', True, 0),
+                          ('t3_file', True, 0),
+                          ('t3_file_two_child', True, 1),
+                          ('t3_file_two_child_with_space_filled', True, 0),
+                          ('two_child_second_filled', True, 9),
+                          ('t3_file_zero_filled_second', True, 0)])
+@pytest.mark.django_db()
+def test_misformatted_multi_records(file_fixture, result, number_of_errors, request, dfs):
+    """Test that (not space filled) multi-records are caught."""
+    file_fixture = request.getfixturevalue(file_fixture)
+    dfs.datafile = file_fixture
+    parse.parse_datafile(file_fixture, dfs)
+    parser_errors = ParserError.objects.filter(file=file_fixture)
+    t3 = TANF_T3.objects.all()
+    assert t3.exists() == result
+
+    parser_errors = ParserError.objects.all()
+    assert parser_errors.count() == number_of_errors
 
 @pytest.mark.django_db()
 def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
@@ -1571,7 +1712,6 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
     assert month_error.error_message == "T2: $9 is not a valid month."
     assert year_error.error_message == "T2: Year Q897 must be larger than 1900."
     assert digits_error.error_message == "T2: Q897$9 3 does not have exactly 8 digits."
-
 
 @pytest.mark.django_db
 def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_datafile, mocker, dfs):
@@ -1617,6 +1757,8 @@ def tanf_section_4_file_with_errors(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, dfs):
     """Test parsing TANF Section 4 submission."""
+    tanf_section_4_file_with_errors.year = 2022
+    tanf_section_4_file_with_errors.quarter = 'Q1'
     dfs.datafile = tanf_section_4_file_with_errors
 
     parse.parse_datafile(tanf_section_4_file_with_errors, dfs)
@@ -1635,6 +1777,7 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
     assert TANF_T7.objects.all().count() == 18
 
     parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
+
     assert parser_errors.count() == 6
 
     t7_objs = TANF_T7.objects.all().order_by('FAMILIES_MONTH')
@@ -1642,8 +1785,8 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
     first = t7_objs.first()
     sixth = t7_objs[5]
 
-    assert first.RPT_MONTH_YEAR == 202011
-    assert sixth.RPT_MONTH_YEAR == 202010
+    assert first.RPT_MONTH_YEAR == 202111
+    assert sixth.RPT_MONTH_YEAR == 202110
 
     assert first.TDRS_SECTION_IND == '1'
     assert sixth.TDRS_SECTION_IND == '1'
@@ -1661,7 +1804,6 @@ def no_records_file(stt_user, stt):
 def test_parse_no_records_file(no_records_file, dfs):
     """Test parsing TANF Section 4 submission."""
     dfs.datafile = no_records_file
-
     parse.parse_datafile(no_records_file, dfs)
 
     dfs.status = dfs.get_status()
@@ -1698,3 +1840,25 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file
 
     assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert error.error_message == "HEADER update indicator: U does not match D."
+
+@pytest.fixture
+def tribal_section_4_bad_quarter(stt_user, stt):
+    """Fixture for tribal_section_4_bad_quarter."""
+    return util.create_test_datafile('tribal_section_4_fake_bad_quarter.txt', stt_user, stt, "Tribal Stratum Data")
+
+@pytest.mark.django_db()
+def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
+    """Test handling invalid quarter value that raises a ValueError exception."""
+    tribal_section_4_bad_quarter.year = 2021
+    tribal_section_4_bad_quarter.quarter = 'Q1'
+    dfs.datafile = tribal_section_4_bad_quarter
+
+    parse.parse_datafile(tribal_section_4_bad_quarter, dfs)
+    parser_errors = ParserError.objects.filter(file=tribal_section_4_bad_quarter).order_by('id')
+
+    assert parser_errors.count() == 3
+
+    parser_errors.first().error_message == "T7: 2020  is invalid. Calendar Quarter must be a numeric" + \
+        "representing the Calendar Year and Quarter formatted as YYYYQ"
+
+    Tribal_TANF_T7.objects.count() == 0
