@@ -99,7 +99,14 @@ class CloudGov(Common):
     ###
     # Store user uploaded data files in designated S3
     #
-    DEFAULT_FILE_STORAGE = 'tdpservice.backends.DataFilesS3Storage'
+    STORAGES = {
+        "default": {
+            "BACKEND": "tdpservice.backends.DataFilesS3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
     AWS_S3_DATAFILES_ACCESS_KEY = s3_datafiles_creds['access_key_id']
     AWS_S3_DATAFILES_SECRET_KEY = s3_datafiles_creds['secret_access_key']
     AWS_S3_DATAFILES_BUCKET_NAME = s3_datafiles_creds['bucket']

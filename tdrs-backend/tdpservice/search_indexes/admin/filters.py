@@ -1,5 +1,5 @@
 """Filter classes."""
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.contrib.admin import SimpleListFilter
 from tdpservice.stts.models import STT
 import datetime

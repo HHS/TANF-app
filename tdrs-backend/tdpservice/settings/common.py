@@ -33,7 +33,6 @@ class Common(Configuration):
     """Define configuration class."""
 
     INSTALLED_APPS = (
-        "colorfield",
         "admin_interface",
         "django.contrib.admin",
         "django.contrib.auth",
@@ -146,7 +145,14 @@ class Common(Configuration):
 
     # Store uploaded files in S3
     # http://django-storages.readthedocs.org/en/latest/index.html
-    DEFAULT_FILE_STORAGE = 'tdpservice.backends.DataFilesS3Storage'
+    STORAGES = {
+        "default": {
+            "BACKEND": "tdpservice.backends.DataFilesS3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
     AWS_S3_DATAFILES_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY')
     AWS_S3_DATAFILES_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_S3_DATAFILES_BUCKET_NAME = os.getenv('AWS_BUCKET')
@@ -278,7 +284,7 @@ class Common(Configuration):
     # of API POST calls to prevent false negative authorization errors.
     # https://docs.djangoproject.com/en/2.2/ref/settings/#csrf-cookie-httponly
     CSRF_COOKIE_HTTPONLY = False
-    CSRF_TRUSTED_ORIGINS = ['.app.cloud.gov', '.acf.hhs.gov']
+    CSRF_TRUSTED_ORIGINS = ['https://*.app.cloud.gov', 'https://*.acf.hhs.gov']
 
 
     # Django Rest Framework

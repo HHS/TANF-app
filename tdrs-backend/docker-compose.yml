@@ -12,7 +12,7 @@ services:
       - ../scripts/zap-hook.py:/zap/scripts/zap-hook.py:ro
 
   postgres:
-    image: postgres:11.6
+    image: postgres:15.6
     environment:
       - PGDATA=/var/lib/postgresql/data/
       - POSTGRES_DB=tdrs_test
@@ -102,6 +102,7 @@ services:
       - SENDGRID_API_KEY
       - GENERATE_TRAILER_ERRORS=True
       - BYPASS_KIBANA_AUTH
+      - DISABLE_COLLECTSTATIC=1
     volumes:
       - .:/tdpapp
     image: tdp
