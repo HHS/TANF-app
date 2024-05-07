@@ -39,7 +39,7 @@ def test_header_datafile(stt_user, stt):
 @pytest.fixture
 def dfs():
     """Fixture for DataFileSummary."""
-    return DataFileSummaryFactory()
+    return DataFileSummaryFactory.build()
 
 
 @pytest.fixture
@@ -895,7 +895,9 @@ def test_dfs_set_case_aggregates(test_datafile, dfs):
     # this still needs to execute to create db objects to be queried
     parse.parse_datafile(test_datafile, dfs)
 
-    dfs.file = test_datafile
+    dfs.datafile = test_datafile
+    dfs.save()
+
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         test_datafile, dfs.status)
