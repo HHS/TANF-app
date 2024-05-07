@@ -48,7 +48,7 @@ def prepare_recipients(recipient_email):
 
     recipient_email can be either a string (single recipient) or a array of strings.
     """
-    recipients = [recipient_email] if type(recipient_email) == str else recipient_email
+    recipients = [recipient_email] if type(recipient_email) is str else recipient_email
     logger.info(f"Starting celery task to send email to {recipients}")
     return recipients
 

@@ -51,7 +51,7 @@ class RowSchema:
         )
         is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
-                if type(self.quiet_preparser_errors) == bool
+                if type(self.quiet_preparser_errors) is bool
                 else self.quiet_preparser_errors(line)
             )
         if not preparsing_is_valid:
@@ -85,7 +85,7 @@ class RowSchema:
 
             is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
-                if type(self.quiet_preparser_errors) == bool
+                if type(self.quiet_preparser_errors) is bool
                 else self.quiet_preparser_errors(line)
             )
             if validator_error and not is_quiet_preparser_errors:
@@ -219,5 +219,5 @@ class SchemaManager:
         """Update whether schema fields are encrypted or not."""
         for schema in self.schemas:
             for field in schema.fields:
-                if type(field) == TransformField and "is_encrypted" in field.kwargs:
+                if type(field) is TransformField and "is_encrypted" in field.kwargs:
                     field.kwargs['is_encrypted'] = is_encrypted
