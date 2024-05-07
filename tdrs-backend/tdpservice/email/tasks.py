@@ -5,9 +5,8 @@ from tdpservice.users.models import User, AccountApprovalStatusChoices
 from django.contrib.auth.models import Group
 from django.conf import settings
 from django.urls import reverse
-from django.utils import timezone
 from celery import shared_task
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from tdpservice.email.helpers.account_access_requests import send_num_access_requests_email
 from tdpservice.email.helpers.account_deactivation_warning import send_deactivation_warning_email
