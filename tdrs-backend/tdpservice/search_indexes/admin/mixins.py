@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django.http import StreamingHttpResponse
 import csv
-
+import datetime
 
 class ExportCsvMixin:
     """Mixin class to support CSV exporting."""
@@ -56,10 +56,12 @@ class ExportCsvMixin:
 
         iterator = ExportCsvMixin.RowIterator(field_names, queryset)
 
+        new_meta = self.model.datafile.fiscal_year + "_" + str(datetime.datetime.now().strftime("%d%m%y-%H-%M-%S"))
+
         return StreamingHttpResponse(
             iterator,
             content_type="text/csv",
-            headers={"Content-Disposition": f'attachment; filename="{meta}.csv"'},
+            headers={"Content-Disposition": f'attachment; filename="{new_meta}.csv"'},
         )
 
     export_as_csv.short_description = "Export Selected as CSV"
