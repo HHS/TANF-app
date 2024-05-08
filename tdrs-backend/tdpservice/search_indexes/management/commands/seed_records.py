@@ -1,4 +1,10 @@
-"""Management command for seeding parsed records into the postgres db."""
+"""
+Management command for seeding parsed records into the postgres db.
+
+Usage: python manage.py seed_records [--models search_index.TANF_T1] [--clear]
+--models: a comma-separated list of models in `AVAILABLE_MODELS`; format: app_name.ModelName
+--clear: if set, deletes all existing records for the specified models before seeding
+"""
 
 
 from django.core.management.base import BaseCommand, CommandError
