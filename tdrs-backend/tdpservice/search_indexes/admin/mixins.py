@@ -54,14 +54,17 @@ class ExportCsvMixin:
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]
 
-        iterator = ExportCsvMixin.RowIterator(field_names, queryset)
+        if queryset.exists():
+            model = queryset.first()
+            datafile_name = f"{meta}_FY{model.datafile.year}{model.datafile.quarter}_" +\
+                str(datetime.now().strftime("%d%m%y-%H-%M-%S"))
 
-        new_meta = self.model.datafile.fiscal_year + "_" + str(datetime.now().strftime("%d%m%y-%H-%M-%S"))
+        iterator = ExportCsvMixin.RowIterator(field_names, queryset)
 
         return StreamingHttpResponse(
             iterator,
             content_type="text/csv",
-            headers={"Content-Disposition": f'attachment; filename="{new_meta}.csv"'},
+            headers={"Content-Disposition": f'attachment; filename="{datafile_name}.csv"'},
         )
 
     export_as_csv.short_description = "Export Selected as CSV"
