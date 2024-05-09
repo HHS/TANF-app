@@ -1695,7 +1695,10 @@ def test_misformatted_multi_records(file_fixture, result, number_of_errors, requ
     t3 = TANF_T3.objects.all()
     assert t3.exists() == result
 
-    parser_errors = ParserError.objects.all()
+    parser_errors = ParserError.objects.all().exclude(
+        # exclude extraneous cat 4 errors
+        error_message__contains='record should have at least one corresponding'
+    )
     assert parser_errors.count() == number_of_errors
 
 @pytest.mark.django_db()
