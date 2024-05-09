@@ -19,7 +19,7 @@ class ParsingFileFactory(factory.django.DjangoModelFactory):
     extension = "txt"
     section = "Active Case Data"
     quarter = "Q1"
-    year = "2020"
+    year = 2020
     version = 1
     user = factory.SubFactory(UserFactory)
     stt = factory.SubFactory(STTFactory)
