@@ -186,8 +186,6 @@ class CaseConsistencyValidator:
 
             if len(t1s) > 0:
                 if len(t2s) == 0 and len(t3s) == 0:
-                    logger.debug(f"t1 has no t2s or t3s")
-
                     for record, schema in t1s:
                         self.__generate_and_add_error(
                             schema,
@@ -214,7 +212,6 @@ class CaseConsistencyValidator:
                     # pass
             else:
                 for record, schema in t2s:
-                    logger.debug(f"t2 has no t1")
                     self.__generate_and_add_error(
                         schema,
                         record,
@@ -227,7 +224,6 @@ class CaseConsistencyValidator:
                     num_errors += 1
 
                 for record, schema in t3s:
-                    logger.debug(f"t3 has no t1")
                     self.__generate_and_add_error(
                         schema,
                         record,
