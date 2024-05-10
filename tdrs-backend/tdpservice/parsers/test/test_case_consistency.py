@@ -81,7 +81,7 @@ class TestCaseConsistencyValidator:
         assert case_consistency_validator.case_has_errors is False
         assert len(case_consistency_validator.record_schema_pairs.cases) == 1
         assert case_consistency_validator.total_cases_cached == 1
-        assert case_consistency_validator.total_cases_validated == 0
+        assert case_consistency_validator.total_cases_validated == 1
 
         # Complete the case to proc validation and verify that it occured. Even if the next case has errors.
         t2 = factories.TanfT2Factory.create()
@@ -98,7 +98,7 @@ class TestCaseConsistencyValidator:
         assert case_consistency_validator.case_has_errors is True
         assert len(case_consistency_validator.record_schema_pairs.cases) == 1
         assert case_consistency_validator.total_cases_cached == 2
-        assert case_consistency_validator.total_cases_validated == 1
+        assert case_consistency_validator.total_cases_validated == 2
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff", [
         (

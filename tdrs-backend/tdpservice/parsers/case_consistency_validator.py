@@ -105,11 +105,7 @@ class CaseConsistencyValidator:
         try:
             if self.case_is_section_one_or_two:
                 self.total_cases_cached += 1
-                if not self.case_has_errors:
-                    num_errors = self.__validate()
-                else:
-                    logger.debug(f"Case: {self.current_case} has errors associated with it's records. "
-                                 "Skipping Cat4 validation.")
+                num_errors = self.__validate()
             return num_errors
         except Exception as e:
             logger.error(f"Uncaught exception during category four validation: {e}")
@@ -190,6 +186,8 @@ class CaseConsistencyValidator:
 
             if len(t1s) > 0:
                 if len(t2s) == 0 and len(t3s) == 0:
+                    logger.debug(f"t1 has no t2s or t3s")
+
                     for record, schema in t1s:
                         self.__generate_and_add_error(
                             schema,
@@ -216,6 +214,7 @@ class CaseConsistencyValidator:
                     # pass
             else:
                 for record, schema in t2s:
+                    logger.debug(f"t2 has no t1")
                     self.__generate_and_add_error(
                         schema,
                         record,
@@ -228,6 +227,7 @@ class CaseConsistencyValidator:
                     num_errors += 1
 
                 for record, schema in t3s:
+                    logger.debug(f"t3 has no t1")
                     self.__generate_and_add_error(
                         schema,
                         record,
