@@ -167,7 +167,6 @@ class CaseConsistencyValidator:
         Every T1 record should have at least one corresponding T2 or T3
         record with the same RPT_MONTH_YEAR and CASE_NUMBER.
         """
-        logger.debug(f"validating s1 records related")
         num_errors = 0
         is_ssp = self.program_type == 'SSP'
 
@@ -180,21 +179,13 @@ class CaseConsistencyValidator:
 
         cases = self.record_schema_pairs.sorted_cases
 
-        logger.debug(f'program_type: {self.program_type}')
-        logger.debug(f'model: T1 - {t1_model}, T2 - {t2_model}, T3 - {t3_model}')
-
         for reporting_year_cases in cases.values():
             t1s = reporting_year_cases.get(t1_model, [])
             t2s = reporting_year_cases.get(t2_model, [])
             t3s = reporting_year_cases.get(t3_model, [])
 
-            logger.debug(f"t1s: {len(t1s)}; t2s: {len(t2s)}; t3s: {len(t3s)}")
-
             if len(t1s) > 0:
-                logger.debug(f"t1 has no t2s or t3s")
                 if len(t2s) == 0 and len(t3s) == 0:
-                    logger.debug(f"t1 has no t2s or t3s")
-
                     for record, schema in t1s:
                         self.__generate_and_add_error(
                             schema,
@@ -221,7 +212,6 @@ class CaseConsistencyValidator:
                     # pass
             else:
                 for record, schema in t2s:
-                    logger.debug(f"t2 has no t1")
                     self.__generate_and_add_error(
                         schema,
                         record,
@@ -234,7 +224,6 @@ class CaseConsistencyValidator:
                     num_errors += 1
 
                 for record, schema in t3s:
-                    logger.debug(f"t3 has no t1")
                     self.__generate_and_add_error(
                         schema,
                         record,
