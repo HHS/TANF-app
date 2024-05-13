@@ -3,7 +3,7 @@ version: "3.4"
 
 services:
   zaproxy:
-    image: softwaresecurityproject/zap-stable:2.13.0
+    image: softwaresecurityproject/zap-stable:2.14.0
     command: sleep 3600
     depends_on:
       - web
