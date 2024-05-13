@@ -36,8 +36,6 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
 
-    case_consistency_validator = CaseConsistencyValidator(header, util.make_generate_parser_error(datafile, None))
-
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
 
@@ -70,6 +68,12 @@ def parse_datafile(datafile, dfs):
         datafile,
         get_section_reference(program_type, section),
         util.make_generate_parser_error(datafile, 1)
+    )
+
+    case_consistency_validator = CaseConsistencyValidator(
+        header,
+        program_type,
+        util.make_generate_parser_error(datafile, None)
     )
 
     if not section_is_valid:

@@ -61,8 +61,11 @@ class TestCaseConsistencyValidator:
     @pytest.mark.django_db
     def test_add_record(self, small_correct_file_header, small_correct_file, tanf_s1_records, tanf_s1_schemas):
         """Test add_record logic."""
-        case_consistency_validator = CaseConsistencyValidator(small_correct_file_header,
-                                                              util.make_generate_parser_error(small_correct_file, None))
+        case_consistency_validator = CaseConsistencyValidator(
+            small_correct_file_header,
+            small_correct_file_header['program_type'],
+            util.make_generate_parser_error(small_correct_file, None)
+        )
 
         for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
             case_consistency_validator.add_record(record, schema, True)
@@ -129,6 +132,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             util.make_generate_parser_error(small_correct_file, None)
         )
 
@@ -212,6 +216,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             util.make_generate_parser_error(small_correct_file, None)
         )
 
@@ -274,6 +279,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             util.make_generate_parser_error(small_correct_file, None)
         )
 
@@ -364,6 +370,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             util.make_generate_parser_error(small_correct_file, None)
         )
 
@@ -454,6 +461,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             util.make_generate_parser_error(small_correct_file, None)
         )
 
@@ -517,6 +525,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             util.make_generate_parser_error(small_correct_file, None)
         )
 
@@ -575,6 +584,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             util.make_generate_parser_error(small_correct_file, None)
         )
 

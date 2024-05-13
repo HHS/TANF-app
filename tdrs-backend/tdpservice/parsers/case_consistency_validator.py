@@ -43,14 +43,14 @@ class SortedRecordSchemaPairs:
 class CaseConsistencyValidator:
     """Caches records of the same case and month to perform category four validation while actively parsing."""
 
-    def __init__(self, header, generate_error):
+    def __init__(self, header, program_type, generate_error):
         self.header = header
         self.record_schema_pairs = SortedRecordSchemaPairs()
         self.current_case = None
         self.case_has_errors = False
         self.section = header["type"]
         self.case_is_section_one_or_two = self.section in {'A', 'C'}
-        self.program_type = header["program_type"]
+        self.program_type = program_type
         self.has_validated = False
         self.generate_error = generate_error
         self.generated_errors = []
@@ -167,6 +167,7 @@ class CaseConsistencyValidator:
         Every T1 record should have at least one corresponding T2 or T3
         record with the same RPT_MONTH_YEAR and CASE_NUMBER.
         """
+        logger.debug(f"validating s1 records related")
         num_errors = 0
         is_ssp = self.program_type == 'SSP'
 
@@ -179,13 +180,21 @@ class CaseConsistencyValidator:
 
         cases = self.record_schema_pairs.sorted_cases
 
+        logger.debug(f'program_type: {self.program_type}')
+        logger.debug(f'model: T1 - {t1_model}, T2 - {t2_model}, T3 - {t3_model}')
+
         for reporting_year_cases in cases.values():
             t1s = reporting_year_cases.get(t1_model, [])
             t2s = reporting_year_cases.get(t2_model, [])
             t3s = reporting_year_cases.get(t3_model, [])
 
+            logger.debug(f"t1s: {len(t1s)}; t2s: {len(t2s)}; t3s: {len(t3s)}")
+
             if len(t1s) > 0:
+                logger.debug(f"t1 has no t2s or t3s")
                 if len(t2s) == 0 and len(t3s) == 0:
+                    logger.debug(f"t1 has no t2s or t3s")
+
                     for record, schema in t1s:
                         self.__generate_and_add_error(
                             schema,
@@ -212,6 +221,7 @@ class CaseConsistencyValidator:
                     # pass
             else:
                 for record, schema in t2s:
+                    logger.debug(f"t2 has no t1")
                     self.__generate_and_add_error(
                         schema,
                         record,
@@ -224,6 +234,7 @@ class CaseConsistencyValidator:
                     num_errors += 1
 
                 for record, schema in t3s:
+                    logger.debug(f"t3 has no t1")
                     self.__generate_and_add_error(
                         schema,
                         record,
