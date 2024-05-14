@@ -25,16 +25,16 @@ settings.GENERATE_TRAILER_ERRORS = True
 
 # TODO: the name of this test doesn't make perfect sense anymore since it will always have errors and no records now.
 @pytest.mark.django_db
-def test_parse_small_correct_file(test_datafile, dfs):
+def test_parse_small_correct_file(small_correct_file, dfs):
     """Test parsing of small_correct_file."""
-    test_datafile.year = 2021
-    test_datafile.quarter = 'Q1'
-    test_datafile.save()
-    dfs.datafile = test_datafile
+    small_correct_file.year = 2021
+    small_correct_file.quarter = 'Q1'
+    small_correct_file.save()
+    dfs.datafile = small_correct_file
 
-    parse.parse_datafile(test_datafile, dfs)
+    parse.parse_datafile(small_correct_file, dfs)
 
-    errors = ParserError.objects.filter(file=test_datafile).order_by('id')
+    errors = ParserError.objects.filter(file=small_correct_file).order_by('id')
     assert errors.count() == 2
     assert errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
@@ -58,17 +58,17 @@ def test_parse_small_correct_file(test_datafile, dfs):
 
 
 @pytest.mark.django_db
-def test_parse_section_mismatch(test_datafile, dfs):
+def test_parse_section_mismatch(small_correct_file, dfs):
     """Test parsing of small_correct_file where the DataFile section doesn't match the rawfile section."""
-    test_datafile.section = 'Closed Case Data'
-    test_datafile.save()
+    small_correct_file.section = 'Closed Case Data'
+    small_correct_file.save()
 
-    dfs.datafile = test_datafile
+    dfs.datafile = small_correct_file
 
-    errors = parse.parse_datafile(test_datafile, dfs)
+    errors = parse.parse_datafile(small_correct_file, dfs)
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.REJECTED
-    parser_errors = ParserError.objects.filter(file=test_datafile)
+    parser_errors = ParserError.objects.filter(file=small_correct_file)
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'rejected': 1,
@@ -98,17 +98,17 @@ def test_parse_section_mismatch(test_datafile, dfs):
 
 
 @pytest.mark.django_db
-def test_parse_wrong_program_type(test_datafile, dfs):
+def test_parse_wrong_program_type(small_correct_file, dfs):
     """Test parsing of small_correct_file where the DataFile program type doesn't match the rawfile."""
-    test_datafile.section = 'SSP Active Case Data'
-    test_datafile.save()
+    small_correct_file.section = 'SSP Active Case Data'
+    small_correct_file.save()
 
-    dfs.datafile = test_datafile
+    dfs.datafile = small_correct_file
     dfs.save()
-    errors = parse.parse_datafile(test_datafile, dfs)
+    errors = parse.parse_datafile(small_correct_file, dfs)
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
-    parser_errors = ParserError.objects.filter(file=test_datafile)
+    parser_errors = ParserError.objects.filter(file=small_correct_file)
     assert parser_errors.count() == 1
 
     err = parser_errors.first()
@@ -123,15 +123,15 @@ def test_parse_wrong_program_type(test_datafile, dfs):
     }
 
 @pytest.mark.django_db
-def test_parse_big_file(test_big_file, dfs):
+def test_parse_big_file(big_file, dfs):
     """Test parsing of ADS.E2J.FTP1.TS06."""
     expected_t1_record_count = 815
     expected_t2_record_count = 882
     expected_t3_record_count = 1376
 
-    dfs.datafile = test_big_file
+    dfs.datafile = big_file
 
-    parse.parse_datafile(test_big_file, dfs)
+    parse.parse_datafile(big_file, dfs)
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
@@ -148,21 +148,21 @@ def test_parse_big_file(test_big_file, dfs):
 
     search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
         'match',
-        datafile__id=test_big_file.id
+        datafile__id=big_file.id
     )
     assert search.count() == expected_t1_record_count
     search.delete()
 
     search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
         'match',
-        datafile__id=test_big_file.id
+        datafile__id=big_file.id
     )
     assert search.count() == expected_t2_record_count
     search.delete()
 
     search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
         'match',
-        datafile__id=test_big_file.id
+        datafile__id=big_file.id
     )
     assert search.count() == expected_t3_record_count
     search.delete()
@@ -779,18 +779,18 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     assert trailer_error.object_id is None
 
 @pytest.mark.django_db
-def test_dfs_set_case_aggregates(test_datafile, dfs):
+def test_dfs_set_case_aggregates(small_correct_file, dfs):
     """Test that the case aggregates are set correctly."""
-    test_datafile.year = 2020
-    test_datafile.quarter = 'Q3'
-    test_datafile.section = 'Active Case Data'
-    test_datafile.save()
+    small_correct_file.year = 2020
+    small_correct_file.quarter = 'Q3'
+    small_correct_file.section = 'Active Case Data'
+    small_correct_file.save()
     # this still needs to execute to create db objects to be queried
-    parse.parse_datafile(test_datafile, dfs)
-    dfs.file = test_datafile
+    parse.parse_datafile(small_correct_file, dfs)
+    dfs.file = small_correct_file
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
-        test_datafile, dfs.status)
+        small_correct_file, dfs.status)
 
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
@@ -1178,9 +1178,9 @@ def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     assert third.NUM_RECIPIENTS == 51348
 
 @pytest.mark.django_db
-def test_rpt_month_year_mismatch(test_header_datafile, dfs):
+def test_rpt_month_year_mismatch(header_datafile, dfs):
     """Test that the rpt_month_year mismatch error is raised."""
-    datafile = test_header_datafile
+    datafile = header_datafile
 
     datafile.section = 'Active Case Data'
     # test_datafile fixture uses create_test_data_file which assigns
@@ -1189,7 +1189,7 @@ def test_rpt_month_year_mismatch(test_header_datafile, dfs):
     datafile.quarter = 'Q1'
     datafile.save()
 
-    dfs.datafile = test_header_datafile
+    dfs.datafile = header_datafile
     dfs.save()
 
     parse.parse_datafile(datafile, dfs)
@@ -1391,7 +1391,7 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
 
 
 @pytest.mark.django_db
-def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_datafile, mocker, dfs):
+def test_bulk_create_returns_rollback_response_on_bulk_index_exception(small_correct_file, mocker, dfs):
     """Test bulk_create_records returns (False, [unsaved_records]) on BulkIndexException."""
     mocker.patch(
         'tdpservice.search_indexes.documents.tanf.TANF_T1DataSubmissionDocument.update',
@@ -1409,7 +1409,7 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_data
         records,
         line_number=1,
         header_count=1,
-        datafile=test_datafile,
+        datafile=small_correct_file,
         dfs=dfs,
         flush=True
     )

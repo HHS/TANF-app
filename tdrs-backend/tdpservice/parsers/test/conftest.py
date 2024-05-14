@@ -4,12 +4,12 @@ from tdpservice.parsers.test.factories import DataFileSummaryFactory, ParsingFil
 from tdpservice.parsers import util
 
 @pytest.fixture
-def test_datafile(stt_user, stt):
+def small_correct_file(stt_user, stt):
     """Fixture for small_correct_file."""
     return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
 
 @pytest.fixture
-def test_header_datafile(stt_user, stt):
+def header_datafile(stt_user, stt):
     """Fixture for header test."""
     return util.create_test_datafile('tanf_section1_header_test.txt', stt_user, stt)
 
@@ -34,7 +34,7 @@ def t2_invalid_dob_file():
     return parsing_file
 
 @pytest.fixture
-def test_big_file(stt_user, stt):
+def big_file(stt_user, stt):
     """Fixture for ADS.E2J.FTP1.TS06."""
     return util.create_test_datafile('ADS.E2J.FTP1.TS06', stt_user, stt)
 
