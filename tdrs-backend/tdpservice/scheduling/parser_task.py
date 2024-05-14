@@ -2,10 +2,13 @@
 from __future__ import absolute_import
 from celery import shared_task
 import logging
+from django.contrib.auth.models import Group
+from tdpservice.users.models import AccountApprovalStatusChoices, User
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.parse import parse_datafile
 from tdpservice.parsers.models import DataFileSummary
 from tdpservice.parsers.aggregates import case_aggregates_by_month, total_errors_by_month
+from tdpservice.email.helpers.data_file import send_data_submitted_email
 
 
 logger = logging.getLogger(__name__)
@@ -33,3 +36,11 @@ def parse(data_file_id):
     dfs.save()
 
     logger.info(f"Parsing finished for file -> {repr(data_file)} with status {dfs.status} and {len(errors)} errors.")
+
+    recipients = User.objects.filter(
+        stt=data_file.stt,
+        account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        groups=Group.objects.get(name='Data Analyst')
+    ).values_list('username', flat=True).distinct()
+
+    send_data_submitted_email(dfs, recipients)

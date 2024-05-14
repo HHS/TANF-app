@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class CaseConsistencyValidator:
     """Caches records of the same case and month to perform category four validation while actively parsing."""
 
-    def __init__(self, header, stt_type, generate_error):
+    def __init__(self, header, program_type, stt_type, generate_error):
         self.header = header
         self.sorted_cases = dict()
         self.cases = list()
@@ -25,7 +25,7 @@ class CaseConsistencyValidator:
         self.case_has_errors = False
         self.section = header["type"]
         self.case_is_section_one_or_two = self.section in {'A', 'C'}
-        self.program_type = header["program_type"]
+        self.program_type = program_type
         self.has_validated = False
         self.generate_error = generate_error
         self.generated_errors = list()
@@ -130,11 +130,7 @@ class CaseConsistencyValidator:
         try:
             if self.case_is_section_one_or_two:
                 self.total_cases_cached += 1
-                if not self.case_has_errors:
-                    num_errors = self.__validate()
-                else:
-                    logger.debug(f"Case: {self.current_case} has errors associated with it's records. "
-                                 "Skipping Cat4 validation.")
+                num_errors = self.__validate()
             return num_errors
         except Exception as e:
             logger.error(f"Uncaught exception during category four validation: {e}")
