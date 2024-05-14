@@ -64,6 +64,7 @@ class TestCaseConsistencyValidator:
         """Test add_record logic."""
         case_consistency_validator = CaseConsistencyValidator(
             small_correct_file_header,
+            small_correct_file_header['program_type'],
             STT.EntityType.STATE,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -89,7 +90,7 @@ class TestCaseConsistencyValidator:
         assert case_consistency_validator.case_has_errors is False
         assert len(case_consistency_validator.cases) == 1
         assert case_consistency_validator.total_cases_cached == 1
-        assert case_consistency_validator.total_cases_validated == 0
+        assert case_consistency_validator.total_cases_validated == 1
 
         # Complete the case to proc validation and verify that it occured. Even if the next case has errors.
         t2 = factories.TanfT2Factory.create()
@@ -111,7 +112,7 @@ class TestCaseConsistencyValidator:
         assert case_consistency_validator.case_has_errors is True
         assert len(case_consistency_validator.cases) == 1
         assert case_consistency_validator.total_cases_cached == 2
-        assert case_consistency_validator.total_cases_validated == 1
+        assert case_consistency_validator.total_cases_validated == 2
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
@@ -146,6 +147,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -232,6 +234,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -292,6 +295,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -388,6 +392,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -483,6 +488,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -570,6 +576,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -640,6 +647,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -720,6 +728,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -791,6 +800,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -871,6 +881,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -927,6 +938,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             stt_type,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -994,6 +1006,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             STT.EntityType.TERRITORY,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -1063,6 +1076,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             STT.EntityType.TERRITORY,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -1140,6 +1154,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             STT.EntityType.TERRITORY,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -1209,6 +1224,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             STT.EntityType.STATE,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -1286,6 +1302,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             STT.EntityType.TERRITORY,
             util.make_generate_parser_error(small_correct_file, None)
         )
@@ -1363,6 +1380,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
+            header['program_type'],
             STT.EntityType.STATE,
             util.make_generate_parser_error(small_correct_file, None)
         )

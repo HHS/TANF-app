@@ -77,6 +77,13 @@ def parse_datafile(datafile, dfs):
         util.make_generate_parser_error(datafile, 1)
     )
 
+    case_consistency_validator = CaseConsistencyValidator(
+        header,
+        program_type,
+        datafile.stt.type,
+        util.make_generate_parser_error(datafile, None)
+    )
+
     if not section_is_valid:
         logger.info(f"Preparser Error -> Section is not valid: {section_error.error_message}")
         errors['document'] = [section_error]
