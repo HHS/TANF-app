@@ -102,8 +102,6 @@ services:
       - SENDGRID_API_KEY
       - GENERATE_TRAILER_ERRORS=True
       - BYPASS_KIBANA_AUTH
-      - IGNORE_DUPLICATE_ERROR_PRECEDENCE
-      - BULK_CREATE_BATCH_SIZE
     volumes:
       - .:/tdpapp
     image: tdp

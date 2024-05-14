@@ -1958,10 +1958,10 @@ def s4_exact_dup_file():
     return parsing_file
 
 @pytest.mark.parametrize("file, batch_size, model, record_type, num_errors", [
-    ('s1_exact_dup_file', 10000, TANF_T1, "T1", 4),
-    ('s1_exact_dup_file', 1, TANF_T1, "T1", 4),  # This forces an in memory and database deletion of records.
-    ('s2_exact_dup_file', 10000, TANF_T4, "T4", 4),
-    ('s2_exact_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
+    ('s1_exact_dup_file', 10000, TANF_T1, "T1", 3),
+    ('s1_exact_dup_file', 1, TANF_T1, "T1", 3),  # This forces an in memory and database deletion of records.
+    ('s2_exact_dup_file', 10000, TANF_T4, "T4", 3),
+    ('s2_exact_dup_file', 1, TANF_T4, "T4", 3),  # This forces an in memory and database deletion of records.
     ('s3_exact_dup_file', 10000, TANF_T6, "T6", 1),
     ('s3_exact_dup_file', 1, TANF_T6, "T6", 1),  # This forces an in memory and database deletion of records.
     ('s4_exact_dup_file', 10000, TANF_T7, "T7", 1),
@@ -2042,7 +2042,7 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, requ
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == 3
 
     dup_error = parser_errors.first()
     assert dup_error.error_message == f"Partial duplicate record detected with record type {record_type} " + \
