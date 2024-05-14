@@ -1682,13 +1682,13 @@ def t3_file_zero_filled_second():
     return parsing_file
 
 @pytest.mark.parametrize('file_fixture, result, number_of_errors',
-                         [('second_child_only_space_t3_file', True, 0),
-                          ('one_child_t3_file', True, 0),
-                          ('t3_file', True, 0),
-                          ('t3_file_two_child', True, 1),
-                          ('t3_file_two_child_with_space_filled', True, 0),
-                          ('two_child_second_filled', True, 9),
-                          ('t3_file_zero_filled_second', True, 0)])
+                         [('second_child_only_space_t3_file', False, 0),
+                          ('one_child_t3_file', False, 0),
+                          ('t3_file', False, 0),
+                          ('t3_file_two_child', False, 1),
+                          ('t3_file_two_child_with_space_filled', False, 0),
+                          ('two_child_second_filled', False, 9),
+                          ('t3_file_zero_filled_second', False, 0)])
 @pytest.mark.django_db()
 def test_misformatted_multi_records(file_fixture, result, number_of_errors, request, dfs):
     """Test that (not space filled) multi-records are caught."""
@@ -1701,8 +1701,9 @@ def test_misformatted_multi_records(file_fixture, result, number_of_errors, requ
 
     parser_errors = ParserError.objects.all().exclude(
         # exclude extraneous cat 4 errors
-        error_message__contains='record should have at least one corresponding'
-    )
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
+    ).exclude(error_message="No records created.")
+    
     assert parser_errors.count() == number_of_errors
 
 @pytest.mark.django_db()
@@ -2041,7 +2042,7 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, requ
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-    assert parser_errors.count() == 1  # TODO: Why doesnt this generate 4 errors per run again?
+    assert parser_errors.count() == 4
 
     dup_error = parser_errors.first()
     assert dup_error.error_message == f"Partial duplicate record detected with record type {record_type} " + \
