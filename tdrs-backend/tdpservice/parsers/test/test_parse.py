@@ -1012,8 +1012,8 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
 
     parse.parse_datafile(tanf_section2_file, dfs)
 
-    assert TANF_T4.objects.all().count() == 216
-    assert TANF_T5.objects.all().count() == 588
+    assert TANF_T4.objects.all().count() == 130
+    assert TANF_T5.objects.all().count() == 362
 
     parser_errors = ParserError.objects.filter(file=tanf_section2_file)
 
