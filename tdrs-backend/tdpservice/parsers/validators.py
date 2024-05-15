@@ -274,6 +274,17 @@ def recordHasLength(length):
     )
 
 
+def fieldHasLength(length):
+    """Validate that the field value (string or array) has a length matching length param."""
+    return make_validator(
+        lambda value: len(value) == length,
+        lambda value,
+        row_schema,
+        friendly_name,
+        item_num: f"{row_schema.record_type} field length is {len(value)} characters but must be {length}.",
+    )
+
+
 def intHasLength(num_digits):
     """Validate the number of digits in an integer."""
     return make_validator(

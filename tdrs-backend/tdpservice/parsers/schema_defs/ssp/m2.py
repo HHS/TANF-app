@@ -376,9 +376,8 @@ m2 = SchemaManager(
                     required=False,
                     validators=[
                         validators.or_validators(
-                            validators.isInLimits(0, 16), validators.isInLimits(98, 99)
+                            validators.isInStringRange(1, 16), validators.isInStringRange(98, 99)
                         ),
-                        validators.notMatches('00')
                     ]
                 ),
                 Field(

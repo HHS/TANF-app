@@ -282,10 +282,9 @@ first_part_schema = RowSchema(
             required=True,
             validators=[
                 validators.or_validators(
-                    validators.isInStringRange(0, 16),
+                    validators.isInStringRange(1, 16),
                     validators.isInStringRange(98, 99)
                 ),
-                validators.notMatches('00')
             ]
         ),
         Field(
@@ -597,7 +596,7 @@ second_part_schema = RowSchema(
             required=True,
             validators=[
                 validators.or_validators(
-                    validators.isInStringRange(0, 16),
+                    validators.isInStringRange(1, 16),
                     validators.isInStringRange(98, 99)
                 )
             ]
