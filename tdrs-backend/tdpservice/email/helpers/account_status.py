@@ -9,13 +9,14 @@ def send_approval_status_update_email(
     context,
 ):
     """Send an email to a user when their account approval status is updated."""
-    from tdpservice.users.models import AccountApprovalStatusChoices
+    from tdpservice.users.models import AccountApprovalStatusChoices, User
 
     recipient_email = user.email
     logger_context = {
         'user_id': user.id,
         'object_id': user.id,
-        'object_repr': user.email
+        'object_repr': user.email,
+        'content_type': User,
     }
 
     template_path = None
