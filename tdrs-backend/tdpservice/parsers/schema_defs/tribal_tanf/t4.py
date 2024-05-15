@@ -1,9 +1,9 @@
 """Schema for Tribal TANF T4 record types."""
 
 from tdpservice.parsers.transforms import zero_pad
-from ...fields import Field, TransformField
-from ...row_schema import RowSchema, SchemaManager
-from ... import validators
+from tdpservice.parsers.fields import Field, TransformField
+from tdpservice.parsers.row_schema import RowSchema, SchemaManager
+from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T4DataSubmissionDocument
 
 
