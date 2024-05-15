@@ -35,7 +35,7 @@ def parse_datafile(datafile, dfs):
         errors['header'] = header_errors
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
-    
+
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
     is_encrypted = field_values["encryption"] == "E"
@@ -43,7 +43,7 @@ def parse_datafile(datafile, dfs):
 
     logger.debug(f"Datafile has encrypted fields: {is_encrypted}.")
     logger.debug(f"Datafile: {datafile.__repr__()}, is Tribal: {is_tribal}.")
-    
+
     program_type = f"Tribal {header['program_type']}" if is_tribal else header['program_type']
     section = header['type']
     logger.debug(f"Program type: {program_type}, Section: {section}.")

@@ -1703,7 +1703,7 @@ def test_misformatted_multi_records(file_fixture, result, number_of_errors, requ
         # exclude extraneous cat 4 errors
         error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
     ).exclude(error_message="No records created.")
-    
+
     assert parser_errors.count() == number_of_errors
 
 @pytest.mark.django_db()
