@@ -1,6 +1,6 @@
 """Schema for SSP M1 record type."""
 
-from ...transforms import zero_pad
+from tdpservice.parsers.transforms import zero_pad
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
