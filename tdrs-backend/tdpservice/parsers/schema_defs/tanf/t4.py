@@ -156,7 +156,7 @@ t4 = SchemaManager(
                     validators=[validators.isInLimits(1, 3)],
                 ),
                 Field(
-                    item="14",
+                    item="-1",
                     name="BLANK",
                     friendly_name="blank",
                     type="string",
