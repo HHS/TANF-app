@@ -22,7 +22,7 @@ We expect that there will be a couple hundred users who interact with the TDP sy
 **Supporting Documentation**
 
 - [Personas mural](https://app.mural.co/t/officeoffamilyassistance2744/m/gsa6/1592254280716/2ae8293a3233a95941d548cda4f373faab96b40b) :lock:
-- [Vision and Stakeholders Doc](https://github.com/raft-tech/TANF-app/blob/restore-stakeholder-and-personas/docs/Product-Strategy/Vision-and-Stakeholders.md)
+- [Vision and Stakeholders Doc](https://github.com/HHS/TANF-app/blob/main/docs/Product-Strategy/Vision-and-Stakeholders.md)
 
 ---
 

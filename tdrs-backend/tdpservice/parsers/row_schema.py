@@ -11,7 +11,8 @@ class RowSchema:
 
     def __init__(
             self,
-            document,
+            record_type="T1",
+            document=None,
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
@@ -22,6 +23,8 @@ class RowSchema:
         self.postparsing_validators = postparsing_validators
         self.fields = fields
         self.quiet_preparser_errors = quiet_preparser_errors
+        self.record_type = record_type
+        self.datafile = None
 
     def _add_field(self, item, name, length, start, end, type):
         """Add a field to the schema."""
@@ -43,10 +46,16 @@ class RowSchema:
         errors = []
 
         # run preparsing validators
-        preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(line, generate_error)
-
+        preparsing_is_valid, preparsing_errors = self.run_preparsing_validators(
+            line, generate_error
+        )
+        is_quiet_preparser_errors = (
+                self.quiet_preparser_errors
+                if type(self.quiet_preparser_errors) == bool
+                else self.quiet_preparser_errors(line)
+            )
         if not preparsing_is_valid:
-            if self.quiet_preparser_errors:
+            if is_quiet_preparser_errors:
                 return None, True, []
             logger.info(f"{len(preparsing_errors)} preparser error(s) encountered.")
             return None, False, preparsing_errors
@@ -71,10 +80,15 @@ class RowSchema:
         errors = []
 
         for validator in self.preparsing_validators:
-            validator_is_valid, validator_error = validator(line)
+            validator_is_valid, validator_error = validator(line, self, "record type", "0")
             is_valid = False if not validator_is_valid else is_valid
 
-            if validator_error and not self.quiet_preparser_errors:
+            is_quiet_preparser_errors = (
+                self.quiet_preparser_errors
+                if type(self.quiet_preparser_errors) == bool
+                else self.quiet_preparser_errors(line)
+            )
+            if validator_error and not is_quiet_preparser_errors:
                 errors.append(
                     generate_error(
                         schema=self,
@@ -118,7 +132,7 @@ class RowSchema:
             should_validate = not field.required and not is_empty
             if (field.required and not is_empty) or should_validate:
                 for validator in field.validators:
-                    validator_is_valid, validator_error = validator(value)
+                    validator_is_valid, validator_error = validator(value, self, field.friendly_name, field.item)
                     is_valid = False if not validator_is_valid else is_valid
                     if validator_error:
                         errors.append(
@@ -150,7 +164,7 @@ class RowSchema:
         errors = []
 
         for validator in self.postparsing_validators:
-            validator_is_valid, validator_error, field_names = validator(instance)
+            validator_is_valid, validator_error, field_names = validator(instance, self)
             is_valid = False if not validator_is_valid else is_valid
             if validator_error:
                 # get field from field name
@@ -188,12 +202,14 @@ class SchemaManager:
 
     def __init__(self, schemas):
         self.schemas = schemas
+        self.datafile = None
 
     def parse_and_validate(self, line, generate_error):
         """Run `parse_and_validate` for each schema provided and bubble up errors."""
         records = []
 
         for schema in self.schemas:
+            schema.datafile = self.datafile
             record, is_valid, errors = schema.parse_and_validate(line, generate_error)
             records.append((record, is_valid, errors))
 

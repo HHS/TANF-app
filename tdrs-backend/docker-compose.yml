@@ -3,7 +3,7 @@ version: "3.4"
 
 services:
   zaproxy:
-    image: owasp/zap2docker-stable:2.13.0
+    image: softwaresecurityproject/zap-stable:2.14.0
     command: sleep 3600
     depends_on:
       - web
@@ -46,7 +46,7 @@ services:
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:7.4.2
+    image: docker.elastic.co/kibana/kibana-oss:7.10.2
     ports:
       - 5601:5601
     environment:
@@ -59,11 +59,10 @@ services:
       - elastic
 
   elastic:
-    image: elasticsearch:7.17.6
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
     environment:
       - discovery.type=single-node
       - logger.discovery.level=debug
-      - xpack.security.enabled=false
     ports:
       - 9200:9200
       - 9300:9300
@@ -101,6 +100,7 @@ services:
       - CYPRESS_TOKEN
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
+      - GENERATE_TRAILER_ERRORS=True
       - BYPASS_KIBANA_AUTH
     volumes:
       - .:/tdpapp

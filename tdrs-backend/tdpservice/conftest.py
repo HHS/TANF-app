@@ -144,6 +144,16 @@ def data_analyst(stt):
 
 
 @pytest.fixture
+def digit_team(stt):
+    """Return a DIGIT Team user."""
+    user = UserFactory.create(groups=(Group.objects.get(name="DIGIT Team"),),)
+    user.stt = stt
+    user.account_approval_status = AccountApprovalStatusChoices.APPROVED
+    user.save()
+    return user
+
+
+@pytest.fixture
 def admin_user():
     """Return an admin user."""
     return AdminUserFactory.create()
@@ -170,14 +180,14 @@ def deactivated_user():
 @pytest.fixture
 def stt(region):
     """Return an STT."""
-    stt, _ = STT.objects.get_or_create(name="first", region=region)
+    stt, _ = STT.objects.get_or_create(name="Wisconsin", region=region, stt_code="55")
     return stt
 
 
 @pytest.fixture
 def region():
     """Return a region."""
-    region, _ = Region.objects.get_or_create(id=1)
+    region, _ = Region.objects.get_or_create(id=5)
     return region
 
 

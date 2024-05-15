@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   zaproxy:
-    image: owasp/zap2docker-stable:2.13.0
+    image: softwaresecurityproject/zap-stable:2.14.0
     container_name: zap-scan
     command: sleep 3600
     ports:
@@ -39,7 +39,7 @@ services:
        envsubst '
       $${KIBANA} $${BACK_END} $${NGINX_FRONTEND} $${LOCAL_DEV}
       '< /etc/nginx/default.conf.template
-      > /etc/nginx/nginx.conf && 
+      > /etc/nginx/nginx.conf &&
       nginx -g 'daemon off;'"
 
 networks:
