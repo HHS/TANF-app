@@ -1804,4 +1804,3 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     for e in parser_errors:
         assert e.error_message in error_msgs
-
