@@ -1881,7 +1881,8 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
 
     parse.parse_datafile(t3_cat2_invalid_citizenship_file, dfs)
 
-    parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).order_by("pk")
+    parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
 
     assert parser_errors.count() == 2
 
@@ -1899,7 +1900,8 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     parse.parse_datafile(m2_cat2_invalid_37_38_39_file, dfs)
 
-    parser_errors = ParserError.objects.filter(file=m2_cat2_invalid_37_38_39_file).order_by("pk")
+    parser_errors = ParserError.objects.filter(file=m2_cat2_invalid_37_38_39_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
 
     assert parser_errors.count() == 3
 
@@ -1919,7 +1921,8 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     parse.parse_datafile(m3_cat2_invalid_68_69_file, dfs)
 
-    parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).order_by("pk")
+    parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
 
     assert parser_errors.count() == 4
 
@@ -1939,7 +1942,8 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     parse.parse_datafile(m5_cat2_invalid_23_24_file, dfs)
 
-    parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).order_by("pk")
+    parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
 
     assert parser_errors.count() == 2
 
