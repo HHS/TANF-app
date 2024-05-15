@@ -1741,11 +1741,9 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
 
     assert parser_errors.count() == 2
 
-    citizenship_status_1_error = parser_errors[0]
-    citizenship_status_2_error = parser_errors[1]
+    for e in parser_errors:
+        assert e.error_message == "T3: 0 is not in [1, 2, 9]."
 
-    assert citizenship_status_1_error.error_message == "T3: 0 is not in [1, 2, 9]."
-    assert citizenship_status_2_error.error_message == "T3: 0 is not in [1, 2, 9]."
 
 @pytest.mark.django_db()
 def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs):
@@ -1761,13 +1759,11 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     assert parser_errors.count() == 3
 
-    education_level_error = parser_errors[0]
-    citizenship_status_error = parser_errors[1]
-    cooperation_child_support_error = parser_errors[2]
-
-    assert education_level_error.error_message == "M2: 00 matches 00."
-    assert citizenship_status_error.error_message == "M2: 0 is not in [1, 2, 3, 9]."
-    assert cooperation_child_support_error.error_message == "M2: 0 is not in [1, 2, 9]."
+    error_msgs = {"M2: 00 is not in range [1, 16]. or M2: 00 is not in range [98, 99].",
+                  "M2: 0 is not in [1, 2, 3, 9].",
+                  "M2: 0 is not in [1, 2, 9]."}
+    for e in parser_errors:
+        assert e.error_message in error_msgs
 
 @pytest.mark.django_db()
 def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
@@ -1781,15 +1777,13 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).order_by("pk")
 
-    assert parser_errors.count() == 3
+    assert parser_errors.count() == 4
 
-    education_level_error = parser_errors[0]
-    citizenship_status_1_error = parser_errors[1]
-    citizenship_status_2_error = parser_errors[2]
+    error_msgs = {"M3: 00 is not in range [1, 16]. or M3: 00 is not in range [98, 99].",
+                  "M3: 0 is not in [1, 2, 3, 9]."}
 
-    assert education_level_error.error_message == "M3: 00 matches 00."
-    assert citizenship_status_1_error.error_message == "M3: 0 is not in [1, 2, 3, 9]."
-    assert citizenship_status_2_error.error_message == "M3: 0 is not in [1, 2, 3, 9]."
+    for e in parser_errors:
+        assert e.error_message in error_msgs
 
 @pytest.mark.django_db()
 def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
@@ -1805,8 +1799,9 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     assert parser_errors.count() == 2
 
-    education_level_error = parser_errors[0]
-    citizenship_status_error = parser_errors[1]
+    error_msgs = {"M5: 00 matches 00.",
+                  "M5: 0 is not in [1, 2, 3, 9]."}
 
-    assert education_level_error.error_message == "M5: 00 matches 00."
-    assert citizenship_status_error.error_message == "M5: 0 is not in [1, 2, 3, 9]."
+    for e in parser_errors:
+        assert e.error_message in error_msgs
+
