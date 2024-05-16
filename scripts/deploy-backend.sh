@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################
-# Global Variable Decls 
+# Global Variable Decls
 ##############################
 
 # The deployment strategy you wish to employ ( rolling update or setting up a new environment)
@@ -79,7 +79,7 @@ set_cf_envs()
     else
       cf_cmd="cf set-env $CGAPPNAME_BACKEND $var_name ${!var_name}"
     fi
-    
+
     echo "Setting var : $var_name"
     $cf_cmd
   done
@@ -87,7 +87,7 @@ set_cf_envs()
 }
 
 # Helper method to generate JWT cert and keys for new environment
-generate_jwt_cert() 
+generate_jwt_cert()
 {
     echo "regenerating JWT cert/key"
     yes 'XX' | openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -sha256
@@ -96,18 +96,23 @@ generate_jwt_cert()
 }
 
 update_kibana()
-{  
+{
   # Add network policy allowing Kibana to talk to the proxy and to allow the backend to talk to Kibana
   cf add-network-policy "$CGAPPNAME_BACKEND" "$CGAPPNAME_KIBANA" --protocol tcp --port 5601
   cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_KIBANA" --protocol tcp --port 5601
   cf add-network-policy "$CGAPPNAME_KIBANA" "$CGAPPNAME_FRONTEND" --protocol tcp --port 80
+
+  # Upload dashboards to Kibana
+  pushd ../tdrs-backend/tdpservice/search_indexes
+  curl -X POST $CGAPPNAME_KIBANA.apps.internal/api/saved_objects/_import -H "kbn-xsrf: true" --form file=@kibana_saved_objs.ndjson
+  popd
 }
 
 update_backend()
 {
     cd tdrs-backend || exit
     cf unset-env "$CGAPPNAME_BACKEND" "AV_SCAN_URL"
-    
+
     if [ "$CF_SPACE" = "tanf-prod" ]; then
       cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tanf-prod-clamav-rest.apps.internal:9000/scan"
     else
@@ -131,12 +136,12 @@ update_backend()
     fi
 
     set_cf_envs
-    
+
     cf map-route "$CGAPPNAME_BACKEND" apps.internal --hostname "$CGAPPNAME_BACKEND"
 
     # Add network policy to allow frontend to access backend
     cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
-    
+
     if [ "$CF_SPACE" = "tanf-prod" ]; then
       # Add network policy to allow backend to access tanf-prod services
       cf add-network-policy "$CGAPPNAME_BACKEND" clamav-rest --protocol tcp --port 9000
@@ -151,7 +156,7 @@ bind_backend_to_services() {
     echo "Binding services to app: $CGAPPNAME_BACKEND"
 
     if [ "$CGAPPNAME_BACKEND" = "tdp-backend-develop" ]; then
-      # TODO: this is technical debt, we should either make staging mimic tanf-dev 
+      # TODO: this is technical debt, we should either make staging mimic tanf-dev
       #       or make unique services for all apps but we have a services limit
       #       Introducing technical debt for release 3.0.0 specifically.
       env="develop"
@@ -160,10 +165,10 @@ bind_backend_to_services() {
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-staticfiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-datafiles-${env}"
     cf bind-service "$CGAPPNAME_BACKEND" "tdp-db-${env}"
-    
+
     # Setting up the ElasticSearch service
     cf bind-service "$CGAPPNAME_BACKEND" "es-${env}"
-    
+
     set_cf_envs
 
     echo "Restarting app: $CGAPPNAME_BACKEND"
