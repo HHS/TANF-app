@@ -318,28 +318,6 @@ def hasLengthGreaterThan(val, error_func=None):
     )
 
 
-def recordHasLength(length):
-    """Validate that value (string or array) has a length matching length param."""
-    return make_validator(
-        lambda value: len(value) == length,
-        lambda value,
-        row_schema,
-        friendly_name,
-        item_num: f"{row_schema.record_type} record length is {len(value)} characters but must be {length}.",
-    )
-
-
-def hasLengthGreaterThan(val, error_func=None):
-    """Validate that value (string or array) has a length greater than val."""
-    return make_validator(
-        lambda value: len(value) >= val,
-        lambda value,
-        row_schema,
-        friendly_name,
-        item_num: f"Value length {len(value)} is not greater than {val}.",
-    )
-
-
 def intHasLength(num_digits):
     """Validate the number of digits in an integer."""
     return make_validator(
