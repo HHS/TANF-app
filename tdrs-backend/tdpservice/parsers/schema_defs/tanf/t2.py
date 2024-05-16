@@ -171,6 +171,7 @@ t2 = SchemaManager(
                     startIndex=19,
                     endIndex=20,
                     required=True,
+                    can_skip_partial=True,
                     validators=[validators.oneOf([1, 2, 3, 5])],
                 ),
                 Field(
@@ -958,6 +959,7 @@ t2 = SchemaManager(
                     ],
                 ),
             ],
+            skip_values={3, 5},
         )
     ]
 )
