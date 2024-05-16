@@ -400,7 +400,7 @@ class CaseConsistencyValidator:
             rpt_month_year_dd = f'{rpt_month_year}01'
             rpt_date = datetime.strptime(rpt_month_year_dd, '%Y%m%d')
             dob_date = datetime.strptime(dob, '%Y%m%d')
-            is_adult = get_years_apart(rpt_date, dob_date) >= 18
+            is_adult = get_years_apart(rpt_date, dob_date) >= 19
 
             if is_territory and is_adult and (rec_aabd != 1 and rec_aabd != 2):
                 self.__generate_and_add_error(
