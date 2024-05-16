@@ -47,8 +47,6 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana-oss:7.10.2
-    command: >
-      echo sleeping for 15 seconds && sleep 15 && curl -X POST elastic:9200/api/saved_objects/_import -H "kbn-xsrf: true" --form file=@kibana_saved_objs.ndjson
     ports:
       - 5601:5601
     environment:
