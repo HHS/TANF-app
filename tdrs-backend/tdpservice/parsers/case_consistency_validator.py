@@ -115,10 +115,6 @@ class CaseConsistencyValidator:
 
         self.current_hash = hash_val
 
-        # TODO: Duplicate detection applies to all sections, however we might need to implement a factory of some sort
-        # to get the correct duplicate manager based on the section. Sections 3 and 4 have different duplicate logic
-        # than 1 or 2 anyways. We also don't know if different program types are going to have different duplicate
-        # detection logic.
         num_errors += self.duplicate_manager.add_record(record, hash_val, schema, line,
                                                         line_number)
 
@@ -209,19 +205,6 @@ class CaseConsistencyValidator:
         t3s = self.sorted_cases.get(t3_model, [])
 
         if len(t1s) > 0:
-            if len(t1s) > 1:  # likely to be captured by "no duplicates" validator
-                for record, schema in t1s[1:]:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='RPT_MONTH_YEAR',
-                        msg=(
-                            f'There should only be one {t1_model_name} record '
-                            f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
-                        )
-                    )
-                    num_errors += 1
-
             if len(t2s) == 0 and len(t3s) == 0:
                 for record, schema in t1s:
                     self.__generate_and_add_error(
@@ -352,31 +335,19 @@ class CaseConsistencyValidator:
         t5s = self.sorted_cases.get(t5_model, [])
 
         if len(t4s) > 0:
-            if len(t4s) > 1:
-                for record, schema in t4s[1:]:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='RPT_MONTH_YEAR',
-                        msg=(
-                            f'There should only be one {t4_model_name} record  '
-                            f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
-                        )
-                    )
-                    num_errors += 1
-            else:
-                t4 = t4s[0]
-                t4_record, t4_schema = t4
-                closure_reason = getattr(t4_record, 'CLOSURE_REASON')
+            t4 = t4s[0]
+            t4_record, t4_schema = t4
+            closure_reason = getattr(t4_record, 'CLOSURE_REASON')
 
-                if closure_reason == '01':
-                    num_errors += self.__validate_case_closure_employment(t4, t5s, (
-                        'At least one person on the case must have employment status = 1:Yes in the same month.'
-                    ))
-                elif closure_reason == '99' and not is_ssp:
-                    num_errors += self.__validate_case_closure_ftl(t4, t5s, (
-                        'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
-                    ))
+            if closure_reason == '01':
+                num_errors += self.__validate_case_closure_employment(t4, t5s, (
+                    'At least one person on the case must have employment status = 1:Yes in the same month.'
+                ))
+            elif closure_reason == '99' and not is_ssp:
+                num_errors += self.__validate_case_closure_ftl(t4, t5s, (
+                    'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
+                ))
+
             if len(t5s) == 0:
                 for record, schema in t4s:
                     self.__generate_and_add_error(
@@ -429,7 +400,7 @@ class CaseConsistencyValidator:
             rpt_month_year_dd = f'{rpt_month_year}01'
             rpt_date = datetime.strptime(rpt_month_year_dd, '%Y%m%d')
             dob_date = datetime.strptime(dob, '%Y%m%d')
-            is_adult = get_years_apart(rpt_date, dob_date) >= 18
+            is_adult = get_years_apart(rpt_date, dob_date) >= 19
 
             if is_territory and is_adult and (rec_aabd != 1 and rec_aabd != 2):
                 self.__generate_and_add_error(

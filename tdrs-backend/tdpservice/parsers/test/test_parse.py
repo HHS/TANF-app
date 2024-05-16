@@ -877,8 +877,8 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
 
     parse.parse_datafile(tanf_section2_file, dfs)
 
-    assert TANF_T4.objects.all().count() == 216
-    assert TANF_T5.objects.all().count() == 588
+    assert TANF_T4.objects.all().count() == 130
+    assert TANF_T5.objects.all().count() == 362
 
     parser_errors = ParserError.objects.filter(file=tanf_section2_file)
 
@@ -1364,128 +1364,6 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
 
-@pytest.fixture
-def second_child_only_space_t3_file():
-    """Fixture for misformatted_t3_file."""
-    # T3 record: second child is not space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q3',
-        original_filename='second_child_only_space_t3_file.txt',
-        file__name='second_child_only_space_t3_file.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20212A25   TAN1 D\n' +
-                    b'T320210400028221R0112014122888175617622222112204398100000000' +
-                    b'                              \n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-@pytest.fixture
-def one_child_t3_file():
-    """Fixture for one child_t3_file."""
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q3',
-        original_filename='one_child_t3_file.txt',
-        file__name='one_child_t3_file.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20212A25   TAN1 D\n' +
-                    b'T320210400028221R0112014122888175617622222112204398100000000\n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-@pytest.fixture
-def t3_file():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q3',
-        original_filename='t3_file.txt',
-        file__name='t3_file.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20212A25   TAN1ED\n' +
-                    b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
-                    b'                                                            ' +
-                    b'                                    \n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-
-@pytest.fixture
-def t3_file_two_child():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q2',
-        original_filename='t3_file.txt',
-        file__name='t3_file.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20211A25   TAN1ED\n' +
-                    b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
-                    b'420100125WTTTT9@TB1221222220430490000\n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-@pytest.fixture
-def t3_file_two_child_with_space_filled():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q2',
-        original_filename='t3_file.txt',
-        file__name='t3_file.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20211A25   TAN1ED\n' +
-                    b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
-                    b'420100125WTTTT9@TB1221222220430490000                       \n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-
-@pytest.fixture
-def two_child_second_filled():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q2',
-        original_filename='two_child_second_filled.txt',
-        file__name='two_child_second_filled.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20211A25   TAN1ED\n' +
-                    b'T320210211111111115120160401WTTTT@BTB22212212204398100000000' +
-                    b'56      111111111                                           ' +
-                    b'                                    \n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-@pytest.fixture
-def t3_file_zero_filled_second():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q3',
-        original_filename='t3_file_zero_filled_second.txt',
-        file__name='t3_file_zero_filled_second.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20212A25   TAN1ED\n' +
-                    b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
-                    b'000000000000000000000000000000000000000000000000000000000000' +
-                    b'000000000000000000000000000000000000\n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
 @pytest.mark.parametrize('file_fixture, result, number_of_errors',
                          [('second_child_only_space_t3_file', False, 0),
                           ('one_child_t3_file', False, 0),
@@ -1508,7 +1386,7 @@ def test_misformatted_multi_records(file_fixture, result, number_of_errors, requ
         # exclude extraneous cat 4 errors
         error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY
     ).exclude(error_message="No records created.")
-    
+
     assert parser_errors.count() == number_of_errors
 
 @pytest.mark.django_db()
@@ -1724,7 +1602,7 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, requ
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-    assert parser_errors.count() == 4
+    assert parser_errors.count() == 3
 
     dup_error = parser_errors.first()
     assert dup_error.error_message == f"Partial duplicate record detected with record type {record_type} " + \

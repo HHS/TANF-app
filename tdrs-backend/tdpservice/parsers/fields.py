@@ -17,6 +17,7 @@ class Field:
         startIndex,
         endIndex,
         required=True,
+        can_skip_partial=False,
         validators=[],
     ):
         self.item = item
@@ -26,6 +27,7 @@ class Field:
         self.startIndex = startIndex
         self.endIndex = endIndex
         self.required = required
+        self.can_skip_partial = can_skip_partial
         self.validators = validators
 
     def create(self, item, name, length, start, end, type):

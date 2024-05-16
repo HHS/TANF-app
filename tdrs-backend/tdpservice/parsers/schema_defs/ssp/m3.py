@@ -134,6 +134,7 @@ first_part_schema = RowSchema(
             startIndex=19,
             endIndex=20,
             required=True,
+            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])]
         ),
         Field(
@@ -317,7 +318,8 @@ first_part_schema = RowSchema(
             required=True,
             validators=[validators.isInLimits(0, 9999)]
         )
-    ]
+    ],
+    skip_values={2, 4, 5},
 )
 
 second_part_schema = RowSchema(
@@ -448,6 +450,7 @@ second_part_schema = RowSchema(
             startIndex=60,
             endIndex=61,
             required=True,
+            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])]
         ),
         Field(
@@ -631,7 +634,8 @@ second_part_schema = RowSchema(
             required=True,
             validators=[validators.isInLimits(0, 9999)]
         )
-    ]
+    ],
+    skip_values={2, 4, 5},
 )
 
 m3 = SchemaManager(schemas=[first_part_schema, second_part_schema])
