@@ -8,21 +8,21 @@ from ..util import make_generate_parser_error, create_test_datafile
 
 def passing_validator():
     """Fake validator that always returns valid."""
-    return lambda _: (True, None)
+    return lambda _, __, ___, ____: (True, None)
 
 
 def failing_validator():
     """Fake validator that always returns invalid."""
-    return lambda _: (False, 'Value is not valid.')
+    return lambda _, __, ___, ____: (False, 'Value is not valid.')
 
 def passing_postparsing_validator():
     """Fake validator that always returns valid."""
-    return lambda _: (True, None, [])
+    return lambda _, __: (True, None, [])
 
 
 def failing_postparsing_validator():
     """Fake validator that always returns invalid."""
-    return lambda _: (False, 'Value is not valid.', [])
+    return lambda _, __: (False, 'Value is not valid.', [])
 
 def error_func(schema, error_category, error_message, record, field):
     """Fake error func that returns an error_message."""
@@ -487,7 +487,7 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
 
     def postparse_validator():
         """Fake validator that always returns valid."""
-        return lambda _: (False, "an Error", ["FIRST", "SECOND"])
+        return lambda _, __: (False, "an Error", ["FIRST", "SECOND"])
 
     instance = {}
     schema = RowSchema(

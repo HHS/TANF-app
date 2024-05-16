@@ -5,7 +5,7 @@
       - secrets-check
       - test-backend:
           requires:
-            - secrets-check      
+            - secrets-check
       - test-frontend:
           requires:
             - secrets-check
@@ -30,7 +30,7 @@
                 - master
                 - /^release.*/
           requires:
-            - secrets-check      
+            - secrets-check
       - test-frontend:
           filters:
             branches:

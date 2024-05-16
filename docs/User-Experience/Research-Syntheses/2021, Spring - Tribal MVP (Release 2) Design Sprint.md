@@ -147,7 +147,7 @@ Some Tribes have been invested in [particular case management systems] for most 
 >
 > "Our system tells us if we have errors before we transmit [and] errors are corrected prior to pulling the data from [system] to report."
 
-Just as we heard from some participants during [Fall 2020 Research](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/2020%2C%20Fall%20-%20Understanding%20STT%20Roles%2C%20Source%20of%20Truth%2C%20and%20Metadata.md), some tribes have been managing their   human services programs in one software solution for the better part of twenty years—often in software structured modularly like other integrated eligibility systems we've seen from participants representing States and Territories. At least two of the tools in use by Tribes still rely on fTANF to produce the final report files. 
+Just as we heard from some participants during [Fall 2020 Research](https://github.com/HHS/TANF-app/blob/main/docs/User-Experience/Research-Syntheses/2020%2C%20Fall%20-%20Understanding%20STT%20Roles%2C%20Source%20of%20Truth%2C%20and%20Metadata.md), some tribes have been managing their   human services programs in one software solution for the better part of twenty years—often in software structured modularly like other integrated eligibility systems we've seen from participants representing States and Territories. At least two of the tools in use by Tribes still rely on fTANF to produce the final report files. 
 
 > "We have had [system] for 19 years"
 >
@@ -396,7 +396,7 @@ Communication in this category is different from prior steps in so much as it's 
 
 **Immediate Next Steps**
 
-- [Issue #804](https://github.com/raft-tech/TANF-app/issues/804) delivered updates to the [Stakeholders and Personas document](https://github.com/HHS/TANF-app/blob/main/docs/User-Research/Stakeholders-and-Personas.md), including recommendations on needed personas and follow-on tickets [#840](https://github.com/raft-tech/TANF-app/issues/840) and [#841](https://github.com/raft-tech/TANF-app/issues/841) which respectively relate to research focused around grantee program directors and regional specialists.
+- [Issue #804](https://github.com/raft-tech/TANF-app/issues/804) delivered updates to the [Stakeholders and Personas document](https://github.com/HHS/TANF-app/blob/main/docs/Product-Strategy/Vision-and-Stakeholders.md), including recommendations on needed personas and follow-on tickets [#840](https://github.com/raft-tech/TANF-app/issues/840) and [#841](https://github.com/raft-tech/TANF-app/issues/841) which respectively relate to research focused around grantee program directors and regional specialists.
 
 **Top Future Validations**
 

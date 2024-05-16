@@ -19,12 +19,15 @@ families_item_numbers = [sub_item_labels[i % 3] for i in range(30)]
 for i in range(1, 31):
     schemas.append(
         RowSchema(
+            record_type="M7",
             document=SSP_M7DataSubmissionDocument(),
             quiet_preparser_errors=i > 1,
             preparsing_validators=[
-                validators.hasLength(247),
+                validators.recordHasLength(247),
                 validators.notEmpty(0, 7),
                 validators.notEmpty(validator_index, validator_index + 24),
+                validators.field_year_month_with_header_year_quarter(),
+                validators.calendarQuarterIsValid(2, 7),
             ],
             postparsing_validators=[],
             fields=[
@@ -47,7 +50,7 @@ for i in range(1, 31):
                     endIndex=7,
                     required=True,
                     validators=[
-                        validators.dateYearIsLargerThan(1998),
+                        validators.dateYearIsLargerThan(2020),
                         validators.quarterIsValid(),
                     ],
                 ),

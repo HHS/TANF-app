@@ -7,11 +7,13 @@ from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T6DataSubmissionDocument
 
-
 s1 = RowSchema(
+    record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.hasLength(379),
+        validators.recordHasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
+        validators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -54,7 +56,7 @@ s1 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
+                validators.dateYearIsLargerThan(2020),
                 validators.quarterIsValid(),
             ],
         ),
@@ -226,9 +228,13 @@ s1 = RowSchema(
 )
 
 s2 = RowSchema(
+    record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
+    quiet_preparser_errors=True,
     preparsing_validators=[
-        validators.hasLength(379),
+        validators.recordHasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
+        validators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
         validators.sumIsEqual(
@@ -437,9 +443,13 @@ s2 = RowSchema(
 )
 
 s3 = RowSchema(
+    record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
+    quiet_preparser_errors=True,
     preparsing_validators=[
-        validators.hasLength(379),
+        validators.recordHasLength(379),
+        validators.field_year_month_with_header_year_quarter(),
+        validators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
         validators.sumIsEqual(

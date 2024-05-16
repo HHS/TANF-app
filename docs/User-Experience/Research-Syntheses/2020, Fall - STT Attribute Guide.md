@@ -9,8 +9,8 @@ We created this guide to provide context to the [STT Attributes Spreadsheet](<ht
 
 We collaborated with OFA analysts to gather reports that contained information related to data submission errors for all of the grantees from Quarter 3 2018 to Quarter 2 2020. We are starting our analysis with two data sets focused on data quality and common errors given the critical role of data quality in the success of TDRS:
 
-- [Error count across submissions and resubmissions](https://hackmd.io/_PV7z3UAQmOPKbuFQ2BuOQ#Number-of-errors-discovered-from-TANF-reports-for-all-STTs)
-- [Error types across submissions and resubmissions](https://hackmd.io/_PV7z3UAQmOPKbuFQ2BuOQ#Most-frequent-errors-from-TANF-reports-for-all-STTs)
+- [Error count across submissions and resubmissions](#error-count-across-submissions-and-resubmissions)
+- [Error count across submissions and resubmissions](#error-count-across-submissions-and-resubmissions)
 
 ---
 
