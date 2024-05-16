@@ -403,7 +403,7 @@ def test_recordHasLength_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: record length is 7 characters but must be 22.'
+    assert error == 'T1 record length is 7 characters but must be 22.'
 
 def test_hasLengthGreaterThan_returns_valid():
     """Test `hasLengthGreaterThan` gives a valid result."""
