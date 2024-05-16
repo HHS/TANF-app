@@ -10,7 +10,7 @@ applications:
       SERVER_SECURITYRESPONSEHEADERS_REFERRERPOLICY: no-referrer
       CSP_WARNLEGACYBROWSERS: false
     docker:
-      image: docker.elastic.co/kibana/kibana-oss:7.4.2
+      image: docker.elastic.co/kibana/kibana-oss:7.10.2
     command: |
       export ELASTICSEARCH_HOSTS=http://$CGAPPNAME_PROXY.apps.internal:8080 &&
       /usr/local/bin/dumb-init -- /usr/local/bin/kibana-docker
