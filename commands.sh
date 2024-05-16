@@ -31,7 +31,7 @@ alias tdrs-start='tdrs-start-backend && tdrs-start-frontend'
 alias tdrs-stop='tdrs-stop-frontend && tdrs-stop-backend'
 
 # Restart frontend and backend
-alias tdrs-restart='tdrs-restart-backend && tdrs-restart-frontend' 
+alias tdrs-restart='tdrs-restart-backend && tdrs-restart-frontend'
 
 # start all backend containers
 alias tdrs-start-backend='tdrs-compose-backend up -d'
@@ -168,7 +168,7 @@ tdrs-run-pytest () {
 
 # Run owasp scan for backend assuming circle ci environment
 tdrs-run-backend-owasp() {
-    if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then 
+    if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then
         docker network create external-net
     fi
     cd-tdrs-backend
@@ -192,7 +192,7 @@ tdrs-run-backend-owasp() {
 
 # Run owasp scan for frontend assuming circle ci environment
 tdrs-run-frontend-owasp() {
-    if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then 
+    if [[ $(docker network inspect external-net 2>&1 | grep -c Scope) == 0 ]]; then
         docker network create external-net
     fi
     cd-tdrs-backend
@@ -235,3 +235,10 @@ alias tdrs-functions='declare -F|grep tdrs && alias|grep tdrs|cut -d" " -f1 --co
 
 # Get logs on backend
 alias tdrs-backend-log="docker logs $(docker ps|grep web|awk '{print $1}')"
+
+upload_kibana_objs() {
+    cd-tdrs-backend
+    cd tdpservice/search_indexes
+    curl -X POST localhost:5601/api/saved_objects/_import -H "kbn-xsrf: true" --form file=@kibana_saved_objs.ndjson
+    cd-tdrs-backend
+}
