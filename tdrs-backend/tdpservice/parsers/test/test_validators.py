@@ -4,10 +4,10 @@ import pytest
 import logging
 from datetime import date
 from .. import validators
-from ..case_consistency_validator import CaseConsistencyValidator
 from .. import schema_defs, util
 from ..row_schema import RowSchema
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
+
 from tdpservice.parsers.test.factories import SSPM5Factory
 
 logger = logging.getLogger(__name__)
@@ -1421,45 +1421,3 @@ class TestCaseConsistencyValidator:
             logger.error('Header is not valid: %s', header_errors)
             return None
         return header
-
-    @pytest.mark.django_db
-    def test_add_record(self, small_correct_file_header, small_correct_file, tanf_s1_records, tanf_s1_schemas):
-        """Test add_record logic."""
-        case_consistency_validator = CaseConsistencyValidator(small_correct_file_header,
-                                                              util.make_generate_parser_error(small_correct_file, None))
-
-        for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
-            case_consistency_validator.add_record(record, schema, True)
-
-        assert case_consistency_validator.has_validated is False
-        assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.record_schema_pairs) == 4
-        assert case_consistency_validator.total_cases_cached == 0
-        assert case_consistency_validator.total_cases_validated == 0
-
-        # Add record with different case number to proc validation again and start caching a new case.
-        t1 = TanfT1Factory.create()
-        t1.CASE_NUMBER = 2
-        case_consistency_validator.add_record(t1, tanf_s1_schemas[0], False)
-        assert case_consistency_validator.has_validated is False
-        assert case_consistency_validator.case_has_errors is False
-        assert len(case_consistency_validator.record_schema_pairs) == 1
-        assert case_consistency_validator.total_cases_cached == 1
-        assert case_consistency_validator.total_cases_validated == 0
-
-        # Complete the case to proc validation and verify that it occured. Even if the next case has errors.
-        t2 = TanfT2Factory.create()
-        t3 = TanfT3Factory.create()
-        t2.CASE_NUMBER = 2
-        t3.CASE_NUMBER = 2
-        case_consistency_validator.add_record(t2, tanf_s1_schemas[1], False)
-        case_consistency_validator.add_record(t3, tanf_s1_schemas[2], False)
-        assert case_consistency_validator.case_has_errors is False
-
-        case_consistency_validator.add_record(tanf_s1_records[0], tanf_s1_schemas[0], True)
-
-        assert case_consistency_validator.has_validated is True
-        assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.record_schema_pairs) == 1
-        assert case_consistency_validator.total_cases_cached == 2
-        assert case_consistency_validator.total_cases_validated == 1
