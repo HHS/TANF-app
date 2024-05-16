@@ -204,6 +204,128 @@ def tribal_section_4_bad_quarter(stt_user, stt):
     return util.create_test_datafile('tribal_section_4_fake_bad_quarter.txt', stt_user, stt, "Tribal Stratum Data")
 
 @pytest.fixture
+def second_child_only_space_t3_file():
+    """Fixture for misformatted_t3_file."""
+    # T3 record: second child is not space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q3',
+        original_filename='second_child_only_space_t3_file.txt',
+        file__name='second_child_only_space_t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T320210400028221R0112014122888175617622222112204398100000000' +
+                    b'                              \n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.fixture
+def one_child_t3_file():
+    """Fixture for one child_t3_file."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q3',
+        original_filename='one_child_t3_file.txt',
+        file__name='one_child_t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T320210400028221R0112014122888175617622222112204398100000000\n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.fixture
+def t3_file():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q3',
+        original_filename='t3_file.txt',
+        file__name='t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
+                    b'                                                            ' +
+                    b'                                    \n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+
+@pytest.fixture
+def t3_file_two_child():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q2',
+        original_filename='t3_file.txt',
+        file__name='t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
+                    b'420100125WTTTT9@TB1221222220430490000\n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.fixture
+def t3_file_two_child_with_space_filled():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q2',
+        original_filename='t3_file.txt',
+        file__name='t3_file.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
+                    b'420100125WTTTT9@TB1221222220430490000                       \n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+
+@pytest.fixture
+def two_child_second_filled():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q2',
+        original_filename='two_child_second_filled.txt',
+        file__name='two_child_second_filled.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T320210211111111115120160401WTTTT@BTB22212212204398100000000' +
+                    b'56      111111111                                           ' +
+                    b'                                    \n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.fixture
+def t3_file_zero_filled_second():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q3',
+        original_filename='t3_file_zero_filled_second.txt',
+        file__name='t3_file_zero_filled_second.txt',
+        file__section=DataFile.Section.ACTIVE_CASE_DATA,
+        file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
+                    b'000000000000000000000000000000000000000000000000000000000000' +
+                    b'000000000000000000000000000000000000\n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+@pytest.fixture
 def tanf_s1_exact_dup_file():
     """Fixture for a section 1 file containing an exact duplicate record."""
     parsing_file = ParsingFileFactory(
