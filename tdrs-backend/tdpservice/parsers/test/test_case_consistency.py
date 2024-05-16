@@ -744,7 +744,8 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            'At least one person on the case must have employment status = 1:Yes in the same month.'
+            'At least one person on the case must have employment status = 1:Yes'
+            ' in the same RPT_MONTH_YEAR since CLOSURE_REASON = 1:Employment/excess earnings.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
@@ -778,7 +779,7 @@ class TestCaseConsistencyValidator:
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                CLOSURE_REASON='99'
+                CLOSURE_REASON='03'
             ),
         ]
         for t4 in t4s:
