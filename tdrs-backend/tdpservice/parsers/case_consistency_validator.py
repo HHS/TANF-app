@@ -199,7 +199,7 @@ class CaseConsistencyValidator:
                             field='RPT_MONTH_YEAR',
                             msg=(
                                 f'There should only be one {t1_model_name} record '
-                                f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
+                                f'per RPT_MONTH_YEAR and CASE_NUMBER.'
                             )
                         )
                         num_errors += 1
@@ -345,7 +345,7 @@ class CaseConsistencyValidator:
                             field='RPT_MONTH_YEAR',
                             msg=(
                                 f'There should only be one {t4_model_name} record  '
-                                f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
+                                f'per RPT_MONTH_YEAR and CASE_NUMBER.'
                             )
                         )
                         num_errors += 1

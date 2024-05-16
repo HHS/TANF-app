@@ -433,7 +433,7 @@ class TestCaseConsistencyValidator:
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f'There should only be one {t1_model_name} record '
-            f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
+            f'per RPT_MONTH_YEAR and CASE_NUMBER.'
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
@@ -668,7 +668,7 @@ class TestCaseConsistencyValidator:
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f'There should only be one {t4_model_name} record  '
-            f'for a RPT_MONTH_YEAR and CASE_NUMBER.'
+            f'per RPT_MONTH_YEAR and CASE_NUMBER.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
