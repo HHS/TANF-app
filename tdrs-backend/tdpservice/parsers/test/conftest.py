@@ -1,5 +1,6 @@
 """Package level fixtures."""
 import pytest
+from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.test.factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.parsers import util
 
