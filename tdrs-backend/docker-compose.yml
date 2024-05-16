@@ -3,7 +3,7 @@ version: "3.4"
 
 services:
   zaproxy:
-    image: softwaresecurityproject/zap-stable:2.13.0
+    image: softwaresecurityproject/zap-stable:2.14.0
     command: sleep 3600
     depends_on:
       - web
@@ -106,6 +106,17 @@ services:
       - SENDGRID_API_KEY
       - GENERATE_TRAILER_ERRORS=True
       - BYPASS_KIBANA_AUTH
+      - ELASTICSEARCH_REINDEX_THREAD_COUNT
+      - ELASTICSEARCH_REINDEX_CHUNK_SIZE
+      - ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT
+      - ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN
+      - ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO
+      - ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE
+      - ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL
+      - ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN
+      - ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO
+      - ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE
+      - ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL
     volumes:
       - .:/tdpapp
     image: tdp

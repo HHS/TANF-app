@@ -7,6 +7,8 @@ from django.conf import settings
 
 def send_deactivation_warning_email(users, days):
     """Send an email to users that are about to be deactivated."""
+    from tdpservice.users.models import User
+
     template_path = EmailType.DEACTIVATION_WARNING.value
     text_message = f'Your account will be deactivated in {days} days.'
     subject = f'Account Deactivation Warning: {days} days remaining'
@@ -24,7 +26,8 @@ def send_deactivation_warning_email(users, days):
         logger_context = {
            'user_id': user.id,
            'object_id': user.id,
-           'object_repr': user.email
+           'object_repr': user.email,
+           'content_type': User,
         }
 
         automated_email(
