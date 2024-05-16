@@ -85,4 +85,5 @@ resource "cloudfoundry_service_instance" "elasticsearch" {
   name         = "es-prod"
   space        = data.cloudfoundry_space.space.id
   service_plan = data.cloudfoundry_service.elasticsearch.service_plans["es-medium"]
+  json_params  = '{"ElasticsearchVersion": "Elasticsearch_7.10"}'
 }

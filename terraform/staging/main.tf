@@ -85,4 +85,5 @@ resource "cloudfoundry_service_instance" "elasticsearch" {
   name         = "es-staging"
   space        = data.cloudfoundry_space.space.id
   service_plan = data.cloudfoundry_service.elasticsearch.service_plans["es-dev"]
+  json_params  = '{"ElasticsearchVersion": "Elasticsearch_7.10"}'
 }
