@@ -449,7 +449,7 @@ class CaseConsistencyValidator:
                         )
                     )
                     num_errors += 1
-                elif is_state and family_affiliation == 1 and rec_ssi != 1:
+                elif is_state and family_affiliation == 1:
                     self.__generate_and_add_error(
                         schema,
                         record,

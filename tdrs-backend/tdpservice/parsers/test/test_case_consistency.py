@@ -572,16 +572,16 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1
+                REC_SSI=2
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1
+                REC_SSI=2
             ),
         ]
         for t5 in t5s:
@@ -644,16 +644,16 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1
+                REC_SSI=2
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1
+                REC_SSI=2
             ),
         ]
         for t5 in t5s:
@@ -719,9 +719,9 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1,
+                REC_SSI=2,
                 EMPLOYMENT_STATUS=3,
             ),
             T5Factory.create(
@@ -729,7 +729,7 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1,
+                REC_SSI=2,
                 EMPLOYMENT_STATUS=2,
             ),
         ]
@@ -789,9 +789,9 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1,
+                REC_SSI=2,
                 RELATIONSHIP_HOH='10',
                 COUNTABLE_MONTH_FED_TIME='059',
             ),
@@ -800,7 +800,7 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1,
+                REC_SSI=2,
                 RELATIONSHIP_HOH='03',
                 COUNTABLE_MONTH_FED_TIME='001',
             ),
@@ -912,16 +912,16 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1
+                REC_SSI=2
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1
+                REC_SSI=2
             ),
         ]
         for t5 in t5s:
@@ -1197,9 +1197,9 @@ class TestCaseConsistencyValidator:
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
                 DATE_OF_BIRTH="19970209",
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=1,
-                REC_SSI=1
+                REC_SSI=2
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
@@ -1207,7 +1207,7 @@ class TestCaseConsistencyValidator:
                 DATE_OF_BIRTH="20170209",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=1,
-                REC_SSI=1
+                REC_SSI=2
             ),
         ]
         for t5 in t5s:
