@@ -356,7 +356,8 @@ class CaseConsistencyValidator:
 
                     if closure_reason == '01':
                         num_errors += self.__validate_case_closure_employment(t4, t5s, (
-                            'At least one person on the case must have employment status = 1:Yes in the same RPT_MONTH_YEAR since CLOSURE_REASON = 1:Employment/excess earnings.'
+                            'At least one person on the case must have employment status = 1:Yes in the '
+                            'same RPT_MONTH_YEAR since CLOSURE_REASON = 1:Employment/excess earnings.'
                         ))
                     elif closure_reason == '03' and not is_ssp:
                         num_errors += self.__validate_case_closure_ftl(t4, t5s, (
