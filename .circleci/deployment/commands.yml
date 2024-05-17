@@ -246,7 +246,6 @@
       - terraform/apply:
           path: <<parameters.tf-path>>
           var_file: ./variables.tfvars
-          timeout: 60m
 
   enable-s3-versioning:
     parameters:
