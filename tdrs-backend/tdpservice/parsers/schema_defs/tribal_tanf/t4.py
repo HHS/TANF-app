@@ -149,15 +149,9 @@ t4 = SchemaManager(
                     validators=[validators.isInLimits(1, 3)],
                 ),
                 Field(
-<<<<<<< HEAD
-                    item="14",
-                    name="FAMILY_AFFILIATION",
-                    friendly_name="Family Affiliation",
-=======
                     item="-1",
                     name="BLANK",
                     friendly_name="blank",
->>>>>>> 9bcf9b93bc83220f701ab924a2bdf0b6f5066393
                     type="string",
                     startIndex=36,
                     endIndex=71,
