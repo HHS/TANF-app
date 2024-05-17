@@ -361,7 +361,9 @@ class CaseConsistencyValidator:
                         ))
                     elif closure_reason == '03' and not is_ssp:
                         num_errors += self.__validate_case_closure_ftl(t4, t5s, (
-                            'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
+                            'At least one person who is head-of-household or spouse of head-of-household '
+                            'on case must have countable months toward time limit >= 60 since '
+                            'CLOSURE_REASON = 03: federal 5 year time limit.'
                         ))
                 if len(t5s) == 0:
                     for record, schema in t4s:
