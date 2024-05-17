@@ -93,6 +93,16 @@ class CaseHashtainer:
                                 str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
         return partial_hash
 
+    def __skip_partial(self, record):
+        skip_partial = False
+        if record.RecordType == "T2":
+            skip_partial = record.FAMILY_AFFILIATION in {3, 5}
+        if record.RecordType == "T3":
+            skip_partial = record.FAMILY_AFFILIATION in {2, 4, 5}
+        if record.RecordType == "T5":
+            skip_partial = record.FAMILY_AFFILIATION in {3, 4, 5}
+        return skip_partial
+
     def add_case_member(self, record, schema, line, line_number):
         """Add case member and generate errors if needed.
 
@@ -119,7 +129,7 @@ class CaseHashtainer:
                            f"line number {existing_record_line_number}.")
                 is_exact_dup = True
 
-            skip_partial = schema.should_skip_partial_dup
+            skip_partial = self.__skip_partial(record)
             partial_hash = self.__get_partial_hash(record)
             if not skip_partial and not is_exact_dup and partial_hash in self.partial_hashes:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(

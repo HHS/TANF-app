@@ -147,7 +147,6 @@ m5 = SchemaManager(
                     startIndex=19,
                     endIndex=20,
                     required=True,
-                    can_skip_partial=True,
                     validators=[validators.isInLimits(1, 5)],
                 ),
                 Field(
@@ -397,7 +396,6 @@ m5 = SchemaManager(
                     validators=[validators.isInStringRange(0, 9999)],
                 ),
             ],
-            skip_values={3, 4, 5},
         )
     ]
 )

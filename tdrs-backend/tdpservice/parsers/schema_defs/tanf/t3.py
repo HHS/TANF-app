@@ -134,7 +134,6 @@ child_one = RowSchema(
             startIndex=19,
             endIndex=20,
             required=True,
-            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])],
         ),
         Field(
@@ -319,7 +318,6 @@ child_one = RowSchema(
             validators=[validators.isInStringRange(0, 9999)],
         ),
     ],
-    skip_values={2, 4, 5},
 )
 
 
@@ -449,7 +447,6 @@ child_two = RowSchema(
             startIndex=60,
             endIndex=61,
             required=True,
-            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])],
         ),
         Field(
@@ -634,7 +631,6 @@ child_two = RowSchema(
             validators=[validators.isInStringRange(0, 9999)],
         ),
     ],
-    skip_values={2, 4, 5},
 )
 
 t3 = SchemaManager(schemas=[child_one, child_two])
