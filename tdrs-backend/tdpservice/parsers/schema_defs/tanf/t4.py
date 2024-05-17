@@ -58,7 +58,7 @@ t4 = SchemaManager(
                 Field(
                     item="2",
                     name="COUNTY_FIPS_CODE",
-                    friendly_name="County FIPS Code",
+                    friendly_name="County FIPS code",
                     type="string",
                     startIndex=19,
                     endIndex=22,
@@ -133,7 +133,7 @@ t4 = SchemaManager(
                 Field(
                     item="12",
                     name="REC_FOOD_STAMPS",
-                    friendly_name="Received Assistance from the Supplemental Nutrition Assistance Program (SNAP)",
+                    friendly_name="Received Assistance from SNAP",
                     type="number",
                     startIndex=34,
                     endIndex=35,

@@ -352,7 +352,7 @@ t1 = SchemaManager(
                 Field(
                     item="21A",
                     name="CASH_AMOUNT",
-                    friendly_name="Cash and Cash Equivalents",
+                    friendly_name="Cash Amount",
                     type="number",
                     startIndex=55,
                     endIndex=59,
@@ -508,7 +508,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AIII",
                     name="FAMILY_SANC_ADULT",
-                    friendly_name="Family Sanction for an Adult with No High School Diploma orEquivalent:",
+                    friendly_name="Family Sanction for an Adult with No High School Diploma or Equivalent:",
                     type="number",
                     startIndex=97,
                     endIndex=98,
@@ -638,7 +638,7 @@ t1 = SchemaManager(
                 Field(
                     item="28",
                     name="FAMILY_EXEMPT_TIME_LIMITS",
-                    friendly_name="Exempt during the reporting month from theTribal Time-Limit Provisions",
+                    friendly_name="Exempt during reporting month from the Tribal Time-Limit Provisions",
                     type="number",
                     startIndex=114,
                     endIndex=116,

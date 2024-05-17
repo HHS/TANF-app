@@ -280,7 +280,7 @@ t1 = SchemaManager(
                 Field(
                     item="15",
                     name="RECEIVES_FOOD_STAMPS",
-                    friendly_name="Receives Assistance from the Supplemental Nutrition Assistance Program (SNAP)",
+                    friendly_name="Receives Assistance from the SNAP",
                     type="number",
                     startIndex=37,
                     endIndex=38,
@@ -292,7 +292,7 @@ t1 = SchemaManager(
                 Field(
                     item="16",
                     name="AMT_FOOD_STAMP_ASSISTANCE",
-                    friendly_name="Amount of Supplemental Nutrition Assistance Program (SNAP) Benefits",
+                    friendly_name="Amount of SNAP Benefits",
                     type="number",
                     startIndex=38,
                     endIndex=42,
@@ -352,7 +352,7 @@ t1 = SchemaManager(
                 Field(
                     item="21A",
                     name="CASH_AMOUNT",
-                    friendly_name="Cash and Cash Equivalents: Amount",
+                    friendly_name="Cash Amount",
                     type="number",
                     startIndex=55,
                     endIndex=59,
@@ -376,7 +376,7 @@ t1 = SchemaManager(
                 Field(
                     item="22A",
                     name="CC_AMOUNT",
-                    friendly_name="TANF Child Care: Amount",
+                    friendly_name="Child Care Amount",
                     type="number",
                     startIndex=62,
                     endIndex=66,
@@ -484,7 +484,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AI",
                     name="SANC_REDUCTION_AMT",
-                    friendly_name="Total Dollar Amount of Reductions due to Sanctions",
+                    friendly_name="Total Dollar Amount of Reductions Due to Sanctions",
                     type="number",
                     startIndex=92,
                     endIndex=96,
@@ -508,7 +508,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AIII",
                     name="FAMILY_SANC_ADULT",
-                    friendly_name="Sanctions: Code no longer in use",
+                    friendly_name="Family Sanction",
                     type="number",
                     startIndex=97,
                     endIndex=98,
@@ -616,7 +616,7 @@ t1 = SchemaManager(
                 Field(
                     item="26CIV",
                     name="OTHER_NON_SANCTION",
-                    friendly_name="Other: Non-Sanction, Non-Recoupment",
+                    friendly_name="Non-Sanction",
                     type="number",
                     startIndex=112,
                     endIndex=113,
@@ -628,7 +628,7 @@ t1 = SchemaManager(
                 Field(
                     item="27",
                     name="WAIVER_EVAL_CONTROL_GRPS",
-                    friendly_name="Waiver Evaluation Experimental and Control Groups",
+                    friendly_name="Waiver Evaluation",
                     type="string",
                     startIndex=113,
                     endIndex=114,
@@ -651,7 +651,7 @@ t1 = SchemaManager(
                 Field(
                     item="29",
                     name="FAMILY_NEW_CHILD",
-                    friendly_name="TANF Family a New Child-Only Family: Code no longer in use",
+                    friendly_name="TANF Family a New Child-Only Family",
                     type="number",
                     startIndex=116,
                     endIndex=117,

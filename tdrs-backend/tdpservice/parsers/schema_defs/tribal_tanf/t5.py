@@ -173,7 +173,7 @@ t5 = SchemaManager(
                 Field(
                     item="17A",
                     name="RACE_HISPANIC",
-                    friendly_name="Ethnicity/Race: Hispanic or Latino",
+                    friendly_name="Hispanic or Latino",
                     type="number",
                     startIndex=37,
                     endIndex=38,
@@ -183,7 +183,7 @@ t5 = SchemaManager(
                 Field(
                     item="17B",
                     name="RACE_AMER_INDIAN",
-                    friendly_name="Ethnicity/Race: American Indian or Alaska Native",
+                    friendly_name="American Indian or Alaska Native",
                     type="number",
                     startIndex=38,
                     endIndex=39,
@@ -193,7 +193,7 @@ t5 = SchemaManager(
                 Field(
                     item="17C",
                     name="RACE_ASIAN",
-                    friendly_name="Ethnicity/Race: Asian",
+                    friendly_name="Asian",
                     type="number",
                     startIndex=39,
                     endIndex=40,
@@ -203,7 +203,7 @@ t5 = SchemaManager(
                 Field(
                     item="17D",
                     name="RACE_BLACK",
-                    friendly_name="Ethnicity/Race: Black or African American",
+                    friendly_name="Black or African American",
                     type="number",
                     startIndex=40,
                     endIndex=41,
@@ -213,7 +213,7 @@ t5 = SchemaManager(
                 Field(
                     item="17E",
                     name="RACE_HAWAIIAN",
-                    friendly_name="Ethnicity/Race: Hawaiian or Other Pacific Islander",
+                    friendly_name="Hawaiian or Pacific Islander",
                     type="number",
                     startIndex=41,
                     endIndex=42,
@@ -223,7 +223,7 @@ t5 = SchemaManager(
                 Field(
                     item="17F",
                     name="RACE_WHITE",
-                    friendly_name="Ethnicity/Race: White",
+                    friendly_name="White",
                     type="number",
                     startIndex=42,
                     endIndex=43,
@@ -253,7 +253,7 @@ t5 = SchemaManager(
                 Field(
                     item="19B",
                     name="REC_FEDERAL_DISABILITY",
-                    friendly_name="Receives Disability Benefits: Federal Disability Status",
+                    friendly_name="Receives Disability Benefits: Other Federal Disability Status",
                     type="number",
                     startIndex=45,
                     endIndex=46,
@@ -263,7 +263,7 @@ t5 = SchemaManager(
                 Field(
                     item="19C",
                     name="REC_AID_TOTALLY_DISABLED",
-                    friendly_name="Received Disability Benefits: Permanently and Totally Disabled Under Title XIV-APDT",
+                    friendly_name="Received Disability Benefits: Permanently and Totally Disabled",
                     type="number",
                     startIndex=46,
                     endIndex=47,
@@ -273,7 +273,7 @@ t5 = SchemaManager(
                 Field(
                     item="19D",
                     name="REC_AID_AGED_BLIND",
-                    friendly_name="Received Disability Benefits: Aged, Blind, and Disabled Under Title XVI-AABD",
+                    friendly_name="Received Disability Benefits: AABD",
                     type="number",
                     startIndex=47,
                     endIndex=48,
@@ -283,7 +283,7 @@ t5 = SchemaManager(
                 Field(
                     item="19E",
                     name="REC_SSI",
-                    friendly_name="Received Disability Benefits: Supplemental Security Income Under Title XVI-SSI",
+                    friendly_name="Received Disability Benefits: SSI",
                     type="number",
                     startIndex=48,
                     endIndex=49,
@@ -362,7 +362,7 @@ t5 = SchemaManager(
                 Field(
                     item="26",
                     name="COUNTABLE_MONTH_FED_TIME",
-                    friendly_name="Number of Months Countable toward Tribal Time Limit:",
+                    friendly_name="Number of Months Countable Toward Tribal Time Limit",
                     type="string",
                     startIndex=57,
                     endIndex=60,

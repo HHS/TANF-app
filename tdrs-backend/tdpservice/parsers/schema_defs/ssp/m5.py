@@ -178,7 +178,7 @@ m5 = SchemaManager(
                 Field(
                     item="16A",
                     name="RACE_HISPANIC",
-                    friendly_name="Race/Ethnicity: Hispanic or Latino",
+                    friendly_name="Hispanic or Latino",
                     type="number",
                     startIndex=37,
                     endIndex=38,
@@ -188,7 +188,7 @@ m5 = SchemaManager(
                 Field(
                     item="16B",
                     name="RACE_AMER_INDIAN",
-                    friendly_name="Race/Ethnicity: American Indian or Alaska Native",
+                    friendly_name="American Indian or Alaska Native",
                     type="number",
                     startIndex=38,
                     endIndex=39,
@@ -198,7 +198,7 @@ m5 = SchemaManager(
                 Field(
                     item="16C",
                     name="RACE_ASIAN",
-                    friendly_name="Race/Ethnicity: Asian",
+                    friendly_name="Asian",
                     type="number",
                     startIndex=39,
                     endIndex=40,
@@ -208,7 +208,7 @@ m5 = SchemaManager(
                 Field(
                     item="16D",
                     name="RACE_BLACK",
-                    friendly_name="Race/Ethnicity: Black or African American",
+                    friendly_name="Black or African American",
                     type="number",
                     startIndex=40,
                     endIndex=41,
@@ -218,7 +218,7 @@ m5 = SchemaManager(
                 Field(
                     item="16E",
                     name="RACE_HAWAIIAN",
-                    friendly_name="Race/Ethnicity: Native Hawaiian or Other Pacific Islander",
+                    friendly_name="Native Hawaiian or Pacific Islander",
                     type="number",
                     startIndex=41,
                     endIndex=42,
@@ -228,7 +228,7 @@ m5 = SchemaManager(
                 Field(
                     item="16F",
                     name="RACE_WHITE",
-                    friendly_name="Race/Ethnicity: White",
+                    friendly_name="White",
                     type="number",
                     startIndex=42,
                     endIndex=43,
@@ -258,7 +258,7 @@ m5 = SchemaManager(
                 Field(
                     item="18B",
                     name="REC_FEDERAL_DISABILITY",
-                    friendly_name="Received Disability Benefits: Federal Disability Status",
+                    friendly_name="Received Disability Benefits: Other Federal Disability Status",
                     type="number",
                     startIndex=45,
                     endIndex=46,
@@ -268,7 +268,7 @@ m5 = SchemaManager(
                 Field(
                     item="18C",
                     name="REC_AID_TOTALLY_DISABLED",
-                    friendly_name="Received Disability Benefits: Permanently and Totally Disabled Under Title XIV-APDT",
+                    friendly_name="Received Disability Benefits: Permanently and Totally Disabled",
                     type="number",
                     startIndex=46,
                     endIndex=47,
@@ -278,7 +278,7 @@ m5 = SchemaManager(
                 Field(
                     item="18D",
                     name="REC_AID_AGED_BLIND",
-                    friendly_name="Received Disability Benefits: Aged, Blind, and Disabled Under Title XVI-AABD",
+                    friendly_name="Received Disability Benefits: AABD",
                     type="number",
                     startIndex=47,
                     endIndex=48,
@@ -288,7 +288,7 @@ m5 = SchemaManager(
                 Field(
                     item="18E",
                     name="REC_SSI",
-                    friendly_name="Received Disability Benefits: Supplemental Security Income Under Title XVI-SSI",
+                    friendly_name="Received Disability Benefits: SSI",
                     type="number",
                     startIndex=48,
                     endIndex=49,

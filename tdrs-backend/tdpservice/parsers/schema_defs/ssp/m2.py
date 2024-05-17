@@ -209,7 +209,7 @@ m2 = SchemaManager(
                     item="30A",
                     name='RACE_HISPANIC',
                     type='number',
-                    friendly_name="Race/Ethnicity: Hispanic or Latino",
+                    friendly_name="Hispanic or Latino",
                     startIndex=38,
                     endIndex=39,
                     required=False,
@@ -218,7 +218,7 @@ m2 = SchemaManager(
                 Field(
                     item="30B",
                     name='RACE_AMER_INDIAN',
-                    friendly_name="Race/Ethnicity: American Indian or Alaska Native",
+                    friendly_name="American Indian or Alaska Native",
                     type='number',
                     startIndex=39,
                     endIndex=40,
@@ -228,7 +228,7 @@ m2 = SchemaManager(
                 Field(
                     item="30C",
                     name='RACE_ASIAN',
-                    friendly_name="Race/Ethnicity: Asian",
+                    friendly_name="Asian",
                     type='number',
                     startIndex=40,
                     endIndex=41,
@@ -238,7 +238,7 @@ m2 = SchemaManager(
                 Field(
                     item="30D",
                     name='RACE_BLACK',
-                    friendly_name="Race/Ethnicity: Black or African American",
+                    friendly_name="Black or African American",
                     type='number',
                     startIndex=41,
                     endIndex=42,
@@ -248,7 +248,7 @@ m2 = SchemaManager(
                 Field(
                     item="30E",
                     name='RACE_HAWAIIAN',
-                    friendly_name="Race/Ethnicity: Native Hawaiian or Other Pacific Islander",
+                    friendly_name="Native Hawaiian or Other Pacific Islander",
                     type='number',
                     startIndex=42,
                     endIndex=43,
@@ -258,7 +258,7 @@ m2 = SchemaManager(
                 Field(
                     item="30F",
                     name='RACE_WHITE',
-                    friendly_name="Race/Ethnicity: White",
+                    friendly_name="White",
                     type='number',
                     startIndex=43,
                     endIndex=44,
@@ -288,7 +288,7 @@ m2 = SchemaManager(
                 Field(
                     item="32B",
                     name='FED_DISABILITY_STATUS',
-                    friendly_name="Receives Disability Benefits: Federal Disability Status",
+                    friendly_name="Receives Disability Benefits: Other Federal Disability Status",
                     type='number',
                     startIndex=46,
                     endIndex=47,
@@ -298,7 +298,7 @@ m2 = SchemaManager(
                 Field(
                     item="32C",
                     name='DISABLED_TITLE_XIVAPDT',
-                    friendly_name="Receives Disability Benefits: Permanently and Totally Disabled Under Title XIV-APDT",
+                    friendly_name="Receives Disability Benefits: Permanently and Totally Disabled",
                     type='number',
                     startIndex=47,
                     endIndex=48,
@@ -308,7 +308,7 @@ m2 = SchemaManager(
                 Field(
                     item="32D",
                     name='AID_AGED_BLIND',
-                    friendly_name="Receives Disability Benefits: Code no longer in use.",
+                    friendly_name="Receives Disability Benefit: AABD",
                     type='number',
                     startIndex=48,
                     endIndex=49,
@@ -318,7 +318,7 @@ m2 = SchemaManager(
                 Field(
                     item="32E",
                     name='RECEIVE_SSI',
-                    friendly_name="Receives Disability Benefits: Supplemental Security Income Under Title XVI-SSI ",
+                    friendly_name="Receives Disability Benefits: SSI ",
                     type='number',
                     startIndex=49,
                     endIndex=50,
@@ -498,7 +498,7 @@ m2 = SchemaManager(
                 Field(
                     item="47",
                     name='OJT',
-                    friendly_name="On-the-job Training ",
+                    friendly_name="On-the-job Training",
                     type='number',
                     startIndex=76,
                     endIndex=78,
@@ -628,7 +628,7 @@ m2 = SchemaManager(
                 Field(
                     item="52A",
                     name='ED_NO_HIGH_SCHOOL_DIPL_HOP',
-                    friendly_name="Education Directly Related to Employment for an Individual with NO High " +
+                    friendly_name="Education Directly Related to Employment for an Individual with NO High" +
                     "School Diploma or Certificate of High School Equivalency: Hours of Participation",
                     type='number',
                     startIndex=102,
@@ -639,7 +639,7 @@ m2 = SchemaManager(
                 Field(
                     item="52B",
                     name='ED_NO_HIGH_SCHOOL_DIPL_EA',
-                    friendly_name="Education Directly Related to Employment for an Individual with NO High " +
+                    friendly_name="Education Directly Related to Employment for an Individual with NO High" +
                     "School Diploma or Certificate of High School Equivalency: Hours of Excused Absences",
                     type='number',
                     startIndex=104,
@@ -650,7 +650,7 @@ m2 = SchemaManager(
                 Field(
                     item="52C",
                     name='ED_NO_HIGH_SCHOOL_DIPL_HOL',
-                    friendly_name="Education Directly Related to Employment for an Individual with NO High " +
+                    friendly_name="Education Directly Related to Employment for an Individual with NO High" +
                     "School Diploma or Certificate of High School Equivalency: Hours of Holidays",
                     type='number',
                     startIndex=106,
@@ -661,7 +661,7 @@ m2 = SchemaManager(
                 Field(
                     item="53A",
                     name='SCHOOL_ATTENDENCE_HOP',
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School Diploma " +
+                    friendly_name="Satisfactory School Attendance for Individuals with No High School Diploma" +
                     "or Certificate of High School Equivalency: Hours of Participation",
                     type='number',
                     startIndex=108,
@@ -672,7 +672,7 @@ m2 = SchemaManager(
                 Field(
                     item="53B",
                     name='SCHOOL_ATTENDENCE_EA',
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School Diploma or " +
+                    friendly_name="Satisfactory School Attendance for Individuals with No High School Diploma or" +
                     "Certificate of High School Equivalency: Hours of Excused Absences",
                     type='number',
                     startIndex=110,
@@ -683,7 +683,7 @@ m2 = SchemaManager(
                 Field(
                     item="53C",
                     name='SCHOOL_ATTENDENCE_HOL',
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School Diploma " +
+                    friendly_name="Satisfactory School Attendance for Individuals with No High School Diploma" +
                     "or Certificate: Hours of Holidays",
                     type='number',
                     startIndex=112,
@@ -694,7 +694,7 @@ m2 = SchemaManager(
                 Field(
                     item="54A",
                     name='PROVIDE_CC_HOP',
-                    friendly_name="Providing Child Care Services to an Individual Who Is Participating in a " +
+                    friendly_name="Providing Child Care Services to an Individual Who Is Participating in a" +
                     "Community Service Program: Hours of Participation",
                     type='number',
                     startIndex=114,
@@ -716,7 +716,7 @@ m2 = SchemaManager(
                 Field(
                     item="54C",
                     name='PROVIDE_CC_HOL',
-                    friendly_name="Providing Child Care Services to an Individual Who Is Participating in a " +
+                    friendly_name="Providing Child Care Services to an Individual Who Is Participating in a" +
                     "Community Service Program: Hours of Holidays",
                     type='number',
                     startIndex=118,

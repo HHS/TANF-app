@@ -163,7 +163,7 @@ child_one = RowSchema(
         Field(
             item="69A",
             name="RACE_HISPANIC",
-            friendly_name="Ethnicity/Race: Hispanic or Latino",
+            friendly_name="Hispanic or Latino",
             type="number",
             startIndex=37,
             endIndex=38,
@@ -173,7 +173,7 @@ child_one = RowSchema(
         Field(
             item="69B",
             name="RACE_AMER_INDIAN",
-            friendly_name="Ethnicity/Race: American Indian or Alaska Native",
+            friendly_name="American Indian or Alaska Native",
             type="number",
             startIndex=38,
             endIndex=39,
@@ -183,7 +183,7 @@ child_one = RowSchema(
         Field(
             item="69C",
             name="RACE_ASIAN",
-            friendly_name="Ethnicity/Race: Asian",
+            friendly_name="Asian",
             type="number",
             startIndex=39,
             endIndex=40,
@@ -193,7 +193,7 @@ child_one = RowSchema(
         Field(
             item="69D",
             name="RACE_BLACK",
-            friendly_name="Ethnicity/Race: Black or African American",
+            friendly_name="Black or African American",
             type="number",
             startIndex=40,
             endIndex=41,
@@ -203,7 +203,7 @@ child_one = RowSchema(
         Field(
             item="69E",
             name="RACE_HAWAIIAN",
-            friendly_name="Native Hawaiian or Other Pacific Islander",
+            friendly_name="Native Hawaiian or Pacific Islander",
             type="number",
             startIndex=41,
             endIndex=42,
@@ -233,7 +233,7 @@ child_one = RowSchema(
         Field(
             item="71A",
             name="RECEIVE_NONSSA_BENEFITS",
-            friendly_name="Receives Benefits Based on Federal Disability Status under Non-Social Security Act Programs",
+            friendly_name="Received Disability Benefits: Other Federal Disability Status",
             type="number",
             startIndex=44,
             endIndex=45,
@@ -243,7 +243,7 @@ child_one = RowSchema(
         Field(
             item="71B",
             name="RECEIVE_SSI",
-            friendly_name="Receives Supplemental Security Income under Title XVI-SSI of the Social Security Act",
+            friendly_name="Receives Supplemental Security Income: SSI",
             type="number",
             startIndex=45,
             endIndex=46,
@@ -474,7 +474,7 @@ child_two = RowSchema(
         Field(
             item="69A",
             name="RACE_HISPANIC",
-            friendly_name="Ethnicity/Race: Hispanic or Latino",
+            friendly_name="Hispanic or Latino",
             type="number",
             startIndex=78,
             endIndex=79,
@@ -484,7 +484,7 @@ child_two = RowSchema(
         Field(
             item="69B",
             name="RACE_AMER_INDIAN",
-            friendly_name="Ethnicity/Race: American Indian or Alaska Natve",
+            friendly_name="American Indian or Alaska Natve",
             type="number",
             startIndex=79,
             endIndex=80,
@@ -494,7 +494,7 @@ child_two = RowSchema(
         Field(
             item="69C",
             name="RACE_ASIAN",
-            friendly_name="Ethnicity/Race: Asian",
+            friendly_name="Asian",
             type="number",
             startIndex=80,
             endIndex=81,
@@ -504,7 +504,7 @@ child_two = RowSchema(
         Field(
             item="69D",
             name="RACE_BLACK",
-            friendly_name="Ethnicity/Race: Black or African American",
+            friendly_name="Black or African American",
             type="number",
             startIndex=81,
             endIndex=82,
@@ -514,7 +514,7 @@ child_two = RowSchema(
         Field(
             item="69E",
             name="RACE_HAWAIIAN",
-            friendly_name="Ethnicity/Race: Native Hawaiian or Other Pacific Islander",
+            friendly_name="Native Hawaiian or Other Pacific Islander",
             type="number",
             startIndex=82,
             endIndex=83,
@@ -524,7 +524,7 @@ child_two = RowSchema(
         Field(
             item="69F",
             name="RACE_WHITE",
-            friendly_name="Ethnicity/Race: White",
+            friendly_name="White",
             type="number",
             startIndex=83,
             endIndex=84,
@@ -544,7 +544,7 @@ child_two = RowSchema(
         Field(
             item="71A",
             name="RECEIVE_NONSSA_BENEFITS",
-            friendly_name="Receives Disability Benefits: Federal Disability Status",
+            friendly_name="Receives Disability Benefits: Other Federal Disability Status",
             type="number",
             startIndex=85,
             endIndex=86,
@@ -554,7 +554,7 @@ child_two = RowSchema(
         Field(
             item="71B",
             name="RECEIVE_SSI",
-            friendly_name="Receives Disability Benefits: Supplemental Security Income Under Title XVI-SSI",
+            friendly_name="Receives Disability Benefits: SSI",
             type="number",
             startIndex=86,
             endIndex=87,

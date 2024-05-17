@@ -136,7 +136,7 @@ m1 = SchemaManager(
                 Field(
                     item="2",
                     name='COUNTY_FIPS_CODE',
-                    friendly_name="County FIPS Code",
+                    friendly_name="County FIPS code",
                     type='string',
                     startIndex=19,
                     endIndex=22,
@@ -226,7 +226,7 @@ m1 = SchemaManager(
                 Field(
                     item="13",
                     name='RECEIVES_FOOD_STAMPS',
-                    friendly_name="Receives Assistance from the Supplemental Nutrition Assistance Program (SNAP)",
+                    friendly_name="Receives Assistance from SNAP",
                     type='number',
                     startIndex=36,
                     endIndex=37,
@@ -236,7 +236,7 @@ m1 = SchemaManager(
                 Field(
                     item="14",
                     name='AMT_FOOD_STAMP_ASSISTANCE',
-                    friendly_name="Amount of Supplemental Nutrition Assistance Program (SNAP) Benefits",
+                    friendly_name="Amount of SNAP Benefits",
                     type='number',
                     startIndex=37,
                     endIndex=41,
@@ -246,7 +246,7 @@ m1 = SchemaManager(
                 Field(
                     item="15",
                     name='RECEIVES_SUB_CC',
-                    friendly_name="Receives Subsidized Child Care: Code no longer in use",
+                    friendly_name="Receives Subsidized Child Care",
                     type='number',
                     startIndex=41,
                     endIndex=42,
@@ -416,7 +416,7 @@ m1 = SchemaManager(
                 Field(
                     item="24AIII",
                     name='FAMILY_SANC_ADULT',
-                    friendly_name="Sanctions: Code no longer in use",
+                    friendly_name="Family Sanctions",
                     type='number',
                     startIndex=96,
                     endIndex=97,
@@ -506,7 +506,7 @@ m1 = SchemaManager(
                 Field(
                     item="24CIV",
                     name='OTHER_NON_SANCTION',
-                    friendly_name="Other: Non-Sanction, Non-Recoupment ",
+                    friendly_name="Other: Non-Sanction, Non-Recoupment",
                     type='number',
                     startIndex=111,
                     endIndex=112,
@@ -516,7 +516,7 @@ m1 = SchemaManager(
                 Field(
                     item="25",
                     name='WAIVER_EVAL_CONTROL_GRPS',
-                    friendly_name="Waiver Evaluation Experimental and Control Groups: Code no longer in use",
+                    friendly_name="Waiver Evaluation Experimental and Control Groups",
                     type='number',
                     startIndex=112,
                     endIndex=113,

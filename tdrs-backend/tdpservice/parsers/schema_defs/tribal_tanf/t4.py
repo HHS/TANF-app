@@ -57,7 +57,7 @@ t4 = SchemaManager(
                 Field(
                     item="2",
                     name="COUNTY_FIPS_CODE",
-                    friendly_name="County FIPS Code",
+                    friendly_name="County FIPS code",
                     type="string",
                     startIndex=19,
                     endIndex=22,

@@ -70,7 +70,7 @@ for i in range(1, 31):
                 Field(
                     item="3",
                     name="TDRS_SECTION_IND",
-                    friendly_name="TDRS Section Indicator",
+                    friendly_name="SDR Section Indicator",
                     type="string",
                     startIndex=section_ind_index,
                     endIndex=section_ind_index + 1,
@@ -90,7 +90,7 @@ for i in range(1, 31):
                 Field(
                     item=families_item_numbers[i - 1],
                     name="FAMILIES_MONTH",
-                    friendly_name="Families Month",
+                    friendly_name="Number of Families",
                     type="number",
                     startIndex=families_index,
                     endIndex=families_index + 7,

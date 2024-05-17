@@ -200,7 +200,7 @@ t2 = SchemaManager(
                 Field(
                     item="34A",
                     name="RACE_HISPANIC",
-                    friendly_name="Ethnicity/Race: Hispanic or Latino",
+                    friendly_name="Hispanic or Latino",
                     type="number",
                     startIndex=38,
                     endIndex=39,
@@ -210,7 +210,7 @@ t2 = SchemaManager(
                 Field(
                     item="34B",
                     name="RACE_AMER_INDIAN",
-                    friendly_name="Ethnicity/Race: American Indian or Alaska Native",
+                    friendly_name="American Indian or Alaska Native",
                     type="number",
                     startIndex=39,
                     endIndex=40,
@@ -220,7 +220,7 @@ t2 = SchemaManager(
                 Field(
                     item="34C",
                     name="RACE_ASIAN",
-                    friendly_name="Ethnicity/Race: Asian",
+                    friendly_name="Asian",
                     type="number",
                     startIndex=40,
                     endIndex=41,
@@ -230,7 +230,7 @@ t2 = SchemaManager(
                 Field(
                     item="34D",
                     name="RACE_BLACK",
-                    friendly_name="Ethnicity/Race: Black or African American",
+                    friendly_name="Black or African American",
                     type="number",
                     startIndex=41,
                     endIndex=42,
@@ -240,7 +240,7 @@ t2 = SchemaManager(
                 Field(
                     item="34E",
                     name="RACE_HAWAIIAN",
-                    friendly_name="Ethnicity/Race: Native Hawaiian or Other Pacific Islander",
+                    friendly_name="Native Hawaiian or Pacific Islander",
                     type="number",
                     startIndex=42,
                     endIndex=43,
@@ -250,7 +250,7 @@ t2 = SchemaManager(
                 Field(
                     item="34F",
                     name="RACE_WHITE",
-                    friendly_name="Ethnicity/Race: White",
+                    friendly_name="White",
                     type="number",
                     startIndex=43,
                     endIndex=44,
@@ -282,7 +282,7 @@ t2 = SchemaManager(
                 Field(
                     item="36B",
                     name="FED_DISABILITY_STATUS",
-                    friendly_name="Receives Disability Benefits: Federal Disability Status",
+                    friendly_name="Receives Disability Benefits: Other Federal Disability Status",
                     type="number",
                     startIndex=46,
                     endIndex=47,
@@ -292,7 +292,7 @@ t2 = SchemaManager(
                 Field(
                     item="36C",
                     name="DISABLED_TITLE_XIVAPDT",
-                    friendly_name="Receives Disability Benefits: Permanently and Totally Disabled Under Title XIV-APDT",
+                    friendly_name="Receives Disability Benefits: Permanently and Totally Disabled",
                     type="string",
                     startIndex=47,
                     endIndex=48,
@@ -306,7 +306,7 @@ t2 = SchemaManager(
                 Field(
                     item="36D",
                     name="AID_AGED_BLIND",
-                    friendly_name="Receives Disability Benefits: Aged, Blind, and Disabled Under Title XVI-AABD",
+                    friendly_name="Receives Disability Benefits: AABD",
                     type="number",
                     startIndex=48,
                     endIndex=49,
@@ -318,7 +318,7 @@ t2 = SchemaManager(
                 Field(
                     item="36E",
                     name="RECEIVE_SSI",
-                    friendly_name="Receives Disability Benefits: Supplemental Security Income Under Title XVI-SSI",
+                    friendly_name="Receives Disability Benefits: SSI",
                     type="number",
                     startIndex=49,
                     endIndex=50,
@@ -439,7 +439,7 @@ t2 = SchemaManager(
                 Field(
                     item="46",
                     name="CURRENT_MONTH_STATE_EXEMPT",
-                    friendly_name="Is Current Month Exempt from the State's (Tribe's) Time Limit",
+                    friendly_name="Current Month Exempt from the (Tribe's) Time Limit",
                     type="number",
                     startIndex=64,
                     endIndex=65,
@@ -588,8 +588,7 @@ t2 = SchemaManager(
                 Field(
                     item="58",
                     name="ED_NO_HIGH_SCHOOL_DIPLOMA",
-                    friendly_name="Education Directly Related to Employment for Individuals with no High " +
-                    "School Diploma or Certificate of High SchoolEquivalency",
+                    friendly_name="Education Directly Related to Employment",
                     type="string",
                     startIndex=86,
                     endIndex=88,
@@ -601,8 +600,7 @@ t2 = SchemaManager(
                 Field(
                     item="59",
                     name="SCHOOL_ATTENDENCE",
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School " +
-                    "Diploma or Certificate of High School Equivalency",
+                    friendly_name="Satisfactory School Attendance",
                     type="string",
                     startIndex=88,
                     endIndex=90,
@@ -614,8 +612,7 @@ t2 = SchemaManager(
                 Field(
                     item="60",
                     name="PROVIDE_CC",
-                    friendly_name="Providing Child Care Services to an Individual Who Is Participating " +
-                    "in a Community Service Program",
+                    friendly_name="Providing Child Care",
                     type="string",
                     startIndex=90,
                     endIndex=92,
@@ -675,7 +672,7 @@ t2 = SchemaManager(
                 Field(
                     item="65A",
                     name="UNEARNED_INCOME_TAX_CREDIT",
-                    friendly_name="Amount of Unearned Income: Earned Income Tax Credit (EITC)",
+                    friendly_name="Amount of Unearned Income",
                     type="string",
                     startIndex=102,
                     endIndex=106,
@@ -687,7 +684,7 @@ t2 = SchemaManager(
                 Field(
                     item="65B",
                     name="UNEARNED_SOCIAL_SECURITY",
-                    friendly_name="Amount of Unearned Income: Social Security",
+                    friendly_name="Amount of Unearned Income: SSI",
                     type="string",
                     startIndex=106,
                     endIndex=110,
