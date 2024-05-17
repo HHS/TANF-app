@@ -105,4 +105,8 @@ resource "cloudfoundry_service_instance" "elasticsearch" {
   space        = data.cloudfoundry_space.space.id
   service_plan = data.cloudfoundry_service.elasticsearch.service_plans["es-dev"]
   json_params  = "{\"ElasticsearchVersion\": \"Elasticsearch_7.10\"}"
+  timeouts {
+    create = "60m"
+    delete = "2h"
+  }
 }
