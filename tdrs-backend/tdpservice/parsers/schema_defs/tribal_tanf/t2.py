@@ -540,7 +540,7 @@ t2 = SchemaManager(
                 Field(
                     item="54",
                     name="JOB_SEARCH",
-                    friendly_name="Job Search and Job Readiness Assistance",
+                    friendly_name="Job Search and Job Readiness",
                     type="string",
                     startIndex=78,
                     endIndex=80,
@@ -576,7 +576,7 @@ t2 = SchemaManager(
                 Field(
                     item="57",
                     name="JOB_SKILLS_TRAINING",
-                    friendly_name="Job Skills Training Directly Related to Employment",
+                    friendly_name="Job Skills Training",
                     type="string",
                     startIndex=84,
                     endIndex=86,
