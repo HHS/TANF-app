@@ -128,7 +128,6 @@ class CloudGov(Common):
         "Cache-Control": "max-age=86400, s-maxage=86400, must-revalidate",
     }
     # The following variables are used to configure the Django Elasticsearch
-    print(f"\n\nServices Env Var: {cloudgov_services}\n\n")
     es_access_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['access_key']
     es_secret_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['secret_key']
     es_host = cloudgov_services['aws-elasticsearch'][0]['credentials']['uri']
