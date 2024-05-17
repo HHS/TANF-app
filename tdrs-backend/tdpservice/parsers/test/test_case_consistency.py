@@ -674,7 +674,9 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
+            'At least one person who is head-of-household or spouse of head-of-household '
+            'on case must have countable months toward time limit >= 60 since '
+            'CLOSURE_REASON = 03: federal 5 year time limit.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
@@ -947,11 +949,11 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} Adults in territories must have a valid value for 19C.'
+            f'{t5_model_name} Adults in territories must have a valid value for REC_AID_TOTALLY_DISABLED.'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} Adults in territories must have a valid value for 19C.'
+            f'{t5_model_name} Adults in territories must have a valid value for REC_AID_TOTALLY_DISABLED.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1095,11 +1097,11 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in states should not have a value of 1.'
+            f'{t5_model_name} People in states should not have a value of 1 for REC_AID_TOTALLY_DISABLED.'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} People in states should not have a value of 1.'
+            f'{t5_model_name} People in states should not have a value of 1 for REC_AID_TOTALLY_DISABLED.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1173,11 +1175,11 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in territories must have value = 2:No for 19E.'
+            f'{t5_model_name} People in territories must have value = 2:No for REC_SSI.'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} People in territories must have value = 2:No for 19E.'
+            f'{t5_model_name} People in territories must have value = 2:No for REC_SSI.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1251,7 +1253,7 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in states must have a valid value.'
+            f'{t5_model_name} People in states must have a valid value for REC_SSI.'
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
