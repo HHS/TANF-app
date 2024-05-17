@@ -131,7 +131,7 @@ def fiscal_to_calendar(year, fiscal_quarter):
     return year, "Q{}".format(array[ind_qtr - 1])  # return the previous quarter
 
 def transform_to_months(quarter):
-    """Return a list of months in a quarter."""
+    """Return a list of months in a quarter depending the quarter's format."""
     match quarter:
         case "Q1":
             return ["Jan", "Feb", "Mar"]
@@ -167,3 +167,10 @@ def year_month_to_year_quarter(year_month):
     month = year_month[4:]
     quarter = get_quarter_from_month(month)
     return year, quarter
+
+
+def get_years_apart(rpt_month_year_date, date):
+    """Return the number of years (double) between rpt_month_year_date and the target date - both `datetime`s."""
+    delta = rpt_month_year_date - date
+    age = delta.days/365.25
+    return age

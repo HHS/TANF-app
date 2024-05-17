@@ -1,12 +1,16 @@
 """Tests for generic validator functions."""
 
 import pytest
+import logging
 from datetime import date
 from .. import validators
+from .. import schema_defs, util
 from ..row_schema import RowSchema
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
+
 from tdpservice.parsers.test.factories import SSPM5Factory
 
+logger = logging.getLogger(__name__)
 
 @pytest.mark.parametrize("value,length", [
     (None, 0),
@@ -44,7 +48,8 @@ def test_or_validators():
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("3", RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("5", RowSchema(), "friendly_name", "item_no") == (False,
-                                                                       "T1: 5 does not match 2. or T1: 5 does not "
+                                                                       "T1 friendly_name: 5 does not match 2. or "
+                                                                       "T1 friendly_name: 5 does not "
                                                                        "match 3.")
 
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")),
@@ -59,13 +64,15 @@ def test_or_validators():
 
     value = "5"
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                         "T1: 5 does not match 2. or T1: 5 does not "
-                                                                         "match 3. or T1: 5 does not match 4.")
+                                                                         'T1 friendly_name: 5 does not match 2. or '
+                                                                         'T1 friendly_name: 5 does not match 3. or '
+                                                                         'T1 friendly_name: 5 does not match 4.')
 
     validator = validators.or_validators(validators.matches((2)), validators.matches((3)), validators.isLargerThan(4))
     assert validator(5, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator(1, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                     "T1: 1 does not match 2. or T1: 1 does not "
+                                                                     "T1 friendly_name: 1 does not match 2. "
+                                                                     "or T1 friendly_name: 1 does not "
                                                                      "match 3. or T1: 1 is not larger than 4.")
 
 def test_if_validators():
@@ -82,7 +89,8 @@ def test_if_validators():
           result_field_name="Field2", result_function=validators.matches('1'),
       )
     result = validator(value, RowSchema())
-    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1: 2 does not match 1.', ['Field1', 'Field2'])
+    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1 Field2: 2 does not match 1.',
+                      ['Field1', 'Field2'])
 
 
 def test_and_validators():
@@ -108,16 +116,25 @@ def test_validate__FAM_AFF__SSN():
     result = validators.validate__FAM_AFF__SSN()(instance, RowSchema())
     assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
 
-def test_quarterIsValid():
+@pytest.mark.parametrize(
+        "value, valid",
+        [
+            ("20201", True),
+            ("20202", True),
+            ("20203", True),
+            ("20204", True),
+            ("20200", False),
+            ("20205", False),
+            ("2020 ", False),
+            ("2020A", False)
+        ])
+def test_quarterIsValid(value, valid):
     """Test `quarterIsValid`."""
-    value = "20204"
     val = validators.quarterIsValid()
-    result = val(value)
-    assert result == (True, None)
-
-    value = "20205"
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, "T1: 5 is not a valid quarter.")
+
+    errorText = None if valid else f"T1: {value[-1:]} is not a valid quarter."
+    assert result == (valid, errorText)
 
 def test_validateSSN():
     """Test `validateSSN`."""
@@ -183,7 +200,7 @@ def test_matches_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: TEST does not match test.'
+    assert error == 'T1 friendly_name: TEST does not match test.'
 
 
 def test_oneOf_returns_valid():
@@ -337,6 +354,26 @@ def test_recordHasLength_returns_invalid():
     assert is_valid is False
     assert error == 'T1 record length is 7 characters but must be 22.'
 
+def test_hasLengthGreaterThan_returns_valid():
+    """Test `hasLengthGreaterThan` gives a valid result."""
+    value = 'abcd123'
+
+    validator = validators.hasLengthGreaterThan(6)
+    is_valid, error = validator(value, None, "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error is None
+
+def test_hasLengthGreaterThan_returns_invalid():
+    """Test `hasLengthGreaterThan` gives an invalid result."""
+    value = 'abcd123'
+
+    validator = validators.hasLengthGreaterThan(8)
+    is_valid, error = validator(value)
+
+    assert is_valid is False
+    assert error == 'Value length 7 is not greater than 8.'
+
 
 def test_intHasLength_returns_valid():
     """Test `intHasLength` gives a valid result."""
@@ -457,6 +494,46 @@ def test_notEmpty_returns_nonexistent_substring():
 
     assert is_valid is False
     assert error == "T1: 111  333 contains blanks between positions 10 and 12."
+
+
+@pytest.mark.parametrize("test_input", [1, 2, 3, 4])
+def test_quarterIsValid_returns_true_if_valid(test_input):
+    """Test `quarterIsValid` gives a valid result for values 1-4."""
+    validator = validators.quarterIsValid()
+    is_valid, error = validator(test_input, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error is None
+
+
+@pytest.mark.parametrize("test_input", [" ", 0, 5, "A"])
+def test_quarterIsValid_returns_false_if_invalid(test_input):
+    """Test `quarterIsValid` gives an invalid result for values not 1-4."""
+    validator = validators.quarterIsValid()
+    is_valid, error = validator(test_input, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error == f"T1: {test_input} is not a valid quarter."
+
+@pytest.mark.parametrize("value", ["T72020 ", "T720194", "T720200", "T720207", "T72020$"])
+def test_calendarQuarterIsValid_returns_invalid(value):
+    """Test `calendarQuarterIsValid` returns false on invalid input."""
+    val = validators.calendarQuarterIsValid(2, 7)
+    is_valid, error_msg = val(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error_msg == f"T1: {value[2:7]} is invalid. Calendar Quarter must be a numeric " + \
+        "representing the Calendar Year and Quarter formatted as YYYYQ"
+
+
+@pytest.mark.parametrize("value", ["T720201", "T720202", "T720203", "T720204"])
+def test_calendarQuarterIsValid_returns_valid(value):
+    """Test `calendarQuarterIsValid` returns false on invalid input."""
+    val = validators.calendarQuarterIsValid(2, 7)
+    is_valid, error_msg = val(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error_msg is None
 
 @pytest.mark.usefixtures('db')
 class TestCat3ValidatorsBase:
@@ -1279,6 +1356,68 @@ class TestM5Cat3Validators(TestCat3ValidatorsBase):
         assert result == (True, None, ['FAMILY_AFFILIATION', 'REC_FEDERAL_DISABILITY'])
 
         record.REC_FEDERAL_DISABILITY = 0
-
         result = val(record, RowSchema())
         assert result[0] is False
+
+def test_is_quiet_preparser_errors():
+    """Test is_quiet_preparser_errors."""
+    assert validators.is_quiet_preparser_errors(2, 4, 6)("#######") is True
+    assert validators.is_quiet_preparser_errors(2, 4, 6)("####1##") is False
+    assert validators.is_quiet_preparser_errors(4, 4, 6)("##1") is True
+
+def test_t3_m3_child_validator():
+    """Test t3_m3_child_validator."""
+    assert validators.t3_m3_child_validator(1)(
+        "4" * 61, None, "fake_friendly_name", 0
+    ) == (True, None)
+    assert validators.t3_m3_child_validator(1)("12", None, "fake_friendly_name", 0) == (
+        False,
+        "The first child record is too short at 2 characters and must be at least 60 characters.",
+    )
+
+class TestCaseConsistencyValidator:
+    """Test case consistency (cat4) validators."""
+
+    def parse_header(self, datafile):
+        """Parse datafile header into header object."""
+        rawfile = datafile.file
+
+        # parse header, trailer
+        rawfile.seek(0)
+        header_line = rawfile.readline().decode().strip()
+        return schema_defs.header.parse_and_validate(
+            header_line,
+            util.make_generate_file_precheck_parser_error(datafile, 1)
+        )
+
+    @pytest.fixture
+    def tanf_s1_records(self):
+        """Return group of TANF Section 1 records."""
+        t1 = TanfT1Factory.create()
+        t2 = TanfT2Factory.create()
+        t3 = TanfT3Factory.create()
+        t3_1 = TanfT3Factory.create()
+        return [t1, t2, t3, t3_1]
+
+    @pytest.fixture
+    def tanf_s1_schemas(self):
+        """Return group of TANF Section 1 schemas."""
+        s1 = schema_defs.tanf.t1.schemas[0]
+        s2 = schema_defs.tanf.t2.schemas[0]
+        s3 = schema_defs.tanf.t3.schemas[0]
+        return [s1, s2, s3, s3]
+
+    @pytest.fixture
+    def small_correct_file(self, stt_user, stt):
+        """Fixture for small_correct_file."""
+        return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
+
+    @pytest.fixture
+    def small_correct_file_header(self, small_correct_file):
+        """Return a valid header record."""
+        header, header_is_valid, header_errors = self.parse_header(small_correct_file)
+
+        if not header_is_valid:
+            logger.error('Header is not valid: %s', header_errors)
+            return None
+        return header

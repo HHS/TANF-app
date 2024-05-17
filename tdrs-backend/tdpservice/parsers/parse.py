@@ -8,8 +8,10 @@ from django.contrib.contenttypes.models import ContentType
 import itertools
 import logging
 from .models import ParserErrorCategoryChoices, ParserError
-from . import schema_defs, validators, util, row_schema
-from .schema_defs.util import get_section_reference, get_program_model
+from . import schema_defs, validators, util
+from . import row_schema
+from .schema_defs.utils import get_section_reference, get_program_model
+from .case_consistency_validator import CaseConsistencyValidator
 from elasticsearch.helpers.errors import BulkIndexError
 from tdpservice.data_files.models import DataFile
 
@@ -68,6 +70,13 @@ def parse_datafile(datafile, dfs):
         util.make_generate_parser_error(datafile, 1)
     )
 
+    case_consistency_validator = CaseConsistencyValidator(
+        header,
+        program_type,
+        datafile.stt.type,
+        util.make_generate_parser_error(datafile, None)
+    )
+
     if not section_is_valid:
         logger.info(f"Preparser Error -> Section is not valid: {section_error.error_message}")
         errors['document'] = [section_error]
@@ -87,7 +96,7 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted)
+    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator)
 
     errors = errors | line_errors
 
@@ -177,6 +186,11 @@ def rollback_parser_errors(datafile):
     num_deleted, models = ParserError.objects.filter(file=datafile).delete()
     logger.debug(f"Deleted {num_deleted} {ParserError}.")
 
+def validate_case_consistency(case_consistency_validator):
+    """Force category four validation if we have reached the last case in the file."""
+    if not case_consistency_validator.has_validated:
+        case_consistency_validator.validate()
+
 def generate_trailer_errors(trailer_errors, errors, unsaved_parser_errors, num_errors):
     """Generate trailer errors if we care to see them."""
     if settings.GENERATE_TRAILER_ERRORS:
@@ -200,7 +214,7 @@ def create_no_records_created_pre_check_error(datafile, dfs):
         errors["no_records_created"] = [err_obj]
     return errors
 
-def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted):
+def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator):
     """Parse lines with appropriate schema and return errors."""
     rawfile = datafile.file
     errors = {}
@@ -285,6 +299,13 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted):
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 unsaved_records.setdefault(s.document, []).append(record)
+                case_consistency_validator.add_record(record, s, len(record_errors) > 0)
+
+        # Add any generated cat4 errors to our error data structure & clear our caches errors list
+        num_errors += case_consistency_validator.num_generated_errors()
+        unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
+            case_consistency_validator.get_generated_errors()
+        case_consistency_validator.clear_errors()
 
         all_created, unsaved_records = bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs)
         unsaved_parser_errors, num_errors = bulk_create_errors(unsaved_parser_errors, num_errors)
@@ -319,8 +340,19 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted):
         bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
         return errors
 
+    validate_case_consistency(case_consistency_validator)
+
+    # TODO: This is duplicate code. Can we extract this to a function?
+    # Add any generated cat4 errors to our error data structure & clear our caches errors list
+    num_errors += case_consistency_validator.num_generated_errors()
+    unsaved_parser_errors[None] = unsaved_parser_errors.get(None, []) + \
+        case_consistency_validator.get_generated_errors()
+    case_consistency_validator.clear_errors()
+
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
+    logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
+                 f"validated {case_consistency_validator.total_cases_validated} of them.")
     dfs.save()
 
     return errors
