@@ -4,6 +4,7 @@ from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T1DataSubmissionDocument
+from tdpservice.parsers.util import generate_t1_t4_hashes
 
 
 t1 = SchemaManager(
@@ -11,6 +12,7 @@ t1 = SchemaManager(
         RowSchema(
             record_type="T1",
             document=TANF_T1DataSubmissionDocument(),
+            generate_hashes_func=generate_t1_t4_hashes,
             preparsing_validators=[
                 validators.recordHasLength(156),
                 validators.caseNumberNotEmpty(8, 19),

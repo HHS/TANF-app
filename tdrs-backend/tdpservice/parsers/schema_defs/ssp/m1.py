@@ -5,12 +5,14 @@ from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M1DataSubmissionDocument
+from tdpservice.parsers.util import generate_t1_t4_hashes
 
 m1 = SchemaManager(
     schemas=[
         RowSchema(
             record_type="M1",
             document=SSP_M1DataSubmissionDocument(),
+            generate_hashes_func=generate_t1_t4_hashes,
             preparsing_validators=[
                 validators.recordHasLength(150),
                 validators.caseNumberNotEmpty(8, 19),

@@ -6,11 +6,13 @@ from ...fields import TransformField, Field
 from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T3DataSubmissionDocument
+from tdpservice.parsers.util import generate_t2_t3_t5_hashes
 
 
 child_one = RowSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
+    generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
@@ -322,6 +324,7 @@ child_one = RowSchema(
 child_two = RowSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
+    generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     quiet_preparser_errors=True,
     preparsing_validators=[

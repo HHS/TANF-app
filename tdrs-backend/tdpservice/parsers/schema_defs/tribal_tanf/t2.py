@@ -6,6 +6,7 @@ from ...fields import TransformField, Field
 from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T2DataSubmissionDocument
+from tdpservice.parsers.util import generate_t2_t3_t5_hashes
 
 
 t2 = SchemaManager(
@@ -13,6 +14,7 @@ t2 = SchemaManager(
         RowSchema(
             record_type="T2",
             document=Tribal_TANF_T2DataSubmissionDocument(),
+            generate_hashes_func=generate_t2_t3_t5_hashes,
             should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
             preparsing_validators=[
                 validators.recordHasLength(122),

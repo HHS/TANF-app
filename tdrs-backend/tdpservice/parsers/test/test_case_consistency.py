@@ -443,7 +443,7 @@ class TestCaseConsistencyValidator:
 
         errors = case_consistency_validator.get_generated_errors()
 
-        assert len(errors) == 1
+        assert len(errors) == 2
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
@@ -500,16 +500,16 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=2,
+                FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=2
+                REC_SSI=1
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=2
+                REC_SSI=1
             ),
         ]
         for t5 in t5s:
@@ -573,9 +573,9 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=2,
+                FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=2,
+                REC_SSI=1,
                 EMPLOYMENT_STATUS=3,
             ),
             T5Factory.create(
@@ -583,7 +583,7 @@ class TestCaseConsistencyValidator:
                 CASE_NUMBER='123',
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=2,
+                REC_SSI=1,
                 EMPLOYMENT_STATUS=2,
             ),
         ]
@@ -655,7 +655,7 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=2,
+                FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=2,
                 RELATIONSHIP_HOH='03',
@@ -772,16 +772,16 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=2,
+                FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=2
+                REC_SSI=1
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=2
+                REC_SSI=1
             ),
         ]
         line_number = 1
