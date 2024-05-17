@@ -334,56 +334,35 @@ class CaseConsistencyValidator:
         t4s = self.sorted_cases.get(t4_model, [])
         t5s = self.sorted_cases.get(t5_model, [])
 
-        # TODO: Check this logic
         if len(t4s) > 0:
-            t4 = t4s[0]
-            t4_record, t4_schema = t4
-            closure_reason = getattr(t4_record, 'CLOSURE_REASON')
-
-            if len(t4s) > 0:
-                if len(t4s) > 1:
-                    for record, schema in t4s[1:]:
-                        self.__generate_and_add_error(
-                            schema,
-                            record,
-                            field='RPT_MONTH_YEAR',
-                            msg=(
-                                f'There should only be one {t4_model_name} record  '
-                                f'per RPT_MONTH_YEAR and CASE_NUMBER.'
-                            )
+            if len(t4s) > 1:
+                for record, schema in t4s[1:]:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='RPT_MONTH_YEAR',
+                        msg=(
+                            f'There should only be one {t4_model_name} record  '
+                            f'per RPT_MONTH_YEAR and CASE_NUMBER.'
                         )
-                        num_errors += 1
-                else:
-                    t4 = t4s[0]
-                    t4_record, t4_schema = t4
-                    closure_reason = getattr(t4_record, 'CLOSURE_REASON')
-
-                    if closure_reason == '01':
-                        num_errors += self.__validate_case_closure_employment(t4, t5s, (
-                            'At least one person on the case must have employment status = 1:Yes in the '
-                            'same RPT_MONTH_YEAR since CLOSURE_REASON = 1:Employment/excess earnings.'
-                        ))
-                    elif closure_reason == '03' and not is_ssp:
-                        num_errors += self.__validate_case_closure_ftl(t4, t5s, (
-                            'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
-                        ))
-                if len(t5s) == 0:
-                    for record, schema in t4s:
-                        self.__generate_and_add_error(
-                            schema,
-                            record,
-                            field='RPT_MONTH_YEAR',
-                            msg=(
-                                f'Every {t4_model_name} record should have at least one corresponding '
-                                f'{t5_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
-                            )
-                        )
-                        num_errors += 1
-                else:
-                    # success
-                    pass
+                    )
+                    num_errors += 1
             else:
-                for record, schema in t5s:
+                t4 = t4s[0]
+                t4_record, t4_schema = t4
+                closure_reason = getattr(t4_record, 'CLOSURE_REASON')
+
+                if closure_reason == '01':
+                    num_errors += self.__validate_case_closure_employment(t4, t5s, (
+                        'At least one person on the case must have employment status = 1:Yes in the '
+                        'same RPT_MONTH_YEAR since CLOSURE_REASON = 1:Employment/excess earnings.'
+                    ))
+                elif closure_reason == '03' and not is_ssp:
+                    num_errors += self.__validate_case_closure_ftl(t4, t5s, (
+                        'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
+                    ))
+            if len(t5s) == 0:
+                for record, schema in t4s:
                     self.__generate_and_add_error(
                         schema,
                         record,
@@ -394,6 +373,9 @@ class CaseConsistencyValidator:
                         )
                     )
                     num_errors += 1
+            else:
+                # success
+                pass
         else:
             for record, schema in t5s:
                 self.__generate_and_add_error(
@@ -406,7 +388,6 @@ class CaseConsistencyValidator:
                     )
                 )
                 num_errors += 1
-
         return num_errors
 
     def __validate_t5_aabd_and_ssi(self):
@@ -422,18 +403,16 @@ class CaseConsistencyValidator:
         t5s = self.sorted_cases.get(t5_model, [])
 
         for record, schema in t5s:
-            rpt_month_year = getattr(record, 'RPT_MONTH_YEAR')
             rec_aabd = getattr(record, 'REC_AID_TOTALLY_DISABLED')
             rec_ssi = getattr(record, 'REC_SSI')
             family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
             dob = getattr(record, 'DATE_OF_BIRTH')
 
-            rpt_month_year_dd = f'{rpt_month_year}01'
+            rpt_month_year_dd = f'{self.current_rpt_month_year}01'
             rpt_date = datetime.strptime(rpt_month_year_dd, '%Y%m%d')
             dob_date = datetime.strptime(dob, '%Y%m%d')
             is_adult = get_years_apart(rpt_date, dob_date) >= 19
 
-            # TODO: Check this
             if is_territory and is_adult and (rec_aabd != 1 and rec_aabd != 2):
                 self.__generate_and_add_error(
                     schema,
@@ -450,30 +429,30 @@ class CaseConsistencyValidator:
                     record,
                     field='REC_AID_TOTALLY_DISABLED',
                     msg=(
-                        f'{t5_model_name} People in states shouldn\'t have a value of 1.'
+                        f'{t5_model_name} People in states should not have a value of 1.'
                     )
                 )
                 num_errors += 1
 
-                if is_territory and rec_ssi != 2:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='REC_SSI',
-                        msg=(
-                            f'{t5_model_name} People in territories must have value = 2:No for 19E.'
-                        )
+            if is_territory and rec_ssi != 2:
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='REC_SSI',
+                    msg=(
+                        f'{t5_model_name} People in territories must have value = 2:No for 19E.'
                     )
-                    num_errors += 1
-                elif is_state and family_affiliation == 1:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='REC_SSI',
-                        msg=(
-                            f'{t5_model_name} People in states must have a valid value.'
-                        )
+                )
+                num_errors += 1
+            elif is_state and family_affiliation == 1:
+                self.__generate_and_add_error(
+                    schema,
+                    record,
+                    field='REC_SSI',
+                    msg=(
+                        f'{t5_model_name} People in states must have a valid value.'
                     )
+                )
                 num_errors += 1
 
         return num_errors
