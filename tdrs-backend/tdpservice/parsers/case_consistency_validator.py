@@ -434,7 +434,7 @@ class CaseConsistencyValidator:
                         record,
                         field='REC_AID_TOTALLY_DISABLED',
                         msg=(
-                            f'{t5_model_name} People in states shouldn\'t have a value of 1.'
+                            f'{t5_model_name} People in states should not have a value of 1.'
                         )
                     )
                     num_errors += 1
@@ -445,7 +445,7 @@ class CaseConsistencyValidator:
                         record,
                         field='REC_SSI',
                         msg=(
-                            f'{t5_model_name} People in territories must have a valid value for 19E.'
+                            f'{t5_model_name} People in territories must have value = 2:No for 19E.'
                         )
                     )
                     num_errors += 1

@@ -1221,11 +1221,11 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in states shouldn\'t have a value of 1.'
+            f'{t5_model_name} People in states should not have a value of 1.'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} People in states shouldn\'t have a value of 1.'
+            f'{t5_model_name} People in states should not have a value of 1.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1296,11 +1296,11 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in territories must have a valid value for 19E.'
+            f'{t5_model_name} People in territories must have value = 2:No for 19E.'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} People in territories must have a valid value for 19E.'
+            f'{t5_model_name} People in territories must have value = 2:No for 19E.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
