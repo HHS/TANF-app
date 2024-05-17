@@ -10,6 +10,7 @@ from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
 first_part_schema = RowSchema(
     record_type="M3",
     document=SSP_M3DataSubmissionDocument(),
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
         validators.caseNumberNotEmpty(8, 19),
@@ -323,6 +324,7 @@ first_part_schema = RowSchema(
 second_part_schema = RowSchema(
     record_type="M3",
     document=SSP_M3DataSubmissionDocument(),
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),

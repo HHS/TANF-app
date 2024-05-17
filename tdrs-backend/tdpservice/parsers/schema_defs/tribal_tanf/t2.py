@@ -13,6 +13,7 @@ t2 = SchemaManager(
         RowSchema(
             record_type="T2",
             document=Tribal_TANF_T2DataSubmissionDocument(),
+            should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
             preparsing_validators=[
                 validators.recordHasLength(122),
                 validators.caseNumberNotEmpty(8, 19),

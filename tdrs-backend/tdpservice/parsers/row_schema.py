@@ -13,12 +13,14 @@ class RowSchema:
             self,
             record_type="T1",
             document=None,
+            should_skip_partial_dup_func=lambda record: False,
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
             quiet_preparser_errors=False,
             ):
         self.document = document
+        self.should_skip_partial_dup_func = should_skip_partial_dup_func
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = postparsing_validators
         self.fields = fields

@@ -13,6 +13,7 @@ SECOND_CHILD = 2
 child_one = RowSchema(
     record_type="T3",
     document=TANF_T3DataSubmissionDocument(),
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     preparsing_validators=[
         validators.t3_m3_child_validator(FIRST_CHILD),
         validators.caseNumberNotEmpty(8, 19),
@@ -324,6 +325,7 @@ child_one = RowSchema(
 child_two = RowSchema(
     record_type="T3",
     document=TANF_T3DataSubmissionDocument(),
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     quiet_preparser_errors=validators.is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
         validators.t3_m3_child_validator(SECOND_CHILD),

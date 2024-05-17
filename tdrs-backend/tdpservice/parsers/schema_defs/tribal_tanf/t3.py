@@ -11,6 +11,7 @@ from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T3DataSubmiss
 child_one = RowSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     preparsing_validators=[
         validators.notEmpty(start=19, end=60),
         validators.caseNumberNotEmpty(8, 19),
@@ -321,6 +322,7 @@ child_one = RowSchema(
 child_two = RowSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     quiet_preparser_errors=True,
     preparsing_validators=[
         validators.notEmpty(start=60, end=101),

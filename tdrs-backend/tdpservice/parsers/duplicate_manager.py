@@ -129,9 +129,9 @@ class CaseHashtainer:
                            f"line number {existing_record_line_number}.")
                 is_exact_dup = True
 
-            skip_partial = self.__skip_partial(record)
+            should_skip_partial_dup = schema.should_skip_partial_dup_func(record)
             partial_hash = self.__get_partial_hash(record)
-            if not skip_partial and not is_exact_dup and partial_hash in self.partial_hashes:
+            if not should_skip_partial_dup and not is_exact_dup and partial_hash in self.partial_hashes:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(
                     ErrorLevel.PARTIAL_DUPLICATE)
                 existing_record_line_number = self.partial_hashes[partial_hash]

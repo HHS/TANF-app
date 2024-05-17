@@ -13,6 +13,7 @@ m2 = SchemaManager(
         RowSchema(
             record_type="M2",
             document=SSP_M2DataSubmissionDocument(),
+            should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
             preparsing_validators=[
                 validators.recordHasLength(150),
                 validators.caseNumberNotEmpty(8, 19),
