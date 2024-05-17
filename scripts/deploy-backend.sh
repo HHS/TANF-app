@@ -103,7 +103,7 @@ update_kibana()
   cf add-network-policy "$CGAPPNAME_KIBANA" "$CGAPPNAME_FRONTEND" --protocol tcp --port 80
 
   # Upload dashboards to Kibana
-  CMD="curl -X POST $CGAPPNAME_KIBANA.apps.internal/api/saved_objects/_import -H 'kbn-xsrf: true' --form file=@app/tdpservice/search_indexeskibana_saved_objs.ndjson"
+  CMD="curl -X POST $CGAPPNAME_KIBANA.apps.internal/api/saved_objects/_import -H 'kbn-xsrf: true' --form file=@/home/vcap/app/tdpservice/search_indexes/kibana_saved_objs.ndjson"
   cf run-task $CGAPPNAME_BACKEND --command "$CMD" --name kibana-obj-upload
 }
 
