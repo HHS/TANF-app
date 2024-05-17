@@ -168,7 +168,6 @@ t1 = SchemaManager(
                     required=False,
                     validators=[
                         validators.isInStringRange(1, 999),
-                        validators.recordHasLength(3),
                         validators.isNumber()
                     ],
                 ),

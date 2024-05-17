@@ -144,7 +144,6 @@ m1 = SchemaManager(
                     required=True,
                     validators=[
                         validators.isInStringRange(1, 999),
-                        validators.fieldHasLength(3),
                         validators.isNumber()
                     ],
                 ),
