@@ -434,7 +434,7 @@ class CaseConsistencyValidator:
                         'of 1 for REC_AID_TOTALLY_DISABLED.'
                     )
                 )
-            num_errors += 1
+                num_errors += 1
 
             if is_territory and rec_ssi != 2:
                 self.__generate_and_add_error(
@@ -455,6 +455,6 @@ class CaseConsistencyValidator:
                         f'{t5_model_name} People in states must have a valid value for REC_SSI.'
                     )
                 )
-            num_errors += 1
+                num_errors += 1
 
         return num_errors
