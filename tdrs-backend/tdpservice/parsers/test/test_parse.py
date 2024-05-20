@@ -1011,10 +1011,7 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
     parser_errors = ParserError.objects.filter(file=tanf_section2_file)
 
     err = parser_errors.first()
-    assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert err.error_message == "REC_OASDI_INSURANCE is required but a value was not provided."
-    assert err.content_type.model == "tanf_t5"
-    assert err.object_id is not None
+    assert err.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
 
 @pytest.fixture
@@ -1555,6 +1552,7 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
 
+
 @pytest.fixture
 def second_child_only_space_t3_file():
     """Fixture for misformatted_t3_file."""
@@ -1566,6 +1564,9 @@ def second_child_only_space_t3_file():
         file__name='second_child_only_space_t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T120210400028221R0112014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210400028221R0112014122888175617622222112204398100000000' +
                     b'                              \n' +
                     b'TRAILER0000001         ')
@@ -1582,6 +1583,9 @@ def one_child_t3_file():
         file__name='one_child_t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T120210400028221R0112014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210400028221R0112014122888175617622222112204398100000000\n' +
                     b'TRAILER0000001         ')
     )
@@ -1598,6 +1602,9 @@ def t3_file():
         file__name='t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T12021044111111111512014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
                     b'                                                            ' +
                     b'                                    \n' +
@@ -1617,6 +1624,9 @@ def t3_file_two_child():
         file__name='t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T12021021111111115712014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
                     b'420100125WTTTT9@TB1221222220430490000\n' +
                     b'TRAILER0000001         ')
@@ -1630,10 +1640,13 @@ def t3_file_two_child_with_space_filled():
     parsing_file = ParsingFileFactory(
         year=2021,
         quarter='Q2',
-        original_filename='t3_file.txt',
-        file__name='t3_file.txt',
+        original_filename='t3_file_two_child_with_space_filled.txt',
+        file__name='t3_file_two_child_with_space_filled.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T12021021111111115712014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
                     b'420100125WTTTT9@TB1221222220430490000                       \n' +
                     b'TRAILER0000001         ')
@@ -1652,12 +1665,16 @@ def two_child_second_filled():
         file__name='two_child_second_filled.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T12021021111111111512014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210211111111115120160401WTTTT@BTB22212212204398100000000' +
                     b'56      111111111                                           ' +
                     b'                                    \n' +
                     b'TRAILER0000001         ')
     )
     return parsing_file
+
 
 @pytest.fixture
 def t3_file_zero_filled_second():
@@ -1670,6 +1687,9 @@ def t3_file_zero_filled_second():
         file__name='t3_file_zero_filled_second.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T12021044111111111512014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
                     b'000000000000000000000000000000000000000000000000000000000000' +
                     b'000000000000000000000000000000000000\n' +
@@ -1677,23 +1697,31 @@ def t3_file_zero_filled_second():
     )
     return parsing_file
 
-@pytest.mark.parametrize('file_fixture, result, number_of_errors',
-                         [('second_child_only_space_t3_file', True, 0),
-                          ('one_child_t3_file', True, 0),
-                          ('t3_file', True, 0),
-                          ('t3_file_two_child', True, 1),
-                          ('t3_file_two_child_with_space_filled', True, 0),
-                          ('two_child_second_filled', True, 9),
-                          ('t3_file_zero_filled_second', True, 0)])
+@pytest.mark.parametrize('file_fixture, result, number_of_errors, error_message',
+                         [('second_child_only_space_t3_file', 1, 0, ''),
+                          ('one_child_t3_file', 1, 0, ''),
+                          ('t3_file', 1, 0, ''),
+                          ('t3_file_two_child', 1, 1,
+                           'The second child record is too short at 97 characters' +
+                           ' and must be at least 101 characters.'),
+                          ('t3_file_two_child_with_space_filled', 2, 0, ''),
+                          ('two_child_second_filled', 2, 9, 'T3: Year 6    must be larger than 1900.'),
+                          ('t3_file_zero_filled_second', 1, 0, '')])
 @pytest.mark.django_db()
-def test_misformatted_multi_records(file_fixture, result, number_of_errors, request, dfs):
+def test_misformatted_multi_records(file_fixture, result, number_of_errors, error_message, request, dfs):
     """Test that (not space filled) multi-records are caught."""
     file_fixture = request.getfixturevalue(file_fixture)
     dfs.datafile = file_fixture
     parse.parse_datafile(file_fixture, dfs)
     parser_errors = ParserError.objects.filter(file=file_fixture)
     t3 = TANF_T3.objects.all()
-    assert t3.exists() == result
+    assert t3.count() == result
+
+    parser_errors = ParserError.objects.all()
+    assert parser_errors.count() == number_of_errors
+    if number_of_errors > 0:
+        error_messages = [parser_error.error_message for parser_error in parser_errors]
+        assert error_message in error_messages
 
     parser_errors = ParserError.objects.all().exclude(
         # exclude extraneous cat 4 errors
