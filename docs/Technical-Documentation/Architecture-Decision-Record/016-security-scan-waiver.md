@@ -45,7 +45,7 @@ Though `unsafe-inline` potentially allows for XSS attacks, the CSP exceptions in
 * Vega (when interpreting its visualization syntax)
 * Lodash (via the _.template function)
 
-
+Maliciously side-loading a script would require Kibana have an unresolved persistent-XSS vulnerability, as well as file-system access to our cloud.gov Kibana application to load a script from an allowed domain. The attack vector is further limited by our authentication implementation, which requires a user be approved and granted Kibana access before loading any Kibana-related pages at all. In these cases, an attacker would have gained access to the system already.
 
 ## Consequences
 
