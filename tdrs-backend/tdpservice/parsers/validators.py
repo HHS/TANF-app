@@ -229,6 +229,17 @@ def recordHasLength(length):
     )
 
 
+def recordHasLengthBetween(lower, upper, error_func=None):
+    """Validate that value (string or array) has a length matching length param."""
+    return make_validator(
+        lambda value: len(value) >= lower and len(value) <= upper,
+        lambda value, row_schema, friendly_name, item_num: error_func(value, lower, upper)
+        if error_func
+        else
+        f"{row_schema.record_type}: record length of {len(value)} characters is not in the range [{lower}, {upper}].",
+    )
+
+
 def caseNumberNotEmpty(start=0, end=None):
     """Validate that string value isn't only blanks."""
     return make_validator(
@@ -304,16 +315,6 @@ def between(min, max):
         lambda value: int(value) > min and int(value) < max,
         lambda value, row_schema, friendly_name, item_num:
             f"{format_error_context(row_schema, friendly_name, item_num)}: {value} is not between {min} and {max}.",
-    )
-
-def recordHasLengthBetween(lower, upper, error_func=None):
-    """Validate that value (string or array) has a length matching length param."""
-    return make_validator(
-        lambda value: len(value) >= lower and len(value) <= upper,
-        lambda value, row_schema, friendly_name, item_num: error_func(value, lower, upper)
-        if error_func
-        else
-        f"{row_schema.record_type} record length of {len(value)} characters is not in the range [{lower}, {upper}].",
     )
 
 def hasLengthGreaterThan(val, error_func=None):
