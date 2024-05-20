@@ -877,8 +877,8 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
 
     parse.parse_datafile(tanf_section2_file, dfs)
 
-    assert TANF_T4.objects.all().count() == 130
-    assert TANF_T5.objects.all().count() == 362
+    assert TANF_T4.objects.all().count() == 206
+    assert TANF_T5.objects.all().count() == 558
 
     parser_errors = ParserError.objects.filter(file=tanf_section2_file)
 
@@ -1364,23 +1364,32 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
 
-@pytest.mark.parametrize('file_fixture, result, number_of_errors',
-                         [('second_child_only_space_t3_file', False, 0),
-                          ('one_child_t3_file', False, 0),
-                          ('t3_file', False, 0),
-                          ('t3_file_two_child', False, 1),
-                          ('t3_file_two_child_with_space_filled', False, 0),
-                          ('two_child_second_filled', False, 9),
-                          ('t3_file_zero_filled_second', False, 0)])
+
+@pytest.mark.parametrize('file_fixture, result, number_of_errors, error_message',
+                         [('second_child_only_space_t3_file', 1, 0, ''),
+                          ('one_child_t3_file', 1, 0, ''),
+                          ('t3_file', 1, 0, ''),
+                          ('t3_file_two_child', 1, 1,
+                           'The second child record is too short at 97 characters' +
+                           ' and must be at least 101 characters.'),
+                          ('t3_file_two_child_with_space_filled', 2, 0, ''),
+                          ('two_child_second_filled', 2, 9, 'T3: Year 6    must be larger than 1900.'),
+                          ('t3_file_zero_filled_second', 1, 0, '')])
 @pytest.mark.django_db()
-def test_misformatted_multi_records(file_fixture, result, number_of_errors, request, dfs):
+def test_misformatted_multi_records(file_fixture, result, number_of_errors, error_message, request, dfs):
     """Test that (not space filled) multi-records are caught."""
     file_fixture = request.getfixturevalue(file_fixture)
     dfs.datafile = file_fixture
     parse.parse_datafile(file_fixture, dfs)
     parser_errors = ParserError.objects.filter(file=file_fixture)
     t3 = TANF_T3.objects.all()
-    assert t3.exists() == result
+    assert t3.count() == result
+
+    parser_errors = ParserError.objects.all()
+    assert parser_errors.count() == number_of_errors
+    if number_of_errors > 0:
+        error_messages = [parser_error.error_message for parser_error in parser_errors]
+        assert error_message in error_messages
 
     parser_errors = ParserError.objects.all().exclude(
         # exclude extraneous cat 4 errors
@@ -1590,7 +1599,7 @@ def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, 
     ('ssp_s2_partial_dup_file', 1, SSP_M4, "M4"),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
-def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, request):
+def test_parse_partial_duplicate(file, batch_size, model, record_type, num_errors, dfs, request):
     """Test handling invalid quarter value that raises a ValueError exception."""
     datafile = request.getfixturevalue(file)
     dfs.datafile = datafile
@@ -1602,7 +1611,7 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, dfs, requ
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
         assert e.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-    assert parser_errors.count() == 3
+    assert parser_errors.count() == num_errors
 
     dup_error = parser_errors.first()
     assert dup_error.error_message == f"Partial duplicate record detected with record type {record_type} " + \

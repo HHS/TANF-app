@@ -6,13 +6,18 @@ from ...fields import TransformField, Field
 from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T3DataSubmissionDocument
+from tdpservice.parsers.util import generate_t2_t3_t5_hashes
 
+FIRST_CHILD = 1
+SECOND_CHILD = 2
 
 child_one = RowSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
+    generate_hashes_func=generate_t2_t3_t5_hashes,
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     preparsing_validators=[
-        validators.notEmpty(start=19, end=60),
+        validators.t3_m3_child_validator(FIRST_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -132,7 +137,6 @@ child_one = RowSchema(
             startIndex=19,
             endIndex=20,
             required=True,
-            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])],
         ),
         Field(
@@ -317,15 +321,16 @@ child_one = RowSchema(
             validators=[validators.isInStringRange(0, 9999)],
         ),
     ],
-    skip_values={2, 4, 5},
 )
 
 child_two = RowSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
-    quiet_preparser_errors=True,
+    generate_hashes_func=generate_t2_t3_t5_hashes,
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
+    quiet_preparser_errors=validators.is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
-        validators.notEmpty(start=60, end=101),
+        validators.t3_m3_child_validator(SECOND_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -445,7 +450,6 @@ child_two = RowSchema(
             startIndex=60,
             endIndex=61,
             required=True,
-            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])],
         ),
         Field(
@@ -629,7 +633,6 @@ child_two = RowSchema(
             validators=[validators.isInStringRange(0, 9999)],
         ),
     ],
-    skip_values={2, 4, 5},
 )
 
 t3 = SchemaManager(schemas=[child_one, child_two])

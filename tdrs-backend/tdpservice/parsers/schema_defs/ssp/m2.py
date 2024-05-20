@@ -6,6 +6,7 @@ from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M2DataSubmissionDocument
+from tdpservice.parsers.util import generate_t2_t3_t5_hashes
 
 
 m2 = SchemaManager(
@@ -13,6 +14,8 @@ m2 = SchemaManager(
         RowSchema(
             record_type="M2",
             document=SSP_M2DataSubmissionDocument(),
+            generate_hashes_func=generate_t2_t3_t5_hashes,
+            should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
             preparsing_validators=[
                 validators.recordHasLength(150),
                 validators.caseNumberNotEmpty(8, 19),
@@ -169,7 +172,6 @@ m2 = SchemaManager(
                     startIndex=19,
                     endIndex=20,
                     required=True,
-                    can_skip_partial=True,
                     validators=[validators.oneOf([1, 2, 3, 5])]
                 ),
                 Field(
@@ -808,7 +810,6 @@ m2 = SchemaManager(
                     validators=[validators.isInLimits(0, 9999)]
                 ),
             ],
-            skip_values={3, 5},
         )
     ]
 )

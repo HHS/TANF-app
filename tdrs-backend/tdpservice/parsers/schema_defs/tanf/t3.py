@@ -6,6 +6,7 @@ from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T3DataSubmissionDocument
+from tdpservice.parsers.util import generate_t2_t3_t5_hashes
 
 FIRST_CHILD = 1
 SECOND_CHILD = 2
@@ -13,6 +14,8 @@ SECOND_CHILD = 2
 child_one = RowSchema(
     record_type="T3",
     document=TANF_T3DataSubmissionDocument(),
+    generate_hashes_func=generate_t2_t3_t5_hashes,
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     preparsing_validators=[
         validators.t3_m3_child_validator(FIRST_CHILD),
         validators.caseNumberNotEmpty(8, 19),
@@ -134,7 +137,6 @@ child_one = RowSchema(
             startIndex=19,
             endIndex=20,
             required=True,
-            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])],
         ),
         Field(
@@ -319,13 +321,14 @@ child_one = RowSchema(
             validators=[validators.isInStringRange(0, 9999)],
         ),
     ],
-    skip_values={2, 4, 5},
 )
 
 
 child_two = RowSchema(
     record_type="T3",
     document=TANF_T3DataSubmissionDocument(),
+    generate_hashes_func=generate_t2_t3_t5_hashes,
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     quiet_preparser_errors=validators.is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
         validators.t3_m3_child_validator(SECOND_CHILD),
@@ -449,7 +452,6 @@ child_two = RowSchema(
             startIndex=60,
             endIndex=61,
             required=True,
-            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])],
         ),
         Field(
@@ -634,7 +636,6 @@ child_two = RowSchema(
             validators=[validators.isInStringRange(0, 9999)],
         ),
     ],
-    skip_values={2, 4, 5},
 )
 
 t3 = SchemaManager(schemas=[child_one, child_two])

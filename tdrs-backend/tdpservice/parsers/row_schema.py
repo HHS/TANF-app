@@ -13,20 +13,23 @@ class RowSchema:
             self,
             record_type="T1",
             document=None,
+            # The default hash function covers all program types with record types ending in a 6 or 7.
+            generate_hashes_func=lambda line, record: (hash(line),
+                                                       None),
+            should_skip_partial_dup_func=lambda record: False,
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
             quiet_preparser_errors=False,
-            skip_values={},
             ):
         self.document = document
+        self.generate_hashes_func = generate_hashes_func
+        self.should_skip_partial_dup_func = should_skip_partial_dup_func
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = postparsing_validators
         self.fields = fields
         self.quiet_preparser_errors = quiet_preparser_errors
         self.record_type = record_type
-        self.skip_values = skip_values
-        self.should_skip_partial_dup = False
         self.datafile = None
 
     def _add_field(self, item, name, length, start, end, type):
@@ -104,12 +107,6 @@ class RowSchema:
 
         return is_valid, errors
 
-    def __set_skip_partial_dup_check(self, field, value):
-        # This technically could be overriden if this applies to other fields, but as of right now, FAMILY_AFFILIATION
-        # is the only field that has `can_skip_partial` set to True.
-        if field.can_skip_partial:
-            self.should_skip_partial_dup = value in self.skip_values
-
     def parse_line(self, line):
         """Create a model for the line based on the schema."""
         record = self.document.Django.model() if self.document is not None else dict()
@@ -122,8 +119,6 @@ class RowSchema:
                     record[field.name] = value
                 else:
                     setattr(record, field.name, value)
-
-                self.__set_skip_partial_dup_check(field, value)
 
         return record
 

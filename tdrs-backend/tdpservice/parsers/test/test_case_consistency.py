@@ -500,7 +500,7 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1
             ),
@@ -573,7 +573,7 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1,
                 EMPLOYMENT_STATUS=3,
@@ -599,7 +599,8 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            'At least one person on the case must have employment status = 1:Yes in the same month.'
+            'At least one person on the case must have employment status = 1:Yes'
+            ' in the same RPT_MONTH_YEAR since CLOSURE_REASON = 1:Employment/excess earnings.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
@@ -633,7 +634,7 @@ class TestCaseConsistencyValidator:
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                CLOSURE_REASON='99'
+                CLOSURE_REASON='03'
             ),
         ]
         line_number = 1
@@ -645,18 +646,18 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1,
+                REC_SSI=2,
                 RELATIONSHIP_HOH='10',
                 COUNTABLE_MONTH_FED_TIME='059',
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=2,
+                FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=1,
+                REC_SSI=2,
                 RELATIONSHIP_HOH='03',
                 COUNTABLE_MONTH_FED_TIME='001',
             ),
@@ -771,7 +772,7 @@ class TestCaseConsistencyValidator:
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1
             ),
@@ -946,11 +947,11 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} Adults in territories must have a valid value for 19C.'
+            f'{t5_model_name} Adults in territories must have a valid value for REC_AID_TOTALLY_DISABLED.'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} Adults in territories must have a valid value for 19C.'
+            f'{t5_model_name} Adults in territories must have a valid value for REC_AID_TOTALLY_DISABLED.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1069,9 +1070,9 @@ class TestCaseConsistencyValidator:
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER='123',
                 DATE_OF_BIRTH="19970209",
-                FAMILY_AFFILIATION=1,
+                FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=1,
-                REC_SSI=1
+                REC_SSI=2
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
@@ -1079,7 +1080,7 @@ class TestCaseConsistencyValidator:
                 DATE_OF_BIRTH="20170209",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=1,
-                REC_SSI=1
+                REC_SSI=2
             ),
         ]
         for t5 in t5s:
@@ -1094,11 +1095,11 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in states shouldn\'t have a value of 1.'
+            f'{t5_model_name} People in states should not have a value of 1 for REC_AID_TOTALLY_DISABLED.'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} People in states shouldn\'t have a value of 1.'
+            f'{t5_model_name} People in states should not have a value of 1 for REC_AID_TOTALLY_DISABLED.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1172,11 +1173,11 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in territories must have a valid value for 19E.'
+            f'{t5_model_name} People in territories must have value = 2:No for REC_SSI.'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} People in territories must have a valid value for 19E.'
+            f'{t5_model_name} People in territories must have value = 2:No for REC_SSI.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1250,7 +1251,7 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in states must have a valid value.'
+            f'{t5_model_name} People in states must have a valid value for REC_SSI.'
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [

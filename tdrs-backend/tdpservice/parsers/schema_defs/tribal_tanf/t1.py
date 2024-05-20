@@ -4,12 +4,14 @@ from ...fields import Field
 from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T1DataSubmissionDocument
+from tdpservice.parsers.util import generate_t1_t4_hashes
 
 t1 = SchemaManager(
     schemas=[
         RowSchema(
             record_type="T1",
             document=Tribal_TANF_T1DataSubmissionDocument(),
+            generate_hashes_func=generate_t1_t4_hashes,
             preparsing_validators=[
                 validators.recordHasLength(122),
                 validators.caseNumberNotEmpty(8, 19),

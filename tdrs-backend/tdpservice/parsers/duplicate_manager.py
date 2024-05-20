@@ -84,16 +84,6 @@ class CaseHashtainer:
                 self.manager_error_dict.setdefault(self.my_hash, []).append(error)
             self.num_errors = len(self.manager_error_dict[self.my_hash])
 
-    def __get_partial_hash(self, record):
-        partial_hash = None
-        rec_num = record.RecordType[-1]
-        if rec_num in {"1", "4"}:
-            partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
-        elif rec_num in {"2", "3", "5"}:
-            partial_hash = hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER +
-                                str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
-        return partial_hash
-
     def add_case_member(self, record, schema, line, line_number):
         """Add case member and generate errors if needed.
 
@@ -111,7 +101,9 @@ class CaseHashtainer:
             has_precedence = False
             is_new_max_precedence = False
 
-            line_hash = hash(line)
+            line_hash, partial_hash = schema.generate_hashes_func(line, record)
+            should_skip_partial_dup = schema.should_skip_partial_dup_func(record)
+
             if line_hash in self.record_hashes:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
                 existing_record_line_number = self.record_hashes[line_hash]
@@ -120,9 +112,7 @@ class CaseHashtainer:
                            f"line number {existing_record_line_number}.")
                 is_exact_dup = True
 
-            skip_partial = schema.should_skip_partial_dup
-            partial_hash = self.__get_partial_hash(record)
-            if not skip_partial and not is_exact_dup and partial_hash in self.partial_hashes:
+            if not should_skip_partial_dup and not is_exact_dup and partial_hash in self.partial_hashes:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(
                     ErrorLevel.PARTIAL_DUPLICATE)
                 existing_record_line_number = self.partial_hashes[partial_hash]

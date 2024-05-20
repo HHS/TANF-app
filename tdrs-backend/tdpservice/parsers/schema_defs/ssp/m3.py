@@ -6,12 +6,18 @@ from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
+from tdpservice.parsers.util import generate_t2_t3_t5_hashes
+
+FIRST_CHILD = 1
+SECOND_CHILD = 2
 
 first_part_schema = RowSchema(
     record_type="M3",
     document=SSP_M3DataSubmissionDocument(),
+    generate_hashes_func=generate_t2_t3_t5_hashes,
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     preparsing_validators=[
-        validators.notEmpty(start=19, end=60),
+        validators.t3_m3_child_validator(FIRST_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -134,7 +140,6 @@ first_part_schema = RowSchema(
             startIndex=19,
             endIndex=20,
             required=True,
-            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])]
         ),
         Field(
@@ -318,16 +323,17 @@ first_part_schema = RowSchema(
             required=True,
             validators=[validators.isInLimits(0, 9999)]
         )
-    ],
-    skip_values={2, 4, 5},
+    ]
 )
 
 second_part_schema = RowSchema(
     record_type="M3",
     document=SSP_M3DataSubmissionDocument(),
-    quiet_preparser_errors=True,
+    generate_hashes_func=generate_t2_t3_t5_hashes,
+    should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
+    quiet_preparser_errors=validators.is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
-        validators.notEmpty(start=60, end=101),
+        validators.t3_m3_child_validator(SECOND_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -450,7 +456,6 @@ second_part_schema = RowSchema(
             startIndex=60,
             endIndex=61,
             required=True,
-            can_skip_partial=True,
             validators=[validators.oneOf([1, 2, 4])]
         ),
         Field(
@@ -634,8 +639,7 @@ second_part_schema = RowSchema(
             required=True,
             validators=[validators.isInLimits(0, 9999)]
         )
-    ],
-    skip_values={2, 4, 5},
+    ]
 )
 
 m3 = SchemaManager(schemas=[first_part_schema, second_part_schema])
