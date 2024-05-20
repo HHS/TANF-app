@@ -14,7 +14,7 @@ m1 = SchemaManager(
             document=SSP_M1DataSubmissionDocument(),
             generate_hashes_func=generate_t1_t4_hashes,
             preparsing_validators=[
-                validators.recordHasLength(150),
+                validators.recordHasLengthBetween(113, 150),
                 validators.caseNumberNotEmpty(8, 19),
                 validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
