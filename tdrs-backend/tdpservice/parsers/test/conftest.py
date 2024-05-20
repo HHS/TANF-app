@@ -215,6 +215,9 @@ def second_child_only_space_t3_file():
         file__name='second_child_only_space_t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T120210400028221R0112014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210400028221R0112014122888175617622222112204398100000000' +
                     b'                              \n' +
                     b'TRAILER0000001         ')
@@ -231,6 +234,9 @@ def one_child_t3_file():
         file__name='one_child_t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T120210400028221R0112014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210400028221R0112014122888175617622222112204398100000000\n' +
                     b'TRAILER0000001         ')
     )
@@ -247,6 +253,9 @@ def t3_file():
         file__name='t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T12021044111111111512014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
                     b'                                                            ' +
                     b'                                    \n' +
@@ -266,6 +275,9 @@ def t3_file_two_child():
         file__name='t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T12021021111111115712014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
                     b'420100125WTTTT9@TB1221222220430490000\n' +
                     b'TRAILER0000001         ')
@@ -279,10 +291,13 @@ def t3_file_two_child_with_space_filled():
     parsing_file = ParsingFileFactory(
         year=2021,
         quarter='Q2',
-        original_filename='t3_file.txt',
-        file__name='t3_file.txt',
+        original_filename='t3_file_two_child_with_space_filled.txt',
+        file__name='t3_file_two_child_with_space_filled.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T12021021111111115712014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
                     b'420100125WTTTT9@TB1221222220430490000                       \n' +
                     b'TRAILER0000001         ')
@@ -301,12 +316,16 @@ def two_child_second_filled():
         file__name='two_child_second_filled.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T12021021111111111512014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210211111111115120160401WTTTT@BTB22212212204398100000000' +
                     b'56      111111111                                           ' +
                     b'                                    \n' +
                     b'TRAILER0000001         ')
     )
     return parsing_file
+
 
 @pytest.fixture
 def t3_file_zero_filled_second():
@@ -319,6 +338,9 @@ def t3_file_zero_filled_second():
         file__name='t3_file_zero_filled_second.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T12021044111111111512014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
                     b'000000000000000000000000000000000000000000000000000000000000' +
                     b'000000000000000000000000000000000000\n' +
