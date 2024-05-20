@@ -1552,16 +1552,16 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
 @pytest.mark.parametrize("file, batch_size, model, record_type, num_errors", [
     ('tanf_s1_exact_dup_file', 10000, TANF_T1, "T1", 3),
     ('tanf_s1_exact_dup_file', 1, TANF_T1, "T1", 3),  # This forces an in memory and database deletion of records.
-    ('tanf_s2_exact_dup_file', 10000, TANF_T4, "T4", 3),
-    ('tanf_s2_exact_dup_file', 1, TANF_T4, "T4", 3),  # This forces an in memory and database deletion of records.
+    ('tanf_s2_exact_dup_file', 10000, TANF_T4, "T4", 4),
+    ('tanf_s2_exact_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
     ('tanf_s3_exact_dup_file', 10000, TANF_T6, "T6", 1),
     ('tanf_s3_exact_dup_file', 1, TANF_T6, "T6", 1),  # This forces an in memory and database deletion of records.
     ('tanf_s4_exact_dup_file', 10000, TANF_T7, "T7", 1),
     ('tanf_s4_exact_dup_file', 1, TANF_T7, "T7", 1),  # This forces an in memory and database deletion of records.
     ('ssp_s1_exact_dup_file', 10000, SSP_M1, "M1", 3),
     ('ssp_s1_exact_dup_file', 1, SSP_M1, "M1", 3),  # This forces an in memory and database deletion of records.
-    ('ssp_s2_exact_dup_file', 10000, SSP_M4, "M4", 3),
-    ('ssp_s2_exact_dup_file', 1, SSP_M4, "M4", 3),  # This forces an in memory and database deletion of records.
+    ('ssp_s2_exact_dup_file', 10000, SSP_M4, "M4", 4),
+    ('ssp_s2_exact_dup_file', 1, SSP_M4, "M4", 4),  # This forces an in memory and database deletion of records.
     ('ssp_s3_exact_dup_file', 10000, SSP_M6, "M6", 1),
     ('ssp_s3_exact_dup_file', 1, SSP_M6, "M6", 1),  # This forces an in memory and database deletion of records.
     ('ssp_s4_exact_dup_file', 10000, SSP_M7, "M7", 1),
@@ -1588,15 +1588,15 @@ def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, 
 
     model.objects.count() == 0
 
-@pytest.mark.parametrize("file, batch_size, model, record_type", [
-    ('tanf_s1_partial_dup_file', 10000, TANF_T1, "T1"),
-    ('tanf_s1_partial_dup_file', 1, TANF_T1, "T1"),  # This forces an in memory and database deletion of records.
-    ('tanf_s2_partial_dup_file', 10000, TANF_T4, "T4"),
-    ('tanf_s2_partial_dup_file', 1, TANF_T4, "T4"),  # This forces an in memory and database deletion of records.
-    ('ssp_s1_partial_dup_file', 10000, SSP_M1, "M1"),
-    ('ssp_s1_partial_dup_file', 1, SSP_M1, "M1"),  # This forces an in memory and database deletion of records.
-    ('ssp_s2_partial_dup_file', 10000, SSP_M4, "M4"),
-    ('ssp_s2_partial_dup_file', 1, SSP_M4, "M4"),  # This forces an in memory and database deletion of records.
+@pytest.mark.parametrize("file, batch_size, model, record_type, num_errors", [
+    ('tanf_s1_partial_dup_file', 10000, TANF_T1, "T1", 3),
+    ('tanf_s1_partial_dup_file', 1, TANF_T1, "T1", 3),  # This forces an in memory and database deletion of records.
+    ('tanf_s2_partial_dup_file', 10000, TANF_T4, "T4", 4),
+    ('tanf_s2_partial_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
+    ('ssp_s1_partial_dup_file', 10000, SSP_M1, "M1", 3),
+    ('ssp_s1_partial_dup_file', 1, SSP_M1, "M1", 3),  # This forces an in memory and database deletion of records.
+    ('ssp_s2_partial_dup_file', 10000, SSP_M4, "M4", 4),
+    ('ssp_s2_partial_dup_file', 1, SSP_M4, "M4", 4),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
 def test_parse_partial_duplicate(file, batch_size, model, record_type, num_errors, dfs, request):
