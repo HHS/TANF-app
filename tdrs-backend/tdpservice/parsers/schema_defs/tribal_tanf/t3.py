@@ -7,12 +7,14 @@ from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T3DataSubmissionDocument
 
+FIRST_CHILD = 1
+SECOND_CHILD = 2
 
 child_one = RowSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
     preparsing_validators=[
-        validators.notEmpty(start=19, end=60),
+        validators.t3_m3_child_validator(FIRST_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -321,9 +323,9 @@ child_one = RowSchema(
 child_two = RowSchema(
     record_type="T3",
     document=Tribal_TANF_T3DataSubmissionDocument(),
-    quiet_preparser_errors=True,
+    quiet_preparser_errors=validators.is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
-        validators.notEmpty(start=60, end=101),
+        validators.t3_m3_child_validator(SECOND_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
