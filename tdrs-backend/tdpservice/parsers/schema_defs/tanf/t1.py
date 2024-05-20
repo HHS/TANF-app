@@ -12,7 +12,7 @@ t1 = SchemaManager(
             record_type="T1",
             document=TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
-                validators.recordHasLength(156),
+                validators.recordHasLengthBetween(117, 156),
                 validators.caseNumberNotEmpty(8, 19),
                 validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
