@@ -280,7 +280,7 @@ t1 = SchemaManager(
                 Field(
                     item="15",
                     name="RECEIVES_FOOD_STAMPS",
-                    friendly_name="Receives Assistance from the SNAP",
+                    friendly_name="Receives SNAP Assistance",
                     type="number",
                     startIndex=37,
                     endIndex=38,

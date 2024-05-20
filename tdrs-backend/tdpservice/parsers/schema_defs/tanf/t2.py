@@ -601,7 +601,7 @@ t2 = SchemaManager(
                 Field(
                     item="55A",
                     name="JOB_SEARCH_HOP",
-                    friendly_name="Job Search and Job Readiness Assistance: Hours of Participation",
+                    friendly_name="Job Search and Job Readiness: Hours of Participation",
                     type="string",
                     startIndex=84,
                     endIndex=86,
@@ -613,7 +613,7 @@ t2 = SchemaManager(
                 Field(
                     item="55B",
                     name="JOB_SEARCH_EA",
-                    friendly_name="Job Search and Job Readiness Assistance: Hours of Excused Absences",
+                    friendly_name="Job Search and Job Readiness: Hours of Excused Absences",
                     type="string",
                     startIndex=86,
                     endIndex=88,
@@ -625,7 +625,7 @@ t2 = SchemaManager(
                 Field(
                     item="55C",
                     name="JOB_SEARCH_HOL",
-                    friendly_name="Job Search and Job Readiness Assistance: Hours of Holidays",
+                    friendly_name="Job Search and Job Readiness: Hours of Holidays",
                     type="string",
                     startIndex=88,
                     endIndex=90,
@@ -709,7 +709,7 @@ t2 = SchemaManager(
                 Field(
                     item="58A",
                     name="JOB_SKILLS_TRAINING_HOP",
-                    friendly_name="Job Skills Training Directly Related to Employment: Hours of Participation",
+                    friendly_name="Job Skills Training: Hours of Participation",
                     type="string",
                     startIndex=102,
                     endIndex=104,
@@ -721,7 +721,7 @@ t2 = SchemaManager(
                 Field(
                     item="58B",
                     name="JOB_SKILLS_TRAINING_EA",
-                    friendly_name="Job Skills Training Directly Related to Employment: Hours of Excused Absences",
+                    friendly_name="Job Skills Training: Hours of Excused Absences",
                     type="string",
                     startIndex=104,
                     endIndex=106,
@@ -733,7 +733,7 @@ t2 = SchemaManager(
                 Field(
                     item="58C",
                     name="JOB_SKILLS_TRAINING_HOL",
-                    friendly_name="Job Skills Training Directly Related to Employment: Hours of Holidays",
+                    friendly_name="Job Skills Training: Hours of Holidays",
                     type="string",
                     startIndex=106,
                     endIndex=108,
@@ -745,8 +745,8 @@ t2 = SchemaManager(
                 Field(
                     item="59A",
                     name="ED_NO_HIGH_SCHOOL_DIPL_HOP",
-                    friendly_name="Education Directly Related to Employment for an Individual with NO High " +
-                    "School Diploma or Certificate of High School Equivalency: Hours of Participation",
+                    friendly_name="Education Directly Related to Employment: " +
+                    "Hours of Participation",
                     type="string",
                     startIndex=108,
                     endIndex=110,
@@ -758,8 +758,8 @@ t2 = SchemaManager(
                 Field(
                     item="59B",
                     name="ED_NO_HIGH_SCHOOL_DIPL_EA",
-                    friendly_name="Education Directly Related to Employment for an Individual with NO High " +
-                    "School Diploma or Certificate: Hours of Excused Absences",
+                    friendly_name="Education Directly Related to Employment: " +
+                    "Hours of Excused Absences",
                     type="string",
                     startIndex=110,
                     endIndex=112,
@@ -771,8 +771,8 @@ t2 = SchemaManager(
                 Field(
                     item="59C",
                     name="ED_NO_HIGH_SCHOOL_DIPL_HOL",
-                    friendly_name="Education Directly Related to Employment for an Individual with NO High " +
-                    "School Diploma or Certificate: Hours of Holidays",
+                    friendly_name="Education Directly Related to Employment: " +
+                    "Hours of Holidays",
                     type="string",
                     startIndex=112,
                     endIndex=114,
@@ -784,8 +784,8 @@ t2 = SchemaManager(
                 Field(
                     item="60A",
                     name="SCHOOL_ATTENDENCE_HOP",
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School " +
-                    "Diploma or Certificate: Hours of Participation",
+                    friendly_name="Satisfactory School Attendance: " +
+                    "Hours of Participation",
                     type="string",
                     startIndex=114,
                     endIndex=116,
@@ -797,8 +797,8 @@ t2 = SchemaManager(
                 Field(
                     item="60B",
                     name="SCHOOL_ATTENDENCE_EA",
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School" +
-                    "Diploma or Certificate: Hours of Ecused Absences",
+                    friendly_name="Satisfactory School Attendance: " +
+                    "Hours of Ecused Absences",
                     type="string",
                     startIndex=116,
                     endIndex=118,
@@ -810,8 +810,8 @@ t2 = SchemaManager(
                 Field(
                     item="60C",
                     name="SCHOOL_ATTENDENCE_HOL",
-                    friendly_name="Satisfactory School Attendance for Individuals with No High School" +
-                    "Diploma or Certificate: Hours of Holidays",
+                    friendly_name="Satisfactory School Attendance: " +
+                    "Hours of Holidays",
                     type="string",
                     startIndex=118,
                     endIndex=120,
@@ -823,8 +823,8 @@ t2 = SchemaManager(
                 Field(
                     item="61A",
                     name="PROVIDE_CC_HOP",
-                    friendly_name="Providing Child Care for an Individual Who Is Participating" +
-                    "in a Community Service Program: Hours of Participation",
+                    friendly_name="Providing Child Care: " +
+                    "Hours of Participation",
                     type="string",
                     startIndex=120,
                     endIndex=122,
@@ -836,8 +836,8 @@ t2 = SchemaManager(
                 Field(
                     item="61B",
                     name="PROVIDE_CC_EA",
-                    friendly_name="Providing Child Care for an Individual Who Is Participating" +
-                    "in a Community Service Program: Hours of Excused Absences",
+                    friendly_name="Providing Child Care: " +
+                    "Hours of Excused Absences",
                     type="string",
                     startIndex=122,
                     endIndex=124,
@@ -849,8 +849,8 @@ t2 = SchemaManager(
                 Field(
                     item="61C",
                     name="PROVIDE_CC_HOL",
-                    friendly_name="Providing Child Care Services for an Individual Who Is Participating" +
-                    "in a Community Service Program: Hours of Holidays",
+                    friendly_name="Providing Child Care Services: " +
+                    "Hours of Holidays",
                     type="string",
                     startIndex=124,
                     endIndex=126,
@@ -910,7 +910,7 @@ t2 = SchemaManager(
                 Field(
                     item="66A",
                     name="UNEARNED_INCOME_TAX_CREDIT",
-                    friendly_name="Amount of Unearned Income: Earned Income Tax Credit (EITC)",
+                    friendly_name="Amount of Unearned Income: EITC",
                     type="string",
                     startIndex=136,
                     endIndex=140,
