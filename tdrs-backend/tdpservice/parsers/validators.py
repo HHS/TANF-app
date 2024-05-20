@@ -274,6 +274,15 @@ def recordHasLength(length):
         item_num: f"{row_schema.record_type} record length is {len(value)} characters but must be {length}.",
     )
 
+def recordHasLengthBetween(lower, upper, error_func=None):
+    """Validate that value (string or array) has a length matching length param."""
+    return make_validator(
+        lambda value: len(value) >= lower and len(value) <= upper,
+        lambda value, row_schema, friendly_name, item_num: error_func(value, lower, upper)
+        if error_func
+        else
+        f"{row_schema.record_type} record length of {len(value)} characters is not in the range [{lower}, {upper}].",
+    )
 
 def hasLengthGreaterThan(val, error_func=None):
     """Validate that value (string or array) has a length greater than val."""
@@ -743,7 +752,6 @@ def _is_all_zeros(value, start, end):
 
 def t3_m3_child_validator(which_child):
     """T3 child validator."""
-
     def t3_first_child_validator_func(value, temp, friendly_name, item_num):
         if not _is_empty(value, 1, 60) and len(value) >= 60:
             return (True, None)
