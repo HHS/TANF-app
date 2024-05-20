@@ -48,7 +48,7 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
         name="stt"
         label={
           sttType
-            ? toTitleCase(sttType)
+            ? `${toTitleCase(sttType)}*`
             : 'Associated State, Tribe, or Territory*'
         }
         error={error ? 'A state, tribe, or territory is required' : undefined}

@@ -256,6 +256,12 @@ describe('Pre-approval Home page', () => {
             code: 'AK',
             name: 'Aleutian/Pribilof Islands Association, Inc.',
           },
+          {
+            id: 1111,
+            type: 'territory',
+            code: 'G',
+            name: 'Guam',
+          },
         ],
       },
     })
@@ -267,7 +273,101 @@ describe('Pre-approval Home page', () => {
 
     const options = wrapper.find('option')
 
-    expect(options.length).toEqual(4)
+    expect(options.length).toEqual(3)
+  })
+
+  it('should mount a list of tribe options based on stts from the store', () => {
+    const store = mockStore({
+      ...initialState,
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+          {
+            id: 1111,
+            type: 'territory',
+            code: 'G',
+            name: 'Guam',
+          },
+        ],
+      },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    const radio = wrapper.find('#tribe')
+    radio.simulate('change', {
+      target: { name: 'jurisdictionType', value: 'tribe' },
+    })
+
+    const options = wrapper.find('option')
+    expect(options.length).toEqual(2)
+  })
+
+  it('should mount a list of territory options based on stts from the store', () => {
+    const store = mockStore({
+      ...initialState,
+      stts: {
+        sttList: [
+          {
+            id: 1,
+            type: 'state',
+            code: 'AL',
+            name: 'Alabama',
+          },
+          {
+            id: 2,
+            type: 'state',
+            code: 'AK',
+            name: 'Alaska',
+          },
+          {
+            id: 140,
+            type: 'tribe',
+            code: 'AK',
+            name: 'Aleutian/Pribilof Islands Association, Inc.',
+          },
+          {
+            id: 1111,
+            type: 'territory',
+            code: 'G',
+            name: 'Guam',
+          },
+        ],
+      },
+    })
+    const wrapper = mount(
+      <Provider store={store}>
+        <Home />
+      </Provider>
+    )
+
+    const radio = wrapper.find('#territory')
+    radio.simulate('change', {
+      target: { name: 'jurisdictionType', value: 'territory' },
+    })
+
+    const options = wrapper.find('option')
+    expect(options.length).toEqual(2)
   })
 
   it('should not show the stt combno box for non-STT users', () => {
@@ -575,7 +675,7 @@ describe('Pre-approval Home page', () => {
       </Provider>
     )
 
-    const select = getByLabelText('Associated State, Tribe, or Territory*', {
+    const select = getByLabelText('State*', {
       selector: 'input',
     })
 
