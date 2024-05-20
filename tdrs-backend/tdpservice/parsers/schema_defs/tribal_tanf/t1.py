@@ -166,10 +166,7 @@ t1 = SchemaManager(
                     startIndex=19,
                     endIndex=22,
                     required=False,
-                    validators=[
-                        validators.isInStringRange(1, 999),
-                        validators.isNumber()
-                    ],
+                    validators=[validators.isNumber()],
                 ),
                 Field(
                     item="5",
