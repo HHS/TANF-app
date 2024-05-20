@@ -74,7 +74,7 @@ def test_parse_small_correct_file(test_datafile, dfs):
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'rejected': 1,
+    assert dfs.case_aggregates == {'rejected': 0,
                                    'months': [
                                        {'accepted_without_errors': 'N/A',
                                         'accepted_with_errors': 'N/A',
@@ -389,7 +389,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     errors = parse.parse_datafile(bad_trailer_file_2, dfs)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
-    assert parser_errors.count() == 7
+    assert parser_errors.count() == 8
 
     trailer_errors = list(parser_errors.filter(row_number=3).order_by('id'))
 

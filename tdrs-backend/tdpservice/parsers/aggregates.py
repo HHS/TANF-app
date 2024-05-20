@@ -1,6 +1,6 @@
 """Aggregate methods for the parsers."""
 from .row_schema import SchemaManager
-from .models import ParserError
+from .models import ParserError, ParserErrorCategoryChoices
 from .util import month_to_int, \
     transform_to_months, fiscal_to_calendar, get_prog_from_section
 from .schema_defs.utils import get_program_models, get_text_from_df
@@ -39,22 +39,22 @@ def case_aggregates_by_month(df, dfs_status):
             if isinstance(schema_model, SchemaManager):
                 schema_model = schema_model.schemas[0]
 
-            curr_case_numbers = set(schema_model.document.Django.model.objects.filter(datafile=df)
-                                    .filter(RPT_MONTH_YEAR=rpt_month_year)
+            curr_case_numbers = set(schema_model.document.Django.model.objects.filter(datafile=df, 
+                                                                                      RPT_MONTH_YEAR=rpt_month_year)
                                     .distinct("CASE_NUMBER").values_list("CASE_NUMBER", flat=True))
             case_numbers = case_numbers.union(curr_case_numbers)
 
         total += len(case_numbers)
-        cases_with_errors += ParserError.objects.filter(file=df).filter(
-            case_number__in=case_numbers).distinct('case_number').count()
+        cases_with_errors += ParserError.objects.filter(file=df, case_number__in=case_numbers)\
+            .distinct('case_number').count()
         accepted = total - cases_with_errors
 
         aggregate_data['months'].append({"month": month,
                                          "accepted_without_errors": accepted,
                                          "accepted_with_errors": cases_with_errors})
 
-    aggregate_data['rejected'] = ParserError.objects.filter(file=df).filter(case_number=None).distinct("row_number")\
-        .exclude(row_number=0).count()
+    aggregate_data['rejected'] = ParserError.objects.filter(file=df, error_type=ParserErrorCategoryChoices.PRE_CHECK)\
+        .distinct("row_number").exclude(row_number=0).count()
 
     return aggregate_data
 

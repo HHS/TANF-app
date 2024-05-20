@@ -219,6 +219,7 @@ def generate_trailer_errors(trailer_errors, errors, unsaved_parser_errors, num_e
 def create_no_records_created_pre_check_error(datafile, dfs):
     """Generate a precheck error if no records were created."""
     errors = {}
+    created = 0
     if dfs.total_number_of_records_created == 0:
         generate_error = util.make_generate_parser_error(datafile, 0)
         err_obj = generate_error(
@@ -229,7 +230,8 @@ def create_no_records_created_pre_check_error(datafile, dfs):
                 field=None
             )
         errors["no_records_created"] = [err_obj]
-    return errors
+        created = 1
+    return errors, created
 
 def delete_serialized_records(duplicate_manager):
     """Delete all records that have already been serialized to the DB that have cat4 errors."""
@@ -379,7 +381,8 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                                       dfs, flush=True)
     unsaved_records.clear(all_created)
 
-    no_records_created_error = create_no_records_created_pre_check_error(datafile, dfs)
+    no_records_created_error, created = create_no_records_created_pre_check_error(datafile, dfs)
+    num_errors += created
     unsaved_parser_errors.update(no_records_created_error)
 
     if not all_created:
