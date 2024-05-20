@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 def value_is_empty(value, length, extra_vals={}):
     """Handle 'empty' values as field inputs."""
+    # TODO: have to build mixed type handling for value
     empty_values = {
         '',
         ' '*length,  # '     '
@@ -282,6 +283,17 @@ def recordHasLengthBetween(lower, upper, error_func=None):
         else
         f"{row_schema.record_type} record length of {len(value)} characters is not in the range [{lower}, {upper}].",
     )
+
+def hasLengthGreaterThan(val, error_func=None):
+    """Validate that value (string or array) has a length greater than val."""
+    return make_validator(
+        lambda value: len(value) >= val,
+        lambda value,
+        row_schema,
+        friendly_name,
+        item_num: f"Value length {len(value)} is not greater than {val}.",
+    )
+
 
 def intHasLength(num_digits):
     """Validate the number of digits in an integer."""
@@ -731,6 +743,49 @@ def validate_header_rpt_month_year(datafile, header, generate_error):
             field=None,
         )
     return is_valid, error
+
+
+def _is_all_zeros(value, start, end):
+    """Check if a value is all zeros."""
+    return value[start:end] == "0" * (end - start)
+
+
+def t3_m3_child_validator(which_child):
+    """T3 child validator."""
+    def t3_first_child_validator_func(value, temp, friendly_name, item_num):
+        if not _is_empty(value, 1, 60) and len(value) >= 60:
+            return (True, None)
+        elif not len(value) >= 60:
+            return (False, f"The first child record is too short at {len(value)} "
+                    "characters and must be at least 60 characters.")
+        else:
+            return (False, "The first child record is empty.")
+
+    def t3_second_child_validator_func(value, temp, friendly_name, item_num):
+        if not _is_empty(value, 60, 101) and len(value) >= 101 and \
+                not _is_empty(value, 8, 19) and \
+                not _is_all_zeros(value, 60, 101):
+            return (True, None)
+        elif not len(value) >= 101:
+            return (False, f"The second child record is too short at {len(value)} "
+                    "characters and must be at least 101 characters.")
+        else:
+            return (False, "The second child record is empty.")
+
+    return t3_first_child_validator_func if which_child == 1 else t3_second_child_validator_func
+
+
+def is_quiet_preparser_errors(min_length, empty_from=61, empty_to=101):
+    """Return a function that checks if the length is valid and if the value is empty."""
+    def return_value(value):
+        is_length_valid = len(value) >= min_length
+        is_empty = value_is_empty(
+            value[empty_from:empty_to],
+            len(value[empty_from:empty_to])
+            )
+        return not (is_length_valid and not is_empty and not _is_all_zeros(value, empty_from, empty_to))
+    return return_value
+
 
 def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     """If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
