@@ -22,6 +22,29 @@ When investigating, we sought out information on what other, modern ACF systems 
 
 While we also investigated and developed technical solutions utilizing either React-app-rewired or Next.js, we decided that the departure from our existing stack was not a worthwhile investment and could lead to other complications down the road.
 
+### 2024 Update
+
+Another instance of this alert appeared in the Webinspect scans for January/February 2024, after the introduction of Kibana to our stack
+
+`HTML5: Misconfigured Content Security Policy` - `Recommendation: Remove the unsafe-eval and unsafe-inline values from the CSP directive values.`
+
+Referring to the following directives in our nginx config
+```
+set $CSP "${CSP}script-src 'self' 'unsafe-eval' 'unsafe-inline' http://{{env "KIBANA_BASE_URL"}}:5601;";
+set $CSP "${CSP}script-src-elem 'self' 'unsafe-inline' http://{{env "KIBANA_BASE_URL"}}:5601;";
+set $CSP "${CSP}script-src-attr 'self' 'unsafe-inline' http://{{env "KIBANA_BASE_URL"}}:5601;";
+```
+
+Kibana performs ajax requests from its frontend to scripts hosted on the server in order to provide styling and javascript functionality - in order to serve Kibana from behind a proxy, which is a requirement with cloud.gov, these `unsafe-inline` and `unsafe-eval` directives are required.
+We currently use Kibana version 7.10 [released November, 2020](https://www.elastic.co/blog/whats-new-kibana-7-10-0-kibana-lens-generally-available). This requirement is present in our current version as mentioned by the Elastic team in [elastic/kibana #27047 (comment)](https://github.com/elastic/kibana/issues/27047#issuecomment-799680263) in March 2021.
+
+Though `unsafe-inline` potentially allows for XSS attacks, the CSP exceptions included for Kibana are fairly low risk as they are limited to dependencies bundled with Kibana and served from the cloud.gov-internal Kibana domain, such as the following [listed in elastic/kibana #27047 (comment)](https://github.com/elastic/kibana/issues/27047#issuecomment-878267021)
+* Handlebars (when compiling templates)
+* Vega (when interpreting its visualization syntax)
+* Lodash (via the _.template function)
+
+Maliciously side-loading a script would require Kibana have an unresolved persistent-XSS vulnerability, as well as file-system access to our cloud.gov Kibana application to load a script from an allowed domain. The attack vector is further limited by our authentication implementation, which requires a user be approved and granted Kibana access before loading any Kibana-related pages at all. In these cases, an attacker would have gained access to the system already.
+
 ## Consequences
 
 Unsafe-inline will continue to be used in our 'react-scripts' frontend framework but we will waive this ZAP alert for both frontend and backend as it is an already mitigated vulnerability within our current stack and the attack vector is small. For verbosity, the attack vector is for vetted, approved users potentially targetting other system users for account credentials or privilege escalation using XSS against inline style sheets.
