@@ -416,7 +416,10 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
 
     row_2_error = parser_errors.get(row_number=2)
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_2_error.error_message == 'T1 Item 13 (receives subsidized housing): 3 is not larger or equal to 1 and smaller or equal to 2.'
+    assert row_2_error.error_message == (
+        'T1 Item 13 (receives subsidized housing): 3 is not '
+        'larger or equal to 1 and smaller or equal to 2.'
+    )
 
     # catch-rpt-month-year-mismatches
     row_3_errors = parser_errors.filter(row_number=3)
@@ -1705,7 +1708,8 @@ def t3_file_zero_filled_second():
                            'The second child record is too short at 97 characters' +
                            ' and must be at least 101 characters.'),
                           ('t3_file_two_child_with_space_filled', 2, 0, ''),
-                          ('two_child_second_filled', 2, 8, 'T3 Item 68 (date of birth): Year 6    must be larger than 1900.'),
+                          ('two_child_second_filled', 2, 8,
+                           'T3 Item 68 (date of birth): Year 6    must be larger than 1900.'),
                           ('t3_file_zero_filled_second', 1, 0, '')])
 @pytest.mark.django_db()
 def test_misformatted_multi_records(file_fixture, result, number_of_errors, error_message, request, dfs):
