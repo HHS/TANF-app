@@ -1,6 +1,9 @@
 """Class definition for Category Four validator."""
 
+from datetime import datetime
 from .models import ParserErrorCategoryChoices
+from .util import get_years_apart
+from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
 import logging
 
@@ -43,7 +46,7 @@ class SortedRecordSchemaPairs:
 class CaseConsistencyValidator:
     """Caches records of the same case and month to perform category four validation while actively parsing."""
 
-    def __init__(self, header, program_type, generate_error):
+    def __init__(self, header, program_type, stt_type, generate_error):
         self.header = header
         self.record_schema_pairs = SortedRecordSchemaPairs()
         self.current_case = None
@@ -56,6 +59,7 @@ class CaseConsistencyValidator:
         self.generated_errors = []
         self.total_cases_cached = 0
         self.total_cases_validated = 0
+        self.stt_type = stt_type
 
     def __get_model(self, model_str):
         """Return a model for the current program type/section given the model's string name."""
@@ -137,10 +141,12 @@ class CaseConsistencyValidator:
     def __validate_section2(self, num_errors):
         """Perform TANF Section 2 category four validation on all cached records."""
         num_errors += self.__validate_s2_records_are_related()
+        num_errors += self.__validate_t5_aabd_and_ssi()
         return num_errors
 
     def __validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
         """Validate at least one record in t2s+t3s has FAMILY_AFFILIATION == 1."""
+        num_errors = 0
         passed = False
         for record, schema in t2s + t3s:
             family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
@@ -185,6 +191,19 @@ class CaseConsistencyValidator:
             t3s = reporting_year_cases.get(t3_model, [])
 
             if len(t1s) > 0:
+                if len(t1s) > 1:  # likely to be captured by "no duplicates" validator
+                    for record, schema in t1s[1:]:
+                        self.__generate_and_add_error(
+                            schema,
+                            record,
+                            field='RPT_MONTH_YEAR',
+                            msg=(
+                                f'There should only be one {t1_model_name} record '
+                                f'per RPT_MONTH_YEAR and CASE_NUMBER.'
+                            )
+                        )
+                        num_errors += 1
+
                 if len(t2s) == 0 and len(t3s) == 0:
                     for record, schema in t1s:
                         self.__generate_and_add_error(
@@ -237,6 +256,65 @@ class CaseConsistencyValidator:
 
         return num_errors
 
+    def __validate_case_closure_employment(self, t4, t5s, error_msg):
+        """
+        Validate case closure.
+
+        If case closure reason = 01:employment, then at least one person on
+        the case must have employment status = 1:Yes in the same month.
+        """
+        num_errors = 0
+        t4_record, t4_schema = t4
+
+        passed = False
+        for record, schema in t5s:
+            employment_status = getattr(record, 'EMPLOYMENT_STATUS')
+
+            if employment_status == 1:
+                passed = True
+                break
+
+        if not passed:
+            self.__generate_and_add_error(
+                t4_schema,
+                t4_record,
+                'EMPLOYMENT_STATUS',
+                error_msg
+            )
+            num_errors += 1
+
+        return num_errors
+
+    def __validate_case_closure_ftl(self, t4, t5s, error_msg):
+        """
+        Validate case closure.
+
+        If closure reason = FTL, then at least one person who is HoH
+        or spouse of HoH on case must have FTL months >=60.
+        """
+        num_errors = 0
+        t4_record, t4_schema = t4
+
+        passed = False
+        for record, schema in t5s:
+            relationship_hoh = getattr(record, 'RELATIONSHIP_HOH')
+            ftl_months = getattr(record, 'COUNTABLE_MONTH_FED_TIME')
+
+            if (relationship_hoh == '01' or relationship_hoh == '02') and int(ftl_months) >= 60:
+                passed = True
+                break
+
+        if not passed:
+            self.__generate_and_add_error(
+                t4_schema,
+                t4_record,
+                'COUNTABLE_MONTH_FED_TIME',
+                error_msg
+            )
+            num_errors += 1
+
+        return num_errors
+
     def __validate_s2_records_are_related(self):
         """
         Validate section 2 records are related.
@@ -259,6 +337,34 @@ class CaseConsistencyValidator:
             t5s = reporting_year_cases.get(t5_model, [])
 
             if len(t4s) > 0:
+                if len(t4s) > 1:
+                    for record, schema in t4s[1:]:
+                        self.__generate_and_add_error(
+                            schema,
+                            record,
+                            field='RPT_MONTH_YEAR',
+                            msg=(
+                                f'There should only be one {t4_model_name} record  '
+                                f'per RPT_MONTH_YEAR and CASE_NUMBER.'
+                            )
+                        )
+                        num_errors += 1
+                else:
+                    t4 = t4s[0]
+                    t4_record, t4_schema = t4
+                    closure_reason = getattr(t4_record, 'CLOSURE_REASON')
+
+                    if closure_reason == '01':
+                        num_errors += self.__validate_case_closure_employment(t4, t5s, (
+                            'At least one person on the case must have employment status = 1:Yes in the '
+                            'same RPT_MONTH_YEAR since CLOSURE_REASON = 1:Employment/excess earnings.'
+                        ))
+                    elif closure_reason == '03' and not is_ssp:
+                        num_errors += self.__validate_case_closure_ftl(t4, t5s, (
+                            'At least one person who is head-of-household or spouse of head-of-household '
+                            'on case must have countable months toward time limit >= 60 since '
+                            'CLOSURE_REASON = 03: federal 5 year time limit.'
+                        ))
                 if len(t5s) == 0:
                     for record, schema in t4s:
                         self.__generate_and_add_error(
@@ -283,6 +389,77 @@ class CaseConsistencyValidator:
                         msg=(
                             f'Every {t5_model_name} record should have at least one corresponding '
                             f'{t4_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+                        )
+                    )
+                    num_errors += 1
+
+        return num_errors
+
+    def __validate_t5_aabd_and_ssi(self):
+        print('validate t5')
+        num_errors = 0
+        is_ssp = self.program_type == 'SSP'
+
+        t5_model_name = 'M5' if is_ssp else 'T5'
+        t5_model = self.__get_model(t5_model_name)
+
+        is_state = self.stt_type == STT.EntityType.STATE
+        is_territory = self.stt_type == STT.EntityType.TERRITORY
+
+        for rpt_month_year, reporting_year_cases in self.record_schema_pairs.sorted_cases.items():
+            t5s = reporting_year_cases.get(t5_model, [])
+
+            for record, schema in t5s:
+                rec_aabd = getattr(record, 'REC_AID_TOTALLY_DISABLED')
+                rec_ssi = getattr(record, 'REC_SSI')
+                family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
+                dob = getattr(record, 'DATE_OF_BIRTH')
+
+                rpt_month_year_dd = f'{rpt_month_year}01'
+                rpt_date = datetime.strptime(rpt_month_year_dd, '%Y%m%d')
+                dob_date = datetime.strptime(dob, '%Y%m%d')
+                is_adult = get_years_apart(rpt_date, dob_date) >= 19
+
+                if is_territory and is_adult and (rec_aabd != 1 and rec_aabd != 2):
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='REC_AID_TOTALLY_DISABLED',
+                        msg=(
+                            f'{t5_model_name} Adults in territories must have a valid '
+                            'value for REC_AID_TOTALLY_DISABLED.'
+                        )
+                    )
+                    num_errors += 1
+                elif is_state and rec_aabd != 2:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='REC_AID_TOTALLY_DISABLED',
+                        msg=(
+                            f'{t5_model_name} People in states should not have a value '
+                            'of 1 for REC_AID_TOTALLY_DISABLED.'
+                        )
+                    )
+                    num_errors += 1
+
+                if is_territory and rec_ssi != 2:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='REC_SSI',
+                        msg=(
+                            f'{t5_model_name} People in territories must have value = 2:No for REC_SSI.'
+                        )
+                    )
+                    num_errors += 1
+                elif is_state and family_affiliation == 1:
+                    self.__generate_and_add_error(
+                        schema,
+                        record,
+                        field='REC_SSI',
+                        msg=(
+                            f'{t5_model_name} People in states must have a valid value for REC_SSI.'
                         )
                     )
                     num_errors += 1

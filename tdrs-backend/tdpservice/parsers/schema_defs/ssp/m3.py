@@ -7,11 +7,14 @@ from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
 
+FIRST_CHILD = 1
+SECOND_CHILD = 2
+
 first_part_schema = RowSchema(
     record_type="M3",
     document=SSP_M3DataSubmissionDocument(),
     preparsing_validators=[
-        validators.notEmpty(start=19, end=60),
+        validators.t3_m3_child_validator(FIRST_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -323,9 +326,9 @@ first_part_schema = RowSchema(
 second_part_schema = RowSchema(
     record_type="M3",
     document=SSP_M3DataSubmissionDocument(),
-    quiet_preparser_errors=True,
+    quiet_preparser_errors=validators.is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
-        validators.notEmpty(start=60, end=101),
+        validators.t3_m3_child_validator(SECOND_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
