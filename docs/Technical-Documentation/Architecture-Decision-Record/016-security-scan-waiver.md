@@ -36,9 +36,7 @@ set $CSP "${CSP}script-src-attr 'self' 'unsafe-inline' http://{{env "KIBANA_BASE
 ```
 
 Kibana performs ajax requests from its frontend to scripts hosted on the server in order to provide styling and javascript functionality - in order to serve Kibana from behind a proxy, which is a requirement with cloud.gov, these `unsafe-inline` and `unsafe-eval` directives are required.
-We currently use Kibana version 7.4 [released October, 2019](https://www.elastic.co/blog/kibana-7-4-0-released). This requirement is present in our current version as mentioned by the Elastic team in
-* [elastic/kibana #27047 (comment)](https://github.com/elastic/kibana/issues/27047#issuecomment-799680263) in March 2021
-* an [elastic discussion post (comment)](https://discuss.elastic.co/t/does-kibana-need-the-autorisation-of-unsafe-inline-or-unsafe-eval-to-work-properly/234390/2) in May 2020
+We currently use Kibana version 7.10 [released November, 2020](https://www.elastic.co/blog/whats-new-kibana-7-10-0-kibana-lens-generally-available). This requirement is present in our current version as mentioned by the Elastic team in [elastic/kibana #27047 (comment)](https://github.com/elastic/kibana/issues/27047#issuecomment-799680263) in March 2021.
 
 Though `unsafe-inline` potentially allows for XSS attacks, the CSP exceptions included for Kibana are fairly low risk as they are limited to dependencies bundled with Kibana and served from the cloud.gov-internal Kibana domain, such as the following [listed in elastic/kibana #27047 (comment)](https://github.com/elastic/kibana/issues/27047#issuecomment-878267021)
 * Handlebars (when compiling templates)
