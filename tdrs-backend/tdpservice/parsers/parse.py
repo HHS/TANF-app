@@ -73,6 +73,7 @@ def parse_datafile(datafile, dfs):
     case_consistency_validator = CaseConsistencyValidator(
         header,
         program_type,
+        datafile.stt.type,
         util.make_generate_parser_error(datafile, None)
     )
 

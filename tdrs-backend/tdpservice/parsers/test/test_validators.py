@@ -426,6 +426,32 @@ def test_hasLengthGreaterThan_returns_invalid():
     assert error == 'Value length 7 is not greater than 8.'
 
 
+def test_recordHasLengthBetween_returns_valid():
+    """Test `hasLengthBetween` gives a valid result."""
+    value = 'abcd123'
+    lower = 0
+    upper = 15
+
+    validator = validators.recordHasLengthBetween(lower, upper)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error is None
+
+
+def test_recordHasLengthBetween_returns_invalid():
+    """Test `hasLengthBetween` gives an invalid result."""
+    value = 'abcd123'
+    lower = 0
+    upper = 1
+
+    validator = validators.recordHasLengthBetween(lower, upper)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error == f"T1 record length of {len(value)} characters is not in the range [{lower}, {upper}]."
+
+
 def test_intHasLength_returns_valid():
     """Test `intHasLength` gives a valid result."""
     value = '123'

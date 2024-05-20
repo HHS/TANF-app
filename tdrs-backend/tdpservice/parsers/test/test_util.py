@@ -1,9 +1,10 @@
 """Test the methods of RowSchema to ensure parsing and validation work in all individual cases."""
 
 import pytest
+from datetime import datetime
 from ..fields import Field
 from ..row_schema import RowSchema, SchemaManager
-from ..util import make_generate_parser_error, create_test_datafile, clean_options_string
+from ..util import make_generate_parser_error, create_test_datafile, get_years_apart, clean_options_string
 
 
 def passing_validator():
@@ -525,6 +526,19 @@ def test_run_postparsing_validators_returns_frinedly_fieldnames(test_datafile_em
     assert is_valid is False
     assert errors[0].fields_json == {'friendly_name': {'FIRST': 'first', 'SECOND': 'second'}}
     assert errors[0].error_message == "an Error"
+
+
+@pytest.mark.parametrize("rpt_date_str,date_str,expected", [
+    ('20200102', '20100101', 10),
+    ('20200102', '20100106', 9),
+    ('20200101', '20200102', 0),
+    ('20200101', '20210102', -1),
+])
+def test_get_years_apart(rpt_date_str, date_str, expected):
+    """Test the get_years_apart util function."""
+    rpt_date = datetime.strptime(rpt_date_str, '%Y%m%d')
+    date = datetime.strptime(date_str, '%Y%m%d')
+    assert int(get_years_apart(rpt_date, date)) == expected
 
 
 @pytest.mark.parametrize('options, expected', [
