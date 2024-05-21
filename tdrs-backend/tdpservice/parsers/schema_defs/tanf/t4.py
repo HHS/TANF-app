@@ -15,7 +15,7 @@ t4 = SchemaManager(
             document=TANF_T4DataSubmissionDocument(),
             generate_hashes_func=generate_t1_t4_hashes,
             preparsing_validators=[
-                validators.recordHasLength(71),
+                validators.recordHasLengthBetween(36, 71),
                 validators.caseNumberNotEmpty(8, 19),
                 validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),

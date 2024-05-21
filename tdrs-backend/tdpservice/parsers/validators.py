@@ -274,6 +274,15 @@ def recordHasLength(length):
         item_num: f"{row_schema.record_type} record length is {len(value)} characters but must be {length}.",
     )
 
+def recordHasLengthBetween(lower, upper, error_func=None):
+    """Validate that value (string or array) has a length matching length param."""
+    return make_validator(
+        lambda value: len(value) >= lower and len(value) <= upper,
+        lambda value, row_schema, friendly_name, item_num: error_func(value, lower, upper)
+        if error_func
+        else
+        f"{row_schema.record_type} record length of {len(value)} characters is not in the range [{lower}, {upper}].",
+    )
 
 def hasLengthGreaterThan(val, error_func=None):
     """Validate that value (string or array) has a length greater than val."""
