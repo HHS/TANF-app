@@ -40,7 +40,7 @@ def test_parse_small_correct_file(small_correct_file, dfs):
 
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(dfs.datafile, dfs.status)
-    assert dfs.case_aggregates == {'rejected': 0,
+    assert dfs.case_aggregates == {'rejected': 1,
                                    'months': [
                                        {'accepted_without_errors': 'N/A',
                                         'accepted_with_errors': 'N/A',
