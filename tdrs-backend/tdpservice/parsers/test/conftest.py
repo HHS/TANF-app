@@ -190,6 +190,11 @@ def tanf_section_4_file_with_errors(stt_user, stt):
     return util.create_test_datafile('tanf_section4_with_errors.txt', stt_user, stt, "Stratum Data")
 
 @pytest.fixture
+def aggregates_rejected_datafile(stt_user, stt):
+    """Fixture for aggregates_rejected."""
+    return util.create_test_datafile('aggregates_rejected.txt', stt_user, stt)
+
+@pytest.fixture
 def no_records_file(stt_user, stt):
     """Fixture for tanf_section4_with_errors."""
     return util.create_test_datafile('no_records.txt', stt_user, stt)

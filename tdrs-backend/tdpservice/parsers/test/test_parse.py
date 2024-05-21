@@ -1512,11 +1512,6 @@ def test_parse_no_records_file(no_records_file, dfs):
     assert error.content_type is None
     assert error.object_id is None
 
-@pytest.fixture
-def aggregates_rejected_datafile(stt_user, stt):
-    """Fixture for aggregates_rejected."""
-    return util.create_test_datafile('aggregates_rejected.txt', stt_user, stt)
-
 
 @pytest.mark.django_db
 def test_parse_aggregates_rejected_datafile(aggregates_rejected_datafile, dfs):
