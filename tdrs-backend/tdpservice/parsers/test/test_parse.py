@@ -11,9 +11,8 @@ from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from tdpservice.search_indexes import documents
-from .factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.data_files.models import DataFile
-from .. import schema_defs, aggregates, util
+from .. import schema_defs, aggregates
 from elasticsearch.helpers.errors import BulkIndexError
 import logging
 logger = logging.getLogger(__name__)
@@ -24,51 +23,18 @@ es_logger.setLevel(logging.WARNING)
 
 settings.GENERATE_TRAILER_ERRORS = True
 
-@pytest.fixture
-def test_datafile(stt_user, stt):
-    """Fixture for small_correct_file."""
-    return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
-
-
-@pytest.fixture
-def test_header_datafile(stt_user, stt):
-    """Fixture for header test."""
-    return util.create_test_datafile('tanf_section1_header_test.txt', stt_user, stt)
-
-
-@pytest.fixture
-def dfs():
-    """Fixture for DataFileSummary."""
-    return DataFileSummaryFactory.build()
-
-
-@pytest.fixture
-def t2_invalid_dob_file():
-    """Fixture for T2 file with an invalid DOB."""
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q1',
-        file__name='t2_invalid_dob_file.txt',
-        file__section='Active Case Data',
-        file__data=(b'HEADER20204A25   TAN1ED\n'
-                    b'T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000'
-                    b'0000000000000000000000000000000000000000000000000000000000291\n'
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
 # TODO: the name of this test doesn't make perfect sense anymore since it will always have errors and no records now.
 @pytest.mark.django_db
-def test_parse_small_correct_file(test_datafile, dfs):
+def test_parse_small_correct_file(small_correct_file, dfs):
     """Test parsing of small_correct_file."""
-    test_datafile.year = 2021
-    test_datafile.quarter = 'Q1'
-    test_datafile.save()
-    dfs.datafile = test_datafile
+    small_correct_file.year = 2021
+    small_correct_file.quarter = 'Q1'
+    small_correct_file.save()
+    dfs.datafile = small_correct_file
 
-    parse.parse_datafile(test_datafile, dfs)
+    parse.parse_datafile(small_correct_file, dfs)
 
-    errors = ParserError.objects.filter(file=test_datafile).order_by('id')
+    errors = ParserError.objects.filter(file=small_correct_file).order_by('id')
     assert errors.count() == 2
     assert errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
@@ -92,17 +58,17 @@ def test_parse_small_correct_file(test_datafile, dfs):
 
 
 @pytest.mark.django_db
-def test_parse_section_mismatch(test_datafile, dfs):
+def test_parse_section_mismatch(small_correct_file, dfs):
     """Test parsing of small_correct_file where the DataFile section doesn't match the rawfile section."""
-    test_datafile.section = 'Closed Case Data'
-    test_datafile.save()
+    small_correct_file.section = 'Closed Case Data'
+    small_correct_file.save()
 
-    dfs.datafile = test_datafile
+    dfs.datafile = small_correct_file
 
-    errors = parse.parse_datafile(test_datafile, dfs)
+    errors = parse.parse_datafile(small_correct_file, dfs)
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.REJECTED
-    parser_errors = ParserError.objects.filter(file=test_datafile)
+    parser_errors = ParserError.objects.filter(file=small_correct_file)
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'rejected': 1,
@@ -132,17 +98,17 @@ def test_parse_section_mismatch(test_datafile, dfs):
 
 
 @pytest.mark.django_db
-def test_parse_wrong_program_type(test_datafile, dfs):
+def test_parse_wrong_program_type(small_correct_file, dfs):
     """Test parsing of small_correct_file where the DataFile program type doesn't match the rawfile."""
-    test_datafile.section = 'SSP Active Case Data'
-    test_datafile.save()
+    small_correct_file.section = 'SSP Active Case Data'
+    small_correct_file.save()
 
-    dfs.datafile = test_datafile
+    dfs.datafile = small_correct_file
     dfs.save()
-    errors = parse.parse_datafile(test_datafile, dfs)
+    errors = parse.parse_datafile(small_correct_file, dfs)
     assert dfs.get_status() == DataFileSummary.Status.REJECTED
 
-    parser_errors = ParserError.objects.filter(file=test_datafile)
+    parser_errors = ParserError.objects.filter(file=small_correct_file)
     assert parser_errors.count() == 1
 
     err = parser_errors.first()
@@ -156,23 +122,16 @@ def test_parse_wrong_program_type(test_datafile, dfs):
         'document': [err]
     }
 
-
-@pytest.fixture
-def test_big_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP1.TS06."""
-    return util.create_test_datafile('ADS.E2J.FTP1.TS06', stt_user, stt)
-
-
 @pytest.mark.django_db
-def test_parse_big_file(test_big_file, dfs):
+def test_parse_big_file(big_file, dfs):
     """Test parsing of ADS.E2J.FTP1.TS06."""
     expected_t1_record_count = 815
     expected_t2_record_count = 882
     expected_t3_record_count = 1376
 
-    dfs.datafile = test_big_file
+    dfs.datafile = big_file
 
-    parse.parse_datafile(test_big_file, dfs)
+    parse.parse_datafile(big_file, dfs)
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
@@ -189,30 +148,24 @@ def test_parse_big_file(test_big_file, dfs):
 
     search = documents.tanf.TANF_T1DataSubmissionDocument.search().query(
         'match',
-        datafile__id=test_big_file.id
+        datafile__id=big_file.id
     )
     assert search.count() == expected_t1_record_count
     search.delete()
 
     search = documents.tanf.TANF_T2DataSubmissionDocument.search().query(
         'match',
-        datafile__id=test_big_file.id
+        datafile__id=big_file.id
     )
     assert search.count() == expected_t2_record_count
     search.delete()
 
     search = documents.tanf.TANF_T3DataSubmissionDocument.search().query(
         'match',
-        datafile__id=test_big_file.id
+        datafile__id=big_file.id
     )
     assert search.count() == expected_t3_record_count
     search.delete()
-
-
-@pytest.fixture
-def bad_test_file(stt_user, stt):
-    """Fixture for bad_TANF_S2."""
-    return util.create_test_datafile('bad_TANF_S2.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -233,12 +186,6 @@ def test_parse_bad_test_file(bad_test_file, dfs):
     assert errors == {
         'header': [err]
     }
-
-
-@pytest.fixture
-def bad_file_missing_header(stt_user, stt):
-    """Fixture for bad_missing_header."""
-    return util.create_test_datafile('bad_missing_header.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -264,12 +211,6 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
     }
 
 
-@pytest.fixture
-def bad_file_multiple_headers(stt_user, stt):
-    """Fixture for bad_two_headers."""
-    return util.create_test_datafile('bad_two_headers.txt', stt_user, stt)
-
-
 @pytest.mark.django_db
 def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
     """Test parsing of bad_two_headers."""
@@ -293,12 +234,6 @@ def test_parse_bad_file_multiple_headers(bad_file_multiple_headers, dfs):
     assert errors['document'] == ['Multiple headers found.']
 
 
-@pytest.fixture
-def big_bad_test_file(stt_user, stt):
-    """Fixture for bad_TANF_S1."""
-    return util.create_test_datafile('bad_TANF_S1.txt', stt_user, stt)
-
-
 @pytest.mark.django_db
 def test_parse_big_bad_test_file(big_bad_test_file, dfs):
     """Test parsing of bad_TANF_S1."""
@@ -316,12 +251,6 @@ def test_parse_big_bad_test_file(big_bad_test_file, dfs):
     assert err.error_message == 'Multiple headers found.'
     assert err.content_type is None
     assert err.object_id is None
-
-
-@pytest.fixture
-def bad_trailer_file(stt_user, stt):
-    """Fixture for bad_trailer_1."""
-    return util.create_test_datafile('bad_trailer_1.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -370,12 +299,6 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
         'trailer': [trailer_error],
         "2_0": row_errors
     }
-
-
-@pytest.fixture
-def bad_trailer_file_2(stt_user, stt):
-    """Fixture for bad_trailer_2."""
-    return util.create_test_datafile('bad_trailer_2.txt', stt_user, stt)
 
 
 @pytest.mark.django_db()
@@ -464,11 +387,6 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     assert trailer_error_4.content_type is None
     assert trailer_error_4.object_id is None
 
-@pytest.fixture
-def empty_file(stt_user, stt):
-    """Fixture for empty_file."""
-    return util.create_test_datafile('empty_file', stt_user, stt)
-
 
 @pytest.mark.django_db
 def test_parse_empty_file(empty_file, dfs):
@@ -510,12 +428,6 @@ def test_parse_empty_file(empty_file, dfs):
     }
 
 
-@pytest.fixture
-def small_ssp_section1_datafile(stt_user, stt):
-    """Fixture for small_ssp_section1."""
-    return util.create_test_datafile('small_ssp_section1.txt', stt_user, stt, 'SSP Active Case Data')
-
-
 @pytest.mark.django_db
 def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
     """Test parsing small_ssp_section1_datafile."""
@@ -549,12 +461,6 @@ def test_parse_small_ssp_section1_datafile(small_ssp_section1_datafile, dfs):
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
     assert SSP_M3.objects.count() == expected_m3_record_count
-
-
-@pytest.fixture
-def ssp_section1_datafile(stt_user, stt):
-    """Fixture for ssp_section1_datafile."""
-    return util.create_test_datafile('ssp_section1_datafile.txt', stt_user, stt, 'SSP Active Case Data')
 
 
 @pytest.mark.django_db()
@@ -594,12 +500,6 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
     assert SSP_M3.objects.count() == expected_m3_record_count
-
-
-@pytest.fixture
-def small_tanf_section1_datafile(stt_user, stt):
-    """Fixture for small_tanf_section1."""
-    return util.create_test_datafile('small_tanf_section1.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -683,12 +583,6 @@ def test_parse_tanf_section1_datafile_t3s(small_tanf_section1_datafile, dfs):
     assert t3_5.EDUCATION_LEVEL == '98'
 
 
-@pytest.fixture
-def super_big_s1_file(stt_user, stt):
-    """Fixture for ADS.E2J.NDM1.TS53_fake."""
-    return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.txt', stt_user, stt)
-
-
 @pytest.mark.django_db()
 @pytest.mark.skip(reason="long runtime")  # big_files
 def test_parse_super_big_s1_file(super_big_s1_file, dfs):
@@ -729,12 +623,6 @@ def test_parse_super_big_s1_file(super_big_s1_file, dfs):
     )
     assert search.count() == expected_t3_record_count
     search.delete()
-
-
-@pytest.fixture
-def big_s1_rollback_file(stt_user, stt):
-    """Fixture for ADS.E2J.NDM1.TS53_fake.rollback."""
-    return util.create_test_datafile('ADS.E2J.NDM1.TS53_fake.rollback.txt', stt_user, stt)
 
 
 @pytest.mark.django_db()
@@ -785,11 +673,6 @@ def test_parse_big_s1_file_with_rollback(big_s1_rollback_file, dfs):
     )
     assert search.count() == 0
 
-@pytest.fixture
-def bad_tanf_s1__row_missing_required_field(stt_user, stt):
-    """Fixture for small_tanf_section1."""
-    return util.create_test_datafile('small_bad_tanf_s1.txt', stt_user, stt)
-
 
 @pytest.mark.django_db
 def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field, dfs):
@@ -830,12 +713,6 @@ def test_parse_bad_tfs1_missing_required(bad_tanf_s1__row_missing_required_field
     assert row_5_error.error_message == error_message
     assert row_5_error.content_type is None
     assert row_5_error.object_id is None
-
-
-@pytest.fixture
-def bad_ssp_s1__row_missing_required_field(stt_user, stt):
-    """Fixture for ssp_section1_datafile."""
-    return util.create_test_datafile('small_bad_ssp_s1.txt', stt_user, stt, 'SSP Active Case Data')
 
 
 @pytest.mark.django_db()
@@ -895,18 +772,18 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     assert trailer_error.object_id is None
 
 @pytest.mark.django_db
-def test_dfs_set_case_aggregates(test_datafile, dfs):
+def test_dfs_set_case_aggregates(small_correct_file, dfs):
     """Test that the case aggregates are set correctly."""
-    test_datafile.year = 2020
-    test_datafile.quarter = 'Q3'
-    test_datafile.section = 'Active Case Data'
-    test_datafile.save()
+    small_correct_file.year = 2020
+    small_correct_file.quarter = 'Q3'
+    small_correct_file.section = 'Active Case Data'
+    small_correct_file.save()
     # this still needs to execute to create db objects to be queried
-    parse.parse_datafile(test_datafile, dfs)
-    dfs.file = test_datafile
+    parse.parse_datafile(small_correct_file, dfs)
+    dfs.file = small_correct_file
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
-        test_datafile, dfs.status)
+        small_correct_file, dfs.status)
 
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
@@ -959,12 +836,6 @@ def test_get_schema_options(dfs):
     # get ref section
 
 
-@pytest.fixture
-def small_tanf_section2_file(stt_user, stt):
-    """Fixture for tanf section2 datafile."""
-    return util.create_test_datafile('small_tanf_section2.txt', stt_user, stt, 'Closed Case Data')
-
-
 @pytest.mark.django_db()
 def test_parse_small_tanf_section2_file(small_tanf_section2_file, dfs):
     """Test parsing a small TANF Section 2 submission."""
@@ -993,12 +864,6 @@ def test_parse_small_tanf_section2_file(small_tanf_section2_file, dfs):
     assert t5.AMOUNT_UNEARNED_INCOME == '0000'
 
 
-@pytest.fixture
-def tanf_section2_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP2.TS06."""
-    return util.create_test_datafile('ADS.E2J.FTP2.TS06', stt_user, stt, 'Closed Case Data')
-
-
 @pytest.mark.django_db()
 def test_parse_tanf_section2_file(tanf_section2_file, dfs):
     """Test parsing TANF Section 2 submission."""
@@ -1017,12 +882,6 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
 
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-
-
-@pytest.fixture
-def tanf_section3_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP3.TS06."""
-    return util.create_test_datafile('ADS.E2J.FTP3.TS06', stt_user, stt, "Aggregate Data")
 
 
 @pytest.mark.django_db()
@@ -1069,10 +928,6 @@ def test_parse_tanf_section3_file(tanf_section3_file, dfs):
     assert second.NUM_CLOSED_CASES == 3881
     assert third.NUM_CLOSED_CASES == 5453
 
-@pytest.fixture
-def tanf_section1_file_with_blanks(stt_user, stt):
-    """Fixture for ADS.E2J.FTP3.TS06."""
-    return util.create_test_datafile('tanf_section1_blanks.txt', stt_user, stt)
 
 @pytest.mark.django_db()
 def test_parse_tanf_section1_blanks_file(tanf_section1_file_with_blanks, dfs):
@@ -1100,11 +955,6 @@ def test_parse_tanf_section1_blanks_file(tanf_section1_file_with_blanks, dfs):
     assert t1.FAMILY_SANC_ADULT is None
     assert t2.MARITAL_STATUS is None
     assert t3.CITIZENSHIP_STATUS is None
-
-@pytest.fixture
-def tanf_section4_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP4.TS06."""
-    return util.create_test_datafile('ADS.E2J.FTP4.TS06', stt_user, stt, "Stratum Data")
 
 
 @pytest.mark.django_db()
@@ -1148,12 +998,6 @@ def test_parse_tanf_section4_file(tanf_section4_file, dfs):
     assert sixth.FAMILIES_MONTH == 499
 
 
-@pytest.fixture
-def bad_tanf_section4_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP4.TS06."""
-    return util.create_test_datafile('bad_tanf_section_4.txt', stt_user, stt, "Stratum Data")
-
-
 @pytest.mark.django_db()
 def test_parse_bad_tanf_section4_file(bad_tanf_section4_file, dfs):
     """Test parsing TANF Section 4 submission when no records are created."""
@@ -1189,11 +1033,6 @@ def test_parse_bad_tanf_section4_file(bad_tanf_section4_file, dfs):
     error.error_type == ParserErrorCategoryChoices.PRE_CHECK
 
 
-@pytest.fixture
-def ssp_section4_file(stt_user, stt):
-    """Fixture for ADS.E2J.NDM4.MS24."""
-    return util.create_test_datafile('ADS.E2J.NDM4.MS24', stt_user, stt, "SSP Stratum Data")
-
 @pytest.mark.django_db()
 def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     """Test parsing SSP Section 4 submission."""
@@ -1221,11 +1060,6 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     assert first.RPT_MONTH_YEAR == 202110
     assert first.FAMILIES_MONTH == 748
 
-@pytest.fixture
-def ssp_section2_rec_oadsi_file(stt_user, stt):
-    """Fixture for sp_section2_rec_oadsi_file."""
-    return util.create_test_datafile('ssp_section2_rec_oadsi_file.txt', stt_user, stt, 'SSP Closed Case Data')
-
 
 @pytest.mark.django_db()
 def test_parse_ssp_section2_rec_oadsi_file(ssp_section2_rec_oadsi_file, dfs):
@@ -1240,11 +1074,6 @@ def test_parse_ssp_section2_rec_oadsi_file(ssp_section2_rec_oadsi_file, dfs):
 
     assert parser_errors.count() == 0
 
-
-@pytest.fixture
-def ssp_section2_file(stt_user, stt):
-    """Fixture for ADS.E2J.NDM2.MS24."""
-    return util.create_test_datafile('ADS.E2J.NDM2.MS24', stt_user, stt, 'SSP Closed Case Data')
 
 @pytest.mark.django_db()
 def test_parse_ssp_section2_file(ssp_section2_file, dfs):
@@ -1297,10 +1126,6 @@ def test_parse_ssp_section2_file(ssp_section2_file, dfs):
     assert m5.AMOUNT_EARNED_INCOME == '0000'
     assert m5.AMOUNT_UNEARNED_INCOME == '0000'
 
-@pytest.fixture
-def ssp_section3_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP3.TS06."""
-    return util.create_test_datafile('ADS.E2J.NDM3.MS24', stt_user, stt, "SSP Aggregate Data")
 
 @pytest.mark.django_db()
 def test_parse_ssp_section3_file(ssp_section3_file, dfs):
@@ -1346,9 +1171,9 @@ def test_parse_ssp_section3_file(ssp_section3_file, dfs):
     assert third.NUM_RECIPIENTS == 51348
 
 @pytest.mark.django_db
-def test_rpt_month_year_mismatch(test_header_datafile, dfs):
+def test_rpt_month_year_mismatch(header_datafile, dfs):
     """Test that the rpt_month_year mismatch error is raised."""
-    datafile = test_header_datafile
+    datafile = header_datafile
 
     datafile.section = 'Active Case Data'
     # test_datafile fixture uses create_test_data_file which assigns
@@ -1357,7 +1182,7 @@ def test_rpt_month_year_mismatch(test_header_datafile, dfs):
     datafile.quarter = 'Q1'
     datafile.save()
 
-    dfs.datafile = test_header_datafile
+    dfs.datafile = header_datafile
     dfs.save()
 
     parse.parse_datafile(datafile, dfs)
@@ -1379,10 +1204,6 @@ def test_rpt_month_year_mismatch(test_header_datafile, dfs):
     assert err.error_message == "Submitted reporting year:2020, quarter:Q4 doesn't" + \
         " match file reporting year:2023, quarter:Q1."
 
-@pytest.fixture
-def tribal_section_1_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP4.TS06."""
-    return util.create_test_datafile('ADS.E2J.FTP1.TS142', stt_user, stt, "Tribal Active Case Data")
 
 @pytest.mark.django_db()
 def test_parse_tribal_section_1_file(tribal_section_1_file, dfs):
@@ -1421,10 +1242,6 @@ def test_parse_tribal_section_1_file(tribal_section_1_file, dfs):
     assert t2.MONTHS_FED_TIME_LIMIT == '  0'
     assert t3.EDUCATION_LEVEL == '98'
 
-@pytest.fixture
-def tribal_section_1_inconsistency_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP4.TS06."""
-    return util.create_test_datafile('tribal_section_1_inconsistency.txt', stt_user, stt, "Tribal Active Case Data")
 
 @pytest.mark.django_db()
 def test_parse_tribal_section_1_inconsistency_file(tribal_section_1_inconsistency_file, dfs):
@@ -1439,10 +1256,6 @@ def test_parse_tribal_section_1_inconsistency_file(tribal_section_1_inconsistenc
     assert parser_errors.first().error_message == "Tribe Code (142) inconsistency with Program Type (TAN) " + \
         "and FIPS Code (01)."
 
-@pytest.fixture
-def tribal_section_2_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP4.TS06."""
-    return util.create_test_datafile('ADS.E2J.FTP2.TS142.txt', stt_user, stt, "Tribal Closed Case Data")
 
 @pytest.mark.django_db()
 def test_parse_tribal_section_2_file(tribal_section_2_file, dfs):
@@ -1481,10 +1294,6 @@ def test_parse_tribal_section_2_file(tribal_section_2_file, dfs):
     assert t4.CLOSURE_REASON == 8
     assert t5.COUNTABLE_MONTH_FED_TIME == '  8'
 
-@pytest.fixture
-def tribal_section_3_file(stt_user, stt):
-    """Fixture for ADS.E2J.FTP3.TS142."""
-    return util.create_test_datafile('ADS.E2J.FTP3.TS142', stt_user, stt, "Tribal Aggregate Data")
 
 @pytest.mark.django_db()
 def test_parse_tribal_section_3_file(tribal_section_3_file, dfs):
@@ -1517,10 +1326,6 @@ def test_parse_tribal_section_3_file(tribal_section_3_file, dfs):
     assert t6.NUM_FAMILIES == 41
     assert t6.NUM_CLOSED_CASES == 3
 
-@pytest.fixture
-def tribal_section_4_file(stt_user, stt):
-    """Fixture for tribal_section_4_fake.txt."""
-    return util.create_test_datafile('tribal_section_4_fake.txt', stt_user, stt, "Tribal Stratum Data")
 
 @pytest.mark.django_db()
 def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
@@ -1557,150 +1362,6 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
 
-
-@pytest.fixture
-def second_child_only_space_t3_file():
-    """Fixture for misformatted_t3_file."""
-    # T3 record: second child is not space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q3',
-        original_filename='second_child_only_space_t3_file.txt',
-        file__name='second_child_only_space_t3_file.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20212A25   TAN1 D\n' +
-                    b'T120210400028221R0112014122311110232110374300000000000005450' +
-                    b'320000000000000000000000000000000000222222000000002229021000' +
-                    b'000000000000000000000000000000000000\n'
-                    b'T320210400028221R0112014122888175617622222112204398100000000' +
-                    b'                              \n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-@pytest.fixture
-def one_child_t3_file():
-    """Fixture for one child_t3_file."""
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q3',
-        original_filename='one_child_t3_file.txt',
-        file__name='one_child_t3_file.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20212A25   TAN1 D\n' +
-                    b'T120210400028221R0112014122311110232110374300000000000005450' +
-                    b'320000000000000000000000000000000000222222000000002229021000' +
-                    b'000000000000000000000000000000000000\n'
-                    b'T320210400028221R0112014122888175617622222112204398100000000\n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-@pytest.fixture
-def t3_file():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q3',
-        original_filename='t3_file.txt',
-        file__name='t3_file.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20212A25   TAN1ED\n' +
-                    b'T12021044111111111512014122311110232110374300000000000005450' +
-                    b'320000000000000000000000000000000000222222000000002229021000' +
-                    b'000000000000000000000000000000000000\n'
-                    b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
-                    b'                                                            ' +
-                    b'                                    \n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-
-@pytest.fixture
-def t3_file_two_child():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q2',
-        original_filename='t3_file.txt',
-        file__name='t3_file.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20211A25   TAN1ED\n' +
-                    b'T12021021111111115712014122311110232110374300000000000005450' +
-                    b'320000000000000000000000000000000000222222000000002229021000' +
-                    b'000000000000000000000000000000000000\n'
-                    b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
-                    b'420100125WTTTT9@TB1221222220430490000\n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-@pytest.fixture
-def t3_file_two_child_with_space_filled():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q2',
-        original_filename='t3_file_two_child_with_space_filled.txt',
-        file__name='t3_file_two_child_with_space_filled.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20211A25   TAN1ED\n' +
-                    b'T12021021111111115712014122311110232110374300000000000005450' +
-                    b'320000000000000000000000000000000000222222000000002229021000' +
-                    b'000000000000000000000000000000000000\n'
-                    b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
-                    b'420100125WTTTT9@TB1221222220430490000                       \n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-
-@pytest.fixture
-def two_child_second_filled():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q2',
-        original_filename='two_child_second_filled.txt',
-        file__name='two_child_second_filled.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20211A25   TAN1ED\n' +
-                    b'T12021021111111111512014122311110232110374300000000000005450' +
-                    b'320000000000000000000000000000000000222222000000002229021000' +
-                    b'000000000000000000000000000000000000\n'
-                    b'T320210211111111115120160401WTTTT@BTB22212212204398100000000' +
-                    b'56      111111111                                           ' +
-                    b'                                    \n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-
-@pytest.fixture
-def t3_file_zero_filled_second():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q3',
-        original_filename='t3_file_zero_filled_second.txt',
-        file__name='t3_file_zero_filled_second.txt',
-        file__section=DataFile.Section.ACTIVE_CASE_DATA,
-        file__data=(b'HEADER20212A25   TAN1ED\n' +
-                    b'T12021044111111111512014122311110232110374300000000000005450' +
-                    b'320000000000000000000000000000000000222222000000002229021000' +
-                    b'000000000000000000000000000000000000\n'
-                    b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
-                    b'000000000000000000000000000000000000000000000000000000000000' +
-                    b'000000000000000000000000000000000000\n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
 
 @pytest.mark.parametrize('file_fixture, result, number_of_errors, error_message',
                          [('second_child_only_space_t3_file', 1, 0, ''),
@@ -1756,7 +1417,7 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
     assert digits_error.error_message == "T2: Q897$9 3 does not have exactly 8 digits."
 
 @pytest.mark.django_db
-def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_datafile, mocker, dfs):
+def test_bulk_create_returns_rollback_response_on_bulk_index_exception(small_correct_file, mocker, dfs):
     """Test bulk_create_records returns (False, [unsaved_records]) on BulkIndexException."""
     mocker.patch(
         'tdpservice.search_indexes.documents.tanf.TANF_T1DataSubmissionDocument.update',
@@ -1774,7 +1435,7 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_data
         records,
         line_number=1,
         header_count=1,
-        datafile=test_datafile,
+        datafile=small_correct_file,
         dfs=dfs,
         flush=True
     )
@@ -1790,11 +1451,6 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(test_data
     assert TANF_T2.objects.all().count() == 1
     assert TANF_T3.objects.all().count() == 1
 
-
-@pytest.fixture
-def tanf_section_4_file_with_errors(stt_user, stt):
-    """Fixture for tanf_section4_with_errors."""
-    return util.create_test_datafile('tanf_section4_with_errors.txt', stt_user, stt, "Stratum Data")
 
 @pytest.mark.django_db()
 def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, dfs):
@@ -1837,11 +1493,6 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
     assert sixth.FAMILIES_MONTH == 446
 
 
-@pytest.fixture
-def no_records_file(stt_user, stt):
-    """Fixture for tanf_section4_with_errors."""
-    return util.create_test_datafile('no_records.txt', stt_user, stt)
-
 @pytest.mark.django_db()
 def test_parse_no_records_file(no_records_file, dfs):
     """Test parsing TANF Section 4 submission."""
@@ -1860,11 +1511,6 @@ def test_parse_no_records_file(no_records_file, dfs):
     assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert error.content_type is None
     assert error.object_id is None
-
-@pytest.fixture
-def aggregates_rejected_datafile(stt_user, stt):
-    """Fixture for aggregates_rejected."""
-    return util.create_test_datafile('aggregates_rejected.txt', stt_user, stt)
 
 
 @pytest.mark.django_db
@@ -1895,11 +1541,6 @@ def test_parse_aggregates_rejected_datafile(aggregates_rejected_datafile, dfs):
 
     assert TANF_T2.objects.count() == 0
 
-@pytest.fixture
-def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
-    """Fixture for tanf_section_1_file_with_bad_update_indicator."""
-    return util.create_test_datafile('tanf_s1_bad_update_indicator.txt', stt_user, stt, "Active Case Data")
-
 @pytest.mark.django_db()
 def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file_with_bad_update_indicator, dfs):
     """Test parsing TANF Section 1 submission update indicator."""
@@ -1916,10 +1557,6 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file
     assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert error.error_message == "HEADER update indicator: U does not match D."
 
-@pytest.fixture
-def tribal_section_4_bad_quarter(stt_user, stt):
-    """Fixture for tribal_section_4_bad_quarter."""
-    return util.create_test_datafile('tribal_section_4_fake_bad_quarter.txt', stt_user, stt, "Tribal Stratum Data")
 
 @pytest.mark.django_db()
 def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
@@ -1938,96 +1575,23 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
 
     Tribal_TANF_T7.objects.count() == 0
 
-@pytest.fixture
-def s1_exact_dup_file():
-    """Fixture for a section 1 file containing an exact duplicate record."""
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q1',
-        file__name='s1_exact_duplicate.txt',
-        file__section='Active Case Data',
-        file__data=(b'HEADER20204A06   TAN1 D\n'
-                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000' +
-                    b'000000000000222222000000002229012                                       \n'
-                    b'T12020101111111111223003403361110212120000300000000000008730010000000000000000000000' +
-                    b'000000000000222222000000002229012                                       \n'
-                    b'TRAILER0000001         '
-                    )
-    )
-    return parsing_file
-
-@pytest.fixture
-def s2_exact_dup_file():
-    """Fixture for a section 2 file containing an exact duplicate record."""
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q1',
-        section="Closed Case Data",
-        file__name='s2_exact_duplicate.txt',
-        file__section='Closed Case Data',
-        file__data=(b'HEADER20204C06   TAN1ED\n'
-                    b'T42020101111111115825301400141123113                                   \n'
-                    b'T42020101111111115825301400141123113                                   \n'
-                    b'TRAILER0000001         '
-                    )
-    )
-    return parsing_file
-
-@pytest.fixture
-def s3_exact_dup_file():
-    """Fixture for a section 3 file containing an exact duplicate record."""
-    parsing_file = ParsingFileFactory(
-        year=2022,
-        quarter='Q1',
-        section="Aggregate Data",
-        file__name='s3_exact_duplicate.txt',
-        file__section='Aggregate Data',
-        file__data=(b'HEADER20214G06   TAN1 D\n'
-                    b'T620214000127470001104500011146000043010000397700003924000084460000706800007222'
-                    b'0000550428490000551413780000566432530007558100075921000755420000098100000970000'
-                    b'0096800039298000393490003897200035302000356020003560200168447001690470016810700'
-                    b'0464480004649800046203001219990012254900121904000001630000014900000151000003440'
-                    b'000033100000276000002580000024100000187000054530000388100003884\n'
-                    b'T620214000127470001104500011146000043010000397700003924000084460000706800007222'
-                    b'0000550428490000551413780000566432530007558100075921000755420000098100000970000'
-                    b'0096800039298000393490003897200035302000356020003560200168447001690470016810700'
-                    b'0464480004649800046203001219990012254900121904000001630000014900000151000003440'
-                    b'000033100000276000002580000024100000187000054530000388100003884\n'
-                    b'TRAILER0000001         '
-                    )
-    )
-    return parsing_file
-
-@pytest.fixture
-def s4_exact_dup_file():
-    """Fixture for a section 4 file containing an exact duplicate record."""
-    parsing_file = ParsingFileFactory(
-        year=2022,
-        quarter='Q1',
-        section="Stratum Data",
-        file__name='s4_exact_duplicate.txt',
-        file__section='Stratum Data',
-        file__data=(b'HEADER20214S06   TAN1 D\n'
-                    b'T720214101006853700680540068454103000312400037850003180104000347400036460003583106'
-                    b'000044600004360000325299000506200036070003385202000039100002740000499             '
-                    b'                                                                                   \n'
-                    b'T720214101006853700680540068454103000312400037850003180104000347400036460003583106'
-                    b'000044600004360000325299000506200036070003385202000039100002740000499             '
-                    b'                                                                                   \n'
-                    b'TRAILER0000001         '
-                    )
-    )
-    return parsing_file
-
 @pytest.mark.parametrize("file, batch_size, model, record_type, num_errors", [
-    ('s1_exact_dup_file', 10000, TANF_T1, "T1", 3),
-    ('s1_exact_dup_file', 1, TANF_T1, "T1", 3),  # This forces an in memory and database deletion of records.
-    ('s2_exact_dup_file', 10000, TANF_T4, "T4", 4),
-    ('s2_exact_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
-    ('s3_exact_dup_file', 10000, TANF_T6, "T6", 1),
-    ('s3_exact_dup_file', 1, TANF_T6, "T6", 1),  # This forces an in memory and database deletion of records.
-    ('s4_exact_dup_file', 10000, TANF_T7, "T7", 1),
-    ('s4_exact_dup_file', 1, TANF_T7, "T7", 1),  # This forces an in memory and database deletion of records.
+    ('tanf_s1_exact_dup_file', 10000, TANF_T1, "T1", 3),
+    ('tanf_s1_exact_dup_file', 1, TANF_T1, "T1", 3),  # This forces an in memory and database deletion of records.
+    ('tanf_s2_exact_dup_file', 10000, TANF_T4, "T4", 4),
+    ('tanf_s2_exact_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
+    ('tanf_s3_exact_dup_file', 10000, TANF_T6, "T6", 1),
+    ('tanf_s3_exact_dup_file', 1, TANF_T6, "T6", 1),  # This forces an in memory and database deletion of records.
+    ('tanf_s4_exact_dup_file', 10000, TANF_T7, "T7", 1),
+    ('tanf_s4_exact_dup_file', 1, TANF_T7, "T7", 1),  # This forces an in memory and database deletion of records.
+    ('ssp_s1_exact_dup_file', 10000, SSP_M1, "M1", 3),
+    ('ssp_s1_exact_dup_file', 1, SSP_M1, "M1", 3),  # This forces an in memory and database deletion of records.
+    ('ssp_s2_exact_dup_file', 10000, SSP_M4, "M4", 4),
+    ('ssp_s2_exact_dup_file', 1, SSP_M4, "M4", 4),  # This forces an in memory and database deletion of records.
+    ('ssp_s3_exact_dup_file', 10000, SSP_M6, "M6", 1),
+    ('ssp_s3_exact_dup_file', 1, SSP_M6, "M6", 1),  # This forces an in memory and database deletion of records.
+    ('ssp_s4_exact_dup_file', 10000, SSP_M7, "M7", 1),
+    ('ssp_s4_exact_dup_file', 1, SSP_M7, "M7", 1),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
 def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, request):
@@ -2050,46 +1614,15 @@ def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, 
 
     model.objects.count() == 0
 
-@pytest.fixture
-def s1_partial_dup_file():
-    """Fixture for a section 1 file containing an partial duplicate record."""
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q1',
-        file__name='s1_partial_duplicate.txt',
-        file__section='Active Case Data',
-        file__data=(b'HEADER20204A06   TAN1 D\n'
-                    b'T120201011111111112230034033611102121200003000000000000087300100000000000000' +
-                    b'00000000000000000000222222000000002229012                                       \n'
-                    b'T1202010111111111122300340336111021212000030000000000000873001000000000000000' +
-                    b'0000000000000000000222222000000002229013                                       \n'
-                    b'TRAILER0000001         '
-                    )
-    )
-    return parsing_file
-
-@pytest.fixture
-def s2_partial_dup_file():
-    """Fixture for a section 2 file containing an partial duplicate record."""
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q1',
-        section="Closed Case Data",
-        file__name='s2_partial_duplicate.txt',
-        file__section='Closed Case Data',
-        file__data=(b'HEADER20204C06   TAN1ED\n'
-                    b'T42020101111111115825301400141123113                                   \n'
-                    b'T42020101111111115825301400141123114                                   \n'
-                    b'TRAILER0000001         '
-                    )
-    )
-    return parsing_file
-
 @pytest.mark.parametrize("file, batch_size, model, record_type, num_errors", [
-    ('s1_partial_dup_file', 10000, TANF_T1, "T1", 3),
-    ('s1_partial_dup_file', 1, TANF_T1, "T1", 3),  # This forces an in memory and database deletion of records.
-    ('s2_partial_dup_file', 10000, TANF_T4, "T4", 4),
-    ('s2_partial_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
+    ('tanf_s1_partial_dup_file', 10000, TANF_T1, "T1", 3),
+    ('tanf_s1_partial_dup_file', 1, TANF_T1, "T1", 3),  # This forces an in memory and database deletion of records.
+    ('tanf_s2_partial_dup_file', 10000, TANF_T4, "T4", 4),
+    ('tanf_s2_partial_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
+    ('ssp_s1_partial_dup_file', 10000, SSP_M1, "M1", 3),
+    ('ssp_s1_partial_dup_file', 1, SSP_M1, "M1", 3),  # This forces an in memory and database deletion of records.
+    ('ssp_s2_partial_dup_file', 10000, SSP_M4, "M4", 4),
+    ('ssp_s2_partial_dup_file', 1, SSP_M4, "M4", 4),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
 def test_parse_partial_duplicate(file, batch_size, model, record_type, num_errors, dfs, request):
