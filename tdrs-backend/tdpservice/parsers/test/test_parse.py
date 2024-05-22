@@ -1015,7 +1015,10 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
 
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert err.error_message == "T4: 3 is not larger or equal to 1 and smaller or equal to 2."
+    assert err.error_message == (
+        "T4 Item 10 (receives subsidized housing): 3 "
+        "is not larger or equal to 1 and smaller or equal to 2."
+    )
     assert err.content_type.model == "tanf_t4"
     assert err.object_id is not None
 
@@ -1768,7 +1771,10 @@ def test_empty_t4_t5_values(t4_t5_empty_values, dfs):
     assert t4[0].STRATUM is None
     logger.info(t4[0].__dict__)
     assert t5.count() == 1
-    assert parser_errors[0].error_message == "T4: 3 is not larger or equal to 1 and smaller or equal to 2."
+    assert parser_errors[0].error_message == (
+        "T4 Item 10 (receives subsidized housing): 3 is "
+        "not larger or equal to 1 and smaller or equal to 2."
+    )
 
 
 @pytest.mark.django_db()
