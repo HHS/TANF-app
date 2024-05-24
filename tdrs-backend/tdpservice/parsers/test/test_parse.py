@@ -1474,7 +1474,7 @@ def test_parse_tribal_section_2_file(tribal_section_2_file, dfs):
     t4 = t4_objs.first()
     t5 = t5_objs.last()
 
-    assert t4.CLOSURE_REASON == 8
+    assert t4.CLOSURE_REASON == '15'
     assert t5.COUNTABLE_MONTH_FED_TIME == '  8'
 
 @pytest.fixture
