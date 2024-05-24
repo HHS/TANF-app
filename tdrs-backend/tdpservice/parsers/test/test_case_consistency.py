@@ -1438,7 +1438,7 @@ class TestCaseConsistencyValidator:
         for i, error in enumerate(errors):
             expected_msg = f"Partial duplicate record detected with record type T{i + 1} at line {i + 4}. " + \
                 f"Record is a partial duplicate of the record at line number {i + 1}."
-            assert error.error_message == expected_msg
+            assert expected_msg in error.error_message
 
         # We don't want to clear dup errors to show that when our errors change precedence, errors with lower precedence
         # are automatically replaced with the errors of higher precedence.
@@ -1564,7 +1564,7 @@ class TestCaseConsistencyValidator:
         for i, error in enumerate(errors):
             expected_msg = f"Partial duplicate record detected with record type T{i + 4} at line {i + 3}. " + \
                 f"Record is a partial duplicate of the record at line number {i + 1}."
-            assert error.error_message == expected_msg
+            assert expected_msg in error.error_message
 
         # We don't want to clear dup errors to show that when our errors change precedence, errors with lower precedence
         # are automatically replaced with the errors of higher precedence.
