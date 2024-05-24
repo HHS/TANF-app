@@ -17,7 +17,9 @@ def calendar_quarter_to_rpt_month_year(month_index):
 
 def tanf_ssn_decryption_func(value, **kwargs):
     """Decrypt TANF SSN value."""
-    if kwargs.get("is_encrypted", False):
+    if value is None:
+        return None
+    elif kwargs.get("is_encrypted", False):
         decryption_dict = {"@": "1", "9": "2", "Z": "3", "P": "4", "0": "5",
                            "#": "6", "Y": "7", "B": "8", "W": "9", "T": "0"}
         decryption_table = str.maketrans(decryption_dict)
@@ -26,7 +28,9 @@ def tanf_ssn_decryption_func(value, **kwargs):
 
 def ssp_ssn_decryption_func(value, **kwargs):
     """Decrypt SSP SSN value."""
-    if kwargs.get("is_encrypted", False):
+    if value is None:
+        return None
+    elif kwargs.get("is_encrypted", False):
         decryption_dict = {"@": "1", "9": "2", "Z": "3", "P": "4", "0": "5",
                            "#": "6", "Y": "7", "B": "8", "W": "9", "T": "0"}
         decryption_table = str.maketrans(decryption_dict)

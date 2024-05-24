@@ -214,6 +214,15 @@ def test_oneOf_returns_valid():
     assert is_valid is True
     assert error is None
 
+    value = 50
+    options = ["17-55"]
+
+    validator = validators.oneOf(options)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error is None
+
 
 def test_oneOf_returns_invalid():
     """Test `oneOf` gives an invalid result."""
@@ -225,6 +234,16 @@ def test_oneOf_returns_invalid():
 
     assert is_valid is False
     assert error == 'T1: 64 is not in [17, 24, 36].'
+
+    value = 65
+    options = ["17-55"]
+
+    validator = validators.oneOf(options)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error == 'T1: 65 is not in [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, ' \
+        '29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55].'
 
 
 def test_between_returns_valid():
