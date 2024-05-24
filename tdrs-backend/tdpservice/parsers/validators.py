@@ -241,8 +241,21 @@ def notMatches(option):
 
 def oneOf(options=[]):
     """Validate that value does not exist in the provided options array."""
+    """
+    accepts options as list of: string, int or string range ("3-20")
+    """
+
+    def check_option(value, options):
+        # split the option if it is a range and append the range to the options
+        for option in options:
+            if "-" in str(option):
+                start, end = option.split("-")
+                options.extend([i for i in range(int(start), int(end) + 1)])
+                options.remove(option)
+        return value in options
+
     return make_validator(
-        lambda value: value in options,
+        lambda value: check_option(value, options),
         lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} is not in {options}."
     )
 
@@ -465,7 +478,6 @@ def isInLimits(LowerBound, UpperBound):
         friendly_name, item_num: f"{row_schema.record_type}: {value} is not larger or equal to {LowerBound} and "
                                  f"smaller or equal to {UpperBound}."
     )
-
 
 # custom validators
 
