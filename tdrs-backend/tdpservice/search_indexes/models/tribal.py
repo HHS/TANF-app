@@ -213,7 +213,7 @@ class Tribal_TANF_T4(models.Model):
     STRATUM = models.CharField(max_length=2, null=True, blank=False)
     ZIP_CODE = models.CharField(max_length=5, null=True, blank=False)
     DISPOSITION = models.IntegerField(null=True, blank=False)
-    CLOSURE_REASON = models.IntegerField(null=True, blank=False)
+    CLOSURE_REASON = models.CharField(max_length=2, null=True, blank=False)
     REC_SUB_HOUSING = models.IntegerField(null=True, blank=False)
     REC_MED_ASSIST = models.IntegerField(null=True, blank=False)
     REC_FOOD_STAMPS = models.IntegerField(null=True, blank=False)
