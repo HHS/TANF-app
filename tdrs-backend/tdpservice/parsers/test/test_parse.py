@@ -1400,24 +1400,6 @@ def test_misformatted_multi_records(file_fixture, result, number_of_errors, erro
     assert parser_errors.count() == number_of_errors
 
 
-@pytest.fixture
-def t4_t5_empty_values():
-    """Fixture for T3 file."""
-    # T3 record is space filled correctly
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q3',
-        original_filename='t4_t5_empty_values.txt',
-        section=DataFile.Section.CLOSED_CASE_DATA,
-        file__filename='t4_t5_empty_values.txt',
-        file__data=(b'HEADER20212C06   TAN1ED\n' +
-                    b'T420210411111111158253  400141123113                                   \n' +
-                    b'T520210411111111158119970123WTTTTTP@Y2222212222221011212100946200000000\n' +
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
-
-
 @pytest.mark.django_db()
 def test_empty_t4_t5_values(t4_t5_empty_values, dfs):
     """Test that empty field values for un-required fields parse."""
