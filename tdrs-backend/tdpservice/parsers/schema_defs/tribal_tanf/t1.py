@@ -4,7 +4,7 @@ from ...fields import Field
 from ...row_schema import RowSchema, SchemaManager
 from ... import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T1DataSubmissionDocument
-from tdpservice.parsers.util import generate_t1_t4_hashes
+from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
 t1 = SchemaManager(
     schemas=[
@@ -12,6 +12,7 @@ t1 = SchemaManager(
             record_type="T1",
             document=Tribal_TANF_T1DataSubmissionDocument(),
             generate_hashes_func=generate_t1_t4_hashes,
+            get_partial_hash_members_func=get_t1_t4_partial_hash_members,
             preparsing_validators=[
                 validators.recordHasLengthBetween(117, 122),
                 validators.caseNumberNotEmpty(8, 19),

@@ -83,6 +83,18 @@ class CaseHashtainer:
             else:
                 self.manager_error_dict.setdefault(self.my_hash, []).append(error)
             self.num_errors = len(self.manager_error_dict[self.my_hash])
+    
+    def __get_partial_dup_error_msg(self, schema, record_type, curr_line_number, existing_line_number):
+        field_names = schema.get_partial_hash_members_func()
+        err_msg = (f"Partial duplicate record detected with record type "
+                   f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
+                   f"record at line number {existing_line_number}. Duplicated fields causing error: ")
+        for i, name in enumerate(field_names):
+            if i == len(field_names) - 1:
+                err_msg += f"and {schema.get_field_by_name(name).friendly_name}."
+            else:
+                err_msg += f"{schema.get_field_by_name(name).friendly_name}, "
+        return err_msg
 
     def add_case_member(self, record, schema, line, line_number):
         """Add case member and generate errors if needed.
@@ -116,9 +128,8 @@ class CaseHashtainer:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(
                     ErrorLevel.PARTIAL_DUPLICATE)
                 existing_record_line_number = self.partial_hashes[partial_hash]
-                err_msg = (f"Partial duplicate record detected with record type "
-                           f"{record.RecordType} at line {line_number}. Record is a partial duplicate of the "
-                           f"record at line number {existing_record_line_number}.")
+                err_msg = self.__get_partial_dup_error_msg(schema, record.RecordType,
+                                                           line_number, existing_record_line_number)
 
             self.__generate_error(err_msg, record, schema, has_precedence, is_new_max_precedence)
             if line_hash not in self.record_hashes:

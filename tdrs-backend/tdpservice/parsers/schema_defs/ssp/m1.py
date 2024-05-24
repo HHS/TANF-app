@@ -5,7 +5,7 @@ from tdpservice.parsers.fields import Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M1DataSubmissionDocument
-from tdpservice.parsers.util import generate_t1_t4_hashes
+from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
 m1 = SchemaManager(
     schemas=[
@@ -13,6 +13,7 @@ m1 = SchemaManager(
             record_type="M1",
             document=SSP_M1DataSubmissionDocument(),
             generate_hashes_func=generate_t1_t4_hashes,
+            get_partial_hash_members_func=get_t1_t4_partial_hash_members,
             preparsing_validators=[
                 validators.recordHasLengthBetween(113, 150),
                 validators.caseNumberNotEmpty(8, 19),

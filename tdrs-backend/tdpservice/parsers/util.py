@@ -247,3 +247,9 @@ def generate_t2_t3_t5_hashes(line, record):
     """Return hashes for duplicate and partial duplicate detection for T2 & T3 & T5 records."""
     return hash(line), hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER +
                             str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
+
+def get_t1_t4_partial_hash_members():
+    return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER"]
+
+def get_t2_t3_t5_partial_hash_members():
+    return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER", "FAMILY_AFFILIATION", "DATE_OF_BIRTH", "SSN"]

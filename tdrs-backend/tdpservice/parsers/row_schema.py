@@ -17,6 +17,7 @@ class RowSchema:
             generate_hashes_func=lambda line, record: (hash(line),
                                                        None),
             should_skip_partial_dup_func=lambda record: False,
+            get_partial_hash_members_func=lambda: [],
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
@@ -25,6 +26,7 @@ class RowSchema:
         self.document = document
         self.generate_hashes_func = generate_hashes_func
         self.should_skip_partial_dup_func = should_skip_partial_dup_func
+        self.get_partial_hash_members_func = get_partial_hash_members_func
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = postparsing_validators
         self.fields = fields

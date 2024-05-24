@@ -1633,20 +1633,22 @@ def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, 
 
     model.objects.count() == 0
 
-@pytest.mark.parametrize("file, batch_size, model, record_type, num_errors", [
-    ('tanf_s1_partial_dup_file', 10000, TANF_T1, "T1", 3),
-    ('tanf_s1_partial_dup_file', 1, TANF_T1, "T1", 3),  # This forces an in memory and database deletion of records.
-    ('tanf_s2_partial_dup_file', 10000, TANF_T4, "T4", 4),
-    ('tanf_s2_partial_dup_file', 1, TANF_T4, "T4", 4),  # This forces an in memory and database deletion of records.
-    ('ssp_s1_partial_dup_file', 10000, SSP_M1, "M1", 3),
-    ('ssp_s1_partial_dup_file', 1, SSP_M1, "M1", 3),  # This forces an in memory and database deletion of records.
-    ('ssp_s2_partial_dup_file', 10000, SSP_M4, "M4", 4),
-    ('ssp_s2_partial_dup_file', 1, SSP_M4, "M4", 4),  # This forces an in memory and database deletion of records.
+@pytest.mark.parametrize("file, batch_size, model, record_type, num_errors, err_msg", [
+    ('tanf_s1_partial_dup_file', 10000, TANF_T1, "T1", 3, "partial_dup_t1_err_msg"),
+    ('tanf_s1_partial_dup_file', 1, TANF_T1, "T1", 3, "partial_dup_t1_err_msg"),  # This forces an in memory and database deletion of records.
+    ('tanf_s2_partial_dup_file', 10000, TANF_T5, "T5", 3, "partial_dup_t5_err_msg"),
+    ('tanf_s2_partial_dup_file', 1, TANF_T5, "T5", 3, "partial_dup_t5_err_msg"),  # This forces an in memory and database deletion of records.
+    ('ssp_s1_partial_dup_file', 10000, SSP_M1, "M1", 3, "partial_dup_t1_err_msg"),
+    ('ssp_s1_partial_dup_file', 1, SSP_M1, "M1", 3, "partial_dup_t1_err_msg"),  # This forces an in memory and database deletion of records.
+    ('ssp_s2_partial_dup_file', 10000, SSP_M5, "M5", 3, "partial_dup_t5_err_msg"),
+    ('ssp_s2_partial_dup_file', 1, SSP_M5, "M5", 3, "partial_dup_t5_err_msg"),  # This forces an in memory and database deletion of records.
 ])
 @pytest.mark.django_db()
-def test_parse_partial_duplicate(file, batch_size, model, record_type, num_errors, dfs, request):
+def test_parse_partial_duplicate(file, batch_size, model, record_type, num_errors, err_msg, dfs, request):
     """Test handling invalid quarter value that raises a ValueError exception."""
     datafile = request.getfixturevalue(file)
+    expected_error_msg = request.getfixturevalue(err_msg)
+
     dfs.datafile = datafile
 
     settings.BULK_CREATE_BATCH_SIZE = batch_size
@@ -1659,7 +1661,6 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, num_error
     assert parser_errors.count() == num_errors
 
     dup_error = parser_errors.first()
-    assert dup_error.error_message == f"Partial duplicate record detected with record type {record_type} " + \
-        "at line 3. Record is a partial duplicate of the record at line number 2."
+    assert dup_error.error_message == expected_error_msg.format(record_type=record_type)
 
     model.objects.count() == 0

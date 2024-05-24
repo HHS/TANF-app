@@ -6,7 +6,7 @@ from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T5DataSubmissionDocument
-from tdpservice.parsers.util import generate_t2_t3_t5_hashes
+from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
 
 t5 = SchemaManager(
@@ -16,6 +16,7 @@ t5 = SchemaManager(
             document=TANF_T5DataSubmissionDocument(),
             generate_hashes_func=generate_t2_t3_t5_hashes,
             should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 4, 5},
+            get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
             preparsing_validators=[
                 validators.recordHasLength(71),
                 validators.caseNumberNotEmpty(8, 19),

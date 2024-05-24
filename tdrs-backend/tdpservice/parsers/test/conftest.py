@@ -557,8 +557,8 @@ def tanf_s2_partial_dup_file():
         file__name='s2_partial_duplicate.txt',
         file__section='Closed Case Data',
         file__data=(b'HEADER20204C06   TAN1ED\n'
-                    b'T42020101111111115825301400141123113                                   \n'
-                    b'T42020101111111115825301400141123114                                   \n'
+                    b'T520201011111111158120160206WTTTT90TY2222212 2  2 0422981      00000000\n'
+                    b'T520201011111111158120160206WTTTT90TY2222212 2  2 0422981      00000001\n'
                     b'TRAILER0000001         '
                     )
     )
@@ -593,9 +593,21 @@ def ssp_s2_partial_dup_file():
         file__name='s2_exact_duplicate.txt',
         file__section='SSP Closed Case Data',
         file__data=(b'HEADER20184C24   SSP1ED\n'
-                    b'M42018101111111116120000406911161113                              \n'
-                    b'M42018101111111116120000406911161112                              \n'
+                    b'M520181011111111161120150623WTTTYT#0W222122222222 0422981     0000\n'
+                    b'M520181011111111161120150623WTTTYT#0W222122222222 0422981     0001\n'
                     b'TRAILER0000001         '
                     )
     )
     return parsing_file
+
+@pytest.fixture
+def partial_dup_t1_err_msg():
+    return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
+            "duplicate of the record at line number 2. Duplicated fields causing error: record type, "
+            "reporting month and year, and case number.")
+
+@pytest.fixture
+def partial_dup_t5_err_msg():
+    return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
+            "duplicate of the record at line number 2. Duplicated fields causing error: record type, "
+            "reporting month and year, case number, family affiliation, date of birth, and social security number.")
