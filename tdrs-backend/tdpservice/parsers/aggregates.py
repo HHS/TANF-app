@@ -4,7 +4,7 @@ from .models import ParserError, ParserErrorCategoryChoices
 from .util import month_to_int, \
     transform_to_months, fiscal_to_calendar, get_prog_from_section
 from .schema_defs.utils import get_program_models, get_text_from_df
-from django.db.models import Q
+from django.db.models import Q as Query
 
 
 def case_aggregates_by_month(df, dfs_status):
@@ -54,8 +54,8 @@ def case_aggregates_by_month(df, dfs_status):
                                          "accepted_without_errors": accepted,
                                          "accepted_with_errors": cases_with_errors})
 
-    error_type_query = Q(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
-        Q(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+    error_type_query = Query(error_type=ParserErrorCategoryChoices.PRE_CHECK) | \
+        Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
 
     aggregate_data['rejected'] = ParserError.objects.filter(error_type_query, file=df)\
         .distinct("row_number").exclude(row_number=0).count()
