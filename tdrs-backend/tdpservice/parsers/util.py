@@ -249,7 +249,9 @@ def generate_t2_t3_t5_hashes(line, record):
                             str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
 
 def get_t1_t4_partial_hash_members():
+    """Return field names used to generate t1/t4 partial hashes."""
     return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER"]
 
 def get_t2_t3_t5_partial_hash_members():
+    """Return field names used to generate t2/t3/t5 partial hashes."""
     return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER", "FAMILY_AFFILIATION", "DATE_OF_BIRTH", "SSN"]

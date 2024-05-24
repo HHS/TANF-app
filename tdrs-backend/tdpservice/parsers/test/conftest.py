@@ -602,12 +602,14 @@ def ssp_s2_partial_dup_file():
 
 @pytest.fixture
 def partial_dup_t1_err_msg():
+    """Fixture for t1 record partial duplicate error."""
     return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
             "duplicate of the record at line number 2. Duplicated fields causing error: record type, "
             "reporting month and year, and case number.")
 
 @pytest.fixture
 def partial_dup_t5_err_msg():
+    """Fixture for t5 record partial duplicate error."""
     return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
             "duplicate of the record at line number 2. Duplicated fields causing error: record type, "
             "reporting month and year, case number, family affiliation, date of birth, and social security number.")

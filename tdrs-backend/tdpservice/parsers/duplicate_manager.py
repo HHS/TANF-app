@@ -83,8 +83,9 @@ class CaseHashtainer:
             else:
                 self.manager_error_dict.setdefault(self.my_hash, []).append(error)
             self.num_errors = len(self.manager_error_dict[self.my_hash])
-    
+
     def __get_partial_dup_error_msg(self, schema, record_type, curr_line_number, existing_line_number):
+        """Generate partial duplicate error message with friendly names."""
         field_names = schema.get_partial_hash_members_func()
         err_msg = (f"Partial duplicate record detected with record type "
                    f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
