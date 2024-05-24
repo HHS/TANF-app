@@ -5,42 +5,12 @@ from django.core.validators import validate_email
 from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import get_template
-from django.contrib.admin.models import LogEntry, ContentType, CHANGE
+from tdpservice.core.utils import log
 
 import logging
 
 logger = logging.getLogger()
 
-
-def log(msg, logger_context=None, level='info'):
-    """Create a log in the terminal and django admin console, for email tasks."""
-    from tdpservice.users.models import User
-
-    log_func = logger.info
-
-    match level:
-        case 'info':
-            log_func = logger.info
-        case 'warn':
-            log_func = logger.warn
-        case 'error':
-            log_func = logger.error
-        case 'critical':
-            log_func = logger.critical
-        case 'exception':
-            log_func = logger.exception
-
-    log_func(msg)
-
-    if logger_context:
-        LogEntry.objects.log_action(
-            user_id=logger_context['user_id'],
-            change_message=msg,
-            action_flag=CHANGE,
-            content_type_id=ContentType.objects.get_for_model(User).pk,
-            object_id=logger_context['object_id'],
-            object_repr=logger_context['object_repr']
-        )
 
 def prepare_recipients(recipient_email):
     """
