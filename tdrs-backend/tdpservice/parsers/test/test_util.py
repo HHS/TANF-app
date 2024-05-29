@@ -297,8 +297,8 @@ def test_field_validators_blank_and_required_returns_error(first, second):
     is_valid, errors = schema.run_field_validators(instance, error_func)
     assert is_valid is False
     assert errors == [
-        'first is required but a value was not provided.',
-        'second is required but a value was not provided.'
+        'T1 Item 1 (first): field is required but a value was not provided.',
+        'T1 Item 2 (second): field is required but a value was not provided.'
     ]
 
 

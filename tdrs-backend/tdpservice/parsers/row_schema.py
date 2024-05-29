@@ -1,7 +1,7 @@
 """Row schema for datafile."""
 from .models import ParserErrorCategoryChoices
 from .fields import Field, TransformField
-from .validators import value_is_empty
+from .validators import value_is_empty, format_error_context
 import logging
 
 logger = logging.getLogger(__name__)
@@ -150,7 +150,10 @@ class RowSchema:
                     generate_error(
                         schema=self,
                         error_category=ParserErrorCategoryChoices.FIELD_VALUE,
-                        error_message=f"{field.name} is required but a value was not provided.",
+                        error_message=(
+                            f"{format_error_context(self, field.friendly_name, field.item)}: "
+                            "field is required but a value was not provided."
+                        ),
                         record=instance,
                         field=field
                     )
