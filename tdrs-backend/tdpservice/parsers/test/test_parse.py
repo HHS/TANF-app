@@ -179,6 +179,9 @@ def test_parse_big_file(test_big_file, dfs):
     expected_t2_record_count = 882
     expected_t3_record_count = 1376
 
+    test_big_file.year = 2022
+    test_big_file.quarter = 'Q1'
+
     dfs.datafile = test_big_file
 
     parse.parse_datafile(test_big_file, dfs)
@@ -998,7 +1001,7 @@ def tanf_section2_file(stt_user, stt):
 @pytest.mark.django_db()
 def test_parse_tanf_section2_file(tanf_section2_file, dfs):
     """Test parsing TANF Section 2 submission."""
-    tanf_section2_file.year = 2021
+    tanf_section2_file.year = 2022
     tanf_section2_file.quarter = 'Q1'
 
     dfs.datafile = tanf_section2_file

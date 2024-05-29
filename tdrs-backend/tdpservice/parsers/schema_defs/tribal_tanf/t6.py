@@ -252,7 +252,10 @@ s2 = RowSchema(
             startIndex=2,
             endIndex=7,
             required=True,
-            validators=[],
+            validators=[
+                validators.dateYearIsLargerThan(2020),
+                validators.quarterIsValid(),
+            ],
         ),
         TransformField(
             calendar_quarter_to_rpt_month_year(1),
@@ -263,7 +266,10 @@ s2 = RowSchema(
             startIndex=2,
             endIndex=7,
             required=True,
-            validators=[],
+            validators=[
+                validators.dateYearIsLargerThan(1998),
+                validators.dateMonthIsValid(),
+            ],
         ),
         Field(
             item="4B",
@@ -455,7 +461,10 @@ s3 = RowSchema(
             startIndex=2,
             endIndex=7,
             required=True,
-            validators=[],
+            validators=[
+                validators.dateYearIsLargerThan(2020),
+                validators.quarterIsValid(),
+            ],
         ),
         TransformField(
             calendar_quarter_to_rpt_month_year(2),
@@ -466,7 +475,10 @@ s3 = RowSchema(
             startIndex=2,
             endIndex=7,
             required=True,
-            validators=[],
+            validators=[
+                validators.dateYearIsLargerThan(1998),
+                validators.dateMonthIsValid(),
+            ],
         ),
         Field(
             item="4C",
