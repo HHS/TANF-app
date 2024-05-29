@@ -51,7 +51,7 @@ resource "cloudfoundry_service_instance" "database" {
   name             = "tdp-db-prod"
   space            = data.cloudfoundry_space.space.id
   service_plan     = data.cloudfoundry_service.rds.service_plans["medium-psql"]
-  json_params      = "{\"version\": \"12\"}"
+  json_params      = "{\"version\": \"15\"}"
   recursive_delete = true
 }
 
