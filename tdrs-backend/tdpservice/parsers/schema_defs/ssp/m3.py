@@ -279,15 +279,15 @@ first_part_schema = RowSchema(
             item="68",
             name='EDUCATION_LEVEL',
             friendly_name="education level",
-            type='number',
+            type='string',
             startIndex=49,
             endIndex=51,
             required=True,
             validators=[
                 validators.or_validators(
-                    validators.isInStringRange(0, 16),
+                    validators.isInStringRange(1, 16),
                     validators.isInStringRange(98, 99)
-                )
+                ),
             ]
         ),
         Field(
@@ -298,7 +298,7 @@ first_part_schema = RowSchema(
             startIndex=51,
             endIndex=52,
             required=False,
-            validators=[validators.oneOf([0, 1, 2, 3, 9])]
+            validators=[validators.oneOf([1, 2, 3, 9])]
         ),
         Field(
             item="70A",
@@ -593,13 +593,13 @@ second_part_schema = RowSchema(
             item="68",
             name='EDUCATION_LEVEL',
             friendly_name="education level",
-            type='number',
+            type='string',
             startIndex=90,
             endIndex=92,
             required=True,
             validators=[
                 validators.or_validators(
-                    validators.isInStringRange(0, 16),
+                    validators.isInStringRange(1, 16),
                     validators.isInStringRange(98, 99)
                 )
             ]
@@ -612,7 +612,7 @@ second_part_schema = RowSchema(
             startIndex=92,
             endIndex=93,
             required=False,
-            validators=[validators.oneOf([0, 1, 2, 3, 9])]
+            validators=[validators.oneOf([1, 2, 3, 9])]
         ),
         Field(
             item="70A",
