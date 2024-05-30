@@ -12,7 +12,7 @@ def calendar_quarter_to_rpt_month_year(month_index):
             month = transform_to_months(quarter)[month_index]
         except ValueError:
             return None
-        return f"{year}{month_to_int(month)}"
+        return int(f"{year}{month_to_int(month)}")
     return transform
 
 def tanf_ssn_decryption_func(value, **kwargs):
