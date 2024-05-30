@@ -1,8 +1,9 @@
 """Schema for Tribal TANF T4 record types."""
 
-from ...fields import Field
-from ...row_schema import RowSchema, SchemaManager
-from ... import validators
+from tdpservice.parsers.transforms import zero_pad
+from tdpservice.parsers.fields import Field, TransformField
+from tdpservice.parsers.row_schema import RowSchema, SchemaManager
+from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T4DataSubmissionDocument
 
 
@@ -54,7 +55,8 @@ t4 = SchemaManager(
                     required=True,
                     validators=[validators.notEmpty()],
                 ),
-                Field(
+                TransformField(
+                    zero_pad(3),
                     item="2",
                     name="COUNTY_FIPS_CODE",
                     friendly_name="county fips code",
@@ -62,7 +64,7 @@ t4 = SchemaManager(
                     startIndex=19,
                     endIndex=22,
                     required=False,
-                    validators=[validators.matches("000")],
+                    validators=[validators.isNumber()],
                 ),
                 Field(
                     item="5",
