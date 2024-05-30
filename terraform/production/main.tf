@@ -89,6 +89,7 @@ resource "cloudfoundry_service_instance" "elasticsearch" {
   json_params  = "{\"ElasticsearchVersion\": \"Elasticsearch_7.10\"}"
   timeouts {
     create = "60m"
+    update = "60m"
     delete = "2h"
   }
 }
