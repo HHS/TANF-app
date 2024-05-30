@@ -297,6 +297,17 @@ def recordHasLengthBetween(lower, upper, error_func=None):
         f"{row_schema.record_type} record length of {len(value)} characters is not in the range [{lower}, {upper}].",
     )
 
+def fieldHasLength(length):
+    """Validate that the field value (string or array) has a length matching length param."""
+    return make_validator(
+        lambda value: len(value) == length,
+        lambda value,
+        row_schema,
+        friendly_name,
+        item_num: f"{row_schema.record_type} field length is {len(value)} characters but must be {length}.",
+    )
+
+
 def hasLengthGreaterThan(val, error_func=None):
     """Validate that value (string or array) has a length greater than val."""
     return make_validator(
@@ -473,7 +484,7 @@ def isSmallerThanOrEqualTo(UpperBound):
 def isInLimits(LowerBound, UpperBound):
     """Validate that value is in a range including the limits."""
     return make_validator(
-        lambda value: value >= LowerBound and value <= UpperBound,
+        lambda value: int(value) >= LowerBound and int(value) <= UpperBound,
         lambda value, row_schema,
         friendly_name, item_num: f"{row_schema.record_type}: {value} is not larger or equal to {LowerBound} and "
                                  f"smaller or equal to {UpperBound}."

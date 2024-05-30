@@ -374,14 +374,14 @@ m2 = SchemaManager(
                     item="37",
                     name='EDUCATION_LEVEL',
                     friendly_name="education level",
-                    type='number',
+                    type='string',
                     startIndex=55,
                     endIndex=57,
                     required=False,
                     validators=[
                         validators.or_validators(
-                            validators.isInLimits(0, 16), validators.isInLimits(98, 99)
-                        )
+                            validators.isInStringRange(1, 16), validators.isInStringRange(98, 99)
+                        ),
                     ]
                 ),
                 Field(
@@ -392,7 +392,7 @@ m2 = SchemaManager(
                     startIndex=57,
                     endIndex=58,
                     required=False,
-                    validators=[validators.oneOf([0, 1, 2, 3, 9])]
+                    validators=[validators.oneOf([1, 2, 3, 9])]
                 ),
                 Field(
                     item="39",
@@ -402,7 +402,7 @@ m2 = SchemaManager(
                     startIndex=58,
                     endIndex=59,
                     required=False,
-                    validators=[validators.oneOf([0, 1, 2, 9])]
+                    validators=[validators.oneOf([1, 2, 9])]
                 ),
                 Field(
                     item="40",
