@@ -386,6 +386,7 @@ def t3_file_zero_filled_second():
     )
     return parsing_file
 
+@pytest.fixture
 def m2_cat2_invalid_37_38_39_file():
     """Fixture for M2 file with an invalid EDUCATION_LEVEL, CITIZENSHIP_STATUS, COOPERATION_CHILD_SUPPORT."""
     parsing_file = ParsingFileFactory(
@@ -400,6 +401,7 @@ def m2_cat2_invalid_37_38_39_file():
     )
     return parsing_file
 
+@pytest.fixture
 def m3_cat2_invalid_68_69_file():
     """Fixture for M3 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
     parsing_file = ParsingFileFactory(
@@ -415,6 +417,7 @@ def m3_cat2_invalid_68_69_file():
     )
     return parsing_file
 
+@pytest.fixture
 def m5_cat2_invalid_23_24_file():
     """Fixture for M5 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
     parsing_file = ParsingFileFactory(
@@ -639,6 +642,7 @@ def ssp_s1_partial_dup_file():
                     b'TRAILER0000001         '
                     )
     )
+    return parsing_file
 
 @pytest.fixture
 def ssp_s2_partial_dup_file():

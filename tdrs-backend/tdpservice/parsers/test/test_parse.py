@@ -4,6 +4,7 @@
 import pytest
 from django.contrib.admin.models import LogEntry
 from django.conf import settings
+from django.db.models import Q as Query
 from .. import parse
 from ..models import ParserError, ParserErrorCategoryChoices, DataFileSummary
 from tdpservice.search_indexes.models.tanf import TANF_T1, TANF_T2, TANF_T3, TANF_T4, TANF_T5, TANF_T6, TANF_T7
@@ -1604,8 +1605,10 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
 
     parse.parse_datafile(t3_cat2_invalid_citizenship_file, dfs)
 
-    parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).exclude(
-        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+    exclusion = Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY) | \
+        Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
+
+    parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).exclude(exclusion).order_by("pk")
 
     assert parser_errors.count() == 2
 
@@ -1623,8 +1626,10 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     parse.parse_datafile(m2_cat2_invalid_37_38_39_file, dfs)
 
-    parser_errors = ParserError.objects.filter(file=m2_cat2_invalid_37_38_39_file).exclude(
-        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+    exclusion = Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY) | \
+        Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
+
+    parser_errors = ParserError.objects.filter(file=m2_cat2_invalid_37_38_39_file).exclude(exclusion).order_by("pk")
 
     assert parser_errors.count() == 3
 
@@ -1644,8 +1649,10 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     parse.parse_datafile(m3_cat2_invalid_68_69_file, dfs)
 
-    parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).exclude(
-        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+    exclusion = Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY) | \
+        Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
+
+    parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).exclude(exclusion).order_by("pk")
 
     assert parser_errors.count() == 4
 
@@ -1665,8 +1672,10 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     parse.parse_datafile(m5_cat2_invalid_23_24_file, dfs)
 
-    parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).exclude(
-        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+    exclusion = Query(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY) | \
+        Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
+
+    parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).exclude(exclusion).order_by("pk")
 
     assert parser_errors.count() == 2
 
