@@ -1,7 +1,7 @@
 """Schema for Tribal TANF T2 row of all submission types."""
 
 
-from tdpservice.parsers.transforms import tanf_ssn_decryption_func
+from tdpservice.parsers.transforms import tanf_ssn_decryption_func, zero_pad
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
@@ -622,7 +622,8 @@ t2 = SchemaManager(
                         validators.isInStringRange(0, 99),
                     ],
                 ),
-                Field(
+                TransformField(
+                    zero_pad(2),
                     item="61",
                     name="ADD_WORK_ACTIVITIES",
                     friendly_name="additional work activities",
