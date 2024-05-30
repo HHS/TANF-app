@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('search_indexes', '0027_tribal_ssp_tanf_dob_to_string'),
+        ('search_indexes', '0028_education_level_to_string'),
     ]
 
     operations = [
