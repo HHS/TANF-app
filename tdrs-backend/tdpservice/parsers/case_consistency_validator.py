@@ -1,7 +1,7 @@
 """Class definition for Category Four validator."""
 
 from datetime import datetime
-from .duplicate_manager import RecordDuplicateManager
+from .duplicate_manager import DuplicateManager
 from .models import ParserErrorCategoryChoices
 from .util import get_years_apart
 from tdpservice.stts.models import STT
@@ -18,10 +18,10 @@ class CaseConsistencyValidator:
         self.header = header
         self.sorted_cases = dict()
         self.cases = list()
-        self.duplicate_manager = RecordDuplicateManager(generate_error)
+        self.duplicate_manager = DuplicateManager(generate_error)
         self.current_rpt_month_year = None
         self.current_case = None
-        self.current_hash = None
+        self.current_case_hash = None
         self.case_has_errors = False
         self.section = header["type"]
         self.case_is_section_one_or_two = self.section in {'A', 'C'}
@@ -78,9 +78,9 @@ class CaseConsistencyValidator:
         if seed_record_schema_pair:
             self.add_record_to_structs(seed_record_schema_pair)
 
-    def update_removed(self, hash_val, was_removed):
-        """Notify duplicate manager's hashtainers whether they need to be removed from DB."""
-        self.duplicate_manager.update_removed(hash_val, was_removed)
+    def update_removed(self, case_hash, was_removed):
+        """Notify duplicate manager's CaseDuplicateDetectors whether they need to mark their records for DB removal."""
+        self.duplicate_manager.update_removed(case_hash, was_removed)
 
     def add_record(self, record, schema, line, line_number, case_has_errors):
         """Add record to cache, validate if new case is detected, and check for duplicate errors.
@@ -94,11 +94,11 @@ class CaseConsistencyValidator:
                  based on the records section)
         """
         num_errors = 0
-        hash_val = None
+        case_hash = None
         self.current_rpt_month_year = record.RPT_MONTH_YEAR
         if self.case_is_section_one_or_two:
-            hash_val = hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
-            if hash_val != self.current_hash and self.current_hash is not None:
+            case_hash = hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
+            if case_hash != self.current_case_hash and self.current_case_hash is not None:
                 num_errors += self.validate()
                 self.clear_structs((record, schema))
                 self.case_has_errors = case_has_errors
@@ -109,16 +109,17 @@ class CaseConsistencyValidator:
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
         else:
-            # Section 3/4 only require exact duplicate matching. Hashing the line is sufficient for that.
             self.current_case = None
-            hash_val = hash(line)
+            # Section 3/4 records don't have a CASE_NUMBER, and they're broken into multiple records for the same line.
+            # Thus to keep the hash unique, we use the whole line to identify the "case" in this instance.
+            case_hash = hash(line)
 
-        self.current_hash = hash_val
+        self.current_case_hash = case_hash
 
-        num_errors += self.duplicate_manager.add_record(record, hash_val, schema, line,
+        num_errors += self.duplicate_manager.add_record(record, case_hash, schema, line,
                                                         line_number)
 
-        return num_errors > 0, hash_val
+        return num_errors > 0, case_hash
 
     def validate(self):
         """Perform category four validation on all cached records."""

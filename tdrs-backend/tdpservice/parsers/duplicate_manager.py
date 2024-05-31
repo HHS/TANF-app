@@ -32,8 +32,12 @@ class ErrorPrecedence:
             return (False, False)
 
 
-class CaseHashtainer:
-    """Container class to manage hashed values for records of the same CASE_NUMBER and RPT_MONTH_YEAR."""
+class CaseDuplicateDetector:
+    """Container class.
+
+    Container class to manage records of the same case, cases that should be removed because of category 4 errors,
+    and to perform exact and partial duplicate detection of the records (a category 4 error type).
+    """
 
     def __init__(self, my_hash, manager_error_dict, generate_error):
         self.my_hash = my_hash
@@ -141,31 +145,31 @@ class CaseHashtainer:
         return self.num_errors
 
 
-class RecordDuplicateManager:
-    """Manages all CaseHashtainers and their errors."""
+class DuplicateManager:
+    """Manages all CaseDuplicateDetectors and their errors."""
 
     def __init__(self, generate_error):
-        self.hashtainers = dict()
+        self.case_duplicate_detectors = dict()
         self.generate_error = generate_error
         self.generated_errors = dict()
 
-    def add_record(self, record, hash_val, schema, line, line_number):
-        """Add record to existing CaseHashtainer or create new one and return whether the record's case has errors.
+    def add_record(self, record, case_hash, schema, line, line_number):
+        """Add record to CaseDuplicateDetector and return whether the record's case has errors.
 
         @param record: a Django model representing a datafile record
-        @param hash_val: a hash value generated from fields in the record based on the records section
+        @param case_hash: a hash value representing the @record's unique case
         @param schema: the schema from which the record was created
-        @param line: the raw string line representing the record
+        @param line: the raw string from the datafile representing the record
         @param line_number: the line number the record was generated from in the datafile
         @return: the number of duplicate errors
         """
-        if hash_val not in self.hashtainers:
-            hashtainer = CaseHashtainer(hash_val, self.generated_errors, self.generate_error)
-            self.hashtainers[hash_val] = hashtainer
-        return self.hashtainers[hash_val].add_case_member(record, schema, line, line_number)
+        if case_hash not in self.case_duplicate_detectors:
+            case_duplicate_detector = CaseDuplicateDetector(case_hash, self.generated_errors, self.generate_error)
+            self.case_duplicate_detectors[case_hash] = case_duplicate_detector
+        return self.case_duplicate_detectors[case_hash].add_case_member(record, schema, line, line_number)
 
     def get_generated_errors(self):
-        """Return all errors from all CaseHashtainers."""
+        """Return all errors from all CaseDuplicateDetectors."""
         generated_errors = list()
         for errors in self.generated_errors.values():
             generated_errors.extend(errors)
@@ -173,24 +177,25 @@ class RecordDuplicateManager:
 
     def clear_errors(self):
         """Clear all generated errors."""
-        # We MUST call .clear() here instead of re-assigning a new dict() because the hashtainers have a reference to
-        # this dictionary. Re-assigning the dictionary means the hashtainers lose their reference.
+        # We MUST call .clear() here instead of re-assigning a new dict() because the case_duplicate_detectors have a
+        # reference to this dictionary. Re-assigning the dictionary means the case_duplicate_detectors lose their
+        # reference.
         self.generated_errors.clear()
 
     def get_records_to_remove(self):
         """Return dictionary of document:[errors]."""
         records_to_remove = dict()
-        for hashtainer in self.hashtainers.values():
-            for document, ids in hashtainer.get_records_for_post_parse_deletion().items():
+        for case_duplicate_detector in self.case_duplicate_detectors.values():
+            for document, ids in case_duplicate_detector.get_records_for_post_parse_deletion().items():
                 records_to_remove.setdefault(document, []).extend(ids)
 
         return records_to_remove
 
-    def update_removed(self, hash_val, was_removed):
-        """Notify hashtainers whether case could or could not be removed from memory."""
-        hashtainer = self.hashtainers.get(hash_val, False)
-        if hashtainer:
+    def update_removed(self, case_hash, was_removed):
+        """Notify CaseDuplicateDetectors whether case could or could not be removed from memory."""
+        case_duplicate_detector = self.case_duplicate_detectors.get(case_hash, False)
+        if case_duplicate_detector:
             if was_removed:
-                hashtainer.set_should_remove_from_db(False)
+                case_duplicate_detector.set_should_remove_from_db(False)
             else:
-                hashtainer.set_should_remove_from_db(True)
+                case_duplicate_detector.set_should_remove_from_db(True)

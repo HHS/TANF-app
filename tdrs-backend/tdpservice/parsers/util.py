@@ -177,7 +177,11 @@ def get_years_apart(rpt_month_year_date, date):
 
 
 class SortedRecords:
-    """Maintains a dict sorted by hash_val and model_type."""
+    """Maintains a dict sorted by hash_val and model type.
+
+    Note, hash_val = `hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)` for section 1 and 2 files; but for section
+    3 and 4 files hash_val = `hash(line)`.
+    """
 
     def __init__(self, section):
         self.records_are_s1_or_s2 = section in {'A', 'C'}
@@ -186,22 +190,22 @@ class SortedRecords:
         self.cases_already_removed = set()
         self.serialized_cases = set()
 
-    def add_record(self, hash_val, record_doc_pair):
+    def add_record(self, case_hash, record_doc_pair):
         """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
         record, document = record_doc_pair
         rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
 
-        if hash_val in self.cases_already_removed:
+        if case_hash in self.cases_already_removed:
             logger.info("Record's case has already been removed due to category four errors. Not adding record with "
                         f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)}, {rpt_month_year})")
 
-        if hash_val is not None and hash_val not in self.cases_already_removed:
-            hashed_case = self.hash_sorted_cases.get(hash_val, {})
+        if case_hash is not None and case_hash not in self.cases_already_removed:
+            hashed_case = self.hash_sorted_cases.get(case_hash, {})
             records = hashed_case.get(document, [])
             records.append(record)
 
             hashed_case[document] = records
-            self.hash_sorted_cases[hash_val] = hashed_case
+            self.hash_sorted_cases[case_hash] = hashed_case
             # We treat the nested dictionary here as a set because dictionaries are sorted while sets aren't. If we
             # don't have a sorted container we have test failures.
             self.cases.setdefault(document, dict())[record] = None
