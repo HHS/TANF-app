@@ -11,11 +11,11 @@ When the user logs in, they will receive an HttpOnly cookie with no `Expires=` s
 SESSION_EXPIRE_AT_BROWSER_CLOSE=True
 ```
 
-The cookie itself contains a `sessionid` reference to a Django-managed session. The session expiration is set to the ~~same expiration of the login.gov-provided jwt~~, **30 minutes**.
+The cookie itself contains a `sessionid` reference to a Django-managed session. The session expiration is set to the same expiration of the login.gov-provided jwt, **15 minutes**.
 
 This is managed in `tdrs-backend/tdpservice/settings/common.py` with the following setting:
 ```python
-SESSION_COOKIE_AGE = 30 * 60  # 30 minutes
+SESSION_COOKIE_AGE = 15 * 60  # 30 minutes
 ```
 
 ### Frontend

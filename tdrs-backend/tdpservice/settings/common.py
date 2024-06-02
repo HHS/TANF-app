@@ -271,7 +271,7 @@ class Common(Configuration):
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
     SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-    SESSION_COOKIE_AGE = 30 * 60  # 30 minutes
+    SESSION_COOKIE_AGE = 15 * 60  # 15 minutes
     # The CSRF token Cookie holds no security benefits when confined to HttpOnly.
     # Setting this to false to allow the frontend to include it in the header
     # of API POST calls to prevent false negative authorization errors.
