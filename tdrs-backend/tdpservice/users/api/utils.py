@@ -21,7 +21,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 now = datetime.datetime.now()
-timeout = now + datetime.timedelta(minutes=settings.SESSION_TIMEOUT)
+timeout = now + datetime.timedelta(minutes=settings.SESSION_COOKIE_AGE)
 
 """
 Validate the nonce and state returned by login.gov API calls match those
