@@ -11,6 +11,10 @@ from datetime import datetime, timedelta
 import logging
 from tdpservice.email.helpers.account_access_requests import send_num_access_requests_email
 from tdpservice.email.helpers.account_deactivation_warning import send_deactivation_warning_email
+from tdpservice.stts.models import STT
+from tdpservice.data_files.models import DataFile
+from .email import automated_email
+from .email_enums import EmailType
 
 
 logger = logging.getLogger(__name__)
@@ -69,3 +73,77 @@ def email_admin_num_access_requests():
                                    subject,
                                    email_context,
                                    )
+
+
+@shared_task
+def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
+    """Send all Data Analysts a reminder to submit if they have not already."""
+    def get_fiscal_year(calendar_year, fiscal_quarter):
+        return calendar_year - 1 if fiscal_quarter == 'Q1' else calendar_year
+
+    now = datetime.now()
+    fiscal_year = get_fiscal_year(now.year, fiscal_quarter)
+
+    all_locations = STT.objects.all()
+
+    #
+    reminder_locations = []
+    for loc in all_locations:
+        submitted_sections = DataFile.objects.all().filter(
+            stt=loc,
+            year=fiscal_year,
+            quarter=fiscal_quarter,
+            # version=??
+        )
+        required_sections = loc.filenames.keys()
+
+        submitted_all_sections = True
+        for s in required_sections:
+            if not submitted_sections.filter(section=s).exists():
+                submitted_all_sections = False
+
+        if not submitted_all_sections:
+            reminder_locations.append(loc)
+
+    #
+    # locations_with_no_submission_for_data_period = all_locations.filter()  # -> ?
+    # spike ticket for improvement and/or iterate
+
+    template_path = EmailType.UPCOMING_SUBMISSION_DEADLINE.value
+    text_message = 'Your datafiles are due in five days.'
+    subject = f'Upcoming submission deadline: {due_date}'
+
+    for loc in reminder_locations:
+        recipients = User.objects.filter(
+            stt=loc,
+            account_approval_status=AccountApprovalStatusChoices.APPROVED,
+            groups=Group.objects.get(name='Data Analyst')
+        )
+
+        for rec in recipients:
+            context = {
+                'first_name': rec.first_name,
+                'fiscal_year': fiscal_year,
+                'fiscal_quarter': fiscal_quarter,
+                'submission_deadline': due_date,
+                'url': settings.FRONTEND_BASE_URL,
+                'subject': subject
+            }
+
+            logger_context = {
+                'user_id': rec.id,
+                'object_id': rec.id,
+                'object_repr': rec.username,
+            }
+
+            automated_email(
+                email_path=template_path,
+                recipient_email=rec.username,
+                subject=subject,
+                email_context=context,
+                text_message=text_message,
+                logger_context=logger_context
+            )
+
+        if len(recipients) == 0:
+            print(f'{loc.name} needs a reminder email but has no recipients')
