@@ -108,7 +108,7 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
     text_message = f'Your datafiles are due by {due_date}.'
 
     for loc in reminder_locations:
-        tanf_ssp_label = 'SSP' if loc.ssp else 'TANF'
+        tanf_ssp_label = 'TANF and SSP' if loc.ssp else 'TANF'
         subject = f'Action Requested: Please submit your {tanf_ssp_label} data files'
 
         recipients = User.objects.filter(
