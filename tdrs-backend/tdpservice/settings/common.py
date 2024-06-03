@@ -491,6 +491,7 @@ class Common(Configuration):
         },
         'Email Data Analyst Q1 Upcoming Submission Deadline Reminder': {
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+            # Feb 9 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='2', day_of_month='9', hour='13', minute='0'),
             # 'schedule': crontab(minute='*/3'),
             'kwargs': {
@@ -501,6 +502,7 @@ class Common(Configuration):
         },
         'Email Data Analyst Q2 Upcoming Submission Deadline Reminder': {
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+            # May 10 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='5', day_of_month='10', hour='13', minute='0'),
             # 'schedule': crontab(minute='*/3'),
             'kwargs': {
@@ -511,6 +513,7 @@ class Common(Configuration):
         },
         'Email Data Analyst Q3 Upcoming Submission Deadline Reminder': {
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+            # Aug 9 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='8', day_of_month='9', hour='13', minute='0'),
             # 'schedule': crontab(minute='*/3'),
             'kwargs': {
@@ -521,6 +524,7 @@ class Common(Configuration):
         },
         'Email Data Analyst Q4 Upcoming Submission Deadline Reminder': {
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+            # Nov 9 at 1pm UTC (9am EST)
             'schedule': crontab(month_of_year='11', day_of_month='9', hour='13', minute='0'),
             # 'schedule': crontab(minute='*/3'),
             'kwargs': {
