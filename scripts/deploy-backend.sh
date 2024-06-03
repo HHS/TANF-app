@@ -60,9 +60,9 @@ set_cf_envs()
   "KIBANA_BASE_URL"
   "LOGGING_LEVEL"
   "REDIS_URI"
-  "JWT_KEY",
-  "STAGING_JWT_KEY",
-  "SENDGRID_API_KEY",
+  "JWT_KEY"
+  "STAGING_JWT_KEY"
+  "SENDGRID_API_KEY"
   )
 
   echo "Setting environment variables for $CGAPPNAME_BACKEND"
