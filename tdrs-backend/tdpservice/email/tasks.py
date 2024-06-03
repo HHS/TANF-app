@@ -106,9 +106,11 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
 
     template_path = EmailType.UPCOMING_SUBMISSION_DEADLINE.value
     text_message = f'Your datafiles are due by {due_date}.'
-    subject = f'Action Requested: Please submit your {TANF/SSP} data files'
 
     for loc in reminder_locations:
+        tanf_ssp_label = 'SSP' if loc.ssp else 'TANF'
+        subject = f'Action Requested: Please submit your {tanf_ssp_label} data files'
+
         recipients = User.objects.filter(
             stt=loc,
             account_approval_status=AccountApprovalStatusChoices.APPROVED,

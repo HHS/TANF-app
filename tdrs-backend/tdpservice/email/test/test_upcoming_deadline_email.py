@@ -38,7 +38,7 @@ def test_upcoming_deadline_sends_no_sections_submitted(
     send_data_submission_reminder(due_date, reporting_period, fiscal_quarter)
 
     assert len(mail.outbox) == 1
-    assert mail.outbox[0].subject == f"Upcoming submission deadline: {due_date}"
+    assert mail.outbox[0].subject == "Action Requested: Please submit your TANF data files"
 
 
 @pytest.mark.parametrize('due_date, reporting_period, fiscal_quarter', [
@@ -81,7 +81,7 @@ def test_upcoming_deadline_sends_some_sections_submitted(
     send_data_submission_reminder(due_date, reporting_period, fiscal_quarter)
 
     assert len(mail.outbox) == 1
-    assert mail.outbox[0].subject == f"Upcoming submission deadline: {due_date}"
+    assert mail.outbox[0].subject == "Action Requested: Please submit your TANF data files"
 
 
 @pytest.mark.parametrize('due_date, reporting_period, fiscal_quarter', [
