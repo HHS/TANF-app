@@ -94,12 +94,12 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
             year=fiscal_year,
             quarter=fiscal_quarter,
             # version=??
-        )
+        ).values_list('section', flat=True).distinct()
         required_sections = loc.filenames.keys()
 
         submitted_all_sections = True
         for s in required_sections:
-            if not submitted_sections.filter(section=s).exists():
+            if s not in submitted_sections:
                 submitted_all_sections = False
 
         if not submitted_all_sections:
