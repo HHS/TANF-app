@@ -86,7 +86,6 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
 
     all_locations = STT.objects.all()
 
-    #
     reminder_locations = []
     year_quarter_files = DataFile.objects.all().filter(
         year=fiscal_year,
@@ -105,13 +104,9 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
         if not submitted_all_sections:
             reminder_locations.append(loc)
 
-    #
-    # locations_with_no_submission_for_data_period = all_locations.filter()  # -> ?
-    # spike ticket for improvement and/or iterate
-
     template_path = EmailType.UPCOMING_SUBMISSION_DEADLINE.value
-    text_message = 'Your datafiles are due in five days.'
-    subject = f'Upcoming submission deadline: {due_date}'
+    text_message = f'Your datafiles are due by {due_date}.'
+    subject = f'Action Requested: Please submit your {TANF/SSP} data files'
 
     for loc in reminder_locations:
         recipients = User.objects.filter(
