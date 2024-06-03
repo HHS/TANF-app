@@ -13,7 +13,7 @@ from tdpservice.email.helpers.account_access_requests import send_num_access_req
 from tdpservice.email.helpers.account_deactivation_warning import send_deactivation_warning_email
 from tdpservice.stts.models import STT
 from tdpservice.data_files.models import DataFile
-from .email import automated_email
+from .email import automated_email, log
 from .email_enums import EmailType
 
 
@@ -146,4 +146,13 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
             )
 
         if len(recipients) == 0:
-            print(f'{loc.name} needs a reminder email but has no recipients')
+            system_user, created = User.objects.get_or_create(username='system')
+            if created:
+                log('Created reserved system user.')
+
+            logger_context = {
+                'user_id': system_user.pk,
+                'object_id': loc.id,
+                'object_repr': loc.name,
+            }
+            log(f"{loc.name} has no recipients for data submission deadline reminder.", logger_context=logger_context)
