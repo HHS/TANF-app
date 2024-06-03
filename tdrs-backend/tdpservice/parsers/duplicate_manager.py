@@ -44,7 +44,7 @@ class CaseDuplicateDetector:
         ################################################################################################################
         # WARNING
         self.manager_error_dict = manager_error_dict
-        # Do not change/re-assign this dictionary unless you know what you're doing! This object is owned by the
+        # Do not change/re-assign this dictionary unless you know exactly what you're doing! This object is owned by the
         # DuplicateManager object. The CaseDuplicateDetector has a reference to this object as a performance
         # optimization which lets the DuplicateManager avoid having to iterate over all CaseDuplicateDetectors to get
         # all of the duplicate errors.
@@ -133,14 +133,14 @@ class CaseDuplicateDetector:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
                 existing_record_line_number = self.record_hashes[line_hash]
                 err_msg = (f"Duplicate record detected with record type "
-                            f"{record.RecordType} at line {line_number}. Record is a duplicate of the record at "
-                            f"line number {existing_record_line_number}.")
+                           f"{record.RecordType} at line {line_number}. Record is a duplicate of the record at "
+                           f"line number {existing_record_line_number}.")
             elif not should_skip_partial_dup and partial_hash in self.partial_hashes:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(
                     ErrorLevel.PARTIAL_DUPLICATE)
                 existing_record_line_number = self.partial_hashes[partial_hash]
                 err_msg = self.__get_partial_dup_error_msg(schema, record.RecordType,
-                                                            line_number, existing_record_line_number)
+                                                           line_number, existing_record_line_number)
 
             self.__generate_error(err_msg, record, schema, has_precedence, is_new_max_precedence)
             if line_hash not in self.record_hashes:
@@ -157,11 +157,10 @@ class DuplicateManager:
     def __init__(self, generate_error):
         self.case_duplicate_detectors = dict()
         self.generate_error = generate_error
-
         ################################################################################################################
         # WARNING
         self.generated_errors = dict()
-        # Do not change/re-assign the dictionary unless you know what you're doing! This object is a one to many
+        # Do not change/re-assign the dictionary unless you exactly know what you're doing! This object is a one to many
         # relationship. That is, each CaseDuplicateDetector has a reference to this dictionary so that it can store
         # it's generated duplicate errors which avoids needing the DuplicateManager to loop over all
         # CaseDuplicateDetectors to get their errors which is a serious performance boost.
