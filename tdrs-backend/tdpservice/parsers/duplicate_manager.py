@@ -41,7 +41,14 @@ class CaseDuplicateDetector:
 
     def __init__(self, my_hash, manager_error_dict, generate_error):
         self.my_hash = my_hash
+        ################################################################################################################
+        # WARNING
         self.manager_error_dict = manager_error_dict
+        # Do not change/re-assign this dictionary unless you know what you're doing! This object is owned by the
+        # DuplicateManager object. The CaseDuplicateDetector has a reference to this object as a performance
+        # optimization which lets the DuplicateManager avoid having to iterate over all CaseDuplicateDetectors to get
+        # all of the duplicate errors.
+        ################################################################################################################
         self.generate_error = generate_error
         self.record_ids = dict()
         self.record_hashes = dict()
@@ -150,7 +157,15 @@ class DuplicateManager:
     def __init__(self, generate_error):
         self.case_duplicate_detectors = dict()
         self.generate_error = generate_error
+
+        ################################################################################################################
+        # WARNING
         self.generated_errors = dict()
+        # Do not change/re-assign the dictionary unless you know what you're doing! This object is a one to many
+        # relationship. That is, each CaseDuplicateDetector has a reference to this dictionary so that it can store
+        # it's generated duplicate errors which avoids needing the DuplicateManager to loop over all
+        # CaseDuplicateDetectors to get their errors which is a serious performance boost.
+        ################################################################################################################
 
     def add_record(self, record, case_hash, schema, line, line_number):
         """Add record to CaseDuplicateDetector and return whether the record's case has errors.
@@ -169,7 +184,6 @@ class DuplicateManager:
 
     def get_generated_errors(self):
         """Return all errors from all CaseDuplicateDetectors."""
-        # TODO: Test having the dup manager return it's errors on each iteration and let case consistency manage it.
         generated_errors = list()
         for errors in self.generated_errors.values():
             generated_errors.extend(errors)
