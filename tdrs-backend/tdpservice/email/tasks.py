@@ -88,13 +88,13 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
 
     #
     reminder_locations = []
+    year_quarter_files = DataFile.objects.all().filter(
+        year=fiscal_year,
+        quarter=fiscal_quarter,
+    )
+
     for loc in all_locations:
-        submitted_sections = DataFile.objects.all().filter(
-            stt=loc,
-            year=fiscal_year,
-            quarter=fiscal_quarter,
-            # version=??
-        ).values_list('section', flat=True).distinct()
+        submitted_sections = year_quarter_files.filter(stt=loc).values_list('section', flat=True).distinct()
         required_sections = loc.filenames.keys()
 
         submitted_all_sections = True
