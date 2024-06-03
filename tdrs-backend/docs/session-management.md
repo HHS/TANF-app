@@ -15,7 +15,7 @@ The cookie itself contains a `sessionid` reference to a Django-managed session. 
 
 This is managed in `tdrs-backend/tdpservice/settings/common.py` with the following setting:
 ```python
-SESSION_COOKIE_AGE = 15 * 60  # 30 minutes
+SESSION_COOKIE_AGE = 15 * 60  # 15 minutes
 ```
 
 ### Frontend
