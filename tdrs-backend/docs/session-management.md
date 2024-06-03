@@ -5,7 +5,7 @@ The requirement for this project is that users will be logged out of the system 
 ### Backend
 The backend will be the ultimate arbiter of session management. When the user logs in they will receive an HttpOnly cookie that is set to expire in 30 minutes. After that, with every interaction between the FE and BE, the BE will refresh the cookie, so it will extend the timeout time to another 30 minutes.
 
-When the user logs in, they will receive an HttpOnly cookie with no `Expires=` setting. This indicates a [session cookie]() which will automatically expire upon browser close. This is controlled with the django setting:
+When the user logs in, they will receive an HttpOnly cookie with no `Expires=` setting. This indicates a [session cookie](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#removal_defining_the_lifetime_of_a_cookie) which will automatically expire upon browser close. This is controlled with the django setting:
 
 ```python
 SESSION_EXPIRE_AT_BROWSER_CLOSE=True
