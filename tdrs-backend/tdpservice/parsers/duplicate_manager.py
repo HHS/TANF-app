@@ -110,10 +110,11 @@ class CaseDuplicateDetector:
         @param line_number: the line number the record was generated from in the datafile
         @return: the number of duplicate errors
         """
+        # We do not run duplicate detection for records that have been generated on the same line: T3, M3, T6, M6, T7,
+        # M7. This is because we would incorrectly generate both duplicate and partial duplicate errors.
         if self.current_line_number is None or self.current_line_number != line_number:
             self.current_line_number = line_number
             self.record_ids.setdefault(schema.document, []).append(record.id)
-            is_exact_dup = False
             err_msg = None
             has_precedence = False
             is_new_max_precedence = False
@@ -125,16 +126,14 @@ class CaseDuplicateDetector:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(ErrorLevel.DUPLICATE)
                 existing_record_line_number = self.record_hashes[line_hash]
                 err_msg = (f"Duplicate record detected with record type "
-                           f"{record.RecordType} at line {line_number}. Record is a duplicate of the record at "
-                           f"line number {existing_record_line_number}.")
-                is_exact_dup = True
-
-            if not should_skip_partial_dup and not is_exact_dup and partial_hash in self.partial_hashes:
+                            f"{record.RecordType} at line {line_number}. Record is a duplicate of the record at "
+                            f"line number {existing_record_line_number}.")
+            elif not should_skip_partial_dup and partial_hash in self.partial_hashes:
                 has_precedence, is_new_max_precedence = self.error_precedence.has_precedence(
                     ErrorLevel.PARTIAL_DUPLICATE)
                 existing_record_line_number = self.partial_hashes[partial_hash]
                 err_msg = self.__get_partial_dup_error_msg(schema, record.RecordType,
-                                                           line_number, existing_record_line_number)
+                                                            line_number, existing_record_line_number)
 
             self.__generate_error(err_msg, record, schema, has_precedence, is_new_max_precedence)
             if line_hash not in self.record_hashes:
@@ -170,6 +169,7 @@ class DuplicateManager:
 
     def get_generated_errors(self):
         """Return all errors from all CaseDuplicateDetectors."""
+        # TODO: Test having the dup manager return it's errors on each iteration and let case consistency manage it.
         generated_errors = list()
         for errors in self.generated_errors.values():
             generated_errors.extend(errors)

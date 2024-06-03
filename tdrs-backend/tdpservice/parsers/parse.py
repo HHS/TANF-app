@@ -272,7 +272,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
     # automatically starts back at the begining of the file.
     file_length = len(rawfile)
     offset = 0
-    hash_val = None
+    case_hash = None
     for rawline in rawfile:
         line_number += 1
         offset += len(rawline)
@@ -338,11 +338,11 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 record_has_errors = len(record_errors) > 0
-                should_remove, hash_val = case_consistency_validator.add_record(record, s, line,
-                                                                                line_number, record_has_errors)
-                unsaved_records.add_record(hash_val, (record, s.document))
-                was_removed = unsaved_records.remove_case_due_to_errors(should_remove, hash_val)
-                case_consistency_validator.update_removed(hash_val, was_removed)
+                should_remove, case_hash = case_consistency_validator.add_record(record, s, line,
+                                                                                 line_number, record_has_errors)
+                unsaved_records.add_record(case_hash, (record, s.document))
+                was_removed = unsaved_records.remove_case_due_to_errors(should_remove, case_hash)
+                case_consistency_validator.update_removed(case_hash, was_removed)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         cat4_errors = case_consistency_validator.get_generated_errors()
@@ -372,8 +372,8 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
         return errors
 
     should_remove = validate_case_consistency(case_consistency_validator)
-    was_removed = unsaved_records.remove_case_due_to_errors(should_remove, hash_val)
-    case_consistency_validator.update_removed(hash_val, was_removed)
+    was_removed = unsaved_records.remove_case_due_to_errors(should_remove, case_hash)
+    case_consistency_validator.update_removed(case_hash, was_removed)
 
     # Only checking "all_created" here because records remained cached if bulk create fails. This is the last chance to
     # successfully create the records.
@@ -391,7 +391,6 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
         bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
         return errors
 
-    # TODO: This is duplicate code. Can we extract this to a function?
     # Add any generated cat4 errors to our error data structure & clear our caches errors list
     cat4_errors = case_consistency_validator.get_generated_errors()
     num_errors += len(cat4_errors)
