@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>TDP — Viewing Error Reports</title>
+    <title>TDP — Understanding Error Reports and File Structure</title>
     <link rel="stylesheet" href="../css/uswds3.css" />
     <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -141,7 +141,7 @@
       <div class="usa-logo" id="basic-logo">
         <em class="usa-logo__text">
           <a href="./index.html" title="TDP Project Updates">
-            TANF Data Portal  Knowledge Center
+            TANF Data Portal Knowledge Center
           </a>
         </em>
       </div>
@@ -292,16 +292,24 @@
       <main
         class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
         id="main-content">
-        <h1>Error Reports and File Structure</h1>
+        <h1>Understanding Error Reports and File Structure</h1>
         <div style="min-height: 22px;"></div>
 
         <p class="usa-intro">
-        Error Reports are generated for each file you submit via TDP when the system detects problems with your data. 
+        Error reports are generated for each file you submit when the TDP system detects potential data quality issues in your file. These can range from issues with the file layout (which can prevent TDP from being able to fully process your files) to issues related to specific records and/or cases in your file. 
         </p>
+            <div style="min-height: 22px;"></div>
+        <p>This guide provides instruction on how to access, understand, and address issues listed in your error reports. Also Included herein is a brief overview of how data is organized in your files.</p>
         <div style="min-height: 22px;"></div>
-    <p>These can range from structural problems with your file layout that prevent TDP from "reading" it successfully to problems specific to cases and records represented in your data. While Error Reports will help you correct a wide variety of problems with your data please note that they don't currently check for every possible issue. OFA may still reach out to you via email with additional feedback on your data.</p>
+    <p>Please note: The error reports were designed to help you to correct a wide variety of data issues. Most of the errors that may be listed in these reports are based on the file record layouts and coding instructions, which are publicly available and accessible from the <a href="https://tanfdata.acf.hhs.gov/">TDP home page</a>. These reports do not capture every possible data quality issue. The OFA TANF data team may still reach out to you via email with additional feedback.</p>
       <div style="min-height: 22px;"></div>
- <p>This guide will instruct you in how to access error reports, understand the structure of errors and how they relate to the structure of your files, and access additional resources to help you navigate the process of correcting errors.</p>
+ <p>Jump to:</p>
+ <ul>
+  <li><a href="#download-and-view">Download and View Error Reports</a></li>
+  <li><a href="#data-file-structure">Data File Structure</a></li>
+  <li><a href="#overview-of-the-error-report">Overview of the Error Report</a></li>
+  <li><a href="#new-instructions-guidance">New Coding Instruction Guidance for States and Territories</a></li>
+ </ul>
 
 
    
@@ -312,18 +320,18 @@
     background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
     <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
 
-   <h2>Downloading Error Reports</h2>
+   <h2 id="download-and-view">Download and View Error Reports</h2>
   <div style="min-height: 22px;"></div>
-      <p>Error Reports are accessed via the Data Files page by navigating to the Submission History section of a given Quarter and Fiscal Year. <a href="view-submission-history.html">Read more about accessing Submission History</a>.
+      <p>Error reports can be accessed from the Data Files page by navigating to the Submission History  tab for a given fiscal year and quarter. <a href="view-submission-history.html">Read more about accessing Submission History</a>.
 
           <div style="min-height: 22px;"></div>
 
-      <p>To access error reports for each file you submit, click on the link in the ‘Error Report’ column to view errors and data feedback associated with that version of the file. Depending on the completeness of your data and how soon you access the Submission History tab after submitting a file you may see other values in this column including "Pending" and "No Errors".</p>
+      <p>To access error reports for submitted files, select the link in the ‘Error Report’ column to download error feedback associated with the relevant version of the file.</p>
   <div style="min-height: 22px;"></div>
        
    
-      <a href="../img/error-reports/click-file-name-download.png" data-lity data-lity-desc="Submission history table with the download error report button emphasized">
-      <img src="../img/error-reports/click-file-name-download.png" alt="Submission history table with the download error report button emphasized">
+      <a href="../img/error-reports/click-file-name-download.png" data-lity data-lity-desc="Submission history table with the download error report link emphasized">
+      <img src="../img/error-reports/click-file-name-download.png" alt="Submission history table with the download error report link emphasized">
       </a>
 
 <hr style="border: none;
@@ -333,38 +341,315 @@
     background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
     <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
 
-<h2>Understanding the Structure of Data Files</h2>
+<h2 id="data-file-structure">Data File Structure</h2>
   <div style="min-height: 22px;"></div>
-      <p>.</p>
-       <h3>Types of File</h3>
+      
+
+
+         <p>The files that you submit on a quarterly basis for your TANF or SSP program contain large amounts of data in a <a href="https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits">specific format</a> that enables TDP to process and provide feedback when uploaded and submitted. Please note that these files are designed for system processing and, as such, are not as human-readable. For example, below is an illustration of a short TANF, Section 1 (Active Case Data) file:</p>
+
+  <a href="../img/error-reports/flatfile.png" data-lity data-lity-desc="TANF data file opened in a text editor beginning with a Header record and ending with a Trailer record">
+      <img src="../img/error-reports/flatfile.png" alt="TANF data file opened in a text editor beginning with a Header record and ending with a Trailer record">
+      </a>
+
+     
          <div style="min-height: 22px;"></div>
-       <h3>Cases</h3>
+        <p>Included below are descriptions of how the data files are classified (or recognized) by the system. These classifications determine the data components to be included in each file and how the components are organized.</p>
          <div style="min-height: 22px;"></div>
-          <h3>Records</h3>
-            <div style="min-height: 22px;"></div>
-          <h4>Items</h4>
-            <div style="min-height: 22px;"></div>
-          <h4>Item Values</h4>
-            <div style="min-height: 22px;"></div>
-      <h4>Header and Trailer</h4>
+         <h3>Classifications of Data Files</h3>
+                  <div style="min-height: 22px;"></div>
+         <h4>Program Type</h4>
+                  <div style="min-height: 22px;"></div>
+         <p>Files are first identified by their program type: Tribal TANF, TANF (ACF-199), or Separate State Program Maintenance-of-Effort (ACF-209). Each type of data file has its own unique elements, which are documented in the coding instructions linked below.
+         </p>
+
+              <ul>
+            <li><a href="https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions">Tribal TANF Coding Instructions</a></li>
+            <li><a href="https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04">TANF (ACF-199) and SSP-MOE (ACF-209) Coding Instructions</a></li>
+
+          </ul>
+   <div style="min-height: 22px;"></div>
+
+        <h4>Sections of Data</h4>
+                 <div style="min-height: 22px;"></div>
+        <p>TANF and SSP-MOE data covering each fiscal quarter period are reported in up to four sections of data files:</p>
+   <div style="min-height: 22px;"></div>
+<table class="usa-table">
+  <caption>
+   Section Definitions
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Section Name</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Active Case Data</th>
+      <td>
+        Families currently receiving TANF or SSP-MOE benefits
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row">Closed Case Data</th>
+      <td>
+        Families who are no longer receiving TANF or SSP-MOE benefits</a>.
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row">Aggregate Data</th>
+      <td>
+        Aggregate counts quantifying the total number of families, recipients, and amount of assistance
+      </td>
+
+    </tr>
+    <tr>
+      <th scope="row">Stratum Data</th>
+      <td>
+       Aggregate counts quantifying the total number of families by section and stratum 
+Note: this section of the data report is only required for some jurisdictions.
+        <a href="https://tdp-project-updates.app.cloud.gov/knowledge-center/faq.html#I%E2%80%99m%20not%20familiar%20with%20Section%204%20(Stratum)%20data%E2%80%94is%20it%20required?">Read our FAQ for more detail on Stratum data submission requirements</a>
+      </td>
+
+    </tr>
+      
+  </tbody>
+</table>
+
         <div style="min-height: 22px;"></div>
 
+       <h3>Components of Data</h3>
+               <div style="min-height: 22px;"></div>
+               <h4>Records</h4>
+                <div style="min-height: 22px;"></div>
+                <p>Each data file contains between 3 and 5 different types of records (including the header and trailer). </p>
+                  <div style="min-height: 22px;"></div>
+     <p>While header and trailer records are included in every data file, the other record types included in each file vary by section. These record types (described below) are referenced in the error message associated with each data quality issue included in the error report.  Please note that T1, T2,...,T7 record types are relevant to TANF and Tribal TANF data files, whereas M1,M2,...,M7 record types refer to the SSP-MOE data files.</p>
           <div style="min-height: 22px;"></div>
+<table class="usa-table">
+  <caption>
+   Record Definitions
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Record Type</th>
+      <th scope="col">Description</th>
+       <th scope="col">Associated Section</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">T1, M1</th>
+      <td>
+Family-level data for a specific month the family is receiving assistance.
+      </td>
+<td>
+  Section 1 (Active Case Data)
+</td>
+    </tr>
 
-          <hr style="border: none;
+        <tr>
+      <th scope="row">T2, M2</th>
+      <td>
+        Person-level data for adults and minor heads-of-household for a specific month that the family is receiving assistance.
+      </td>
+<td>
+  Section 1 (Active Case Data)
+</td>
+    </tr>
+
+            <tr>
+      <th scope="row">T3, M3</th>
+      <td>
+        Person-level data for minor non- heads-of-household for a specific month that the family is receiving assistance.
+      </td>
+<td>
+  Section 1 (Active Case Data)
+</td>
+    </tr>
+
+                <tr>
+      <th scope="row">T4, M4</th>
+      <td>
+        Family-level data for the last month the family received assistance. 
+      </td>
+<td>
+  Section 2 (Closed Case Data)
+</td>
+    </tr>
+
+                    <tr>
+      <th scope="row">T5, M5</th>
+      <td>
+        Person-level data for the last month that the family received assistance. 
+      </td>
+<td>
+  Section 2 (Closed Case Data)
+</td>
+    </tr>
+
+                        <tr>
+      <th scope="row">T6, M6</th>
+      <td>
+        Aggregate data of families applying for and receiving assistance, by month.
+      </td>
+<td>
+  Section 3 (Aggregate Data)
+</td>
+    </tr>
+
+                            <tr>
+      <th scope="row">T7, M7</th>
+      <td>
+        Aggregate data of families  receiving assistance, by month and stratum.
+      </td>
+<td>
+  Section 4 (Stratum Data)
+</td>
+    </tr>
+      
+  </tbody>
+</table>
+           <div style="min-height: 22px;"></div>
+               <h4>Header and Trailer Records</h4>
+                <div style="min-height: 22px;"></div>
+                <p>The <a href="https://www.acf.hhs.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf">Header and Trailer</a> refer to special records at the beginning and end of every data file. The Header communicates key information to TDP about the file's classification that helps the system correctly process it, including calendar year and quarter, program type, and section. The Trailer contains information about the number of records (excluding the header and trailer records) in the file. </p>
+                  <div style="min-height: 22px;"></div>
+     <p>Examples of Header and Trailer records:</p>
+         
+
+
+<blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span><br>HEADER20204G02000TAN2 D <br>
+    TRAILER0000042 
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+
+           <p>Typically, these records will be generated automatically as part of your current process for exporting data files. Please note: TDP does require that the update indicator, one of the items making up the Header record, be set to a value of "D" (meaning "Delete"). The update indicator is an instruction to the system to delete and replace any existing data in the TDP database for the specified quarter, program type, and section with the data included in the submitted file). <a href="/exporting-complete-data-using-ftanf">Read more about how to submit complete data.</a></p>
+                  <div style="min-height: 22px;"></div>
+                    <h4>Header and Trailer Records</h4>
+                <div style="min-height: 22px;"></div>
+                <p>Items (sometimes referred to as "data elements") are the building blocks of every record. Items are references to the coding instructions. For example, Item 11 of  Section 1 of the TANF Data Report is "Number of Family Members".  Each data quality issue in the error report will, if applicable, include the associated Item Number and Item Name for reference to the coding instructions, which include all acceptable values for each item, their meanings, and guidelines for their use.</p>
+                  <div style="min-height: 22px;"></div>
+                  <p>Some items have a static list of acceptable values, such as the Item 10 (Newly-Approved Applicant), where the acceptable values are either "1" (Yes, a newly-approved applicant) or "2" (No). Others, like Item 32 (Date of Birth), have a broader range of specific formats for which to report values (e.g. YYYYMMDD).</p>
+
+                  <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+
+                  <hr style="border: none;
     height: 1px;
     background: #000;
     margin-top: 32px;
     background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
     <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
 
-<h2>Understanding Errors</h2>
+<h3 id="overview-of-the-error-report">Overview of the Error Report</h3>
+<div style="min-height: 22px;"></div> 
+<p>TDP's error reports are designed to provide you with key information you may need to quickly identify records that have been flagged for data quality issues. This includes the following:</p>
+<div style="min-height: 22px;"></div> 
+<ul>
+  <li>Case Number, Year, and Month — which can be used to identify which cases have errors and the reporting period those errors are specific to  (if applicable).</li>
+  <li>Error Message — which describes the error and how the related items are logically connected.</li>
+  <li>Item Number and Item Name — which can be used alongside the error message to cross-reference with the coding instructions.</li>
+  <li>Internal Variable Name — a value specific to TDP's database for use in support sessions with the TANF data team.</li>
+  <li>Row Number — identifying which row of the submitted file contains the record associated with a given error.</li>
+</ul>
+<div style="min-height: 22px;"></div> 
+
+
+  <a href="../img/error-reports/error-report.png" data-lity data-lity-desc="TDP error report containing some of the error examples below opened in Excel">
+      <img src="../img/error-reports/error-report.png" alt="TDP error report containing some of the error examples below opened in Excel">
+      </a>
+<div style="min-height: 22px;"></div> 
+<h4>Examples of Common Errors</h4>
+<div style="min-height: 22px;"></div>
+<p>Below are examples of error messages associated with common issues that may be listed in an error report.</p>
+
+
+
+        <div class="usa-alert usa-alert--info usa-alert--no-icon">
+     
+  
+
+  <div class="usa-alert__body">
+    <p class="usa-alert__text">
+      Some error messages that you may encounter in error reports are still in development and may have been listed incorrectly or need further clarity. Please feel free to reach out to <a href="mailto:tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov</a> with questions or requests for additional guidance. We continuously update the system based on user feedback and encourage you to reach out if you encounter any confusing errors or believe the system incorrectly identified an issue.
+    </p>
+  </div></div>
+<div style="min-height: 22px;"></div>
+  <h5>Errors related to header or trailer records:</h5>
   <div style="min-height: 22px;"></div>
-      <p>.</p>
+  <p>Header-related errors are often the result of submitting files for a fiscal period that is not consistent with the time period in the header record (e.g. trying to submit 2022 data for a 2024 submission). Other header/trailer errors may be related to how the file was generated (e.g. the file produced is missing a header record). Some examples of how these types of error may appear in your error report are included below:</p>
 
-          <div style="min-height: 22px;"></div>
+  <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Submitted reporting year: 2024, quarter: 1 doesn't match file reporting year 2022, quarter: 4. 
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
 
-   
+  <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Your file does not begin with a HEADER record.
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+
+            <p>Please refer to the <a href="https://www.acf.hhs.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf">Transmission File Header Record definitions</a> to compare your file's header or trailer with the expected layout.
+
+
+  <div style="min-height: 22px;"></div>
+  <h5>Errors related to record length:</h5>
+  <div style="min-height: 22px;"></div>
+  <p>Record length-related errors will be raised if the specified record is not aligned with the record layout requirements. For example, this kind of error may appear as follows in the report:</p>
+   <div style="min-height: 22px;"></div>
+
+    <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>T6 record length is 409 characters but must be 379.
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+
+           <div style="min-height: 22px;"></div>
+           <p>Please refer to the <a href="https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits">Transmission File Layout documents</a> to compare your records against their expected layouts. Feel free to reach out to the data team at tanfdata@acf.hhs.gov with additional questions.</p>
+
+  <div style="min-height: 22px;"></div>
+  <h5>Errors related to invalid values for a specific item/data element:</h5>
+  <div style="min-height: 22px;"></div>
+  <p>Invalid value errors can come up when a specific item/data element has an unexpected value (e.g. a letter or a symbol was reported for the zip code field, such as: "462$1"): </p>
+    <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Item 17 (ZIP code) must be numeric.
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <p>To remedy these type of issues, you can compare the value reported in the file for a given item number to the allowable values in the coding instructions associated to the relevant item number. The coding instructions are linked below:</p>
+          <ul>
+            <li><a href="https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions">Tribal TANF Coding Instructions</a></li>
+            <li><a href="https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04">TANF (ACF-199) and SSP-MOE (ACF-209) Coding Instructions</a></li>
+          </ul>
+
+
+  <div style="min-height: 22px;"></div>
+  <h5>Errors related to inconsistent values for related items/data elements in the same record:</h5>
+   <div style="min-height: 22px;"></div>
+  <p>Some errors may require review of the coding instructions for multiple items (and their respective values) to determine the proper correction. In the example below, the error is communicating that Item 49 on one of the records is either 99 or was left blank, either of which is in a conflict with the value for Item 30 in the same record. This message suggests a problem with either the value of Item 49 or the value of Item 30. Refer to the coding instructions and your own data to determine which value needs to be corrected.</p>
+  <div style="min-height: 22px;"></div>
+
+      <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>If Item 30 (Family Affiliation) is 1 then Item 49 (Work Participation Status) must be in set of values [01, 02, 05, 07, 09, 15, 17, 18, 19, 99].
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+
+    <div style="min-height: 22px;"></div>
+  <h5>Errors related to inconsistent values across related records:</h5>
+  <div style="min-height: 22px;"></div>
+  <p>Errors with inconsistent values across related records may require review of the coding instructions to determine the proper correction. In the example below, the error is communicating that a T1 (family) record was found in the file that did not have a corresponding T2 (adult) or T3 (child) record, which effectively means that person-level records associated with this family are missing from the file. </p>
+
+        <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Every T1 record should have at least one corresponding T2 or T3 record with the same Report Month & Year and Case Number.
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+
+
+
+                  <hr style="border: none;
+    height: 1px;
+    background: #000;
+    margin-top: 32px;
+    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+    <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+
+<h3 id="new-instructions-guidance">New Coding Instructions Guidance for States and Territories</h3>
+<div style="min-height: 22px;"></div> 
+<p>Some errors flagged in error reports may be associated with values and/or fields that have been deprecated by the updated coding instructions for states and territories. You can refer to the public guidance for a timeline to correct these.</p>
+<div style="min-height: 22px;"></div> 
+<p>If you submit files based on the old instructions, this will not negatively impact your submission, work participation rates, or published data. You will, however, begin to see errors in the TDP error reports that reflect the new instructions, but these errors will not impact whether your data is accepted.</p>
+<div style="min-height: 22px;"></div> 
+<p>Please contact the data team at <a href="mailto:tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov</a> with any questions.</p>
+<div style="min-height: 22px;"></div> 
+
 
 
       </main>
