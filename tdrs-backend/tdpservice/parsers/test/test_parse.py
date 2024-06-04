@@ -57,7 +57,7 @@ def t2_invalid_dob_file():
     )
     return parsing_file
 
-
+# TODO: the name of this test doesn't make perfect sense anymore since it will always have errors now.
 @pytest.mark.django_db
 def test_parse_small_correct_file(test_datafile, dfs):
     """Test parsing of small_correct_file."""
@@ -68,18 +68,22 @@ def test_parse_small_correct_file(test_datafile, dfs):
 
     parse.parse_datafile(test_datafile, dfs)
 
+    errors = ParserError.objects.filter(file=test_datafile)
+    assert errors.count() == 1
+    assert errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     for month in dfs.case_aggregates['months']:
         if month['month'] == 'Oct':
-            assert month['accepted_without_errors'] == 1
-            assert month['accepted_with_errors'] == 0
+            assert month['accepted_without_errors'] == 0
+            assert month['accepted_with_errors'] == 1
         else:
             assert month['accepted_without_errors'] == 0
             assert month['accepted_with_errors'] == 0
 
-    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     assert TANF_T1.objects.count() == 1
 
     # spot check
@@ -368,7 +372,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
     length_error = row_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'T1 record length is 7 characters but must be 156.'
+    assert length_error.error_message == "T1 record length of 7 characters is not in the range [117, 156]."
     assert length_error.content_type is None
     assert length_error.object_id is None
     assert errors == {
@@ -411,10 +415,8 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     assert trailer_error_2.object_id is None
 
     row_2_error = parser_errors.get(row_number=2)
-    assert row_2_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert row_2_error.error_message == 'T1 record length is 117 characters but must be 156.'
-    assert row_2_error.content_type is None
-    assert row_2_error.object_id is None
+    assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
+    assert row_2_error.error_message == 'T1: 3 is not larger or equal to 1 and smaller or equal to 2.'
 
     # catch-rpt-month-year-mismatches
     row_3_errors = parser_errors.filter(row_number=3)
@@ -424,7 +426,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
         row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert row_3_error.error_message in {
-            'T1 record length is 7 characters but must be 156.',
+            'T1 record length of 7 characters is not in the range [117, 156].',
             'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.',
             'T1trash does not start with TRAILER.',
             'TRAILER record length is 7 characters but must be 23.',
@@ -446,7 +448,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     row_3_errors = [trailer_errors[2], trailer_errors[3]]
     length_error = row_3_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'T1 record length is 7 characters but must be 156.'
+    assert length_error.error_message == 'T1 record length of 7 characters is not in the range [117, 156].'
     assert length_error.content_type is None
     assert length_error.object_id is None
 
@@ -488,7 +490,7 @@ def test_parse_empty_file(empty_file, dfs):
     dfs.case_aggregates = aggregates.case_aggregates_by_month(empty_file, dfs.status)
 
     assert dfs.status == DataFileSummary.Status.REJECTED
-    assert dfs.case_aggregates == {'rejected': 2,
+    assert dfs.case_aggregates == {'rejected': 1,
                                    'months': [
                                        {'accepted_without_errors': 'N/A',
                                         'accepted_with_errors': 'N/A',
@@ -1008,8 +1010,8 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
 
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert err.error_message == "REC_OASDI_INSURANCE is required but a value was not provided."
-    assert err.content_type.model == "tanf_t5"
+    assert err.error_message == "T4: 3 is not larger or equal to 1 and smaller or equal to 2."
+    assert err.content_type.model == "tanf_t4"
     assert err.object_id is not None
 
 
@@ -1081,7 +1083,7 @@ def test_parse_tanf_section1_blanks_file(tanf_section1_file_with_blanks, dfs):
 
     parser_errors = ParserError.objects.filter(file=tanf_section1_file_with_blanks)
 
-    assert parser_errors.count() == 23
+    assert parser_errors.count() == 22
 
     # Should only be cat3 validator errors
     for error in parser_errors:
@@ -1357,15 +1359,16 @@ def test_rpt_month_year_mismatch(test_header_datafile, dfs):
     parse.parse_datafile(datafile, dfs)
 
     parser_errors = ParserError.objects.filter(file=datafile)
-    assert parser_errors.count() == 0
+    assert parser_errors.count() == 1
+    assert parser_errors.first().error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
 
     datafile.year = 2023
     datafile.save()
 
     parse.parse_datafile(datafile, dfs)
 
-    parser_errors = ParserError.objects.filter(file=datafile)
-    assert parser_errors.count() == 1
+    parser_errors = ParserError.objects.filter(file=datafile).order_by('-id')
+    assert parser_errors.count() == 2
 
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
@@ -1550,6 +1553,7 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
     assert first.FAMILIES_MONTH == 274
     assert sixth.FAMILIES_MONTH == 499
 
+
 @pytest.fixture
 def second_child_only_space_t3_file():
     """Fixture for misformatted_t3_file."""
@@ -1561,6 +1565,9 @@ def second_child_only_space_t3_file():
         file__name='second_child_only_space_t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T120210400028221R0112014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210400028221R0112014122888175617622222112204398100000000' +
                     b'                              \n' +
                     b'TRAILER0000001         ')
@@ -1577,6 +1584,9 @@ def one_child_t3_file():
         file__name='one_child_t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1 D\n' +
+                    b'T120210400028221R0112014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210400028221R0112014122888175617622222112204398100000000\n' +
                     b'TRAILER0000001         ')
     )
@@ -1593,6 +1603,9 @@ def t3_file():
         file__name='t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T12021044111111111512014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
                     b'                                                            ' +
                     b'                                    \n' +
@@ -1612,6 +1625,9 @@ def t3_file_two_child():
         file__name='t3_file.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T12021021111111115712014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
                     b'420100125WTTTT9@TB1221222220430490000\n' +
                     b'TRAILER0000001         ')
@@ -1625,10 +1641,13 @@ def t3_file_two_child_with_space_filled():
     parsing_file = ParsingFileFactory(
         year=2021,
         quarter='Q2',
-        original_filename='t3_file.txt',
-        file__name='t3_file.txt',
+        original_filename='t3_file_two_child_with_space_filled.txt',
+        file__name='t3_file_two_child_with_space_filled.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T12021021111111115712014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210211111111157120190527WTTTTT9WT12212122204398100000000' +
                     b'420100125WTTTT9@TB1221222220430490000                       \n' +
                     b'TRAILER0000001         ')
@@ -1647,12 +1666,16 @@ def two_child_second_filled():
         file__name='two_child_second_filled.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20211A25   TAN1ED\n' +
+                    b'T12021021111111111512014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210211111111115120160401WTTTT@BTB22212212204398100000000' +
                     b'56      111111111                                           ' +
                     b'                                    \n' +
                     b'TRAILER0000001         ')
     )
     return parsing_file
+
 
 @pytest.fixture
 def t3_file_zero_filled_second():
@@ -1665,6 +1688,9 @@ def t3_file_zero_filled_second():
         file__name='t3_file_zero_filled_second.txt',
         file__section=DataFile.Section.ACTIVE_CASE_DATA,
         file__data=(b'HEADER20212A25   TAN1ED\n' +
+                    b'T12021044111111111512014122311110232110374300000000000005450' +
+                    b'320000000000000000000000000000000000222222000000002229021000' +
+                    b'000000000000000000000000000000000000\n'
                     b'T320210441111111115120160401WTTTT@BTB22212212204398100000000' +
                     b'000000000000000000000000000000000000000000000000000000000000' +
                     b'000000000000000000000000000000000000\n' +
@@ -1672,26 +1698,71 @@ def t3_file_zero_filled_second():
     )
     return parsing_file
 
-@pytest.mark.parametrize('file_fixture, result, number_of_errors',
-                         [('second_child_only_space_t3_file', True, 0),
-                          ('one_child_t3_file', True, 0),
-                          ('t3_file', True, 0),
-                          ('t3_file_two_child', True, 1),
-                          ('t3_file_two_child_with_space_filled', True, 0),
-                          ('two_child_second_filled', True, 9),
-                          ('t3_file_zero_filled_second', True, 0)])
+@pytest.mark.parametrize('file_fixture, result, number_of_errors, error_message',
+                         [('second_child_only_space_t3_file', 1, 0, ''),
+                          ('one_child_t3_file', 1, 0, ''),
+                          ('t3_file', 1, 0, ''),
+                          ('t3_file_two_child', 1, 1,
+                           'The second child record is too short at 97 characters' +
+                           ' and must be at least 101 characters.'),
+                          ('t3_file_two_child_with_space_filled', 2, 0, ''),
+                          ('two_child_second_filled', 2, 9, 'T3: Year 6    must be larger than 1900.'),
+                          ('t3_file_zero_filled_second', 1, 0, '')])
 @pytest.mark.django_db()
-def test_misformatted_multi_records(file_fixture, result, number_of_errors, request, dfs):
+def test_misformatted_multi_records(file_fixture, result, number_of_errors, error_message, request, dfs):
     """Test that (not space filled) multi-records are caught."""
     file_fixture = request.getfixturevalue(file_fixture)
     dfs.datafile = file_fixture
     parse.parse_datafile(file_fixture, dfs)
     parser_errors = ParserError.objects.filter(file=file_fixture)
     t3 = TANF_T3.objects.all()
-    assert t3.exists() == result
+    assert t3.count() == result
 
     parser_errors = ParserError.objects.all()
     assert parser_errors.count() == number_of_errors
+    if number_of_errors > 0:
+        error_messages = [parser_error.error_message for parser_error in parser_errors]
+        assert error_message in error_messages
+
+    parser_errors = ParserError.objects.all().exclude(
+        # exclude extraneous cat 4 errors
+        error_message__contains='record should have at least one corresponding'
+    )
+    assert parser_errors.count() == number_of_errors
+
+
+@pytest.fixture
+def t4_t5_empty_values():
+    """Fixture for T3 file."""
+    # T3 record is space filled correctly
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q3',
+        original_filename='t4_t5_empty_values.txt',
+        section=DataFile.Section.CLOSED_CASE_DATA,
+        file__filename='t4_t5_empty_values.txt',
+        file__data=(b'HEADER20212C06   TAN1ED\n' +
+                    b'T420210411111111158253  400141123113                                   \n' +
+                    b'T520210411111111158119970123WTTTTTP@Y2222212222221011212100946200000000\n' +
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+
+@pytest.mark.django_db()
+def test_empty_t4_t5_values(t4_t5_empty_values, dfs):
+    """Test that empty field values for un-required fields parse."""
+    dfs.datafile = t4_t5_empty_values
+    parse.parse_datafile(t4_t5_empty_values, dfs)
+    parser_errors = ParserError.objects.filter(file=t4_t5_empty_values)
+    t4 = TANF_T4.objects.all()
+    t5 = TANF_T5.objects.all()
+    assert t4.count() == 1
+    assert t4[0].STRATUM is None
+    logger.info(t4[0].__dict__)
+    assert t5.count() == 1
+    assert parser_errors[0].error_message == "T4: 3 is not larger or equal to 1 and smaller or equal to 2."
+
 
 @pytest.mark.django_db()
 def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
@@ -1819,6 +1890,39 @@ def test_parse_no_records_file(no_records_file, dfs):
     assert error.content_type is None
     assert error.object_id is None
 
+@pytest.fixture
+def aggregates_rejected_datafile(stt_user, stt):
+    """Fixture for aggregates_rejected."""
+    return util.create_test_datafile('aggregates_rejected.txt', stt_user, stt)
+
+
+@pytest.mark.django_db
+def test_parse_aggregates_rejected_datafile(aggregates_rejected_datafile, dfs):
+    """Test record rejection counting when record has more than one preparsing error."""
+    aggregates_rejected_datafile.year = 2021
+    aggregates_rejected_datafile.quarter = 'Q1'
+    dfs.datafile = aggregates_rejected_datafile
+
+    parse.parse_datafile(aggregates_rejected_datafile, dfs)
+
+    dfs.status = dfs.get_status()
+    assert dfs.status == DataFileSummary.Status.REJECTED
+    dfs.case_aggregates = aggregates.case_aggregates_by_month(
+        dfs.datafile, dfs.status)
+    assert dfs.case_aggregates == {'months': [
+        {'month': 'Oct', 'accepted_without_errors': "N/A", 'accepted_with_errors': "N/A"},
+        {'month': 'Nov', 'accepted_without_errors': "N/A", 'accepted_with_errors': "N/A"},
+        {'month': 'Dec', 'accepted_without_errors': "N/A", 'accepted_with_errors': "N/A"}],
+        'rejected': 1}
+
+    errors = ParserError.objects.filter(file=aggregates_rejected_datafile)
+
+    assert errors.count() == 3
+    for error in errors:
+        assert error.error_type == ParserErrorCategoryChoices.PRE_CHECK
+    assert errors.filter(row_number=2).count() == 2
+
+    assert TANF_T2.objects.count() == 0
 
 @pytest.fixture
 def tanf_section_1_file_with_bad_update_indicator(stt_user, stt):
@@ -1862,3 +1966,85 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
         "representing the Calendar Year and Quarter formatted as YYYYQ"
 
     Tribal_TANF_T7.objects.count() == 0
+
+@pytest.mark.django_db()
+def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs):
+    """Test parsing a TANF T3 record with an invalid CITIZENSHIP_STATUS."""
+    dfs.datafile = t3_cat2_invalid_citizenship_file
+    t3_cat2_invalid_citizenship_file.year = 2021
+    t3_cat2_invalid_citizenship_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(t3_cat2_invalid_citizenship_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+
+    assert parser_errors.count() == 2
+
+    for e in parser_errors:
+        assert e.error_message == "T3: 0 is not in [1, 2, 9]."
+
+
+@pytest.mark.django_db()
+def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs):
+    """Test parsing an SSP M2 file with an invalid EDUCATION_LEVEL, CITIZENSHIP_STATUS, COOPERATION_CHILD_SUPPORT."""
+    dfs.datafile = m2_cat2_invalid_37_38_39_file
+    m2_cat2_invalid_37_38_39_file.year = 2024
+    m2_cat2_invalid_37_38_39_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(m2_cat2_invalid_37_38_39_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=m2_cat2_invalid_37_38_39_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+
+    assert parser_errors.count() == 3
+
+    error_msgs = {"M2: 00 is not in range [1, 16]. or M2: 00 is not in range [98, 99].",
+                  "M2: 0 is not in [1, 2, 3, 9].",
+                  "M2: 0 is not in [1, 2, 9]."}
+    for e in parser_errors:
+        assert e.error_message in error_msgs
+
+@pytest.mark.django_db()
+def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
+    """Test parsing an SSP M3 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
+    dfs.datafile = m3_cat2_invalid_68_69_file
+    m3_cat2_invalid_68_69_file.year = 2024
+    m3_cat2_invalid_68_69_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(m3_cat2_invalid_68_69_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+
+    assert parser_errors.count() == 4
+
+    error_msgs = {"M3: 00 is not in range [1, 16]. or M3: 00 is not in range [98, 99].",
+                  "M3: 0 is not in [1, 2, 3, 9]."}
+
+    for e in parser_errors:
+        assert e.error_message in error_msgs
+
+@pytest.mark.django_db()
+def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
+    """Test parsing an SSP M5 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
+    dfs.datafile = m5_cat2_invalid_23_24_file
+    m5_cat2_invalid_23_24_file.year = 2019
+    m5_cat2_invalid_23_24_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(m5_cat2_invalid_23_24_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+
+    assert parser_errors.count() == 2
+
+    error_msgs = {"M5: 00 matches 00.",
+                  "M5: 0 is not in [1, 2, 3, 9]."}
+
+    for e in parser_errors:
+        assert e.error_message in error_msgs

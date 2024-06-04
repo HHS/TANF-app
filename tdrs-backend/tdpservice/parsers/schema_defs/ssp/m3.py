@@ -7,11 +7,14 @@ from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
 
+FIRST_CHILD = 1
+SECOND_CHILD = 2
+
 first_part_schema = RowSchema(
     record_type="M3",
     document=SSP_M3DataSubmissionDocument(),
     preparsing_validators=[
-        validators.notEmpty(start=19, end=60),
+        validators.t3_m3_child_validator(FIRST_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -276,15 +279,15 @@ first_part_schema = RowSchema(
             item="68",
             name='EDUCATION_LEVEL',
             friendly_name="education level",
-            type='number',
+            type='string',
             startIndex=49,
             endIndex=51,
             required=True,
             validators=[
                 validators.or_validators(
-                    validators.isInStringRange(0, 16),
+                    validators.isInStringRange(1, 16),
                     validators.isInStringRange(98, 99)
-                )
+                ),
             ]
         ),
         Field(
@@ -295,7 +298,7 @@ first_part_schema = RowSchema(
             startIndex=51,
             endIndex=52,
             required=False,
-            validators=[validators.oneOf([0, 1, 2, 3, 9])]
+            validators=[validators.oneOf([1, 2, 3, 9])]
         ),
         Field(
             item="70A",
@@ -323,9 +326,9 @@ first_part_schema = RowSchema(
 second_part_schema = RowSchema(
     record_type="M3",
     document=SSP_M3DataSubmissionDocument(),
-    quiet_preparser_errors=True,
+    quiet_preparser_errors=validators.is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
-        validators.notEmpty(start=60, end=101),
+        validators.t3_m3_child_validator(SECOND_CHILD),
         validators.caseNumberNotEmpty(8, 19),
         validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -590,13 +593,13 @@ second_part_schema = RowSchema(
             item="68",
             name='EDUCATION_LEVEL',
             friendly_name="education level",
-            type='number',
+            type='string',
             startIndex=90,
             endIndex=92,
             required=True,
             validators=[
                 validators.or_validators(
-                    validators.isInStringRange(0, 16),
+                    validators.isInStringRange(1, 16),
                     validators.isInStringRange(98, 99)
                 )
             ]
@@ -609,7 +612,7 @@ second_part_schema = RowSchema(
             startIndex=92,
             endIndex=93,
             required=False,
-            validators=[validators.oneOf([0, 1, 2, 3, 9])]
+            validators=[validators.oneOf([1, 2, 3, 9])]
         ),
         Field(
             item="70A",

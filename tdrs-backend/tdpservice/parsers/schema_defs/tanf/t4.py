@@ -1,7 +1,7 @@
 """Schema for HEADER row of all submission types."""
 
-
-from tdpservice.parsers.fields import Field
+from tdpservice.parsers.transforms import zero_pad
+from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T4DataSubmissionDocument
@@ -13,7 +13,7 @@ t4 = SchemaManager(
             record_type="T4",
             document=TANF_T4DataSubmissionDocument(),
             preparsing_validators=[
-                validators.recordHasLength(71),
+                validators.recordHasLengthBetween(36, 71),
                 validators.caseNumberNotEmpty(8, 19),
                 validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -55,7 +55,8 @@ t4 = SchemaManager(
                     required=True,
                     validators=[validators.notEmpty()],
                 ),
-                Field(
+                TransformField(
+                    zero_pad(3),
                     item="2",
                     name="COUNTY_FIPS_CODE",
                     friendly_name="county fips code",
@@ -63,7 +64,7 @@ t4 = SchemaManager(
                     startIndex=19,
                     endIndex=22,
                     required=True,
-                    validators=[validators.isInStringRange(1, 999)],
+                    validators=[validators.isNumber()],
                 ),
                 Field(
                     item="5",
@@ -72,7 +73,7 @@ t4 = SchemaManager(
                     type="string",
                     startIndex=22,
                     endIndex=24,
-                    required=True,
+                    required=False,
                     validators=[validators.isInStringRange(0, 99)],
                 ),
                 Field(
@@ -118,7 +119,7 @@ t4 = SchemaManager(
                     startIndex=32,
                     endIndex=33,
                     required=True,
-                    validators=[validators.isInLimits(1, 3)],
+                    validators=[validators.isInLimits(1, 2)],
                 ),
                 Field(
                     item="11",

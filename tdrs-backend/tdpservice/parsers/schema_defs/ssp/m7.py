@@ -1,9 +1,9 @@
 """Schema for TANF T7 Row."""
 
-from ...fields import Field, TransformField
-from ...row_schema import RowSchema, SchemaManager
-from ...transforms import calendar_quarter_to_rpt_month_year
-from ... import validators
+from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
+from tdpservice.parsers.fields import Field, TransformField
+from tdpservice.parsers.row_schema import RowSchema, SchemaManager
+from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M7DataSubmissionDocument
 
 schemas = []

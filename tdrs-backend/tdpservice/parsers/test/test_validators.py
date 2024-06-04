@@ -4,10 +4,10 @@ import pytest
 import logging
 from datetime import date
 from .. import validators
-from ..case_consistency_validator import CaseConsistencyValidator
 from .. import schema_defs, util
 from ..row_schema import RowSchema
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
+
 from tdpservice.parsers.test.factories import SSPM5Factory
 
 logger = logging.getLogger(__name__)
@@ -214,6 +214,15 @@ def test_oneOf_returns_valid():
     assert is_valid is True
     assert error is None
 
+    value = 50
+    options = ["17-55"]
+
+    validator = validators.oneOf(options)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error is None
+
 
 def test_oneOf_returns_invalid():
     """Test `oneOf` gives an invalid result."""
@@ -225,6 +234,16 @@ def test_oneOf_returns_invalid():
 
     assert is_valid is False
     assert error == 'T1: 64 is not in [17, 24, 36].'
+
+    value = 65
+    options = ["17-55"]
+
+    validator = validators.oneOf(options)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error == 'T1: 65 is not in [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, ' \
+        '29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55].'
 
 
 def test_between_returns_valid():
@@ -373,6 +392,32 @@ def test_hasLengthGreaterThan_returns_invalid():
 
     assert is_valid is False
     assert error == 'Value length 7 is not greater than 8.'
+
+
+def test_recordHasLengthBetween_returns_valid():
+    """Test `hasLengthBetween` gives a valid result."""
+    value = 'abcd123'
+    lower = 0
+    upper = 15
+
+    validator = validators.recordHasLengthBetween(lower, upper)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error is None
+
+
+def test_recordHasLengthBetween_returns_invalid():
+    """Test `hasLengthBetween` gives an invalid result."""
+    value = 'abcd123'
+    lower = 0
+    upper = 1
+
+    validator = validators.recordHasLengthBetween(lower, upper)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error == f"T1 record length of {len(value)} characters is not in the range [{lower}, {upper}]."
 
 
 def test_intHasLength_returns_valid():
@@ -824,19 +869,6 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         result = val(record, RowSchema())
         assert result[0] is False
 
-    def test_validate_months_federal_time_limit(self, record):
-        """Test cat3 validator for federal time limit."""
-        val = validators.validate__FAM_AFF__HOH__Fed_Time()
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema())
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'MONTHS_FED_TIME_LIMIT'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.MONTHS_FED_TIME_LIMIT = "000"
-        record.RELATIONSHIP_HOH = "01"
-        result = val(record, RowSchema())
-        assert result[0] is False
-
     def test_validate_employment_status(self, record):
         """Test cat3 validator for employment status."""
         val = validators.if_then_validator(
@@ -1135,21 +1167,6 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
         result = val(record, RowSchema())
         assert result[0] is False
 
-    def test_validate_hoh_fed_time(self, record):
-        """Test cat3 validator for federal disability."""
-        val = validators.validate__FAM_AFF__HOH__Count_Fed_Time()
-
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema())
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'COUNTABLE_MONTH_FED_TIME'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.RELATIONSHIP_HOH = 1
-        record.COUNTABLE_MONTH_FED_TIME = 0
-
-        result = val(record, RowSchema())
-        assert result[0] is False
-
     def test_validate_oasdi_insurance(self, record):
         """Test cat3 validator for OASDI insurance."""
         val = validators.if_then_validator(
@@ -1421,45 +1438,3 @@ class TestCaseConsistencyValidator:
             logger.error('Header is not valid: %s', header_errors)
             return None
         return header
-
-    @pytest.mark.django_db
-    def test_add_record(self, small_correct_file_header, small_correct_file, tanf_s1_records, tanf_s1_schemas):
-        """Test add_record logic."""
-        case_consistency_validator = CaseConsistencyValidator(small_correct_file_header,
-                                                              util.make_generate_parser_error(small_correct_file, None))
-
-        for record, schema in zip(tanf_s1_records, tanf_s1_schemas):
-            case_consistency_validator.add_record(record, schema, True)
-
-        assert case_consistency_validator.has_validated is False
-        assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.record_schema_pairs) == 4
-        assert case_consistency_validator.total_cases_cached == 0
-        assert case_consistency_validator.total_cases_validated == 0
-
-        # Add record with different case number to proc validation again and start caching a new case.
-        t1 = TanfT1Factory.create()
-        t1.CASE_NUMBER = 2
-        case_consistency_validator.add_record(t1, tanf_s1_schemas[0], False)
-        assert case_consistency_validator.has_validated is False
-        assert case_consistency_validator.case_has_errors is False
-        assert len(case_consistency_validator.record_schema_pairs) == 1
-        assert case_consistency_validator.total_cases_cached == 1
-        assert case_consistency_validator.total_cases_validated == 0
-
-        # Complete the case to proc validation and verify that it occured. Even if the next case has errors.
-        t2 = TanfT2Factory.create()
-        t3 = TanfT3Factory.create()
-        t2.CASE_NUMBER = 2
-        t3.CASE_NUMBER = 2
-        case_consistency_validator.add_record(t2, tanf_s1_schemas[1], False)
-        case_consistency_validator.add_record(t3, tanf_s1_schemas[2], False)
-        assert case_consistency_validator.case_has_errors is False
-
-        case_consistency_validator.add_record(tanf_s1_records[0], tanf_s1_schemas[0], True)
-
-        assert case_consistency_validator.has_validated is True
-        assert case_consistency_validator.case_has_errors is True
-        assert len(case_consistency_validator.record_schema_pairs) == 1
-        assert case_consistency_validator.total_cases_cached == 2
-        assert case_consistency_validator.total_cases_validated == 1

@@ -1,6 +1,7 @@
 """Schema for t1 record types."""
 
-from tdpservice.parsers.fields import Field
+from tdpservice.parsers.transforms import zero_pad
+from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tanf import TANF_T1DataSubmissionDocument
@@ -12,7 +13,7 @@ t1 = SchemaManager(
             record_type="T1",
             document=TANF_T1DataSubmissionDocument(),
             preparsing_validators=[
-                validators.recordHasLength(156),
+                validators.recordHasLengthBetween(117, 156),
                 validators.caseNumberNotEmpty(8, 19),
                 validators.or_priority_validators([
                     validators.field_year_month_with_header_year_quarter(),
@@ -155,7 +156,8 @@ t1 = SchemaManager(
                     required=True,
                     validators=[validators.notEmpty()],
                 ),
-                Field(
+                TransformField(
+                    zero_pad(3),
                     item="2",
                     name="COUNTY_FIPS_CODE",
                     friendly_name="county fips code",
@@ -163,9 +165,7 @@ t1 = SchemaManager(
                     startIndex=19,
                     endIndex=22,
                     required=True,
-                    validators=[
-                        validators.isNumber(),
-                    ],
+                    validators=[validators.isNumber()],
                 ),
                 Field(
                     item="5",

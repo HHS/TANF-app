@@ -297,7 +297,7 @@ class Common(Configuration):
         "DEFAULT_AUTHENTICATION_CLASSES": (
             "tdpservice.users.authentication.CustomAuthentication",
             "rest_framework.authentication.SessionAuthentication",
-            "rest_framework.authentication.TokenAuthentication",
+            "tdpservice.security.utils.ExpTokenAuthentication",
         ),
         "DEFAULT_FILTER_BACKENDS": [
             "django_filters.rest_framework.DjangoFilterBackend",
@@ -310,6 +310,8 @@ class Common(Configuration):
         "tdpservice.users.authentication.CustomAuthentication",
         "django.contrib.auth.backends.ModelBackend",
     )
+
+    TOKEN_EXPIRATION_HOURS = int(os.getenv("TOKEN_EXPIRATION_HOURS", 24))
 
     # CORS
     CORS_ALLOW_CREDENTIALS = True
@@ -348,6 +350,18 @@ class Common(Configuration):
             'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
         },
     }
+    ELASTICSEARCH_DSL_PARALLEL = True
+    ELASTICSEARCH_REINDEX_THREAD_COUNT = int(os.getenv('ELASTICSEARCH_REINDEX_THREAD_COUNT', 3))
+    ELASTICSEARCH_REINDEX_CHUNK_SIZE = int(os.getenv('ELASTICSEARCH_REINDEX_CHUNK_SIZE', 500))
+    ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT = int(os.getenv('ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT', 10))
+    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_WARN', '1s')
+    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_INFO', '500ms')
+    ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_THRESHOLD_TRACE', '0ms')
+    ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
+    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_WARN', '1s')
+    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_INFO', '500ms')
+    ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE', '0ms')
+    ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
     KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
     BYPASS_KIBANA_AUTH = os.getenv("BYPASS_KIBANA_AUTH", False)
     ELASTIC_INDEX_PREFIX = APP_NAME + '_'
@@ -474,7 +488,7 @@ class Common(Configuration):
         'Email Admin Number of Access Requests' : {
             'task': 'tdpservice.email.tasks.email_admin_num_access_requests',
             'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
-        }
+        },
     }
 
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
