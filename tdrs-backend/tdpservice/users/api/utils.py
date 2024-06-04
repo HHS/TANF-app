@@ -14,8 +14,6 @@ from django.http import HttpResponseRedirect
 import jwt
 import requests
 from jwcrypto import jwk
-from rest_framework import status
-from rest_framework.response import Response
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
