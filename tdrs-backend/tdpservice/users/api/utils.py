@@ -149,35 +149,6 @@ def get_nonce_and_state(session):
     return validation_keys
 
 
-"""
-Returns a found users information along with an httpOnly cookie.
-
-:param self: parameter to permit django python to call a method within its own class
-:param user: current user associated with this session
-:param status_message: Helper message to note how the user was found
-:param id_token: encoded token returned by login.gov/token
-"""
-
-
-def response_internal(user, status_message, id_token):
-    """Respond with an httpOnly cookie to secure the session with the client."""
-    response = Response(
-        {"user_id": user.pk, "email": user.username, "status": status_message},
-        status=status.HTTP_200_OK,
-    )
-    response.set_cookie(
-        "id_token",
-        value=id_token,
-        max_age=None,
-        expires=timeout,
-        path="/",
-        domain=None,
-        secure=True,
-        httponly=True,
-    )
-    return response
-
-
 def response_redirect(self, id_token):
     """
     Redirects to web app with an httpOnly cookie.

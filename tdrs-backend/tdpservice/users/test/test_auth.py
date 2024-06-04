@@ -18,7 +18,6 @@ from tdpservice.users.api.utils import (
     generate_client_assertion,
     generate_jwt_from_jwks,
     generate_token_endpoint_parameters,
-    response_internal,
 )
 from tdpservice.users.authentication import CustomAuthentication
 from tdpservice.users.models import User
@@ -426,15 +425,6 @@ def test_login_fails_with_bad_data(api_client):
     """Test login fails with bad data."""
     response = api_client.get("/v1/login/", {"code": "dummy", "state": "dummy"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-@pytest.mark.django_db
-def test_response_internal(user):
-    """Test response internal works."""
-    response = response_internal(
-        user, status_message="hello", id_token={"fake": "stuff"}
-    )
-    assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.django_db
