@@ -98,7 +98,7 @@ t2 = SchemaManager(
                     result_field_name="COOPERATION_CHILD_SUPPORT",
                     result_function=validators.oneOf((1, 2, 9)),
                 ),
-                validators.validate__FAM_AFF__HOH__Fed_Time(),
+
                 validators.if_then_validator(
                     condition_field_name="FAMILY_AFFILIATION",
                     condition_function=validators.isInLimits(1, 3),
@@ -347,9 +347,9 @@ t2 = SchemaManager(
                     type="string",
                     startIndex=51,
                     endIndex=53,
-                    required=False,
+                    required=True,
                     validators=[
-                        validators.isInStringRange(0, 10),
+                        validators.isInStringRange(1, 10),
                     ],
                 ),
                 Field(
