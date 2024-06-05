@@ -62,6 +62,7 @@ set_cf_envs()
   "REDIS_URI"
   "JWT_KEY"
   "STAGING_JWT_KEY"
+  "SENDGRID_API_KEY"
   )
 
   echo "Setting environment variables for $CGAPPNAME_BACKEND"
