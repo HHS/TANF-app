@@ -522,11 +522,14 @@ Family-level data for a specific month the family is receiving assistance.
                   <div style="min-height: 22px;"></div>
      <p>Examples of Header and Trailer records:</p>
          
+ <div style="min-height: 22px;"></div>
 
-
-<blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span><br>HEADER20204G02000TAN2 D <br>
-    TRAILER0000042 
-          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+<code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8;">HEADER20204G02000TAN2 D
+    </code>
+     <div style="min-height: 22px;"></div>
+    <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8;">TRAILER0000042 </code>
+   
+     <div style="min-height: 22px;"></div>
 
            <p>Typically, these records will be generated automatically as part of your current process for exporting data files. Please note: TDP does require that the update indicator, one of the items making up the Header record, be set to a value of "D" (meaning "Delete"). The update indicator is an instruction to the system to delete and replace any existing data in the TDP database for the specified quarter, program type, and section with the data included in the submitted file). <a href="/complete-resubmissions">Read more about how to submit complete data.</a></p>
                   <div style="min-height: 22px;"></div>
@@ -549,8 +552,8 @@ Family-level data for a specific month the family is receiving assistance.
 <div style="min-height: 22px;"></div> 
 <p>TDP's error reports are designed to provide you with key information you may need to quickly identify records that have been flagged for data quality issues. This includes the following:</p>
 <div style="min-height: 22px;"></div> 
-<ul>
-  <li>Case Number, Year, and Month — which can be used to identify which cases have errors and the reporting period those errors are specific to  (if applicable).</li>
+<ul style="">
+  <li style="max-width: auto;">Case Number, Year, and Month — which can be used to identify which cases have errors and the reporting period those errors are specific to  (if applicable).</li>
   <li>Error Message — which describes the error and how the related items are logically connected.</li>
   <li>Item Number and Item Name — which can be used alongside the error message to cross-reference with the coding instructions.</li>
   <li>Internal Variable Name — a value specific to TDP's database for use in support sessions with the TANF data team.</li>
@@ -562,7 +565,7 @@ Family-level data for a specific month the family is receiving assistance.
   <a href="../img/error-reports/error-report.png" data-lity data-lity-desc="TDP error report containing some of the error examples below opened in Excel">
       <img src="../img/error-reports/error-report.png" alt="TDP error report containing some of the error examples below opened in Excel">
       </a>
-<div style="min-height: 22px;"></div> 
+<div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
 <h3>Examples of Common Errors</h3>
 <div style="min-height: 22px;"></div>
 <p>Below are examples of error messages associated with common issues that may be listed in an error report.</p>
@@ -570,46 +573,57 @@ Family-level data for a specific month the family is receiving assistance.
 
 
         <div class="usa-alert usa-alert--info usa-alert--no-icon">
-     
-  
-
   <div class="usa-alert__body">
     <p class="usa-alert__text">
       Some error messages that you may encounter in error reports are still in development and may have been listed incorrectly or need further clarity. Please feel free to reach out to <a href="mailto:tanfdata@acf.hhs.gov">tanfdata@acf.hhs.gov</a> with questions or requests for additional guidance. We continuously update the system based on user feedback and encourage you to reach out if you encounter any confusing errors or believe the system incorrectly identified an issue.
     </p>
-  </div></div>
+  </div></div><div style="min-height: 22px;"></div> 
+
 <div style="min-height: 22px;"></div>
-  <h5>Errors related to header or trailer records:</h5>
+<div style="min-height: 22px;"></div>
+  <h4>Errors related to header or trailer records:</h4>
   <div style="min-height: 22px;"></div>
   <p>Header-related errors are often the result of submitting files for a fiscal period that is not consistent with the time period in the header record (e.g. trying to submit 2022 data for a 2024 submission). Other header or trailer errors may be related to how the file was generated (e.g. the file produced is missing a header or trailer record). Some examples of how these types of error may appear in your error report are included below:</p>
 
-  <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Submitted reporting year: 2024, quarter: 1 doesn't match file reporting year 2022, quarter: 4. 
-          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
 
-  <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Your file does not begin with a HEADER record.
-          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+     <div style="min-height: 22px;"></div>
+<code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Submitted reporting year: 2024, quarter: 1 doesn't match file reporting year 2022, quarter: 4. 
+    </code>
+     <div style="min-height: 22px;"></div>
+    <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Your file does not begin with a HEADER record.
+    </code>
+<div style="min-height: 22px;"></div>
+
 
             <p>Please refer to the <a href="https://www.acf.hhs.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf">Transmission File Header Record definitions</a> to compare your file's header or trailer to the expected layout.
 
 
-  <div style="min-height: 22px;"></div>
-  <h5>Errors related to record length:</h5>
+  <div style="min-height: 22px;"></div><div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+  <h4>Errors related to record length:</h4>
   <div style="min-height: 22px;"></div>
   <p>Record length-related errors will be raised if the specified record is not aligned with the record layout requirements. For example, this kind of error may appear as follows in the report:</p>
    <div style="min-height: 22px;"></div>
 
-    <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>T6 record length is 409 characters but must be 379.
-          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+
+
+        
+    <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">T6 record length is 409 characters but must be 379.
+    </code>
+
 
            <div style="min-height: 22px;"></div>
            <p>Please refer to the <a href="https://www.acf.hhs.gov/ofa/policy-guidance/final-tanf-ssp-moe-data-reporting-system-transmission-files-layouts-and-edits">Transmission File Layout documents</a> to compare your records against their expected layouts.</p>
 
-  <div style="min-height: 22px;"></div>
-  <h5>Errors related to invalid values for a specific item/data element:</h5>
+  <div style="min-height: 22px;"></div><div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+  <h4>Errors related to invalid values for a specific item/data element:</h4>
   <div style="min-height: 22px;"></div>
   <p>Invalid value errors can come up when a specific item/data element has an unexpected value (e.g. a letter or a symbol was reported for the zip code field, such as: "462$1"): </p>
-    <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Item 17 (ZIP code) must be numeric.
-          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+
+           <div style="min-height: 22px;"></div>
+    <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Item 17 (ZIP code) must be numeric.
+    </code>
+<div style="min-height: 22px;"></div>
+
           <p>To remedy these type of issues, you can compare the value reported in the file for a given item number to the allowable values in the coding instructions associated to the relevant item number. The coding instructions are linked below:</p>
           <ul>
             <li><a href="https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions">Tribal TANF Coding Instructions</a></li>
@@ -617,22 +631,29 @@ Family-level data for a specific month the family is receiving assistance.
           </ul>
 
 
-  <div style="min-height: 22px;"></div>
-  <h5>Errors related to inconsistent values for related items/data elements in the same record:</h5>
+  <div style="min-height: 22px;"></div><div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+  <h4>Errors related to inconsistent values for related items/data elements in the same record:</h4>
    <div style="min-height: 22px;"></div>
   <p>Some errors may require review of the coding instructions for multiple items (and their respective values) to determine the proper correction. In the example below, the error is communicating that the value reported for Item 49 is in a conflict with the value for Item 30 in the same record. This message suggests a problem with either the value of Item 49 or the value of Item 30. Refer to the coding instructions and your own data to determine which value needs to be corrected.</p>
-  <div style="min-height: 22px;"></div>
 
-      <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>If Item 30 (Family Affiliation) is 1 then Item 49 (Work Participation Status) must be in set of values [01, 02, 05, 07, 09, 15, 17, 18, 19, 99].
-          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
 
-    <div style="min-height: 22px;"></div>
-  <h5>Errors related to inconsistent values across related records:</h5>
+
+             <div style="min-height: 22px;"></div>
+    <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">If Item 30 (Family Affiliation) is 1 then Item 49 (Work Participation Status) must be in set of values [01, 02, 05, 07, 09, 15, 17, 18, 19, 99].
+    </code>
+<div style="min-height: 22px;"></div>
+
+    <div style="min-height: 22px;"></div><div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
+  <h4>Errors related to inconsistent values across related records:</h4>
   <div style="min-height: 22px;"></div>
   <p>Errors with inconsistent values across related records may require review of the coding instructions to determine the proper correction. In the example below, the error is communicating that a T1 (family) record was found in the file that did not have a corresponding T2 (adult) or T3 (child) record, which effectively means that person-level records associated with this family are missing from the file. </p>
 
-        <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 500; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Every T1 record should have at least one corresponding T2 or T3 record with the same Report Month & Year and Case Number.
-          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+
+
+                       <div style="min-height: 22px;"></div>
+    <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Every T1 record should have at least one corresponding T2 or T3 record with the same Report Month & Year and Case Number.
+    </code>
+<div style="min-height: 22px;"></div>
 
 <div style="min-height: 22px;"></div> <div style="min-height: 22px;"></div> 
 
