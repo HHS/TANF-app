@@ -96,7 +96,6 @@ t5 = SchemaManager(
                     result_field_name="CITIZENSHIP_STATUS",
                     result_function=validators.isInLimits(1, 2),
                 ),
-                validators.validate__FAM_AFF__HOH__Count_Fed_Time(),
                 validators.if_then_validator(
                     condition_field_name="DATE_OF_BIRTH",
                     condition_function=validators.olderThan(18),
