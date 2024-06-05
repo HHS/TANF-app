@@ -1463,15 +1463,15 @@ def test_parse_tribal_section_2_file(tribal_section_2_file, dfs):
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'rejected': 0,
                                    'months': [
-                                       {'accepted_without_errors': 0,
-                                           'accepted_with_errors': 3, 'month': 'Oct'},
-                                       {'accepted_without_errors': 0,
-                                           'accepted_with_errors': 3, 'month': 'Nov'},
+                                       {'accepted_without_errors': 3,
+                                           'accepted_with_errors': 0, 'month': 'Oct'},
+                                       {'accepted_without_errors': 3,
+                                           'accepted_with_errors': 0, 'month': 'Nov'},
                                        {'accepted_without_errors': 0,
                                            'accepted_with_errors': 0, 'month': 'Dec'}
                                    ]}
 
-    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
     assert Tribal_TANF_T4.objects.all().count() == 6
     assert Tribal_TANF_T5.objects.all().count() == 13
@@ -1996,7 +1996,7 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
     assert parser_errors.count() == 2
 
     for e in parser_errors:
-        assert e.error_message == "T3: 0 is not in [1, 2, 9]."
+        assert e.error_message == "T3 Item 76 (citizenship status): 0 is not in [1, 2, 9]."
 
 
 @pytest.mark.django_db()
@@ -2014,9 +2014,9 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     assert parser_errors.count() == 3
 
-    error_msgs = {"M2: 00 is not in range [1, 16]. or M2: 00 is not in range [98, 99].",
-                  "M2: 0 is not in [1, 2, 3, 9].",
-                  "M2: 0 is not in [1, 2, 9]."}
+    error_msgs = {"M2 Item 37 (education level): 00 is not in range [1, 16]. or M2 Item 37 (education level): 00 is not in range [98, 99].",
+                  "M2 Item 38 (citizenship status): 0 is not in [1, 2, 3, 9].",
+                  "M2 Item 39 (cooperation with child support): 0 is not in [1, 2, 9]."}
     for e in parser_errors:
         assert e.error_message in error_msgs
 
@@ -2035,8 +2035,8 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     assert parser_errors.count() == 4
 
-    error_msgs = {"M3: 00 is not in range [1, 16]. or M3: 00 is not in range [98, 99].",
-                  "M3: 0 is not in [1, 2, 3, 9]."}
+    error_msgs = {"M3 Item 68 (education level): 00 is not in range [1, 16]. or M3: 00 is not in range [98, 99].",
+                  "M3 Item 69 (citizenship status): 0 is not in [1, 2, 3, 9]."}
 
     for e in parser_errors:
         assert e.error_message in error_msgs
@@ -2056,8 +2056,8 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     assert parser_errors.count() == 2
 
-    error_msgs = {"M5: 00 matches 00.",
-                  "M5: 0 is not in [1, 2, 3, 9]."}
+    error_msgs = {"M5 Item 23 (education level): 00 matches 00.",
+                  "M5 Item 24 (citizenship status): 0 is not in [1, 2, 3, 9]."}
 
     for e in parser_errors:
         assert e.error_message in error_msgs
