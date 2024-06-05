@@ -2035,7 +2035,7 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     assert parser_errors.count() == 4
 
-    error_msgs = {"M3 Item 68 (education level): 00 is not in range [1, 16]. or M3: 00 is not in range [98, 99].",
+    error_msgs = {"M3 Item 68 (education level): 00 is not in range [1, 16]. or M3 Item 68 (education level): 00 is not in range [98, 99].",
                   "M3 Item 69 (citizenship status): 0 is not in [1, 2, 3, 9]."}
 
     for e in parser_errors:
