@@ -33,7 +33,7 @@ class ParserError(models.Model):
         related_name="parser_errors",
         null=True,
     )
-    row_number = models.IntegerField(null=False)
+    row_number = models.IntegerField(null=True)
     column_number = models.CharField(null=True, max_length=8)
     item_number = models.CharField(null=True, max_length=8)
     field_name = models.TextField(null=True, max_length=128)
