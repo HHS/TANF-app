@@ -109,7 +109,7 @@ export const TotalAggregatesTable = ({ files }) => (
           Status
         </th>
         <th scope="col" rowSpan={2}>
-          Error Reports (In development)
+          Error Reports
         </th>
       </tr>
     </thead>

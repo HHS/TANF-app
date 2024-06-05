@@ -1,7 +1,7 @@
 """Schema for SSP M1 record type."""
 
-
-from tdpservice.parsers.fields import Field
+from tdpservice.parsers.transforms import zero_pad
+from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.ssp import SSP_M1DataSubmissionDocument
@@ -133,7 +133,8 @@ m1 = SchemaManager(
                     required=True,
                     validators=[validators.notEmpty()]
                 ),
-                Field(
+                TransformField(
+                    zero_pad(3),
                     item="2",
                     name='COUNTY_FIPS_CODE',
                     friendly_name="County FIPS code",
@@ -141,7 +142,7 @@ m1 = SchemaManager(
                     startIndex=19,
                     endIndex=22,
                     required=True,
-                    validators=[validators.isNumber(),]
+                    validators=[validators.isNumber()],
                 ),
                 Field(
                     item="4",

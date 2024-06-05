@@ -241,8 +241,21 @@ def notMatches(option):
 
 def oneOf(options=[]):
     """Validate that value does not exist in the provided options array."""
+    """
+    accepts options as list of: string, int or string range ("3-20")
+    """
+
+    def check_option(value, options):
+        # split the option if it is a range and append the range to the options
+        for option in options:
+            if "-" in str(option):
+                start, end = option.split("-")
+                options.extend([i for i in range(int(start), int(end) + 1)])
+                options.remove(option)
+        return value in options
+
     return make_validator(
-        lambda value: value in options,
+        lambda value: check_option(value, options),
         lambda value, row_schema, friendly_name, item_num: f"{row_schema.record_type}: {value} is not in {options}."
     )
 
@@ -283,6 +296,17 @@ def recordHasLengthBetween(lower, upper, error_func=None):
         else
         f"{row_schema.record_type} record length of {len(value)} characters is not in the range [{lower}, {upper}].",
     )
+
+def fieldHasLength(length):
+    """Validate that the field value (string or array) has a length matching length param."""
+    return make_validator(
+        lambda value: len(value) == length,
+        lambda value,
+        row_schema,
+        friendly_name,
+        item_num: f"{row_schema.record_type} field length is {len(value)} characters but must be {length}.",
+    )
+
 
 def hasLengthGreaterThan(val, error_func=None):
     """Validate that value (string or array) has a length greater than val."""
@@ -460,12 +484,11 @@ def isSmallerThanOrEqualTo(UpperBound):
 def isInLimits(LowerBound, UpperBound):
     """Validate that value is in a range including the limits."""
     return make_validator(
-        lambda value: value >= LowerBound and value <= UpperBound,
+        lambda value: int(value) >= LowerBound and int(value) <= UpperBound,
         lambda value, row_schema,
         friendly_name, item_num: f"{row_schema.record_type}: {value} is not larger or equal to {LowerBound} and "
                                  f"smaller or equal to {UpperBound}."
     )
-
 
 # custom validators
 
@@ -582,104 +605,6 @@ def validate__FAM_AFF__SSN():
             return (True, None, ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"])
 
     return validate
-
-
-def validate__FAM_AFF__HOH__Fed_Time():
-    """If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then MONTHS_FED_TIME_LIMIT >= 1."""
-    # value is instance
-    def validate(instance, row_schema):
-        false_case = (False,
-                      f"{row_schema.record_type}: If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then "
-                      + "MONTHS_FED_TIME_LIMIT >= 1.",
-                      ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "MONTHS_FED_TIME_LIMIT",],
-                      )
-        true_case = (True,
-                     None,
-                     ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "MONTHS_FED_TIME_LIMIT",],
-                     )
-        try:
-            FAMILY_AFFILIATION = (
-                instance["FAMILY_AFFILIATION"]
-                if type(instance) is dict
-                else getattr(instance, "FAMILY_AFFILIATION")
-            )
-            RELATIONSHIP_HOH = (
-                instance["RELATIONSHIP_HOH"]
-                if type(instance) is dict
-                else getattr(instance, "RELATIONSHIP_HOH")
-            )
-            RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
-            MONTHS_FED_TIME_LIMIT = (
-                instance["MONTHS_FED_TIME_LIMIT"]
-                if type(instance) is dict
-                else getattr(instance, "MONTHS_FED_TIME_LIMIT")
-            )
-            if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
-                if MONTHS_FED_TIME_LIMIT is None or int(MONTHS_FED_TIME_LIMIT) < 1:
-                    return false_case
-                else:
-                    return true_case
-            else:
-                return true_case
-        except Exception:
-            vals = {"FAMILY_AFFILIATION": FAMILY_AFFILIATION,
-                    "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
-                    "MONTHS_FED_TIME_LIMIT": MONTHS_FED_TIME_LIMIT}
-            logger.debug("Caught exception in validator: validate__FAM_AFF__HOH__Fed_Time. With field values: " +
-                         f"{vals}.")
-            return false_case
-
-    return validate
-
-
-def validate__FAM_AFF__HOH__Count_Fed_Time():
-    """If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then COUNTABLE_MONTH_FED_TIME >= 1."""
-    # value is instance
-    def validate(instance, row_schema):
-        false_case = (False,
-                      f"{row_schema.record_type}: If FAMILY_AFFILIATION == 1 and RELATIONSHIP_HOH == 1 or 2, then "
-                      + "COUNTABLE_MONTH_FED_TIME >= 1.",
-                      ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "COUNTABLE_MONTH_FED_TIME",],
-                      )
-        true_case = (True,
-                     None,
-                     ["FAMILY_AFFILIATION", "RELATIONSHIP_HOH", "COUNTABLE_MONTH_FED_TIME",],
-                     )
-        try:
-            FAMILY_AFFILIATION = (
-                instance["FAMILY_AFFILIATION"]
-                if type(instance) is dict
-                else getattr(instance, "FAMILY_AFFILIATION")
-            )
-            RELATIONSHIP_HOH = (
-                instance["RELATIONSHIP_HOH"]
-                if type(instance) is dict
-                else getattr(instance, "RELATIONSHIP_HOH")
-            )
-            RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
-            COUNTABLE_MONTH_FED_TIME = (
-                instance["COUNTABLE_MONTH_FED_TIME"]
-                if type(instance) is dict
-                else getattr(instance, "COUNTABLE_MONTH_FED_TIME")
-            )
-            if FAMILY_AFFILIATION == 1 and (RELATIONSHIP_HOH == 1 or RELATIONSHIP_HOH == 2):
-                if int(COUNTABLE_MONTH_FED_TIME) < 1:
-                    return false_case
-                else:
-                    return true_case
-            else:
-                return true_case
-        except Exception:
-            vals = {"FAMILY_AFFILIATION": FAMILY_AFFILIATION,
-                    "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
-                    "COUNTABLE_MONTH_FED_TIME": COUNTABLE_MONTH_FED_TIME
-                    }
-            logger.debug("Caught exception in validator: validate__FAM_AFF__HOH__Count_Fed_Time. With field values: " +
-                         f"{vals}.")
-            return false_case
-
-    return validate
-
 
 def validate_header_section_matches_submission(datafile, section, generate_error):
     """Validate header section matches submission section."""

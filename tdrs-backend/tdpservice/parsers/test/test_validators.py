@@ -214,6 +214,15 @@ def test_oneOf_returns_valid():
     assert is_valid is True
     assert error is None
 
+    value = 50
+    options = ["17-55"]
+
+    validator = validators.oneOf(options)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is True
+    assert error is None
+
 
 def test_oneOf_returns_invalid():
     """Test `oneOf` gives an invalid result."""
@@ -225,6 +234,16 @@ def test_oneOf_returns_invalid():
 
     assert is_valid is False
     assert error == 'T1: 64 is not in [17, 24, 36].'
+
+    value = 65
+    options = ["17-55"]
+
+    validator = validators.oneOf(options)
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+
+    assert is_valid is False
+    assert error == 'T1: 65 is not in [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, ' \
+        '29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55].'
 
 
 def test_between_returns_valid():
@@ -850,19 +869,6 @@ class TestT2Cat3Validators(TestCat3ValidatorsBase):
         result = val(record, RowSchema())
         assert result[0] is False
 
-    def test_validate_months_federal_time_limit(self, record):
-        """Test cat3 validator for federal time limit."""
-        val = validators.validate__FAM_AFF__HOH__Fed_Time()
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema())
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'MONTHS_FED_TIME_LIMIT'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.MONTHS_FED_TIME_LIMIT = "000"
-        record.RELATIONSHIP_HOH = "01"
-        result = val(record, RowSchema())
-        assert result[0] is False
-
     def test_validate_employment_status(self, record):
         """Test cat3 validator for employment status."""
         val = validators.if_then_validator(
@@ -1157,21 +1163,6 @@ class TestT5Cat3Validators(TestCat3ValidatorsBase):
 
         record.FAMILY_AFFILIATION = 1
         record.CITIZENSHIP_STATUS = 0
-
-        result = val(record, RowSchema())
-        assert result[0] is False
-
-    def test_validate_hoh_fed_time(self, record):
-        """Test cat3 validator for federal disability."""
-        val = validators.validate__FAM_AFF__HOH__Count_Fed_Time()
-
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema())
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH', 'COUNTABLE_MONTH_FED_TIME'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.RELATIONSHIP_HOH = 1
-        record.COUNTABLE_MONTH_FED_TIME = 0
 
         result = val(record, RowSchema())
         assert result[0] is False

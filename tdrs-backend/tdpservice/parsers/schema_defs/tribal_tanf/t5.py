@@ -1,10 +1,10 @@
 """Schema for Tribal TANF T5 row of all submission types."""
 
 
-from ...transforms import tanf_ssn_decryption_func
-from ...fields import TransformField, Field
-from ...row_schema import RowSchema, SchemaManager
-from ... import validators
+from tdpservice.parsers.transforms import tanf_ssn_decryption_func
+from tdpservice.parsers.fields import Field, TransformField
+from tdpservice.parsers.row_schema import RowSchema, SchemaManager
+from tdpservice.parsers import validators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T5DataSubmissionDocument
 
 
@@ -92,7 +92,7 @@ t5 = SchemaManager(
                     result_field_name="CITIZENSHIP_STATUS",
                     result_function=validators.isInLimits(1, 2),
                 ),
-                validators.validate__FAM_AFF__HOH__Count_Fed_Time(),
+
                 validators.if_then_validator(
                     condition_field_name="FAMILY_AFFILIATION",
                     condition_function=validators.matches(1),
