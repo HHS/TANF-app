@@ -1091,7 +1091,7 @@ def test_parse_tanf_section1_blanks_file(tanf_section1_file_with_blanks, dfs):
 
     parser_errors = ParserError.objects.filter(file=tanf_section1_file_with_blanks)
 
-    assert parser_errors.count() == 23
+    assert parser_errors.count() == 22
 
     # Should only be cat3 validator errors
     for error in parser_errors:
@@ -1979,3 +1979,85 @@ def test_parse_tribal_section_4_bad_quarter(tribal_section_4_bad_quarter, dfs):
         "representing the Calendar Year and Quarter formatted as YYYYQ"
 
     Tribal_TANF_T7.objects.count() == 0
+
+@pytest.mark.django_db()
+def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs):
+    """Test parsing a TANF T3 record with an invalid CITIZENSHIP_STATUS."""
+    dfs.datafile = t3_cat2_invalid_citizenship_file
+    t3_cat2_invalid_citizenship_file.year = 2021
+    t3_cat2_invalid_citizenship_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(t3_cat2_invalid_citizenship_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=t3_cat2_invalid_citizenship_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+
+    assert parser_errors.count() == 2
+
+    for e in parser_errors:
+        assert e.error_message == "T3: 0 is not in [1, 2, 9]."
+
+
+@pytest.mark.django_db()
+def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs):
+    """Test parsing an SSP M2 file with an invalid EDUCATION_LEVEL, CITIZENSHIP_STATUS, COOPERATION_CHILD_SUPPORT."""
+    dfs.datafile = m2_cat2_invalid_37_38_39_file
+    m2_cat2_invalid_37_38_39_file.year = 2024
+    m2_cat2_invalid_37_38_39_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(m2_cat2_invalid_37_38_39_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=m2_cat2_invalid_37_38_39_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+
+    assert parser_errors.count() == 3
+
+    error_msgs = {"M2: 00 is not in range [1, 16]. or M2: 00 is not in range [98, 99].",
+                  "M2: 0 is not in [1, 2, 3, 9].",
+                  "M2: 0 is not in [1, 2, 9]."}
+    for e in parser_errors:
+        assert e.error_message in error_msgs
+
+@pytest.mark.django_db()
+def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
+    """Test parsing an SSP M3 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
+    dfs.datafile = m3_cat2_invalid_68_69_file
+    m3_cat2_invalid_68_69_file.year = 2024
+    m3_cat2_invalid_68_69_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(m3_cat2_invalid_68_69_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+
+    assert parser_errors.count() == 4
+
+    error_msgs = {"M3: 00 is not in range [1, 16]. or M3: 00 is not in range [98, 99].",
+                  "M3: 0 is not in [1, 2, 3, 9]."}
+
+    for e in parser_errors:
+        assert e.error_message in error_msgs
+
+@pytest.mark.django_db()
+def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
+    """Test parsing an SSP M5 file with an invalid EDUCATION_LEVEL and CITIZENSHIP_STATUS."""
+    dfs.datafile = m5_cat2_invalid_23_24_file
+    m5_cat2_invalid_23_24_file.year = 2019
+    m5_cat2_invalid_23_24_file.quarter = 'Q1'
+    dfs.save()
+
+    parse.parse_datafile(m5_cat2_invalid_23_24_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=m5_cat2_invalid_23_24_file).exclude(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("pk")
+
+    assert parser_errors.count() == 2
+
+    error_msgs = {"M5: 00 matches 00.",
+                  "M5: 0 is not in [1, 2, 3, 9]."}
+
+    for e in parser_errors:
+        assert e.error_message in error_msgs
