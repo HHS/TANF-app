@@ -96,11 +96,11 @@ class DataFileAPITestBase:
         """Assert the error report file contents match expected with friendly names."""
         ws = DataFileAPITestBase.get_spreadsheet(response)
 
-        COL_ERROR_MESSAGE = 5
+        COL_ERROR_MESSAGE = 4
 
-        assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
-            + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=5, column=COL_ERROR_MESSAGE).value == "if cash amount :873 validator1 passed" \
+        assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
+            + "instructions (linked below) when looking up items and allowable values during the data revision process"
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == "if cash amount :873 validator1 passed" \
             + " then number of months T1: 0 is not larger than 0."
 
     @staticmethod
@@ -108,11 +108,11 @@ class DataFileAPITestBase:
         """Assert the error report file contents match expected with friendly names."""
         ws = DataFileAPITestBase.get_spreadsheet(response)
 
-        COL_ERROR_MESSAGE = 5
+        COL_ERROR_MESSAGE = 4
 
-        assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
-            + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == "TRAILER record length is 15 characters " + \
+        assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
+            + "instructions (linked below) when looking up items and allowable values during the data revision process"
+        assert ws.cell(row=7, column=COL_ERROR_MESSAGE).value == "TRAILER record length is 15 characters " + \
             "but must be 23."
 
     @staticmethod
@@ -128,11 +128,11 @@ class DataFileAPITestBase:
         wb = openpyxl.load_workbook('mycls.xlsx')
         ws = wb.get_sheet_by_name('Sheet1')
 
-        COL_ERROR_MESSAGE = 5
+        COL_ERROR_MESSAGE = 4
 
-        assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
-            + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=5, column=COL_ERROR_MESSAGE).value == ("if CASH_AMOUNT :873 validator1 passed then "
+        assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
+            + "instructions (linked below) when looking up items and allowable values during the data revision process"
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("if CASH_AMOUNT :873 validator1 passed then "
                                                                   "NBR_MONTHS T1: 0 is not larger than 0.")
 
     @staticmethod
