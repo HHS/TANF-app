@@ -72,17 +72,31 @@ const SubmissionHistory = ({ filterValues }) => {
   }, [hasFetchedFiles, files, dispatch, filterValues])
 
   return (
-    <div>
-      {fileUploadSections.map((section, index) => (
-        <SectionSubmissionHistory
-          key={section}
-          section={index + 1}
-          label={section}
-          filterValues={filterValues}
-          files={files.filter((f) => f.section.includes(section))}
-        />
-      ))}
-    </div>
+    <>
+      <div className="margin-top-2">
+        <a
+          className="usa-link"
+          href="https://tdp-project-updates.app.cloud.gov/knowledge-center/viewing-error-reports.html"
+          target="_blank"
+          aria-label="Knowledge Center error reports guidance"
+          rel="noreferrer"
+        >
+          Visit the Knowledge Center for further guidance on reviewing error
+          reports
+        </a>
+      </div>
+      <div>
+        {fileUploadSections.map((section, index) => (
+          <SectionSubmissionHistory
+            key={section}
+            section={index + 1}
+            label={section}
+            filterValues={filterValues}
+            files={files.filter((f) => f.section.includes(section))}
+          />
+        ))}
+      </div>
+    </>
   )
 }
 
