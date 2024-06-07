@@ -114,6 +114,7 @@ class DataFileAPITestBase:
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert ws.cell(row=7, column=COL_ERROR_MESSAGE).value == ("M1: 3 is not larger or equal to 1 and smaller "
                                                                   "or equal to 2.")
+
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
         """Assert the error report file contents match expected without friendly names."""
