@@ -6,7 +6,6 @@ To maintain good security, we will periodically rotate the following secret keys
 - CF deployer keys (_for continuous delivery_)
 - JWT keys (_external user auth_)
 - ACF AMS keys (_internal user auth_)
-- ACF Titan server keys (_for file transfers between TDP and TDRS_)
 - Django secret keys ([_cryptographic signing_](https://docs.djangoproject.com/en/4.0/topics/signing/#module-django.core.signing))
 
 This document outlines the process for doing this for each set of keys. 
@@ -154,61 +153,6 @@ Service requests tickets must be submitted by Government-authorized personnel wi
 2. Update environment variables in CircleCI and relevant cloud.gov backend applications after ticket completed by OCIO. [Restage applications](https://cloud.gov/docs/deployment/app-maintenance/#restaging-your-app).
 </details>
 
-**<details><summary>ACF Titan Server Keys</summary>**
-The ACF OCIO Ops team manages these credentials for all environments (dev, staging, and prod), so we will need to submit a service request ticket whenever we need keys rotated. 
-
-Service requests tickets must be submitted by Government-authorized personnel with Government computers and PIV access (e.g. Raft tech lead for lower environments and TDP sys admins for production environment). Please follow the procedures below:
-
-1. Generate new public/private key pair
-
-Below is an example of how to generate new titan public/private key pair from _Git BASH for Windows_. Two files called `filename_where_newtitan_keypair_saved` are created: one is the _private_ key and the other is a _public_ key (the latter is saved with a _.pub_ extention).
-(note: the info below is not associated with any real keys)
-
-```
-$ ssh-keygen -t rsa -b 4096
-Generating public/private rsa key pair.
-
-Enter file in which to save the key (/c/Users/username/.ssh/id_rsa): filename_where_newtitan_keypair_saved
-
-Enter passphrase (empty for no passphrase):
-
-Enter same passphrase again:
-
-Your identification has been saved in filename_where_newtitan_keypair_saved
-
-Your public key has been saved in filename_where_newtitan_keypair_saved.pub
-
-The key fingerprint is:
-SHA256:BY6Nl0hCjIrI9yZMBGH2vbDFLCTq2DsFQXQTmLydwjI 
-
-The key's randomart image is:
-+---[RSA 4096]----+
-| X*B*.. .        |
-|+ O+=+ * o       |
-|=oo* *+ = .      |
-|Eo++B .. .       |
-|.+=oo.  S        |
-|   = o           |
-|  o o            |
-|   .             |
-|                 |
-+----[SHA256]-----+
-```
-
-2. Submit request tickets from government-issued email address and use the email template located on **page 2** of [this document.](https://hhsgov.sharepoint.com/:w:/r/sites/TANFDataPortalOFA/Shared%20Documents/compliance/Authentication%20%26%20Authorization/ACF%20AMS%20docs/OCIO%20OPERATIONS%20REQUEST%20TEMPLATES.docx?d=w5332585c1ecf49a4aeda17674f687154&csf=1&web=1&e=aQyIPz) cc OFA tech lead on lower environment requests. 
-
-The request should include:
-- the titan service account name (i.e. `tanfdp` for prod; `tanfdpdev` for dev/staging) 
-- the newly generated public key from `filename_where_newtitan_keypair_saved.pub`
-
-3. When OCIO confirms that the change has been made, add the private key from `filename_where_newtitan_keypair_saved` to CircleCI as an environment variable. The variable name is `ACFTITAN_KEY`. **Please note**: the value needs must be edited before adding to CircleCI. It should be a one-line string with underscores ("_") replacing the spaces at the end of every line. See example below:
-
-```
------BEGIN OPENSSH PRIVATE KEY-----_somehashvalue_-----END OPENSSH PRIVATE KEY-----
-```
-
-4. Re-run the deployment workflow from CircleCI and confirm that the updated key value pair has been added to the relevant cloud.gov backend application.
-</details>
 
 **<details><summary>Django secret keys</summary>**
 

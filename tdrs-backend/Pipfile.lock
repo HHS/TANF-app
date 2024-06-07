@@ -892,36 +892,11 @@
             "markers": "python_version >= '3.7'",
             "version": "==2.8.0"
         },
-        "pynacl": {
-            "hashes": [
-                "sha256:06b8f6fa7f5de8d5d2f7573fe8c863c051225a27b61e6860fd047b1775807858",
-                "sha256:0c84947a22519e013607c9be43706dd42513f9e6ae5d39d3613ca1e142fba44d",
-                "sha256:20f42270d27e1b6a29f54032090b972d97f0a1b0948cc52392041ef7831fee93",
-                "sha256:401002a4aaa07c9414132aaed7f6836ff98f59277a234704ff66878c2ee4a0d1",
-                "sha256:52cb72a79269189d4e0dc537556f4740f7f0a9ec41c1322598799b0bdad4ef92",
-                "sha256:61f642bf2378713e2c2e1de73444a3778e5f0a38be6fee0fe532fe30060282ff",
-                "sha256:8ac7448f09ab85811607bdd21ec2464495ac8b7c66d146bf545b0f08fb9220ba",
-                "sha256:a36d4a9dda1f19ce6e03c9a784a2921a4b726b02e1c736600ca9c22029474394",
-                "sha256:a422368fc821589c228f4c49438a368831cb5bbc0eab5ebe1d7fac9dded6567b",
-                "sha256:e46dae94e34b085175f8abb3b0aaa7da40767865ac82c928eeb9e57e1ea8a543"
-            ],
-            "markers": "python_version >= '3.6'",
-            "version": "==1.5.0"
-        },
-        "pytest-sftpserver": {
-            "hashes": [
-                "sha256:b7ac34a23f63d77e27f67b6a81c9418243733f027eeb8a3061d965b2da7e5cab",
-                "sha256:c5e8a37049866d4eabc711db9f1c09e1c02ab72ba290f5fd244939c9a188042f"
-            ],
-            "index": "pypi",
-            "version": "==1.3.0"
-        },
         "python-crontab": {
             "hashes": [
-                "sha256:6d5ba3c190ec76e4d252989a1644fcb233dbf53fbc8fceeb9febe1657b9fb1d4",
-                "sha256:79fb7465039ddfd4fb93d072d6ee0d45c1ac8bf1597f0686ea14fd4361dba379"
+                "sha256:f4ea1605d24533b67fa7a634ef26cb59a5f2e7954f6e677d2d7a2229959a2fc8"
             ],
-            "version": "==3.0.0"
+            "version": "==3.1.0"
         },
         "python-dateutil": {
             "hashes": [
@@ -1324,11 +1299,11 @@
         },
         "faker": {
             "hashes": [
-                "sha256:6737cc6d591cd83421fdc5e494f6e2c1a6e32266214f158b745aa9fa15687c98",
-                "sha256:c153505618801f1704807b258a6010ea8cabf91f66f4788939bfdba83b887e76"
+                "sha256:45b84f47ff1ef86e3d1a8d11583ca871ecf6730fad0660edadc02576583a2423",
+                "sha256:cfe97c4857c4c36ee32ea4aaabef884895992e209bae4cbd26807cf3e05c6918"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==25.0.1"
+            "version": "==25.2.0"
         },
         "flake8": {
             "hashes": [

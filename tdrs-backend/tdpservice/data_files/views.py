@@ -18,7 +18,7 @@ from tdpservice.data_files.serializers import DataFileSerializer
 from tdpservice.data_files.util import get_xls_serialized_file
 from tdpservice.data_files.models import DataFile, get_s3_upload_path
 from tdpservice.users.permissions import DataFilePermissions, IsApprovedPermission
-from tdpservice.scheduling import sftp_task, parser_task
+from tdpservice.scheduling import parser_task
 from tdpservice.data_files.s3_client import S3Client
 from tdpservice.parsers.models import ParserError
 from tdpservice.parsers.serializers import ParsingErrorSerializer
@@ -59,7 +59,6 @@ class DataFileViewSet(ModelViewSet):
 
         # only if file is passed the virus scan and created successfully will we perform side-effects:
         # * Send to parsing
-        # * Upload to ACF-TITAN
         # * Send email to user
 
         logger.debug(f"{self.__class__.__name__}: status: {response.status_code}")
@@ -73,15 +72,6 @@ class DataFileViewSet(ModelViewSet):
 
             parser_task.parse.delay(data_file_id)
             logger.info("Submitted parse task to queue for datafile %s.", data_file_id)
-
-            sftp_task.upload.delay(
-                data_file_pk=data_file_id,
-                server_address=settings.ACFTITAN_SERVER_ADDRESS,
-                local_key=settings.ACFTITAN_LOCAL_KEY,
-                username=settings.ACFTITAN_USERNAME,
-                port=22
-            )
-            logger.info("Submitted upload task to redis for datafile %s.", data_file_id)
 
             app_name = settings.APP_NAME + '/'
             key = app_name + get_s3_upload_path(data_file, '')
