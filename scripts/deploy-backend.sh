@@ -42,9 +42,6 @@ echo backend_app_name: "$backend_app_name"
 set_cf_envs()
 {
   var_list=(
-  "ACFTITAN_HOST"
-  "ACFTITAN_KEY"
-  "ACFTITAN_USERNAME"
   "AMS_CLIENT_ID"
   "AMS_CLIENT_SECRET"
   "AMS_CONFIGURATION_ENDPOINT"
