@@ -100,8 +100,9 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("T1: 3 is not larger or equal to 1 and smaller " +
-                                                                  "or equal to 2.")
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == "if cash amount :873 validator1 passed" \
+            + " then number of months T1: 0 is not larger than 0."
+
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
         """Assert the error report file contents match expected with friendly names."""
@@ -130,8 +131,9 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("T1: 3 is not larger or equal to 1 and " +
-                                                                  "smaller or equal to 2.")
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("if CASH_AMOUNT :873 validator1 passed then "
+                                                                  "NBR_MONTHS T1: 0 is not larger than 0.")
+
     @staticmethod
     def assert_data_file_exists(data_file_data, version, user):
         """Confirm that a data file matching the provided data exists in the DB."""
