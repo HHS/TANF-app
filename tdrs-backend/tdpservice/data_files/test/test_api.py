@@ -96,25 +96,23 @@ class DataFileAPITestBase:
         """Assert the error report file contents match expected with friendly names."""
         ws = DataFileAPITestBase.get_spreadsheet(response)
 
-        COL_ERROR_MESSAGE = 5
+        COL_ERROR_MESSAGE = 4
 
-        assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
-            + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == ("T1: 3 is not larger or equal to 1 and smaller " +
+        assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
+            + "instructions (linked below) when looking up items and allowable values during the data revision process"
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("T1: 3 is not larger or equal to 1 and smaller " +
                                                                   "or equal to 2.")
-
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
         """Assert the error report file contents match expected with friendly names."""
         ws = DataFileAPITestBase.get_spreadsheet(response)
 
-        COL_ERROR_MESSAGE = 5
+        COL_ERROR_MESSAGE = 4
 
-        assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
-            + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == ("M1: 3 is not larger or equal to 1 and smaller "
+        assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
+            + "instructions (linked below) when looking up items and allowable values during the data revision process"
+        assert ws.cell(row=7, column=COL_ERROR_MESSAGE).value == ("M1: 3 is not larger or equal to 1 and smaller "
                                                                   "or equal to 2.")
-
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
         """Assert the error report file contents match expected without friendly names."""
@@ -128,13 +126,12 @@ class DataFileAPITestBase:
         wb = openpyxl.load_workbook('mycls.xlsx')
         ws = wb.get_sheet_by_name('Sheet1')
 
-        COL_ERROR_MESSAGE = 5
+        COL_ERROR_MESSAGE = 4
 
-        assert ws.cell(row=1, column=1).value == "Error reporting in TDP is still in development.We'll" \
-            + " be in touch when it's ready to use!For now please refer to the reports you receive via email"
-        assert ws.cell(row=4, column=COL_ERROR_MESSAGE).value == ("T1: 3 is not larger or equal to 1 and " +
+        assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
+            + "instructions (linked below) when looking up items and allowable values during the data revision process"
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("T1: 3 is not larger or equal to 1 and " +
                                                                   "smaller or equal to 2.")
-
     @staticmethod
     def assert_data_file_exists(data_file_data, version, user):
         """Confirm that a data file matching the provided data exists in the DB."""

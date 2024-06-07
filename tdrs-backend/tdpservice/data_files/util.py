@@ -36,27 +36,51 @@ def get_xls_serialized_file(data):
     output = BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
+
     report_columns = [
         ('case_number', lambda x: x['case_number']),
         ('year', lambda x: str(x['rpt_month_year'])[0:4] if x['rpt_month_year'] else None),
         ('month', lambda x: calendar.month_name[
             int(str(x['rpt_month_year'])[4:])
             ] if x['rpt_month_year'] else None),
-        ('error_type', lambda x: x['error_type']),
         ('error_message', lambda x: format_error_msg(chk(x))),
         ('item_number', lambda x: x['item_number']),
         ('item_name', lambda x: ','.join([i for i in chk(x)['fields_json']['friendly_name'].values()])),
         ('internal_variable_name', lambda x: ','.join([i for i in chk(x)['fields_json']['friendly_name'].keys()])),
         ('row_number', lambda x: x['row_number']),
-        ('column_number', lambda x: x['column_number'])
     ]
 
     # write beta banner
-    worksheet.write(row, col,
-                    "Error reporting in TDP is still in development." +
-                    "We'll be in touch when it's ready to use!" +
-                    "For now please refer to the reports you receive via email")
+    worksheet.write(
+        row, col,
+        "Please refer to the most recent versions of the coding " +
+        "instructions (linked below) when looking up items " +
+        "and allowable values during the data revision process"
+    )
+
+    row, col = 1, 0
+    worksheet.write_url(
+        row, col,
+        'https://www.acf.hhs.gov/ofa/policy-guidance/tribal-tanf-data-coding-instructions',
+        string='For Tribal TANF data reports: Tribal TANF Instructions',
+    )
+
     row, col = 2, 0
+    worksheet.write_url(
+        row, col,
+        'https://www.acf.hhs.gov/ofa/policy-guidance/acf-ofa-pi-23-04',
+        string='For TANF and SSP-MOE data reports: TANF / SSP-MOE (ACF-199 / ACF-209) Instructions'
+    )
+
+    row, col = 3, 0
+    worksheet.write_url(
+        row, col,
+        'https://tdp-project-updates.app.cloud.gov/knowledge-center/viewing-error-reports.html',
+        string='Visit the Knowledge Center for further guidance on reviewing error reports'
+    )
+
+    row, col = 5, 0
+
     # write csv header
     bold = workbook.add_format({'bold': True})
 
@@ -68,7 +92,7 @@ def get_xls_serialized_file(data):
     [worksheet.write(row, col, format_header(key[0]), bold) for col, key in enumerate(report_columns)]
 
     [
-        worksheet.write(row + 3, col, key[1](data_i)) for col, key in enumerate(report_columns)
+        worksheet.write(row + 6, col, key[1](data_i)) for col, key in enumerate(report_columns)
         for row, data_i in enumerate(data)
     ]
 

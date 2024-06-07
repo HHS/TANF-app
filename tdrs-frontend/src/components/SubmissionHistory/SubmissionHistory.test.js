@@ -241,9 +241,7 @@ describe('SubmissionHistory', () => {
     expect(screen.queryByText('test5.txt')).not.toBeInTheDocument()
     expect(screen.queryByText('test6.txt')).toBeInTheDocument()
 
-    expect(
-      screen.queryByText('Error Reports (In development)')
-    ).toBeInTheDocument()
+    expect(screen.queryByText('Error Reports')).toBeInTheDocument()
   })
 
   it('Shows SSP results when SSP-MOE file type selected', () => {
