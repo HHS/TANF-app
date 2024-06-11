@@ -13,8 +13,8 @@ from tdpservice.email.helpers.account_access_requests import send_num_access_req
 from tdpservice.email.helpers.account_deactivation_warning import send_deactivation_warning_email
 from tdpservice.stts.models import STT
 from tdpservice.data_files.models import DataFile
-from .email import automated_email, log
-from .email_enums import EmailType
+from tdpservice.email import automated_email, log
+from tdpservice.email.email_enums import EmailType
 
 
 logger = logging.getLogger(__name__)
