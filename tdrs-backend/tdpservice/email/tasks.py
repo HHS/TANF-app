@@ -79,7 +79,6 @@ def email_admin_num_access_requests():
 @shared_task
 def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
     """Send all Data Analysts a reminder to submit if they have not already."""
-
     now = datetime.now()
     fiscal_year = calendar_to_fiscal(now.year, fiscal_quarter)
 

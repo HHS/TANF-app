@@ -132,6 +132,7 @@ def fiscal_to_calendar(year, fiscal_quarter):
 
 
 def calendar_to_fiscal(calendar_year, fiscal_quarter):
+    """Decrement the calendar year if in Q1."""
     return calendar_year - 1 if fiscal_quarter == 'Q1' else calendar_year
 
 
