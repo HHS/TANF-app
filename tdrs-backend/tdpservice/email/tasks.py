@@ -15,6 +15,7 @@ from tdpservice.stts.models import STT
 from tdpservice.data_files.models import DataFile
 from tdpservice.email import automated_email, log
 from tdpservice.email.email_enums import EmailType
+from tdpservice.parsers.util import calendar_to_fiscal
 
 
 logger = logging.getLogger(__name__)
@@ -78,11 +79,9 @@ def email_admin_num_access_requests():
 @shared_task
 def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
     """Send all Data Analysts a reminder to submit if they have not already."""
-    def get_fiscal_year(calendar_year, fiscal_quarter):
-        return calendar_year - 1 if fiscal_quarter == 'Q1' else calendar_year
 
     now = datetime.now()
-    fiscal_year = get_fiscal_year(now.year, fiscal_quarter)
+    fiscal_year = calendar_to_fiscal(now.year, fiscal_quarter)
 
     all_locations = STT.objects.all()
 
