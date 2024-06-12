@@ -430,9 +430,7 @@ describe('Pre-approval Home page', () => {
 
     expect(getByText('First Name is required')).toBeInTheDocument()
     expect(getByText('Last Name is required')).toBeInTheDocument()
-    expect(
-      getByText('A state, tribe, or territory is required')
-    ).toBeInTheDocument()
+    expect(getByText('A state is required')).toBeInTheDocument()
   })
 
   it('should not require an stt for ofa users', () => {
@@ -479,9 +477,7 @@ describe('Pre-approval Home page', () => {
 
     expect(getByText('First Name is required')).toBeInTheDocument()
     expect(getByText('Last Name is required')).toBeInTheDocument()
-    expect(
-      queryByText('A state, tribe, or territory is required')
-    ).not.toBeInTheDocument()
+    expect(queryByText('A state is required')).not.toBeInTheDocument()
   })
 
   it('should remove error message when you add a character and blur out of input', () => {

@@ -51,7 +51,11 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
             ? `${toTitleCase(sttType)}*`
             : 'Associated State, Tribe, or Territory*'
         }
-        error={error ? `A ${sttType} is required` : undefined}
+        error={
+          error
+            ? `A ${sttType || 'state, tribe, or territory'} is required`
+            : undefined
+        }
         handleSelect={selectStt}
         selected={selectedStt}
         handleBlur={handleBlur}
