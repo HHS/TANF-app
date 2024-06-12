@@ -151,7 +151,7 @@ class RowSchema:
                         schema=self,
                         error_category=ParserErrorCategoryChoices.FIELD_VALUE,
                         error_message=(
-                            f"{format_error_context(self, field.friendly_name, field.item)}: "
+                            f"{format_error_context(self, field.friendly_name, field.item)} "
                             "field is required but a value was not provided."
                         ),
                         record=instance,
