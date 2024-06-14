@@ -2014,7 +2014,8 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     assert parser_errors.count() == 3
 
-    error_msgs = {"Item 37 (education level) 00 is not in range [1, 16]. or Item 37 (education level) 00 is not in range [98, 99].",
+    error_msgs = {"Item 37 (education level) 00 is not in range [1, 16]. or Item 37 "
+                  "(education level) 00 is not in range [98, 99].",
                   "M2 Item 38 (citizenship status): 0 is not in [1, 2, 3, 9].",
                   "M2 Item 39 (cooperation with child support): 0 is not in [1, 2, 9]."}
     for e in parser_errors:
@@ -2035,7 +2036,8 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     assert parser_errors.count() == 4
 
-    error_msgs = {"Item 68 (education level) 00 is not in range [1, 16]. or Item 68 (education level) 00 is not in range [98, 99].",
+    error_msgs = {"Item 68 (education level) 00 is not in range [1, 16]. or Item 68 "
+                  "(education level) 00 is not in range [98, 99].",
                   "M3 Item 69 (citizenship status): 0 is not in [1, 2, 3, 9]."}
 
     for e in parser_errors:

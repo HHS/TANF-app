@@ -28,6 +28,8 @@ def value_is_empty(value, length, extra_vals={}):
 
 @dataclass
 class ValidationErrorArgs:
+    """Dataclass for args to `make_validator` `error_func`s."""
+
     value: Any
     row_schema: object  # RowSchema causes circular import
     friendly_name: str
@@ -50,9 +52,6 @@ def format_error_context(eargs: ValidationErrorArgs):
 
 def make_validator(validator_func, error_func):
     """Return a function accepting a value input and returning (bool, string) to represent validation state."""
-
-    # struct
-    # or kwargs
     def validator(value, row_schema=None, friendly_name=None, item_num=None, error_context_format='prefix'):
         eargs = ValidationErrorArgs(
             value=value,
@@ -75,9 +74,14 @@ def make_validator(validator_func, error_func):
 def or_validators(*args, **kwargs):
     """Return a validator that is true only if one of the validators is true."""
     return (
-        lambda value, row_schema, friendly_name, item_num, error_context_format='inline': (True, None)
-        if any([validator(value, row_schema, friendly_name, item_num, error_context_format)[0] for validator in args])
-        else (False, " or ".join([validator(value, row_schema, friendly_name, item_num, error_context_format)[1] for validator in args]))
+        lambda value, row_schema, friendly_name,
+        item_num, error_context_format='inline': (True, None)
+        if any([
+            validator(value, row_schema, friendly_name, item_num, error_context_format)[0] for validator in args
+        ])
+        else (False, " or ".join([
+            validator(value, row_schema, friendly_name, item_num, error_context_format)[1] for validator in args
+        ]))
     )
 
 
@@ -85,8 +89,8 @@ def and_validators(validator1, validator2):
     """Return a validator that is true only if both validators are true."""
     return (
         lambda value, row_schema, friendly_name, item_num: (True, None)
-        if (validator1(value, row_schema, friendly_name, item_num, 'inline')[0] and validator2(value, row_schema,
-                                                                                     friendly_name, item_num, 'inline')[0])
+        if (validator1(value, row_schema, friendly_name, item_num, 'inline')[0]
+            and validator2(value, row_schema, friendly_name, item_num, 'inline')[0])
         else (
             False,
             (validator1(value, row_schema, friendly_name, item_num, 'inline')[1])
@@ -120,9 +124,8 @@ def extended_and_validators(*args, **kwargs):
         else:
             return (False, "".join(
                 [
-                    " and " + validator(value, row_schema,
-                                        friendly_name, item_num, 'inline')[1] if validator(value, row_schema,
-                                                                                 friendly_name, item_num, 'inline')[0] else ""
+                    " and " + validator(value, row_schema, friendly_name, item_num, 'inline')[1]
+                    if validator(value, row_schema, friendly_name, item_num, 'inline')[0] else ""
                     for validator in args
                 ]
             ))
@@ -154,8 +157,20 @@ def if_then_validator(
         result_field = row_schema.get_field_by_name(result_field_name)
 
         # TODO: There is some work to be done here to get the actual friendly name and item numbers of the fields
-        validator1_result = condition_function(value1, row_schema, condition_field.friendly_name, condition_field.item, 'inline')
-        validator2_result = result_function(value2, row_schema, result_field.friendly_name, result_field.item, 'inline')
+        validator1_result = condition_function(
+            value1,
+            row_schema,
+            condition_field.friendly_name,
+            condition_field.item,
+            'inline'
+        )
+        validator2_result = result_function(
+            value2,
+            row_schema,
+            result_field.friendly_name,
+            result_field.item,
+            'inline'
+        )
 
         if not validator1_result[0]:
             returned_value = (True, None, [condition_field_name, result_field_name])
@@ -217,7 +232,8 @@ def sumIsEqual(condition_field, sum_fields=[]):
 
 def field_year_month_with_header_year_quarter():
     """Validate that the field year and month match the header year and quarter."""
-    def validate_reporting_month_year_fields_header(line, row_schema, friendly_name, item_num, error_context_format=None):
+    def validate_reporting_month_year_fields_header(
+            line, row_schema, friendly_name, item_num, error_context_format=None):
 
         field_month_year = row_schema.get_field_values_by_names(line, ['RPT_MONTH_YEAR']).get('RPT_MONTH_YEAR')
         df_quarter = row_schema.datafile.quarter
