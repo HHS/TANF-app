@@ -102,8 +102,10 @@ class CaseDuplicateDetector:
                    f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
                    f"record at line number {existing_line_number}. Duplicated fields causing error: ")
         for i, name in enumerate(field_names):
-            if i == len(field_names) - 1:
+            if i == len(field_names) - 1 and len(field_names) != 1:
                 err_msg += f"and {schema.get_field_by_name(name).friendly_name}."
+            elif len(field_names) == 1:
+                err_msg += f"{schema.get_field_by_name(name).friendly_name}."
             else:
                 err_msg += f"{schema.get_field_by_name(name).friendly_name}, "
         return err_msg

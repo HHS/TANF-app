@@ -662,6 +662,52 @@ def ssp_s2_partial_dup_file():
     return parsing_file
 
 @pytest.fixture
+def tanf_s3_partial_dup_file():
+    """Fixture for a section 3 file containing an exact duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2022,
+        quarter='Q1',
+        section="Aggregate Data",
+        file__name='s3_exact_duplicate.txt',
+        file__section='Aggregate Data',
+        file__data=(b'HEADER20214G06   TAN1 D\n'
+                    b'T620214000127470001104500011146000043010000397700003924000084460000706800007222'
+                    b'0000550428490000551413780000566432530007558100075921000755420000098100000970000'
+                    b'0096800039298000393490003897200035302000356020003560200168447001690470016810700'
+                    b'0464480004649800046203001219990012254900121904000001630000014900000151000003440'
+                    b'000033100000276000002580000024100000187000054530000388100003884\n'
+                    b'T620214000127470001104500011146000043010000397700003924000084460000706800007222'
+                    b'0000550428490000551413780000566432530007558100075921000755420000098100000970000'
+                    b'0096800039298000393490013897200035302000356020003560200168447001690470016810700'
+                    b'0464480004649800046203001219990012254900121904000001630000014900000151000003440'
+                    b'000033100000276000002580000024100000187000054530000388100003884\n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.fixture
+def tanf_s4_partial_dup_file():
+    """Fixture for a section 4 file containing a partial duplicate record."""
+    parsing_file = ParsingFileFactory(
+        year=2022,
+        quarter='Q1',
+        section="Stratum Data",
+        file__name='s4_partial_duplicate.txt',
+        file__section='Stratum Data',
+        file__data=(b'HEADER20214S06   TAN1 D\n'
+                    b'T720214101006853700680540068454103000312400037850003180104000347400036460003583106'
+                    b'000044600004360000325299000506200036070003385202000039100002740000499             '
+                    b'                                                                                   \n'
+                    b'T720214101006853700681540068454103000312400037850003180104000347400036460003583106'
+                    b'000044600004360000325299000506200036070003385202000039100002740000499             '
+                    b'                                                                                   \n'
+                    b'TRAILER0000001         '
+                    )
+    )
+    return parsing_file
+
+@pytest.fixture
 def partial_dup_t1_err_msg():
     """Fixture for t1 record partial duplicate error."""
     return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
@@ -674,3 +720,9 @@ def partial_dup_t5_err_msg():
     return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
             "duplicate of the record at line number 2. Duplicated fields causing error: record type, "
             "reporting month and year, case number, family affiliation, date of birth, and social security number.")
+
+@pytest.fixture
+def partial_dup_s3_s4_err_msg():
+    """Fixture for t7 record partial duplicate error."""
+    return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
+            "duplicate of the record at line number 2. Duplicated fields causing error: record type.")

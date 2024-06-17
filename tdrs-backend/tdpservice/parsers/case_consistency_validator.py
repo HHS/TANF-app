@@ -111,8 +111,11 @@ class CaseConsistencyValidator:
         else:
             self.current_case = None
             # Section 3/4 records don't have a CASE_NUMBER, and they're broken into multiple records for the same line.
-            # Thus to keep the hash unique, we use the whole line to identify the "case" in this instance.
-            case_hash = hash(line)
+            # The duplicate manager saves us from dupe validating the records on teh same line, however, we use record
+            # type as the "case number" here because there should only ever be one line in a section 3/4 file with a
+            # record type. If we generate the same hash twice we guarentee an error and therefore need only check the
+            # record type.
+            case_hash = hash(record.RecordType)
 
         self.current_case_hash = case_hash
 

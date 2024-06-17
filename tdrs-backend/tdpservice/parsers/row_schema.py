@@ -15,9 +15,9 @@ class RowSchema:
             document=None,
             # The default hash function covers all program types with record types ending in a 6 or 7.
             generate_hashes_func=lambda line, record: (hash(line),
-                                                       None),
+                                                       hash(record.RecordType)),
             should_skip_partial_dup_func=lambda record: False,
-            get_partial_hash_members_func=lambda: [],
+            get_partial_hash_members_func=lambda: ["RecordType"],
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
