@@ -8,14 +8,13 @@ Please refer to the [Team Members doc](https://hhsgov.sharepoint.com/:w:/r/sites
 * Alexandra Pennington, OFA, tech lead
 
 **Raft**
-* Connor Smith, Raft, facilitator/product manager
-* Miles Reiter, Raft, design lead + senior ux/ui researcher and designer
-* Diana Liang, Raft, ux/ui researcher and designer
+* Rob Gendron, Raft, facilitator/product manager
+* Victoria Amoroso, Raft, design lead + senior ux/ui researcher and designer
+* Miles Reiter, Raft, senior ux/ui researcher and designer
 * Andrew Jameson, Raft, tech lead
-* Cameron Smart, Raft, full stack engineer
 * Jan Timpe, Raft, full stack engineer
 * Mo Sohani, Raft, full stack engineer
-* George Hudson, Raft, devops engineer
+* Eric Lipe, Raft, full stack engineer
 
 ## Subject Matter Experts
 **OFA Data Team**
