@@ -97,7 +97,7 @@ class CreationDateFilter(SimpleListFilter):
 class STTFilter(MultipleChoiceListFilter):
     """Simple filter class to show records based on stt."""
 
-    title = _('STT Code')
+    title = _('STT')
 
     parameter_name = 'stt_code'
 

@@ -10,7 +10,7 @@ class TANF_T1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
@@ -27,7 +27,7 @@ class TANF_T2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
@@ -44,7 +44,7 @@ class TANF_T3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
@@ -61,7 +61,7 @@ class TANF_T4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
@@ -78,7 +78,7 @@ class TANF_T5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
@@ -95,7 +95,7 @@ class TANF_T6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'CALENDAR_QUARTER',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
@@ -116,7 +116,7 @@ class TANF_T7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'STRATUM',
         'FAMILIES_MONTH',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
