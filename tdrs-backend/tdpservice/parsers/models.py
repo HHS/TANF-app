@@ -111,12 +111,11 @@ class DataFileSummary(models.Model):
 
         if errors is None:
             return DataFileSummary.Status.PENDING
-        elif precheck_errors.count() > 0 or case_consistency_errors.count() > 0 or \
-                self.total_number_of_records_created == 0:
+        elif precheck_errors.count() > 0 or self.total_number_of_records_created == 0:
             return DataFileSummary.Status.REJECTED
         elif errors.count() == 0:
             return DataFileSummary.Status.ACCEPTED
-        elif row_precheck_errors.count() > 0:
+        elif row_precheck_errors.count() > 0 or case_consistency_errors.count() > 0:
             return DataFileSummary.Status.PARTIALLY_ACCEPTED
         else:
             return DataFileSummary.Status.ACCEPTED_WITH_ERRORS
