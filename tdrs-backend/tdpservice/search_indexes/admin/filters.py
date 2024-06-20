@@ -44,12 +44,13 @@ class CreationDateFilter(SimpleListFilter):
 
 class STTFilter(MultiSelectDropdownFilter):
     """Multi-select dropdown filter class to filter records based on stt."""
+
     def __init__(self, field, request, params, model, model_admin, field_path):
         super(MultiSelectDropdownFilter, self).__init__(field, request, params, model, model_admin, field_path)
         self.lookup_choices = (self._get_lookup_choices(request, model_admin.get_queryset(request)))
 
     def _get_lookup_choices(self, request, queryset):
-        """Filter queryset to show records matching selected fiscal year."""
+        """Filter queryset to guarentee lookup_choices only has STTs associated with the record type."""
         record_type = str(request.path).split('/')[-2]
         if 'tribal' in record_type:
             queryset = queryset.filter(datafile__stt__type=STT.EntityType.TRIBE)
