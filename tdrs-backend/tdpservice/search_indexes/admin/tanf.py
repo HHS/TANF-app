@@ -1,6 +1,8 @@
 """ModelAdmin classes for parsed TANF data files."""
 from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
 from .mixins import CsvExportAdminMixin, ReadOnlyAdminMixin
+from more_admin_filters import MultiSelectDropdownFilter
+
 
 
 class TANF_T1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -16,7 +18,7 @@ class TANF_T1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 
@@ -33,7 +35,7 @@ class TANF_T2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 
@@ -50,7 +52,7 @@ class TANF_T3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 
@@ -67,7 +69,7 @@ class TANF_T4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 
@@ -84,7 +86,7 @@ class TANF_T5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 
@@ -101,7 +103,7 @@ class TANF_T6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 
@@ -122,5 +124,5 @@ class TANF_T7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
