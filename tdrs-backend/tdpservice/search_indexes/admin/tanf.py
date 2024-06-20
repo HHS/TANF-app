@@ -1,8 +1,6 @@
 """ModelAdmin classes for parsed TANF data files."""
 from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
 from .mixins import CsvExportAdminMixin, ReadOnlyAdminMixin
-from more_admin_filters import MultiSelectDropdownFilter
-
 
 
 class TANF_T1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
