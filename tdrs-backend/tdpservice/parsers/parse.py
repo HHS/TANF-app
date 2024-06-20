@@ -338,11 +338,11 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                 s = schema_manager.schemas[i]
                 record.datafile = datafile
                 record_has_errors = len(record_errors) > 0
-                should_remove, case_hash = case_consistency_validator.add_record(record, s, line,
+                should_remove, case_hash_to_remove, case_hash = case_consistency_validator.add_record(record, s, line,
                                                                                  line_number, record_has_errors)
-                unsaved_records.add_record(case_hash, (record, s.document))
-                was_removed = unsaved_records.remove_case_due_to_errors(should_remove, case_hash)
-                case_consistency_validator.update_removed(case_hash, was_removed)
+                unsaved_records.add_record(case_hash, (record, s.document), line_number)
+                was_removed = unsaved_records.remove_case_due_to_errors(should_remove, case_hash_to_remove)
+                case_consistency_validator.update_removed(case_hash_to_remove, was_removed)
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         cat4_errors = case_consistency_validator.get_generated_errors()

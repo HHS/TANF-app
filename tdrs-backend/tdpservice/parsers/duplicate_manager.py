@@ -66,6 +66,10 @@ class CaseDuplicateDetector:
         """Return case duplicate error state."""
         return self.num_errors > 0
 
+    def get_num_errors(self):
+        """Return the number of errors."""
+        return self.num_errors
+
     def get_records_for_post_parse_deletion(self):
         """Return record ids if case has duplicate errors."""
         if self.num_errors > 0 and self.should_remove_from_db:
@@ -117,7 +121,6 @@ class CaseDuplicateDetector:
         @param schema: the schema from which the record was created
         @param line: the raw string line representing the record
         @param line_number: the line number the record was generated from in the datafile
-        @return: the number of duplicate errors
         """
         # We do not run duplicate detection for records that have been generated on the same line: T3, M3, T6, M6, T7,
         # M7. This is because we would incorrectly generate both duplicate and partial duplicate errors.
@@ -150,8 +153,6 @@ class CaseDuplicateDetector:
             if partial_hash is not None and partial_hash not in self.partial_hashes:
                 self.partial_hashes[partial_hash] = line_number
 
-        return self.num_errors
-
 
 class DuplicateManager:
     """Manages all CaseDuplicateDetectors and their errors."""
@@ -176,12 +177,11 @@ class DuplicateManager:
         @param schema: the schema from which the record was created
         @param line: the raw string from the datafile representing the record
         @param line_number: the line number the record was generated from in the datafile
-        @return: the number of duplicate errors
         """
         if case_hash not in self.case_duplicate_detectors:
             case_duplicate_detector = CaseDuplicateDetector(case_hash, self.generated_errors, self.generate_error)
             self.case_duplicate_detectors[case_hash] = case_duplicate_detector
-        return self.case_duplicate_detectors[case_hash].add_case_member(record, schema, line, line_number)
+        self.case_duplicate_detectors[case_hash].add_case_member(record, schema, line, line_number)
 
     def get_generated_errors(self):
         """Return all errors from all CaseDuplicateDetectors."""
@@ -214,3 +214,8 @@ class DuplicateManager:
                 case_duplicate_detector.set_should_remove_from_db(False)
             else:
                 case_duplicate_detector.set_should_remove_from_db(True)
+    
+    def get_num_dup_errors(self, case_hash):
+        if case_hash in self.case_duplicate_detectors:
+            return self.case_duplicate_detectors.get(case_hash).get_num_errors()
+        return 0

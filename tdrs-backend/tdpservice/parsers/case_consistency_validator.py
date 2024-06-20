@@ -81,6 +81,16 @@ class CaseConsistencyValidator:
     def update_removed(self, case_hash, was_removed):
         """Notify duplicate manager's CaseDuplicateDetectors whether they need to mark their records for DB removal."""
         self.duplicate_manager.update_removed(case_hash, was_removed)
+    
+    def _get_case_hash(self, record):
+        # Section 3/4 records don't have a CASE_NUMBER, and they're broken into multiple records for the same line.
+        # The duplicate manager saves us from dupe validating the records on teh same line, however, we use record
+        # type as the "case number" here because there should only ever be one line in a section 3/4 file with a
+        # record type. If we generate the same hash twice we guarentee an error and therefore need only check the
+        # record type.
+        if not self.case_is_section_one_or_two:
+            return hash(record.RecordType)
+        return hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
 
     def add_record(self, record, schema, line, line_number, case_has_errors):
         """Add record to cache, validate if new case is detected, and check for duplicate errors.
@@ -94,35 +104,31 @@ class CaseConsistencyValidator:
                  based on the records section)
         """
         num_errors = 0
-        case_hash = None
+        latest_case_hash = self._get_case_hash(record)
+        case_hash_to_remove = latest_case_hash
         self.current_rpt_month_year = record.RPT_MONTH_YEAR
         if self.case_is_section_one_or_two:
-            case_hash = hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
-            if case_hash != self.current_case_hash and self.current_case_hash is not None:
+            if latest_case_hash != self.current_case_hash and self.current_case_hash is not None:
                 num_errors += self.validate()
                 self.clear_structs((record, schema))
                 self.case_has_errors = case_has_errors
                 self.has_validated = False
+                case_hash_to_remove = self.current_case_hash
             else:
                 self.case_has_errors = self.case_has_errors if self.case_has_errors else case_has_errors
                 self.add_record_to_structs((record, schema))
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
-        else:
-            self.current_case = None
-            # Section 3/4 records don't have a CASE_NUMBER, and they're broken into multiple records for the same line.
-            # The duplicate manager saves us from dupe validating the records on teh same line, however, we use record
-            # type as the "case number" here because there should only ever be one line in a section 3/4 file with a
-            # record type. If we generate the same hash twice we guarentee an error and therefore need only check the
-            # record type.
-            case_hash = hash(record.RecordType)
 
-        self.current_case_hash = case_hash
+        # Need to return the hash of what we just cat4 validated, i.e. case_hash_to_remove = self.current_case_hash. If
+        # we didn't cat4 validate then we return the latest case hash, i.e. case_hash_to_remove = latest_case_hash. 
+        # However, we always call self.duplicate_manager.add_record with the latest case_hash.
+        self.duplicate_manager.add_record(record, latest_case_hash, schema, line, line_number)
+        num_errors += self.duplicate_manager.get_num_dup_errors(case_hash_to_remove)
 
-        num_errors += self.duplicate_manager.add_record(record, case_hash, schema, line,
-                                                        line_number)
+        self.current_case_hash = latest_case_hash
 
-        return num_errors > 0, case_hash
+        return num_errors > 0, case_hash_to_remove, latest_case_hash
 
     def validate(self):
         """Perform category four validation on all cached records."""

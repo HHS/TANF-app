@@ -190,7 +190,7 @@ class SortedRecords:
         self.cases_already_removed = set()
         self.serialized_cases = set()
 
-    def add_record(self, case_hash, record_doc_pair):
+    def add_record(self, case_hash, record_doc_pair, line_num):
         """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
         record, document = record_doc_pair
         rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
@@ -198,8 +198,9 @@ class SortedRecords:
         if case_hash in self.cases_already_removed:
             logger.info("Record's case has already been removed due to category four errors. Not adding record with "
                         f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)}, {rpt_month_year})")
+            return
 
-        if case_hash is not None and case_hash not in self.cases_already_removed:
+        if case_hash is not None:
             hashed_case = self.hash_sorted_cases.get(case_hash, {})
             records = hashed_case.get(document, [])
             records.append(record)
@@ -209,6 +210,8 @@ class SortedRecords:
             # We treat the nested dictionary here as a set because dictionaries are sorted while sets aren't. If we
             # don't have a sorted container we have test failures.
             self.cases.setdefault(document, dict())[record] = None
+        else:
+            logger.error(f"Error: Case hash for record at line #{line_num} was None!")
 
     def get_bulk_create_struct(self):
         """Return dict of form {document: Iterable(records)} for bulk_create_records to consume."""
@@ -221,26 +224,26 @@ class SortedRecords:
             self.hash_sorted_cases = dict()
             self.cases = dict()
 
-    def remove_case_due_to_errors(self, should_remove, hash):
+    def remove_case_due_to_errors(self, should_remove, case_hash):
         """Remove all records from memory given the hash."""
         if should_remove:
-            if hash in self.cases_already_removed:
+            if case_hash in self.cases_already_removed:
                 return True
-            if hash in self.hash_sorted_cases:
-                self.cases_already_removed.add(hash)
-                removed = self.hash_sorted_cases.pop(hash)
+            if case_hash in self.hash_sorted_cases:
+                self.cases_already_removed.add(case_hash)
+                removed = self.hash_sorted_cases.pop(case_hash)
 
-                # TODO: Can we do this without nested loops?
-                case_ids = list()
-                for records in removed.values():
-                    for record in records:
-                        case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None),
-                                         record.RPT_MONTH_YEAR))
-                        for record_set in self.cases.values():
-                            record_set.pop(record, None)
-                logger.info("Case consistency errors generated, removing case from in memory cache. "
-                            f"Record(s) info: {case_ids}.")
-                return True and hash not in self.serialized_cases
+                if logger.getEffectiveLevel() == logging.DEBUG:
+                    case_ids = list()
+                    for records in removed.values():
+                        for record in records:
+                            case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None),
+                                            record.RPT_MONTH_YEAR))
+                            for record_set in self.cases.values():
+                                record_set.pop(record, None)
+                    logger.debug("Case consistency errors generated, removing case from in memory cache. "
+                                 f"Record(s) info: {case_ids}.")
+                return True and case_hash not in self.serialized_cases
         return False
 
 def generate_t1_t4_hashes(line, record):
