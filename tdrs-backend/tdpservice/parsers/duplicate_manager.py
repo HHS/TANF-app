@@ -72,7 +72,7 @@ class CaseDuplicateDetector:
 
     def get_records_for_post_parse_deletion(self):
         """Return record ids if case has duplicate errors."""
-        if self.num_errors > 0 and self.should_remove_from_db:
+        if self.should_remove_from_db:
             return self.record_ids
         return dict()
 
@@ -122,11 +122,14 @@ class CaseDuplicateDetector:
         @param line: the raw string line representing the record
         @param line_number: the line number the record was generated from in the datafile
         """
+        # Add all records detector receives to id dictionary. That way if a line that has more than one record created
+        # from it will have all of it's records appropriately marked for deletion if need be.
+        self.record_ids.setdefault(schema.document, []).append(record.id)
+
         # We do not run duplicate detection for records that have been generated on the same line: T3, M3, T6, M6, T7,
         # M7. This is because we would incorrectly generate both duplicate and partial duplicate errors.
         if self.current_line_number is None or self.current_line_number != line_number:
             self.current_line_number = line_number
-            self.record_ids.setdefault(schema.document, []).append(record.id)
             err_msg = None
             has_precedence = False
             is_new_max_precedence = False
@@ -206,13 +209,13 @@ class DuplicateManager:
 
         return records_to_remove
 
-    def update_removed(self, case_hash, was_removed):
+    def update_removed(self, case_hash, should_remove, was_removed):
         """Notify CaseDuplicateDetectors whether case could or could not be removed from memory."""
         case_duplicate_detector = self.case_duplicate_detectors.get(case_hash, False)
         if case_duplicate_detector:
-            if was_removed:
+            if was_removed and not should_remove:
                 case_duplicate_detector.set_should_remove_from_db(False)
-            else:
+            elif not was_removed and should_remove:
                 case_duplicate_detector.set_should_remove_from_db(True)
     
     def get_num_dup_errors(self, case_hash):

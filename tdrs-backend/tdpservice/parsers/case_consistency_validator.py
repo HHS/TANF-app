@@ -78,9 +78,9 @@ class CaseConsistencyValidator:
         if seed_record_schema_pair:
             self.add_record_to_structs(seed_record_schema_pair)
 
-    def update_removed(self, case_hash, was_removed):
+    def update_removed(self, case_hash, should_remove, was_removed):
         """Notify duplicate manager's CaseDuplicateDetectors whether they need to mark their records for DB removal."""
-        self.duplicate_manager.update_removed(case_hash, was_removed)
+        self.duplicate_manager.update_removed(case_hash, should_remove, was_removed)
     
     def _get_case_hash(self, record):
         # Section 3/4 records don't have a CASE_NUMBER, and they're broken into multiple records for the same line.

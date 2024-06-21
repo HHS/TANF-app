@@ -1775,12 +1775,12 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
     dfs.datafile = cat4_edge_case_file
     dfs.save()
 
+    settings.BULK_CREATE_BATCH_SIZE = 1
+
     parse.parse_datafile(cat4_edge_case_file, dfs)
 
     parser_errors = ParserError.objects.filter(file=cat4_edge_case_file).filter(
         error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
-    for e in parser_errors:
-        print(e.error_message)
 
     assert TANF_T1.objects.all().count() == 2
     assert TANF_T2.objects.all().count() == 2

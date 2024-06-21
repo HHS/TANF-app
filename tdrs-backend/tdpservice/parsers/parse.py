@@ -233,7 +233,7 @@ def create_no_records_created_pre_check_error(datafile, dfs):
         created = 1
     return errors, created
 
-def delete_serialized_records(duplicate_manager):
+def delete_serialized_records(duplicate_manager, dfs):
     """Delete all records that have already been serialized to the DB that have cat4 errors."""
     total_deleted = 0
     for document, ids in duplicate_manager.get_records_to_remove().items():
@@ -247,10 +247,12 @@ def delete_serialized_records(duplicate_manager):
             # dependencies. If that ever changes, we should NOT use `_raw_delete`.
             num_deleted = qset._raw_delete(qset.db)
             total_deleted += num_deleted
+            dfs.total_number_of_records_created -= num_deleted
             logger.debug(f"Deleted {num_deleted} records of type: {model}.")
         except Exception as e:
             logging.error(f"Encountered error while deleting records of type {model}. Error message: {e}")
-    logger.info(f"Deleted a total of {total_deleted} records because of duplicate errors.")
+    if total_deleted:
+        logger.info(f"Deleted a total of {total_deleted} records from the DB because of case consistenecy errors.")
 
 def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator):
     """Parse lines with appropriate schema and return errors."""
@@ -320,7 +322,6 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
         records = manager_parse_line(line, schema_manager, generate_error, datafile, is_encrypted)
         num_records = len(records)
-        dfs.total_number_of_records_in_file += num_records
 
         record_number = 0
         for i in range(num_records):
@@ -342,7 +343,8 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                                                                                  line_number, record_has_errors)
                 unsaved_records.add_record(case_hash, (record, s.document), line_number)
                 was_removed = unsaved_records.remove_case_due_to_errors(should_remove, case_hash_to_remove)
-                case_consistency_validator.update_removed(case_hash_to_remove, was_removed)
+                case_consistency_validator.update_removed(case_hash_to_remove, should_remove, was_removed)
+                dfs.total_number_of_records_in_file += 1
 
         # Add any generated cat4 errors to our error data structure & clear our caches errors list
         cat4_errors = case_consistency_validator.get_generated_errors()
@@ -373,7 +375,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     should_remove = validate_case_consistency(case_consistency_validator)
     was_removed = unsaved_records.remove_case_due_to_errors(should_remove, case_hash)
-    case_consistency_validator.update_removed(case_hash, was_removed)
+    case_consistency_validator.update_removed(case_hash, should_remove, was_removed)
 
     # Only checking "all_created" here because records remained cached if bulk create fails. This is the last chance to
     # successfully create the records.
@@ -399,7 +401,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
 
     bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
 
-    delete_serialized_records(case_consistency_validator.duplicate_manager)
+    delete_serialized_records(case_consistency_validator.duplicate_manager, dfs)
 
     logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
                  f"validated {case_consistency_validator.total_cases_validated} of them.")
