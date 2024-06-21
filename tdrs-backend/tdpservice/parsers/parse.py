@@ -212,8 +212,8 @@ def rollback_records(unsaved_records, datafile):
                 object_id=datafile,
                 object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
                 action_flag=ADDITION,
-                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! " + \
-                    f"Error message: {e}"
+                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
+                               f"Error message: {e}"
             )
 
 def rollback_parser_errors(datafile):
@@ -303,8 +303,8 @@ def delete_serialized_records(duplicate_manager, dfs):
                 object_id=datafile,
                 object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
                 action_flag=ADDITION,
-                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! " + \
-                    f"Error message: {e}"
+                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
+                               f"Error message: {e}"
             )
     if total_deleted:
         logger.info(f"Deleted a total of {total_deleted} records from the DB because of case consistenecy errors.")
