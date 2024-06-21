@@ -47,19 +47,20 @@ class STTFilter(MultiSelectDropdownFilter):
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         super(MultiSelectDropdownFilter, self).__init__(field, request, params, model, model_admin, field_path)
-        self.lookup_choices = (self._get_lookup_choices(request, model_admin.get_queryset(request)))
+        self.lookup_choices = self._get_lookup_choices(request)
 
-    def _get_lookup_choices(self, request, queryset):
+    def _get_lookup_choices(self, request):
         """Filter queryset to guarentee lookup_choices only has STTs associated with the record type."""
         record_type = str(request.path).split('/')[-2]
+        queryset = STT.objects.all()
         if 'tribal' in record_type:
-            queryset = queryset.filter(datafile__stt__type=STT.EntityType.TRIBE)
+            queryset = queryset.filter(type=STT.EntityType.TRIBE)
         elif 'ssp' in record_type:
-            queryset = queryset.filter(datafile__stt__ssp=True)
+            queryset = queryset.filter(ssp=True)
         else:
-            queryset = queryset.filter(datafile__stt__type=STT.EntityType.STATE)
+            queryset = queryset.filter(type=STT.EntityType.STATE)
 
-        return queryset.distinct().order_by('datafile__stt__name').values_list('datafile__stt__name', flat=True)
+        return (queryset.distinct().order_by('name').values_list('name', flat=True))
 
 
 class FiscalPeriodFilter(SimpleListFilter):
@@ -76,7 +77,7 @@ class FiscalPeriodFilter(SimpleListFilter):
         quarters = [1, 2, 3, 4]
         months = ["(Oct - Dec)", "(Jan - Mar)", "(Apr - Jun)", "(Jul - Sep)"]
         years = [year for year in range(current_year, 2020, -1)]
-        options = [(None, _('All'))]
+        options = []
 
         for year in years:
             for qtr, month in zip(quarters, months):
