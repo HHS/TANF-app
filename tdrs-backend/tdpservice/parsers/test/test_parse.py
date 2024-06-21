@@ -1765,3 +1765,30 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, num_error
     assert dup_error.error_message == expected_error_msg.format(record_type=record_type)
 
     model.objects.count() == 0
+
+@pytest.mark.django_db()
+def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
+    """Test parsing file with a cat4 error edge case submission."""
+    cat4_edge_case_file.year = 2024
+    cat4_edge_case_file.quarter = 'Q1'
+
+    dfs.datafile = cat4_edge_case_file
+    dfs.save()
+
+    parse.parse_datafile(cat4_edge_case_file, dfs)
+
+    parser_errors = ParserError.objects.filter(file=cat4_edge_case_file).filter(
+        error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
+    for e in parser_errors:
+        print(e.error_message)
+
+    assert TANF_T1.objects.all().count() == 2
+    assert TANF_T2.objects.all().count() == 2
+    assert TANF_T3.objects.all().count() == 4
+
+    assert dfs.total_number_of_records_in_file == 13
+    assert dfs.total_number_of_records_created == 8
+
+    err = parser_errors.first()
+    assert err.error_message == ("Every T1 record should have at least one corresponding T2 or T3 record with the "
+                                 "same RPT_MONTH_YEAR and CASE_NUMBER.")

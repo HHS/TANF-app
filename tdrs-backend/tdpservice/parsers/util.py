@@ -233,15 +233,14 @@ class SortedRecords:
                 self.cases_already_removed.add(case_hash)
                 removed = self.hash_sorted_cases.pop(case_hash)
 
-                if logger.getEffectiveLevel() == logging.DEBUG:
-                    case_ids = list()
-                    for records in removed.values():
-                        for record in records:
-                            case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None),
-                                            record.RPT_MONTH_YEAR))
-                            for record_set in self.cases.values():
-                                record_set.pop(record, None)
-                    logger.debug("Case consistency errors generated, removing case from in memory cache. "
+                case_ids = list()
+                for records in removed.values():
+                    for record in records:
+                        case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None),
+                                        record.RPT_MONTH_YEAR))
+                        for record_set in self.cases.values():
+                            record_set.pop(record, None)
+                    logger.info("Case consistency errors generated, removing case from in memory cache. "
                                  f"Record(s) info: {case_ids}.")
                 return True and case_hash not in self.serialized_cases
         return False
