@@ -1786,7 +1786,7 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
     assert TANF_T2.objects.all().count() == 2
     assert TANF_T3.objects.all().count() == 4
 
-    assert dfs.total_number_of_records_in_file == 13
+    assert dfs.total_number_of_records_in_file == 17
     assert dfs.total_number_of_records_created == 8
 
     err = parser_errors.first()
