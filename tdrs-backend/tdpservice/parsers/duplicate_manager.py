@@ -217,8 +217,9 @@ class DuplicateManager:
                 case_duplicate_detector.set_should_remove_from_db(False)
             elif not was_removed and should_remove:
                 case_duplicate_detector.set_should_remove_from_db(True)
-    
+
     def get_num_dup_errors(self, case_hash):
+        """Return the number of duplicate errors for a specific duplicate detector."""
         if case_hash in self.case_duplicate_detectors:
             return self.case_duplicate_detectors.get(case_hash).get_num_errors()
         return 0

@@ -81,7 +81,7 @@ class CaseConsistencyValidator:
     def update_removed(self, case_hash, should_remove, was_removed):
         """Notify duplicate manager's CaseDuplicateDetectors whether they need to mark their records for DB removal."""
         self.duplicate_manager.update_removed(case_hash, should_remove, was_removed)
-    
+
     def _get_case_hash(self, record):
         # Section 3/4 records don't have a CASE_NUMBER, and they're broken into multiple records for the same line.
         # The duplicate manager saves us from dupe validating the records on teh same line, however, we use record
@@ -121,7 +121,7 @@ class CaseConsistencyValidator:
             self.current_case = record.CASE_NUMBER
 
         # Need to return the hash of what we just cat4 validated, i.e. case_hash_to_remove = self.current_case_hash. If
-        # we didn't cat4 validate then we return the latest case hash, i.e. case_hash_to_remove = latest_case_hash. 
+        # we didn't cat4 validate then we return the latest case hash, i.e. case_hash_to_remove = latest_case_hash.
         # However, we always call self.duplicate_manager.add_record with the latest case_hash.
         self.duplicate_manager.add_record(record, latest_case_hash, schema, line, line_number)
         num_errors += self.duplicate_manager.get_num_dup_errors(case_hash_to_remove)

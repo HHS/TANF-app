@@ -1445,7 +1445,8 @@ class TestCaseConsistencyValidator:
         case_consistency_validator.clear_errors(clear_dup=False)
 
         t1_complete_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
-        has_errors, _, _ = case_consistency_validator.add_record(t1_complete_dup, t1_schema, str(t1), line_number, False)
+        has_errors, _, _ = case_consistency_validator.add_record(t1_complete_dup, t1_schema, str(t1),
+                                                                 line_number, False)
 
         errors = case_consistency_validator.get_generated_errors()
         assert len(errors) == 1
@@ -1571,7 +1572,8 @@ class TestCaseConsistencyValidator:
         case_consistency_validator.clear_errors(clear_dup=False)
 
         t4_complete_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
-        has_errors, _, _ = case_consistency_validator.add_record(t4_complete_dup, t4_schema, str(t4), line_number, False)
+        has_errors, _, _ = case_consistency_validator.add_record(t4_complete_dup, t4_schema, str(t4),
+                                                                 line_number, False)
 
         errors = case_consistency_validator.get_generated_errors()
         assert len(errors) == 1

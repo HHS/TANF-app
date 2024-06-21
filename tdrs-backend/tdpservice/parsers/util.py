@@ -241,7 +241,7 @@ class SortedRecords:
                         for record_set in self.cases.values():
                             record_set.pop(record, None)
                     logger.info("Case consistency errors generated, removing case from in memory cache. "
-                                 f"Record(s) info: {case_ids}.")
+                                f"Record(s) info: {case_ids}.")
                 return True and case_hash not in self.serialized_cases
         return False
 
