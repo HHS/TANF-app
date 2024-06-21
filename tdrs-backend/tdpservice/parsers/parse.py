@@ -193,11 +193,28 @@ def rollback_records(unsaved_records, datafile):
             # Elastic clean up later.
             logger.error("Encountered an Elastic exception, enforcing DB cleanup.")
             logger.error(f"Elastic Error: {e}")
+            LogEntry.objects.log_action(
+                user_id=datafile.user.pk,
+                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                object_id=datafile,
+                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+                action_flag=ADDITION,
+                change_message=f"Encountered error while indexing datafile documents: {e}",
+            )
             num_deleted, models = qset.delete()
             logger.info("Succesfully performed DB cleanup after elastic failure.")
         except Exception as e:
-            logging.critical(f"Encountered error while deleting records of type {model}. No records deleted! "
+            logging.critical(f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
                              f"Error message: {e}")
+            LogEntry.objects.log_action(
+                user_id=datafile.user.pk,
+                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                object_id=datafile,
+                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+                action_flag=ADDITION,
+                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! " + \
+                    f"Error message: {e}"
+            )
 
 def rollback_parser_errors(datafile):
     """Delete created errors in the event of a failure."""
@@ -263,13 +280,32 @@ def delete_serialized_records(duplicate_manager, dfs):
             # Elastic clean up later.
             logger.error("Encountered an Elastic exception, enforcing DB cleanup.")
             logger.error(f"Elastic Error: {e}")
+            datafile = dfs.datafile
+            LogEntry.objects.log_action(
+                user_id=datafile.user.pk,
+                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                object_id=datafile,
+                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+                action_flag=ADDITION,
+                change_message=f"Encountered error while indexing datafile documents: {e}",
+            )
             num_deleted, models = qset.delete()
             total_deleted += num_deleted
             dfs.total_number_of_records_created -= num_deleted
             logger.info("Succesfully performed DB cleanup after elastic failure.")
         except Exception as e:
-            logging.critical(f"Encountered error while deleting records of type {model}. No records deleted! "
+            logging.critical(f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
                              f"Error message: {e}")
+            datafile = dfs.datafile
+            LogEntry.objects.log_action(
+                user_id=datafile.user.pk,
+                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                object_id=datafile,
+                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+                action_flag=ADDITION,
+                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! " + \
+                    f"Error message: {e}"
+            )
     if total_deleted:
         logger.info(f"Deleted a total of {total_deleted} records from the DB because of case consistenecy errors.")
 
