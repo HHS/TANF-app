@@ -66,7 +66,7 @@ class TestCaseConsistencyValidator:
             small_correct_file_header,
             small_correct_file_header['program_type'],
             STT.EntityType.STATE,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         line_number = 1
@@ -149,7 +149,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t1s = [
@@ -236,7 +236,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t1s = [
@@ -297,7 +297,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t2s = [
@@ -394,7 +394,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t1s = [
@@ -482,7 +482,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -554,7 +554,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -627,7 +627,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -708,7 +708,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -765,7 +765,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t5s = [
@@ -833,7 +833,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             STT.EntityType.TERRITORY,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -903,7 +903,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             STT.EntityType.TERRITORY,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -981,7 +981,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             STT.EntityType.TERRITORY,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -1051,7 +1051,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             STT.EntityType.STATE,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -1129,7 +1129,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             STT.EntityType.TERRITORY,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -1207,7 +1207,7 @@ class TestCaseConsistencyValidator:
             header,
             header['program_type'],
             STT.EntityType.STATE,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t4s = [
@@ -1288,7 +1288,7 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t1 = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
@@ -1381,7 +1381,7 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             stt_type,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         t1 = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
@@ -1482,7 +1482,7 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         line_number = 1
@@ -1538,7 +1538,7 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         line_number = 1
@@ -1605,7 +1605,7 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         line_number = 1
@@ -1656,7 +1656,7 @@ class TestCaseConsistencyValidator:
             header,
             header["program_type"],
             STT.EntityType.STATE,
-            util.make_generate_parser_error(small_correct_file, None)
+            util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
         line_number = 1
