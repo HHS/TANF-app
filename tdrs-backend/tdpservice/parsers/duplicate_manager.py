@@ -76,7 +76,7 @@ class CaseDuplicateDetector:
             return self.record_ids
         return dict()
 
-    def __generate_error(self, err_msg, record, schema, has_precedence, is_new_max_precedence):
+    def __generate_error(self, err_msg, record, schema, line_number, has_precedence, is_new_max_precedence):
         """Add an error to the managers error dictionary.
 
         @param err_msg: string representation of the error message
@@ -88,6 +88,7 @@ class CaseDuplicateDetector:
         if has_precedence:
             error = self.generate_error(
                         error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
+                        line_number= line_number,
                         schema=schema,
                         record=record,
                         field=None,
@@ -150,7 +151,7 @@ class CaseDuplicateDetector:
                 err_msg = self.__get_partial_dup_error_msg(schema, record.RecordType,
                                                            line_number, existing_record_line_number)
 
-            self.__generate_error(err_msg, record, schema, has_precedence, is_new_max_precedence)
+            self.__generate_error(err_msg, record, schema, line_number, has_precedence, is_new_max_precedence)
             if line_hash not in self.record_hashes:
                 self.record_hashes[line_hash] = line_number
             if partial_hash is not None and partial_hash not in self.partial_hashes:

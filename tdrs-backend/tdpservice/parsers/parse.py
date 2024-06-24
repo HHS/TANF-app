@@ -49,7 +49,7 @@ def parse_datafile(datafile, dfs):
     section = header['type']
     logger.debug(f"Program type: {program_type}, Section: {section}.")
 
-    cat4_error_generator = util.make_generate_parser_error(datafile, None)
+    cat4_error_generator = util.make_generate_case_consistency_parser_error(datafile)
     case_consistency_validator = CaseConsistencyValidator(
         header,
         program_type,

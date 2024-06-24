@@ -85,6 +85,22 @@ def make_generate_file_precheck_parser_error(datafile, line_number):
     return generate
 
 
+def make_generate_case_consistency_parser_error(datafile):
+    """Configure a generate_parser_error that is specific to case consistency errors."""
+    def generate(schema, error_category, error_message, line_number=None, record=None, field=None):
+        return generate_parser_error(
+            datafile=datafile,
+            line_number=line_number,
+            schema=schema,
+            error_category=error_category,
+            error_message=error_message,
+            record=record,
+            field=field,
+        )
+
+    return generate
+
+
 def contains_encrypted_indicator(line, encryption_field):
     """Determine if line contains encryption indicator."""
     if encryption_field is not None:
