@@ -156,7 +156,6 @@ def if_then_validator(
         condition_field = row_schema.get_field_by_name(condition_field_name)
         result_field = row_schema.get_field_by_name(result_field_name)
 
-        # TODO: There is some work to be done here to get the actual friendly name and item numbers of the fields
         validator1_result = condition_function(
             value1,
             row_schema,
