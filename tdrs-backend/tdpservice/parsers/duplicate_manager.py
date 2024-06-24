@@ -88,7 +88,7 @@ class CaseDuplicateDetector:
         if has_precedence:
             error = self.generate_error(
                         error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
-                        line_number= line_number,
+                        line_number=line_number,
                         schema=schema,
                         record=record,
                         field=None,
