@@ -6,6 +6,7 @@ as environment variables.
 """
 
 import time
+from datetime import datetime, timezone
 from django_elasticsearch_dsl.management.commands import search_index
 from django_elasticsearch_dsl.registries import registry
 from django.conf import settings
@@ -16,6 +17,33 @@ class Command(search_index.Command):
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
+
+    def _create(self, models, aliases, options):
+        options['use_alias'] = True
+        options['use_alias_keep_index'] = True
+        alias_index_pairs = []
+        index_suffix = "-" + str(time.time_ns())
+        for index in registry.get_indices(models):
+            # The alias takes the original index name value. The
+            # index name sent to Elasticsearch will be the alias
+            # plus the suffix from above. In addition, the index
+            # name needs to be limited to 255 characters, of which
+            # 21 will always be taken by the suffix, leaving 234
+            # characters from the original index name value.
+            new_index = index._name[:234] + index_suffix
+            alias_index_pairs.append(
+                {'alias': index._name, 'index': new_index}
+            )
+            index._name = new_index
+
+        super()._create(models, aliases, options)
+
+        for alias_index_pair in alias_index_pairs:
+            alias = alias_index_pair['alias']
+            alias_exists = alias in aliases
+            self._update_alias(
+                alias, alias_index_pair['index'], alias_exists, options
+            )
 
     def _populate(self, models, options):
         parallel = options['parallel']
