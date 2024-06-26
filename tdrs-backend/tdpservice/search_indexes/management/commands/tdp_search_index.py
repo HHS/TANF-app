@@ -22,7 +22,7 @@ class Command(search_index.Command):
         options['use_alias'] = True
         options['use_alias_keep_index'] = True
         alias_index_pairs = []
-        index_suffix = "-" + str(time.time_ns())
+        index_suffix = "-" + datetime.now().strftime("%Y%m%d%H%M%S%f")
         for index in registry.get_indices(models):
             # The alias takes the original index name value. The
             # index name sent to Elasticsearch will be the alias
