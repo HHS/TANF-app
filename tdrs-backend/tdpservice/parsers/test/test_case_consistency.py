@@ -673,9 +673,9 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 1
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-        assert errors[0].error_message == (
-            'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
-        )
+        assert errors[0].error_message == ('At least one person who is head-of-household or spouse of '
+                                           'head-of-household on case must have countable months toward time limit >= '
+                                           '60 since CLOSURE_REASON = 03: federal 5 year time limit.')
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (

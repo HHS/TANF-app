@@ -345,19 +345,7 @@ class CaseConsistencyValidator:
         t5s = self.sorted_cases.get(t5_model, [])
 
         if len(t4s) > 0:
-            if len(t4s) > 1:
-                for record, schema in t4s[1:]:
-                    self.__generate_and_add_error(
-                        schema,
-                        record,
-                        field='RPT_MONTH_YEAR',
-                        msg=(
-                            f'There should only be one {t4_model_name} record  '
-                            f'per RPT_MONTH_YEAR and CASE_NUMBER.'
-                        )
-                    )
-                    num_errors += 1
-            else:
+            if len(t4s) == 1:
                 t4 = t4s[0]
                 t4_record, t4_schema = t4
                 closure_reason = getattr(t4_record, 'CLOSURE_REASON')
@@ -368,9 +356,11 @@ class CaseConsistencyValidator:
                         'same RPT_MONTH_YEAR since CLOSURE_REASON = 1:Employment/excess earnings.'
                     ))
                 elif closure_reason == '03' and not is_ssp:
-                    num_errors += self.__validate_case_closure_ftl(t4, t5s, (
-                        'At least one person who is HoH or spouse of HoH on case must have FTL months >=60.'
-                    ))
+                    num_errors += self.__validate_case_closure_ftl(t4, t5s,
+                        ('At least one person who is head-of-household or spouse of head-of-household on case must '
+                         'have countable months toward time limit >= 60 since CLOSURE_REASON = 03: federal 5 year ' 
+                         'time limit.')
+                    )
             if len(t5s) == 0:
                 for record, schema in t4s:
                     self.__generate_and_add_error(
