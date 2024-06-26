@@ -2,22 +2,16 @@
 Delete and reparse a set of datafiles
 """
 
-import time
-from django.core.management.base import BaseCommand, CommandError
-from django_elasticsearch_dsl.management.commands import search_index
-from django_elasticsearch_dsl.registries import registry
+import os
+from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.conf import settings
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers.models import ParserError, DataFileSummary
-# from tdpservice.search_indexes.models import tanf, ssp, tribal
 from tdpservice.scheduling import parser_task
-from django.forms.models import model_to_dict
 from tdpservice.search_indexes.documents import tanf, ssp, tribal
-from tdpservice.scheduling.db_backup import run_backup
-from elasticsearch.helpers.errors import BulkIndexError
-from django.db import models
-from django.apps import apps
+from tdpservice.scheduling.db_backup import backup_database, upload_file, get_system_values
+from tdpservice.users.models import User
+from tdpservice.core.utils import log
 
 
 class Command(BaseCommand):
@@ -29,101 +23,155 @@ class Command(BaseCommand):
         """Add arguments to the management command."""
         parser.add_argument("--fiscal_quarter", type=str)
         parser.add_argument("--fiscal_year", type=str)
+        parser.add_argument("--all", action='store_true')
+
+    def backup_postgres_db(self):
+        sys_values = {
+            'SPACE': '',
+            'POSTGRES_CLIENT_DIR': '',
+            'POSTGRES_CLIENT': '',
+            'S3_ENV_VARS': '',
+            'S3_CREDENTIALS': '',
+            'S3_URI': '',
+            'S3_ACCESS_KEY_ID': '',
+            'S3_SECRET_ACCESS_KEY': '',
+            'S3_BUCKET': '',
+            'S3_REGION': '',
+            'DATABASE_URI': '',
+            'AWS_ACCESS_KEY_ID': '',
+            'AWS_SECRET_ACCESS_KEY': '',
+            'DATABASE_PORT': '',
+            'DATABASE_PASSWORD': '',
+            'DATABASE_DB_NAME': '',
+            'DATABASE_HOST': '',
+            'DATABASE_USERNAME': '',
+            'PGPASSFILE': '',
+        }
+        if settings.USE_LOCALSTACK is False:
+            sys_values = get_system_values()
+        else:  # fix me :)
+            return
+
+        arg_file = "/tmp/backup.pg"
+        arg_database = sys_values['DATABASE_URI']
+        system_user, created = User.objects.get_or_create(username='system')
+        # logger_context = {}
+
+        # log(
+        #     user_id=system_user.pk,
+        #     content_type_id=content_type.pk,
+        #     object_id=None,
+        #     object_repr="Begining Database Backup",
+        #     action_flag=ADDITION,
+        #     change_message="Begining database backup."
+        # )
+        # back up database
+        backup_database(
+            file_name=arg_file,
+            postgres_client=sys_values['POSTGRES_CLIENT_DIR'],
+            database_uri=arg_database,
+            system_user=system_user
+        )
+
+        # upload backup file
+        upload_file(
+            file_name=arg_file,
+            bucket=sys_values['S3_BUCKET'],
+            sys_values=sys_values,
+            system_user=system_user,
+            region=sys_values['S3_REGION'],
+            object_name="backup"+arg_file,
+        )
+
+        # log(
+        #     user_id=system_user.pk,
+        #     content_type_id=content_type.pk,
+        #     object_id=None,
+        #     object_repr="Finished Database Backup",
+        #     action_flag=ADDITION,
+        #     change_message="Finished database backup."
+        # )
+
+        # logger.info(f"Deleting {arg_file} from local storage.")
+        os.system('rm ' + arg_file)
 
     def handle(self, *args, **options):
         """Delete datafiles matching a query."""
-        # full db backup -> backup_database()
-        # parameterize location backup
-        # refine on subsequent pass
-        run_backup('-b')  # or reimplement `main` to parameterize file name/loc
+        # try
+        try:
+            self.backup_postgres_db()
+        except Exception as e:
+            print('Database backup failed with exception')
+            raise e
 
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
+        delete_all = options.get('all', False)
 
-        # might be a little dangerous... confirm they want to delete everything if year/quarter not specified
-        files = DataFile.objects.all()
-        files = files.filter(year=fiscal_year) if fiscal_year else files
-        files = files.filter(quarter=fiscal_quarter) if fiscal_quarter else files
+        files = None
+        if delete_all:
+            files = DataFile.objects.all()
+            print(
+                f'This will delete ALL ({files.count()}) '
+                'data files for ALL submission periods.'
+            )
+        else:
+            if not fiscal_year and not fiscal_quarter:
+                print(
+                    'Options --fiscal_year and --fiscal_quarter not set. '
+                    'Provide either option to continue, or --all to wipe all submissions.'
+                )
+                return
+            files = DataFile.objects.all()
+            files = files.filter(year=fiscal_year) if fiscal_year else files
+            files = files.filter(quarter=fiscal_quarter) if fiscal_quarter else files
+            print(
+                f'This will delete {files.count()} datafiles, '
+                'create new elasticsearch indices, '
+                'and re-parse each of the datafiles.'
+            )
 
-        print(f'this will delete {files.count()} datafiles - continue?')
-        # catch confirmation input?
+        c = str(input('Continue [y/n]? ')).lower()
+        if c not in ['y', 'yes']:
+            print('Cancelled.')
+            return
 
         call_command('tdp_search_index', '--create', '-f')
 
-        # file_ids = files.values_list('id', flat=True).distinct()
+        file_ids = files.values_list('id', flat=True).distinct()
 
-        # disconnect post_delete signals
-        # models.signals.post_delete.disconnect()
+        model_types = [
+            tanf.TANF_T1, tanf.TANF_T2, tanf.TANF_T3, tanf.TANF_T4, tanf.TANF_T5, tanf.TANF_T6, tanf.TANF_T7,
+            ssp.SSP_M1, ssp.SSP_M2, ssp.SSP_M3, ssp.SSP_M4, ssp.SSP_M5, ssp.SSP_M6, ssp.SSP_M7,
+            tribal.Tribal_TANF_T1, tribal.Tribal_TANF_T2, tribal.Tribal_TANF_T3, tribal.Tribal_TANF_T4, tribal.Tribal_TANF_T5, tribal.Tribal_TANF_T6, tribal.Tribal_TANF_T7
+        ]
 
-        # sign_proc = apps.get_app_config('django_elasticsearch_dsl').signal_processor
-        # sign_proc.teardown()
+        for m in model_types:
+            objs = m.objects.all().filter(datafile_id__in=file_ids)
+            print(f'deleting {objs.count()}, {m} objects')
 
-        # reconnect post_delete signals
+            # atomic delete?
+            try:
+                objs._raw_delete(objs.db)
+            except Exception as e:
+                print(f'_raw_delete failed for model {m}')
+                raise e
 
+        print(f'Deleting and reparsing {files.count()} files')
         for f in files:
-            f.delete()  # -> delete all data associated
-            # raw_delete -> doesn't execute signals or cascade
 
-        # sign_proc.setup()
+            try:
+                f.delete()
+            except Exception as e:
+                print(f'DataFile.delete failed for id: {f.pk}')
+                raise e
 
-        for f in files:
-            f.save()
-            parser_task.parse.delay(f.pk)
+            try:
+                f.save()
+            except Exception as e:
+                print(f'DataFile.save failed for id: {f.pk}')
+                raise e
 
-        # # parallelize - parent task (above)
-        # # add model deletion, reparse to celery queue (for each datafile)
-
-        # ## delete all parsed records matching files
-        # model_types = [
-        #     tanf.TANF_T1, tanf.TANF_T2, tanf.TANF_T3, tanf.TANF_T4, tanf.TANF_T5, tanf.TANF_T6, tanf.TANF_T7,
-        #     ssp.SSP_M1, ssp.SSP_M2, ssp.SSP_M3, ssp.SSP_M4, ssp.SSP_M5, ssp.SSP_M6, ssp.SSP_M7,
-        #     tribal.Tribal_TANF_T1, tribal.Tribal_TANF_T2, tribal.Tribal_TANF_T3, tribal.Tribal_TANF_T4, tribal.Tribal_TANF_T5, tribal.Tribal_TANF_T6, tribal.Tribal_TANF_T7
-        # ]
-
-        # # base model + cascade would allow to query only one model
-        # # query by record's datafile's date
-        # for model in model_types:
-        #     objects = model.objects.filter(datafile_id__in=file_ids)
-        #     num_deleted, models = objects.delete()
-        #     if num_deleted > 0:
-        #         print(f'deleted {num_deleted}, {model} objects')
-
-        # ## delete all parser errors matching files
-        # errors = ParserError.objects.filter(file_id__in=file_ids)
-        # # pickle/export
-        # # upload_file()
-        # # delete
-        # num_deleted, models = errors.delete()
-        # if num_deleted > 0:
-        #     print(f'deleted {num_deleted}, ParserError objects')
-
-        # ## delete all data file summaries
-        # summaries = DataFileSummary.objects.filter(datafile_id__in=file_ids)
-        # # pickle/export
-        # # upload_file()
-        # # delete
-        # num_deleted, models = summaries.delete()
-        # if num_deleted > 0:
-        #     print(f'deleted {num_deleted}, DataFileSummary objects')
-
-        # ## delete data file (?) how are we going to re-parse them?
-        # # datafile.delete()
-
-        # ## delete all elastic documents ~~matching files~~ (all of them in general)
-        # # call_command('tdp_search_index','--delete', '-f')
-        # # don't delete old index
-
-        # ## reindex elastic indexes
-        
-        # underlying library to create with new name/alias (keeps the old index around)
-
-        ## re-parse data file (turn off emails/side-effects)
-        # reparse old data (not in specified dataset) later -> update other ticket
-
-        # load pickled data?
-        # backup elastic?
-        # - cf service level
-        # first task before start
-        # - turn off elastic - perform backup
-        # - delete all DF records from postgres
-        # - spin up new elastic
+            # latest version only? -> possible new ticket
+            parser_task.parse.delay(f.pk, should_send_submission_email=False)
+        print('Done.')
