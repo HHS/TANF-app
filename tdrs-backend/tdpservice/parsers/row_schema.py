@@ -13,12 +13,20 @@ class RowSchema:
             self,
             record_type="T1",
             document=None,
+            # The default hash function covers all program types with record types ending in a 6 or 7.
+            generate_hashes_func=lambda line, record: (hash(line),
+                                                       hash(record.RecordType)),
+            should_skip_partial_dup_func=lambda record: False,
+            get_partial_hash_members_func=lambda: ["RecordType"],
             preparsing_validators=[],
             postparsing_validators=[],
             fields=[],
             quiet_preparser_errors=False,
             ):
         self.document = document
+        self.generate_hashes_func = generate_hashes_func
+        self.should_skip_partial_dup_func = should_skip_partial_dup_func
+        self.get_partial_hash_members_func = get_partial_hash_members_func
         self.preparsing_validators = preparsing_validators
         self.postparsing_validators = postparsing_validators
         self.fields = fields
