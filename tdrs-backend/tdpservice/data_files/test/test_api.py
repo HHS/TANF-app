@@ -97,7 +97,6 @@ class DataFileAPITestBase:
         ws = DataFileAPITestBase.get_spreadsheet(response)
 
         COL_ERROR_MESSAGE = 4
-        COL_ITEM_NAME = 6
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
@@ -130,7 +129,6 @@ class DataFileAPITestBase:
         ws = wb.get_sheet_by_name('Sheet1')
 
         COL_ERROR_MESSAGE = 4
-        COL_ITEM_NAME = 6
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
