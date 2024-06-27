@@ -323,7 +323,7 @@ t2 = SchemaManager(
                 Field(
                     item="36E",
                     name="RECEIVE_SSI",
-                    friendly_name="receives social security income",
+                    friendly_name="receives SSI",
                     type="number",
                     startIndex=49,
                     endIndex=50,

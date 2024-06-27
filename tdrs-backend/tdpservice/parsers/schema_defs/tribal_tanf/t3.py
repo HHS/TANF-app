@@ -249,7 +249,7 @@ child_one = RowSchema(
         Field(
             item="71B",
             name="RECEIVE_SSI",
-            friendly_name="receives social security income",
+            friendly_name="receives SSI",
             type="number",
             startIndex=45,
             endIndex=46,
