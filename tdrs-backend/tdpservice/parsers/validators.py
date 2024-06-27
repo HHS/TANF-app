@@ -7,6 +7,7 @@ from typing import Any
 # from tdpservice.parsers.row_schema import RowSchema
 from tdpservice.parsers.models import ParserErrorCategoryChoices
 from tdpservice.parsers.util import fiscal_to_calendar, year_month_to_year_quarter, clean_options_string
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ def make_validator(validator_func, error_func):
                 return (True, None)
             return (False, error_func(eargs))
         except Exception as e:
-            logger.debug(f"Caught exception in validator. Exception: {e}")
+            logger.debug(f"Caught exception in validator. Exception: {e}. Stack Trace:\n{traceback.format_exc()}")
             return (False, error_func(eargs))
     return validator
 

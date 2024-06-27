@@ -8,6 +8,7 @@ from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
 from tdpservice.parsers.validators import ValidationErrorArgs, format_error_context
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +52,12 @@ class CaseConsistencyValidator:
                                     )
         return format_error_context(eargs)
 
-    def __generate_and_add_error(self, schema, record, field, msg):
+    def __generate_and_add_error(self, schema, record, field, line_num, msg):
         """Generate a ParserError and add it to the `generated_errors` list."""
         err = self.generate_error(
             error_category=ParserErrorCategoryChoices.CASE_CONSISTENCY,
             schema=schema,
+            line_number=line_num,
             record=record,
             field=field,
             error_message=msg,
@@ -78,18 +80,18 @@ class CaseConsistencyValidator:
         """Return current number of generated errors for the current case."""
         return len(self.generated_errors)
 
-    def add_record_to_structs(self, record_schema_pair):
+    def add_record_to_structs(self, record_triplet):
         """Add record_schema_pair to structs."""
-        record = record_schema_pair[0]
-        self.sorted_cases.setdefault(type(record), []).append(record_schema_pair)
-        self.cases.append(record_schema_pair)
+        record = record_triplet[0]
+        self.sorted_cases.setdefault(type(record), []).append(record_triplet)
+        self.cases.append(record_triplet)
 
-    def clear_structs(self, seed_record_schema_pair=None):
+    def clear_structs(self, seed_record_triplet=None):
         """Reset and optionally seed the structs."""
         self.sorted_cases = dict()
         self.cases = list()
-        if seed_record_schema_pair:
-            self.add_record_to_structs(seed_record_schema_pair)
+        if seed_record_triplet:
+            self.add_record_to_structs(seed_record_triplet)
 
     def update_removed(self, case_hash, should_remove, was_removed):
         """Notify duplicate manager's CaseDuplicateDetectors whether they need to mark their records for DB removal."""
@@ -123,13 +125,13 @@ class CaseConsistencyValidator:
         if self.case_is_section_one_or_two:
             if latest_case_hash != self.current_case_hash and self.current_case_hash is not None:
                 num_errors += self.validate()
-                self.clear_structs((record, schema))
+                self.clear_structs((record, schema, line_number))
                 self.case_has_errors = case_has_errors
                 self.has_validated = False
                 case_hash_to_remove = self.current_case_hash
             else:
                 self.case_has_errors = self.case_has_errors if self.case_has_errors else case_has_errors
-                self.add_record_to_structs((record, schema))
+                self.add_record_to_structs((record, schema, line_number))
                 self.has_validated = False
             self.current_case = record.CASE_NUMBER
 
@@ -152,7 +154,8 @@ class CaseConsistencyValidator:
                 num_errors = self.__validate()
             return num_errors
         except Exception as e:
-            logger.error(f"Uncaught exception during category four validation: {e}")
+            logger.error(f"Uncaught exception during category four validation: {e}. "
+                         f"Stack Trace:\n{traceback.format_exc()}")
             return num_errors
 
     def __validate(self):
@@ -199,7 +202,7 @@ class CaseConsistencyValidator:
 
         is_t2 = True
         t2_context = self.__get_error_context("FAMILY_AFFILIATION", t2s[0][1]) + "==1"
-        for record, schema in t2s:
+        for record, schema, line_num in t2s:
             family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
             if family_affiliation == 1:
                 passed = True
@@ -208,7 +211,7 @@ class CaseConsistencyValidator:
 
         is_t3 = True
         t3_context = self.__get_error_context("FAMILY_AFFILIATION", t3s[0][1]) + "==1"
-        for record, schema in t3s:
+        for record, schema, line_num in t3s:
             family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
             if family_affiliation == 1:
                 passed = True
@@ -224,7 +227,7 @@ class CaseConsistencyValidator:
             final_context += t3_context + "."
 
         if not passed:
-            for record, schema in t1s:
+            for record, schema, line_num in t1s:
                 rpt_context = f'{self.__get_error_context("RPT_MONTH_YEAR", schema)} and '
                 case_context = f'{self.__get_error_context("CASE_NUMBER", schema)}, where '
                 error_msg += rpt_context + case_context + final_context
@@ -232,6 +235,7 @@ class CaseConsistencyValidator:
                     schema,
                     record,
                     field='FAMILY_AFFILIATION',
+                    line_num=line_num,
                     msg=error_msg
                 )
                 num_errors += 1
@@ -261,11 +265,12 @@ class CaseConsistencyValidator:
 
         if len(t1s) > 0:
             if len(t2s) == 0 and len(t3s) == 0:
-                for record, schema in t1s:
+                for record, schema, line_num in t1s:
                     self.__generate_and_add_error(
                         schema,
                         record,
                         field='RPT_MONTH_YEAR',
+                        line_num=line_num,
                         msg=(
                             f'Every {t1_model_name} record should have at least one '
                             f'corresponding {t2_model_name} or {t3_model_name} record '
@@ -278,7 +283,6 @@ class CaseConsistencyValidator:
             else:
                 # loop through all t2s and t3s
                 # to find record where FAMILY_AFFILIATION == 1
-                record, schema = t1s[0]
                 num_errors += self.__validate_family_affiliation(num_errors,
                                                                  t1_model_name, t1s,
                                                                  t2_model_name, t2s,
@@ -287,11 +291,12 @@ class CaseConsistencyValidator:
                 # the successful route
                 # pass
         else:
-            for record, schema in t2s:
+            for record, schema, line_num in t2s:
                 self.__generate_and_add_error(
                     schema,
                     record,
                     field='RPT_MONTH_YEAR',
+                    line_num=line_num,
                     msg=(
                         f'Every {t2_model_name} record should have at least one corresponding '
                         f'{t1_model_name} record with the same {self.__get_error_context("RPT_MONTH_YEAR", schema)} '
@@ -300,11 +305,12 @@ class CaseConsistencyValidator:
                 )
                 num_errors += 1
 
-            for record, schema in t3s:
+            for record, schema, line_num in t3s:
                 self.__generate_and_add_error(
                     schema,
                     record,
                     field='RPT_MONTH_YEAR',
+                    line_num=line_num,
                     msg=(
                         f'Every {t3_model_name} record should have at least one corresponding '
                         f'{t1_model_name} record with the same {self.__get_error_context("RPT_MONTH_YEAR", schema)} '
@@ -323,10 +329,10 @@ class CaseConsistencyValidator:
         the case must have employment status = 1:Yes in the same month.
         """
         num_errors = 0
-        t4_record, t4_schema = t4
+        t4_record, t4_schema, line_num = t4
 
         passed = False
-        for record, schema in t5s:
+        for record, schema, line_num in t5s:
             employment_status = getattr(record, 'EMPLOYMENT_STATUS')
 
             if employment_status == 1:
@@ -338,6 +344,7 @@ class CaseConsistencyValidator:
                 t4_schema,
                 t4_record,
                 'EMPLOYMENT_STATUS',
+                line_num,
                 error_msg
             )
             num_errors += 1
@@ -352,10 +359,10 @@ class CaseConsistencyValidator:
         or spouse of HoH on case must have FTL months >=60.
         """
         num_errors = 0
-        t4_record, t4_schema = t4
+        t4_record, t4_schema, line_num = t4
 
         passed = False
-        for record, schema in t5s:
+        for record, schema, line_num in t5s:
             relationship_hoh = getattr(record, 'RELATIONSHIP_HOH')
             ftl_months = getattr(record, 'COUNTABLE_MONTH_FED_TIME')
 
@@ -368,6 +375,7 @@ class CaseConsistencyValidator:
                 t4_schema,
                 t4_record,
                 'COUNTABLE_MONTH_FED_TIME',
+                line_num,
                 error_msg
             )
             num_errors += 1
@@ -395,7 +403,7 @@ class CaseConsistencyValidator:
         if len(t4s) > 0:
             if len(t4s) == 1:
                 t4 = t4s[0]
-                t4_record, t4_schema = t4
+                t4_record, t4_schema, line_num = t4
                 closure_reason = getattr(t4_record, 'CLOSURE_REASON')
 
                 if closure_reason == '01':
@@ -416,11 +424,12 @@ class CaseConsistencyValidator:
                          'federal 5 year time limit.')
                          )
             if len(t5s) == 0:
-                for record, schema in t4s:
+                for record, schema, line_num in t4s:
                     self.__generate_and_add_error(
                         schema,
                         record,
                         field='RPT_MONTH_YEAR',
+                        line_num=line_num,
                         msg=(
                             f'Every {t4_model_name} record should have at least one corresponding '
                             f'{t5_model_name} record with the same {self.__get_error_context("RPT_MONTH_YEAR", schema)}'
@@ -432,11 +441,12 @@ class CaseConsistencyValidator:
                 # success
                 pass
         else:
-            for record, schema in t5s:
+            for record, schema, line_num in t5s:
                 self.__generate_and_add_error(
                     schema,
                     record,
                     field='RPT_MONTH_YEAR',
+                    line_num=line_num,
                     msg=(
                         f'Every {t5_model_name} record should have at least one corresponding '
                         f'{t4_model_name} record with the same {self.__get_error_context("RPT_MONTH_YEAR", schema)} '
@@ -458,7 +468,7 @@ class CaseConsistencyValidator:
 
         t5s = self.sorted_cases.get(t5_model, [])
 
-        for record, schema in t5s:
+        for record, schema, line_num in t5s:
             rec_aabd = getattr(record, 'REC_AID_TOTALLY_DISABLED')
             rec_ssi = getattr(record, 'REC_SSI')
             family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
@@ -474,6 +484,7 @@ class CaseConsistencyValidator:
                     schema,
                     record,
                     field='REC_AID_TOTALLY_DISABLED',
+                    line_num=line_num,
                     msg=(
                         f'{t5_model_name} Adults in territories must have a valid '
                         f'value for {self.__get_error_context("REC_AID_TOTALLY_DISABLED", schema)}.'
@@ -485,6 +496,7 @@ class CaseConsistencyValidator:
                     schema,
                     record,
                     field='REC_AID_TOTALLY_DISABLED',
+                    line_num=line_num,
                     msg=(
                         f'{t5_model_name} People in states should not have a value '
                         f'of 1 for {self.__get_error_context("REC_AID_TOTALLY_DISABLED", schema)}.'
@@ -497,6 +509,7 @@ class CaseConsistencyValidator:
                     schema,
                     record,
                     field='REC_SSI',
+                    line_num=line_num,
                     msg=(
                         f'{t5_model_name} People in territories must have value = 2:No for '
                         f'{self.__get_error_context("REC_SSI", schema)}.'
@@ -508,6 +521,7 @@ class CaseConsistencyValidator:
                     schema,
                     record,
                     field='REC_SSI',
+                    line_num=line_num,
                     msg=(
                         f'{t5_model_name} People in states must have a valid value for '
                         f'{self.__get_error_context("REC_SSI", schema)}.'

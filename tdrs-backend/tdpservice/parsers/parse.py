@@ -15,6 +15,7 @@ from .case_consistency_validator import CaseConsistencyValidator
 from elasticsearch.helpers.errors import BulkIndexError
 from elasticsearch.exceptions import ElasticsearchException
 from tdpservice.data_files.models import DataFile
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +121,8 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                 try:
                     num_elastic_records_created += document.update(created_objs)[0]
                 except BulkIndexError as e:
-                    logger.error(f"Encountered error while indexing datafile documents: {e}")
+                    logger.error(f"Encountered error while indexing datafile documents: {e}. "
+                                 f"Stack Trace:\n{traceback.format_exc()}")
                     LogEntry.objects.log_action(
                         user_id=datafile.user.pk,
                         content_type_id=ContentType.objects.get_for_model(DataFile).pk,
@@ -142,7 +144,8 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                 logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
             return num_db_records_created == num_expected_db_records, {}
         except DatabaseError as e:
-            logger.error(f"Encountered error while creating datafile records: {e}")
+            logger.error(f"Encountered error while creating datafile records: {e}. "
+                         f"Stack Trace:\n{traceback.format_exc()}")
             return False
     return False
 
@@ -192,7 +195,7 @@ def rollback_records(unsaved_records, datafile):
             # Caught an Elastic exception, to ensure the quality of the DB, we will force the DB deletion and let
             # Elastic clean up later.
             logger.error("Encountered an Elastic exception, enforcing DB cleanup.")
-            logger.error(f"Elastic Error: {e}")
+            logger.error(f"Elastic Error: {e}. Stack Trace:\n{traceback.format_exc()}")
             LogEntry.objects.log_action(
                 user_id=datafile.user.pk,
                 content_type_id=ContentType.objects.get_for_model(DataFile).pk,
@@ -205,7 +208,7 @@ def rollback_records(unsaved_records, datafile):
             logger.info("Succesfully performed DB cleanup after elastic failure.")
         except Exception as e:
             logging.critical(f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                             f"Error message: {e}")
+                             f"Error message: {e}. Stack Trace:\n{traceback.format_exc()}")
             LogEntry.objects.log_action(
                 user_id=datafile.user.pk,
                 content_type_id=ContentType.objects.get_for_model(DataFile).pk,
@@ -226,7 +229,8 @@ def rollback_parser_errors(datafile):
         num_deleted = qset._raw_delete(qset.db)
         logger.debug(f"Deleted {num_deleted} {ParserError}.")
     except Exception as e:
-        logging.error(f"Encountered error while deleting records of type {ParserError}. Error message: {e}")
+        logging.error(f"Encountered error while deleting records of type {ParserError}. Error message: {e}. "
+                      f"Stack Trace:\n{traceback.format_exc()}")
 
 def validate_case_consistency(case_consistency_validator):
     """Force category four validation if we have reached the last case in the file."""
@@ -279,7 +283,7 @@ def delete_serialized_records(duplicate_manager, dfs):
             # Caught an Elastic exception, to ensure the quality of the DB, we will force the DB deletion and let
             # Elastic clean up later.
             logger.error("Encountered an Elastic exception, enforcing DB cleanup.")
-            logger.error(f"Elastic Error: {e}")
+            logger.error(f"Elastic Error: {e}. Stack Trace:\n{traceback.format_exc()}")
             datafile = dfs.datafile
             LogEntry.objects.log_action(
                 user_id=datafile.user.pk,
@@ -295,7 +299,7 @@ def delete_serialized_records(duplicate_manager, dfs):
             logger.info("Succesfully performed DB cleanup after elastic failure.")
         except Exception as e:
             logging.critical(f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                             f"Error message: {e}")
+                             f"Error message: {e}. Stack Trace:\n{traceback.format_exc()}")
             datafile = dfs.datafile
             LogEntry.objects.log_action(
                 user_id=datafile.user.pk,
@@ -477,7 +481,7 @@ def manager_parse_line(line, schema_manager, generate_error, datafile, is_encryp
         records = schema_manager.parse_and_validate(line, generate_error)
         return records
     except AttributeError as e:
-        logger.error(e)
+        logger.error(f"{e}. Stack Trace:\n{traceback.format_exc()}")
         return [(None, False, [
             generate_error(
                 schema=None,

@@ -315,6 +315,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
     assert parser_errors.count() == 8
 
+    parser_errors = parser_errors.exclude(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
     trailer_errors = list(parser_errors.filter(row_number=3).order_by('id'))
 
     trailer_error_1 = trailer_errors[0]
@@ -1400,7 +1401,6 @@ def test_misformatted_multi_records(file_fixture, result, number_of_errors, erro
     assert parser_errors.count() == number_of_errors
     if number_of_errors > 0:
         error_messages = [parser_error.error_message for parser_error in parser_errors]
-        print(error_messages)
         assert error_message in error_messages
 
     parser_errors = ParserError.objects.all().exclude(
