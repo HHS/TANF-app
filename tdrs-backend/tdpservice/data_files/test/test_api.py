@@ -101,7 +101,7 @@ class DataFileAPITestBase:
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == "Every T1 record should have at least one " + \
-            "corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER."
+            "corresponding T2 or T3 record with the same Item 4 (reporting month and year) and Item 6 (case number)."
 
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
@@ -134,7 +134,8 @@ class DataFileAPITestBase:
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("Every T1 record should have at least one "
                                                                   "corresponding T2 or T3 record with the same "
-                                                                  "RPT_MONTH_YEAR and CASE_NUMBER.")
+                                                                  "Item 4 (reporting month and year) and Item 6 "
+                                                                  "(case number).")
 
     @staticmethod
     def assert_data_file_exists(data_file_data, version, user):
