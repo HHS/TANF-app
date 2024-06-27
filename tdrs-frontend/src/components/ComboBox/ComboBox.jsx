@@ -27,6 +27,7 @@ const ComboBox = ({
   name,
   placeholder,
   label,
+  autoComplete,
 }) => {
   useEffect(() => {
     // The combo box was not rendering as a combo box without this line
@@ -64,6 +65,7 @@ const ComboBox = ({
       <div className="usa-combo-box" data-placeholder={placeholder}>
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
         <select
+          autoComplete={autoComplete ? 'on' : 'off'}
           className="usa-select"
           data-testid={`${name}-combobox`}
           aria-describedby={`${name}-error-alert`}
@@ -94,6 +96,7 @@ ComboBox.propTypes = {
   name: PropTypes.string.isRequired,
   placeholder: PropTypes.string,
   label: PropTypes.string.isRequired,
+  autoComplete: PropTypes.bool,
 }
 
 ComboBox.defaultProps = {
@@ -101,6 +104,7 @@ ComboBox.defaultProps = {
   error: '',
   placeholder: '',
   handleBlur: null,
+  autoComplete: true,
 }
 
 export default ComboBox
