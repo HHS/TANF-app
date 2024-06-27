@@ -4,7 +4,6 @@ import pytest
 import logging
 from datetime import date
 from .. import validators
-from .. import schema_defs, util
 from ..row_schema import RowSchema
 from ..fields import Field
 from tdpservice.parsers.test.factories import TanfT1Factory, TanfT2Factory, TanfT3Factory, TanfT5Factory, TanfT6Factory
@@ -2110,50 +2109,3 @@ def test_t3_m3_child_validator():
         False,
         "The first child record is too short at 2 characters and must be at least 60 characters.",
     )
-
-class TestCaseConsistencyValidator:
-    """Test case consistency (cat4) validators."""
-
-    def parse_header(self, datafile):
-        """Parse datafile header into header object."""
-        rawfile = datafile.file
-
-        # parse header, trailer
-        rawfile.seek(0)
-        header_line = rawfile.readline().decode().strip()
-        return schema_defs.header.parse_and_validate(
-            header_line,
-            util.make_generate_file_precheck_parser_error(datafile, 1)
-        )
-
-    @pytest.fixture
-    def tanf_s1_records(self):
-        """Return group of TANF Section 1 records."""
-        t1 = TanfT1Factory.create()
-        t2 = TanfT2Factory.create()
-        t3 = TanfT3Factory.create()
-        t3_1 = TanfT3Factory.create()
-        return [t1, t2, t3, t3_1]
-
-    @pytest.fixture
-    def tanf_s1_schemas(self):
-        """Return group of TANF Section 1 schemas."""
-        s1 = schema_defs.tanf.t1.schemas[0]
-        s2 = schema_defs.tanf.t2.schemas[0]
-        s3 = schema_defs.tanf.t3.schemas[0]
-        return [s1, s2, s3, s3]
-
-    @pytest.fixture
-    def small_correct_file(self, stt_user, stt):
-        """Fixture for small_correct_file."""
-        return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
-
-    @pytest.fixture
-    def small_correct_file_header(self, small_correct_file):
-        """Return a valid header record."""
-        header, header_is_valid, header_errors = self.parse_header(small_correct_file)
-
-        if not header_is_valid:
-            logger.error('Header is not valid: %s', header_errors)
-            return None
-        return header
