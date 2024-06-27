@@ -97,13 +97,11 @@ class DataFileAPITestBase:
         ws = DataFileAPITestBase.get_spreadsheet(response)
 
         COL_ERROR_MESSAGE = 4
-        COL_ITEM_NAME = 6
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == "if cash amount :873 validator1 passed" \
-            + " then number of months Item 21B (number of months) 0 is not larger than 0."
-        assert ws.cell(row=8, column=COL_ITEM_NAME).value == 'number of months,cash amount'
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == "Every T1 record should have at least one " + \
+            "corresponding T2 or T3 record with the same RPT_MONTH_YEAR and CASE_NUMBER."
 
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
@@ -131,15 +129,12 @@ class DataFileAPITestBase:
         ws = wb.get_sheet_by_name('Sheet1')
 
         COL_ERROR_MESSAGE = 4
-        COL_ITEM_NAME = 6
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
-            "if CASH_AMOUNT :873 validator1 passed then "
-            "NBR_MONTHS Item 21B (number of months) 0 is not larger than 0."
-        )
-        assert ws.cell(row=8, column=COL_ITEM_NAME).value == '[CASH_AMOUNT(55-59), NBR_MONTHS(59-62)]'
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("Every T1 record should have at least one "
+                                                                  "corresponding T2 or T3 record with the same "
+                                                                  "RPT_MONTH_YEAR and CASE_NUMBER.")
 
     @staticmethod
     def assert_data_file_exists(data_file_data, version, user):
