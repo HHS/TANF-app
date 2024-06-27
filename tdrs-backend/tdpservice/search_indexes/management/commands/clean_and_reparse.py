@@ -9,9 +9,12 @@ from django.conf import settings
 from tdpservice.data_files.models import DataFile
 from tdpservice.scheduling import parser_task
 from tdpservice.search_indexes.documents import tanf, ssp, tribal
-from tdpservice.scheduling.db_backup import backup_database, upload_file, get_system_values
+from tdpservice.scheduling.db_backup import main, get_system_values
 from tdpservice.users.models import User
 from tdpservice.core.utils import log
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -26,84 +29,22 @@ class Command(BaseCommand):
         parser.add_argument("--all", action='store_true')
 
     def backup_postgres_db(self):
-        sys_values = {
-            'SPACE': '',
-            'POSTGRES_CLIENT_DIR': 'postgres',
-            'POSTGRES_CLIENT': 'postgres',
-            'S3_ENV_VARS': '',
-            'S3_CREDENTIALS': '',
-            'S3_URI': '',
-            'S3_ACCESS_KEY_ID': settings.AWS_S3_DATAFILES_ACCESS_KEY,
-            'S3_SECRET_ACCESS_KEY': settings.AWS_S3_DATAFILES_SECRET_KEY,
-            'S3_BUCKET': settings.AWS_S3_DATAFILES_BUCKET_NAME,
-            'S3_REGION': settings.AWS_S3_DATAFILES_REGION_NAME,
-            'DATABASE_URI': 'localhost',
-            'AWS_ACCESS_KEY_ID': settings.AWS_S3_DATAFILES_ACCESS_KEY,
-            'AWS_SECRET_ACCESS_KEY': settings.AWS_S3_DATAFILES_SECRET_KEY,
-            'DATABASE_PORT': settings.DATABASES['default']['PORT'],
-            'DATABASE_PASSWORD': settings.DATABASES['default']['PASSWORD'],
-            'DATABASE_DB_NAME': settings.DATABASES['default']['NAME'],
-            'DATABASE_HOST': settings.DATABASES['default']['HOST'],
-            'DATABASE_USERNAME': settings.DATABASES['default']['USER'],
-            'PGPASSFILE': '',
-        }
+        file_loc = '/tmp/reparse_backup.pg'
         if settings.USE_LOCALSTACK is False:
-            sys_values = get_system_values()
-        else:  # fix me :)
-            return
-
-        arg_file = "/tmp/backup.pg"
-        arg_database = sys_values['DATABASE_URI']
-        system_user, created = User.objects.get_or_create(username='system')
-        # logger_context = {}
-
-        # log(
-        #     user_id=system_user.pk,
-        #     content_type_id=content_type.pk,
-        #     object_id=None,
-        #     object_repr="Begining Database Backup",
-        #     action_flag=ADDITION,
-        #     change_message="Begining database backup."
-        # )
-        # back up database
-        backup_database(
-            file_name=arg_file,
-            postgres_client=sys_values['POSTGRES_CLIENT_DIR'],
-            database_uri=arg_database,
-            system_user=system_user
-        )
-
-        # upload backup file
-        upload_file(
-            file_name=arg_file,
-            bucket=sys_values['S3_BUCKET'],
-            sys_values=sys_values,
-            system_user=system_user,
-            region=sys_values['S3_REGION'],
-            object_name="backup"+arg_file,
-        )
-
-        # log(
-        #     user_id=system_user.pk,
-        #     content_type_id=content_type.pk,
-        #     object_id=None,
-        #     object_repr="Finished Database Backup",
-        #     action_flag=ADDITION,
-        #     change_message="Finished database backup."
-        # )
-
-        # logger.info(f"Deleting {arg_file} from local storage.")
-        os.system('rm ' + arg_file)
+            system_user, created = User.objects.get_or_create(username='system')
+            if created:
+                logger.debug('Created reserved system user.')
+            main(['-b', '-f', f'{file_loc}'], sys_values=get_system_values(), system_user=system_user)
+        else:
+            os.system(f"export PGPASSWORD={settings.DATABASES['default']['PASSWORD']}")
+            cmd = (f"pg_dump -h {settings.DATABASES['default']['HOST']} -p {settings.DATABASES['default']['PORT']} -d "
+                   f"{settings.DATABASES['default']['NAME']} -U {settings.DATABASES['default']['USER']} "
+                   f"-F c --no-password --no-acl --no-owner -f {file_loc} -v")
+            os.system(cmd)
+            logger.info(f"Local backup saved to: {file_loc}.")
 
     def handle(self, *args, **options):
         """Delete datafiles matching a query."""
-        # try
-        try:
-            self.backup_postgres_db()
-        except Exception as e:
-            print('Database backup failed with exception')
-            raise e
-
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
         delete_all = options.get('all', False)
@@ -136,6 +77,14 @@ class Command(BaseCommand):
             print('Cancelled.')
             return
 
+        try:
+            logger.info("Begining reparse DB Backup.")
+            self.backup_postgres_db()
+            logger.info("Backup complete! Commencing clean and reparse.")
+        except Exception as e:
+            logger.critical('Database backup FAILED. Clean and re-parse NOT executed. Database IS consistent!')
+            raise e
+
         call_command('tdp_search_index', '--create', '-f')
 
         file_ids = files.values_list('id', flat=True).distinct()
@@ -148,30 +97,30 @@ class Command(BaseCommand):
 
         for m in model_types:
             objs = m.objects.all().filter(datafile_id__in=file_ids)
-            print(f'deleting {objs.count()}, {m} objects')
+            logger.info(f'Deleting {objs.count()}, {m} objects')
 
             # atomic delete?
             try:
                 objs._raw_delete(objs.db)
             except Exception as e:
-                print(f'_raw_delete failed for model {m}')
+                logger.critical(f'_raw_delete failed for model {m}. Database is now inconsistent! Restore the DB from '
+                                'the backup as soon as possible!')
                 raise e
 
-        print(f'Deleting and reparsing {files.count()} files')
+        logger.info(f'Deleting and reparsing {files.count()} files')
         for f in files:
-
             try:
                 f.delete()
             except Exception as e:
-                print(f'DataFile.delete failed for id: {f.pk}')
+                logger.error(f'DataFile.delete failed for id: {f.pk}')
                 raise e
 
             try:
                 f.save()
             except Exception as e:
-                print(f'DataFile.save failed for id: {f.pk}')
+                logger.error(f'DataFile.save failed for id: {f.pk}')
                 raise e
 
             # latest version only? -> possible new ticket
             parser_task.parse.delay(f.pk, should_send_submission_email=False)
-        print('Done.')
+        logger.info('Done. All tasks have been queued to re-parse the selected datafiles.')
