@@ -613,22 +613,22 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4', '9'),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5', '26'),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4', '9'),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5', '26'),
             STT.EntityType.TRIBE,
         ),
     ])
     @pytest.mark.django_db
     def test_section2_validator_fail_case_closure_ftl(self, small_correct_file, header, T4Stuff, T5Stuff, stt_type):
         """Test records are related validator section 2 success case."""
-        (T4Factory, t4_schema, t4_model_name) = T4Stuff
-        (T5Factory, t5_schema, t5_model_name) = T5Stuff
+        (T4Factory, t4_schema, t4_model_name, closure_item_num) = T4Stuff
+        (T5Factory, t5_schema, t5_model_name, fed_time_item_num) = T5Stuff
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
@@ -681,8 +681,9 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == ('At least one person who is head-of-household or spouse of '
-                                           'head-of-household on case must have countable months toward time limit >= '
-                                           '60 since CLOSURE_REASON = 03: federal 5 year time limit.')
+                                           f'head-of-household on case must have Item {fed_time_item_num} '
+                                           '(countable months toward federal time) >= 60 since Item '
+                                           f'{closure_item_num} (closure reason) = 03: federal 5 year time limit.')
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
