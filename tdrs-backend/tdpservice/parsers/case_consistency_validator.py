@@ -40,6 +40,8 @@ class CaseConsistencyValidator:
         return manager.schemas[0].document.Django.model
 
     def __get_error_context(self, field_name, schema):
+        if schema is None:
+            return field_name
         field = schema.get_field_by_name(field_name)
         eargs = ValidationErrorArgs(value=None,
                                     row_schema=schema,
@@ -182,18 +184,50 @@ class CaseConsistencyValidator:
         num_errors += self.__validate_t5_aabd_and_ssi()
         return num_errors
 
-    def __validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
+    def __validate_family_affiliation(self,
+                                      num_errors,
+                                      t1_model_name, t1s,
+                                      t2_model_name, t2s,
+                                      t3_model_name, t3s):
         """Validate at least one record in t2s+t3s has FAMILY_AFFILIATION == 1."""
         num_errors = 0
         passed = False
-        for record, schema in t2s + t3s:
+        error_msg = (
+                        f'Every {t1_model_name} record should have at least one corresponding '
+                        f'{t2_model_name} or {t3_model_name} record with the same '
+                    )
+
+        is_t2 = True
+        t2_context = self.__get_error_context("FAMILY_AFFILIATION", t2s[0][1]) + "==1"
+        for record, schema in t2s:
             family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
             if family_affiliation == 1:
                 passed = True
+                is_t2 = False
                 break
+
+        is_t3 = True
+        t3_context = self.__get_error_context("FAMILY_AFFILIATION", t3s[0][1]) + "==1"
+        for record, schema in t3s:
+            family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
+            if family_affiliation == 1:
+                passed = True
+                is_t3 = False
+                break
+
+        final_context = ""
+        if is_t2 and is_t3:
+            final_context += t2_context + " and " + t3_context + "."
+        elif is_t2:
+            final_context += t2_context + "."
+        else:
+            final_context += t3_context + "."
 
         if not passed:
             for record, schema in t1s:
+                rpt_context = f'{self.__get_error_context("RPT_MONTH_YEAR", schema)} and '
+                case_context = f'{self.__get_error_context("CASE_NUMBER", schema)}, where '
+                error_msg += rpt_context + case_context + final_context
                 self.__generate_and_add_error(
                     schema,
                     record,
@@ -244,13 +278,11 @@ class CaseConsistencyValidator:
             else:
                 # loop through all t2s and t3s
                 # to find record where FAMILY_AFFILIATION == 1
-                num_errors += self.__validate_family_affiliation(num_errors, t1s, t2s, t3s, (
-                        f'Every {t1_model_name} record should have at least one corresponding '
-                        f'{t2_model_name} or {t3_model_name} record with the same '
-                        f'{self.__get_error_context("RPT_MONTH_YEAR", schema)} and '
-                        f'{self.__get_error_context("CASE_NUMBER", schema)}, where '
-                        f'{self.__get_error_context("FAMILY_AFFILIATION", schema)} equals 1.'
-                    ))
+                record, schema = t1s[0]
+                num_errors += self.__validate_family_affiliation(num_errors,
+                                                                 t1_model_name, t1s,
+                                                                 t2_model_name, t2s,
+                                                                 t3_model_name, t3s)
 
                 # the successful route
                 # pass
@@ -369,7 +401,7 @@ class CaseConsistencyValidator:
                 if closure_reason == '01':
                     num_errors += self.__validate_case_closure_employment(t4, t5s, (
                         f'At least one person on the case must have '
-                        f'{self.__get_error_context("EMPLOYMENT_STATUS", t4_schema)} = 1:Yes in the '
+                        f'{self.__get_error_context("EMPLOYMENT_STATUS", t5s[0][1] if t5s else None)} = 1:Yes in the '
                         f'same {self.__get_error_context("RPT_MONTH_YEAR", t4_schema)} since '
                         f'{self.__get_error_context("CLOSURE_REASON", t4_schema)} = 1:Employment/excess earnings.'
                     ))
@@ -379,8 +411,8 @@ class CaseConsistencyValidator:
                         t5s,
                         ('At least one person who is head-of-household or '
                          'spouse of head-of-household on case must have '
-                         f'{self.__get_error_context("COUNTABLE_MONTH_FED_TIME", t4_schema)} >= 60 since '
-                         f'{self.__get_error_context("CLOSURE_REASON", t4_schema)} = 03: '
+                         f'{self.__get_error_context("COUNTABLE_MONTH_FED_TIME", t5s[0][1] if t5s else None)} >= 60 '
+                         f'since {self.__get_error_context("CLOSURE_REASON", t4_schema)} = 03: '
                          'federal 5 year time limit.')
                          )
             if len(t5s) == 0:

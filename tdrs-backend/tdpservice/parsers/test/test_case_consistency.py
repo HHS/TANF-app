@@ -204,21 +204,21 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1'),
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1', '4', '6'),
             (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
             (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1'),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1', '4', '6'),
             (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2'),
             (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3'),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1'),
+            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1', '3', '5'),
             (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2'),
             (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3'),
             STT.EntityType.STATE,
@@ -228,7 +228,7 @@ class TestCaseConsistencyValidator:
     def test_section1_records_are_related_validator_fail_no_t2_or_t3(
             self, small_correct_file, header, T1Stuff, T2Stuff, T3Stuff, stt_type):
         """Test records are related validator fails with no t2s or t3s."""
-        (T1Factory, t1_schema, t1_model_name) = T1Stuff
+        (T1Factory, t1_schema, t1_model_name, rpt_item_num, case_item_num) = T1Stuff
         (T2Factory, t2_schema, t2_model_name) = T2Stuff
         (T3Factory, t3_schema, t3_model_name) = T3Stuff
 
@@ -259,27 +259,28 @@ class TestCaseConsistencyValidator:
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f'Every {t1_model_name} record should have at least one corresponding '
-            f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+            f'{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} '
+            f'(reporting month and year) and Item {case_item_num} (case number).'
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1'),
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1', '4', '6'),
             (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
             (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1'),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1', '4', '6'),
             (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2'),
             (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3'),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1'),
+            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1', '3', '5'),
             (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2'),
             (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3'),
             STT.EntityType.STATE,
@@ -289,7 +290,7 @@ class TestCaseConsistencyValidator:
     def test_section1_records_are_related_validator_fail_no_t1(
             self, small_correct_file, header, T1Stuff, T2Stuff, T3Stuff, stt_type):
         """Test records are related validator fails with no t1s."""
-        (T1Factory, t1_schema, t1_model_name) = T1Stuff
+        (T1Factory, t1_schema, t1_model_name, rpt_item_num, case_item_num) = T1Stuff
         (T2Factory, t2_schema, t2_model_name) = T2Stuff
         (T3Factory, t3_schema, t3_model_name) = T3Stuff
 
@@ -341,44 +342,48 @@ class TestCaseConsistencyValidator:
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f'Every {t2_model_name} record should have at least one corresponding '
-            f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+            f'{t1_model_name} record with the same Item {rpt_item_num} '
+            f'(reporting month and year) and Item {case_item_num} (case number).'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
             f'Every {t2_model_name} record should have at least one corresponding '
-            f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+            f'{t1_model_name} record with the same Item {rpt_item_num} '
+            f'(reporting month and year) and Item {case_item_num} (case number).'
         )
         assert errors[2].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[2].error_message == (
             f'Every {t3_model_name} record should have at least one corresponding '
-            f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+            f'{t1_model_name} record with the same Item {rpt_item_num} '
+            f'(reporting month and year) and Item {case_item_num} (case number).'
         )
         assert errors[3].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[3].error_message == (
             f'Every {t3_model_name} record should have at least one corresponding '
-            f'{t1_model_name} record with the same RPT_MONTH_YEAR and CASE_NUMBER.'
+            f'{t1_model_name} record with the same Item {rpt_item_num} '
+            f'(reporting month and year) and Item {case_item_num} (case number).'
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1'),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1', '4', '6'),
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2', '30'),
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3', '67'),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1'),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2'),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3'),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1', '4', '6'),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2', '30'),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3', '66'),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1'),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2'),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3'),
+            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1', '3', '5'),
+            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2', '26'),
+            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3', '60'),
             STT.EntityType.STATE,
         ),
     ])
@@ -386,9 +391,9 @@ class TestCaseConsistencyValidator:
     def test_section1_records_are_related_validator_fail_no_family_affiliation(
             self, small_correct_file, header, T1Stuff, T2Stuff, T3Stuff, stt_type):
         """Test records are related validator fails when no t2 or t3 has family_affiliation == 1."""
-        (T1Factory, t1_schema, t1_model_name) = T1Stuff
-        (T2Factory, t2_schema, t2_model_name) = T2Stuff
-        (T3Factory, t3_schema, t3_model_name) = T3Stuff
+        (T1Factory, t1_schema, t1_model_name, rpt_item_num, case_item_num) = T1Stuff
+        (T2Factory, t2_schema, t2_model_name, t2_fam_afil_item_num) = T2Stuff
+        (T3Factory, t3_schema, t3_model_name, t3_fam_afil_item_num) = T3Stuff
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
@@ -448,8 +453,9 @@ class TestCaseConsistencyValidator:
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f'Every {t1_model_name} record should have at least one corresponding '
-            f'{t2_model_name} or {t3_model_name} record with the same RPT_MONTH_YEAR and '
-            f'CASE_NUMBER, where FAMILY_AFFILIATION==1'
+            f'{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} (reporting month and year) '
+            f'and Item {case_item_num} (case number), where Item {t2_fam_afil_item_num} (family affiliation)==1 and '
+            f'Item {t3_fam_afil_item_num} (family affiliation)==1.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
@@ -526,20 +532,20 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4', '4', '9'),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5', '28'),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4', '4', '9'),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5', '28'),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4', '3', '8'),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5', '25'),
             STT.EntityType.STATE,
         ),
     ])
@@ -547,8 +553,8 @@ class TestCaseConsistencyValidator:
     def test_section2_validator_fail_case_closure_employment(
             self, small_correct_file, header, T4Stuff, T5Stuff, stt_type):
         """Test records are related validator section 2 success case."""
-        (T4Factory, t4_schema, t4_model_name) = T4Stuff
-        (T5Factory, t5_schema, t5_model_name) = T5Stuff
+        (T4Factory, t4_schema, t4_model_name, rpt_item_num, closure_item_num) = T4Stuff
+        (T5Factory, t5_schema, t5_model_name, emp_status_item_num) = T5Stuff
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
@@ -599,8 +605,9 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            'At least one person on the case must have employment status = 1:Yes'
-            ' in the same RPT_MONTH_YEAR since CLOSURE_REASON = 1:Employment/excess earnings.'
+            f'At least one person on the case must have Item {emp_status_item_num} (employment status) = 1:Yes in the '
+            f'same Item {rpt_item_num} (reporting month and year) since Item {closure_item_num} (closure reason) = '
+            '1:Employment/excess earnings.'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
