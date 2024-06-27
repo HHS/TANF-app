@@ -891,24 +891,24 @@ class TestCaseConsistencyValidator:
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
             (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5', '19C'),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
             (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5', '19C'),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
             (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5', '18C'),
         ),
     ])
     @pytest.mark.django_db
     def test_section2_aabd_ssi_validator_fail_territory_adult_aabd(self, small_correct_file, header, T4Stuff, T5Stuff):
         """Test records are related validator section 2 success case."""
         (T4Factory, t4_schema, t4_model_name) = T4Stuff
-        (T5Factory, t5_schema, t5_model_name) = T5Stuff
+        (T5Factory, t5_schema, t5_model_name, ratd_item_num) = T5Stuff
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
@@ -958,11 +958,13 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} Adults in territories must have a valid value for REC_AID_TOTALLY_DISABLED.'
+            f'{t5_model_name} Adults in territories must have a valid value for Item {ratd_item_num} '
+            '(receives aid for totally disabled).'
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} Adults in territories must have a valid value for REC_AID_TOTALLY_DISABLED.'
+            f'{t5_model_name} Adults in territories must have a valid value for Item {ratd_item_num} '
+            '(receives aid for totally disabled).'
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
