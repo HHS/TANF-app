@@ -1806,4 +1806,4 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
 
     err = parser_errors.first()
     assert err.error_message == ("Every T1 record should have at least one corresponding T2 or T3 record with the "
-                                 "same RPT_MONTH_YEAR and CASE_NUMBER.")
+                                 "same Item 4 (reporting month and year) and Item 6 (case number).")
