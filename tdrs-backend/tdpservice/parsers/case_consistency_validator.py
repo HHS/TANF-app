@@ -41,7 +41,8 @@ class CaseConsistencyValidator:
 
     def __get_error_context(self, field_name, schema):
         field = schema.get_field_by_name(field_name)
-        eargs = ValidationErrorArgs(row_schema=schema,
+        eargs = ValidationErrorArgs(value=None,
+                                    row_schema=schema,
                                     friendly_name=field.friendly_name,
                                     item_num=field.item,
                                     error_context_format='inline'
@@ -454,7 +455,7 @@ class CaseConsistencyValidator:
                     field='REC_AID_TOTALLY_DISABLED',
                     msg=(
                         f'{t5_model_name} People in states should not have a value '
-                        'of 1 for {self.__get_error_context("REC_AID_TOTALLY_DISABLED", schema)}.'
+                        f'of 1 for {self.__get_error_context("REC_AID_TOTALLY_DISABLED", schema)}.'
                     )
                 )
                 num_errors += 1
