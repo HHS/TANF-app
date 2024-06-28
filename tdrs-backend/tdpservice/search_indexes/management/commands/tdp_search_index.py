@@ -10,6 +10,9 @@ from datetime import datetime, timezone
 from django_elasticsearch_dsl.management.commands import search_index
 from django_elasticsearch_dsl.registries import registry
 from django.conf import settings
+from tdpservice.core.utils import log
+from django.contrib.admin.models import ADDITION
+from tdpservice.users.models import User
 
 
 class Command(search_index.Command):
@@ -18,7 +21,15 @@ class Command(search_index.Command):
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
 
+    def __get_log_context(self):
+        context = {'user_id': User.objects.get_or_create(username='system')[0].id,
+                   'action_flag': ADDITION,
+                   'object_repr': "Elastic Index Creation"
+                   }
+        return context
+
     def _create(self, models, aliases, options):
+        log_context = self.__get_log_context()
         options['use_alias'] = True
         options['use_alias_keep_index'] = True
         alias_index_pairs = []
@@ -36,6 +47,10 @@ class Command(search_index.Command):
             )
             index._name = new_index
 
+        log(f"All aliased indexes created with suffix: {index_suffix}",
+            logger_context=log_context,
+            level='info')
+
         super()._create(models, aliases, options)
 
         for alias_index_pair in alias_index_pairs:
@@ -44,6 +59,10 @@ class Command(search_index.Command):
             self._update_alias(
                 alias, alias_index_pair['index'], alias_exists, options
             )
+
+        log(f"Aliased index creation complete.",
+            logger_context=log_context,
+            level='info')
 
     def _populate(self, models, options):
         parallel = options['parallel']

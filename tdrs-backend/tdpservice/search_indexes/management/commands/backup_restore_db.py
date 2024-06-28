@@ -1,13 +1,8 @@
 import os
 from django.core.management.base import BaseCommand
-from django.core.management import call_command
 from django.conf import settings
-from tdpservice.data_files.models import DataFile
-from tdpservice.scheduling import parser_task
-from tdpservice.search_indexes.documents import tanf, ssp, tribal
 from tdpservice.scheduling.db_backup import main, get_system_values
 from tdpservice.users.models import User
-from tdpservice.core.utils import log
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,13 +22,19 @@ class Command(BaseCommand):
         if (not options['backup'] and not options['restore']) or (options['backup'] and options['restore']):
             print("\nYou must specify -b or -r but not both.\n")
             return
+
         switch = '-b' if options['backup'] else '-r'
         file = options["file"]
+
         if not settings.USE_LOCALSTACK:
             system_user, created = User.objects.get_or_create(username='system')
             if created:
                 logger.debug('Created reserved system user.')
-            main([f'{switch}', '-f', f'{file}'], sys_values=get_system_values(), system_user=system_user)
+            try:
+                main([f'{switch}', '-f', f'{file}'], sys_values=get_system_values(), system_user=system_user)
+            except Exception as e:
+                logger.error(f"Exception occured while executing backup/restore: {e}")
+                raise e
             logger.info("Cloud backup/restore job complete.")
         else:
             os.system(f"export PGPASSWORD={settings.DATABASES['default']['PASSWORD']}")
@@ -45,7 +46,7 @@ class Command(BaseCommand):
 
             if options['backup']:
                 cmd = (f"pg_dump -h {db_host} -p {db_port} -d {db_name} -U {db_user} -F c --no-password --no-acl "
-                       f"--no-owner -f {file} -v")
+                    f"--no-owner -f {file}")
                 os.system(cmd)
                 logger.info(f"Local backup saved to: {file}.")
             elif options['restore']:

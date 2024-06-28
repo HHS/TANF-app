@@ -142,7 +142,7 @@ def restore_database(file_name, postgres_client, database_uri, system_user):
         logger.info(msg)
     except Exception as e:
         logger.error(f"Caught exception while creating the database. Exception: {e}.")
-        return False
+        raise e
 
     # write .pgpass
     with open('/home/vcap/.pgpass', 'w') as f:
