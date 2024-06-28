@@ -2,16 +2,15 @@
 Delete and reparse a set of datafiles
 """
 
-import os
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.conf import settings
 from tdpservice.data_files.models import DataFile
 from tdpservice.scheduling import parser_task
 from tdpservice.search_indexes.documents import tanf, ssp, tribal
-from tdpservice.scheduling.db_backup import main, get_system_values
 from tdpservice.users.models import User
 from tdpservice.core.utils import log
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     """Command class."""
 
-    help = "Delete and reparse a set of datafiles"
+    help = "Delete and reparse a set of datafiles. All reparsed data will be moved into a new set of Elastic indexes."
 
     def add_arguments(self, parser):
         """Add arguments to the management command."""
@@ -28,27 +27,13 @@ class Command(BaseCommand):
         parser.add_argument("--fiscal_year", type=str)
         parser.add_argument("--all", action='store_true')
 
-    def backup_postgres_db(self):
-        file_loc = '/tmp/reparse_backup.pg'
-        if settings.USE_LOCALSTACK is False:
-            system_user, created = User.objects.get_or_create(username='system')
-            if created:
-                logger.debug('Created reserved system user.')
-            main(['-b', '-f', f'{file_loc}'], sys_values=get_system_values(), system_user=system_user)
-        else:
-            os.system(f"export PGPASSWORD={settings.DATABASES['default']['PASSWORD']}")
-            cmd = (f"pg_dump -h {settings.DATABASES['default']['HOST']} -p {settings.DATABASES['default']['PORT']} -d "
-                   f"{settings.DATABASES['default']['NAME']} -U {settings.DATABASES['default']['USER']} "
-                   f"-F c --no-password --no-acl --no-owner -f {file_loc} -v")
-            os.system(cmd)
-            logger.info(f"Local backup saved to: {file_loc}.")
-
     def handle(self, *args, **options):
         """Delete datafiles matching a query."""
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
         delete_all = options.get('all', False)
 
+        backup_file_name = f"/tmp/reparsing_backup"
         files = None
         if delete_all:
             files = DataFile.objects.all()
@@ -56,6 +41,7 @@ class Command(BaseCommand):
                 f'This will delete ALL ({files.count()}) '
                 'data files for ALL submission periods.'
             )
+            backup_file_name += "_FY_all_Q1-4"
         else:
             if not fiscal_year and not fiscal_quarter:
                 print(
@@ -64,8 +50,15 @@ class Command(BaseCommand):
                 )
                 return
             files = DataFile.objects.all()
-            files = files.filter(year=fiscal_year) if fiscal_year else files
-            files = files.filter(quarter=fiscal_quarter) if fiscal_quarter else files
+            if (fiscal_year and fiscal_quarter):
+                files = files.filter(year=fiscal_year, quarter=fiscal_quarter)
+                backup_file_name += f"_FY_{fiscal_year}_Q{fiscal_quarter}"
+            elif fiscal_year:
+                files = files.filter(year=fiscal_year)
+                backup_file_name += f"_FY_{fiscal_year}_Q1-4"
+            elif fiscal_quarter:
+                files = files.filter(quarter=fiscal_quarter)
+                backup_file_name += f"_FY_all_Q{fiscal_quarter}"
             print(
                 f'This will delete {files.count()} datafiles, '
                 'create new elasticsearch indices, '
@@ -79,7 +72,9 @@ class Command(BaseCommand):
 
         try:
             logger.info("Begining reparse DB Backup.")
-            self.backup_postgres_db()
+            pattern = "%d-%m-%Y_%H:%M:%S"
+            backup_file_name += f"_{datetime.now().strftime(pattern)}.pg"
+            call_command('backup_restore_db', '-b', '-f', f'{backup_file_name}')
             logger.info("Backup complete! Commencing clean and reparse.")
         except Exception as e:
             logger.critical('Database backup FAILED. Clean and re-parse NOT executed. Database IS consistent!')
