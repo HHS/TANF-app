@@ -97,7 +97,7 @@ class TanfT1Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.TANF_T1"
 
-    RecordType = fake.uuid4()
+    RecordType = "T1"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = "1"
     COUNTY_FIPS_CODE = 1
@@ -152,12 +152,12 @@ class TanfT2Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.TANF_T2"
 
-    RecordType = fake.uuid4()
+    RecordType = "T2"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = '1'
     FAMILY_AFFILIATION = 1
     NONCUSTODIAL_PARENT = 1
-    DATE_OF_BIRTH = 1
+    DATE_OF_BIRTH = '1'
     SSN = '1'
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
@@ -231,12 +231,12 @@ class TanfT3Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.TANF_T3"
 
-    RecordType = fake.uuid4()
+    RecordType = "T3"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = '1'
 
     FAMILY_AFFILIATION = 1
-    DATE_OF_BIRTH = 1
+    DATE_OF_BIRTH = '1'
     SSN = '1'
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
@@ -262,6 +262,7 @@ class TanfT4Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.TANF_T4"
 
+    RecordType = "T4"
     RPT_MONTH_YEAR = 202301
     CASE_NUMBER = "1"
 
@@ -284,6 +285,7 @@ class TanfT5Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.TANF_T5"
 
+    RecordType = "T5"
     RPT_MONTH_YEAR = 202301
     CASE_NUMBER = "1"
     FAMILY_AFFILIATION = 1
@@ -321,6 +323,7 @@ class TanfT6Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.TANF_T6"
 
+    RecordType = "T6"
     CALENDAR_QUARTER = 1
     RPT_MONTH_YEAR = 202301
     NUM_APPLICATIONS = 1
@@ -347,6 +350,7 @@ class TanfT7Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.TANF_T7"
 
+    RecordType = "T7"
     CALENDAR_QUARTER = 20204
     RPT_MONTH_YEAR = 202011
     TDRS_SECTION_IND = '1'
@@ -361,7 +365,7 @@ class TribalTanfT1Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.Tribal_TANF_T1"
 
-    RecordType = fake.uuid4()
+    RecordType = "T1"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = "1"
     COUNTY_FIPS_CODE = 1
@@ -416,12 +420,12 @@ class TribalTanfT2Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.Tribal_TANF_T2"
 
-    RecordType = fake.uuid4()
+    RecordType = "T2"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = '1'
     FAMILY_AFFILIATION = 1
     NONCUSTODIAL_PARENT = 1
-    DATE_OF_BIRTH = 1
+    DATE_OF_BIRTH = "1"
     SSN = '1'
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
@@ -477,12 +481,12 @@ class TribalTanfT3Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.Tribal_TANF_T3"
 
-    RecordType = fake.uuid4()
+    RecordType = "T3"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = '1'
 
     FAMILY_AFFILIATION = 1
-    DATE_OF_BIRTH = 1
+    DATE_OF_BIRTH = "1"
     SSN = '1'
     RACE_HISPANIC = 1
     RACE_AMER_INDIAN = 1
@@ -508,6 +512,7 @@ class TribalTanfT4Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.Tribal_TANF_T4"
 
+    RecordType = "T4"
     RPT_MONTH_YEAR = 202301
     CASE_NUMBER = "1"
 
@@ -530,6 +535,7 @@ class TribalTanfT5Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.Tribal_TANF_T5"
 
+    RecordType = "T5"
     RPT_MONTH_YEAR = 202301
     CASE_NUMBER = "1"
     FAMILY_AFFILIATION = 1
@@ -567,6 +573,7 @@ class TribalTanfT6Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.Tribal_TANF_T6"
 
+    RecordType = "T6"
     CALENDAR_QUARTER = 1
     RPT_MONTH_YEAR = 202301
     NUM_APPLICATIONS = 1
@@ -608,7 +615,7 @@ class SSPM1Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.SSP_M1"
 
-    RecordType = fake.uuid4()
+    RecordType = "M1"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = "1"
     COUNTY_FIPS_CODE = 1
@@ -659,7 +666,7 @@ class SSPM2Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.SSP_M2"
 
-    RecordType = fake.uuid4()
+    RecordType = "M2"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = '1'
     FAMILY_AFFILIATION = 1
@@ -735,7 +742,7 @@ class SSPM3Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.SSP_M3"
 
-    RecordType = fake.uuid4()
+    RecordType = "M3"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = '1'
 
@@ -766,6 +773,7 @@ class SSPM4Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.SSP_M4"
 
+    RecordType = "M4"
     RPT_MONTH_YEAR = 202301
     CASE_NUMBER = "1"
 
@@ -787,6 +795,7 @@ class SSPM5Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.SSP_M5"
 
+    RecordType = "M5"
     RPT_MONTH_YEAR = 1
     CASE_NUMBER = '1'
 
@@ -824,6 +833,7 @@ class SSPM6Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.SSP_M6"
 
+    RecordType = "M6"
     CALENDAR_QUARTER = 1
     RPT_MONTH_YEAR = 202301
     SSPMOE_FAMILIES = 1
@@ -845,6 +855,7 @@ class SSPM7Factory(factory.django.DjangoModelFactory):
 
         model = "search_indexes.SSP_M7"
 
+    RecordType = "M7"
     CALENDAR_QUARTER = 20204
     RPT_MONTH_YEAR = 202011
     TDRS_SECTION_IND = '1'

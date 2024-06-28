@@ -43,12 +43,3 @@ class Local(Common):
     }
 
     REDIS_SERVER_LOCAL = bool(strtobool(os.getenv("REDIS_SERVER_LOCAL", "TRUE")))
-
-    # SFTP TEST KEY
-    """
-    To be able to fit the PRIVATE KEY in one line as environment variable, we replace the EOL
-    with an underscore char.
-    The next line replaces the _ with EOL before using the PRIVATE KEY
-    """
-    ACFTITAN_SFTP_PYTEST = os.getenv("ACFTITAN_SFTP_PYTEST").replace('_', '\n')
-    APP_NAME = "tdrs-backend-local"
