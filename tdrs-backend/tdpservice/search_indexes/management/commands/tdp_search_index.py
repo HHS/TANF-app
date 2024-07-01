@@ -30,26 +30,16 @@ class Command(search_index.Command):
 
     def _create(self, models, aliases, options):
         log_context = self.__get_log_context()
-        options['use_alias'] = True
-        options['use_alias_keep_index'] = True
         alias_index_pairs = []
-        index_suffix = "-" + datetime.now().strftime("%Y%m%d%H%M%S%f")
+        fmt = "%Y-%m-%d_%H.%M.%S"
+        index_suffix = f"_{datetime.now().strftime(fmt)}"
+
         for index in registry.get_indices(models):
-            # The alias takes the original index name value. The
-            # index name sent to Elasticsearch will be the alias
-            # plus the suffix from above. In addition, the index
-            # name needs to be limited to 255 characters, of which
-            # 21 will always be taken by the suffix, leaving 234
-            # characters from the original index name value.
-            new_index = index._name[:234] + index_suffix
+            new_index = index._name + index_suffix
             alias_index_pairs.append(
                 {'alias': index._name, 'index': new_index}
             )
             index._name = new_index
-
-        log(f"All aliased indexes created with suffix: {index_suffix}",
-            logger_context=log_context,
-            level='info')
 
         super()._create(models, aliases, options)
 
@@ -60,7 +50,7 @@ class Command(search_index.Command):
                 alias, alias_index_pair['index'], alias_exists, options
             )
 
-        log(f"Aliased index creation complete.",
+        log(f"Aliased index creation complete. Newest suffix: {index_suffix}",
             logger_context=log_context,
             level='info')
 

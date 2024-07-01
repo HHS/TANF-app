@@ -13,6 +13,7 @@ from django.contrib.admin.models import ADDITION
 from tdpservice.users.models import User
 from datetime import datetime
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +25,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         """Add arguments to the management command."""
-        parser.add_argument("--fiscal_quarter", type=str)
-        parser.add_argument("--fiscal_year", type=str)
-        parser.add_argument("--all", action='store_true')
+        parser.add_argument("-q", "--fiscal_quarter", type=str)
+        parser.add_argument("-y", "--fiscal_year", type=str)
+        parser.add_argument("-a", "--all", action='store_true')
+        parser.add_argument("-n", "--new-indices", action='store_true')
+        parser.add_argument("-d", "--delete-old-indices", action='store_true')
 
     def __get_log_context(self, system_user):
         context = {'user_id': system_user.id,
@@ -40,6 +43,8 @@ class Command(BaseCommand):
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
         delete_all = options.get('all', False)
+        new_indices = options.get('new_indices', False)
+        delete_old_indices = options.get('delete_old_indices', False)
 
         backup_file_name = f"/tmp/reparsing_backup"
         files = None
@@ -102,6 +107,8 @@ class Command(BaseCommand):
             pattern = "%d-%m-%Y_%H:%M:%S"
             backup_file_name += f"_{datetime.now().strftime(pattern)}.pg"
             call_command('backup_restore_db', '-b', '-f', f'{backup_file_name}')
+            if os.path.getsize(backup_file_name) == 0:
+                raise Exception("DB backup failed! Backup file size is 0 bytes!")
             logger.info("Backup complete! Commencing clean and reparse.")
         except Exception as e:
             log(f"Database backup FAILED. Clean and re-parse NOT executed. Database and Elastic are CONSISTENT!",
@@ -109,14 +116,18 @@ class Command(BaseCommand):
                 level='error')
             raise e
 
-        try:
-            call_command('tdp_search_index', '--create', '-f')
-        except Exception as e:
-            log(f"Elastic index creation FAILED. Clean and re-parse NOT executed. "
-                "Database is CONSISTENT, Elastic is INCONSISTENT!",
-                logger_context=log_context,
-                level='error')
-            raise e
+        if new_indices:
+            try:
+                if not delete_old_indices:
+                    call_command('tdp_search_index', '--create', '-f', '--use-alias', '--use-alias-keep-index')
+                else:
+                    call_command('tdp_search_index', '--create', '-f', '--use-alias')
+            except Exception as e:
+                log(f"Elastic index creation FAILED. Clean and re-parse NOT executed. "
+                    "Database is CONSISTENT, Elastic is INCONSISTENT!",
+                    logger_context=log_context,
+                    level='error')
+                raise e
 
         file_ids = files.values_list('id', flat=True).distinct()
 
