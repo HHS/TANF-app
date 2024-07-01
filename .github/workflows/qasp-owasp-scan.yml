@@ -15,7 +15,7 @@ jobs:
     env:
       # Check the label from the pull request itself, rather than the event -
       # not all event types will contain the label name.
-      HAS_QASP_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'QASP Review') }}
+      HAS_QASP_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'WIP') }}
     # Prevent running the action for label events that aren't QASP Review, but
     # we need to allow other accepted event types without checking the label.
     if: |
