@@ -4,7 +4,7 @@ Delete and reparse a set of datafiles
 
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from django.conf import settings
+from elasticsearch.helpers.errors import BulkIndexError
 from tdpservice.data_files.models import DataFile
 from tdpservice.scheduling import parser_task
 from tdpservice.search_indexes.documents import tanf, ssp, tribal
@@ -25,11 +25,15 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         """Add arguments to the management command."""
-        parser.add_argument("-q", "--fiscal_quarter", type=str)
-        parser.add_argument("-y", "--fiscal_year", type=str)
-        parser.add_argument("-a", "--all", action='store_true')
-        parser.add_argument("-n", "--new-indices", action='store_true')
-        parser.add_argument("-d", "--delete-old-indices", action='store_true')
+        parser.add_argument("-q", "--fiscal_quarter", type=str, help="Reparse all files in the fiscal quarter, "
+                            "e.g. Q1.")
+        parser.add_argument("-y", "--fiscal_year", type=str, help="Reparse all files in the fiscal year, e.g. 2021.")
+        parser.add_argument("-a", "--all", action='store_true', help="Clean and reparse all datafiles. If selected, "
+                            "fiscal_year/quarter aren't necessary.")
+        parser.add_argument("-n", "--new_indices", action='store_true', help="Move reparsed data to new Elastic "
+                            "indices.")
+        parser.add_argument("-d", "--delete_old_index", action='store_true', help="Requires new_indices. Delete the "
+                            "current index once the new index is created.")
 
     def __get_log_context(self, system_user):
         context = {'user_id': system_user.id,
@@ -44,7 +48,7 @@ class Command(BaseCommand):
         fiscal_quarter = options.get('fiscal_quarter', None)
         delete_all = options.get('all', False)
         new_indices = options.get('new_indices', False)
-        delete_old_indices = options.get('delete_old_indices', False)
+        delete_old_index = options.get('delete_old_index', False)
 
         backup_file_name = f"/tmp/reparsing_backup"
         files = None
@@ -118,7 +122,7 @@ class Command(BaseCommand):
 
         if new_indices:
             try:
-                if not delete_old_indices:
+                if not delete_old_index:
                     call_command('tdp_search_index', '--create', '-f', '--use-alias', '--use-alias-keep-index')
                 else:
                     call_command('tdp_search_index', '--create', '-f', '--use-alias')
@@ -128,32 +132,54 @@ class Command(BaseCommand):
                     logger_context=log_context,
                     level='error')
                 raise e
+            # TODO: Need to ask Alex if we can run some queries in prod to deduce the average number of records per DF.
 
         file_ids = files.values_list('id', flat=True).distinct()
 
-        model_types = [
-            tanf.TANF_T1, tanf.TANF_T2, tanf.TANF_T3, tanf.TANF_T4, tanf.TANF_T5, tanf.TANF_T6, tanf.TANF_T7,
-            ssp.SSP_M1, ssp.SSP_M2, ssp.SSP_M3, ssp.SSP_M4, ssp.SSP_M5, ssp.SSP_M6, ssp.SSP_M7,
-            tribal.Tribal_TANF_T1, tribal.Tribal_TANF_T2, tribal.Tribal_TANF_T3, tribal.Tribal_TANF_T4, tribal.Tribal_TANF_T5, tribal.Tribal_TANF_T6, tribal.Tribal_TANF_T7
-        ]
+        docs = [
+                tanf.TANF_T1DataSubmissionDocument, tanf.TANF_T2DataSubmissionDocument,
+                tanf.TANF_T3DataSubmissionDocument, tanf.TANF_T4DataSubmissionDocument,
+                tanf.TANF_T5DataSubmissionDocument, tanf.TANF_T6DataSubmissionDocument,
+                tanf.TANF_T7DataSubmissionDocument,
+
+                ssp.SSP_M1DataSubmissionDocument, ssp.SSP_M2DataSubmissionDocument, ssp.SSP_M3DataSubmissionDocument,
+                ssp.SSP_M4DataSubmissionDocument, ssp.SSP_M5DataSubmissionDocument, ssp.SSP_M6DataSubmissionDocument,
+                ssp.SSP_M7DataSubmissionDocument,
+
+                tribal.Tribal_TANF_T1DataSubmissionDocument, tribal.Tribal_TANF_T2DataSubmissionDocument,
+                tribal.Tribal_TANF_T3DataSubmissionDocument, tribal.Tribal_TANF_T4DataSubmissionDocument,
+                tribal.Tribal_TANF_T5DataSubmissionDocument, tribal.Tribal_TANF_T6DataSubmissionDocument,
+                tribal.Tribal_TANF_T7DataSubmissionDocument
+            ]
 
         log("DB backup and Index creation complete. Beginning database cleanse.",
             logger_context=log_context,
             level='info')
 
-        for m in model_types:
-            objs = m.objects.all().filter(datafile_id__in=file_ids)
-            logger.info(f'Deleting {objs.count()}, {m} objects')
-
+        total_deleted = 0
+        for doc in docs:
             # atomic delete?
             try:
-                objs._raw_delete(objs.db)
+                model = doc.Django.model
+                qset = model.objects.all().filter(datafile_id__in=file_ids)
+                total_deleted += qset.count()
+                if not new_indices:
+                    # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
+                    doc().update(qset, refresh=True, action='delete')
+                qset._raw_delete(qset.db)
+            except BulkIndexError as e:
+                log(f'Elastic document delete failed for model {model}. Database and Elastic are INCONSISTENT! Restore '
+                    'the DB from the backup as soon as possible!',
+                    logger_context=log_context,
+                    level='critical')
+                raise e
             except Exception as e:
-                log(f'_raw_delete failed for model {m}. Database and Elastic are INCONSISTENT! Restore the DB from '
+                log(f'_raw_delete failed for model {model}. Database and Elastic are INCONSISTENT! Restore the DB from '
                     'the backup as soon as possible!',
                     logger_context=log_context,
                     level='critical')
                 raise e
+        logger.info(f"Deleted a total of {total_deleted} records accross {files.count()} files.")
 
         logger.info(f'Deleting and reparsing {files.count()} files')
         for f in files:
