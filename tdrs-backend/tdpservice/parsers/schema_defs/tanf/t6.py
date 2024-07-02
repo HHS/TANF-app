@@ -107,7 +107,7 @@ s1 = RowSchema(
         Field(
             item="7A",
             name="ASSISTANCE",
-            friendly_name="Total Number of Cash Assistance",
+            friendly_name="Total Amount of Cash Assistance",
             type="number",
             startIndex=79,
             endIndex=91,
