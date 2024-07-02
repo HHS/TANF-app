@@ -1,6 +1,4 @@
-"""
-Delete and reparse a set of datafiles
-"""
+"""Delete and re-parse a set of datafiles."""
 
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
@@ -21,24 +19,24 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     """Command class."""
 
-    help = "Delete and reparse a set of datafiles. All reparsed data will be moved into a new set of Elastic indexes."
+    help = "Delete and re-parse a set of datafiles. All re-parsed data will be moved into a new set of Elastic indexes."
 
     def add_arguments(self, parser):
         """Add arguments to the management command."""
-        parser.add_argument("-q", "--fiscal_quarter", type=str, help="Reparse all files in the fiscal quarter, "
+        parser.add_argument("-q", "--fiscal_quarter", type=str, help="Re-parse all files in the fiscal quarter, "
                             "e.g. Q1.")
-        parser.add_argument("-y", "--fiscal_year", type=str, help="Reparse all files in the fiscal year, e.g. 2021.")
-        parser.add_argument("-a", "--all", action='store_true', help="Clean and reparse all datafiles. If selected, "
+        parser.add_argument("-y", "--fiscal_year", type=str, help="Re-parse all files in the fiscal year, e.g. 2021.")
+        parser.add_argument("-a", "--all", action='store_true', help="Clean and re-parse all datafiles. If selected, "
                             "fiscal_year/quarter aren't necessary.")
-        parser.add_argument("-n", "--new_indices", action='store_true', help="Move reparsed data to new Elastic "
+        parser.add_argument("-n", "--new_indices", action='store_true', help="Move re-parsed data to new Elastic "
                             "indices.")
         parser.add_argument("-d", "--delete_indices", action='store_true', help="Requires new_indices. Delete the "
-                            "current indices.")
+                            "current Elastic indices.")
 
     def __get_log_context(self, system_user):
         context = {'user_id': system_user.id,
                    'action_flag': ADDITION,
-                   'object_repr': "Clean and Reparse"
+                   'object_repr': "Clean and Re-parse"
                    }
         return context
 
@@ -50,15 +48,13 @@ class Command(BaseCommand):
         new_indices = options.get('new_indices', False)
         delete_indices = options.get('delete_indices', False)
 
-        backup_file_name = f"/tmp/reparsing_backup"
+        backup_file_name = "/tmp/reparsing_backup"
         files = None
+        continue_msg = "You have selected to re-parse datafiles for FY {fy} and {q}. The re-parsed files "
         if delete_all:
             files = DataFile.objects.all()
-            print(
-                f'This will delete ALL ({files.count()}) '
-                'data files for ALL submission periods.'
-            )
-            backup_file_name += "_FY_all_Q1-4"
+            backup_file_name += "_FY_All_Q1-4"
+            continue_msg = continue_msg.format(fy="All", q="Q1-4")
         else:
             if not fiscal_year and not fiscal_quarter:
                 print(
@@ -70,19 +66,25 @@ class Command(BaseCommand):
             if (fiscal_year and fiscal_quarter):
                 files = files.filter(year=fiscal_year, quarter=fiscal_quarter)
                 backup_file_name += f"_FY_{fiscal_year}_Q{fiscal_quarter}"
+                continue_msg = continue_msg.format(fy=fiscal_year, q=fiscal_quarter)
             elif fiscal_year:
                 files = files.filter(year=fiscal_year)
                 backup_file_name += f"_FY_{fiscal_year}_Q1-4"
+                continue_msg = continue_msg.format(fy=fiscal_year, q="Q1-4")
             elif fiscal_quarter:
                 files = files.filter(quarter=fiscal_quarter)
-                backup_file_name += f"_FY_all_Q{fiscal_quarter}"
-            print(
-                f'This will delete {files.count()} datafiles, '
-                'create new elasticsearch indices, '
-                'and re-parse each of the datafiles.'
-            )
+                backup_file_name += f"_FY_All_Q{fiscal_quarter}"
+                continue_msg = continue_msg.format(fy="All", q=fiscal_quarter)
 
-        c = str(input('Continue [y/n]? ')).lower()
+        continue_msg += "will {new_index} stored in new indices and the old indices ".format(new_index="be"
+                                                                                             if new_indices
+                                                                                             else "NOT be")
+        continue_msg += "will {old_index} deleted.".format(old_index="be" if delete_indices else "NOT be")
+        continue_msg += "\nThese options will delete and re-parse {0} datafiles.".format(f"ALL ({files.count()})" if
+                                                                                         delete_all else
+                                                                                         f"({files.count()})")
+
+        c = str(input(f'\n{continue_msg}\nContinue [y/n]? ')).lower()
         if c not in ['y', 'yes']:
             print('Cancelled.')
             return
@@ -92,9 +94,9 @@ class Command(BaseCommand):
             logger.debug('Created reserved system user.')
         log_context = self.__get_log_context(system_user)
 
-        all_fy = "all"
+        all_fy = "All"
         all_q = "1-4"
-        log(f"Beginning Clean and reparse for FY {fiscal_year if fiscal_year else all_fy} and "
+        log(f"Beginning Clean and re-parse for FY {fiscal_year if fiscal_year else all_fy} and "
             f"Q{fiscal_quarter if fiscal_quarter else all_q}",
             logger_context=log_context,
             level='info')
@@ -107,15 +109,15 @@ class Command(BaseCommand):
             return
 
         try:
-            logger.info("Beginning reparse DB Backup.")
+            logger.info("Beginning re-parse DB Backup.")
             pattern = "%Y-%m-%d_%H.%M.%S"
             backup_file_name += f"_{datetime.now().strftime(pattern)}.pg"
             call_command('backup_restore_db', '-b', '-f', f'{backup_file_name}')
             if os.path.getsize(backup_file_name) == 0:
                 raise Exception("DB backup failed! Backup file size is 0 bytes!")
-            logger.info("Backup complete! Commencing clean and reparse.")
+            logger.info("Backup complete! Commencing clean and re-parse.")
         except Exception as e:
-            log(f"Database backup FAILED. Clean and re-parse NOT executed. Database and Elastic are CONSISTENT!",
+            log("Database backup FAILED. Clean and re-parse NOT executed. Database and Elastic are CONSISTENT!",
                 logger_context=log_context,
                 level='error')
             raise e
@@ -127,7 +129,7 @@ class Command(BaseCommand):
                 else:
                     call_command('tdp_search_index', '--create', '-f', '--use-alias')
             except Exception as e:
-                log(f"Elastic index creation FAILED. Clean and re-parse NOT executed. "
+                log("Elastic index creation FAILED. Clean and re-parse NOT executed. "
                     "Database is CONSISTENT, Elastic is INCONSISTENT!",
                     logger_context=log_context,
                     level='error')
@@ -207,7 +209,7 @@ class Command(BaseCommand):
         log("Database cleansing complete and all files have been rescheduling for parsing and validation.",
             logger_context=log_context,
             level='info')
-        log(f"Clean and reparse completed for FY {fiscal_year if fiscal_year else all_fy} and "
+        log(f"Clean and re-parse completed for FY {fiscal_year if fiscal_year else all_fy} and "
             f"Q{fiscal_quarter if fiscal_quarter else all_q}",
             logger_context=log_context,
             level='info')
