@@ -34,6 +34,7 @@ class Command(BaseCommand):
                             "current Elastic indices.")
 
     def __get_log_context(self, system_user):
+        """Return logger context."""
         context = {'user_id': system_user.id,
                    'action_flag': ADDITION,
                    'object_repr': "Clean and Re-parse"
@@ -41,6 +42,7 @@ class Command(BaseCommand):
         return context
 
     def __backup(self, backup_file_name, log_context):
+        """Execute Postgres DB backup."""
         try:
             logger.info("Beginning re-parse DB Backup.")
             call_command('backup_db', '-b', '-f', f'{backup_file_name}')
@@ -58,6 +60,7 @@ class Command(BaseCommand):
             raise e
 
     def __handle_elastic(self, new_indices, delete_indices, log_context):
+        """Create new Elastic indices and delete old ones."""
         if new_indices:
             try:
                 if not delete_indices:
@@ -76,6 +79,7 @@ class Command(BaseCommand):
             # TODO: Need to ask Alex if we can run some queries in prod to deduce the average number of records per DF.
 
     def __delete_records(self, docs, file_ids, new_indices, log_context):
+        """Delete records and documents from Postgres and Elastic respectively."""
         total_deleted = 0
         for doc in docs:
             # atomic delete?
@@ -102,6 +106,7 @@ class Command(BaseCommand):
         return total_deleted
 
     def __handle_datafiles(self, files, log_context):
+        """Delete, re-save, and re-parse selected datafiles."""
         for f in files:
             try:
                 f.delete()
@@ -125,7 +130,7 @@ class Command(BaseCommand):
             parser_task.parse.delay(f.pk, should_send_submission_email=False)
 
     def handle(self, *args, **options):
-        """Delete datafiles matching a query."""
+        """Delete and re-parse datafiles matching a query."""
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
         delete_all = options.get('all', False)
