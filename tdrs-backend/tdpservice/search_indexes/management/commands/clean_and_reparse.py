@@ -32,8 +32,8 @@ class Command(BaseCommand):
                             "fiscal_year/quarter aren't necessary.")
         parser.add_argument("-n", "--new_indices", action='store_true', help="Move reparsed data to new Elastic "
                             "indices.")
-        parser.add_argument("-d", "--delete_old_index", action='store_true', help="Requires new_indices. Delete the "
-                            "current index once the new index is created.")
+        parser.add_argument("-d", "--delete_indices", action='store_true', help="Requires new_indices. Delete the "
+                            "current indices.")
 
     def __get_log_context(self, system_user):
         context = {'user_id': system_user.id,
@@ -48,7 +48,7 @@ class Command(BaseCommand):
         fiscal_quarter = options.get('fiscal_quarter', None)
         delete_all = options.get('all', False)
         new_indices = options.get('new_indices', False)
-        delete_old_index = options.get('delete_old_index', False)
+        delete_indices = options.get('delete_indices', False)
 
         backup_file_name = f"/tmp/reparsing_backup"
         files = None
@@ -108,7 +108,7 @@ class Command(BaseCommand):
 
         try:
             logger.info("Beginning reparse DB Backup.")
-            pattern = "%d-%m-%Y_%H:%M:%S"
+            pattern = "%Y-%m-%d_%H.%M.%S"
             backup_file_name += f"_{datetime.now().strftime(pattern)}.pg"
             call_command('backup_restore_db', '-b', '-f', f'{backup_file_name}')
             if os.path.getsize(backup_file_name) == 0:
@@ -122,7 +122,7 @@ class Command(BaseCommand):
 
         if new_indices:
             try:
-                if not delete_old_index:
+                if not delete_indices:
                     call_command('tdp_search_index', '--create', '-f', '--use-alias', '--use-alias-keep-index')
                 else:
                     call_command('tdp_search_index', '--create', '-f', '--use-alias')
