@@ -125,7 +125,7 @@ s1 = RowSchema(
         Field(
             item="10A",
             name="NUM_1_PARENTS",
-            friendly_name="Total Number of No-Parent Families",
+            friendly_name="Total Number of One-Parent Families",
             type="number",
             startIndex=163,
             endIndex=171,
@@ -135,7 +135,7 @@ s1 = RowSchema(
         Field(
             item="11A",
             name="NUM_NO_PARENTS",
-            friendly_name="Total Number of No Parent Families",
+            friendly_name="Total Number of No-Parent Families",
             type="number",
             startIndex=187,
             endIndex=195,
@@ -268,7 +268,7 @@ s2 = RowSchema(
         Field(
             item="4B",
             name="NUM_APPLICATIONS",
-            friendly_name="Total Number of Applicants",
+            friendly_name="Total Number of Applications",
             type="number",
             startIndex=15,
             endIndex=23,
@@ -541,7 +541,7 @@ s3 = RowSchema(
         Field(
             item="11C",
             name="NUM_NO_PARENTS",
-            friendly_name="Total Number of No parent Families",
+            friendly_name="Total Number of No-parent Families",
             type="number",
             startIndex=203,
             endIndex=211,

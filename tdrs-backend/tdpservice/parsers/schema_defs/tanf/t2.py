@@ -800,7 +800,7 @@ t2 = SchemaManager(
                     item="60B",
                     name="SCHOOL_ATTENDENCE_EA",
                     friendly_name="Satisfactory School Attendance: " +
-                    "Hours of Ecused Absences",
+                    "Hours of Excused Absences",
                     type="string",
                     startIndex=116,
                     endIndex=118,

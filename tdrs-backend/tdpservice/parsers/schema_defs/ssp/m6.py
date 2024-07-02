@@ -275,7 +275,7 @@ s2 = RowSchema(
         Field(
             item="7B",
             name='NUM_RECIPIENTS',
-            friendly_name='SSP-MOERecipients',
+            friendly_name='SSP-MOE Recipients',
             type='number',
             startIndex=111,
             endIndex=119,
