@@ -121,7 +121,6 @@ t1 = SchemaManager(
                         "CASH_AMOUNT",
                         "CC_AMOUNT",
                         "TRANSP_AMOUNT",
-                        "TRANSITION_SERVICES_AMOUNT",
                         "OTHER_AMOUNT",
                     ),
                     0,
