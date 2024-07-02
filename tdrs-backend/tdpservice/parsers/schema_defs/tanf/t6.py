@@ -537,7 +537,7 @@ s3 = RowSchema(
         Field(
             item="7C",
             name="ASSISTANCE",
-            friendly_name="Total Number of Cash Assistance",
+            friendly_name="Total Amount of Cash Assistance",
             type="number",
             startIndex=103,
             endIndex=115,
