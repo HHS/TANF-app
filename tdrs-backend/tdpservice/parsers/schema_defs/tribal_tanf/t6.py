@@ -125,7 +125,7 @@ s1 = RowSchema(
         Field(
             item="10A",
             name="NUM_1_PARENTS",
-            friendly_name="Total Number of No-Parent Families",
+            friendly_name="Total Number of One-Parent Families",
             type="number",
             startIndex=163,
             endIndex=171,
