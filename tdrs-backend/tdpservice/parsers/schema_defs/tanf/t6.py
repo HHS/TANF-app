@@ -517,7 +517,7 @@ s3 = RowSchema(
         Field(
             item="5C",
             name="NUM_APPROVED",
-            friendly_name="Total Number of Applications",
+            friendly_name="Total Number of Approved Applications",
             type="number",
             startIndex=47,
             endIndex=55,
