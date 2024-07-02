@@ -11,7 +11,6 @@ from django.contrib.admin.models import ADDITION
 from tdpservice.users.models import User
 from datetime import datetime
 import logging
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +45,6 @@ class Command(BaseCommand):
         try:
             logger.info("Beginning re-parse DB Backup.")
             call_command('backup_db', '-b', '-f', f'{backup_file_name}')
-            if os.path.getsize(backup_file_name) == 0:
-                raise Exception("DB backup failed! Backup file size is 0 bytes!")
             logger.info("Backup complete! Commencing clean and re-parse.")
 
             log("Database backup complete.",

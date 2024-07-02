@@ -45,6 +45,8 @@ class Command(BaseCommand):
                 cmd = (f"{export_password} && pg_dump -h {db_host} -p {db_port} -d {db_name} -U {db_user} -F c "
                        f"--no-password --no-acl --no-owner -f {file}")
                 os.system(cmd)
+                if os.path.getsize(file) == 0:
+                    raise Exception("DB backup failed! Backup file size is 0 bytes!")
                 logger.info(f"Local backup saved to: {file}.")
                 logger.info("Local backup job complete.")
             except Exception as e:
