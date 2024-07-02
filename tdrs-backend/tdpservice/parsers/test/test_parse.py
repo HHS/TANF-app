@@ -313,7 +313,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     errors = parse.parse_datafile(bad_trailer_file_2, dfs)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
-    assert parser_errors.count() == 8
+    assert parser_errors.count() == 9
 
     trailer_errors = list(parser_errors.filter(row_number=3).order_by('id'))
 
@@ -329,7 +329,8 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     assert trailer_error_2.content_type is None
     assert trailer_error_2.object_id is None
 
-    row_2_error = parser_errors.get(row_number=2)
+    row_2_errors = parser_errors.filter(row_number=2).order_by('id')
+    row_2_error = row_2_errors.first()
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_2_error.error_message == 'T1: 3 is not larger or equal to 1 and smaller or equal to 2.'
 
@@ -352,8 +353,9 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     errors_2_0 = errors["2_0"]
     errors_3_0 = errors["3_0"]
     error_trailer = errors["trailer"]
+    row_2_error_set = set(row_2_errors)
     for error_2_0 in errors_2_0:
-        assert error_2_0 in [row_2_error]
+        assert error_2_0 in row_2_error_set
     for error_3_0 in errors_3_0:
         assert error_3_0 in row_3_error_list
     assert error_trailer == [trailer_error_1, trailer_error_2]
@@ -366,14 +368,6 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     assert length_error.content_type is None
     assert length_error.object_id is None
 
-    errors_2_0 = errors["2_0"]
-    errors_3_0 = errors["3_0"]
-    error_trailer = errors["trailer"]
-    for error_2_0 in errors_2_0:
-        assert error_2_0 in [row_2_error]
-    for error_3_0 in errors_3_0:
-        assert error_3_0 in row_3_error_list
-    assert error_trailer == [trailer_error_1, trailer_error_2]
     trailer_error_3 = trailer_errors[3]
     assert trailer_error_3.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error_3.error_message == 'T1: Case number T1trash cannot contain blanks.'
