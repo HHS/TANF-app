@@ -541,7 +541,7 @@ s3 = RowSchema(
         Field(
             item="11C",
             name="NUM_NO_PARENTS",
-            friendly_name="Total Number of No parent Families",
+            friendly_name="Total Number of No-parent Families",
             type="number",
             startIndex=203,
             endIndex=211,
