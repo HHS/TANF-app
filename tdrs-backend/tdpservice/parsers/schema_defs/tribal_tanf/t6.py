@@ -268,7 +268,7 @@ s2 = RowSchema(
         Field(
             item="4B",
             name="NUM_APPLICATIONS",
-            friendly_name="Total Number of Applicants",
+            friendly_name="Total Number of Applications",
             type="number",
             startIndex=15,
             endIndex=23,
