@@ -43,7 +43,7 @@ class Command(BaseCommand):
     def __backup(self, backup_file_name, log_context):
         try:
             logger.info("Beginning re-parse DB Backup.")
-            call_command('backup_restore_db', '-b', '-f', f'{backup_file_name}')
+            call_command('backup_db', '-b', '-f', f'{backup_file_name}')
             if os.path.getsize(backup_file_name) == 0:
                 raise Exception("DB backup failed! Backup file size is 0 bytes!")
             logger.info("Backup complete! Commencing clean and re-parse.")
