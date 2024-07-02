@@ -40,6 +40,90 @@ class Command(BaseCommand):
                    }
         return context
 
+    def __backup(self, backup_file_name, log_context):
+        try:
+            logger.info("Beginning re-parse DB Backup.")
+            call_command('backup_restore_db', '-b', '-f', f'{backup_file_name}')
+            if os.path.getsize(backup_file_name) == 0:
+                raise Exception("DB backup failed! Backup file size is 0 bytes!")
+            logger.info("Backup complete! Commencing clean and re-parse.")
+
+            log("Database backup complete.",
+                logger_context=log_context,
+                level='info')
+        except Exception as e:
+            log("Database backup FAILED. Clean and re-parse NOT executed. Database and Elastic are CONSISTENT!",
+                logger_context=log_context,
+                level='error')
+            raise e
+
+    def __handle_elastic(self, new_indices, delete_indices, log_context):
+        if new_indices:
+            try:
+                if not delete_indices:
+                    call_command('tdp_search_index', '--create', '-f', '--use-alias', '--use-alias-keep-index')
+                else:
+                    call_command('tdp_search_index', '--create', '-f', '--use-alias')
+                log("Index creation complete.",
+                    logger_context=log_context,
+                    level='info')
+            except Exception as e:
+                log("Elastic index creation FAILED. Clean and re-parse NOT executed. "
+                    "Database is CONSISTENT, Elastic is INCONSISTENT!",
+                    logger_context=log_context,
+                    level='error')
+                raise e
+            # TODO: Need to ask Alex if we can run some queries in prod to deduce the average number of records per DF.
+
+    def __delete_records(self, docs, file_ids, new_indices, log_context):
+        total_deleted = 0
+        for doc in docs:
+            # atomic delete?
+            try:
+                model = doc.Django.model
+                qset = model.objects.all().filter(datafile_id__in=file_ids)
+                total_deleted += qset.count()
+                if not new_indices:
+                    # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
+                    doc().update(qset, refresh=True, action='delete')
+                qset._raw_delete(qset.db)
+            except BulkIndexError as e:
+                log(f'Elastic document delete failed for model {model}. Database and Elastic are INCONSISTENT! Restore '
+                    'the DB from the backup as soon as possible!',
+                    logger_context=log_context,
+                    level='critical')
+                raise e
+            except Exception as e:
+                log(f'_raw_delete failed for model {model}. Database and Elastic are INCONSISTENT! Restore the DB from '
+                    'the backup as soon as possible!',
+                    logger_context=log_context,
+                    level='critical')
+                raise e
+        return total_deleted
+
+    def __handle_datafiles(self, files, log_context):
+        for f in files:
+            try:
+                f.delete()
+            except Exception as e:
+                log(f'DataFile.delete failed for id: {f.pk}. Database and Elastic are INCONSISTENT! Restore the '
+                    'DB from the backup as soon as possible!',
+                    logger_context=log_context,
+                    level='critical')
+                raise e
+
+            try:
+                f.save()
+            except Exception as e:
+                log(f'DataFile.save failed for id: {f.pk}. Database and Elastic are INCONSISTENT! Restore the '
+                    'DB from the backup as soon as possible!',
+                    logger_context=log_context,
+                    level='critical')
+                raise e
+
+            # latest version only? -> possible new ticket
+            parser_task.parse.delay(f.pk, should_send_submission_email=False)
+
     def handle(self, *args, **options):
         """Delete datafiles matching a query."""
         fiscal_year = options.get('fiscal_year', None)
@@ -108,36 +192,16 @@ class Command(BaseCommand):
                 level='warn')
             return
 
-        try:
-            logger.info("Beginning re-parse DB Backup.")
-            pattern = "%Y-%m-%d_%H.%M.%S"
-            backup_file_name += f"_{datetime.now().strftime(pattern)}.pg"
-            call_command('backup_restore_db', '-b', '-f', f'{backup_file_name}')
-            if os.path.getsize(backup_file_name) == 0:
-                raise Exception("DB backup failed! Backup file size is 0 bytes!")
-            logger.info("Backup complete! Commencing clean and re-parse.")
-        except Exception as e:
-            log("Database backup FAILED. Clean and re-parse NOT executed. Database and Elastic are CONSISTENT!",
-                logger_context=log_context,
-                level='error')
-            raise e
+        # Backup the Postgres DB
+        pattern = "%Y-%m-%d_%H.%M.%S"
+        backup_file_name += f"_{datetime.now().strftime(pattern)}.pg"
+        self.__backup(backup_file_name, log_context)
 
-        if new_indices:
-            try:
-                if not delete_indices:
-                    call_command('tdp_search_index', '--create', '-f', '--use-alias', '--use-alias-keep-index')
-                else:
-                    call_command('tdp_search_index', '--create', '-f', '--use-alias')
-            except Exception as e:
-                log("Elastic index creation FAILED. Clean and re-parse NOT executed. "
-                    "Database is CONSISTENT, Elastic is INCONSISTENT!",
-                    logger_context=log_context,
-                    level='error')
-                raise e
-            # TODO: Need to ask Alex if we can run some queries in prod to deduce the average number of records per DF.
+        # Create and delete Elastic indices if necessary
+        self.__handle_elastic(new_indices, delete_indices, log_context)
 
+        # Delete records from Postgres and Elastic if necessary
         file_ids = files.values_list('id', flat=True).distinct()
-
         docs = [
                 tanf.TANF_T1DataSubmissionDocument, tanf.TANF_T2DataSubmissionDocument,
                 tanf.TANF_T3DataSubmissionDocument, tanf.TANF_T4DataSubmissionDocument,
@@ -153,60 +217,14 @@ class Command(BaseCommand):
                 tribal.Tribal_TANF_T5DataSubmissionDocument, tribal.Tribal_TANF_T6DataSubmissionDocument,
                 tribal.Tribal_TANF_T7DataSubmissionDocument
             ]
-
-        log("DB backup and Index creation complete. Beginning database cleanse.",
-            logger_context=log_context,
-            level='info')
-
-        total_deleted = 0
-        for doc in docs:
-            # atomic delete?
-            try:
-                model = doc.Django.model
-                qset = model.objects.all().filter(datafile_id__in=file_ids)
-                total_deleted += qset.count()
-                if not new_indices:
-                    # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
-                    doc().update(qset, refresh=True, action='delete')
-                qset._raw_delete(qset.db)
-            except BulkIndexError as e:
-                log(f'Elastic document delete failed for model {model}. Database and Elastic are INCONSISTENT! Restore '
-                    'the DB from the backup as soon as possible!',
-                    logger_context=log_context,
-                    level='critical')
-                raise e
-            except Exception as e:
-                log(f'_raw_delete failed for model {model}. Database and Elastic are INCONSISTENT! Restore the DB from '
-                    'the backup as soon as possible!',
-                    logger_context=log_context,
-                    level='critical')
-                raise e
+        total_deleted = self.__delete_records(docs, file_ids, new_indices, log_context)
         logger.info(f"Deleted a total of {total_deleted} records accross {files.count()} files.")
 
+        # Delete and re-save datafiles to handle cascading dependencies
         logger.info(f'Deleting and reparsing {files.count()} files')
-        for f in files:
-            try:
-                f.delete()
-            except Exception as e:
-                log(f'DataFile.delete failed for id: {f.pk}. Database and Elastic are INCONSISTENT! Restore the '
-                    'DB from the backup as soon as possible!',
-                    logger_context=log_context,
-                    level='critical')
-                raise e
+        self.__handle_datafiles(files, log_context)
 
-            try:
-                f.save()
-            except Exception as e:
-                log(f'DataFile.save failed for id: {f.pk}. Database and Elastic are INCONSISTENT! Restore the '
-                    'DB from the backup as soon as possible!',
-                    logger_context=log_context,
-                    level='critical')
-                raise e
-
-            # latest version only? -> possible new ticket
-            parser_task.parse.delay(f.pk, should_send_submission_email=False)
-
-        log("Database cleansing complete and all files have been rescheduling for parsing and validation.",
+        log("Database cleansing complete and all files have been re-scheduling for parsing and validation.",
             logger_context=log_context,
             level='info')
         log(f"Clean and re-parse completed for FY {fiscal_year if fiscal_year else all_fy} and "
