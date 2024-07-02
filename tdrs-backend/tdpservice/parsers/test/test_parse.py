@@ -506,11 +506,11 @@ def test_parse_tanf_section1_datafile(small_tanf_section1_datafile, dfs):
     parse.parse_datafile(small_tanf_section1_datafile, dfs)
 
     dfs.status = dfs.get_status()
-    assert dfs.status == DataFileSummary.Status.ACCEPTED
+    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'months': [
-        {'month': 'Oct', 'accepted_without_errors': 5, 'accepted_with_errors': 0},
+        {'month': 'Oct', 'accepted_without_errors': 4, 'accepted_with_errors': 1},
         {'month': 'Nov', 'accepted_without_errors': 0, 'accepted_with_errors': 0},
         {'month': 'Dec', 'accepted_without_errors': 0, 'accepted_with_errors': 0}],
         'rejected': 0}
