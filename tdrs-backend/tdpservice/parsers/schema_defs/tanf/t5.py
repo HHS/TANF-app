@@ -182,7 +182,7 @@ t5 = SchemaManager(
                 Field(
                     item="17A",
                     name="RACE_HISPANIC",
-                    friendly_name="Hisapic or Latino",
+                    friendly_name="Hispanic or Latino",
                     type="number",
                     startIndex=37,
                     endIndex=38,
