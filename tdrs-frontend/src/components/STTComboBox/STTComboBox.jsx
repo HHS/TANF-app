@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchSttList } from '../../actions/sttList'
 import ComboBox from '../ComboBox'
 import Modal from '../Modal'
+import { toTitleCase } from '../../utils/stringUtils'
 
 /**
  * @param {function} selectStt - Function to reference and change the
@@ -14,7 +15,7 @@ import Modal from '../Modal'
  * @param {function} error - Reference to stt errors object.
  */
 
-function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
+function STTComboBox({ selectStt, selectedStt, handleBlur, error, sttType }) {
   const sttListRequest = useSelector((state) => state?.stts)
   const dispatch = useDispatch()
   const [numTries, setNumTries] = useState(0)
@@ -45,22 +46,34 @@ function STTComboBox({ selectStt, selectedStt, handleBlur, error }) {
     <>
       <ComboBox
         name="stt"
-        label="Associated State, Tribe, or Territory*"
-        error={error ? 'A state, tribe, or territory is required' : undefined}
+        label={
+          sttType
+            ? `${toTitleCase(sttType)}*`
+            : 'Associated State, Tribe, or Territory*'
+        }
+        error={
+          error
+            ? `A ${sttType || 'state, tribe, or territory'} is required`
+            : undefined
+        }
         handleSelect={selectStt}
         selected={selectedStt}
         handleBlur={handleBlur}
         placeholder="- Select or Search -"
         aria-required="true"
+        autoComplete={false}
       >
         <option value="" disabled hidden>
           - Select or Search -
         </option>
-        {sttListRequest.sttList.map((stt) => (
-          <option className="sttOption" key={stt.id} value={stt.name}>
-            {stt.name}
-          </option>
-        ))}
+        {sttListRequest.sttList.map(
+          (stt) =>
+            (sttType == null || stt.type === sttType) && (
+              <option className="sttOption" key={stt.id} value={stt.name}>
+                {stt.name}
+              </option>
+            )
+        )}
       </ComboBox>
       <Modal
         title="TDP systems are currently experiencing technical difficulties."
