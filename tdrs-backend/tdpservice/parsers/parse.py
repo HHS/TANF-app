@@ -2,7 +2,6 @@
 
 
 from django.conf import settings
-from django.db import DatabaseError
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.contrib.contenttypes.models import ContentType
 import itertools

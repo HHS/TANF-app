@@ -149,7 +149,7 @@ def restore_database(file_name, postgres_client, database_uri, system_user):
 
         logger.info("Begining database restoration.")
         cmd = (postgres_client + "pg_restore" + " -p " + DATABASE_PORT + " -h " +
-            DATABASE_HOST + " -U " + DATABASE_USERNAME + " -d " + DATABASE_DB_NAME + " " + file_name)
+               DATABASE_HOST + " -U " + DATABASE_USERNAME + " -d " + DATABASE_DB_NAME + " " + file_name)
         logger.info(f"Executing restore command: {cmd}")
         os.system(cmd)
         msg = "Completed database restoration."
