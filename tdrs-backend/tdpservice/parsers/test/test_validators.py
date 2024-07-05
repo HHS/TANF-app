@@ -46,10 +46,11 @@ def test_or_validators():
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")))
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (True, None)
     assert validator("3", RowSchema(), "friendly_name", "item_no") == (True, None)
-    assert validator("5", RowSchema(), "friendly_name", "item_no") == (False,
-                                                                       "T1 friendly_name: 5 does not match 2. or "
-                                                                       "T1 friendly_name: 5 does not "
-                                                                       "match 3.")
+    assert validator("5", RowSchema(), "friendly_name", "item_no") == (
+        False,
+        "T1 Item item_no (friendly_name): 5 does not match 2. or "
+        "T1 Item item_no (friendly_name): 5 does not match 3."
+    )
 
     validator = validators.or_validators(validators.matches(("2")), validators.matches(("3")),
                                          validators.matches(("4")))
@@ -62,17 +63,21 @@ def test_or_validators():
     assert validator(value, RowSchema(), "friendly_name", "item_no") == (True, None)
 
     value = "5"
-    assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                         'T1 friendly_name: 5 does not match 2. or '
-                                                                         'T1 friendly_name: 5 does not match 3. or '
-                                                                         'T1 friendly_name: 5 does not match 4.')
+    assert validator(value, RowSchema(), "friendly_name", "item_no") == (
+        False,
+        'T1 Item item_no (friendly_name): 5 does not match 2. or '
+        'T1 Item item_no (friendly_name): 5 does not match 3. or '
+        'T1 Item item_no (friendly_name): 5 does not match 4.'
+    )
 
     validator = validators.or_validators(validators.matches((2)), validators.matches((3)), validators.isLargerThan(4))
     assert validator(5, RowSchema(), "friendly_name", "item_no") == (True, None)
-    assert validator(1, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                     "T1 friendly_name: 1 does not match 2. "
-                                                                     "or T1 friendly_name: 1 does not "
-                                                                     "match 3. or T1: 1 is not larger than 4.")
+    assert validator(1, RowSchema(), "friendly_name", "item_no") == (
+        False,
+        "T1 Item item_no (friendly_name): 1 does not match 2. "
+        "or T1 Item item_no (friendly_name): 1 does not "
+        "match 3. or T1 Item item_no (friendly_name): 1 is not larger than 4."
+    )
 
 def test_if_validators():
     """Test `if_then_validator` gives a valid result."""
@@ -88,14 +93,17 @@ def test_if_validators():
           result_field_name="Field2", result_function=validators.matches('1'),
       )
     result = validator(value, RowSchema())
-    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1 Field2: 2 does not match 1.',
+    assert result == (False, 'if Field1 :1 validator1 passed then Field2 T1 Item -1 (Field2): 2 does not match 1.',
                       ['Field1', 'Field2'])
 
 
 def test_and_validators():
     """Test `and_validators` gives a valid result."""
     validator = validators.and_validators(validators.isLargerThan(2), validators.isLargerThan(0))
-    assert validator(1, RowSchema(), "friendly_name", "item_no") == (False, 'T1: 1 is not larger than 2.')
+    assert validator(1, RowSchema(), "friendly_name", "item_no") == (
+        False,
+        'T1 Item item_no (friendly_name): 1 is not larger than 2.'
+    )
     assert validator(3, RowSchema(), "friendly_name", "item_no") == (True, None)
 
 
@@ -132,7 +140,7 @@ def test_quarterIsValid(value, valid):
     val = validators.quarterIsValid()
     result = val(value, RowSchema(), "friendly_name", "item_no")
 
-    errorText = None if valid else f"T1: {value[-1:]} is not a valid quarter."
+    errorText = None if valid else f"T1 Item item_no (friendly_name): {value[-1:]} is not a valid quarter."
     assert result == (valid, errorText)
 
 def test_validateSSN():
@@ -145,7 +153,7 @@ def test_validateSSN():
     value = "111111111"
     options = [str(i) * 9 for i in range(0, 10)]
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, f"T1: {value} is in {options}.")
+    assert result == (False, f"T1 Item item_no (friendly_name): {value} is in {options}.")
 
 def test_validateRace():
     """Test `validateRace`."""
@@ -156,7 +164,10 @@ def test_validateRace():
 
     value = 3
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, f"T1: {value} is not greater than or equal to 0 or smaller than or equal to 2.")
+    assert result == (
+        False,
+        f"T1 Item item_no (friendly_name): {value} is not greater than or equal to 0 or smaller than or equal to 2."
+    )
 
 def test_validateRptMonthYear():
     """Test `validateRptMonthYear`."""
@@ -167,18 +178,27 @@ def test_validateRptMonthYear():
 
     value = "T1      "
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, f"T1: The value: {value[2:8]}, does not follow the YYYYMM format for Reporting Year and "
-                      "Month.")
+    assert result == (
+        False,
+        f"T1 Item item_no (friendly_name): The value: {value[2:8]}, does not "
+        "follow the YYYYMM format for Reporting Year and Month."
+    )
 
     value = "T1189912"
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, f"T1: The value: {value[2:8]}, does not follow the YYYYMM format for Reporting Year and "
-                      "Month.")
+    assert result == (
+        False,
+        f"T1 Item item_no (friendly_name): The value: {value[2:8]}, does not follow "
+        "the YYYYMM format for Reporting Year and Month."
+    )
 
     value = "T1202013"
     result = val(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, f"T1: The value: {value[2:8]}, does not follow the YYYYMM format for Reporting Year and "
-                      "Month.")
+    assert result == (
+        False,
+        f"T1 Item item_no (friendly_name): The value: {value[2:8]}, does "
+        "not follow the YYYYMM format for Reporting Year and Month."
+    )
 
 def test_matches_returns_valid():
     """Test `matches` gives a valid result."""
@@ -199,7 +219,7 @@ def test_matches_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1 friendly_name: TEST does not match test.'
+    assert error == 'T1 Item item_no (friendly_name): TEST does not match test.'
 
 
 def test_oneOf_returns_valid():
@@ -232,7 +252,7 @@ def test_oneOf_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: 64 is not in [17, 24, 36].'
+    assert error == 'T1 Item item_no (friendly_name): 64 is not in [17, 24, 36].'
 
     value = 65
     options = ["17-55"]
@@ -241,7 +261,7 @@ def test_oneOf_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: 65 is not in [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, ' \
+    assert error == 'T1 Item item_no (friendly_name): 65 is not in [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, ' \
         '29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55].'
 
 
@@ -275,7 +295,34 @@ def test_between_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: 47 is not between 48 and 400.'
+    assert error == 'T1 Item item_no (friendly_name): 47 is not between 48 and 400.'
+
+
+@pytest.mark.parametrize('value, expected_is_valid, expected_error', [
+    (7, True, None),
+    (77731, True, None),
+    ('7', True, None),
+    ('234897', True, None),
+    ('a', False, 'T1 Item item_no (friendly_name): a is not a number.'),
+    (
+        'houston, we have a problem', False,
+        'T1 Item item_no (friendly_name): houston, we have a problem is not a number.'
+    ),
+    ('  test', False, 'T1 Item item_no (friendly_name):   test is not a number.'),
+    (' 7 ', True, None),
+    (' 8388323', True, None),
+    ('87932875                              ', True, None),
+    (' 00 ', True, None),
+    (' 88 ', True, None),
+    (' 088 ', True, None),
+    (' 8 8 ', False, 'T1 Item item_no (friendly_name):  8 8  is not a number.'),
+])
+def test_isNumber(value, expected_is_valid, expected_error):
+    """Test `isNumber` validator."""
+    validator = validators.isNumber()
+    is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
+    assert is_valid == expected_is_valid
+    assert error == expected_error
 
 
 def test_date_month_is_valid_returns_valid():
@@ -293,7 +340,7 @@ def test_date_month_is_valid_returns_invalid():
     validator = validators.dateMonthIsValid()
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
     assert is_valid is False
-    assert error == 'T1: 13 is not a valid month.'
+    assert error == 'T1 Item item_no (friendly_name): 13 is not a valid month.'
 
 
 def test_date_day_is_valid_returns_valid():
@@ -311,7 +358,7 @@ def test_date_day_is_valid_returns_invalid():
     validator = validators.dateDayIsValid()
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
     assert is_valid is False
-    assert error == 'T1: 32 is not a valid day.'
+    assert error == 'T1 Item item_no (friendly_name): 32 is not a valid day.'
 
 
 def test_olderThan():
@@ -323,8 +370,11 @@ def test_olderThan():
 
     value = 20240101
     result = validator(value, RowSchema(), "friendly_name", "item_no")
-    assert result == (False, (f"T1: {str(value)[:4]} must be less than or equal to {date.today().year - min_age} "
-                              "to meet the minimum age requirement."))
+    assert result == (
+        False,
+        f"T1 Item item_no (friendly_name): {str(value)[:4]} must be less than or equal to "
+        f"{date.today().year - min_age} to meet the minimum age requirement."
+    )
 
 
 def test_dateYearIsLargerThan():
@@ -335,9 +385,10 @@ def test_dateYearIsLargerThan():
     assert validator(value) == (True, None)
 
     value = 18990101
-    assert validator(value, RowSchema(), "friendly_name", "item_no") == (False,
-                                                                         f"T1: Year {str(value)[:4]} must be larger "
-                                                                         f"than {year}.")
+    assert validator(value, RowSchema(), "friendly_name", "item_no") == (
+        False,
+        f"T1 Item item_no (friendly_name): Year {str(value)[:4]} must be larger than {year}."
+    )
 
 
 def test_between_returns_invalid_for_string_value():
@@ -348,7 +399,7 @@ def test_between_returns_invalid_for_string_value():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: 047 is not between 100 and 400.'
+    assert error == 'T1 Item item_no (friendly_name): 047 is not between 100 and 400.'
 
 
 def test_recordHasLength_returns_valid():
@@ -370,7 +421,7 @@ def test_recordHasLength_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1 record length is 7 characters but must be 22.'
+    assert error == 'T1: record length is 7 characters but must be 22.'
 
 def test_hasLengthGreaterThan_returns_valid():
     """Test `hasLengthGreaterThan` gives a valid result."""
@@ -416,7 +467,7 @@ def test_recordHasLengthBetween_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == f"T1 record length of {len(value)} characters is not in the range [{lower}, {upper}]."
+    assert error == f"T1: record length of {len(value)} characters is not in the range [{lower}, {upper}]."
 
 
 def test_intHasLength_returns_valid():
@@ -438,7 +489,7 @@ def test_intHasLength_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: 1a3 does not have exactly 22 digits.'
+    assert error == 'T1 Item item_no (friendly_name): 1a3 does not have exactly 22 digits.'
 
 
 def test_contains_returns_valid():
@@ -460,7 +511,7 @@ def test_contains_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: 12345abcde does not contain 6789.'
+    assert error == 'T1 Item item_no (friendly_name): 12345abcde does not contain 6789.'
 
 
 def test_startsWith_returns_valid():
@@ -482,7 +533,7 @@ def test_startsWith_returns_invalid():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1: 12345abcde does not start with abc.'
+    assert error == 'T1 Item item_no (friendly_name): 12345abcde does not start with abc.'
 
 
 def test_notEmpty_returns_valid_full_string():
@@ -504,7 +555,7 @@ def test_notEmpty_returns_invalid_full_string():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == 'T1:           contains blanks between positions 0 and 9.'
+    assert error == 'T1 Item item_no (friendly_name):           contains blanks between positions 0 and 9.'
 
 
 def test_notEmpty_returns_valid_substring():
@@ -526,7 +577,7 @@ def test_notEmpty_returns_invalid_substring():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == "T1: 111  333 contains blanks between positions 3 and 5."
+    assert error == "T1 Item item_no (friendly_name): 111  333 contains blanks between positions 3 and 5."
 
 
 def test_notEmpty_returns_nonexistent_substring():
@@ -537,7 +588,7 @@ def test_notEmpty_returns_nonexistent_substring():
     is_valid, error = validator(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == "T1: 111  333 contains blanks between positions 10 and 12."
+    assert error == "T1 Item item_no (friendly_name): 111  333 contains blanks between positions 10 and 12."
 
 
 @pytest.mark.parametrize("test_input", [1, 2, 3, 4])
@@ -557,7 +608,7 @@ def test_quarterIsValid_returns_false_if_invalid(test_input):
     is_valid, error = validator(test_input, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error == f"T1: {test_input} is not a valid quarter."
+    assert error == f"T1 Item item_no (friendly_name): {test_input} is not a valid quarter."
 
 @pytest.mark.parametrize("value", ["T72020 ", "T720194", "T720200", "T720207", "T72020$"])
 def test_calendarQuarterIsValid_returns_invalid(value):
@@ -566,8 +617,10 @@ def test_calendarQuarterIsValid_returns_invalid(value):
     is_valid, error_msg = val(value, RowSchema(), "friendly_name", "item_no")
 
     assert is_valid is False
-    assert error_msg == f"T1: {value[2:7]} is invalid. Calendar Quarter must be a numeric " + \
+    assert error_msg == (
+        f"T1: {value[2:7]} is invalid. Calendar Quarter must be a numeric "
         "representing the Calendar Year and Quarter formatted as YYYYQ"
+    )
 
 
 @pytest.mark.parametrize("value", ["T720201", "T720202", "T720203", "T720204"])

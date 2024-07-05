@@ -181,7 +181,7 @@ def test_parse_bad_test_file(bad_test_file, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'HEADER record length is 24 characters but must be 23.'
+    assert err.error_message == 'HEADER: record length is 24 characters but must be 23.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -204,7 +204,7 @@ def test_parse_bad_file_missing_header(bad_file_missing_header, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'HEADER record length is 14 characters but must be 23.'
+    assert err.error_message == 'HEADER: record length is 14 characters but must be 23.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -268,7 +268,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
 
     trailer_error = parser_errors.get(row_number=3)
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error.error_message == 'TRAILER record length is 11 characters but must be 23.'
+    assert trailer_error.error_message == 'TRAILER: record length is 11 characters but must be 23.'
     assert trailer_error.content_type is None
     assert trailer_error.object_id is None
 
@@ -279,7 +279,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
         row_errors_list.append(row_error)
         assert row_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert trailer_error.error_message in [
-            'TRAILER record length is 11 characters but must be 23.',
+            'TRAILER: record length is 11 characters but must be 23.',
             'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.']
         assert row_error.content_type is None
         assert row_error.object_id is None
@@ -293,7 +293,7 @@ def test_parse_bad_trailer_file(bad_trailer_file, dfs):
     row_errors = list(parser_errors.filter(row_number=2).order_by("id"))
     length_error = row_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == "T1 record length of 7 characters is not in the range [117, 156]."
+    assert length_error.error_message == "T1: record length of 7 characters is not in the range [117, 156]."
     assert length_error.content_type is None
     assert length_error.object_id is None
     assert errors == {
@@ -319,7 +319,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
 
     trailer_error_1 = trailer_errors[0]
     assert trailer_error_1.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert trailer_error_1.error_message == 'TRAILER record length is 7 characters but must be 23.'
+    assert trailer_error_1.error_message == 'TRAILER: record length is 7 characters but must be 23.'
     assert trailer_error_1.content_type is None
     assert trailer_error_1.object_id is None
 
@@ -332,7 +332,10 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     row_2_errors = parser_errors.filter(row_number=2).order_by('id')
     row_2_error = row_2_errors.first()
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert row_2_error.error_message == 'T1: 3 is not larger or equal to 1 and smaller or equal to 2.'
+    assert row_2_error.error_message == (
+        'T1 Item 13 (receives subsidized housing): 3 is not '
+        'larger or equal to 1 and smaller or equal to 2.'
+    )
 
     # catch-rpt-month-year-mismatches
     row_3_errors = parser_errors.filter(row_number=3)
@@ -342,7 +345,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
         row_3_error_list.append(row_3_error)
         assert row_3_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
         assert row_3_error.error_message in {
-            'T1 record length of 7 characters is not in the range [117, 156].',
+            'T1: record length of 7 characters is not in the range [117, 156].',
             'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.',
             'TRAILER record length is 7 characters but must be 23.',
             'T1: Case number T1trash cannot contain blanks.',
@@ -364,7 +367,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     row_3_errors = [trailer_errors[2], trailer_errors[3]]
     length_error = row_3_errors[0]
     assert length_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert length_error.error_message == 'T1 record length of 7 characters is not in the range [117, 156].'
+    assert length_error.error_message == 'T1: record length of 7 characters is not in the range [117, 156].'
     assert length_error.content_type is None
     assert length_error.object_id is None
 
@@ -414,7 +417,7 @@ def test_parse_empty_file(empty_file, dfs):
 
     assert err.row_number == 1
     assert err.error_type == ParserErrorCategoryChoices.PRE_CHECK
-    assert err.error_message == 'HEADER record length is 0 characters but must be 23.'
+    assert err.error_message == 'HEADER: record length is 0 characters but must be 23.'
     assert err.content_type is None
     assert err.object_id is None
     assert errors == {
@@ -478,7 +481,9 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
 
     assert err.row_number == 2
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert err.error_message == 'M1: 3 is not larger or equal to 1 and smaller or equal to 2.'
+    assert err.error_message == (
+        'M1 Item 11 (receives subsidized housing): 3 is not larger or equal to 1 and smaller or equal to 2.'
+    )
     assert err.content_type is not None
     assert err.object_id is not None
 
@@ -759,7 +764,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
 
     trailer_error = parser_errors.get(
         row_number=6,
-        error_message='TRAILER record length is 15 characters but must be 23.'
+        error_message='TRAILER: record length is 15 characters but must be 23.'
     )
     assert trailer_error.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error.content_type is None
@@ -876,7 +881,10 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
 
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert err.error_message == "T4: 3 is not larger or equal to 1 and smaller or equal to 2."
+    assert err.error_message == (
+        "T4 Item 10 (receives subsidized housing): 3 "
+        "is not larger or equal to 1 and smaller or equal to 2."
+    )
     assert err.content_type.model == "tanf_t4"
     assert err.object_id is not None
 
@@ -1269,15 +1277,15 @@ def test_parse_tribal_section_2_file(tribal_section_2_file, dfs):
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'rejected': 0,
                                    'months': [
-                                       {'accepted_without_errors': 0,
-                                           'accepted_with_errors': 3, 'month': 'Oct'},
-                                       {'accepted_without_errors': 0,
-                                           'accepted_with_errors': 3, 'month': 'Nov'},
+                                       {'accepted_without_errors': 3,
+                                           'accepted_with_errors': 0, 'month': 'Oct'},
+                                       {'accepted_without_errors': 3,
+                                           'accepted_with_errors': 0, 'month': 'Nov'},
                                        {'accepted_without_errors': 0,
                                            'accepted_with_errors': 0, 'month': 'Dec'}
                                    ]}
 
-    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert dfs.get_status() == DataFileSummary.Status.ACCEPTED
 
     assert Tribal_TANF_T4.objects.all().count() == 6
     assert Tribal_TANF_T5.objects.all().count() == 13
@@ -1368,7 +1376,8 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
                            'The second child record is too short at 97 characters' +
                            ' and must be at least 101 characters.'),
                           ('t3_file_two_child_with_space_filled', 2, 0, ''),
-                          ('two_child_second_filled', 2, 9, 'T3: Year 6    must be larger than 1900.'),
+                          ('two_child_second_filled', 2, 8,
+                           'T3 Item 68 (date of birth): Year 6    must be larger than 1900.'),
                           ('t3_file_zero_filled_second', 1, 0, '')])
 @pytest.mark.django_db()
 def test_misformatted_multi_records(file_fixture, result, number_of_errors, error_message, request, dfs):
@@ -1384,6 +1393,7 @@ def test_misformatted_multi_records(file_fixture, result, number_of_errors, erro
     assert parser_errors.count() == number_of_errors
     if number_of_errors > 0:
         error_messages = [parser_error.error_message for parser_error in parser_errors]
+        print(error_messages)
         assert error_message in error_messages
 
     parser_errors = ParserError.objects.all().exclude(
@@ -1406,7 +1416,10 @@ def test_empty_t4_t5_values(t4_t5_empty_values, dfs):
     assert t4[0].STRATUM is None
     logger.info(t4[0].__dict__)
     assert t5.count() == 1
-    assert parser_errors[0].error_message == "T4: 3 is not larger or equal to 1 and smaller or equal to 2."
+    assert parser_errors[0].error_message == (
+        "T4 Item 10 (receives subsidized housing): 3 is "
+        "not larger or equal to 1 and smaller or equal to 2."
+    )
 
 
 @pytest.mark.django_db()
@@ -1425,9 +1438,9 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
     year_error = parser_errors[1]
     digits_error = parser_errors[0]
 
-    assert month_error.error_message == "T2: $9 is not a valid month."
-    assert year_error.error_message == "T2: Year Q897 must be larger than 1900."
-    assert digits_error.error_message == "T2: Q897$9 3 does not have exactly 8 digits."
+    assert month_error.error_message == "T2 Item 32 (date of birth): $9 is not a valid month."
+    assert year_error.error_message == "T2 Item 32 (date of birth): Year Q897 must be larger than 1900."
+    assert digits_error.error_message == "T2 Item 32 (date of birth): Q897$9 3 does not have exactly 8 digits."
 
 @pytest.mark.django_db
 def test_bulk_create_returns_rollback_response_on_bulk_index_exception(small_correct_file, mocker, dfs):
@@ -1568,7 +1581,7 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file
     error = parser_errors.first()
 
     assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert error.error_message == "HEADER update indicator: U does not match D."
+    assert error.error_message == "HEADER Item 10 (update indicator): U does not match D."
 
 
 @pytest.mark.django_db()
@@ -1606,7 +1619,7 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
     assert parser_errors.count() == 2
 
     for e in parser_errors:
-        assert e.error_message == "T3: 0 is not in [1, 2, 9]."
+        assert e.error_message == "T3 Item 76 (citizenship status): 0 is not in [1, 2, 9]."
 
 
 @pytest.mark.django_db()
@@ -1626,9 +1639,10 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     assert parser_errors.count() == 3
 
-    error_msgs = {"M2: 00 is not in range [1, 16]. or M2: 00 is not in range [98, 99].",
-                  "M2: 0 is not in [1, 2, 3, 9].",
-                  "M2: 0 is not in [1, 2, 9]."}
+    error_msgs = {"M2 Item 37 (education level): 00 is not in range [1, 16]. "
+                  "or M2 Item 37 (education level): 00 is not in range [98, 99].",
+                  "M2 Item 38 (citizenship status): 0 is not in [1, 2, 3, 9].",
+                  "M2 Item 39 (cooperation with child support): 0 is not in [1, 2, 9]."}
     for e in parser_errors:
         assert e.error_message in error_msgs
 
@@ -1649,8 +1663,9 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     assert parser_errors.count() == 4
 
-    error_msgs = {"M3: 00 is not in range [1, 16]. or M3: 00 is not in range [98, 99].",
-                  "M3: 0 is not in [1, 2, 3, 9]."}
+    error_msgs = {"M3 Item 68 (education level): 00 is not in range [1, 16]. "
+                  "or M3 Item 68 (education level): 00 is not in range [98, 99].",
+                  "M3 Item 69 (citizenship status): 0 is not in [1, 2, 3, 9]."}
 
     for e in parser_errors:
         assert e.error_message in error_msgs
@@ -1672,8 +1687,8 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     assert parser_errors.count() == 2
 
-    error_msgs = {"M5: 00 matches 00.",
-                  "M5: 0 is not in [1, 2, 3, 9]."}
+    error_msgs = {"M5 Item 23 (education level): 00 matches 00.",
+                  "M5 Item 24 (citizenship status): 0 is not in [1, 2, 3, 9]."}
 
     for e in parser_errors:
         assert e.error_message in error_msgs
