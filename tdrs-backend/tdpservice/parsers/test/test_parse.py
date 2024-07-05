@@ -333,7 +333,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     row_2_error = row_2_errors.first()
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_2_error.error_message == (
-        'T1 Item 13 (receives subsidized housing): 3 is not '
+        'T1 Item 13 (Receives Subsidized Housing): 3 is not '
         'larger or equal to 1 and smaller or equal to 2.'
     )
 
@@ -347,7 +347,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
         assert row_3_error.error_message in {
             'T1: record length of 7 characters is not in the range [117, 156].',
             'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.',
-            'TRAILER record length is 7 characters but must be 23.',
+            'TRAILER: record length is 7 characters but must be 23.',
             'T1: Case number T1trash cannot contain blanks.',
             'Your file does not end with a TRAILER record.'}
         assert row_3_error.content_type is None
