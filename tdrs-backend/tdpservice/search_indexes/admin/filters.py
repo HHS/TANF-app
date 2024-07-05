@@ -1,6 +1,7 @@
 """Filter classes."""
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin import SimpleListFilter
+from django.db.models import Q as Query
 from more_admin_filters import MultiSelectDropdownFilter
 from tdpservice.stts.models import STT
 import datetime
@@ -58,7 +59,8 @@ class STTFilter(MultiSelectDropdownFilter):
         elif 'ssp' in record_type:
             queryset = queryset.filter(ssp=True)
         else:
-            queryset = queryset.filter(type=STT.EntityType.STATE)
+            type_query = Query(type=STT.EntityType.STATE) | Query(type=STT.EntityType.TERRITORY)
+            queryset = queryset.filter(type_query)
 
         return (queryset.distinct().order_by('name').values_list('name', flat=True))
 
