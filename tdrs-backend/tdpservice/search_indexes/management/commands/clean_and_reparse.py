@@ -2,7 +2,7 @@
 
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from elasticsearch.helpers.errors import BulkIndexError
+from elasticsearch.exceptions import ElasticsearchException
 from tdpservice.data_files.models import DataFile
 from tdpservice.scheduling import parser_task
 from tdpservice.search_indexes.documents import tanf, ssp, tribal
@@ -22,9 +22,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         """Add arguments to the management command."""
-        parser.add_argument("-q", "--fiscal_quarter", type=str, help="Re-parse all files in the fiscal quarter, "
-                            "e.g. Q1.")
-        parser.add_argument("-y", "--fiscal_year", type=str, help="Re-parse all files in the fiscal year, e.g. 2021.")
+        parser.add_argument("-q", "--fiscal_quarter", type=str, choices=["Q1", "Q2", "Q3", "Q4"],
+                            help="Re-parse all files in the fiscal quarter, e.g. Q1.")
+        parser.add_argument("-y", "--fiscal_year", type=int, help="Re-parse all files in the fiscal year, e.g. 2021.")
         parser.add_argument("-a", "--all", action='store_true', help="Clean and re-parse all datafiles. If selected, "
                             "fiscal_year/quarter aren't necessary.")
         parser.add_argument("-n", "--new_indices", action='store_true', help="Move re-parsed data to new Elastic "
@@ -88,7 +88,7 @@ class Command(BaseCommand):
                     # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
                     doc().update(qset, refresh=True, action='delete')
                 qset._raw_delete(qset.db)
-            except BulkIndexError as e:
+            except ElasticsearchException as e:
                 log(f'Elastic document delete failed for model {model}. Database and Elastic are INCONSISTENT! Restore '
                     'the DB from the backup as soon as possible!',
                     logger_context=log_context,
@@ -107,18 +107,10 @@ class Command(BaseCommand):
         for f in files:
             try:
                 f.delete()
-            except Exception as e:
-                log(f'DataFile.delete failed for id: {f.pk}. Database and Elastic are INCONSISTENT! Restore the '
-                    'DB from the backup as soon as possible!',
-                    logger_context=log_context,
-                    level='critical')
-                raise e
-
-            try:
                 f.save()
             except Exception as e:
-                log(f'DataFile.save failed for id: {f.pk}. Database and Elastic are INCONSISTENT! Restore the '
-                    'DB from the backup as soon as possible!',
+                log(f'DataFile.delete or DataFile.save failed for id: {f.pk}. Database and Elastic are INCONSISTENT! '
+                    'Restore the DB from the backup as soon as possible!',
                     logger_context=log_context,
                     level='critical')
                 raise e
@@ -135,10 +127,9 @@ class Command(BaseCommand):
         delete_indices = options.get('delete_indices', False)
 
         backup_file_name = "/tmp/reparsing_backup"
-        files = None
+        files = DataFile.objects.all()
         continue_msg = "You have selected to re-parse datafiles for FY {fy} and {q}. The re-parsed files "
         if delete_all:
-            files = DataFile.objects.all()
             backup_file_name += "_FY_All_Q1-4"
             continue_msg = continue_msg.format(fy="All", q="Q1-4")
         else:
@@ -148,27 +139,27 @@ class Command(BaseCommand):
                     'Provide either option to continue, or --all to wipe all submissions.'
                 )
                 return
-            files = DataFile.objects.all()
-            if (fiscal_year and fiscal_quarter):
+            if fiscal_year is not None and fiscal_quarter is not None:
                 files = files.filter(year=fiscal_year, quarter=fiscal_quarter)
                 backup_file_name += f"_FY_{fiscal_year}_Q{fiscal_quarter}"
                 continue_msg = continue_msg.format(fy=fiscal_year, q=fiscal_quarter)
-            elif fiscal_year:
+            elif fiscal_year is not None:
                 files = files.filter(year=fiscal_year)
                 backup_file_name += f"_FY_{fiscal_year}_Q1-4"
                 continue_msg = continue_msg.format(fy=fiscal_year, q="Q1-4")
-            elif fiscal_quarter:
+            elif fiscal_quarter is not None:
                 files = files.filter(quarter=fiscal_quarter)
                 backup_file_name += f"_FY_All_Q{fiscal_quarter}"
                 continue_msg = continue_msg.format(fy="All", q=fiscal_quarter)
 
-        continue_msg += "will {new_index} stored in new indices and the old indices ".format(new_index="be"
-                                                                                             if new_indices
-                                                                                             else "NOT be")
-        continue_msg += "will {old_index} deleted.".format(old_index="be" if delete_indices else "NOT be")
-        continue_msg += "\nThese options will delete and re-parse {0} datafiles.".format(f"ALL ({files.count()})" if
-                                                                                         delete_all else
-                                                                                         f"({files.count()})")
+        fmt_str = "be" if new_indices else "NOT be"
+        continue_msg += "will {new_index} stored in new indices and the old indices ".format(new_index=fmt_str)
+
+        fmt_str = "be" if delete_indices else "NOT be"
+        continue_msg += "will {old_index} deleted.".format(old_index=fmt_str)
+
+        fmt_str = f"ALL ({files.count()})" if delete_all else f"({files.count()})"
+        continue_msg += "\nThese options will delete and re-parse {0} datafiles.".format(fmt_str)
 
         c = str(input(f'\n{continue_msg}\nContinue [y/n]? ')).lower()
         if c not in ['y', 'yes']:

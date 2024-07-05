@@ -140,32 +140,32 @@ def restore_database(file_name, postgres_client, database_uri, system_user):
             change_message=msg
         )
         logger.info(msg)
+
+        # write .pgpass
+        with open('/home/vcap/.pgpass', 'w') as f:
+            f.write(DATABASE_HOST+":"+DATABASE_PORT+":"+DATABASE_DB_NAME+":"+DATABASE_USERNAME+":"+DATABASE_PASSWORD)
+        os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
+        os.system('chmod 0600 /home/vcap/.pgpass')
+
+        logger.info("Begining database restoration.")
+        cmd = (postgres_client + "pg_restore" + " -p " + DATABASE_PORT + " -h " +
+            DATABASE_HOST + " -U " + DATABASE_USERNAME + " -d " + DATABASE_DB_NAME + " " + file_name)
+        logger.info(f"Executing restore command: {cmd}")
+        os.system(cmd)
+        msg = "Completed database restoration."
+        LogEntry.objects.log_action(
+            user_id=system_user.pk,
+            content_type_id=content_type.pk,
+            object_id=None,
+            object_repr="Executed Database restore",
+            action_flag=ADDITION,
+            change_message=msg
+        )
+        logger.info(msg)
+        return True
     except Exception as e:
         logger.error(f"Caught exception while creating the database. Exception: {e}.")
         raise e
-
-    # write .pgpass
-    with open('/home/vcap/.pgpass', 'w') as f:
-        f.write(DATABASE_HOST+":"+DATABASE_PORT+":"+DATABASE_DB_NAME+":"+DATABASE_USERNAME+":"+DATABASE_PASSWORD)
-    os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
-    os.system('chmod 0600 /home/vcap/.pgpass')
-
-    logger.info("Begining database restoration.")
-    cmd = (postgres_client + "pg_restore" + " -p " + DATABASE_PORT + " -h " +
-           DATABASE_HOST + " -U " + DATABASE_USERNAME + " -d " + DATABASE_DB_NAME + " " + file_name)
-    logger.info(f"Executing restore command: {cmd}")
-    os.system(cmd)
-    msg = "Completed database restoration."
-    LogEntry.objects.log_action(
-        user_id=system_user.pk,
-        content_type_id=content_type.pk,
-        object_id=None,
-        object_repr="Executed Database restore",
-        action_flag=ADDITION,
-        change_message=msg
-    )
-    logger.info(msg)
-    return True
 
 
 def upload_file(file_name, bucket, sys_values, system_user, object_name=None, region='us-gov-west-1'):
