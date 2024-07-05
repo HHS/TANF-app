@@ -120,6 +120,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Delete and re-parse datafiles matching a query."""
+        if len(args) == 0:
+            self.print_help("manage.py", "clean_and_parse")
+            return
+
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
         delete_all = options.get('all', False)
