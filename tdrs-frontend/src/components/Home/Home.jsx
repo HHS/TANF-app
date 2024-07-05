@@ -38,6 +38,7 @@ function Home() {
   const userAccessInReview = useSelector(accountIsInReview)
   const userAccessRequestApproved = useSelector(accountStatusIsApproved)
 
+  const [jurisdictionType, setJurisdictionTypeInputValue] = useState('state')
   const shouldShowSttComboBox = !user?.email?.includes('@acf.hhs.gov')
 
   const validation = (fieldName, fieldValue) => {
@@ -55,6 +56,11 @@ function Home() {
       return `${field} is required`
     }
     return null
+  }
+
+  const setJurisdictionType = (val) => {
+    setStt('')
+    setJurisdictionTypeInputValue(val)
   }
 
   const setStt = (sttName) => {
@@ -136,7 +142,7 @@ function Home() {
     )
   } else if (!userAccessRequestApproved) {
     return (
-      <div className="margin-top-5">
+      <div className="margin-top-5 margin-bottom-5">
         <p className="margin-top-1 margin-bottom-4">
           Please enter your information to request access from an OFA
           administrator
@@ -172,6 +178,55 @@ function Home() {
             handleBlur={handleBlur}
           />
           {shouldShowSttComboBox && (
+            <div className="usa-form-group">
+              <fieldset className="usa-fieldset">
+                <legend className="usa-label text-bold">
+                  Jurisdiction Type
+                </legend>
+                <div className="usa-radio">
+                  <input
+                    className="usa-radio__input"
+                    id="state"
+                    type="radio"
+                    name="jurisdictionType"
+                    value="state"
+                    defaultChecked
+                    onChange={() => setJurisdictionType('state')}
+                  />
+                  <label className="usa-radio__label" htmlFor="state">
+                    State
+                  </label>
+                </div>
+                <div className="usa-radio">
+                  <input
+                    className="usa-radio__input"
+                    id="tribe"
+                    type="radio"
+                    name="jurisdictionType"
+                    value="tribe"
+                    onChange={() => setJurisdictionType('tribe')}
+                  />
+                  <label className="usa-radio__label" htmlFor="tribe">
+                    Tribe
+                  </label>
+                </div>
+                <div className="usa-radio">
+                  <input
+                    className="usa-radio__input"
+                    id="territory"
+                    type="radio"
+                    name="jurisdictionType"
+                    value="territory"
+                    onChange={() => setJurisdictionType('territory')}
+                  />
+                  <label className="usa-radio__label" htmlFor="territory">
+                    Territory
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+          )}
+          {jurisdictionType && shouldShowSttComboBox && (
             <div
               className={`usa-form-group ${
                 errors.stt ? 'usa-form-group--error' : ''
@@ -182,6 +237,7 @@ function Home() {
                 error={Boolean(errors.stt)}
                 selectedStt={profileInfo?.stt}
                 handleBlur={handleBlur}
+                sttType={jurisdictionType}
               />
             </div>
           )}
