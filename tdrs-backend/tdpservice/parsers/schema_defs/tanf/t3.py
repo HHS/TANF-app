@@ -169,7 +169,7 @@ child_one = RowSchema(
         Field(
             item="70A",
             name="RACE_HISPANIC",
-            friendly_name="Ethnicity/Race: Hispanic or Latino",
+            friendly_name="Hispanic or Latino",
             type="number",
             startIndex=37,
             endIndex=38,
@@ -179,7 +179,7 @@ child_one = RowSchema(
         Field(
             item="70B",
             name="RACE_AMER_INDIAN",
-            friendly_name="Ethnicity/Race: American Indian or Alaska Native ",
+            friendly_name="American Indian or Alaska Native ",
             type="number",
             startIndex=38,
             endIndex=39,
@@ -189,7 +189,7 @@ child_one = RowSchema(
         Field(
             item="70C",
             name="RACE_ASIAN",
-            friendly_name="Ethnicity/Race: Asian",
+            friendly_name="Asian",
             type="number",
             startIndex=39,
             endIndex=40,
@@ -199,7 +199,7 @@ child_one = RowSchema(
         Field(
             item="70D",
             name="RACE_BLACK",
-            friendly_name="Ethnicity/Race: Black or African American",
+            friendly_name="Black or African American",
             type="number",
             startIndex=40,
             endIndex=41,
@@ -209,7 +209,7 @@ child_one = RowSchema(
         Field(
             item="70E",
             name="RACE_HAWAIIAN",
-            friendly_name="Ethnicity/Race: Native Hawaiian or Pacific Islander",
+            friendly_name="Native Hawaiian or Pacific Islander",
             type="number",
             startIndex=41,
             endIndex=42,
@@ -219,7 +219,7 @@ child_one = RowSchema(
         Field(
             item="70F",
             name="RACE_WHITE",
-            friendly_name="Ethnicity/Race: White",
+            friendly_name="White",
             type="number",
             startIndex=42,
             endIndex=43,
