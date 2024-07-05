@@ -12,7 +12,6 @@ from . import schema_defs, validators, util
 from . import row_schema
 from .schema_defs.utils import get_section_reference, get_program_model
 from .case_consistency_validator import CaseConsistencyValidator
-from elasticsearch.helpers.errors import BulkIndexError
 from elasticsearch.exceptions import ElasticsearchException
 from tdpservice.data_files.models import DataFile
 
@@ -119,7 +118,7 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
 
                 try:
                     num_elastic_records_created += document.update(created_objs)[0]
-                except BulkIndexError as e:
+                except ElasticsearchException as e:
                     logger.error(f"Encountered error while indexing datafile documents: {e}")
                     LogEntry.objects.log_action(
                         user_id=datafile.user.pk,
@@ -140,8 +139,8 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                              f"{num_expected_db_records}!")
             else:
                 logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
-            return num_db_records_created == num_expected_db_records, {}
-        except DatabaseError as e:
+            return num_db_records_created == num_expected_db_records
+        except Exception as e:
             logger.error(f"Encountered error while creating datafile records: {e}")
             return False
     return False

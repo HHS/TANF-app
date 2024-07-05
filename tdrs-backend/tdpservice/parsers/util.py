@@ -230,7 +230,7 @@ class SortedRecords:
             logger.error(f"Error: Case hash for record at line #{line_num} was None!")
 
     def get_bulk_create_struct(self):
-        """Return dict of form {document: Iterable(records)} for bulk_create_records to consume."""
+        """Return dict of form {document: {record: None}} for bulk_create_records to consume."""
         return self.cases
 
     def clear(self, all_created):
@@ -238,7 +238,12 @@ class SortedRecords:
         if all_created:
             self.serialized_cases.update(set(self.hash_sorted_cases.keys()))
             self.hash_sorted_cases = dict()
-            self.cases = dict()
+
+            # We don't want to re-assign self.cases here because we lose the keys of the record/doc types we've already
+            # made. If we don't maintain that state we might not delete everything if we need to roll the records back
+            # at the end of, or during parsing.
+            for key in self.cases.keys():
+                self.cases[key] = {}
 
     def remove_case_due_to_errors(self, should_remove, case_hash):
         """Remove all records from memory given the hash."""
