@@ -371,7 +371,6 @@ def between(min, max):
     )
 
 
-
 def fieldHasLength(length):
     """Validate that the field value (string or array) has a length matching length param."""
     return make_validator(
