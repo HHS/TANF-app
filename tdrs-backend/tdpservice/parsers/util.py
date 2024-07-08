@@ -85,11 +85,33 @@ def make_generate_file_precheck_parser_error(datafile, line_number):
     return generate
 
 
+def make_generate_case_consistency_parser_error(datafile):
+    """Configure a generate_parser_error that is specific to case consistency errors."""
+    def generate(schema, error_category, error_message, line_number=None, record=None, field=None):
+        return generate_parser_error(
+            datafile=datafile,
+            line_number=line_number,
+            schema=schema,
+            error_category=error_category,
+            error_message=error_message,
+            record=record,
+            field=field,
+        )
+
+    return generate
+
+
 def contains_encrypted_indicator(line, encryption_field):
     """Determine if line contains encryption indicator."""
     if encryption_field is not None:
         return encryption_field.parse_value(line) == "E"
     return False
+
+
+def clean_options_string(options, remove=['\'', '"', ' ']):
+    """Return a prettied-up version of an options array."""
+    options_str = ', '.join(str(o) for o in options)
+    return f'[{options_str}]'
 
 
 '''
@@ -174,3 +196,93 @@ def get_years_apart(rpt_month_year_date, date):
     delta = rpt_month_year_date - date
     age = delta.days/365.25
     return age
+
+
+class SortedRecords:
+    """Maintains a dict sorted by hash_val and model type.
+
+    Note, hash_val = `hash(str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)` for section 1 and 2 files; but for section
+    3 and 4 files hash_val = `hash(line)`.
+    """
+
+    def __init__(self, section):
+        self.records_are_s1_or_s2 = section in {'A', 'C'}
+        self.hash_sorted_cases = dict()
+        self.cases = dict()
+        self.cases_already_removed = set()
+        self.serialized_cases = set()
+
+    def add_record(self, case_hash, record_doc_pair, line_num):
+        """Add a record_doc_pair to the sorted object if the case hasn't been removed already."""
+        record, document = record_doc_pair
+        rpt_month_year = str(getattr(record, 'RPT_MONTH_YEAR'))
+
+        if case_hash in self.cases_already_removed:
+            logger.info("Record's case has already been removed due to category four errors. Not adding record with "
+                        f"info: ({record.RecordType}, {getattr(record, 'CASE_NUMBER', None)}, {rpt_month_year})")
+            return
+
+        if case_hash is not None:
+            hashed_case = self.hash_sorted_cases.get(case_hash, {})
+            records = hashed_case.get(document, [])
+            records.append(record)
+
+            hashed_case[document] = records
+            self.hash_sorted_cases[case_hash] = hashed_case
+            # We treat the nested dictionary here as a set because dictionaries are sorted while sets aren't. If we
+            # don't have a sorted container we have test failures.
+            self.cases.setdefault(document, dict())[record] = None
+        else:
+            logger.error(f"Error: Case hash for record at line #{line_num} was None!")
+
+    def get_bulk_create_struct(self):
+        """Return dict of form {document: Iterable(records)} for bulk_create_records to consume."""
+        return self.cases
+
+    def clear(self, all_created):
+        """Reset sorted structs if all records were created."""
+        if all_created:
+            self.serialized_cases.update(set(self.hash_sorted_cases.keys()))
+            self.hash_sorted_cases = dict()
+            self.cases = dict()
+
+    def remove_case_due_to_errors(self, should_remove, case_hash):
+        """Remove all records from memory given the hash."""
+        if should_remove:
+            if case_hash in self.cases_already_removed:
+                return True
+            if case_hash in self.hash_sorted_cases:
+                self.cases_already_removed.add(case_hash)
+                removed = self.hash_sorted_cases.pop(case_hash)
+
+                case_ids = list()
+                for records in removed.values():
+                    for record in records:
+                        case_ids.append((record.RecordType, getattr(record, 'CASE_NUMBER', None),
+                                        record.RPT_MONTH_YEAR))
+                        for record_set in self.cases.values():
+                            record_set.pop(record, None)
+                    logger.info("Case consistency errors generated, removing case from in memory cache. "
+                                f"Record(s) info: {case_ids}.")
+                return True and case_hash not in self.serialized_cases
+        return False
+
+def generate_t1_t4_hashes(line, record):
+    """Return hashes for duplicate and partial duplicate detection for T1 & T4 records."""
+    logger.debug(f"Partial Hash Field Values: {record.RecordType} {str(record.RPT_MONTH_YEAR)} {record.CASE_NUMBER}")
+    return hash(line), hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
+
+def generate_t2_t3_t5_hashes(line, record):
+    """Return hashes for duplicate and partial duplicate detection for T2 & T3 & T5 records."""
+    logger.debug(f"Partial Hash Field Values: {record.RecordType} {str(record.RPT_MONTH_YEAR)} {record.CASE_NUMBER} " +
+                 f"{str(record.FAMILY_AFFILIATION)} {record.DATE_OF_BIRTH} {record.SSN}")
+    return hash(line), hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER +
+                            str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
+
+def get_t1_t4_partial_hash_members():
+    """Return field names used to generate t1/t4 partial hashes."""
+    return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER"]
+
+def get_t2_t3_t5_partial_hash_members():
+    """Return field names used to generate t2/t3/t5 partial hashes."""
+    return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER", "FAMILY_AFFILIATION", "DATE_OF_BIRTH", "SSN"]

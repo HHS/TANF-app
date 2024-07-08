@@ -53,6 +53,7 @@ class Common(Configuration):
         "storages",
         "django_elasticsearch_dsl",
         "django_elasticsearch_dsl_drf",
+        "more_admin_filters",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -482,3 +483,5 @@ class Common(Configuration):
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)
 
     GENERATE_TRAILER_ERRORS = os.getenv("GENERATE_TRAILER_ERRORS", False)
+    IGNORE_DUPLICATE_ERROR_PRECEDENCE = os.getenv("IGNORE_DUPLICATE_ERROR_PRECEDENCE", False)
+    BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
