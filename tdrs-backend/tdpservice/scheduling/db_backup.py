@@ -101,8 +101,8 @@ def backup_database(file_name,
         db_user = settings.DATABASES['default']['USER']
 
         export_password = f"export PGPASSWORD={settings.DATABASES['default']['PASSWORD']}"
-        cmd = (f"{export_password} && {postgres_client}pg_dump -h {db_host} -p {db_port} -d {db_name} -U {db_user} -F c "
-                       f"--no-password --no-acl --no-owner -f {file_name}")
+        cmd = (f"{export_password} && {postgres_client}pg_dump -h {db_host} -p {db_port} -d {db_name} -U {db_user} "
+               f"-F c --no-password --no-acl --no-owner -f {file_name}")
         logger.info(f"Executing backup command: {cmd}")
         os.system(cmd)
         msg = "Successfully executed backup. Wrote pg dumpfile to {}".format(file_name)
