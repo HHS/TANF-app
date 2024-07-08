@@ -120,15 +120,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Delete and re-parse datafiles matching a query."""
-        if len(args) == 0:
-            self.print_help("manage.py", "clean_and_parse")
-            return
-
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
         delete_all = options.get('all', False)
         new_indices = options.get('new_indices', False)
         delete_indices = options.get('delete_indices', False)
+
+        args_passed = fiscal_quarter is not None or fiscal_quarter is not None or delete_all
+
+        if not args_passed:
+            logger.warn("No arguments supplied.")
+            self.print_help("manage.py", "clean_and_parse")
+            return
 
         backup_file_name = "/tmp/reparsing_backup"
         files = DataFile.objects.all()
