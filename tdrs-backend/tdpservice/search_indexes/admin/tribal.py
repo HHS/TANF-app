@@ -10,13 +10,13 @@ class Tribal_TANF_T1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 
@@ -27,13 +27,13 @@ class Tribal_TANF_T2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 
@@ -44,13 +44,13 @@ class Tribal_TANF_T3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 class Tribal_TANF_T4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -60,13 +60,13 @@ class Tribal_TANF_T4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 class Tribal_TANF_T5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     """ModelAdmin class for parsed Tribal_T5 data files."""
@@ -75,13 +75,13 @@ class Tribal_TANF_T5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'RecordType',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 class Tribal_TANF_T6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -92,13 +92,13 @@ class Tribal_TANF_T6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'CALENDAR_QUARTER',
         'RPT_MONTH_YEAR',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
 
 class Tribal_TANF_T7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -112,11 +112,11 @@ class Tribal_TANF_T7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
         'STRATUM',
         'FAMILIES_MONTH',
         'datafile',
-        'stt_code',
+        'stt_name',
     ]
 
     list_filter = [
         FiscalPeriodFilter,
         CreationDateFilter,
-        STTFilter,
+        ('datafile__stt__name', STTFilter),
     ]
