@@ -313,11 +313,6 @@ def calendarQuarterIsValid(start=0, end=None):
 # generic validators
 
 
-def format_error_context(row_schema, friendly_name, item_num):
-    """Format the error message for consistency across cat2 validators."""
-    return f'{row_schema.record_type} Item {item_num} ({friendly_name})'
-
-
 def matches(option, error_func=None):
     """Validate that value is equal to option."""
     return make_validator(

@@ -280,7 +280,6 @@ def test_oneOf_returns_invalid():
 
     assert is_valid is False
     assert error == 'T1 Item item_no (friendly_name): 65 is not in [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, ' \
-    assert error == 'T1 Item item_no (friendly_name): 65 is not in [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, ' \
         '29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55].'
 
 
@@ -650,10 +649,7 @@ def test_calendarQuarterIsValid_returns_invalid(value):
     assert is_valid is False
     assert error_msg == (
         f"T1: {value[2:7]} is invalid. Calendar Quarter must be a numeric "
-    assert error_msg == (
-        f"T1: {value[2:7]} is invalid. Calendar Quarter must be a numeric "
         "representing the Calendar Year and Quarter formatted as YYYYQ"
-    )
     )
 
 
