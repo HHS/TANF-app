@@ -94,7 +94,15 @@ def backup_database(file_name,
     pg_dump -F c --no-acl --no-owner -f backup.pg postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME}
     """
     try:
-        cmd = postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " -d " + database_uri
+        # cmd = postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " -d " + database_uri
+        db_host = settings.DATABASES['default']['HOST']
+        db_port = settings.DATABASES['default']['PORT']
+        db_name = settings.DATABASES['default']['NAME']
+        db_user = settings.DATABASES['default']['USER']
+
+        export_password = f"export PGPASSWORD={settings.DATABASES['default']['PASSWORD']}"
+        cmd = (f"{export_password} && {postgres_client}pg_dump -h {db_host} -p {db_port} -d {db_name} -U {db_user} -F c "
+                       f"--no-password --no-acl --no-owner -f {file_name}")
         logger.info(f"Executing backup command: {cmd}")
         os.system(cmd)
         msg = "Successfully executed backup. Wrote pg dumpfile to {}".format(file_name)
