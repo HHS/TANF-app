@@ -74,7 +74,7 @@ def get_system_values():
     with open('/home/vcap/.pgpass', 'w') as f:
         f.write(sys_values['DATABASE_HOST'] + ":"
                 + sys_values['DATABASE_PORT'] + ":"
-                + sys_values['DATABASE_DB_NAME'] + ":"
+                + settings.DATABASES['default']['NAME'] + ":"
                 + sys_values['DATABASE_USERNAME'] + ":"
                 + sys_values['DATABASE_PASSWORD'])
     os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
