@@ -8,7 +8,6 @@ from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
 from tdpservice.parsers.validators import ValidationErrorArgs, format_error_context
 import logging
-import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -153,9 +152,8 @@ class CaseConsistencyValidator:
                 self.total_cases_cached += 1
                 num_errors = self.__validate()
             return num_errors
-        except Exception as e:
-            logger.error(f"Uncaught exception during category four validation: {e}. "
-                         f"Stack Trace:\n{traceback.format_exc()}")
+        except Exception:
+            logger.exception(f"Uncaught exception during category four validation.")
             return num_errors
 
     def __validate(self):
