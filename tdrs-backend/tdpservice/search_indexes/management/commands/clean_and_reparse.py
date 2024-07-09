@@ -77,8 +77,9 @@ class Command(BaseCommand):
             # TODO: Need to ask Alex if we can run some queries in prod to deduce the average number of records per DF.
 
     def __delete_records(self, docs, file_ids, new_indices, log_context):
-        """Delete records and documents from Postgres and Elastic respectively."""
+        """Delete records, errors, and documents from Postgres and Elastic."""
         total_deleted = 0
+        self.__delete_errors(file_ids, log_context)
         for doc in docs:
             # atomic delete?
             try:
@@ -106,7 +107,7 @@ class Command(BaseCommand):
     def __delete_errors(self, file_ids, log_context):
         """Raw delete all ParserErrors for each file ID."""
         try:
-            qset = ParserError.objects.filter(datafile_id__in=file_ids)
+            qset = ParserError.objects.filter(file_id__in=file_ids)
             qset._raw_delete(qset.db)
         except Exception as e:
             log('_raw_delete failed for ParserError objects. Database and Elastic are INCONSISTENT! Restore the '
@@ -237,7 +238,6 @@ class Command(BaseCommand):
         # Delete and re-save datafiles to handle cascading dependencies
         logger.info(f'Deleting and reparsing {files.count()} files')
         self.__handle_datafiles(files, log_context)
-        self.__delete_errors(file_ids, log_context)
 
         log("Database cleansing complete and all files have been re-scheduling for parsing and validation.",
             logger_context=log_context,

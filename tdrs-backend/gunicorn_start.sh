@@ -20,8 +20,7 @@ else
 fi
 
 
-celery -A tdpservice.settings worker --loglevel=WARNING --concurrency=2 -n worker1@%h &
-celery -A tdpservice.settings worker --loglevel=WARNING --concurrency=2 -n worker2@%h &
+celery -A tdpservice.settings worker --loglevel=WARNING --concurrency=1 -n worker1@%h &
 sleep 5
 
 # TODO: Uncomment the following line to add flower service when memory limitation is resolved
