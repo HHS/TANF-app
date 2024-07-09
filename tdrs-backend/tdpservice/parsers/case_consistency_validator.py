@@ -27,12 +27,15 @@ class CaseConsistencyValidator:
         self.section = header["type"]
         self.case_is_section_one_or_two = self.section in {'A', 'C'}
         self.program_type = program_type
+        self.is_ssp = self.program_type == 'SSP'
         self.has_validated = False
         self.generate_error = generate_error
         self.generated_errors = list()
         self.total_cases_cached = 0
         self.total_cases_validated = 0
         self.stt_type = stt_type
+        self.s1s = None
+        self.s2s = None
 
     def __get_model(self, model_str):
         """Return a model for the current program type/section given the model's string name."""
@@ -155,6 +158,9 @@ class CaseConsistencyValidator:
         except Exception:
             logger.exception(f"Uncaught exception during category four validation.")
             return num_errors
+        finally:
+            self.s1s = None
+            self.s2s = None
 
     def __validate(self):
         """Private validate, lint complexity."""
@@ -240,6 +246,33 @@ class CaseConsistencyValidator:
 
         return num_errors
 
+    def __get_s1_triplets_and_names(self):
+        if self.s1s is None:
+            t1_model_name = 'M1' if self.is_ssp else 'T1'
+            t1_model = self.__get_model(t1_model_name)
+            t2_model_name = 'M2' if self.is_ssp else 'T2'
+            t2_model = self.__get_model(t2_model_name)
+            t3_model_name = 'M3' if self.is_ssp else 'T3'
+            t3_model = self.__get_model(t3_model_name)
+
+            t1s = self.sorted_cases.get(t1_model, [])
+            t2s = self.sorted_cases.get(t2_model, [])
+            t3s = self.sorted_cases.get(t3_model, [])
+            self.s1s = (t1s, t1_model_name, t2s, t2_model_name, t3s, t3_model_name)
+        return self.s1s
+
+    def __get_s2_triplets_and_names(self):
+        if self.s2s is None:
+            t4_model_name = 'M4' if self.is_ssp else 'T4'
+            t4_model = self.__get_model(t4_model_name)
+            t5_model_name = 'M5' if self.is_ssp else 'T5'
+            t5_model = self.__get_model(t5_model_name)
+
+            t4s = self.sorted_cases.get(t4_model, [])
+            t5s = self.sorted_cases.get(t5_model, [])
+            self.s2s = (t4s, t4_model_name, t5s, t5_model_name)
+        return self.s2s
+
     def __validate_s1_records_are_related(self):
         """
         Validate section 1 records are related.
@@ -248,18 +281,7 @@ class CaseConsistencyValidator:
         record with the same RPT_MONTH_YEAR and CASE_NUMBER.
         """
         num_errors = 0
-        is_ssp = self.program_type == 'SSP'
-
-        t1_model_name = 'M1' if is_ssp else 'T1'
-        t1_model = self.__get_model(t1_model_name)
-        t2_model_name = 'M2' if is_ssp else 'T2'
-        t2_model = self.__get_model(t2_model_name)
-        t3_model_name = 'M3' if is_ssp else 'T3'
-        t3_model = self.__get_model(t3_model_name)
-
-        t1s = self.sorted_cases.get(t1_model, [])
-        t2s = self.sorted_cases.get(t2_model, [])
-        t3s = self.sorted_cases.get(t3_model, [])
+        t1s, t1_model_name, t2s, t2_model_name, t3s, t3_model_name = self.__get_s1_triplets_and_names()
 
         if len(t1s) > 0:
             if len(t2s) == 0 and len(t3s) == 0:
@@ -388,15 +410,7 @@ class CaseConsistencyValidator:
         with the same RPT_MONTH_YEAR and CASE_NUMBER.
         """
         num_errors = 0
-        is_ssp = self.program_type == 'SSP'
-
-        t4_model_name = 'M4' if is_ssp else 'T4'
-        t4_model = self.__get_model(t4_model_name)
-        t5_model_name = 'M5' if is_ssp else 'T5'
-        t5_model = self.__get_model(t5_model_name)
-
-        t4s = self.sorted_cases.get(t4_model, [])
-        t5s = self.sorted_cases.get(t5_model, [])
+        t4s, t4_model_name, t5s, t5_model_name = self.__get_s2_triplets_and_names()
 
         if len(t4s) > 0:
             if len(t4s) == 1:
@@ -411,7 +425,7 @@ class CaseConsistencyValidator:
                         f'same {self.__get_error_context("RPT_MONTH_YEAR", t4_schema)} since '
                         f'{self.__get_error_context("CLOSURE_REASON", t4_schema)} = 1:Employment/excess earnings.'
                     ))
-                elif closure_reason == '03' and not is_ssp:
+                elif closure_reason == '03' and not self.is_ssp:
                     num_errors += self.__validate_case_closure_ftl(
                         t4,
                         t5s,
@@ -458,13 +472,10 @@ class CaseConsistencyValidator:
         num_errors = 0
         is_ssp = self.program_type == 'SSP'
 
-        t5_model_name = 'M5' if is_ssp else 'T5'
-        t5_model = self.__get_model(t5_model_name)
+        t4s, t4_model_name, t5s, t5_model_name = self.__get_s2_triplets_and_names()
 
         is_state = self.stt_type == STT.EntityType.STATE
         is_territory = self.stt_type == STT.EntityType.TERRITORY
-
-        t5s = self.sorted_cases.get(t5_model, [])
 
         for record, schema, line_num in t5s:
             rec_aabd = getattr(record, 'REC_AID_TOTALLY_DISABLED')
