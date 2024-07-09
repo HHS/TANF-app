@@ -120,7 +120,7 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                 try:
                     num_elastic_records_created += document.update(created_objs)[0]
                 except BulkIndexError as e:
-                    logger.exception(f"Encountered error while indexing datafile documents.")
+                    logger.exception("Encountered error while indexing datafile documents.")
                     LogEntry.objects.log_action(
                         user_id=datafile.user.pk,
                         content_type_id=ContentType.objects.get_for_model(DataFile).pk,
@@ -142,7 +142,7 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                 logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
             return num_db_records_created == num_expected_db_records, {}
         except DatabaseError:
-            logger.exception(f"Encountered error while creating datafile records.")
+            logger.exception("Encountered error while creating datafile records.")
             return False
     return False
 

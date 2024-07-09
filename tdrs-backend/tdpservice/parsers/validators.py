@@ -66,7 +66,7 @@ def make_validator(validator_func, error_func):
                 return (True, None)
             return (False, error_func(eargs))
         except Exception:
-            logger.exception(f"Caught exception in validator.")
+            logger.exception("Caught exception in validator.")
             return (False, error_func(eargs))
     return validator
 

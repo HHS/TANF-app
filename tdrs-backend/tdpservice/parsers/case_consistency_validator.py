@@ -156,7 +156,7 @@ class CaseConsistencyValidator:
                 num_errors = self.__validate()
             return num_errors
         except Exception:
-            logger.exception(f"Uncaught exception during category four validation.")
+            logger.exception("Uncaught exception during category four validation.")
             return num_errors
         finally:
             self.s1s = None
@@ -470,8 +470,6 @@ class CaseConsistencyValidator:
 
     def __validate_t5_aabd_and_ssi(self):
         num_errors = 0
-        is_ssp = self.program_type == 'SSP'
-
         t4s, t4_model_name, t5s, t5_model_name = self.__get_s2_triplets_and_names()
 
         is_state = self.stt_type == STT.EntityType.STATE
