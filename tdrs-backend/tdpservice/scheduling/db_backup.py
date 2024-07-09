@@ -94,6 +94,7 @@ def backup_database(file_name,
     pg_dump -F c --no-acl --no-owner -f backup.pg postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME}
     """
     try:
+        # TODO: This is a bandaid until the correct logic is determined for the system values
         # cmd = postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " -d " + database_uri
         db_host = settings.DATABASES['default']['HOST']
         db_port = settings.DATABASES['default']['PORT']

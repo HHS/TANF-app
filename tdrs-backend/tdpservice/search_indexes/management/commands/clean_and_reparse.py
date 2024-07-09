@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from elasticsearch.exceptions import ElasticsearchException
 from tdpservice.data_files.models import DataFile
+from tdpservice.parsers.models import ParserError
 from tdpservice.scheduling import parser_task
 from tdpservice.search_indexes.documents import tanf, ssp, tribal
 from tdpservice.core.utils import log
@@ -82,7 +83,7 @@ class Command(BaseCommand):
             # atomic delete?
             try:
                 model = doc.Django.model
-                qset = model.objects.all().filter(datafile_id__in=file_ids)
+                qset = model.objects.filter(datafile_id__in=file_ids)
                 total_deleted += qset.count()
                 if not new_indices:
                     # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
@@ -102,21 +103,34 @@ class Command(BaseCommand):
                 raise e
         return total_deleted
 
+    def __delete_errors(self, file_ids, log_context):
+        """Raw delete all ParserErrors for each file ID."""
+        try:
+            qset = ParserError.objects.filter(datafile_id__in=file_ids)
+            qset._raw_delete(qset.db)
+        except Exception as e:
+            log('_raw_delete failed for ParserError objects. Database and Elastic are INCONSISTENT! Restore the '
+                'DB from the backup as soon as possible!',
+                logger_context=log_context,
+                level='critical')
+            raise e
+
     def __handle_datafiles(self, files, log_context):
         """Delete, re-save, and re-parse selected datafiles."""
-        for f in files:
+        for file in files:
             try:
-                f.delete()
-                f.save()
+                logger.info(f"Deleting file: {file.pk}")
+                file.delete()
+                file.save()
+                logger.info(f"Saved file, new PK: {file.pk}")
+                # latest version only? -> possible new ticket
+                parser_task.parse.delay(file.pk, should_send_submission_email=False)
             except Exception as e:
-                log(f'DataFile.delete or DataFile.save failed for id: {f.pk}. Database and Elastic are INCONSISTENT! '
+                log('Failed in __handle_datafiles. Database and Elastic are INCONSISTENT! '
                     'Restore the DB from the backup as soon as possible!',
                     logger_context=log_context,
                     level='critical')
                 raise e
-
-            # latest version only? -> possible new ticket
-            parser_task.parse.delay(f.pk, should_send_submission_email=False)
 
     def handle(self, *args, **options):
         """Delete and re-parse datafiles matching a query."""
@@ -223,6 +237,7 @@ class Command(BaseCommand):
         # Delete and re-save datafiles to handle cascading dependencies
         logger.info(f'Deleting and reparsing {files.count()} files')
         self.__handle_datafiles(files, log_context)
+        self.__delete_errors(file_ids, log_context)
 
         log("Database cleansing complete and all files have been re-scheduling for parsing and validation.",
             logger_context=log_context,
