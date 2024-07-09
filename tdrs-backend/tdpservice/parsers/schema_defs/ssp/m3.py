@@ -253,7 +253,7 @@ first_part_schema = RowSchema(
         Field(
             item="65B",
             name='RECEIVE_SSI',
-            friendly_name="Receives Disability Benefits: SSI or AABD"
+            friendly_name="Receives Disability Benefits: SSI or AABD",
             type='number',
             startIndex=45,
             endIndex=46,
