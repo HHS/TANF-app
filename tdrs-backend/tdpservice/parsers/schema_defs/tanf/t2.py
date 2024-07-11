@@ -498,7 +498,7 @@ t2 = SchemaManager(
                     type="string",
                     startIndex=68,
                     endIndex=70,
-                    required=False,
+                    required=True,
                     validators=[
                         validators.oneOf(
                             [
