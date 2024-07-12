@@ -54,12 +54,18 @@ def get_num_access_requests():
 def email_admin_num_access_requests():
     """Send all OFA System Admins an email with how many users have requested access."""
     recipient_email = get_ofa_admin_user_emails()
-    text_message = ''
+    num_access_requests = get_num_access_requests()
+    text_message = 'This is an automated email. Please do not reply.\n' + \
+                   'This email is to notify you of the number of users' + \
+                   ' who have requested access to the TANF Data Portal.\n' + \
+                   f'There are currently {num_access_requests} pending ' + \
+                   'access requests'
+
     subject = 'Number of Active Access Requests'
     url = f'{settings.FRONTEND_BASE_URL}{reverse("admin:users_user_changelist")}?o=-2'
     email_context = {
         'date': datetime.today(),
-        'num_requests': get_num_access_requests(),
+        'num_requests': num_access_requests,
         'admin_user_pg': url,
     }
 

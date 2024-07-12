@@ -108,6 +108,12 @@ def contains_encrypted_indicator(line, encryption_field):
     return False
 
 
+def clean_options_string(options, remove=['\'', '"', ' ']):
+    """Return a prettied-up version of an options array."""
+    options_str = ', '.join(str(o) for o in options)
+    return f'[{options_str}]'
+
+
 '''
 text -> section YES
 text -> models{} YES
