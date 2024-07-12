@@ -173,7 +173,7 @@ def restore_database(file_name, postgres_client, database_uri, system_user):
         logger.info(msg)
         return True
     except Exception as e:
-        logger.error(f"Caught exception while creating the database. Exception: {e}.")
+        logger.error(f"Caught exception while restoring the database. Exception: {e}.")
         raise e
 
 

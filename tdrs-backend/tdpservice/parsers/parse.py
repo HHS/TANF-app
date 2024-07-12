@@ -106,42 +106,40 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
     batch_size = settings.BULK_CREATE_BATCH_SIZE
     if (line_number % batch_size == 0 and header_count > 0) or flush:
         logger.debug("Bulk creating records.")
-        try:
-            num_db_records_created = 0
-            num_expected_db_records = 0
-            num_elastic_records_created = 0
-            for document, records in unsaved_records.items():
+        num_db_records_created = 0
+        num_expected_db_records = 0
+        num_elastic_records_created = 0
+        for document, records in unsaved_records.items():
+            try:
                 num_expected_db_records += len(records)
                 created_objs = document.Django.model.objects.bulk_create(records)
                 num_db_records_created += len(created_objs)
+                num_elastic_records_created += document.update(created_objs)[0]
+            except ElasticsearchException as e:
+                logger.error(f"Encountered error while indexing datafile documents: {e}")
+                LogEntry.objects.log_action(
+                    user_id=datafile.user.pk,
+                    content_type_id=ContentType.objects.get_for_model(DataFile).pk,
+                    object_id=datafile,
+                    object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+                    action_flag=ADDITION,
+                    change_message=f"Encountered error while indexing datafile documents: {e}",
+                )
+                continue
+            except Exception as e:
+                logger.error(f"Encountered error while creating datafile records: {e}")
+                return False
 
-                try:
-                    num_elastic_records_created += document.update(created_objs)[0]
-                except ElasticsearchException as e:
-                    logger.error(f"Encountered error while indexing datafile documents: {e}")
-                    LogEntry.objects.log_action(
-                        user_id=datafile.user.pk,
-                        content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                        object_id=datafile,
-                        object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                        action_flag=ADDITION,
-                        change_message=f"Encountered error while indexing datafile documents: {e}",
-                    )
-                    continue
-
-            dfs.total_number_of_records_created += num_db_records_created
-            if num_db_records_created != num_expected_db_records:
-                logger.error(f"Bulk Django record creation only created {num_db_records_created}/" +
-                             f"{num_expected_db_records}!")
-            elif num_elastic_records_created != num_expected_db_records:
-                logger.error(f"Bulk Elastic document creation only created {num_elastic_records_created}/" +
-                             f"{num_expected_db_records}!")
-            else:
-                logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
-            return num_db_records_created == num_expected_db_records
-        except Exception as e:
-            logger.error(f"Encountered error while creating datafile records: {e}")
-            return False
+        dfs.total_number_of_records_created += num_db_records_created
+        if num_db_records_created != num_expected_db_records:
+            logger.error(f"Bulk Django record creation only created {num_db_records_created}/" +
+                            f"{num_expected_db_records}!")
+        elif num_elastic_records_created != num_expected_db_records:
+            logger.error(f"Bulk Elastic document creation only created {num_elastic_records_created}/" +
+                            f"{num_expected_db_records}!")
+        else:
+            logger.info(f"Created {num_db_records_created}/{num_expected_db_records} records.")
+        return num_db_records_created == num_expected_db_records
     return False
 
 def bulk_create_errors(unsaved_parser_errors, num_errors, batch_size=5000, flush=False):
