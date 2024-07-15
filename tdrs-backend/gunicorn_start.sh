@@ -19,7 +19,7 @@ else
     python manage.py collectstatic --noinput
 fi
 
-
+# Celery worker config can be found here: https://docs.celeryq.dev/en/stable/userguide/workers.html#:~:text=The-,hostname,-argument%20can%20expand
 celery -A tdpservice.settings worker --loglevel=WARNING --concurrency=1 -n worker1@%h &
 sleep 5
 
