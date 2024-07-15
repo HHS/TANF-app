@@ -2,6 +2,7 @@
 
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from django.db.utils import DatabaseError
 from elasticsearch.exceptions import ElasticsearchException
 from tdpservice.data_files.models import DataFile
 from tdpservice.parsers.models import ParserError
@@ -68,20 +69,24 @@ class Command(BaseCommand):
                 log("Index creation complete.",
                     logger_context=log_context,
                     level='info')
-            except Exception as e:
+            except ElasticsearchException as e:
                 log("Elastic index creation FAILED. Clean and re-parse NOT executed. "
                     "Database is CONSISTENT, Elastic is INCONSISTENT!",
                     logger_context=log_context,
                     level='error')
                 raise e
-            # TODO: Need to ask Alex if we can run some queries in prod to deduce the average number of records per DF.
+            except Exception as e:
+                log("Caught generic exception in __handle_elastic. Clean and re-parse NOT executed. "
+                    "Database is CONSISTENT, Elastic is INCONSISTENT!",
+                    logger_context=log_context,
+                    level='error')
+                raise e
 
     def __delete_records(self, docs, file_ids, new_indices, log_context):
         """Delete records, errors, and documents from Postgres and Elastic."""
         total_deleted = 0
         self.__delete_errors(file_ids, log_context)
         for doc in docs:
-            # atomic delete?
             try:
                 model = doc.Django.model
                 qset = model.objects.filter(datafile_id__in=file_ids)
@@ -91,14 +96,20 @@ class Command(BaseCommand):
                     doc().update(qset, refresh=True, action='delete')
                 qset._raw_delete(qset.db)
             except ElasticsearchException as e:
-                log(f'Elastic document delete failed for model {model}. Database and Elastic are INCONSISTENT! Restore '
-                    'the DB from the backup as soon as possible!',
+                log(f'Elastic document delete failed for type {model}. The database and Elastic are INCONSISTENT! '
+                    'Restore the DB from the backup as soon as possible!',
+                    logger_context=log_context,
+                    level='critical')
+                raise e
+            except DatabaseError as e:
+                log(f'Encountered a DatabaseError while deleting records of type {model} from Postgres. The database '
+                    'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
                     logger_context=log_context,
                     level='critical')
                 raise e
             except Exception as e:
-                log(f'_raw_delete failed for model {model}. Database and Elastic are INCONSISTENT! Restore the DB from '
-                    'the backup as soon as possible!',
+                log(f'Caught generic exception while deleting records of type {model}. The database and Elastic are '
+                    'INCONSISTENT! Restore the DB from the backup as soon as possible!',
                     logger_context=log_context,
                     level='critical')
                 raise e
@@ -109,9 +120,15 @@ class Command(BaseCommand):
         try:
             qset = ParserError.objects.filter(file_id__in=file_ids)
             qset._raw_delete(qset.db)
+        except DatabaseError as e:
+            log('Encountered a DatabaseError while deleting ParserErrors from Postgres. The database '
+                'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
+                logger_context=log_context,
+                level='critical')
+            raise e
         except Exception as e:
-            log('_raw_delete failed for ParserError objects. Database and Elastic are INCONSISTENT! Restore the '
-                'DB from the backup as soon as possible!',
+            log('Caught generic exception while deleting ParserErrors. The database and Elastic are INCONSISTENT! '
+                'Restore the DB from the backup as soon as possible!',
                 logger_context=log_context,
                 level='critical')
             raise e
@@ -120,14 +137,20 @@ class Command(BaseCommand):
         """Delete, re-save, and re-parse selected datafiles."""
         for file in files:
             try:
-                logger.info(f"Deleting file: {file.pk}")
+                logger.info(f"Deleting file with PK: {file.pk}")
                 file.delete()
                 file.save()
-                logger.info(f"Saved file, new PK: {file.pk}")
+                logger.info(f"New file PK: {file.pk}")
                 # latest version only? -> possible new ticket
                 parser_task.parse.delay(file.pk, should_send_submission_email=False)
+            except DatabaseError as e:
+                log('Encountered a DatabaseError while re-creating datafiles. The database '
+                    'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
+                    logger_context=log_context,
+                    level='critical')
+                raise e
             except Exception as e:
-                log('Failed in __handle_datafiles. Database and Elastic are INCONSISTENT! '
+                log('Caught generic exception in __handle_datafiles. Database and Elastic are INCONSISTENT! '
                     'Restore the DB from the backup as soon as possible!',
                     logger_context=log_context,
                     level='critical')
@@ -137,11 +160,11 @@ class Command(BaseCommand):
         """Delete and re-parse datafiles matching a query."""
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
-        delete_all = options.get('all', False)
+        reparse_all = options.get('all', False)
         new_indices = options.get('new_indices', False)
         delete_indices = options.get('delete_indices', False)
 
-        args_passed = fiscal_quarter is not None or fiscal_quarter is not None or delete_all
+        args_passed = fiscal_quarter is not None or fiscal_quarter is not None or reparse_all
 
         if not args_passed:
             logger.warn("No arguments supplied.")
@@ -151,7 +174,7 @@ class Command(BaseCommand):
         backup_file_name = "/tmp/reparsing_backup"
         files = DataFile.objects.all()
         continue_msg = "You have selected to re-parse datafiles for FY {fy} and {q}. The re-parsed files "
-        if delete_all:
+        if reparse_all:
             backup_file_name += "_FY_All_Q1-4"
             continue_msg = continue_msg.format(fy="All", q="Q1-4")
         else:
@@ -163,7 +186,7 @@ class Command(BaseCommand):
                 return
             if fiscal_year is not None and fiscal_quarter is not None:
                 files = files.filter(year=fiscal_year, quarter=fiscal_quarter)
-                backup_file_name += f"_FY_{fiscal_year}_Q{fiscal_quarter}"
+                backup_file_name += f"_FY_{fiscal_year}_{fiscal_quarter}"
                 continue_msg = continue_msg.format(fy=fiscal_year, q=fiscal_quarter)
             elif fiscal_year is not None:
                 files = files.filter(year=fiscal_year)
@@ -171,7 +194,7 @@ class Command(BaseCommand):
                 continue_msg = continue_msg.format(fy=fiscal_year, q="Q1-4")
             elif fiscal_quarter is not None:
                 files = files.filter(quarter=fiscal_quarter)
-                backup_file_name += f"_FY_All_Q{fiscal_quarter}"
+                backup_file_name += f"_FY_All_{fiscal_quarter}"
                 continue_msg = continue_msg.format(fy="All", q=fiscal_quarter)
 
         fmt_str = "be" if new_indices else "NOT be"
@@ -180,7 +203,7 @@ class Command(BaseCommand):
         fmt_str = "be" if delete_indices else "NOT be"
         continue_msg += "will {old_index} deleted.".format(old_index=fmt_str)
 
-        fmt_str = f"ALL ({files.count()})" if delete_all else f"({files.count()})"
+        fmt_str = f"ALL ({files.count()})" if reparse_all else f"({files.count()})"
         continue_msg += "\nThese options will delete and re-parse {0} datafiles.".format(fmt_str)
 
         c = str(input(f'\n{continue_msg}\nContinue [y/n]? ')).lower()
@@ -196,7 +219,7 @@ class Command(BaseCommand):
         all_fy = "All"
         all_q = "1-4"
         log(f"Beginning Clean and re-parse for FY {fiscal_year if fiscal_year else all_fy} and "
-            f"Q{fiscal_quarter if fiscal_quarter else all_q}",
+            f"{fiscal_quarter if fiscal_quarter else all_q}",
             logger_context=log_context,
             level='info')
 
@@ -243,7 +266,7 @@ class Command(BaseCommand):
             logger_context=log_context,
             level='info')
         log(f"Clean and re-parse completed for FY {fiscal_year if fiscal_year else all_fy} and "
-            f"Q{fiscal_quarter if fiscal_quarter else all_q}",
+            f"{fiscal_quarter if fiscal_quarter else all_q}",
             logger_context=log_context,
             level='info')
         logger.info('Done. All tasks have been queued to re-parse the selected datafiles.')
