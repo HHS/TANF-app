@@ -103,11 +103,20 @@ def parse_datafile(datafile, dfs):
         return errors
 
     # Last resort to catch any un-caught exceptions during parsing and handle state appropriately
+    line_errors = {}
     try:
         line_errors = parse_datafile_lines(datafile, dfs, program_type, section,
                                            is_encrypted, case_consistency_validator)
     except Exception as e:
-        dfs.status = "Rejected"
+        # TODO: is this the best way to force the datafile to be rejected while also having an error report?
+        generate_error = util.make_generate_parser_error(datafile, None)
+        error = generate_error(schema=None,
+                               error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                               error_message="Uncaught parsing exception, rejecting file.",
+                               record=None,
+                               field=None
+                               )
+        error.save()
         dfs.save()
         log_parser_exception(datafile,
                              ("Caught an uncaught exception while parsing! Please review the logs to see if manual "
