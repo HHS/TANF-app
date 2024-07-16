@@ -136,8 +136,8 @@ class DataFileAPITestBase:
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
-            "if CASH_AMOUNT :873 validator1 passed then NBR_MONTHS Item 21B "
-            "(Cash and Cash Equivalents: Number of Months) 0 is not larger than 0."
+            "Every T1 record should have at least one corresponding T2 or T3 "
+            "record with the same RPT_MONTH_YEAR and CASE_NUMBER."
         )
 
     @staticmethod
