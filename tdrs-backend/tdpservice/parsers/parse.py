@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def log_parser_exception(datafile, error_msg, level):
+    """Log to DAC and console on parser exception."""
     context = {'user_id': datafile.user.pk,
                'action_flag': ADDITION,
                'object_repr': f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
@@ -210,10 +211,10 @@ def rollback_records(unsaved_records, datafile):
                                  )
         except DatabaseError as e:
             log_parser_exception(datafile,
-                                    (f"Encountered error while deleting database records for model: {model}. "
-                                    f"Exception: {e}"),
-                                    "error"
-                                    )
+                                 (f"Encountered error while deleting database records for model: {model}. "
+                                  f"Exception: {e}"),
+                                 "error"
+                                 )
         except Exception as e:
             log_parser_exception(datafile,
                                  f"Encountered generic exception while trying to rollback records. Exception: {e}",
@@ -232,7 +233,7 @@ def rollback_parser_errors(datafile):
     except DatabaseError as e:
         log_parser_exception(datafile,
                              ("Encountered error while deleting database records for ParserErrors. "
-                             f"Exception: {e}"),
+                              f"Exception: {e}"),
                              "error"
                              )
     except Exception as e:
@@ -293,7 +294,7 @@ def delete_serialized_records(duplicate_manager, dfs):
             # Elastic clean up later.
             log_parser_exception(dfs.datafile,
                                  ("Encountered error while indexing datafile documents. Enforcing DB cleanup. "
-                                 f"Exception: {e}"),
+                                  f"Exception: {e}"),
                                  "error"
                                  )
             num_deleted, models = qset.delete()
@@ -305,14 +306,14 @@ def delete_serialized_records(duplicate_manager, dfs):
                                  )
         except DatabaseError as e:
             log_parser_exception(dfs.datafile,
-                                (f"Encountered error while deleting database records for model {model}. "
-                                f"Exception: {e}"),
-                                "error"
-                                )
+                                 (f"Encountered error while deleting database records for model {model}. "
+                                  f"Exception: {e}"),
+                                 "error"
+                                 )
         except Exception as e:
             log_parser_exception(dfs.datafile,
                                  (f"Encountered generic exception while deleting records of type {model}. "
-                                 f"Exception: {e}"),
+                                  f"Exception: {e}"),
                                  "error"
                                  )
     if total_deleted:
