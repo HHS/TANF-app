@@ -15,7 +15,7 @@ RUN apt-get -y update
 # Upgrade already installed packages:
 RUN apt-get -y upgrade
 # Postgres client setup
-RUN apt install -y postgresql-common curl ca-certificates && install -d /usr/share/postgresql-common/pgdg && \
+RUN apt --purge remove postgresql postgresql-* && apt install -y postgresql-common curl ca-certificates && install -d /usr/share/postgresql-common/pgdg && \
 curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
 sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
 apt -y update && apt install postgresql-client-15 -y
