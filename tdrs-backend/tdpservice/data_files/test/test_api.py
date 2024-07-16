@@ -100,10 +100,11 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("if Cash Amount :873 validator1 passed then Cash and "
-                                                                  "Cash Equivalents: Number of Months T1 Item -1 (Cash "
-                                                                  "and Cash Equivalents: Number of Months): 0 is not "
-                                                                  "larger than 0.")
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
+            "if Cash Amount :873 validator1 passed then Cash "
+            "and Cash Equivalents: Number of Months Item 21B "
+            "(Cash and Cash Equivalents: Number of Months) 0 is not larger than 0."
+        )
 
     @staticmethod
     def assert_error_report_ssp_file_content_matches_with_friendly_names(response):
@@ -134,9 +135,10 @@ class DataFileAPITestBase:
 
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
-        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == ("if CASH_AMOUNT :873 validator1 passed then "
-                                                                  "NBR_MONTHS T1 Item -1 (NBR_MONTHS): 0 is not "
-                                                                  "larger than 0.")
+        assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
+            "if CASH_AMOUNT :873 validator1 passed then NBR_MONTHS Item 21B "
+            "(Cash and Cash Equivalents: Number of Months) 0 is not larger than 0."
+        )
 
     @staticmethod
     def assert_data_file_exists(data_file_data, version, user):
