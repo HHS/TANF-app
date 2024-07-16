@@ -81,7 +81,7 @@ class TestCaseConsistencyValidator:
         assert case_consistency_validator.total_cases_validated == 0
 
         # Add record with different case number to proc validation again and start caching a new case.
-        t1 = factories.TanfT1Factory.create()
+        t1 = factories.TanfT1Factory.build()
         t1.CASE_NUMBER = "2"
         t1.RPT_MONTH_YEAR = 2
         line_number += 1
@@ -93,8 +93,8 @@ class TestCaseConsistencyValidator:
         assert case_consistency_validator.total_cases_validated == 1
 
         # Complete the case to proc validation and verify that it occured. Even if the next case has errors.
-        t2 = factories.TanfT2Factory.create()
-        t3 = factories.TanfT3Factory.create()
+        t2 = factories.TanfT2Factory.build()
+        t3 = factories.TanfT3Factory.build()
         t2.CASE_NUMBER = "2"
         t2.RPT_MONTH_YEAR = 2
         t3.CASE_NUMBER = "2"
@@ -153,7 +153,7 @@ class TestCaseConsistencyValidator:
         )
 
         t1s = [
-            T1Factory.create(
+            T1Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
             ),
@@ -164,12 +164,12 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t2s = [
-            T2Factory.create(
+            T2Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=1,
             ),
-            T2Factory.create(
+            T2Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -180,12 +180,12 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t3s = [
-            T3Factory.create(
+            T3Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=1,
             ),
-            T3Factory.create(
+            T3Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -240,7 +240,7 @@ class TestCaseConsistencyValidator:
         )
 
         t1s = [
-            T1Factory.create(
+            T1Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123"
             ),
@@ -302,12 +302,12 @@ class TestCaseConsistencyValidator:
         )
 
         t2s = [
-            T2Factory.create(
+            T2Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=1,
             ),
-            T2Factory.create(
+            T2Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -319,12 +319,12 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t3s = [
-            T3Factory.create(
+            T3Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=1,
             ),
-            T3Factory.create(
+            T3Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -403,7 +403,7 @@ class TestCaseConsistencyValidator:
         )
 
         t1s = [
-            T1Factory.create(
+            T1Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123"
             ),
@@ -414,12 +414,12 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t2s = [
-            T2Factory.create(
+            T2Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
-            T2Factory.create(
+            T2Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -430,12 +430,12 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t3s = [
-            T3Factory.create(
+            T3Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
-            T3Factory.create(
+            T3Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -492,7 +492,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
             ),
@@ -503,14 +503,14 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -564,7 +564,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 CLOSURE_REASON="01"
@@ -576,7 +576,7 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=3,
@@ -584,7 +584,7 @@ class TestCaseConsistencyValidator:
                 REC_SSI=1,
                 EMPLOYMENT_STATUS=3,
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -638,7 +638,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 CLOSURE_REASON="03"
@@ -650,7 +650,7 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -659,7 +659,7 @@ class TestCaseConsistencyValidator:
                 RELATIONSHIP_HOH="10",
                 COUNTABLE_MONTH_FED_TIME="059",
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=3,
@@ -720,7 +720,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
             ),
@@ -778,14 +778,14 @@ class TestCaseConsistencyValidator:
         )
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
@@ -848,7 +848,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
             ),
@@ -859,7 +859,7 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
@@ -867,7 +867,7 @@ class TestCaseConsistencyValidator:
                 REC_AID_TOTALLY_DISABLED=1,
                 REC_SSI=2
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
@@ -918,7 +918,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
             ),
@@ -929,7 +929,7 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
@@ -937,7 +937,7 @@ class TestCaseConsistencyValidator:
                 REC_AID_TOTALLY_DISABLED=0,
                 REC_SSI=2
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
@@ -998,7 +998,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
             ),
@@ -1009,7 +1009,7 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="20170209",
@@ -1017,7 +1017,7 @@ class TestCaseConsistencyValidator:
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=2
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="20170209",
@@ -1068,7 +1068,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
             ),
@@ -1079,7 +1079,7 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
@@ -1087,7 +1087,7 @@ class TestCaseConsistencyValidator:
                 REC_AID_TOTALLY_DISABLED=1,
                 REC_SSI=2
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="20170209",
@@ -1148,7 +1148,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
             ),
@@ -1159,7 +1159,7 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
@@ -1167,7 +1167,7 @@ class TestCaseConsistencyValidator:
                 REC_AID_TOTALLY_DISABLED=1,
                 REC_SSI=1
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
@@ -1226,7 +1226,7 @@ class TestCaseConsistencyValidator:
         )
 
         t4s = [
-            T4Factory.create(
+            T4Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
             ),
@@ -1237,7 +1237,7 @@ class TestCaseConsistencyValidator:
             line_number += 1
 
         t5s = [
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
@@ -1245,7 +1245,7 @@ class TestCaseConsistencyValidator:
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=2
             ),
-            T5Factory.create(
+            T5Factory.build(
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
@@ -1306,25 +1306,25 @@ class TestCaseConsistencyValidator:
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
-        t1 = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t1 = T1Factory.build(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         line_number = 1
         case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
         line_number += 1
 
-        t2 = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t2 = T2Factory.build(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                               SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
         line_number += 1
 
         t3s = [
-            T3Factory.create(
+            T3Factory.build(
                 RecordType="T3",
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 SSN="111111111",
                 DATE_OF_BIRTH="22222222"
             ),
-            T3Factory.create(
+            T3Factory.build(
                 RecordType="T3",
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
@@ -1336,19 +1336,19 @@ class TestCaseConsistencyValidator:
         for t3 in t3s:
             case_consistency_validator.add_record(t3, t3_schema, str(t3), line_number, False)
 
-        t1_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t1_dup = T1Factory.build(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         line_number += 1
         has_errors, _, _ = case_consistency_validator.add_record(t1_dup, t1_schema, str(t1), line_number, False)
         line_number += 1
         assert has_errors
 
-        t2_dup = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t2_dup = T2Factory.build(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t2_dup, t2_schema, str(t2), line_number, False)
         line_number += 1
         assert has_errors
 
-        t3_dup = T3Factory.create(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t3_dup = T3Factory.build(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t3_dup, t3_schema, str(t3s[0]), line_number, False)
         line_number += 1
@@ -1399,25 +1399,25 @@ class TestCaseConsistencyValidator:
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
-        t1 = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t1 = T1Factory.build(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         line_number = 1
         case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
         line_number += 1
 
-        t2 = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t2 = T2Factory.build(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                               SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
         line_number += 1
 
         t3s = [
-            T3Factory.create(
+            T3Factory.build(
                 RecordType="T3",
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
                 SSN="111111111",
                 DATE_OF_BIRTH="22222222"
             ),
-            T3Factory.create(
+            T3Factory.build(
                 RecordType="T3",
                 RPT_MONTH_YEAR=202010,
                 CASE_NUMBER="123",
@@ -1430,19 +1430,19 @@ class TestCaseConsistencyValidator:
             case_consistency_validator.add_record(t3, t3_schema, str(t3), line_number, False)
 
         # Introduce partial dups
-        t1_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t1_dup = T1Factory.build(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         line_number += 1
         has_errors, _, _ = case_consistency_validator.add_record(t1_dup, t1_schema, str(t1_dup), line_number, False)
         line_number += 1
         assert has_errors
 
-        t2_dup = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t2_dup = T2Factory.build(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t2_dup, t2_schema, str(t2_dup), line_number, False)
         line_number += 1
         assert has_errors
 
-        t3_dup = T3Factory.create(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t3_dup = T3Factory.build(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t3_dup, t3_schema, str(t3_dup), line_number, False)
         line_number += 1
@@ -1459,7 +1459,7 @@ class TestCaseConsistencyValidator:
         # are automatically replaced with the errors of higher precedence.
         case_consistency_validator.clear_errors(clear_dup=False)
 
-        t1_complete_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t1_complete_dup = T1Factory.build(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         has_errors, _, _ = case_consistency_validator.add_record(t1_complete_dup, t1_schema, str(t1),
                                                                  line_number, False)
 
@@ -1501,20 +1501,20 @@ class TestCaseConsistencyValidator:
         )
 
         line_number = 1
-        t4 = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t4 = T4Factory.build(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
         line_number += 1
 
-        t5 = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t5 = T5Factory.build(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                               SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
         line_number += 1
 
-        t4_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t4_dup = T4Factory.build(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(t4_dup, t4_schema, str(t4), line_number, False)
         line_number += 1
 
-        t5_dup = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t5_dup = T5Factory.build(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5_dup, t5_schema, str(t5), line_number, False)
         line_number += 1
@@ -1557,20 +1557,20 @@ class TestCaseConsistencyValidator:
         )
 
         line_number = 1
-        t4 = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t4 = T4Factory.build(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
         line_number += 1
 
-        t5 = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t5 = T5Factory.build(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                               SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
         line_number += 1
 
-        t4_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t4_dup = T4Factory.build(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(t4_dup, t4_schema, str(t4_dup), line_number, False)
         line_number += 1
 
-        t5_dup = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
+        t5_dup = T5Factory.build(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5_dup, t5_schema, str(t5_dup), line_number, False)
         line_number += 1
@@ -1586,7 +1586,7 @@ class TestCaseConsistencyValidator:
         # are automatically replaced with the errors of higher precedence.
         case_consistency_validator.clear_errors(clear_dup=False)
 
-        t4_complete_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        t4_complete_dup = T4Factory.build(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         has_errors, _, _ = case_consistency_validator.add_record(t4_complete_dup, t4_schema, str(t4),
                                                                  line_number, False)
 
@@ -1624,11 +1624,11 @@ class TestCaseConsistencyValidator:
         )
 
         line_number = 1
-        first_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
+        first_record = Factory.build(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(first_record, schema, str(first_record), line_number, False)
         line_number += 1
 
-        second_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER="123",
+        second_record = Factory.build(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER="123",
                                        FAMILY_AFFILIATION=5)
         case_consistency_validator.add_record(second_record, schema, str(second_record), line_number, False)
         line_number += 1
@@ -1679,7 +1679,7 @@ class TestCaseConsistencyValidator:
         # the file. If the line number was changing, we would be flagging duplicate errors.
         first_record = None
         for i in range(5):
-            record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010)
+            record = Factory.build(RecordType=model_name, RPT_MONTH_YEAR=202010)
             if i == 0:
                 first_record = record
             case_consistency_validator.add_record(record, schema, str(record), line_number, False)
@@ -1688,7 +1688,7 @@ class TestCaseConsistencyValidator:
         errors = case_consistency_validator.get_generated_errors()
         assert len(errors) == 0
 
-        second_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010)
+        second_record = Factory.build(RecordType=model_name, RPT_MONTH_YEAR=202010)
         case_consistency_validator.add_record(second_record, schema, str(first_record), line_number, False)
 
         errors = case_consistency_validator.get_generated_errors()
