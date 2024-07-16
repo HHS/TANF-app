@@ -28,7 +28,7 @@ We use an S3 bucket created by Cloud Foundry in Cloud.gov as our remote backend 
 
 Note that a single S3 bucket maintains the Terraform State for both the development and staging environments, and this instance is deployed in the development space.
 
-|   | development  | staging  | production | 
+|   | development  | staging  | production |
 |---|---|---|---|
 | S3 Key | `terraform.tfstate.dev`   | `terraform.tfstate.staging`  | `terraform.tfstate.prod`  |
 | Service Space | `tanf-dev`  | `tanf-dev`  | `tanf-prod`  |
@@ -45,11 +45,11 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
 1. **Install Cloud Foundry CLI**
    - On macOS: `brew install cloudfoundry/tap/cf-cli`
    - On other platforms: [Download and install cf][cf-install]
-   
+
 1. **Install CircleCI local CLI**
    - On macOS: `brew install circleci`
    - On other platforms: [Download and install circleci][circleci]
-   
+
 1. **Install jq CLI**
    - On macOS: `brew install jq`
    - On other platforms: [Download and install jq][jq]
@@ -59,10 +59,10 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
        # login
        cf login -a api.fr.cloud.gov --sso
        # Follow temporary authorization code prompt.
-       
-       # Select the target org (probably `hhs-acf-prototyping`), 
+
+       # Select the target org (probably `hhs-acf-prototyping`),
        # and the space within which you want to provision infrastructure.
-       
+
        # Spaces:
        # dev = tanf-dev
        # staging = tanf-staging
@@ -75,7 +75,7 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
 
    ```bash
    ./create_tf_vars.sh
-   
+
    # Should generate a file `variables.tfvars` in the `/terraform/dev` directory.
    # Your file should look something like this:
    #
@@ -83,32 +83,32 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
    # cf_password = "some-dev-password"
    # cf_space_name = "tanf-dev"
    ```
-   
+
 ## Test Deployment in Development
 
 1. Follow the instructions above and ensure the `variables.tfvars` file has been generated with proper values.
 1. `cd` into `/terraform/dev`
 
 1. Prepare terraform backend:
-   
+
    **Remote vs. Local Backend:**
-   
+
    If you merely wish to test some new changes without regards to the currently deployed state stored in the remote TF state S3 bucket, you may want to use a "local" backend with Terraform.
    ```terraform
    terraform {
     backend "local" {}
    }
    ```
-   
+
    With this change to `main.tf`, you should be able to run `terraform init` successfully.
 
    **Get Remote S3 Credentials:**
-   
+
    In the `/terraform` directory, you can run the `create_backend_vars.sh` script which can be modified with details of your current environment, and will yield a `backend_config.tfvars` file which must be later passed in to Terraform. For more on this, check out [terraform variable definitions][tf-vars].
 
    ```bash
    ./create_backend_vars.sh
-   
+
    # Should generate a file `backend_config.tfvars` in the current directory.
    # Your file should look something like this:
    #
@@ -116,21 +116,21 @@ Sometimes a developer will need to run Terraform locally to perform manual opera
    # secret_key = "some-secret-key"
    # region = "us-gov-west-1"
    ```
-   
+
    You can now run `terraform init -backend-config backend_config.tfvars` and load the remote state stored in S3 into your local Terraform config.
 
 1. Run `terraform init` if using a local backend, or `terraform init -backend-config backend_config.tfvars` with the remote backend.
-1. Run `terraform destroy -var-file variables.tfvars` to clear the current deployment (if there is one).
+1. Run `terraform destroy -var-file variables.tf` to clear the current deployment (if there is one).
    - If the current deployment isn't destroyed, `terraform apply` will fail later because the unique service instance names are already taken.
    - Be cautious and weary of your target environment when destroying infrastructure.
-1. Run `terraform plan -out tfapply -var-file variables.tfvars` to create a new execution plan.
+1. Run `terraform plan -out tfapply -var-file variables.tfvars` to create a new execution plan. When prompted for the `cf_app_name`, you should provide the value `tanf-<ENV>` where `<ENV>` is: `dev`, `staging`, `prod`.
 1. Run `terraform apply "tfapply"` to create the new infrastructure.
 
 A similar test deployment can also be executed from the `/scripts/deploy-infrastructure-dev.sh` script, albeit without the `destroy` step.
 
 ### Terraform State S3 Bucket
 
-These instructions describe the creation of a new S3 bucket to hold Terraform's state. _This need only be done once per environment_ (note that currently development and staging environments share a single S3 bucket that exists in the development space). This is the only true manual steps that needs to be taken upon the initial application deployment in new environments. This should only need to be done at the beginning of a deployed app's lifetime. 
+These instructions describe the creation of a new S3 bucket to hold Terraform's state. _This need only be done once per environment_ (note that currently development and staging environments share a single S3 bucket that exists in the development space). This is the only true manual steps that needs to be taken upon the initial application deployment in new environments. This should only need to be done at the beginning of a deployed app's lifetime.
 
 1. **Create S3 Bucket for Terraform State**
 
@@ -139,7 +139,7 @@ These instructions describe the creation of a new S3 bucket to hold Terraform's 
    ```
 
 1. **Create service key**
-   
+
    Now we need a new service key with which to authenticate to our Cloud.gov S3 bucket from CircleCI.
 
    ```bash
@@ -175,7 +175,7 @@ Below, we will use an example change that has been done on cloud.gov UI. Assume 
 
 If we try to run plan or deploy at this point, then it will fail since the state doesn't have new "es-dev" elastic search service, so it assumes this is a new deployment and tries to deploy the new instance, which will fail since the name is already taken.
 
-2. grab the id of remote change (in this case elastic service) by running ```cf``` commands. 
+2. grab the id of remote change (in this case elastic service) by running ```cf``` commands.
       for the case of our example, we can run ```cf services```, and then run ```cf service es-dev --guid ``` which will show guid of newly created elasticsearch service instance, which is required for updating state with ES instance.
 
 3. run this command to update state: ```terraform import cloudfoundry_service_instance.elasticsearch <guid from previous step>```
@@ -183,13 +183,13 @@ If we try to run plan or deploy at this point, then it will fail since the state
 You should change ```cloudfoundry_service_instance.elasticsearch``` to your instance/service you added and trying to update the state file with.
 
 #### Security
-   
-   The Terraform State S3 instance is set to be encrypted (see `main.tf#backend`). Amazon S3 [protects data at rest][s3] using 256-bit Advanced Encryption Standard. 
+
+   The Terraform State S3 instance is set to be encrypted (see `main.tf#backend`). Amazon S3 [protects data at rest][s3] using 256-bit Advanced Encryption Standard.
 
    > **Rotating credentials:**
-   > 
+   >
    > The S3 service creates unique IAM credentials for each application binding or service key. To rotate credentials associated with an application binding, unbind and rebind the service instance to the application. To rotate credentials associated with a service key, delete and recreate the service key.
-   
+
 
 <!-- Links -->
 

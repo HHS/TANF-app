@@ -40,5 +40,7 @@ def ssp_ssn_decryption_func(value, **kwargs):
 def zero_pad(digits):
     """Zero pad a string."""
     def transform(value, **kwargs):
+        if value is None:
+            return None
         return value.lstrip().zfill(digits)
     return transform
