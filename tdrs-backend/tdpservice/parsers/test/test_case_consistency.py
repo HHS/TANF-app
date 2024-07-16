@@ -1312,7 +1312,7 @@ class TestCaseConsistencyValidator:
         line_number += 1
 
         t2 = T2Factory.build(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                              SSN="111111111", DATE_OF_BIRTH="22222222")
+                             SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
         line_number += 1
 
@@ -1343,13 +1343,13 @@ class TestCaseConsistencyValidator:
         assert has_errors
 
         t2_dup = T2Factory.build(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+                                 SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t2_dup, t2_schema, str(t2), line_number, False)
         line_number += 1
         assert has_errors
 
         t3_dup = T3Factory.build(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+                                 SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t3_dup, t3_schema, str(t3s[0]), line_number, False)
         line_number += 1
         assert has_errors
@@ -1405,7 +1405,7 @@ class TestCaseConsistencyValidator:
         line_number += 1
 
         t2 = T2Factory.build(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                              SSN="111111111", DATE_OF_BIRTH="22222222")
+                             SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
         line_number += 1
 
@@ -1437,13 +1437,13 @@ class TestCaseConsistencyValidator:
         assert has_errors
 
         t2_dup = T2Factory.build(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+                                 SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t2_dup, t2_schema, str(t2_dup), line_number, False)
         line_number += 1
         assert has_errors
 
         t3_dup = T3Factory.build(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+                                 SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t3_dup, t3_schema, str(t3_dup), line_number, False)
         line_number += 1
         assert has_errors
@@ -1506,7 +1506,7 @@ class TestCaseConsistencyValidator:
         line_number += 1
 
         t5 = T5Factory.build(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                              SSN="111111111", DATE_OF_BIRTH="22222222")
+                             SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
         line_number += 1
 
@@ -1515,7 +1515,7 @@ class TestCaseConsistencyValidator:
         line_number += 1
 
         t5_dup = T5Factory.build(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+                                 SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5_dup, t5_schema, str(t5), line_number, False)
         line_number += 1
 
@@ -1562,7 +1562,7 @@ class TestCaseConsistencyValidator:
         line_number += 1
 
         t5 = T5Factory.build(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                              SSN="111111111", DATE_OF_BIRTH="22222222")
+                             SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
         line_number += 1
 
@@ -1571,7 +1571,7 @@ class TestCaseConsistencyValidator:
         line_number += 1
 
         t5_dup = T5Factory.build(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
-                                  SSN="111111111", DATE_OF_BIRTH="22222222")
+                                 SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5_dup, t5_schema, str(t5_dup), line_number, False)
         line_number += 1
 
@@ -1629,7 +1629,7 @@ class TestCaseConsistencyValidator:
         line_number += 1
 
         second_record = Factory.build(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER="123",
-                                       FAMILY_AFFILIATION=5)
+                                      FAMILY_AFFILIATION=5)
         case_consistency_validator.add_record(second_record, schema, str(second_record), line_number, False)
         line_number += 1
 
