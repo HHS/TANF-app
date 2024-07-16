@@ -29,7 +29,7 @@ def get_system_values():
     sys_values['SPACE'] = json.loads(OS_ENV['VCAP_APPLICATION'])['space_name']
 
     # Postgres client pg_dump directory
-    sys_values['POSTGRES_CLIENT_DIR'] = "/home/vcap/deps/0/apt/usr/lib/postgresql/12/bin/"
+    sys_values['POSTGRES_CLIENT_DIR'] = "/home/vcap/deps/0/apt/usr/lib/postgresql/15/bin/"
 
     # If the client directory and binaries don't exist, we need to find them.
     if not (os.path.exists(sys_values['POSTGRES_CLIENT_DIR']) and
