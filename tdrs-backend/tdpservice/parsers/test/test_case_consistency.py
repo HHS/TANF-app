@@ -47,7 +47,7 @@ class TestCaseConsistencyValidator:
     @pytest.fixture
     def small_correct_file(self, stt_user, stt):
         """Fixture for small_correct_file."""
-        return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
+        return util.create_test_datafile("small_correct_file.txt", stt_user, stt)
 
     @pytest.fixture
     def small_correct_file_header(self, small_correct_file):
@@ -55,7 +55,7 @@ class TestCaseConsistencyValidator:
         header, header_is_valid, header_errors = self.parse_header(small_correct_file)
 
         if not header_is_valid:
-            logger.error('Header is not valid: %s', header_errors)
+            logger.error("Header is not valid: %s", header_errors)
             return None
         return header
 
@@ -64,7 +64,7 @@ class TestCaseConsistencyValidator:
         """Test add_record logic."""
         case_consistency_validator = CaseConsistencyValidator(
             small_correct_file_header,
-            small_correct_file_header['program_type'],
+            small_correct_file_header["program_type"],
             STT.EntityType.STATE,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -82,7 +82,7 @@ class TestCaseConsistencyValidator:
 
         # Add record with different case number to proc validation again and start caching a new case.
         t1 = factories.TanfT1Factory.create()
-        t1.CASE_NUMBER = '2'
+        t1.CASE_NUMBER = "2"
         t1.RPT_MONTH_YEAR = 2
         line_number += 1
         case_consistency_validator.add_record(t1, tanf_s1_schemas[0], str(t1), line_number, False)
@@ -95,9 +95,9 @@ class TestCaseConsistencyValidator:
         # Complete the case to proc validation and verify that it occured. Even if the next case has errors.
         t2 = factories.TanfT2Factory.create()
         t3 = factories.TanfT3Factory.create()
-        t2.CASE_NUMBER = '2'
+        t2.CASE_NUMBER = "2"
         t2.RPT_MONTH_YEAR = 2
-        t3.CASE_NUMBER = '2'
+        t3.CASE_NUMBER = "2"
         t3.RPT_MONTH_YEAR = 2
         line_number += 1
         case_consistency_validator.add_record(t2, tanf_s1_schemas[1], str(t2), line_number, False)
@@ -117,23 +117,23 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1'),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1'),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2'),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3'),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1'),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2'),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3'),
+            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
             STT.EntityType.STATE,
         ),
     ])
@@ -147,7 +147,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             stt_type,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -155,7 +155,7 @@ class TestCaseConsistencyValidator:
         t1s = [
             T1Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
             ),
         ]
         line_number = 1
@@ -166,12 +166,12 @@ class TestCaseConsistencyValidator:
         t2s = [
             T2Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=1,
             ),
             T2Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
         ]
@@ -182,12 +182,12 @@ class TestCaseConsistencyValidator:
         t3s = [
             T3Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=1,
             ),
             T3Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
         ]
@@ -204,23 +204,23 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1', '4', '6'),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1", "4", "6"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1', '4', '6'),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2'),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3'),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1", "4", "6"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1', '3', '5'),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2'),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3'),
+            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1", "3", "5"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
             STT.EntityType.STATE,
         ),
     ])
@@ -234,7 +234,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             stt_type,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -242,7 +242,7 @@ class TestCaseConsistencyValidator:
         t1s = [
             T1Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123'
+                CASE_NUMBER="123"
             ),
         ]
         line_number = 1
@@ -258,31 +258,31 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'Every {t1_model_name} record should have at least one corresponding '
-            f'{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} '
-            f'(reporting month and year) and Item {case_item_num} (case number).'
+            f"Every {t1_model_name} record should have at least one corresponding "
+            f"{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} "
+            f"(reporting month and year) and Item {case_item_num} (case number)."
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1', '4', '6'),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1", "4", "6"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1', '4', '6'),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2'),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3'),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1", "4", "6"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1', '3', '5'),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2'),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3'),
+            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1", "3", "5"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
             STT.EntityType.STATE,
         ),
     ])
@@ -296,7 +296,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             stt_type,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -304,12 +304,12 @@ class TestCaseConsistencyValidator:
         t2s = [
             T2Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=1,
             ),
             T2Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
         ]
@@ -321,12 +321,12 @@ class TestCaseConsistencyValidator:
         t3s = [
             T3Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=1,
             ),
             T3Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
         ]
@@ -341,49 +341,49 @@ class TestCaseConsistencyValidator:
         assert num_errors == 4
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'Every {t2_model_name} record should have at least one corresponding '
-            f'{t1_model_name} record with the same Item {rpt_item_num} '
-            f'(reporting month and year) and Item {case_item_num} (case number).'
+            f"Every {t2_model_name} record should have at least one corresponding "
+            f"{t1_model_name} record with the same Item {rpt_item_num} "
+            f"(reporting month and year) and Item {case_item_num} (case number)."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'Every {t2_model_name} record should have at least one corresponding '
-            f'{t1_model_name} record with the same Item {rpt_item_num} '
-            f'(reporting month and year) and Item {case_item_num} (case number).'
+            f"Every {t2_model_name} record should have at least one corresponding "
+            f"{t1_model_name} record with the same Item {rpt_item_num} "
+            f"(reporting month and year) and Item {case_item_num} (case number)."
         )
         assert errors[2].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[2].error_message == (
-            f'Every {t3_model_name} record should have at least one corresponding '
-            f'{t1_model_name} record with the same Item {rpt_item_num} '
-            f'(reporting month and year) and Item {case_item_num} (case number).'
+            f"Every {t3_model_name} record should have at least one corresponding "
+            f"{t1_model_name} record with the same Item {rpt_item_num} "
+            f"(reporting month and year) and Item {case_item_num} (case number)."
         )
         assert errors[3].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[3].error_message == (
-            f'Every {t3_model_name} record should have at least one corresponding '
-            f'{t1_model_name} record with the same Item {rpt_item_num} '
-            f'(reporting month and year) and Item {case_item_num} (case number).'
+            f"Every {t3_model_name} record should have at least one corresponding "
+            f"{t1_model_name} record with the same Item {rpt_item_num} "
+            f"(reporting month and year) and Item {case_item_num} (case number)."
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1', '4', '6'),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2', '30'),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3', '67'),
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1", "4", "6"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2", "30"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3", "67"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1', '4', '6'),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2', '30'),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3', '66'),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1", "4", "6"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2", "30"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3", "66"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "A", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1', '3', '5'),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2', '26'),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3', '60'),
+            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1", "3", "5"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2", "26"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3", "60"),
             STT.EntityType.STATE,
         ),
     ])
@@ -397,7 +397,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             stt_type,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -405,7 +405,7 @@ class TestCaseConsistencyValidator:
         t1s = [
             T1Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123'
+                CASE_NUMBER="123"
             ),
         ]
         line_number = 1
@@ -416,12 +416,12 @@ class TestCaseConsistencyValidator:
         t2s = [
             T2Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
             T2Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
         ]
@@ -432,12 +432,12 @@ class TestCaseConsistencyValidator:
         t3s = [
             T3Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
             T3Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
             ),
         ]
@@ -452,29 +452,29 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'Every {t1_model_name} record should have at least one corresponding '
-            f'{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} (reporting month and year) '
-            f'and Item {case_item_num} (case number), where Item {t2_fam_afil_item_num} (family affiliation)==1 and '
-            f'Item {t3_fam_afil_item_num} (family affiliation)==1.'
+            f"Every {t1_model_name} record should have at least one corresponding "
+            f"{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} (reporting month and year) "
+            f"and Item {case_item_num} (case number), where Item {t2_fam_afil_item_num} (family affiliation)==1 and "
+            f"Item {t3_fam_afil_item_num} (family affiliation)==1."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
             STT.EntityType.STATE,
         ),
     ])
@@ -486,7 +486,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             stt_type,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -494,7 +494,7 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
             ),
         ]
         line_number = 1
@@ -505,14 +505,14 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1
@@ -532,20 +532,20 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4', '4', '9'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5', '28'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4", "4", "9"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "28"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4', '4', '9'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5', '28'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4", "4", "9"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "28"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4', '3', '8'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5', '25'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4", "3", "8"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "25"),
             STT.EntityType.STATE,
         ),
     ])
@@ -558,7 +558,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             stt_type,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -566,8 +566,8 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
-                CLOSURE_REASON='01'
+                CASE_NUMBER="123",
+                CLOSURE_REASON="01"
             ),
         ]
         line_number = 1
@@ -578,7 +578,7 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1,
@@ -586,7 +586,7 @@ class TestCaseConsistencyValidator:
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1,
@@ -605,22 +605,22 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'At least one person on the case must have Item {emp_status_item_num} (employment status) = 1:Yes in the '
-            f'same Item {rpt_item_num} (reporting month and year) since Item {closure_item_num} (closure reason) = '
-            '1:Employment/excess earnings.'
+            f"At least one person on the case must have Item {emp_status_item_num} (employment status) = 1:Yes in the "
+            f"same Item {rpt_item_num} (reporting month and year) since Item {closure_item_num} (closure reason) = "
+            "1:Employment/excess earnings."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4', '9'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5', '26'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4", "9"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "26"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4', '9'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5', '26'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4", "9"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "26"),
             STT.EntityType.TRIBE,
         ),
     ])
@@ -632,7 +632,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             stt_type,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -640,8 +640,8 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
-                CLOSURE_REASON='03'
+                CASE_NUMBER="123",
+                CLOSURE_REASON="03"
             ),
         ]
         line_number = 1
@@ -652,21 +652,21 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=2,
-                RELATIONSHIP_HOH='10',
-                COUNTABLE_MONTH_FED_TIME='059',
+                RELATIONSHIP_HOH="10",
+                COUNTABLE_MONTH_FED_TIME="059",
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=2,
-                RELATIONSHIP_HOH='03',
-                COUNTABLE_MONTH_FED_TIME='001',
+                RELATIONSHIP_HOH="03",
+                COUNTABLE_MONTH_FED_TIME="001",
             ),
         ]
         for t5 in t5s:
@@ -680,28 +680,28 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 1
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
-        assert errors[0].error_message == ('At least one person who is head-of-household or spouse of '
-                                           f'head-of-household on case must have Item {fed_time_item_num} '
-                                           '(countable months toward federal time) >= 60 since Item '
-                                           f'{closure_item_num} (closure reason) = 03: federal 5 year time limit.')
+        assert errors[0].error_message == ("At least one person who is head-of-household or spouse of "
+                                           f"head-of-household on case must have Item {fed_time_item_num} "
+                                           "(countable months toward federal time) >= 60 since Item "
+                                           f"{closure_item_num} (closure reason) = 03: federal 5 year time limit.")
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4', '4', '6'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4", "4", "6"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4', '4', '6'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4", "4", "6"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4', '3', '5'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4", "3", "5"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
             STT.EntityType.STATE,
         ),
     ])
@@ -714,7 +714,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             stt_type,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -722,7 +722,7 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
             ),
         ]
         line_number = 1
@@ -738,28 +738,28 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'Every {t4_model_name} record should have at least one corresponding '
-            f'{t5_model_name} record with the same Item {rpt_item_num} (reporting month and year) '
-            f'and Item {case_item_num} (case number).'
+            f"Every {t4_model_name} record should have at least one corresponding "
+            f"{t5_model_name} record with the same Item {rpt_item_num} (reporting month and year) "
+            f"and Item {case_item_num} (case number)."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4', '4', '6'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4", "4", "6"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4', '4', '6'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4", "4", "6"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
             STT.EntityType.TRIBE,
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4', '3', '5'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4", "3", "5"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
             STT.EntityType.STATE,
         ),
     ])
@@ -772,7 +772,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             stt_type,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -780,14 +780,14 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=3,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
                 REC_SSI=1
@@ -806,32 +806,32 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'Every {t5_model_name} record should have at least one corresponding '
-            f'{t4_model_name} record with the same Item {rpt_item_num} (reporting month and year) '
-            f'and Item {case_item_num} (case number).'
+            f"Every {t5_model_name} record should have at least one corresponding "
+            f"{t4_model_name} record with the same Item {rpt_item_num} (reporting month and year) "
+            f"and Item {case_item_num} (case number)."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'Every {t5_model_name} record should have at least one corresponding '
-            f'{t4_model_name} record with the same Item {rpt_item_num} (reporting month and year) '
-            f'and Item {case_item_num} (case number).'
+            f"Every {t5_model_name} record should have at least one corresponding "
+            f"{t4_model_name} record with the same Item {rpt_item_num} (reporting month and year) "
+            f"and Item {case_item_num} (case number)."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
         ),
     ])
     @pytest.mark.django_db
@@ -842,7 +842,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             STT.EntityType.TERRITORY,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -850,7 +850,7 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
             ),
         ]
         line_number = 1
@@ -861,7 +861,7 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=1,
                 REC_AID_TOTALLY_DISABLED=1,
@@ -869,7 +869,7 @@ class TestCaseConsistencyValidator:
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=2,
@@ -890,18 +890,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5', '19C'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "19C"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5', '19C'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "19C"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5', '18C'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "18C"),
         ),
     ])
     @pytest.mark.django_db
@@ -912,7 +912,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             STT.EntityType.TERRITORY,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -920,7 +920,7 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
             ),
         ]
         line_number = 1
@@ -931,7 +931,7 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=1,
                 REC_AID_TOTALLY_DISABLED=0,
@@ -939,7 +939,7 @@ class TestCaseConsistencyValidator:
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=0,
@@ -958,30 +958,30 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} Adults in territories must have a valid value for Item {ratd_item_num} '
-            '(receives aid for totally disabled).'
+            f"{t5_model_name} Adults in territories must have a valid value for Item {ratd_item_num} "
+            "(receives aid for totally disabled)."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} Adults in territories must have a valid value for Item {ratd_item_num} '
-            '(receives aid for totally disabled).'
+            f"{t5_model_name} Adults in territories must have a valid value for Item {ratd_item_num} "
+            "(receives aid for totally disabled)."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
         ),
     ])
     @pytest.mark.django_db
@@ -992,7 +992,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             STT.EntityType.TERRITORY,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -1000,7 +1000,7 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
             ),
         ]
         line_number = 1
@@ -1011,7 +1011,7 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="20170209",
                 FAMILY_AFFILIATION=1,
                 REC_AID_TOTALLY_DISABLED=2,
@@ -1019,7 +1019,7 @@ class TestCaseConsistencyValidator:
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="20170209",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=1,
@@ -1040,18 +1040,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5', "19C"),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "19C"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5', "19C"),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "19C"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5', "18C"),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "18C"),
         ),
     ])
     @pytest.mark.django_db
@@ -1062,7 +1062,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             STT.EntityType.STATE,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -1070,7 +1070,7 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
             ),
         ]
         line_number = 1
@@ -1081,7 +1081,7 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=1,
@@ -1089,7 +1089,7 @@ class TestCaseConsistencyValidator:
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="20170209",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=1,
@@ -1108,30 +1108,30 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in states should not have a value of 1 for Item {item_no} ('
-            'receives aid for totally disabled).'
+            f"{t5_model_name} People in states should not have a value of 1 for Item {item_no} ("
+            "receives aid for totally disabled)."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} People in states should not have a value of 1 for Item {item_no} '
-            '(receives aid for totally disabled).'
+            f"{t5_model_name} People in states should not have a value of 1 for Item {item_no} "
+            "(receives aid for totally disabled)."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5', '19E'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "19E"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5', '19E'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "19E"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5', '18E'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "18E"),
         ),
     ])
     @pytest.mark.django_db
@@ -1142,7 +1142,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             STT.EntityType.TERRITORY,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -1150,7 +1150,7 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
             ),
         ]
         line_number = 1
@@ -1161,7 +1161,7 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=1,
                 REC_AID_TOTALLY_DISABLED=1,
@@ -1169,7 +1169,7 @@ class TestCaseConsistencyValidator:
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=2,
                 REC_AID_TOTALLY_DISABLED=1,
@@ -1188,28 +1188,28 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (receives SSI).'
+            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (receives SSI)."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f'{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (receives SSI).'
+            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (receives SSI)."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5', '19E'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5", "19E"),
         ),
         (
             {"type": "C", "program_type": "Tribal TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5', '19E'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5", "19E"),
         ),
         (
             {"type": "C", "program_type": "SSP", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5', '18E'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5", "18E"),
         ),
     ])
     @pytest.mark.django_db
@@ -1220,7 +1220,7 @@ class TestCaseConsistencyValidator:
 
         case_consistency_validator = CaseConsistencyValidator(
             header,
-            header['program_type'],
+            header["program_type"],
             STT.EntityType.STATE,
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
@@ -1228,7 +1228,7 @@ class TestCaseConsistencyValidator:
         t4s = [
             T4Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
             ),
         ]
         line_number = 1
@@ -1239,7 +1239,7 @@ class TestCaseConsistencyValidator:
         t5s = [
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=1,
                 REC_AID_TOTALLY_DISABLED=2,
@@ -1247,7 +1247,7 @@ class TestCaseConsistencyValidator:
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=2,  # validator only applies to fam_affil = 1; won't generate error
                 REC_AID_TOTALLY_DISABLED=2,
@@ -1266,29 +1266,29 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f'{t5_model_name} People in states must have a valid value for Item {rec_ssi_item_num} (receives SSI).'
+            f"{t5_model_name} People in states must have a valid value for Item {rec_ssi_item_num} (receives SSI)."
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1'),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1'),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2'),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3'),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1'),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2'),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3'),
+            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
             STT.EntityType.STATE,
         )
     ])
@@ -1306,12 +1306,12 @@ class TestCaseConsistencyValidator:
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
-        t1 = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t1 = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         line_number = 1
         case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
         line_number += 1
 
-        t2 = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t2 = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                               SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
         line_number += 1
@@ -1320,14 +1320,14 @@ class TestCaseConsistencyValidator:
             T3Factory.create(
                 RecordType="T3",
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 SSN="111111111",
                 DATE_OF_BIRTH="22222222"
             ),
             T3Factory.create(
                 RecordType="T3",
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 SSN="111111111",
                 DATE_OF_BIRTH="22222222"
             ),
@@ -1336,19 +1336,19 @@ class TestCaseConsistencyValidator:
         for t3 in t3s:
             case_consistency_validator.add_record(t3, t3_schema, str(t3), line_number, False)
 
-        t1_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t1_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         line_number += 1
         has_errors, _, _ = case_consistency_validator.add_record(t1_dup, t1_schema, str(t1), line_number, False)
         line_number += 1
         assert has_errors
 
-        t2_dup = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t2_dup = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t2_dup, t2_schema, str(t2), line_number, False)
         line_number += 1
         assert has_errors
 
-        t3_dup = T3Factory.create(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t3_dup = T3Factory.create(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t3_dup, t3_schema, str(t3s[0]), line_number, False)
         line_number += 1
@@ -1364,23 +1364,23 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], 'T1'),
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
+            (factories.TanfT1Factory, schema_defs.tanf.t1.schemas[0], "T1"),
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], 'T1'),
-            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], 'T2'),
-            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], 'T3'),
+            (factories.TribalTanfT1Factory, schema_defs.tribal_tanf.t1.schemas[0], "T1"),
+            (factories.TribalTanfT2Factory, schema_defs.tribal_tanf.t2.schemas[0], "T2"),
+            (factories.TribalTanfT3Factory, schema_defs.tribal_tanf.t3.schemas[0], "T3"),
             STT.EntityType.STATE,
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], 'M1'),
-            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], 'M2'),
-            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], 'M3'),
+            (factories.SSPM1Factory, schema_defs.ssp.m1.schemas[0], "M1"),
+            (factories.SSPM2Factory, schema_defs.ssp.m2.schemas[0], "M2"),
+            (factories.SSPM3Factory, schema_defs.ssp.m3.schemas[0], "M3"),
             STT.EntityType.STATE,
         ),
     ])
@@ -1399,12 +1399,12 @@ class TestCaseConsistencyValidator:
             util.make_generate_case_consistency_parser_error(small_correct_file)
         )
 
-        t1 = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t1 = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         line_number = 1
         case_consistency_validator.add_record(t1, t1_schema, str(t1), line_number, False)
         line_number += 1
 
-        t2 = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t2 = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                               SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t2, t2_schema, str(t2), line_number, False)
         line_number += 1
@@ -1413,14 +1413,14 @@ class TestCaseConsistencyValidator:
             T3Factory.create(
                 RecordType="T3",
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 SSN="111111111",
                 DATE_OF_BIRTH="22222222"
             ),
             T3Factory.create(
                 RecordType="T3",
                 RPT_MONTH_YEAR=202010,
-                CASE_NUMBER='123',
+                CASE_NUMBER="123",
                 SSN="111111111",
                 DATE_OF_BIRTH="22222222"
             ),
@@ -1430,19 +1430,19 @@ class TestCaseConsistencyValidator:
             case_consistency_validator.add_record(t3, t3_schema, str(t3), line_number, False)
 
         # Introduce partial dups
-        t1_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t1_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         line_number += 1
         has_errors, _, _ = case_consistency_validator.add_record(t1_dup, t1_schema, str(t1_dup), line_number, False)
         line_number += 1
         assert has_errors
 
-        t2_dup = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t2_dup = T2Factory.create(RecordType="T2", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t2_dup, t2_schema, str(t2_dup), line_number, False)
         line_number += 1
         assert has_errors
 
-        t3_dup = T3Factory.create(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t3_dup = T3Factory.create(RecordType="T3", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         has_errors, _, _ = case_consistency_validator.add_record(t3_dup, t3_schema, str(t3_dup), line_number, False)
         line_number += 1
@@ -1459,7 +1459,7 @@ class TestCaseConsistencyValidator:
         # are automatically replaced with the errors of higher precedence.
         case_consistency_validator.clear_errors(clear_dup=False)
 
-        t1_complete_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t1_complete_dup = T1Factory.create(RecordType="T1", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         has_errors, _, _ = case_consistency_validator.add_record(t1_complete_dup, t1_schema, str(t1),
                                                                  line_number, False)
 
@@ -1473,18 +1473,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
         ),
     ])
     @pytest.mark.django_db
@@ -1501,20 +1501,20 @@ class TestCaseConsistencyValidator:
         )
 
         line_number = 1
-        t4 = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t4 = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
         line_number += 1
 
-        t5 = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t5 = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                               SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
         line_number += 1
 
-        t4_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t4_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(t4_dup, t4_schema, str(t4), line_number, False)
         line_number += 1
 
-        t5_dup = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t5_dup = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5_dup, t5_schema, str(t5), line_number, False)
         line_number += 1
@@ -1529,18 +1529,18 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], 'T4'),
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT4Factory, schema_defs.tanf.t4.schemas[0], "T4"),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], 'T4'),
-            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], 'T5'),
+            (factories.TribalTanfT4Factory, schema_defs.tribal_tanf.t4.schemas[0], "T4"),
+            (factories.TribalTanfT5Factory, schema_defs.tribal_tanf.t5.schemas[0], "T5"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], 'M4'),
-            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], 'M5'),
+            (factories.SSPM4Factory, schema_defs.ssp.m4.schemas[0], "M4"),
+            (factories.SSPM5Factory, schema_defs.ssp.m5.schemas[0], "M5"),
         ),
     ])
     @pytest.mark.django_db
@@ -1557,20 +1557,20 @@ class TestCaseConsistencyValidator:
         )
 
         line_number = 1
-        t4 = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t4 = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(t4, t4_schema, str(t4), line_number, False)
         line_number += 1
 
-        t5 = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t5 = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                               SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5, t5_schema, str(t5), line_number, False)
         line_number += 1
 
-        t4_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t4_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(t4_dup, t4_schema, str(t4_dup), line_number, False)
         line_number += 1
 
-        t5_dup = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER='123', FAMILY_AFFILIATION=1,
+        t5_dup = T5Factory.create(RecordType="T5", RPT_MONTH_YEAR=202010, CASE_NUMBER="123", FAMILY_AFFILIATION=1,
                                   SSN="111111111", DATE_OF_BIRTH="22222222")
         case_consistency_validator.add_record(t5_dup, t5_schema, str(t5_dup), line_number, False)
         line_number += 1
@@ -1586,7 +1586,7 @@ class TestCaseConsistencyValidator:
         # are automatically replaced with the errors of higher precedence.
         case_consistency_validator.clear_errors(clear_dup=False)
 
-        t4_complete_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        t4_complete_dup = T4Factory.create(RecordType="T4", RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         has_errors, _, _ = case_consistency_validator.add_record(t4_complete_dup, t4_schema, str(t4),
                                                                  line_number, False)
 
@@ -1600,15 +1600,15 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,record_stuff", [
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], 'T2'),
+            (factories.TanfT2Factory, schema_defs.tanf.t2.schemas[0], "T2"),
         ),
         (
             {"type": "A", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], 'T3'),
+            (factories.TanfT3Factory, schema_defs.tanf.t3.schemas[0], "T3"),
         ),
         (
             {"type": "C", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], 'T5'),
+            (factories.TanfT5Factory, schema_defs.tanf.t5.schemas[0], "T5"),
         ),
     ])
     @pytest.mark.django_db
@@ -1624,11 +1624,11 @@ class TestCaseConsistencyValidator:
         )
 
         line_number = 1
-        first_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER='123')
+        first_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER="123")
         case_consistency_validator.add_record(first_record, schema, str(first_record), line_number, False)
         line_number += 1
 
-        second_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER='123',
+        second_record = Factory.create(RecordType=model_name, RPT_MONTH_YEAR=202010, CASE_NUMBER="123",
                                        FAMILY_AFFILIATION=5)
         case_consistency_validator.add_record(second_record, schema, str(second_record), line_number, False)
         line_number += 1
@@ -1639,27 +1639,27 @@ class TestCaseConsistencyValidator:
     @pytest.mark.parametrize("header,record_stuff", [
         (
             {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT6Factory, schema_defs.tanf.t6.schemas[0], 'T6'),
+            (factories.TanfT6Factory, schema_defs.tanf.t6.schemas[0], "T6"),
         ),
         (
             {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT6Factory, schema_defs.tribal_tanf.t6.schemas[0], 'T6'),
+            (factories.TribalTanfT6Factory, schema_defs.tribal_tanf.t6.schemas[0], "T6"),
         ),
         (
             {"type": "G", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM6Factory, schema_defs.ssp.m6.schemas[0], 'M6'),
+            (factories.SSPM6Factory, schema_defs.ssp.m6.schemas[0], "M6"),
         ),
         (
             {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TanfT7Factory, schema_defs.tanf.t7.schemas[0], 'T7'),
+            (factories.TanfT7Factory, schema_defs.tanf.t7.schemas[0], "T7"),
         ),
         (
             {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.TribalTanfT7Factory, schema_defs.tribal_tanf.t7.schemas[0], 'T7'),
+            (factories.TribalTanfT7Factory, schema_defs.tribal_tanf.t7.schemas[0], "T7"),
         ),
         (
             {"type": "S", "program_type": "TAN", "year": 2020, "quarter": "4"},
-            (factories.SSPM7Factory, schema_defs.ssp.m7.schemas[0], 'M7'),
+            (factories.SSPM7Factory, schema_defs.ssp.m7.schemas[0], "M7"),
         ),
     ])
     @pytest.mark.django_db
