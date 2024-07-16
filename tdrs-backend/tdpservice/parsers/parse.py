@@ -102,7 +102,17 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator)
+    # Last resort to catch any un-caught exceptions during parsing and handle state appropriately
+    try:
+        line_errors = parse_datafile_lines(datafile, dfs, program_type, section,
+                                           is_encrypted, case_consistency_validator)
+    except Exception as e:
+        dfs.status = "Rejected"
+        dfs.save()
+        log_parser_exception(datafile,
+                             ("Caught an uncaught exception while parsing! Please review the logs to see if manual "
+                              f"intervention is required. Exception: {e}"),
+                             "critical")
 
     errors = errors | line_errors
 
