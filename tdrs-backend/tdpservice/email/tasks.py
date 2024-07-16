@@ -157,4 +157,7 @@ def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
                 'object_id': loc.id,
                 'object_repr': loc.name,
             }
-            log(f"{loc.name} has no recipients for data submission deadline reminder.", logger_context=logger_context)
+            log(
+                f"{loc.name} has no recipients for data submission deadline reminder.",
+                logger_context=logger_context if not settings.DEBUG else None
+            )
