@@ -2,20 +2,26 @@
 
 
 from django.conf import settings
-from django.contrib.admin.models import LogEntry, ADDITION
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.models import ADDITION
+from django.db.utils import DatabaseError
+from elasticsearch.exceptions import ElasticsearchException
 import itertools
 import logging
-from .models import ParserErrorCategoryChoices, ParserError
-from . import schema_defs, validators, util
-from . import row_schema
-from .schema_defs.utils import get_section_reference, get_program_model
-from .case_consistency_validator import CaseConsistencyValidator
-from elasticsearch.exceptions import ElasticsearchException
-from tdpservice.data_files.models import DataFile
+from tdpservice.parsers.models import ParserErrorCategoryChoices, ParserError
+from tdpservice.parsers import row_schema, schema_defs, util, validators
+from tdpservice.parsers.schema_defs.utils import get_section_reference, get_program_model
+from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
+from tdpservice.core.utils import log
 
 logger = logging.getLogger(__name__)
 
+
+def log_parser_exception(datafile, error_msg, level):
+    context = {'user_id': datafile.user.pk,
+               'action_flag': ADDITION,
+               'object_repr': f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+               "object_id": datafile}
+    log(error_msg, context, level)
 
 def parse_datafile(datafile, dfs):
     """Parse and validate Datafile header/trailer, then select appropriate schema and parse/validate all lines."""
@@ -116,18 +122,22 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                 num_db_records_created += len(created_objs)
                 num_elastic_records_created += document.update(created_objs)[0]
             except ElasticsearchException as e:
-                logger.error(f"Encountered error while indexing datafile documents: {e}")
-                LogEntry.objects.log_action(
-                    user_id=datafile.user.pk,
-                    content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                    object_id=datafile,
-                    object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                    action_flag=ADDITION,
-                    change_message=f"Encountered error while indexing datafile documents: {e}",
-                )
+                log_parser_exception(datafile,
+                                     f"Encountered error while indexing datafile documents: {e}",
+                                     "error"
+                                     )
                 continue
+            except DatabaseError as e:
+                log_parser_exception(datafile,
+                                     f"Encountered error while creating database records: {e}",
+                                     "error"
+                                     )
+                return False
             except Exception as e:
-                logger.error(f"Encountered error while creating datafile records: {e}")
+                log_parser_exception(datafile,
+                                     f"Encountered generic exception while creating database records: {e}",
+                                     "error"
+                                     )
                 return False
 
         dfs.total_number_of_records_created += num_db_records_created
@@ -187,30 +197,28 @@ def rollback_records(unsaved_records, datafile):
         except ElasticsearchException as e:
             # Caught an Elastic exception, to ensure the quality of the DB, we will force the DB deletion and let
             # Elastic clean up later.
-            logger.error("Encountered an Elastic exception, enforcing DB cleanup.")
-            logger.error(f"Elastic Error: {e}")
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while indexing datafile documents: {e}",
-            )
+            log_parser_exception(datafile,
+                                 f"Encountered error while indexing datafile documents: {e}",
+                                 "error"
+                                 )
+            logger.warn("Encountered an Elastic exception, enforcing DB cleanup.")
             num_deleted, models = qset.delete()
             logger.info("Succesfully performed DB cleanup after elastic failure.")
+            log_parser_exception(datafile,
+                                 "Succesfully performed DB cleanup after elastic failure.",
+                                 "info"
+                                 )
+        except DatabaseError as e:
+            log_parser_exception(datafile,
+                                    (f"Encountered error while deleting database records for model: {model}. "
+                                    f"Exception: {e}"),
+                                    "error"
+                                    )
         except Exception as e:
-            logging.critical(f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                             f"Error message: {e}")
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                               f"Error message: {e}"
-            )
+            log_parser_exception(datafile,
+                                 f"Encountered generic exception while trying to rollback records. Exception: {e}",
+                                 "error"
+                                 )
 
 def rollback_parser_errors(datafile):
     """Delete created errors in the event of a failure."""
@@ -220,9 +228,18 @@ def rollback_parser_errors(datafile):
         # WARNING: we can use `_raw_delete` in this case because our error models don't have cascading dependencies. If
         # that ever changes, we should NOT use `_raw_delete`.
         num_deleted = qset._raw_delete(qset.db)
-        logger.debug(f"Deleted {num_deleted} {ParserError}.")
+        logger.debug(f"Deleted {num_deleted} ParserErrors.")
+    except DatabaseError as e:
+        log_parser_exception(datafile,
+                             ("Encountered error while deleting database records for ParserErrors. "
+                             f"Exception: {e}"),
+                             "error"
+                             )
     except Exception as e:
-        logging.error(f"Encountered error while deleting records of type {ParserError}. Error message: {e}")
+        log_parser_exception(datafile,
+                             f"Encountered generic exception while rolling back ParserErrors. Exception: {e}.",
+                             "error"
+                             )
 
 def validate_case_consistency(case_consistency_validator):
     """Force category four validation if we have reached the last case in the file."""
@@ -274,34 +291,30 @@ def delete_serialized_records(duplicate_manager, dfs):
         except ElasticsearchException as e:
             # Caught an Elastic exception, to ensure the quality of the DB, we will force the DB deletion and let
             # Elastic clean up later.
-            logger.error("Encountered an Elastic exception, enforcing DB cleanup.")
-            logger.error(f"Elastic Error: {e}")
-            datafile = dfs.datafile
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while indexing datafile documents: {e}",
-            )
+            log_parser_exception(dfs.datafile,
+                                 ("Encountered error while indexing datafile documents. Enforcing DB cleanup. "
+                                 f"Exception: {e}"),
+                                 "error"
+                                 )
             num_deleted, models = qset.delete()
             total_deleted += num_deleted
             dfs.total_number_of_records_created -= num_deleted
-            logger.info("Succesfully performed DB cleanup after elastic failure.")
+            log_parser_exception(dfs.datafile,
+                                 "Succesfully performed DB cleanup after elastic failure.",
+                                 "info"
+                                 )
+        except DatabaseError as e:
+            log_parser_exception(dfs.datafile,
+                                (f"Encountered error while deleting database records for model {model}. "
+                                f"Exception: {e}"),
+                                "error"
+                                )
         except Exception as e:
-            logging.critical(f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                             f"Error message: {e}")
-            datafile = dfs.datafile
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                               f"Error message: {e}"
-            )
+            log_parser_exception(dfs.datafile,
+                                 (f"Encountered generic exception while deleting records of type {model}. "
+                                 f"Exception: {e}"),
+                                 "error"
+                                 )
     if total_deleted:
         logger.info(f"Deleted a total of {total_deleted} records from the DB because of case consistenecy errors.")
 
