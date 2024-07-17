@@ -108,7 +108,7 @@ def test_if_validators():
                       name='Field2', friendly_name='field 2'),
             ]
     ))
-    assert result == (False, 'if Field1 :1 validator1 passed then Field2 Item 2 (field 2) 2 does not match 1.',
+    assert result == (False, 'if Field1 :1 validator1 passed then Item 2 (field 2) 2 does not match 1.',
                       ['Field1', 'Field2'])
 
 
