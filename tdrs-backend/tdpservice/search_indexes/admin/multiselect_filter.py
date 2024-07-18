@@ -1,3 +1,4 @@
+"""File containing multiselect filter classes and mixins."""
 import urllib.parse
 from django.contrib import admin
 from django.db.models import Q
@@ -8,6 +9,7 @@ from django.contrib.admin.options import IncorrectLookupParameters
 
 
 def flatten_used_parameters(used_parameters: dict, keep_list: bool = True):
+    """Flatten length 1 lists in dictionary."""
     # FieldListFilter.__init__ calls prepare_lookup_value,
     # which returns a list if lookup_kwarg ends with "__in"
     for k, v in used_parameters.items():
@@ -15,10 +17,13 @@ def flatten_used_parameters(used_parameters: dict, keep_list: bool = True):
             used_parameters[k] = v[0]
 
 class MultiSelectMixin(object):
+    """Mixin for multi-select filters."""
+
     def queryset(self, request, queryset):
+        """Build queryset based on choices."""
         params = Q()
         for lookup_arg, value in self.used_parameters.items():
-            params |= Q(**{lookup_arg:value})
+            params |= Q(**{lookup_arg: value})
         try:
             return queryset.filter(params)
         except (ValueError, ValidationError) as e:
@@ -27,6 +32,7 @@ class MultiSelectMixin(object):
             raise IncorrectLookupParameters(e)
 
     def querystring_for_choices(self, val, changelist):
+        """Build query string based on new val."""
         lookup_vals = self.lookup_vals[:]
         if val in self.lookup_vals:
             lookup_vals.remove(val)
@@ -37,14 +43,13 @@ class MultiSelectMixin(object):
                 self.lookup_kwarg: ','.join(lookup_vals),
             }, [])
         else:
-            query_string = changelist.get_query_string({},
-                [self.lookup_kwarg])
+            query_string = changelist.get_query_string({}, [self.lookup_kwarg])
         return query_string
 
     def querystring_for_isnull(self, changelist):
+        """Build query string based on a null val."""
         if self.lookup_val_isnull:
-            query_string = changelist.get_query_string({},
-                [self.lookup_kwarg_isnull])
+            query_string = changelist.get_query_string({}, [self.lookup_kwarg_isnull])
         else:
             query_string = changelist.get_query_string({
                 self.lookup_kwarg_isnull: 'True',
@@ -52,9 +57,11 @@ class MultiSelectMixin(object):
         return query_string
 
     def has_output(self):
+        """Return if there is output."""
         return len(self.lookup_choices) > 1
 
     def get_facet_counts(self, pk_attname, filtered_qs):
+        """Return count of __in facets."""
         if not self.lookup_kwarg.endswith("__in"):
             raise NotImplementedError("Facets are only supported for default lookup_kwarg values, ending with '__in' "
                                       "(got '%s')" % self.lookup_kwarg)
@@ -67,9 +74,8 @@ class MultiSelectMixin(object):
 
 
 class MultiSelectFilter(MultiSelectMixin, admin.AllValuesFieldListFilter):
-    """
-    Multi select filter for all kind of fields.
-    """
+    """Multi select filter for all kind of fields."""
+
     def __init__(self, field, request, params, model, model_admin, field_path):
         self.lookup_kwarg = '%s__in' % field_path
         self.lookup_kwarg_isnull = '%s__isnull' % field_path
@@ -92,18 +98,22 @@ class MultiSelectFilter(MultiSelectMixin, admin.AllValuesFieldListFilter):
         self.used_parameters = self.prepare_used_parameters(self.used_parameters)
 
     def prepare_querystring_value(self, value):
+        """Preparse the query string value."""
         # mask all commas or these values will be used
         # in a comma-seperated-list as get-parameter
         return str(value).replace(',', '%~')
 
     def prepare_used_parameters(self, used_parameters):
+        """Prepare parameters."""
         # remove comma-mask from list-values for __in-lookups
         for key, value in used_parameters.items():
-            if not key.endswith('__in'): continue
+            if not key.endswith('__in'):
+                continue
             used_parameters[key] = [v.replace('%~', ',') for v in value]
         return used_parameters
 
     def choices(self, changelist):
+        """Generate choices."""
         add_facets = getattr(changelist, "add_facets", False)
         facet_counts = self.get_facet_queryset(changelist) if add_facets else None
         yield {
@@ -137,12 +147,12 @@ class MultiSelectFilter(MultiSelectMixin, admin.AllValuesFieldListFilter):
 
 
 class MultiSelectDropdownFilter(MultiSelectFilter):
-    """
-    Multi select dropdown filter for all kind of fields.
-    """
+    """Multi select dropdown filter for all kind of fields."""
+
     template = 'multiselectdropdownfilter.html'
 
     def choices(self, changelist):
+        """Generate choices."""
         add_facets = getattr(changelist, "add_facets", False)
         facet_counts = self.get_facet_queryset(changelist) if add_facets else None
         query_string = changelist.get_query_string({}, [self.lookup_kwarg, self.lookup_kwarg_isnull])
