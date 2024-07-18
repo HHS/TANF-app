@@ -2,8 +2,8 @@
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Q as Query
-from more_admin_filters import MultiSelectDropdownFilter
 from tdpservice.stts.models import STT
+from tdpservice.search_indexes.admin.multiselect_filter import MultiSelectDropdownFilter
 import datetime
 
 
@@ -49,6 +49,7 @@ class STTFilter(MultiSelectDropdownFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):
         super(MultiSelectDropdownFilter, self).__init__(field, request, params, model, model_admin, field_path)
         self.lookup_choices = self._get_lookup_choices(request)
+        self.title = _("STT")
 
     def _get_lookup_choices(self, request):
         """Filter queryset to guarentee lookup_choices only has STTs associated with the record type."""
