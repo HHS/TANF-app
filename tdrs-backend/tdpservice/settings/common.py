@@ -53,7 +53,6 @@ class Common(Configuration):
         "storages",
         "django_elasticsearch_dsl",
         "django_elasticsearch_dsl_drf",
-        "more_admin_filters",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
