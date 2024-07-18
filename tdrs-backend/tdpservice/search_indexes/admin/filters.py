@@ -61,8 +61,22 @@ class STTFilter(MultiSelectDropdownFilter):
         else:
             type_query = Query(type=STT.EntityType.STATE) | Query(type=STT.EntityType.TERRITORY)
             queryset = queryset.filter(type_query)
-
         return (queryset.distinct().order_by('name').values_list('name', flat=True))
+
+    def lookups(self, request, model_admin):
+        """Available options in dropdown."""
+        listing_record_type = [i for i in str(request.path).lower().split('/') if i not in ['/', '']][-1]
+        options = []
+        if 'tribal' in listing_record_type:
+            objects = STT.objects.filter(type=STT.EntityType.TRIBE)
+        elif 'ssp' in listing_record_type:
+            objects = STT.objects.filter(ssp=True)
+        else:
+            objects = STT.objects.filter(Query(type=STT.EntityType.STATE) | Query(type=STT.EntityType.TERRITORY))
+        for obj in objects:
+            options.append((obj.stt_code, _(obj.name)))
+
+        return options
 
 
 class FiscalPeriodFilter(SimpleListFilter):

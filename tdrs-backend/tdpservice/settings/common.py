@@ -479,6 +479,50 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.email_admin_num_access_requests',
             'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
         },
+        'Email Data Analyst Q1 Upcoming Submission Deadline Reminder': {
+            'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+            # Feb 9 at 1pm UTC (9am EST)
+            'schedule': crontab(month_of_year='2', day_of_month='9', hour='13', minute='0'),
+            # 'schedule': crontab(minute='*/3'),
+            'kwargs': {
+                'due_date': 'February 14th',
+                'reporting_period': 'Oct - Dec',
+                'fiscal_quarter': 'Q1',
+            }
+        },
+        'Email Data Analyst Q2 Upcoming Submission Deadline Reminder': {
+            'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+            # May 10 at 1pm UTC (9am EST)
+            'schedule': crontab(month_of_year='5', day_of_month='10', hour='13', minute='0'),
+            # 'schedule': crontab(minute='*/3'),
+            'kwargs': {
+                'due_date': 'May 15th',
+                'reporting_period': 'Jan - Mar',
+                'fiscal_quarter': 'Q2',
+            }
+        },
+        'Email Data Analyst Q3 Upcoming Submission Deadline Reminder': {
+            'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+            # Aug 9 at 1pm UTC (9am EST)
+            'schedule': crontab(month_of_year='8', day_of_month='9', hour='13', minute='0'),
+            # 'schedule': crontab(minute='*/3'),
+            'kwargs': {
+                'due_date': 'August 14th',
+                'reporting_period': 'Apr - Jun',
+                'fiscal_quarter': 'Q3',
+            }
+        },
+        'Email Data Analyst Q4 Upcoming Submission Deadline Reminder': {
+            'task': 'tdpservice.email.tasks.send_data_submission_reminder',
+            # Nov 9 at 1pm UTC (9am EST)
+            'schedule': crontab(month_of_year='11', day_of_month='9', hour='13', minute='0'),
+            # 'schedule': crontab(minute='*/3'),
+            'kwargs': {
+                'due_date': 'November 14th',
+                'reporting_period': 'Jul - Sep',
+                'fiscal_quarter': 'Q4',
+            }
+        },
     }
 
     CYPRESS_TOKEN = os.getenv('CYPRESS_TOKEN', None)

@@ -189,7 +189,7 @@ def if_then_validator(
                     ending_error = "validator2 passed"
 
                 error_message = (f"if {condition_field_name} " + (center_error) +
-                                 f" then {result_field_name} " + ending_error)
+                                 " then " + ending_error)
             else:
                 error_message = None
 
