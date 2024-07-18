@@ -10,6 +10,11 @@ from datetime import datetime, timedelta, timezone
 import logging
 from tdpservice.email.helpers.account_access_requests import send_num_access_requests_email
 from tdpservice.email.helpers.account_deactivation_warning import send_deactivation_warning_email
+from tdpservice.stts.models import STT
+from tdpservice.data_files.models import DataFile
+from tdpservice.email.email import automated_email, log
+from tdpservice.email.email_enums import EmailType
+from tdpservice.parsers.util import calendar_to_fiscal
 
 
 logger = logging.getLogger(__name__)
@@ -74,3 +79,84 @@ def email_admin_num_access_requests():
                                    subject,
                                    email_context,
                                    )
+
+
+@shared_task
+def send_data_submission_reminder(due_date, reporting_period, fiscal_quarter):
+    """Send all Data Analysts a reminder to submit if they have not already."""
+    now = datetime.now()
+    fiscal_year = calendar_to_fiscal(now.year, fiscal_quarter)
+
+    all_locations = STT.objects.all()
+
+    reminder_locations = []
+    year_quarter_files = DataFile.objects.all().filter(
+        year=fiscal_year,
+        quarter=fiscal_quarter,
+    )
+
+    for loc in all_locations:
+        submitted_sections = year_quarter_files.filter(stt=loc).values_list('section', flat=True).distinct()
+        required_sections = loc.filenames.keys()
+
+        submitted_all_sections = True
+        for s in required_sections:
+            if s not in submitted_sections:
+                submitted_all_sections = False
+
+        if not submitted_all_sections:
+            reminder_locations.append(loc)
+
+    template_path = EmailType.UPCOMING_SUBMISSION_DEADLINE.value
+    text_message = f'Your datafiles are due by {due_date}.'
+
+    all_data_analysts = User.objects.all().filter(
+        account_approval_status=AccountApprovalStatusChoices.APPROVED,
+        groups=Group.objects.get(name='Data Analyst')
+    )
+
+    for loc in reminder_locations:
+        tanf_ssp_label = 'TANF and SSP' if loc.ssp else 'TANF'
+        subject = f'Action Requested: Please submit your {tanf_ssp_label} data files'
+
+        recipients = all_data_analysts.filter(stt=loc)
+
+        for rec in recipients:
+            context = {
+                'first_name': rec.first_name,
+                'fiscal_year': fiscal_year,
+                'fiscal_quarter': fiscal_quarter,
+                'submission_deadline': due_date,
+                'url': settings.FRONTEND_BASE_URL,
+                'subject': subject
+            }
+
+            logger_context = {
+                'user_id': rec.id,
+                'object_id': rec.id,
+                'object_repr': rec.username,
+            }
+
+            automated_email(
+                email_path=template_path,
+                recipient_email=rec.username,
+                subject=subject,
+                email_context=context,
+                text_message=text_message,
+                logger_context=logger_context
+            )
+
+        if len(recipients) == 0:
+            system_user, created = User.objects.get_or_create(username='system')
+            if created:
+                log('Created reserved system user.')
+
+            logger_context = {
+                'user_id': system_user.pk,
+                'object_id': loc.id,
+                'object_repr': loc.name,
+            }
+            log(
+                f"{loc.name} has no recipients for data submission deadline reminder.",
+                logger_context=logger_context if not settings.DEBUG else None
+            )
