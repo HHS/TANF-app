@@ -108,19 +108,20 @@ def parse_datafile(datafile, dfs):
         line_errors = parse_datafile_lines(datafile, dfs, program_type, section,
                                            is_encrypted, case_consistency_validator)
     except Exception as e:
-        # TODO: is this the best way to force the datafile to be rejected while also having an error report?
         generate_error = util.make_generate_parser_error(datafile, None)
         error = generate_error(schema=None,
                                error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                               error_message="Uncaught parsing exception, rejecting file.",
+                               error_message=("An unknown error occurred, and the file has been rejected. Please "
+                                              "contact the TDP Admin team at TANFData@acf.hhs.gov for further "
+                                              "assistance."),
                                record=None,
                                field=None
                                )
         error.save()
         dfs.save()
         log_parser_exception(datafile,
-                             ("Caught an uncaught exception while parsing! Please review the logs to see if manual "
-                              f"intervention is required. Exception: {e}"),
+                             (f"Uncaught exception while parsing datafile: {datafile.pk}! Please review the logs to "
+                              f"see if manual intervention is required. Exception: {e}"),
                              "critical")
 
     errors = errors | line_errors
