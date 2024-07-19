@@ -80,7 +80,7 @@ class TestCaseConsistencyValidator:
         assert case_consistency_validator.total_cases_cached == 0
         assert case_consistency_validator.total_cases_validated == 0
 
-        # Add record with different case number to proc validation again and start caching a new case.
+        # Add record with different Case Number to proc validation again and start caching a new case.
         t1 = factories.TanfT1Factory.build()
         t1.CASE_NUMBER = "2"
         t1.RPT_MONTH_YEAR = 2
@@ -257,10 +257,13 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 1
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        is_tribal = "Tribal" in header['program_type']
+        case_num = "Case Number"
+        case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
             f"Every {t1_model_name} record should have at least one corresponding "
             f"{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} "
-            f"(reporting month and year) and Item {case_item_num} (case number)."
+            f"(Reporting Year and Month) and Item {case_item_num} ({case_num})."
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
@@ -340,28 +343,32 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 4
         assert num_errors == 4
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+
+        is_tribal = "Tribal" in header['program_type']
+        case_num = "Case Number"
+        case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
             f"Every {t2_model_name} record should have at least one corresponding "
             f"{t1_model_name} record with the same Item {rpt_item_num} "
-            f"(reporting month and year) and Item {case_item_num} (case number)."
+            f"(Reporting Year and Month) and Item {case_item_num} ({case_num})."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
             f"Every {t2_model_name} record should have at least one corresponding "
             f"{t1_model_name} record with the same Item {rpt_item_num} "
-            f"(reporting month and year) and Item {case_item_num} (case number)."
+            f"(Reporting Year and Month) and Item {case_item_num} ({case_num})."
         )
         assert errors[2].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[2].error_message == (
             f"Every {t3_model_name} record should have at least one corresponding "
             f"{t1_model_name} record with the same Item {rpt_item_num} "
-            f"(reporting month and year) and Item {case_item_num} (case number)."
+            f"(Reporting Year and Month) and Item {case_item_num} ({case_num})."
         )
         assert errors[3].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[3].error_message == (
             f"Every {t3_model_name} record should have at least one corresponding "
             f"{t1_model_name} record with the same Item {rpt_item_num} "
-            f"(reporting month and year) and Item {case_item_num} (case number)."
+            f"(Reporting Year and Month) and Item {case_item_num} ({case_num})."
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
@@ -451,11 +458,14 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 2
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        is_tribal = "Tribal" in header['program_type']
+        case_num = "Case Number"
+        case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
             f"Every {t1_model_name} record should have at least one corresponding "
-            f"{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} (reporting month and year) "
-            f"and Item {case_item_num} (case number), where Item {t2_fam_afil_item_num} (family affiliation)==1 and "
-            f"Item {t3_fam_afil_item_num} (family affiliation)==1."
+            f"{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} (Reporting Year and Month) "
+            f"and Item {case_item_num} ({case_num}), where Item {t2_fam_afil_item_num} (Family Affiliation)==1 and "
+            f"Item {t3_fam_afil_item_num} (Family Affiliation)==1."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
@@ -605,8 +615,8 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f"At least one person on the case must have Item {emp_status_item_num} (employment status) = 1:Yes in the "
-            f"same Item {rpt_item_num} (reporting month and year) since Item {closure_item_num} (closure reason) = "
+            f"At least one person on the case must have Item {emp_status_item_num} (Employment Status) = 1:Yes in the "
+            f"same Item {rpt_item_num} (Reporting Year and Month) since Item {closure_item_num} (Reason for Closure) = "
             "1:Employment/excess earnings."
         )
 
@@ -680,10 +690,13 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 1
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        is_tribal = "Tribal" in header["program_type"]
+        tribe_or_fed = "Tribal" if is_tribal else "Federal"
         assert errors[0].error_message == ("At least one person who is head-of-household or spouse of "
                                            f"head-of-household on case must have Item {fed_time_item_num} "
-                                           "(countable months toward federal time) >= 60 since Item "
-                                           f"{closure_item_num} (closure reason) = 03: federal 5 year time limit.")
+                                           f"(Number of Months Countable Toward {tribe_or_fed} Time Limit) >= 60 since "
+                                           f"Item {closure_item_num} (Reason for Closure) = 03: federal 5 year time "
+                                           "limit.")
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
         (
@@ -737,10 +750,13 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 1
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        is_tribal = "Tribal" in header['program_type']
+        case_num = "Case Number"
+        case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
             f"Every {t4_model_name} record should have at least one corresponding "
-            f"{t5_model_name} record with the same Item {rpt_item_num} (reporting month and year) "
-            f"and Item {case_item_num} (case number)."
+            f"{t5_model_name} record with the same Item {rpt_item_num} (Reporting Year and Month) "
+            f"and Item {case_item_num} ({case_num})."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff,stt_type", [
@@ -805,16 +821,19 @@ class TestCaseConsistencyValidator:
         assert len(errors) == 2
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
+        is_tribal = "Tribal" in header['program_type']
+        case_num = "Case Number"
+        case_num += "--TANF" if is_tribal else ""
         assert errors[0].error_message == (
             f"Every {t5_model_name} record should have at least one corresponding "
-            f"{t4_model_name} record with the same Item {rpt_item_num} (reporting month and year) "
-            f"and Item {case_item_num} (case number)."
+            f"{t4_model_name} record with the same Item {rpt_item_num} (Reporting Year and Month) "
+            f"and Item {case_item_num} ({case_num})."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
             f"Every {t5_model_name} record should have at least one corresponding "
-            f"{t4_model_name} record with the same Item {rpt_item_num} (reporting month and year) "
-            f"and Item {case_item_num} (case number)."
+            f"{t4_model_name} record with the same Item {rpt_item_num} (Reporting Year and Month) "
+            f"and Item {case_item_num} ({case_num})."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -959,12 +978,12 @@ class TestCaseConsistencyValidator:
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f"{t5_model_name} Adults in territories must have a valid value for Item {ratd_item_num} "
-            "(receives aid for totally disabled)."
+            "(Received Disability Benefits: Permanently and Totally Disabled)."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
             f"{t5_model_name} Adults in territories must have a valid value for Item {ratd_item_num} "
-            "(receives aid for totally disabled)."
+            "(Received Disability Benefits: Permanently and Totally Disabled)."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1109,12 +1128,12 @@ class TestCaseConsistencyValidator:
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
             f"{t5_model_name} People in states should not have a value of 1 for Item {item_no} ("
-            "receives aid for totally disabled)."
+            "Received Disability Benefits: Permanently and Totally Disabled)."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
             f"{t5_model_name} People in states should not have a value of 1 for Item {item_no} "
-            "(receives aid for totally disabled)."
+            "(Received Disability Benefits: Permanently and Totally Disabled)."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1188,11 +1207,11 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (receives SSI)."
+            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (Received Disability Benefits: SSI)."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (receives SSI)."
+            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (Received Disability Benefits: SSI)."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1266,7 +1285,7 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f"{t5_model_name} People in states must have a valid value for Item {rec_ssi_item_num} (receives SSI)."
+            f"{t5_model_name} People in states must have a valid value for Item {rec_ssi_item_num} (Received Disability Benefits: SSI)."
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
