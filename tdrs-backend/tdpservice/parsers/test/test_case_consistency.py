@@ -1207,11 +1207,13 @@ class TestCaseConsistencyValidator:
         assert num_errors == 2
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (Received Disability Benefits: SSI)."
+            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} "
+            "(Received Disability Benefits: SSI)."
         )
         assert errors[1].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[1].error_message == (
-            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} (Received Disability Benefits: SSI)."
+            f"{t5_model_name} People in territories must have value = 2:No for Item {rec_ssi_item_num} "
+            "(Received Disability Benefits: SSI)."
         )
 
     @pytest.mark.parametrize("header,T4Stuff,T5Stuff", [
@@ -1285,7 +1287,8 @@ class TestCaseConsistencyValidator:
         assert num_errors == 1
         assert errors[0].error_type == ParserErrorCategoryChoices.CASE_CONSISTENCY
         assert errors[0].error_message == (
-            f"{t5_model_name} People in states must have a valid value for Item {rec_ssi_item_num} (Received Disability Benefits: SSI)."
+            f"{t5_model_name} People in states must have a valid value for Item {rec_ssi_item_num} "
+            "(Received Disability Benefits: SSI)."
         )
 
     @pytest.mark.parametrize("header,T1Stuff,T2Stuff,T3Stuff,stt_type", [
