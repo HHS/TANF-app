@@ -64,6 +64,7 @@ def test_header_cleanup(test_datafile):
 ])
 @pytest.mark.django_db
 def test_header_fields(test_datafile, header_line, is_valid, error):
+    """Test validate all header fields."""
     generate_error = util.make_generate_parser_error(test_datafile, 1)
     header, header_is_valid, header_errors = schema_defs.header.parse_and_validate(header_line,
                                                                                    generate_error)
