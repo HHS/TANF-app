@@ -63,6 +63,7 @@ def parse(data_file_id, should_send_submission_email=True):
                                field=None
                                )
         error.save()
+        dfs.set_status(DataFileSummary.Status.REJECTED)
         dfs.save()
         log_parser_exception(data_file,
                              (f"Uncaught exception while parsing datafile: {data_file.pk}! Please review the logs to "
