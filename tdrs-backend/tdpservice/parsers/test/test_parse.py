@@ -12,9 +12,7 @@ from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from tdpservice.search_indexes import documents
-from tdpservice.parsers.test.factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers import util
 from .. import schema_defs, aggregates
 from elasticsearch.helpers.errors import BulkIndexError
 import logging
