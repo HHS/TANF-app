@@ -37,7 +37,8 @@ def parse(data_file_id, should_send_submission_email=True):
 
         dfs.save()
 
-        logger.info(f"Parsing finished for file -> {repr(data_file)} with status {dfs.status} and {len(errors)} errors.")
+        logger.info(f"Parsing finished for file -> {repr(data_file)} with status "
+                    f"{dfs.status} and {len(errors)} errors.")
 
         if should_send_submission_email is True:
             recipients = User.objects.filter(

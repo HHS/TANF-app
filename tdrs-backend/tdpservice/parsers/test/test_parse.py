@@ -1504,7 +1504,7 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(small_cor
     assert LogEntry.objects.all().count() == 1
 
     log = LogEntry.objects.get()
-    assert log.change_message == "Encountered error while indexing datafile documents: indexing exception"
+    assert log.change_message == "Encountered error while indexing datafile documents: \nindexing exception"
 
     assert all_created is True
     assert TANF_T1.objects.all().count() == 1
