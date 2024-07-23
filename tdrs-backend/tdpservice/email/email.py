@@ -6,10 +6,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import get_template
 from tdpservice.core.utils import log
-
 import logging
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 def prepare_recipients(recipient_email):
@@ -78,6 +77,6 @@ def filter_valid_emails(emails, logger_context=None):
                 logger_context=logger_context
             )
     if len(valid_emails) == 0:
-        raise ValidationError("No valid emails provided.")
+        logger.warn("No valid emails provided.")
 
     return valid_emails
