@@ -1,7 +1,9 @@
 """Utility file for functions shared between all parsers even preparser."""
 from .models import ParserError
+from django.contrib.admin.models import ADDITION
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
+from tdpservice.core.utils import log
 from datetime import datetime
 from pathlib import Path
 import logging
@@ -291,3 +293,11 @@ def get_t1_t4_partial_hash_members():
 def get_t2_t3_t5_partial_hash_members():
     """Return field names used to generate t2/t3/t5 partial hashes."""
     return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER", "FAMILY_AFFILIATION", "DATE_OF_BIRTH", "SSN"]
+
+def log_parser_exception(datafile, error_msg, level):
+    """Log to DAC and console on parser exception."""
+    context = {'user_id': datafile.user.pk,
+               'action_flag': ADDITION,
+               'object_repr': f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
+               "object_id": datafile}
+    log(error_msg, context, level)

@@ -2,7 +2,6 @@
 
 
 from django.conf import settings
-from django.contrib.admin.models import ADDITION
 from django.db.utils import DatabaseError
 from elasticsearch.exceptions import ElasticsearchException
 import itertools
@@ -11,18 +10,11 @@ from tdpservice.parsers.models import ParserErrorCategoryChoices, ParserError
 from tdpservice.parsers import row_schema, schema_defs, util, validators
 from tdpservice.parsers.schema_defs.utils import get_section_reference, get_program_model
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
-from tdpservice.core.utils import log
+from tdpservice.parsers.util import log_parser_exception
+
 
 logger = logging.getLogger(__name__)
 
-
-def log_parser_exception(datafile, error_msg, level):
-    """Log to DAC and console on parser exception."""
-    context = {'user_id': datafile.user.pk,
-               'action_flag': ADDITION,
-               'object_repr': f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-               "object_id": datafile}
-    log(error_msg, context, level)
 
 def parse_datafile(datafile, dfs):
     """Parse and validate Datafile header/trailer, then select appropriate schema and parse/validate all lines."""
@@ -102,27 +94,7 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    # Last resort to catch any un-caught exceptions during parsing and handle state appropriately
-    line_errors = {}
-    try:
-        line_errors = parse_datafile_lines(datafile, dfs, program_type, section,
-                                           is_encrypted, case_consistency_validator)
-    except Exception as e:
-        generate_error = util.make_generate_parser_error(datafile, None)
-        error = generate_error(schema=None,
-                               error_category=ParserErrorCategoryChoices.PRE_CHECK,
-                               error_message=("An unknown error occurred, and the file has been rejected. Please "
-                                              "contact the TDP Admin team at TANFData@acf.hhs.gov for further "
-                                              "assistance."),
-                               record=None,
-                               field=None
-                               )
-        error.save()
-        dfs.save()
-        log_parser_exception(datafile,
-                             (f"Uncaught exception while parsing datafile: {datafile.pk}! Please review the logs to "
-                              f"see if manual intervention is required. Exception: {e}"),
-                             "critical")
+    line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator)
 
     errors = errors | line_errors
 
@@ -144,19 +116,19 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                 num_elastic_records_created += document.update(created_objs)[0]
             except ElasticsearchException as e:
                 log_parser_exception(datafile,
-                                     f"Encountered error while indexing datafile documents: {e}",
+                                     f"Encountered error while indexing datafile documents: \n{e}",
                                      "error"
                                      )
                 continue
             except DatabaseError as e:
                 log_parser_exception(datafile,
-                                     f"Encountered error while creating database records: {e}",
+                                     f"Encountered error while creating database records: \n{e}",
                                      "error"
                                      )
                 return False
             except Exception as e:
                 log_parser_exception(datafile,
-                                     f"Encountered generic exception while creating database records: {e}",
+                                     f"Encountered generic exception while creating database records: \n{e}",
                                      "error"
                                      )
                 return False
@@ -219,7 +191,7 @@ def rollback_records(unsaved_records, datafile):
             # Caught an Elastic exception, to ensure the quality of the DB, we will force the DB deletion and let
             # Elastic clean up later.
             log_parser_exception(datafile,
-                                 f"Encountered error while indexing datafile documents: {e}",
+                                 f"Encountered error while indexing datafile documents: \n{e}",
                                  "error"
                                  )
             logger.warn("Encountered an Elastic exception, enforcing DB cleanup.")
@@ -232,12 +204,12 @@ def rollback_records(unsaved_records, datafile):
         except DatabaseError as e:
             log_parser_exception(datafile,
                                  (f"Encountered error while deleting database records for model: {model}. "
-                                  f"Exception: {e}"),
+                                  f"Exception: \n{e}"),
                                  "error"
                                  )
         except Exception as e:
             log_parser_exception(datafile,
-                                 f"Encountered generic exception while trying to rollback records. Exception: {e}",
+                                 f"Encountered generic exception while trying to rollback records. Exception: \n{e}",
                                  "error"
                                  )
 
@@ -253,12 +225,12 @@ def rollback_parser_errors(datafile):
     except DatabaseError as e:
         log_parser_exception(datafile,
                              ("Encountered error while deleting database records for ParserErrors. "
-                              f"Exception: {e}"),
+                              f"Exception: \n{e}"),
                              "error"
                              )
     except Exception as e:
         log_parser_exception(datafile,
-                             f"Encountered generic exception while rolling back ParserErrors. Exception: {e}.",
+                             f"Encountered generic exception while rolling back ParserErrors. Exception: \n{e}.",
                              "error"
                              )
 
@@ -314,7 +286,7 @@ def delete_serialized_records(duplicate_manager, dfs):
             # Elastic clean up later.
             log_parser_exception(dfs.datafile,
                                  ("Encountered error while indexing datafile documents. Enforcing DB cleanup. "
-                                  f"Exception: {e}"),
+                                  f"Exception: \n{e}"),
                                  "error"
                                  )
             num_deleted, models = qset.delete()
@@ -327,13 +299,13 @@ def delete_serialized_records(duplicate_manager, dfs):
         except DatabaseError as e:
             log_parser_exception(dfs.datafile,
                                  (f"Encountered error while deleting database records for model {model}. "
-                                  f"Exception: {e}"),
+                                  f"Exception: \n{e}"),
                                  "error"
                                  )
         except Exception as e:
             log_parser_exception(dfs.datafile,
                                  (f"Encountered generic exception while deleting records of type {model}. "
-                                  f"Exception: {e}"),
+                                  f"Exception: \n{e}"),
                                  "error"
                                  )
     if total_deleted:
