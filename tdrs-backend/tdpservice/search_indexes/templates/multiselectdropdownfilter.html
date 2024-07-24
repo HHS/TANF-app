@@ -20,7 +20,7 @@
 </div>
 
 <script>
-    function stt_multiselect_callback($) {
+    function get_stt_multiselect_query($) {
         // fetch data from selected options
         var params = {};
         var query = null;
@@ -46,6 +46,6 @@
     // This function must have this name as it is referenced inside of https://github.com/raft-tech/django-admin-508/blob/main/admin_interface/static/admin_interface/508/dropdown-filter.js
     // to allow custom filters to hook into the onClick event for the DAC `Apply Filters` button.
     function custom_filter_callback($) {
-        return stt_multiselect_callback($)
+        return get_stt_multiselect_query($)
     }
 </script>
