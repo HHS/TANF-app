@@ -1,34 +1,27 @@
 {% load i18n admin_urls %}
 <h3>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
 
-<ul>
+<div>
     {% for choice in choices|slice:":1" %}
-        <li{% if choice.selected %} class="selected"{% endif %}>
-            <a href="{{ choice.query_string|iriencode }}" title="Show {{ choice.display }}">Show {{ choice.display }}</a>
-        </li>
+        <a href="{{ choice.query_string|iriencode }}" title="Show {{ choice.display }}">Show {{ choice.display }}</a>
     {% endfor %}
-    <li>
-        <select id="{{ title|slugify }}_select" multiple style="color:#000000;width:100%" aria-mutliselectable="true">
-        {% for choice in choices|slice:"1:" %}
-            <option{% if choice.selected %} selected{% endif %}
-                value="{{ choice.value }}"
-                data-key="{{ choice.key }}"
-                data-query="{{ choice.query_string|iriencode }}"
-                style="color:#000000"
-                {% if choice.selected %} aria-checked="true" {% else %} aria-checked="false" {% endif %}>
-                {{ choice.display }}
-            </option>
-        {% endfor %}
-        </select>
-    </li>
-    <li>
-        <input type="submit" value="Filter to Selection(s)" title="Filter to Selection(s)" id="{{ title|slugify }}_submit"/>
-    </li>
-</ul>
+    <select id="{{ title|slugify }}_select" multiple style="color:#000000;width:100%" aria-mutliselectable="true">
+    {% for choice in choices|slice:"1:" %}
+        <option{% if choice.selected %} selected{% endif %}
+            value="{{ choice.value }}"
+            data-key="{{ choice.key }}"
+            data-query="{{ choice.query_string|iriencode }}"
+            style="color:#000000"
+            {% if choice.selected %} aria-checked="true" {% else %} aria-checked="false" {% endif %}>
+            {{ choice.display }}
+        </option>
+    {% endfor %}
+    </select>
+</div>
 
 <script>
-(function($) {
-    $('input#{{ title|slugify }}_submit').click(function(evt) {
+    // This function must have this name as it is referenced inside of https://github.com/raft-tech/django-admin-508/blob/main/admin_interface/static/admin_interface/508/dropdown-filter.js
+    function custom_filter_callback($) {
         // fetch data from selected options
         var params = {};
         var query = null;
@@ -39,8 +32,8 @@
             if (!query) query = $(this).attr('data-query');
         });
 
-        // do we had selected options at all?
-        if (!query) return false;
+        // do we have selected options at all?
+        if (!query) return "";
 
         // build up the href
         var params_query = '';
@@ -49,7 +42,6 @@
                 params_query += '&' + key + '=' + params[key].join()
             }
         }
-        window.location = query + params_query;
-    });
-})(django.jQuery);
+        return query + params_query;
+    }
 </script>

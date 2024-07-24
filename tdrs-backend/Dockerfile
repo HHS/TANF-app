@@ -15,7 +15,7 @@ RUN apt-get -y update
 # Upgrade already installed packages:
 RUN apt-get -y upgrade
 # Install a new package:
-RUN apt-get install -y gcc && apt-get install -y graphviz && apt-get install -y graphviz-dev
+RUN apt-get install -y gcc && apt-get install -y graphviz && apt-get install -y graphviz-dev && apt-get install -y vim
 RUN apt-get install postgresql-client -y
 RUN apt-get install -y libpq-dev python3-dev
 # Install pipenv
