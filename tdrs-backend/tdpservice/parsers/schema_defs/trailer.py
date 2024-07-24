@@ -3,15 +3,17 @@
 
 from ..fields import Field
 from ..row_schema import RowSchema
-from .. import validators
+from tdpservice.parsers.validators.category1 import PreparsingValidators
+from tdpservice.parsers.validators.category2 import FieldValidators
+from tdpservice.parsers.validators.category3 import PostparsingValidators
 
 
 trailer = RowSchema(
     record_type="TRAILER",
     document=None,
     preparsing_validators=[
-        validators.recordHasLength(23),
-        validators.startsWith("TRAILER",
+        PreparsingValidators.recordHasLength(23),
+        PreparsingValidators.recordStartsWith("TRAILER",
                               lambda value: f"Your file does not end with a {value} record."),
     ],
     postparsing_validators=[],
@@ -25,7 +27,7 @@ trailer = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.matches('TRAILER')
+                FieldValidators.isEqual('TRAILER')
             ]
         ),
         Field(
@@ -37,7 +39,7 @@ trailer = RowSchema(
             endIndex=14,
             required=True,
             validators=[
-                validators.between(0, 9999999)
+                FieldValidators.isBetween(0, 9999999, inclusive=True, cast=int) # fix
             ]
         ),
         Field(
@@ -49,7 +51,7 @@ trailer = RowSchema(
             endIndex=23,
             required=False,
             validators=[
-                validators.matches('         ')
+                FieldValidators.isEqual('         ')
             ]
         ),
     ],

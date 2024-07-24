@@ -711,6 +711,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
             ]
         ))
         assert result[0] is False
+        assert result[1] == 'If Item 1 (receives food stamps) is 1, then Item 2 (amt food stamps) 0 is not larger than 0.'
 
     def test_validate_subsidized_child_care(self, record):
         """Test cat3 validator for subsidized child care."""
@@ -741,6 +742,7 @@ class TestT1Cat3Validators(TestCat3ValidatorsBase):
             ]
         ))
         assert result[0] is False
+        assert result[1] == 'Uh oh'
 
     def test_validate_cash_amount_and_nbr_months(self, record):
         """Test cat3 validator for cash amount and number of months."""

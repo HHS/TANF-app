@@ -286,3 +286,7 @@ def get_t1_t4_partial_hash_members():
 def get_t2_t3_t5_partial_hash_members():
     """Return field names used to generate t2/t3/t5 partial hashes."""
     return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER", "FAMILY_AFFILIATION", "DATE_OF_BIRTH", "SSN"]
+
+def get_record_value_by_field_name(record, field_name):
+    """Return the value of a record for a given field name, accounting for the generic record type."""
+    return record[field_name] if type(record) is dict else getattr(record, field_name)

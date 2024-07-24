@@ -1,7 +1,7 @@
 """Datafile field representations."""
 
 import logging
-from .validators import value_is_empty
+from .validators.util import value_is_empty
 
 logger = logging.getLogger(__name__)
 

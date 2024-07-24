@@ -4,7 +4,9 @@
 from tdpservice.parsers.transforms import tanf_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
-from tdpservice.parsers import validators
+from tdpservice.parsers.validators.category1 import PreparsingValidators
+from tdpservice.parsers.validators.category2 import FieldValidators
+from tdpservice.parsers.validators.category3 import PostparsingValidators
 from tdpservice.search_indexes.documents.tanf import TANF_T5DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
@@ -18,95 +20,95 @@ t5 = SchemaManager(
             should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 4, 5},
             get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
             preparsing_validators=[
-                validators.recordHasLength(71),
-                validators.caseNumberNotEmpty(8, 19),
-                validators.or_priority_validators([
-                    validators.field_year_month_with_header_year_quarter(),
-                    validators.validateRptMonthYear(),
+                PreparsingValidators.recordHasLength(71),
+                PreparsingValidators.caseNumberNotEmpty(8, 19),
+                PreparsingValidators.or_priority_validators([
+                    PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
+                    PreparsingValidators.validateRptMonthYear(),
                 ]),
             ],
             postparsing_validators=[
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.matches(1),
+                    condition_function=PostparsingValidators.matches(1),
                     result_field_name="SSN",
-                    result_function=validators.validateSSN(),
+                    result_function=PostparsingValidators.validateSSN(),
                 ),
-                validators.validate__FAM_AFF__SSN(),
-                validators.if_then_validator(
+                PostparsingValidators.validate__FAM_AFF__SSN(),
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=PostparsingValidators.isInLimits(1, 3),
                     result_field_name="RACE_HISPANIC",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=PostparsingValidators.isInLimits(1, 2),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=PostparsingValidators.isInLimits(1, 3),
                     result_field_name="RACE_AMER_INDIAN",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=PostparsingValidators.isInLimits(1, 2),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=PostparsingValidators.isInLimits(1, 3),
                     result_field_name="RACE_ASIAN",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=PostparsingValidators.isInLimits(1, 2),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=PostparsingValidators.isInLimits(1, 3),
                     result_field_name="RACE_BLACK",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=PostparsingValidators.isInLimits(1, 2),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=PostparsingValidators.isInLimits(1, 3),
                     result_field_name="RACE_HAWAIIAN",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=PostparsingValidators.isInLimits(1, 2),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=PostparsingValidators.isInLimits(1, 3),
                     result_field_name="RACE_WHITE",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=PostparsingValidators.isInLimits(1, 2),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=PostparsingValidators.isInLimits(1, 3),
                     result_field_name="MARITAL_STATUS",
-                    result_function=validators.isInLimits(1, 5),
+                    result_function=PostparsingValidators.isInLimits(1, 5),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 2),
+                    condition_function=PostparsingValidators.isInLimits(1, 2),
                     result_field_name="PARENT_MINOR_CHILD",
-                    result_function=validators.isInLimits(1, 3),
+                    result_function=PostparsingValidators.isInLimits(1, 3),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=PostparsingValidators.isInLimits(1, 3),
                     result_field_name="EDUCATION_LEVEL",
-                    result_function=validators.or_validators(
-                        validators.isInStringRange(1, 16),
-                        validators.isInStringRange(98, 99),
+                    result_function=PostparsingValidators.or_validators(
+                        PostparsingValidators.isInStringRange(1, 16),
+                        PostparsingValidators.isInStringRange(98, 99),
                     ),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.matches(1),
+                    condition_function=PostparsingValidators.matches(1),
                     result_field_name="CITIZENSHIP_STATUS",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=PostparsingValidators.isInLimits(1, 2),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="DATE_OF_BIRTH",
-                    condition_function=validators.olderThan(18),
+                    condition_function=PostparsingValidators.olderThan(18),
                     result_field_name="REC_OASDI_INSURANCE",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=PostparsingValidators.isInLimits(1, 2),
                 ),
-                validators.if_then_validator(
+                PostparsingValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.matches(1),
+                    condition_function=PostparsingValidators.matches(1),
                     result_field_name="REC_FEDERAL_DISABILITY",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=PostparsingValidators.isInLimits(1, 2),
                 ),
             ],
             fields=[
@@ -129,8 +131,8 @@ t5 = SchemaManager(
                     endIndex=8,
                     required=True,
                     validators=[
-                        validators.dateYearIsLargerThan(1998),
-                        validators.dateMonthIsValid(),
+                        FieldValidators.dateYearIsLargerThan(1998),
+                        FieldValidators.dateMonthIsValid(),
                     ],
                 ),
                 Field(
@@ -141,7 +143,7 @@ t5 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.notEmpty()],
+                    validators=[FieldValidators.isNotEmpty()],
                 ),
                 Field(
                     item="14",
@@ -151,7 +153,7 @@ t5 = SchemaManager(
                     startIndex=19,
                     endIndex=20,
                     required=True,
-                    validators=[validators.isInLimits(1, 5)],
+                    validators=[FieldValidators.isBetween(1, 5, inclusive=True)],
                 ),
                 Field(
                     item="15",
@@ -161,10 +163,10 @@ t5 = SchemaManager(
                     startIndex=20,
                     endIndex=28,
                     required=True,
-                    validators=[validators.intHasLength(8),
-                                validators.dateYearIsLargerThan(1900),
-                                validators.dateMonthIsValid(),
-                                validators.dateDayIsValid()
+                    validators=[FieldValidators.intHasLength(8),
+                                FieldValidators.dateYearIsLargerThan(1900),
+                                FieldValidators.dateMonthIsValid(),
+                                FieldValidators.dateDayIsValid()
                                 ]
                 ),
                 TransformField(
@@ -176,7 +178,7 @@ t5 = SchemaManager(
                     startIndex=28,
                     endIndex=37,
                     required=True,
-                    validators=[validators.isNumber()],
+                    validators=[FieldValidators.isNumber()],
                     is_encrypted=False,
                 ),
                 Field(
@@ -187,7 +189,7 @@ t5 = SchemaManager(
                     startIndex=37,
                     endIndex=38,
                     required=False,
-                    validators=[validators.validateRace()],
+                    validators=[FieldValidators.validateRace()],
                 ),
                 Field(
                     item="17B",
@@ -197,7 +199,7 @@ t5 = SchemaManager(
                     startIndex=38,
                     endIndex=39,
                     required=False,
-                    validators=[validators.validateRace()],
+                    validators=[FieldValidators.validateRace()],
                 ),
                 Field(
                     item="17C",
@@ -207,7 +209,7 @@ t5 = SchemaManager(
                     startIndex=39,
                     endIndex=40,
                     required=False,
-                    validators=[validators.validateRace()],
+                    validators=[FieldValidators.validateRace()],
                 ),
                 Field(
                     item="17D",
@@ -217,7 +219,7 @@ t5 = SchemaManager(
                     startIndex=40,
                     endIndex=41,
                     required=False,
-                    validators=[validators.validateRace()],
+                    validators=[FieldValidators.validateRace()],
                 ),
                 Field(
                     item="17E",
@@ -227,7 +229,7 @@ t5 = SchemaManager(
                     startIndex=41,
                     endIndex=42,
                     required=False,
-                    validators=[validators.validateRace()],
+                    validators=[FieldValidators.validateRace()],
                 ),
                 Field(
                     item="17F",
@@ -237,7 +239,7 @@ t5 = SchemaManager(
                     startIndex=42,
                     endIndex=43,
                     required=False,
-                    validators=[validators.validateRace()],
+                    validators=[FieldValidators.validateRace()],
                 ),
                 Field(
                     item="18",
@@ -247,7 +249,7 @@ t5 = SchemaManager(
                     startIndex=43,
                     endIndex=44,
                     required=True,
-                    validators=[validators.isInLimits(0, 9)],
+                    validators=[FieldValidators.isBetween(0, 9, inclusive=True)],
                 ),
                 Field(
                     item="19A",
@@ -257,7 +259,7 @@ t5 = SchemaManager(
                     startIndex=44,
                     endIndex=45,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[FieldValidators.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="19B",
@@ -267,7 +269,7 @@ t5 = SchemaManager(
                     startIndex=45,
                     endIndex=46,
                     required=False,
-                    validators=[validators.isInLimits(1, 2)],
+                    validators=[FieldValidators.isBetween(1, 2, inclusive=True)],
                 ),
                 Field(
                     item="19C",
@@ -277,7 +279,7 @@ t5 = SchemaManager(
                     startIndex=46,
                     endIndex=47,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[FieldValidators.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="19D",
@@ -287,7 +289,7 @@ t5 = SchemaManager(
                     startIndex=47,
                     endIndex=48,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[FieldValidators.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="19E",
@@ -297,7 +299,7 @@ t5 = SchemaManager(
                     startIndex=48,
                     endIndex=49,
                     required=True,
-                    validators=[validators.isInLimits(1, 2)],
+                    validators=[FieldValidators.isBetween(1, 2, inclusive=True)],
                 ),
                 Field(
                     item="20",
@@ -307,7 +309,7 @@ t5 = SchemaManager(
                     startIndex=49,
                     endIndex=50,
                     required=False,
-                    validators=[validators.isInLimits(0, 5)],
+                    validators=[FieldValidators.isBetween(0, 5, inclusive=True)],
                 ),
                 Field(
                     item="21",
@@ -317,7 +319,7 @@ t5 = SchemaManager(
                     startIndex=50,
                     endIndex=52,
                     required=True,
-                    validators=[validators.isInStringRange(1, 10)],
+                    validators=[FieldValidators.isBetween(1, 10, inclusive=True, cast=int)],
                 ),
                 Field(
                     item="22",
@@ -327,7 +329,7 @@ t5 = SchemaManager(
                     startIndex=52,
                     endIndex=53,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[FieldValidators.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="23",
@@ -337,7 +339,7 @@ t5 = SchemaManager(
                     startIndex=53,
                     endIndex=54,
                     required=False,
-                    validators=[validators.isInLimits(0, 9)],
+                    validators=[FieldValidators.isBetween(0, 9, inclusive=True)],
                 ),
                 Field(
                     item="24",
@@ -348,9 +350,9 @@ t5 = SchemaManager(
                     endIndex=56,
                     required=False,
                     validators=[
-                        validators.or_validators(
-                            validators.isInStringRange(0, 16),
-                            validators.isInStringRange(98, 99),
+                        FieldValidators.or_validators(
+                            FieldValidators.isBetween(0, 16, inclusive=True, cast=int),
+                            FieldValidators.isBetween(98, 99, inclusive=True, cast=int),
                         )
                     ],
                 ),
@@ -363,9 +365,9 @@ t5 = SchemaManager(
                     endIndex=57,
                     required=False,
                     validators=[
-                        validators.or_validators(
-                            validators.isInLimits(0, 2),
-                            validators.matches(9)
+                        FieldValidators.or_validators(
+                            FieldValidators.isBetween(0, 2, inclusive=True),
+                            FieldValidators.isEqual(9)
                         )
                     ],
                 ),
@@ -377,7 +379,7 @@ t5 = SchemaManager(
                     startIndex=57,
                     endIndex=60,
                     required=False,
-                    validators=[validators.isInStringRange(0, 999)],
+                    validators=[FieldValidators.isBetween(0, 999, inclusive=True, cast=int)],
                 ),
                 Field(
                     item="27",
@@ -387,7 +389,7 @@ t5 = SchemaManager(
                     startIndex=60,
                     endIndex=62,
                     required=False,
-                    validators=[validators.isInStringRange(0, 99)],
+                    validators=[FieldValidators.isBetween(0, 99, inclusive=True, cast=int)],
                 ),
                 Field(
                     item="28",
@@ -397,7 +399,7 @@ t5 = SchemaManager(
                     startIndex=62,
                     endIndex=63,
                     required=False,
-                    validators=[validators.isInLimits(0, 3)],
+                    validators=[FieldValidators.isBetween(0, 3, inclusive=True)],
                 ),
                 Field(
                     item="29",
@@ -407,7 +409,7 @@ t5 = SchemaManager(
                     startIndex=63,
                     endIndex=67,
                     required=False,
-                    validators=[validators.isInStringRange(0, 9999)],
+                    validators=[FieldValidators.isBetween(0, 9999, inclusive=True, cast=int)],
                 ),
                 Field(
                     item="30",
@@ -417,7 +419,7 @@ t5 = SchemaManager(
                     startIndex=67,
                     endIndex=71,
                     required=False,
-                    validators=[validators.isInStringRange(0, 9999)],
+                    validators=[FieldValidators.isBetween(0, 9999, inclusive=True, cast=int)],
                 ),
             ],
         )

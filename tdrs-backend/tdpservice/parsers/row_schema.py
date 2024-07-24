@@ -1,7 +1,8 @@
 """Row schema for datafile."""
 from .models import ParserErrorCategoryChoices
 from .fields import Field, TransformField
-from .validators import value_is_empty, format_error_context, ValidationErrorArgs
+from .validators.util import value_is_empty, ValidationErrorArgs
+from .validators.category2 import format_error_context
 import logging
 
 logger = logging.getLogger(__name__)
@@ -88,7 +89,15 @@ class RowSchema:
         errors = []
 
         for validator in self.preparsing_validators:
-            validator_is_valid, validator_error = validator(line, self, "record type", "0")
+            field = self.get_field_by_name('RecordType')
+            eargs = ValidationErrorArgs(
+                value=line,
+                row_schema=self,
+                friendly_name=field.friendly_name,
+                item_num=field.item,
+                error_context_format='prefix'
+            )
+            validator_is_valid, validator_error = validator(line, eargs)
             is_valid = False if not validator_is_valid else is_valid
 
             is_quiet_preparser_errors = (
@@ -136,11 +145,19 @@ class RowSchema:
             else:
                 value = getattr(instance, field.name, None)
 
+            eargs = ValidationErrorArgs(
+                value=value,
+                row_schema=self,
+                friendly_name=field.friendly_name,
+                item_num=field.item,
+                error_context_format='prefix'
+            )
+
             is_empty = value_is_empty(value, field.endIndex-field.startIndex)
             should_validate = not field.required and not is_empty
             if (field.required and not is_empty) or should_validate:
                 for validator in field.validators:
-                    validator_is_valid, validator_error = validator(value, self, field.friendly_name, field.item)
+                    validator_is_valid, validator_error = validator(value, eargs)
                     is_valid = False if not validator_is_valid else is_valid
                     if validator_error:
                         errors.append(
@@ -154,14 +171,6 @@ class RowSchema:
                         )
             elif field.required:
                 is_valid = False
-                eargs = ValidationErrorArgs(
-                    value=value,
-                    row_schema=self,
-                    friendly_name=field.friendly_name,
-                    item_num=field.item,
-                    error_context_format='prefix'
-                )
-
                 errors.append(
                     generate_error(
                         schema=self,
