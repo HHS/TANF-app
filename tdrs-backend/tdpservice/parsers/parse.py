@@ -8,8 +8,9 @@ from django.contrib.contenttypes.models import ContentType
 import itertools
 import logging
 from .models import ParserErrorCategoryChoices, ParserError
-from . import schema_defs, validators, util
+from . import schema_defs, util
 from . import row_schema
+from .validators.util import value_is_empty, validate_header_rpt_month_year, validate_header_section_matches_submission, validate_tribe_fips_program_agree
 from .schema_defs.utils import get_section_reference, get_program_model
 from .case_consistency_validator import CaseConsistencyValidator
 from elasticsearch.helpers.errors import BulkIndexError
@@ -40,7 +41,7 @@ def parse_datafile(datafile, dfs):
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
     is_encrypted = field_values["encryption"] == "E"
-    is_tribal = not validators.value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
+    is_tribal = not value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
 
     logger.debug(f"Datafile has encrypted fields: {is_encrypted}.")
     logger.debug(f"Datafile: {datafile.__repr__()}, is Tribal: {is_tribal}.")
@@ -59,7 +60,7 @@ def parse_datafile(datafile, dfs):
 
     # Validate tribe code in submission across program type and fips code
     generate_error = util.make_generate_parser_error(datafile, 1)
-    tribe_is_valid, tribe_error = validators.validate_tribe_fips_program_agree(header['program_type'],
+    tribe_is_valid, tribe_error = validate_tribe_fips_program_agree(header['program_type'],
                                                                                field_values["tribe_code"],
                                                                                field_values["state_fips"],
                                                                                generate_error)
@@ -72,7 +73,7 @@ def parse_datafile(datafile, dfs):
         return errors
 
     # Ensure file section matches upload section
-    section_is_valid, section_error = validators.validate_header_section_matches_submission(
+    section_is_valid, section_error = validate_header_section_matches_submission(
         datafile,
         get_section_reference(program_type, section),
         util.make_generate_parser_error(datafile, 1)
@@ -85,7 +86,7 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    rpt_month_year_is_valid, rpt_month_year_error = validators.validate_header_rpt_month_year(
+    rpt_month_year_is_valid, rpt_month_year_error = validate_header_rpt_month_year(
         datafile,
         header,
         util.make_generate_parser_error(datafile, 1)

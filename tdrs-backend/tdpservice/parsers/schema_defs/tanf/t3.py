@@ -7,6 +7,7 @@ from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
 from tdpservice.parsers.validators.category3 import PostparsingValidators
+from tdpservice.parsers.validators.util import is_quiet_preparser_errors
 from tdpservice.search_indexes.documents.tanf import TANF_T3DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
@@ -30,7 +31,7 @@ child_one = RowSchema(
     postparsing_validators=[
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
-            condition_function=PostparsingValidators.matches(1),
+            condition_function=PostparsingValidators.isEqual(1),
             result_field_name="SSN",
             result_function=PostparsingValidators.validateSSN(),
         ),
@@ -38,43 +39,43 @@ child_one = RowSchema(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_HISPANIC",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_AMER_INDIAN",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_ASIAN",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_BLACK",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_HAWAIIAN",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_WHITE",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RELATIONSHIP_HOH",
-            result_function=PostparsingValidators.isInStringRange(4, 9),
+            result_function=PostparsingValidators.isBetween(4, 9, inclusive=True, cast=int),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
@@ -84,19 +85,19 @@ child_one = RowSchema(
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
-            condition_function=PostparsingValidators.matches(1),
+            condition_function=PostparsingValidators.isEqual(1),
             result_field_name="EDUCATION_LEVEL",
-            result_function=PostparsingValidators.notMatches("99"),
+            result_function=PostparsingValidators.isNotEqual("99"),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
-            condition_function=PostparsingValidators.matches(1),
+            condition_function=PostparsingValidators.isEqual(1),
             result_field_name="CITIZENSHIP_STATUS",
             result_function=PostparsingValidators.isOneOf((1, 2)),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
-            condition_function=PostparsingValidators.matches(2),
+            condition_function=PostparsingValidators.isEqual(2),
             result_field_name="CITIZENSHIP_STATUS",
             result_function=PostparsingValidators.isOneOf((1, 2, 9)),
         ),
@@ -287,10 +288,10 @@ child_one = RowSchema(
             endIndex=51,
             required=True,
             validators=[
-                FieldValidators.or_validators(
+                FieldValidators.orValidators([
                     FieldValidators.isBetween(0, 16, inclusive=True, cast=int),
                     FieldValidators.isBetween(98, 99, inclusive=True, cast=int),
-                )
+                ])
             ],
         ),
         Field(
@@ -333,7 +334,7 @@ child_two = RowSchema(
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
-    quiet_preparser_errors=validators.is_quiet_preparser_errors(min_length=61),
+    quiet_preparser_errors=is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
         PreparsingValidators.t3_m3_child_validator(SECOND_CHILD),
         PreparsingValidators.caseNumberNotEmpty(8, 19),
@@ -346,7 +347,7 @@ child_two = RowSchema(
     postparsing_validators=[
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
-            condition_function=PostparsingValidators.matches(1),
+            condition_function=PostparsingValidators.isEqual(1),
             result_field_name="SSN",
             result_function=PostparsingValidators.validateSSN(),
         ),
@@ -354,43 +355,43 @@ child_two = RowSchema(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_HISPANIC",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_AMER_INDIAN",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_ASIAN",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_BLACK",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_HAWAIIAN",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RACE_WHITE",
-            result_function=PostparsingValidators.isInLimits(1, 2),
+            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
             condition_function=PostparsingValidators.isOneOf((1, 2)),
             result_field_name="RELATIONSHIP_HOH",
-            result_function=PostparsingValidators.isInStringRange(4, 9),
+            result_function=PostparsingValidators.isBetween(4, 9, inclusive=True, cast=int),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
@@ -400,19 +401,19 @@ child_two = RowSchema(
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
-            condition_function=PostparsingValidators.matches(1),
+            condition_function=PostparsingValidators.isEqual(1),
             result_field_name="EDUCATION_LEVEL",
-            result_function=PostparsingValidators.notMatches("99"),
+            result_function=PostparsingValidators.isNotEqual("99"),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
-            condition_function=PostparsingValidators.matches(1),
+            condition_function=PostparsingValidators.isEqual(1),
             result_field_name="CITIZENSHIP_STATUS",
             result_function=PostparsingValidators.isOneOf((1, 2)),
         ),
         PostparsingValidators.ifThenAlso(
             condition_field_name="FAMILY_AFFILIATION",
-            condition_function=PostparsingValidators.matches(2),
+            condition_function=PostparsingValidators.isEqual(2),
             result_field_name="CITIZENSHIP_STATUS",
             result_function=PostparsingValidators.isOneOf((1, 2, 9)),
         ),
@@ -603,10 +604,10 @@ child_two = RowSchema(
             endIndex=92,
             required=True,
             validators=[
-                FieldValidators.or_validators(
+                FieldValidators.orValidators([
                     FieldValidators.isBetween(0, 16, inclusive=True, cast=int),
                     FieldValidators.isOneOf(["98", "99"])
-                )
+                ])
             ],
         ),
         Field(

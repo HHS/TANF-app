@@ -8,7 +8,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def _handle_kwargs(val, **kwargs):
-        if 'cast' in kwargs:
+        if 'cast' in kwargs and kwargs['cast'] is not None:
             val = ValidatorFunctions._handle_cast(val, kwargs['cast'])
 
         return val
@@ -16,7 +16,7 @@ class ValidatorFunctions:
     @staticmethod
     def _make_validator(func, **kwargs):
         def _validate(val):
-            val = ValidatorFunctions._handle_kwargs(val, kwargs)
+            val = ValidatorFunctions._handle_kwargs(val, **kwargs)
             return func(val)
         return _validate
 
@@ -100,7 +100,7 @@ class ValidatorFunctions:
         )
 
     @staticmethod
-    def isAlphanumeric(**kwargs):
+    def isAlphaNumeric(**kwargs):
         return ValidatorFunctions._make_validator(
             lambda val: val.isalnum(),
             **kwargs

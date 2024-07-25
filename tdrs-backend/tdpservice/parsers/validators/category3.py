@@ -1,6 +1,10 @@
+import datetime
+import logging
 from tdpservice.parsers.util import get_record_value_by_field_name
 from .base import ValidatorFunctions
-from .util import ValidationErrorArgs, make_validator
+from .util import ValidationErrorArgs, make_validator, evaluate_all
+
+logger = logging.getLogger(__name__)
 
 # @staticmethod
 def format_error_context(eargs: ValidationErrorArgs):
@@ -84,9 +88,9 @@ class PostparsingValidators():
         )
 
     @staticmethod
-    def isAlphanumeric(**kwargs):
+    def isAlphaNumeric(**kwargs):
         return make_validator(
-            ValidatorFunctions.isAlphanumeric(**kwargs),
+            ValidatorFunctions.isAlphaNumeric(**kwargs),
             lambda eargs: f'{eargs.value} must be alphanumeric.'
         )
 
@@ -155,7 +159,7 @@ class PostparsingValidators():
                 row_schema=row_schema,
                 friendly_name=condition_field.friendly_name,
                 item_num=condition_field.item,
-                error_context_format='inline'
+                # error_context_format='inline'
             )
             condition_success, msg1 = condition_function(condition_value, condition_field_eargs)
 
@@ -166,7 +170,7 @@ class PostparsingValidators():
                 row_schema=row_schema,
                 friendly_name=result_field.friendly_name,
                 item_num=result_field.item,
-                error_context_format='inline'
+                # error_context_format='inline'
             )
             result_success, msg2 = result_function(result_value, result_field_eargs)
 
@@ -185,7 +189,19 @@ class PostparsingValidators():
             else:
                 return (result_success, None, fields)
 
-        if_then_validator_func
+        return if_then_validator_func
+
+    @staticmethod
+    def orValidators(validators, **kwargs):
+        """Return a validator that is true only if one of the validators is true."""
+        def _validate(value, eargs):
+            validator_results = evaluate_all(validators, value, eargs)
+
+            if not any(result[0] for result in validator_results):
+                return (False, " or ".join([result[1] for result in validator_results]))
+            return (True, None)
+
+        return _validate
 
     @staticmethod
     def sumIsEqual(condition_field_name, sum_fields=[]):
@@ -231,3 +247,125 @@ class PostparsingValidators():
             )
 
         return sumIsLargerFunc
+
+    @staticmethod
+    def validate__FAM_AFF__SSN():
+        """
+        Validate social security number provided.
+
+        If item FAMILY_AFFILIATION ==2 and item CITIZENSHIP_STATUS ==1 or 2,
+        then item SSN != 000000000 -- 999999999.
+        """
+        # value is instance
+        def validate(instance, row_schema):
+            FAMILY_AFFILIATION = (
+                instance["FAMILY_AFFILIATION"]
+                if type(instance) is dict
+                else getattr(instance, "FAMILY_AFFILIATION")
+            )
+            CITIZENSHIP_STATUS = (
+                instance["CITIZENSHIP_STATUS"]
+                if type(instance) is dict
+                else getattr(instance, "CITIZENSHIP_STATUS")
+            )
+            SSN = instance["SSN"] if type(instance) is dict else getattr(instance, "SSN")
+            if FAMILY_AFFILIATION == 2 and (
+                CITIZENSHIP_STATUS == 1 or CITIZENSHIP_STATUS == 2
+            ):
+                if SSN in [str(i) * 9 for i in range(10)]:
+                    return (
+                        False,
+                        f"{row_schema.record_type}: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, "
+                        "then SSN != 000000000 -- 999999999.",
+                        ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"],
+                    )
+                else:
+                    return (True, None, ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"])
+            else:
+                return (True, None, ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"])
+
+        return validate
+
+    @staticmethod
+    def validateSSN():
+        """Validate that SSN value is not a repeating digit."""
+        options = [str(i) * 9 for i in range(0, 10)]
+        return make_validator(
+            lambda value: value not in options,
+            lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {options}."
+        )
+
+    @staticmethod
+    def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
+        """If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
+        # value is instance
+        def validate(instance, row_schema):
+            false_case = (False,
+                        f"{row_schema.record_type}: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, "
+                        "then RELATIONSHIP_HOH != 1",
+                        ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
+                        )
+            true_case = (True,
+                        None,
+                        ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
+                        )
+            try:
+                WORK_ELIGIBLE_INDICATOR = (
+                    instance["WORK_ELIGIBLE_INDICATOR"]
+                    if type(instance) is dict
+                    else getattr(instance, "WORK_ELIGIBLE_INDICATOR")
+                )
+                RELATIONSHIP_HOH = (
+                    instance["RELATIONSHIP_HOH"]
+                    if type(instance) is dict
+                    else getattr(instance, "RELATIONSHIP_HOH")
+                )
+                RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
+
+                DOB = str(
+                    instance["DATE_OF_BIRTH"]
+                    if type(instance) is dict
+                    else getattr(instance, "DATE_OF_BIRTH")
+                )
+
+                RPT_MONTH_YEAR = str(
+                    instance["RPT_MONTH_YEAR"]
+                    if type(instance) is dict
+                    else getattr(instance, "RPT_MONTH_YEAR")
+                )
+
+                RPT_MONTH_YEAR += "01"
+
+                DOB_datetime = datetime.datetime.strptime(DOB, '%Y%m%d')
+                RPT_MONTH_YEAR_datetime = datetime.datetime.strptime(RPT_MONTH_YEAR, '%Y%m%d')
+                AGE = (RPT_MONTH_YEAR_datetime - DOB_datetime).days / 365.25
+
+                if WORK_ELIGIBLE_INDICATOR == "11" and AGE < 19:
+                    if RELATIONSHIP_HOH == 1:
+                        return false_case
+                    else:
+                        return true_case
+                else:
+                    return true_case
+            except Exception:
+                vals = {"WORK_ELIGIBLE_INDICATOR": WORK_ELIGIBLE_INDICATOR,
+                        "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
+                        "DOB": DOB
+                        }
+                logger.debug("Caught exception in validator: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE. " +
+                            f"With field values: {vals}.")
+                # Per conversation with Alex on 03/26/2024, returning the true case during exception handling to avoid
+                # confusing the STTs.
+                return true_case
+
+        return validate
+
+    @staticmethod
+    def olderThan(min_age):
+        """Validate that value is larger than min_age."""
+        return make_validator(
+            lambda value: datetime.date.today().year - int(str(value)[:4]) > min_age,
+            lambda eargs:
+                f"{format_error_context(eargs)} {str(eargs.value)[:4]} must be less "
+                f"than or equal to {datetime.date.today().year - min_age} to meet the minimum age requirement."
+        )

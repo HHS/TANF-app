@@ -93,9 +93,9 @@ class RowSchema:
             eargs = ValidationErrorArgs(
                 value=line,
                 row_schema=self,
-                friendly_name=field.friendly_name,
-                item_num=field.item,
-                error_context_format='prefix'
+                friendly_name=field.friendly_name if field else 'record type',
+                item_num=field.item if field else '0',
+                # error_context_format='prefix'
             )
             validator_is_valid, validator_error = validator(line, eargs)
             is_valid = False if not validator_is_valid else is_valid
@@ -150,12 +150,15 @@ class RowSchema:
                 row_schema=self,
                 friendly_name=field.friendly_name,
                 item_num=field.item,
-                error_context_format='prefix'
+                # error_context_format='prefix'
             )
 
+            print(f'RUNNING VALIDATOR {field.name} value: "{value}"')
             is_empty = value_is_empty(value, field.endIndex-field.startIndex)
             should_validate = not field.required and not is_empty
+            print(f'empty: {is_empty}; should validate: {should_validate}')
             if (field.required and not is_empty) or should_validate:
+                print('validating')
                 for validator in field.validators:
                     validator_is_valid, validator_error = validator(value, eargs)
                     is_valid = False if not validator_is_valid else is_valid

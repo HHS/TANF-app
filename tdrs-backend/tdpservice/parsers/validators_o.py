@@ -1334,65 +1334,65 @@ def is_quiet_preparser_errors(min_length, empty_from=61, empty_to=101):
 
 
 def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
-    """If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
-    # value is instance
-    def validate(instance, row_schema):
-        false_case = (False,
-                      f"{row_schema.record_type}: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, "
-                      "then RELATIONSHIP_HOH != 1",
-                      ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
-                      )
-        true_case = (True,
-                     None,
-                     ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
-                     )
-        try:
-            WORK_ELIGIBLE_INDICATOR = (
-                instance["WORK_ELIGIBLE_INDICATOR"]
-                if type(instance) is dict
-                else getattr(instance, "WORK_ELIGIBLE_INDICATOR")
-            )
-            RELATIONSHIP_HOH = (
-                instance["RELATIONSHIP_HOH"]
-                if type(instance) is dict
-                else getattr(instance, "RELATIONSHIP_HOH")
-            )
-            RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
+"""If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
+# value is instance
+def validate(instance, row_schema):
+    false_case = (False,
+                    f"{row_schema.record_type}: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, "
+                    "then RELATIONSHIP_HOH != 1",
+                    ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
+                    )
+    true_case = (True,
+                    None,
+                    ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
+                    )
+    try:
+        WORK_ELIGIBLE_INDICATOR = (
+            instance["WORK_ELIGIBLE_INDICATOR"]
+            if type(instance) is dict
+            else getattr(instance, "WORK_ELIGIBLE_INDICATOR")
+        )
+        RELATIONSHIP_HOH = (
+            instance["RELATIONSHIP_HOH"]
+            if type(instance) is dict
+            else getattr(instance, "RELATIONSHIP_HOH")
+        )
+        RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
 
-            DOB = str(
-                instance["DATE_OF_BIRTH"]
-                if type(instance) is dict
-                else getattr(instance, "DATE_OF_BIRTH")
-            )
+        DOB = str(
+            instance["DATE_OF_BIRTH"]
+            if type(instance) is dict
+            else getattr(instance, "DATE_OF_BIRTH")
+        )
 
-            RPT_MONTH_YEAR = str(
-                instance["RPT_MONTH_YEAR"]
-                if type(instance) is dict
-                else getattr(instance, "RPT_MONTH_YEAR")
-            )
+        RPT_MONTH_YEAR = str(
+            instance["RPT_MONTH_YEAR"]
+            if type(instance) is dict
+            else getattr(instance, "RPT_MONTH_YEAR")
+        )
 
-            RPT_MONTH_YEAR += "01"
+        RPT_MONTH_YEAR += "01"
 
-            DOB_datetime = datetime.datetime.strptime(DOB, '%Y%m%d')
-            RPT_MONTH_YEAR_datetime = datetime.datetime.strptime(RPT_MONTH_YEAR, '%Y%m%d')
-            AGE = (RPT_MONTH_YEAR_datetime - DOB_datetime).days / 365.25
+        DOB_datetime = datetime.datetime.strptime(DOB, '%Y%m%d')
+        RPT_MONTH_YEAR_datetime = datetime.datetime.strptime(RPT_MONTH_YEAR, '%Y%m%d')
+        AGE = (RPT_MONTH_YEAR_datetime - DOB_datetime).days / 365.25
 
-            if WORK_ELIGIBLE_INDICATOR == "11" and AGE < 19:
-                if RELATIONSHIP_HOH == 1:
-                    return false_case
-                else:
-                    return true_case
+        if WORK_ELIGIBLE_INDICATOR == "11" and AGE < 19:
+            if RELATIONSHIP_HOH == 1:
+                return false_case
             else:
                 return true_case
-        except Exception:
-            vals = {"WORK_ELIGIBLE_INDICATOR": WORK_ELIGIBLE_INDICATOR,
-                    "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
-                    "DOB": DOB
-                    }
-            logger.debug("Caught exception in validator: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE. " +
-                         f"With field values: {vals}.")
-            # Per conversation with Alex on 03/26/2024, returning the true case during exception handling to avoid
-            # confusing the STTs.
+        else:
             return true_case
+    except Exception:
+        vals = {"WORK_ELIGIBLE_INDICATOR": WORK_ELIGIBLE_INDICATOR,
+                "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
+                "DOB": DOB
+                }
+        logger.debug("Caught exception in validator: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE. " +
+                        f"With field values: {vals}.")
+        # Per conversation with Alex on 03/26/2024, returning the true case during exception handling to avoid
+        # confusing the STTs.
+        return true_case
 
-    return validate
+return validate

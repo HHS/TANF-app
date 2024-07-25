@@ -110,10 +110,10 @@ t4 = SchemaManager(
                     endIndex=32,
                     required=True,
                     validators=[
-                        FieldValidators.or_validators(
+                        FieldValidators.orValidators([
                             FieldValidators.isBetween(1, 19, inclusive=True, cast=int),
                             FieldValidators.isEqual("99")
-                        )
+                        ])
                     ],
                 ),
                 Field(

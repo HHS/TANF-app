@@ -9,11 +9,10 @@ def format_error_context(eargs: ValidationErrorArgs):
 
 
 class FieldValidators():
-    @staticmethod
-    @make_validator(ValidatorFunctions.isEqual)
-    def isEqual():
-        return lambda eargs: f'stuff'
-
+    # @staticmethod
+    # @make_validator(ValidatorFunctions.isEqual)
+    # def isEqual():
+    #     return lambda eargs: f'stuff'
 
     @staticmethod
     def isEqual(option, **kwargs):
@@ -92,9 +91,9 @@ class FieldValidators():
         )
 
     @staticmethod
-    def isAlphanumeric(**kwargs):
+    def isAlphaNumeric(**kwargs):
         return make_validator(
-            ValidatorFunctions.isAlphanumeric(**kwargs),
+            ValidatorFunctions.isAlphaNumeric(**kwargs),
             lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not alphanumeric."
         )
 
@@ -184,4 +183,22 @@ class FieldValidators():
         return make_validator(
             lambda value: int(str(value)[6:]) in range(1, 32),
             lambda eargs: f"{format_error_context(eargs)} {str(eargs.value)[6:]} is not a valid day.",
+        )
+
+    @staticmethod
+    def validateRace():
+        """Validate race."""
+        return make_validator(
+            lambda value: value >= 0 and value <= 2,
+            lambda eargs:
+                f"{format_error_context(eargs)} {eargs.value} is not greater than or equal to 0 "
+                "or smaller than or equal to 2."
+        )
+
+    @staticmethod
+    def quarterIsValid():
+        """Validate in a year quarter combination, the quarter is valid."""
+        return make_validator(
+            lambda value: int(str(value)[-1]) > 0 and int(str(value)[-1]) < 5,
+            lambda eargs: f"{format_error_context(eargs)} {str(eargs.value)[-1]} is not a valid quarter.",
         )

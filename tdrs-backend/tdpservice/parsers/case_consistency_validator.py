@@ -6,7 +6,8 @@ from .models import ParserErrorCategoryChoices
 from .util import get_years_apart
 from tdpservice.stts.models import STT
 from tdpservice.parsers.schema_defs.utils import get_program_model
-from tdpservice.parsers.validators import ValidationErrorArgs, format_error_context
+from tdpservice.parsers.validators.util import ValidationErrorArgs
+from tdpservice.parsers.validators.category3 import format_error_context
 import logging
 
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class CaseConsistencyValidator:
                                          row_schema=schema,
                                          friendly_name=field.friendly_name,
                                          item_num=field.item,
-                                         error_context_format="inline"
+                                        #  error_context_format="inline"
                                          )
         return format_error_context(error_args)
 

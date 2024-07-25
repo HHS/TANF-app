@@ -124,7 +124,7 @@ header = RowSchema(
             startIndex=22,
             endIndex=23,
             required=True,
-            validators=[FieldValidators.isEqual("D", lambda eargs: f'new error')],
+            validators=[FieldValidators.isEqual("D")],
         ),
     ],
 )
