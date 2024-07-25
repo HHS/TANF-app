@@ -131,7 +131,7 @@ t1 = SchemaManager(
                 Field(
                     item="0",
                     name="RecordType",
-                    friendly_name="record type",
+                    friendly_name="Record Type",
                     type="string",
                     startIndex=0,
                     endIndex=2,
@@ -141,7 +141,7 @@ t1 = SchemaManager(
                 Field(
                     item="4",
                     name="RPT_MONTH_YEAR",
-                    friendly_name="reporting month and year",
+                    friendly_name="Reporting Year and Month",
                     type="number",
                     startIndex=2,
                     endIndex=8,
@@ -154,7 +154,7 @@ t1 = SchemaManager(
                 Field(
                     item="6",
                     name="CASE_NUMBER",
-                    friendly_name="case number",
+                    friendly_name="Case Number",
                     type="string",
                     startIndex=8,
                     endIndex=19,
@@ -165,7 +165,7 @@ t1 = SchemaManager(
                     zero_pad(3),
                     item="2",
                     name="COUNTY_FIPS_CODE",
-                    friendly_name="county fips code",
+                    friendly_name="County FIPS Code",
                     type="string",
                     startIndex=19,
                     endIndex=22,
@@ -175,7 +175,7 @@ t1 = SchemaManager(
                 Field(
                     item="5",
                     name="STRATUM",
-                    friendly_name="stratum",
+                    friendly_name="Stratum",
                     type="string",
                     startIndex=22,
                     endIndex=24,
@@ -187,7 +187,7 @@ t1 = SchemaManager(
                 Field(
                     item="7",
                     name="ZIP_CODE",
-                    friendly_name="zip code",
+                    friendly_name="ZIP Code",
                     type="string",
                     startIndex=24,
                     endIndex=29,
@@ -199,7 +199,7 @@ t1 = SchemaManager(
                 Field(
                     item="8",
                     name="FUNDING_STREAM",
-                    friendly_name="funding stream",
+                    friendly_name="Funding Stream",
                     type="number",
                     startIndex=29,
                     endIndex=30,
@@ -211,19 +211,19 @@ t1 = SchemaManager(
                 Field(
                     item="9",
                     name="DISPOSITION",
-                    friendly_name="disposition",
+                    friendly_name="Disposition",
                     type="number",
                     startIndex=30,
                     endIndex=31,
                     required=True,
                     validators=[
-                        FieldValidators.isEqual(1)
+                        FieldValidators.isEqual(1),
                     ],
                 ),
                 Field(
                     item="10",
                     name="NEW_APPLICANT",
-                    friendly_name="new applicant",
+                    friendly_name="Newly-Approved Applicant",
                     type="number",
                     startIndex=31,
                     endIndex=32,
@@ -235,7 +235,7 @@ t1 = SchemaManager(
                 Field(
                     item="11",
                     name="NBR_FAMILY_MEMBERS",
-                    friendly_name="number of family members",
+                    friendly_name="Number of Family Members",
                     type="number",
                     startIndex=32,
                     endIndex=34,
@@ -247,7 +247,7 @@ t1 = SchemaManager(
                 Field(
                     item="12",
                     name="FAMILY_TYPE",
-                    friendly_name="family type",
+                    friendly_name="Type of Family for Work Participation",
                     type="number",
                     startIndex=34,
                     endIndex=35,
@@ -259,7 +259,7 @@ t1 = SchemaManager(
                 Field(
                     item="13",
                     name="RECEIVES_SUB_HOUSING",
-                    friendly_name="receives subsidized housing",
+                    friendly_name="Receives Subsidized Housing",
                     type="number",
                     startIndex=35,
                     endIndex=36,
@@ -271,7 +271,7 @@ t1 = SchemaManager(
                 Field(
                     item="14",
                     name="RECEIVES_MED_ASSISTANCE",
-                    friendly_name="receives medical assistance",
+                    friendly_name="Receives Medical Assistance",
                     type="number",
                     startIndex=36,
                     endIndex=37,
@@ -283,7 +283,7 @@ t1 = SchemaManager(
                 Field(
                     item="15",
                     name="RECEIVES_FOOD_STAMPS",
-                    friendly_name="receives food stamps",
+                    friendly_name="Receives SNAP Assistance",
                     type="number",
                     startIndex=37,
                     endIndex=38,
@@ -295,7 +295,7 @@ t1 = SchemaManager(
                 Field(
                     item="16",
                     name="AMT_FOOD_STAMP_ASSISTANCE",
-                    friendly_name="amount of food stamp assistance",
+                    friendly_name="Amount of SNAP Benefits",
                     type="number",
                     startIndex=38,
                     endIndex=42,
@@ -307,7 +307,7 @@ t1 = SchemaManager(
                 Field(
                     item="17",
                     name="RECEIVES_SUB_CC",
-                    friendly_name="receives subsidized child care",
+                    friendly_name="Received Subsidized Child Care",
                     type="number",
                     startIndex=42,
                     endIndex=43,
@@ -319,7 +319,7 @@ t1 = SchemaManager(
                 Field(
                     item="18",
                     name="AMT_SUB_CC",
-                    friendly_name="amount of subsidized child care",
+                    friendly_name="Amount of Subsidized Child Care",
                     type="number",
                     startIndex=43,
                     endIndex=47,
@@ -331,7 +331,7 @@ t1 = SchemaManager(
                 Field(
                     item="19",
                     name="CHILD_SUPPORT_AMT",
-                    friendly_name="child support amount",
+                    friendly_name="Amount of Child Support",
                     type="number",
                     startIndex=47,
                     endIndex=51,
@@ -343,7 +343,7 @@ t1 = SchemaManager(
                 Field(
                     item="20",
                     name="FAMILY_CASH_RESOURCES",
-                    friendly_name="family cash resources",
+                    friendly_name="Amount of the Family's Cash Resources",
                     type="number",
                     startIndex=51,
                     endIndex=55,
@@ -355,7 +355,7 @@ t1 = SchemaManager(
                 Field(
                     item="21A",
                     name="CASH_AMOUNT",
-                    friendly_name="cash amount",
+                    friendly_name="Cash Amount",
                     type="number",
                     startIndex=55,
                     endIndex=59,
@@ -367,7 +367,7 @@ t1 = SchemaManager(
                 Field(
                     item="21B",
                     name="NBR_MONTHS",
-                    friendly_name="number of months",
+                    friendly_name="Cash and Cash Equivalents: Number of Months",
                     type="number",
                     startIndex=59,
                     endIndex=62,
@@ -379,7 +379,7 @@ t1 = SchemaManager(
                 Field(
                     item="22A",
                     name="CC_AMOUNT",
-                    friendly_name="child care amount",
+                    friendly_name="Child Care Amount",
                     type="number",
                     startIndex=62,
                     endIndex=66,
@@ -391,7 +391,7 @@ t1 = SchemaManager(
                 Field(
                     item="22B",
                     name="CHILDREN_COVERED",
-                    friendly_name="children covered",
+                    friendly_name="TANF Child Care: Number of Children Covered",
                     type="number",
                     startIndex=66,
                     endIndex=68,
@@ -403,7 +403,7 @@ t1 = SchemaManager(
                 Field(
                     item="22C",
                     name="CC_NBR_MONTHS",
-                    friendly_name="child care - number of months",
+                    friendly_name="TANF Child Care: Number of Months",
                     type="number",
                     startIndex=68,
                     endIndex=71,
@@ -415,7 +415,7 @@ t1 = SchemaManager(
                 Field(
                     item="23A",
                     name="TRANSP_AMOUNT",
-                    friendly_name="transportation amount",
+                    friendly_name="Transportation and Other Supportive Services: Amount",
                     type="number",
                     startIndex=71,
                     endIndex=75,
@@ -427,7 +427,7 @@ t1 = SchemaManager(
                 Field(
                     item="23B",
                     name="TRANSP_NBR_MONTHS",
-                    friendly_name="transportation - number of months",
+                    friendly_name="Transportation and Other Supportive Services: Number of Months",
                     type="number",
                     startIndex=75,
                     endIndex=78,
@@ -439,7 +439,7 @@ t1 = SchemaManager(
                 Field(
                     item="24A",
                     name="TRANSITION_SERVICES_AMOUNT",
-                    friendly_name="transition services amount",
+                    friendly_name="Transitional Services: Amount",
                     type="number",
                     startIndex=78,
                     endIndex=82,
@@ -451,7 +451,7 @@ t1 = SchemaManager(
                 Field(
                     item="24B",
                     name="TRANSITION_NBR_MONTHS",
-                    friendly_name="transition services - number of months",
+                    friendly_name="Transitional Services: Number of Months",
                     type="number",
                     startIndex=82,
                     endIndex=85,
@@ -463,7 +463,7 @@ t1 = SchemaManager(
                 Field(
                     item="25A",
                     name="OTHER_AMOUNT",
-                    friendly_name="other amount",
+                    friendly_name="Other: Amount",
                     type="number",
                     startIndex=85,
                     endIndex=89,
@@ -475,7 +475,7 @@ t1 = SchemaManager(
                 Field(
                     item="25B",
                     name="OTHER_NBR_MONTHS",
-                    friendly_name="other - number of months",
+                    friendly_name="Other: Number of Months",
                     type="number",
                     startIndex=89,
                     endIndex=92,
@@ -487,7 +487,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AI",
                     name="SANC_REDUCTION_AMT",
-                    friendly_name="sanction reduction amount",
+                    friendly_name="Total Dollar Amount of Reductions Due to Sanctions",
                     type="number",
                     startIndex=92,
                     endIndex=96,
@@ -499,7 +499,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AII",
                     name="WORK_REQ_SANCTION",
-                    friendly_name="work requirement sanction",
+                    friendly_name="Work Requirements Sanction",
                     type="number",
                     startIndex=96,
                     endIndex=97,
@@ -511,7 +511,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AIII",
                     name="FAMILY_SANC_ADULT",
-                    friendly_name="family sanction adult",
+                    friendly_name="Family Sanction",
                     type="number",
                     startIndex=97,
                     endIndex=98,
@@ -523,7 +523,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AIV",
                     name="SANC_TEEN_PARENT",
-                    friendly_name="sanctioned teen parent",
+                    friendly_name="Sanction: Teen Parent not Attending School (or Alternative Training)",
                     type="number",
                     startIndex=98,
                     endIndex=99,
@@ -535,7 +535,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AV",
                     name="NON_COOPERATION_CSE",
-                    friendly_name="non-cooperation with child support",
+                    friendly_name="Sanction: Non-Cooperation with Child Support",
                     type="number",
                     startIndex=99,
                     endIndex=100,
@@ -547,7 +547,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AVI",
                     name="FAILURE_TO_COMPLY",
-                    friendly_name="failure to comply",
+                    friendly_name="Failure to Comply with an Individual Responsibility Plan",
                     type="number",
                     startIndex=100,
                     endIndex=101,
@@ -559,7 +559,7 @@ t1 = SchemaManager(
                 Field(
                     item="26AVII",
                     name="OTHER_SANCTION",
-                    friendly_name="other sanction",
+                    friendly_name="Other Sanction",
                     type="number",
                     startIndex=101,
                     endIndex=102,
@@ -571,7 +571,7 @@ t1 = SchemaManager(
                 Field(
                     item="26B",
                     name="RECOUPMENT_PRIOR_OVRPMT",
-                    friendly_name="recoupment prior overpayment",
+                    friendly_name="Recoupment of Prior Overpayment",
                     type="number",
                     startIndex=102,
                     endIndex=106,
@@ -583,7 +583,7 @@ t1 = SchemaManager(
                 Field(
                     item="26CI",
                     name="OTHER_TOTAL_REDUCTIONS",
-                    friendly_name="other total reductions",
+                    friendly_name="Other: Total Dollar Amount of Reductions",
                     type="number",
                     startIndex=106,
                     endIndex=110,
@@ -595,7 +595,7 @@ t1 = SchemaManager(
                 Field(
                     item="26CII",
                     name="FAMILY_CAP",
-                    friendly_name="family cap",
+                    friendly_name="Other: Family Cap",
                     type="number",
                     startIndex=110,
                     endIndex=111,
@@ -607,7 +607,7 @@ t1 = SchemaManager(
                 Field(
                     item="26CIII",
                     name="REDUCTIONS_ON_RECEIPTS",
-                    friendly_name="reductions on receipts",
+                    friendly_name="Other: Reductions Based on Time Limit",
                     type="number",
                     startIndex=111,
                     endIndex=112,
@@ -619,7 +619,7 @@ t1 = SchemaManager(
                 Field(
                     item="26CIV",
                     name="OTHER_NON_SANCTION",
-                    friendly_name="other non-sanction",
+                    friendly_name="Non-Sanction",
                     type="number",
                     startIndex=112,
                     endIndex=113,
@@ -631,7 +631,7 @@ t1 = SchemaManager(
                 Field(
                     item="27",
                     name="WAIVER_EVAL_CONTROL_GRPS",
-                    friendly_name="waiver evaluation control groups",
+                    friendly_name="Waiver Evaluation",
                     type="string",
                     startIndex=113,
                     endIndex=114,
@@ -644,7 +644,7 @@ t1 = SchemaManager(
                 Field(
                     item="28",
                     name="FAMILY_EXEMPT_TIME_LIMITS",
-                    friendly_name="family exempt time limits",
+                    friendly_name="Federal Time Limit Exemptions",
                     type="number",
                     startIndex=114,
                     endIndex=116,
@@ -654,7 +654,7 @@ t1 = SchemaManager(
                 Field(
                     item="29",
                     name="FAMILY_NEW_CHILD",
-                    friendly_name="family new child",
+                    friendly_name="TANF Family a New Child-Only Family",
                     type="number",
                     startIndex=116,
                     endIndex=117,

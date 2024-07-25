@@ -30,7 +30,7 @@ t4 = SchemaManager(
                 Field(
                     item="0",
                     name="RecordType",
-                    friendly_name="record type",
+                    friendly_name="Record Type",
                     type="string",
                     startIndex=0,
                     endIndex=2,
@@ -40,7 +40,7 @@ t4 = SchemaManager(
                 Field(
                     item="4",
                     name="RPT_MONTH_YEAR",
-                    friendly_name="reporting month and year",
+                    friendly_name="Reporting Year and Month",
                     type="number",
                     startIndex=2,
                     endIndex=8,
@@ -53,7 +53,7 @@ t4 = SchemaManager(
                 Field(
                     item="6",
                     name="CASE_NUMBER",
-                    friendly_name="case number",
+                    friendly_name="Case Number--TANF",
                     type="string",
                     startIndex=8,
                     endIndex=19,
@@ -64,7 +64,7 @@ t4 = SchemaManager(
                     zero_pad(3),
                     item="2",
                     name="COUNTY_FIPS_CODE",
-                    friendly_name="county fips code",
+                    friendly_name="County FIPS code",
                     type="string",
                     startIndex=19,
                     endIndex=22,
@@ -74,7 +74,7 @@ t4 = SchemaManager(
                 Field(
                     item="5",
                     name="STRATUM",
-                    friendly_name="stratum",
+                    friendly_name="Stratum",
                     type="string",
                     startIndex=22,
                     endIndex=24,
@@ -84,7 +84,7 @@ t4 = SchemaManager(
                 Field(
                     item="7",
                     name="ZIP_CODE",
-                    friendly_name="zip code",
+                    friendly_name="ZIP Code",
                     type="string",
                     startIndex=24,
                     endIndex=29,
@@ -94,7 +94,7 @@ t4 = SchemaManager(
                 Field(
                     item="8",
                     name="DISPOSITION",
-                    friendly_name="disposition",
+                    friendly_name="Disposition",
                     type="number",
                     startIndex=29,
                     endIndex=30,
@@ -104,7 +104,7 @@ t4 = SchemaManager(
                 Field(
                     item="9",
                     name="CLOSURE_REASON",
-                    friendly_name="closure reason",
+                    friendly_name="Reason for Closure",
                     type="string",
                     startIndex=30,
                     endIndex=32,
@@ -119,7 +119,7 @@ t4 = SchemaManager(
                 Field(
                     item="10",
                     name="REC_SUB_HOUSING",
-                    friendly_name="receives subsidized housing",
+                    friendly_name="Received Subsidized Housing",
                     type="number",
                     startIndex=32,
                     endIndex=33,
@@ -129,7 +129,7 @@ t4 = SchemaManager(
                 Field(
                     item="11",
                     name="REC_MED_ASSIST",
-                    friendly_name="receives medical assistance",
+                    friendly_name="Received Medical Assistance",
                     type="number",
                     startIndex=33,
                     endIndex=34,
@@ -139,7 +139,7 @@ t4 = SchemaManager(
                 Field(
                     item="12",
                     name="REC_FOOD_STAMPS",
-                    friendly_name="receives food stamps",
+                    friendly_name="Received SNAP Assistance",
                     type="number",
                     startIndex=34,
                     endIndex=35,
@@ -149,7 +149,7 @@ t4 = SchemaManager(
                 Field(
                     item="13",
                     name="REC_SUB_CC",
-                    friendly_name="receives subsidized child care",
+                    friendly_name="Received Subsidized Child Care",
                     type="number",
                     startIndex=35,
                     endIndex=36,

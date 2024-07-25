@@ -12,7 +12,9 @@ from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from tdpservice.search_indexes import documents
+from tdpservice.parsers.test.factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.data_files.models import DataFile
+from tdpservice.parsers import util
 from .. import schema_defs, aggregates
 from elasticsearch.helpers.errors import BulkIndexError
 import logging
@@ -24,7 +26,41 @@ es_logger.setLevel(logging.WARNING)
 
 settings.GENERATE_TRAILER_ERRORS = True
 
-# TODO: the name of this test doesn't make perfect sense anymore since it will always have errors and no records now.
+@pytest.fixture
+def test_datafile(stt_user, stt):
+    """Fixture for small_correct_file."""
+    return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
+
+
+@pytest.fixture
+def test_header_datafile(stt_user, stt):
+    """Fixture for header test."""
+    return util.create_test_datafile('tanf_section1_header_test.txt', stt_user, stt)
+
+
+@pytest.fixture
+def dfs():
+    """Fixture for DataFileSummary."""
+    return DataFileSummaryFactory.build()
+
+
+@pytest.fixture
+def t2_invalid_dob_file():
+    """Fixture for T2 file with an invalid DOB."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q1',
+        file__name='t2_invalid_dob_file.txt',
+        file__section='Active Case Data',
+        file__data=(b'HEADER20204A25   TAN1ED\n'
+                    b'T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000'
+                    b'0000000000000000000000000000000000000000000000000000000000291\n'
+                    b'TRAILER0000001         ')
+    )
+    return parsing_file
+
+# TODO: the name of this test doesn't make perfect sense anymore since it will always have errors now.
+# TODO: parametrize and merge with test_zero_filled_fips_code_file
 @pytest.mark.django_db
 def test_parse_small_correct_file(small_correct_file, dfs):
     """Test parsing of small_correct_file."""
@@ -313,7 +349,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     errors = parse.parse_datafile(bad_trailer_file_2, dfs)
 
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
-    assert parser_errors.count() == 8
+    assert parser_errors.count() == 9
 
     parser_errors = parser_errors.exclude(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
     trailer_errors = list(parser_errors.filter(row_number=3).order_by('id'))
@@ -330,10 +366,11 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     assert trailer_error_2.content_type is None
     assert trailer_error_2.object_id is None
 
-    row_2_error = parser_errors.get(row_number=2)
+    row_2_errors = parser_errors.filter(row_number=2).order_by('id')
+    row_2_error = row_2_errors.first()
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_2_error.error_message == (
-        'T1 Item 13 (receives subsidized housing): 3 is not '
+        'T1 Item 13 (Receives Subsidized Housing): 3 is not '
         'larger or equal to 1 and smaller or equal to 2.'
     )
 
@@ -347,7 +384,6 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
         assert row_3_error.error_message in {
             'T1: record length of 7 characters is not in the range [117, 156].',
             'T1: Reporting month year None does not match file reporting year:2021, quarter:Q1.',
-            'T1trash does not start with TRAILER.',
             'TRAILER: record length is 7 characters but must be 23.',
             'T1: Case number T1trash cannot contain blanks.',
             'Your file does not end with a TRAILER record.'}
@@ -357,8 +393,9 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     errors_2_0 = errors["2_0"]
     errors_3_0 = errors["3_0"]
     error_trailer = errors["trailer"]
+    row_2_error_set = set(row_2_errors)
     for error_2_0 in errors_2_0:
-        assert error_2_0 in [row_2_error]
+        assert error_2_0 in row_2_error_set
     for error_3_0 in errors_3_0:
         assert error_3_0 in row_3_error_list
     assert error_trailer == [trailer_error_1, trailer_error_2]
@@ -371,14 +408,6 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     assert length_error.content_type is None
     assert length_error.object_id is None
 
-    errors_2_0 = errors["2_0"]
-    errors_3_0 = errors["3_0"]
-    error_trailer = errors["trailer"]
-    for error_2_0 in errors_2_0:
-        assert error_2_0 in [row_2_error]
-    for error_3_0 in errors_3_0:
-        assert error_3_0 in row_3_error_list
-    assert error_trailer == [trailer_error_1, trailer_error_2]
     trailer_error_3 = trailer_errors[3]
     assert trailer_error_3.error_type == ParserErrorCategoryChoices.PRE_CHECK
     assert trailer_error_3.error_message == 'T1: Case number T1trash cannot contain blanks.'
@@ -490,7 +519,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert err.row_number == 2
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert err.error_message == (
-        'M1 Item 11 (receives subsidized housing): 3 is not larger or equal to 1 and smaller or equal to 2.'
+        'M1 Item 11 (Receives Subsidized Housing): 3 is not larger or equal to 1 and smaller or equal to 2.'
     )
     assert err.content_type is not None
     assert err.object_id is not None
@@ -734,7 +763,7 @@ def test_parse_bad_ssp_s1_missing_required(bad_ssp_s1__row_missing_required_fiel
     parse.parse_datafile(bad_ssp_s1__row_missing_required_field, dfs)
 
     parser_errors = ParserError.objects.filter(file=bad_ssp_s1__row_missing_required_field)
-    assert parser_errors.count() == 7
+    assert parser_errors.count() == 6
 
     row_2_error = parser_errors.get(
         row_number=2,
@@ -890,7 +919,7 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert err.error_message == (
-        "T4 Item 10 (receives subsidized housing): 3 "
+        "T4 Item 10 (Received Subsidized Housing): 3 "
         "is not larger or equal to 1 and smaller or equal to 2."
     )
     assert err.content_type.model == "tanf_t4"
@@ -1385,7 +1414,7 @@ def test_parse_tribal_section_4_file(tribal_section_4_file, dfs):
                            ' and must be at least 101 characters.'),
                           ('t3_file_two_child_with_space_filled', 2, 0, ''),
                           ('two_child_second_filled', 2, 8,
-                           'T3 Item 68 (date of birth): Year 6    must be larger than 1900.'),
+                           'T3 Item 68 (Date of Birth): Year 6    must be larger than 1900.'),
                           ('t3_file_zero_filled_second', 1, 0, '')])
 @pytest.mark.django_db()
 def test_misformatted_multi_records(file_fixture, result, number_of_errors, error_message, request, dfs):
@@ -1424,7 +1453,7 @@ def test_empty_t4_t5_values(t4_t5_empty_values, dfs):
     logger.info(t4[0].__dict__)
     assert t5.count() == 1
     assert parser_errors[0].error_message == (
-        "T4 Item 10 (receives subsidized housing): 3 is "
+        "T4 Item 10 (Received Subsidized Housing): 3 is "
         "not larger or equal to 1 and smaller or equal to 2."
     )
 
@@ -1445,9 +1474,9 @@ def test_parse_t2_invalid_dob(t2_invalid_dob_file, dfs):
     year_error = parser_errors[1]
     digits_error = parser_errors[0]
 
-    assert month_error.error_message == "T2 Item 32 (date of birth): $9 is not a valid month."
-    assert year_error.error_message == "T2 Item 32 (date of birth): Year Q897 must be larger than 1900."
-    assert digits_error.error_message == "T2 Item 32 (date of birth): Q897$9 3 does not have exactly 8 digits."
+    assert month_error.error_message == "T2 Item 32 (Date of Birth): $9 is not a valid month."
+    assert year_error.error_message == "T2 Item 32 (Date of Birth): Year Q897 must be larger than 1900."
+    assert digits_error.error_message == "T2 Item 32 (Date of Birth): Q897$9 3 does not have exactly 8 digits."
 
 @pytest.mark.django_db
 def test_bulk_create_returns_rollback_response_on_bulk_index_exception(small_correct_file, mocker, dfs):
@@ -1626,7 +1655,7 @@ def test_parse_t3_cat2_invalid_citizenship(t3_cat2_invalid_citizenship_file, dfs
     assert parser_errors.count() == 2
 
     for e in parser_errors:
-        assert e.error_message == "T3 Item 76 (citizenship status): 0 is not in [1, 2, 9]."
+        assert e.error_message == "T3 Item 76 (Citizenship/Immigration Status): 0 is not in [1, 2, 9]."
 
 
 @pytest.mark.django_db()
@@ -1646,10 +1675,12 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
 
     assert parser_errors.count() == 3
 
-    error_msgs = {"Item 37 (education level) 00 is not in range [1, 16]. or Item 37 "
-                  "(education level) 00 is not in range [98, 99].",
-                  "M2 Item 38 (citizenship status): 0 is not in [1, 2, 3, 9].",
-                  "M2 Item 39 (cooperation with child support): 0 is not in [1, 2, 9]."}
+    error_msgs = {
+        "Item 37 (Educational Level) 00 is not in range [1, 16]. or "
+        "Item 37 (Educational Level) 00 is not in range [98, 99].",
+        "M2 Item 38 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
+        "M2 Item 39 (Cooperated with Child Support): 0 is not in [1, 2, 9]."
+    }
     for e in parser_errors:
         assert e.error_message in error_msgs
 
@@ -1670,9 +1701,12 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     assert parser_errors.count() == 4
 
-    error_msgs = {"Item 68 (education level) 00 is not in range [1, 16]. or Item 68 "
-                  "(education level) 00 is not in range [98, 99].",
-                  "M3 Item 69 (citizenship status): 0 is not in [1, 2, 3, 9]."}
+    error_msgs = {"Item 68 (Educational Level) 00 is not in range [1, 16]. or Item 68 (Educational Level) " +
+                  "00 is not in range [98, 99].",
+                  "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
+                  "Item 68 (Educational Level) 00 is not in range [1, 16]. or Item 68 (Educational Level) " +
+                  "00 is not in range [98, 99].",
+                  "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."}
 
     for e in parser_errors:
         assert e.error_message in error_msgs
@@ -1694,11 +1728,52 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     assert parser_errors.count() == 2
 
-    error_msgs = {"M5 Item 23 (education level): 00 matches 00.",
-                  "M5 Item 24 (citizenship status): 0 is not in [1, 2, 3, 9]."}
+    error_msgs = {"M5 Item 23 (Educational Level): 00 matches 00.",
+                  "M5 Item 24 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."}
 
     for e in parser_errors:
         assert e.error_message in error_msgs
+
+
+@pytest.fixture
+def test_file_zero_filled_fips_code():
+    """Fixture for T1 file with an invalid CITIZENSHIP_STATUS."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q1',
+        file__name='t3_invalid_citizenship_file.txt',
+        file__section='Active Case Data',
+        file__data=(b'HEADER20241A01000TAN2ED\n'
+                    b'T1202401    2132333   0140951112 43312   03   0   0   2 554145' +
+                    b'   0 0  0   0  0   0  0   0  0   0222222   0   02229 22    \n' +
+                    b'T2202401    21323333219550117WT@TB9BT92122222222223 1329911 34' +
+                    b'  32 699 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0' +
+                    b' 0 0 0 0   0   01623   0   0   0\n' +
+                    b'T2202401    21323333219561102WTT@WBP992122221222222 2329911 28' +
+                    b'  32 699 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0' +
+                    b' 0 0 0 0   0   01432   0   0   0\n' +
+                    b'T3202401    2132333120070906WT@@#ZY@W212222122 63981   0   012' +
+                    b'0050201WTTYT#TT0212222122 63981   0   0                      \n' +
+                    b'TRAILER      4         ')
+    )
+    return parsing_file
+
+
+@pytest.mark.django_db()
+def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):
+    """Test parsing a file with zero filled FIPS code."""
+    # TODO: this test can be merged as parametrized test with  "test_parse_small_correct_file"
+    dfs.datafile = test_file_zero_filled_fips_code
+    test_file_zero_filled_fips_code.year = 2024
+    test_file_zero_filled_fips_code.quarter = 'Q2'
+    test_file_zero_filled_fips_code.save()
+
+    parse.parse_datafile(test_file_zero_filled_fips_code, dfs)
+
+    parser_errors = ParserError.objects.filter(file=test_file_zero_filled_fips_code)
+    assert 'T1 Item 2 (County FIPS Code): field is required but a value was not' + \
+           ' provided.' in [i.error_message for i in parser_errors]
+
 
 @pytest.mark.parametrize("file, batch_size, model, record_type, num_errors", [
     ('tanf_s1_exact_dup_file', 10000, TANF_T1, "T1", 3),
@@ -1806,4 +1881,4 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
 
     err = parser_errors.first()
     assert err.error_message == ("Every T1 record should have at least one corresponding T2 or T3 record with the "
-                                 "same Item 4 (reporting month and year) and Item 6 (case number).")
+                                 "same Item 4 (Reporting Year and Month) and Item 6 (Case Number).")

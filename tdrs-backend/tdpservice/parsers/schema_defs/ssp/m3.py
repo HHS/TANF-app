@@ -27,6 +27,7 @@ first_part_schema = RowSchema(
                     PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
                     PreparsingValidators.validateRptMonthYear(),
                 ]),
+        PreparsingValidators.isNotEmpty(8, 19)
     ],
     postparsing_validators=[
         PostparsingValidators.ifThenAlso(
@@ -106,7 +107,7 @@ first_part_schema = RowSchema(
         Field(
             item="0",
             name='RecordType',
-            friendly_name="record type",
+            friendly_name="Record Type",
             type='string',
             startIndex=0,
             endIndex=2,
@@ -116,7 +117,7 @@ first_part_schema = RowSchema(
         Field(
             item="3",
             name='RPT_MONTH_YEAR',
-            friendly_name="reporting month and year",
+            friendly_name="Reporting Year and Month",
             type='number',
             startIndex=2,
             endIndex=8,
@@ -129,7 +130,7 @@ first_part_schema = RowSchema(
         Field(
             item="5",
             name='CASE_NUMBER',
-            friendly_name="case number",
+            friendly_name="Case Number",
             type='string',
             startIndex=8,
             endIndex=19,
@@ -139,7 +140,7 @@ first_part_schema = RowSchema(
         Field(
             item="60",
             name='FAMILY_AFFILIATION',
-            friendly_name="family affiliation",
+            friendly_name="Family Affiliation",
             type='number',
             startIndex=19,
             endIndex=20,
@@ -149,7 +150,7 @@ first_part_schema = RowSchema(
         Field(
             item="61",
             name='DATE_OF_BIRTH',
-            friendly_name="date of birth",
+            friendly_name="Date of Birth",
             type='string',
             startIndex=20,
             endIndex=28,
@@ -164,7 +165,7 @@ first_part_schema = RowSchema(
             transform_func=ssp_ssn_decryption_func,
             item="62",
             name='SSN',
-            friendly_name="social security number",
+            friendly_name="Social Security Number",
             type='string',
             startIndex=28,
             endIndex=37,
@@ -175,7 +176,7 @@ first_part_schema = RowSchema(
         Field(
             item="63A",
             name='RACE_HISPANIC',
-            friendly_name="race hispanic",
+            friendly_name="Hispanic or Latino",
             type='number',
             startIndex=37,
             endIndex=38,
@@ -185,7 +186,7 @@ first_part_schema = RowSchema(
         Field(
             item="63B",
             name='RACE_AMER_INDIAN',
-            friendly_name="race american-indian",
+            friendly_name="American Indian or Alaska Native",
             type='number',
             startIndex=38,
             endIndex=39,
@@ -195,7 +196,7 @@ first_part_schema = RowSchema(
         Field(
             item="63C",
             name='RACE_ASIAN',
-            friendly_name="race asian",
+            friendly_name="Asian",
             type='number',
             startIndex=39,
             endIndex=40,
@@ -205,7 +206,7 @@ first_part_schema = RowSchema(
         Field(
             item="63D",
             name='RACE_BLACK',
-            friendly_name="race black",
+            friendly_name="Black or African American",
             type='number',
             startIndex=40,
             endIndex=41,
@@ -215,7 +216,7 @@ first_part_schema = RowSchema(
         Field(
             item="63E",
             name='RACE_HAWAIIAN',
-            friendly_name="race hawaiian",
+            friendly_name="Native Hawaiian or Pacific Islander",
             type='number',
             startIndex=41,
             endIndex=42,
@@ -225,7 +226,7 @@ first_part_schema = RowSchema(
         Field(
             item="63F",
             name='RACE_WHITE',
-            friendly_name="race white",
+            friendly_name="White",
             type='number',
             startIndex=42,
             endIndex=43,
@@ -235,7 +236,7 @@ first_part_schema = RowSchema(
         Field(
             item="64",
             name='GENDER',
-            friendly_name="gender",
+            friendly_name="Gender",
             type='number',
             startIndex=43,
             endIndex=44,
@@ -245,7 +246,7 @@ first_part_schema = RowSchema(
         Field(
             item="65A",
             name='RECEIVE_NONSSI_BENEFITS',
-            friendly_name="receive non-SSI benefits",
+            friendly_name="Receives Disability Benefits: Federal Disability Status",
             type='number',
             startIndex=44,
             endIndex=45,
@@ -255,7 +256,7 @@ first_part_schema = RowSchema(
         Field(
             item="65B",
             name='RECEIVE_SSI',
-            friendly_name="receives SSI",
+            friendly_name="Receives Disability Benefits: SSI or AABD",
             type='number',
             startIndex=45,
             endIndex=46,
@@ -265,7 +266,7 @@ first_part_schema = RowSchema(
         Field(
             item="66",
             name='RELATIONSHIP_HOH',
-            friendly_name="relationship to head of household",
+            friendly_name="Relationship to Head-of-Household",
             type='number',
             startIndex=46,
             endIndex=48,
@@ -275,7 +276,7 @@ first_part_schema = RowSchema(
         Field(
             item="67",
             name='PARENT_MINOR_CHILD',
-            friendly_name="parent of minor child",
+            friendly_name="Parental Status of Minor",
             type='number',
             startIndex=48,
             endIndex=49,
@@ -285,7 +286,7 @@ first_part_schema = RowSchema(
         Field(
             item="68",
             name='EDUCATION_LEVEL',
-            friendly_name="education level",
+            friendly_name="Educational Level",
             type='string',
             startIndex=49,
             endIndex=51,
@@ -300,7 +301,7 @@ first_part_schema = RowSchema(
         Field(
             item="69",
             name='CITIZENSHIP_STATUS',
-            friendly_name="citizenship status",
+            friendly_name="Citizenship/Immigration Status",
             type='number',
             startIndex=51,
             endIndex=52,
@@ -310,7 +311,7 @@ first_part_schema = RowSchema(
         Field(
             item="70A",
             name='UNEARNED_SSI',
-            friendly_name="unearned SSI benefit",
+            friendly_name="Amount of Unearned Income: SSI",
             type='number',
             startIndex=52,
             endIndex=56,
@@ -320,7 +321,7 @@ first_part_schema = RowSchema(
         Field(
             item="70B",
             name='OTHER_UNEARNED_INCOME',
-            friendly_name="other unearned income",
+            friendly_name="Amount of Unearned Income: Other",
             type='number',
             startIndex=56,
             endIndex=60,
@@ -423,7 +424,7 @@ second_part_schema = RowSchema(
         Field(
             item="0",
             name='RecordType',
-            friendly_name="record type",
+            friendly_name="Record Type",
             type='string',
             startIndex=0,
             endIndex=2,
@@ -433,7 +434,7 @@ second_part_schema = RowSchema(
         Field(
             item="3",
             name='RPT_MONTH_YEAR',
-            friendly_name="reporting month and year",
+            friendly_name="Reporting Year and Month",
             type='number',
             startIndex=2,
             endIndex=8,
@@ -446,7 +447,7 @@ second_part_schema = RowSchema(
         Field(
             item="5",
             name='CASE_NUMBER',
-            friendly_name="case number",
+            friendly_name="Case Number",
             type='string',
             startIndex=8,
             endIndex=19,
@@ -456,7 +457,7 @@ second_part_schema = RowSchema(
         Field(
             item="60",
             name='FAMILY_AFFILIATION',
-            friendly_name="family affiliation",
+            friendly_name="Family Affiliation",
             type='number',
             startIndex=60,
             endIndex=61,
@@ -466,7 +467,7 @@ second_part_schema = RowSchema(
         Field(
             item="61",
             name='DATE_OF_BIRTH',
-            friendly_name="date of birth",
+            friendly_name="Date of Birth",
             type='string',
             startIndex=61,
             endIndex=69,
@@ -481,7 +482,7 @@ second_part_schema = RowSchema(
             transform_func=ssp_ssn_decryption_func,
             item="62",
             name='SSN',
-            friendly_name="social security number",
+            friendly_name="Social Security Number",
             type='string',
             startIndex=69,
             endIndex=78,
@@ -492,7 +493,7 @@ second_part_schema = RowSchema(
         Field(
             item="63A",
             name='RACE_HISPANIC',
-            friendly_name="race hispanic",
+            friendly_name="Hispanic or Latino",
             type='number',
             startIndex=78,
             endIndex=79,
@@ -502,7 +503,7 @@ second_part_schema = RowSchema(
         Field(
             item="63B",
             name='RACE_AMER_INDIAN',
-            friendly_name="race american-indian",
+            friendly_name="American Indian or Alaska Native",
             type='number',
             startIndex=79,
             endIndex=80,
@@ -512,7 +513,7 @@ second_part_schema = RowSchema(
         Field(
             item="63C",
             name='RACE_ASIAN',
-            friendly_name="race asian",
+            friendly_name="Asian",
             type='number',
             startIndex=80,
             endIndex=81,
@@ -522,7 +523,7 @@ second_part_schema = RowSchema(
         Field(
             item="63D",
             name='RACE_BLACK',
-            friendly_name="race black",
+            friendly_name="Black or African American",
             type='number',
             startIndex=81,
             endIndex=82,
@@ -532,7 +533,7 @@ second_part_schema = RowSchema(
         Field(
             item="63E",
             name='RACE_HAWAIIAN',
-            friendly_name="race hawaiian",
+            friendly_name="Native Hawaiian or Pacific Islander",
             type='number',
             startIndex=82,
             endIndex=83,
@@ -542,7 +543,7 @@ second_part_schema = RowSchema(
         Field(
             item="63F",
             name='RACE_WHITE',
-            friendly_name="race white",
+            friendly_name="White",
             type='number',
             startIndex=83,
             endIndex=84,
@@ -552,7 +553,7 @@ second_part_schema = RowSchema(
         Field(
             item="64",
             name='GENDER',
-            friendly_name="gender",
+            friendly_name="Gender",
             type='number',
             startIndex=84,
             endIndex=85,
@@ -562,7 +563,7 @@ second_part_schema = RowSchema(
         Field(
             item="65A",
             name='RECEIVE_NONSSI_BENEFITS',
-            friendly_name="receives non-SSI benefit",
+            friendly_name="Receives Disability Benefits: Other Federal Disability Status",
             type='number',
             startIndex=85,
             endIndex=86,
@@ -572,7 +573,7 @@ second_part_schema = RowSchema(
         Field(
             item="65B",
             name='RECEIVE_SSI',
-            friendly_name="receives ssi",
+            friendly_name="Receives Disability Benefits: SSI or AABD",
             type='number',
             startIndex=86,
             endIndex=87,
@@ -582,7 +583,7 @@ second_part_schema = RowSchema(
         Field(
             item="66",
             name='RELATIONSHIP_HOH',
-            friendly_name="relationship to head of household",
+            friendly_name="Relationship to Head-of-Household",
             type='number',
             startIndex=87,
             endIndex=89,
@@ -592,7 +593,7 @@ second_part_schema = RowSchema(
         Field(
             item="67",
             name='PARENT_MINOR_CHILD',
-            friendly_name="parent of minor child",
+            friendly_name="Parental Status of Minor",
             type='number',
             startIndex=89,
             endIndex=90,
@@ -602,7 +603,7 @@ second_part_schema = RowSchema(
         Field(
             item="68",
             name='EDUCATION_LEVEL',
-            friendly_name="education level",
+            friendly_name="Educational Level",
             type='string',
             startIndex=90,
             endIndex=92,
@@ -617,7 +618,7 @@ second_part_schema = RowSchema(
         Field(
             item="69",
             name='CITIZENSHIP_STATUS',
-            friendly_name="citizenship status",
+            friendly_name="Citizenship/Immigration Status",
             type='number',
             startIndex=92,
             endIndex=93,
@@ -627,7 +628,7 @@ second_part_schema = RowSchema(
         Field(
             item="70A",
             name='UNEARNED_SSI',
-            friendly_name="unearned SSI benefit",
+            friendly_name="Amount of Unearned Income: SSI",
             type='number',
             startIndex=93,
             endIndex=97,
@@ -637,7 +638,7 @@ second_part_schema = RowSchema(
         Field(
             item="70B",
             name='OTHER_UNEARNED_INCOME',
-            friendly_name="other unearned income",
+            friendly_name="Amount of Unearned Income: Other",
             type='number',
             startIndex=97,
             endIndex=101,
