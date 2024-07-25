@@ -217,7 +217,7 @@ class Command(BaseCommand):
         log_context = self.__get_log_context(system_user)
 
         all_fy = "All"
-        all_q = "1-4"
+        all_q = "Q1-4"
         log(f"Starting clean and re-parse command for FY {fiscal_year if fiscal_year else all_fy} and "
             f"{fiscal_quarter if fiscal_quarter else all_q}",
             logger_context=log_context,
