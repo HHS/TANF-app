@@ -164,7 +164,7 @@ class Command(BaseCommand):
         new_indices = options.get('new_indices', False)
         delete_indices = options.get('delete_indices', False)
 
-        args_passed = fiscal_quarter is not None or fiscal_quarter is not None or reparse_all
+        args_passed = fiscal_year is not None or fiscal_quarter is not None or reparse_all
 
         if not args_passed:
             logger.warn("No arguments supplied.")
@@ -218,7 +218,7 @@ class Command(BaseCommand):
 
         all_fy = "All"
         all_q = "1-4"
-        log(f"Beginning Clean and re-parse for FY {fiscal_year if fiscal_year else all_fy} and "
+        log(f"Starting clean and re-parse command for FY {fiscal_year if fiscal_year else all_fy} and "
             f"{fiscal_quarter if fiscal_quarter else all_q}",
             logger_context=log_context,
             level='info')
@@ -259,14 +259,14 @@ class Command(BaseCommand):
         logger.info(f"Deleted a total of {total_deleted} records accross {files.count()} files.")
 
         # Delete and re-save datafiles to handle cascading dependencies
-        logger.info(f'Deleting and reparsing {files.count()} files')
+        logger.info(f'Deleting and re-parsing {files.count()} files')
         self.__handle_datafiles(files, log_context)
 
         log("Database cleansing complete and all files have been re-scheduling for parsing and validation.",
             logger_context=log_context,
             level='info')
-        log(f"Clean and re-parse completed for FY {fiscal_year if fiscal_year else all_fy} and "
-            f"{fiscal_quarter if fiscal_quarter else all_q}",
+        log(f"Clean and re-parse command completed. All files for FY {fiscal_year if fiscal_year else all_fy} and "
+            f"{fiscal_quarter if fiscal_quarter else all_q} have been queued for parsing.",
             logger_context=log_context,
             level='info')
-        logger.info('Done. All tasks have been queued to re-parse the selected datafiles.')
+        logger.info('Done. All tasks have been queued to parse the selected datafiles.')
