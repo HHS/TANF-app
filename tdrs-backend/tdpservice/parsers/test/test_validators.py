@@ -675,1454 +675,1454 @@ class TestCat3ValidatorsBase:
         raise NotImplementedError()
 
 
-class TestT1Cat3Validators(TestCat3ValidatorsBase):
-    """Test category three validators for TANF T1 records."""
-
-    @pytest.fixture
-    def record(self):
-        """Override default record with TANF T1 record."""
-        return TanfT1Factory.create()
-
-    def test_validate_food_stamps(self, record):
-        """Test cat3 validator for food stamps."""
-        val = validators.if_then_validator(
-          condition_field_name='RECEIVES_FOOD_STAMPS', condition_function=validators.matches(1),
-          result_field_name='AMT_FOOD_STAMP_ASSISTANCE', result_function=validators.isLargerThan(0),
-        )
-        record.RECEIVES_FOOD_STAMPS = 1
-        record.AMT_FOOD_STAMP_ASSISTANCE = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='RECEIVES_FOOD_STAMPS', friendly_name='receives food stamps'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='AMT_FOOD_STAMP_ASSISTANCE', friendly_name='amt food stamps'),
-            ]
-        ))
-        assert result == (True, None, ['RECEIVES_FOOD_STAMPS', 'AMT_FOOD_STAMP_ASSISTANCE'])
-
-        record.AMT_FOOD_STAMP_ASSISTANCE = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='RECEIVES_FOOD_STAMPS', friendly_name='receives food stamps'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='AMT_FOOD_STAMP_ASSISTANCE', friendly_name='amt food stamps'),
-            ]
-        ))
-        assert result[0] is False
-        assert result[1] == 'If Item 1 (receives food stamps) is 1, then Item 2 (amt food stamps) 0 is not larger than 0.'
-
-    def test_validate_subsidized_child_care(self, record):
-        """Test cat3 validator for subsidized child care."""
-        val = validators.if_then_validator(
-          condition_field_name='RECEIVES_SUB_CC', condition_function=validators.notMatches(3),
-          result_field_name='AMT_SUB_CC', result_function=validators.isLargerThan(0),
-        )
-        record.RECEIVES_SUB_CC = 4
-        record.AMT_SUB_CC = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='RECEIVES_SUB_CC', friendly_name='receives sub cc'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='AMT_SUB_CC', friendly_name='amt sub cc'),
-            ]
-        ))
-        assert result == (True, None, ['RECEIVES_SUB_CC', 'AMT_SUB_CC'])
-
-        record.RECEIVES_SUB_CC = 4
-        record.AMT_SUB_CC = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='RECEIVES_SUB_CC', friendly_name='receives sub cc'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='AMT_SUB_CC', friendly_name='amt sub cc'),
-            ]
-        ))
-        assert result[0] is False
-        assert result[1] == 'Uh oh'
-
-    def test_validate_cash_amount_and_nbr_months(self, record):
-        """Test cat3 validator for cash amount and number of months."""
-        val = validators.if_then_validator(
-          condition_field_name='CASH_AMOUNT', condition_function=validators.isLargerThan(0),
-          result_field_name='NBR_MONTHS', result_function=validators.isLargerThan(0),
-        )
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='CASH_AMOUNT', friendly_name='cash amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='NBR_MONTHS', friendly_name='nbr months'),
-            ]
-        ))
-        assert result == (True, None, ['CASH_AMOUNT', 'NBR_MONTHS'])
-
-        record.CASH_AMOUNT = 1
-        record.NBR_MONTHS = -1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='CASH_AMOUNT', friendly_name='cash amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='NBR_MONTHS', friendly_name='nbr months'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_child_care(self, record):
-        """Test cat3 validator for child care."""
-        val = validators.if_then_validator(
-          condition_field_name='CC_AMOUNT', condition_function=validators.isLargerThan(0),
-          result_field_name='CHILDREN_COVERED', result_function=validators.isLargerThan(0),
-        )
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='CC_AMOUNT', friendly_name='cc amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CHILDREN_COVERED', friendly_name='chldrn coverd'),
-            ]
-        ))
-        assert result == (True, None, ['CC_AMOUNT', 'CHILDREN_COVERED'])
-
-        record.CC_AMOUNT = 1
-        record.CHILDREN_COVERED = -1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='CC_AMOUNT', friendly_name='cc amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CHILDREN_COVERED', friendly_name='chldrn coverd'),
-            ]
-        ))
-        assert result[0] is False
-
-        val = validators.if_then_validator(
-          condition_field_name='CC_AMOUNT', condition_function=validators.isLargerThan(0),
-          result_field_name='CC_NBR_MONTHS', result_function=validators.isLargerThan(0),
-        )
-        record.CC_AMOUNT = 10
-        record.CC_NBR_MONTHS = -1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='CC_AMOUNT', friendly_name='cc amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CC_NBR_MONTHS', friendly_name='cc nbr mnths'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_transportation(self, record):
-        """Test cat3 validator for transportation."""
-        val = validators.if_then_validator(
-          condition_field_name='TRANSP_AMOUNT', condition_function=validators.isLargerThan(0),
-          result_field_name='TRANSP_NBR_MONTHS', result_function=validators.isLargerThan(0),
-        )
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='TRANSP_AMOUNT', friendly_name='transp amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='TRANSP_NBR_MONTHS', friendly_name='transp nbr months'),
-            ]
-        ))
-        assert result == (True, None, ['TRANSP_AMOUNT', 'TRANSP_NBR_MONTHS'])
-
-        record.TRANSP_AMOUNT = 1
-        record.TRANSP_NBR_MONTHS = -1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='TRANSP_AMOUNT', friendly_name='transp amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='TRANSP_NBR_MONTHS', friendly_name='transp nbr months'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_transitional_services(self, record):
-        """Test cat3 validator for transitional services."""
-        val = validators.if_then_validator(
-          condition_field_name='TRANSITION_SERVICES_AMOUNT', condition_function=validators.isLargerThan(0),
-          result_field_name='TRANSITION_NBR_MONTHS', result_function=validators.isLargerThan(0),
-        )
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='TRANSITION_SERVICES_AMOUNT', friendly_name='transition serv amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='TRANSITION_NBR_MONTHS', friendly_name='transition nbr months'),
-            ]
-        ))
-        assert result == (True, None, ['TRANSITION_SERVICES_AMOUNT', 'TRANSITION_NBR_MONTHS'])
-
-        record.TRANSITION_SERVICES_AMOUNT = 1
-        record.TRANSITION_NBR_MONTHS = -1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='TRANSITION_SERVICES_AMOUNT', friendly_name='transition serv amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='TRANSITION_NBR_MONTHS', friendly_name='transition nbr months'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_other(self, record):
-        """Test cat3 validator for other."""
-        val = validators.if_then_validator(
-          condition_field_name='OTHER_AMOUNT', condition_function=validators.isLargerThan(0),
-          result_field_name='OTHER_NBR_MONTHS', result_function=validators.isLargerThan(0),
-        )
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='OTHER_AMOUNT', friendly_name='other amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='OTHER_NBR_MONTHS', friendly_name='other nbr months'),
-            ]
-        ))
-        assert result == (True, None, ['OTHER_AMOUNT', 'OTHER_NBR_MONTHS'])
-
-        record.OTHER_AMOUNT = 1
-        record.OTHER_NBR_MONTHS = -1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='OTHER_AMOUNT', friendly_name='other amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='OTHER_NBR_MONTHS', friendly_name='other nbr months'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_reasons_for_amount_of_assistance_reductions(self, record):
-        """Test cat3 validator for assistance reductions."""
-        val = validators.if_then_validator(
-          condition_field_name='SANC_REDUCTION_AMT', condition_function=validators.isLargerThan(0),
-          result_field_name='WORK_REQ_SANCTION', result_function=validators.oneOf((1, 2)),
-        )
-        record.SANC_REDUCTION_AMT = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='SANC_REDUCTION_AMT', friendly_name='sanc reduction amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='WORK_REQ_SANCTION', friendly_name='work req sanction'),
-            ]
-        ))
-        assert result == (True, None, ['SANC_REDUCTION_AMT', 'WORK_REQ_SANCTION'])
-
-        record.SANC_REDUCTION_AMT = 10
-        record.WORK_REQ_SANCTION = -1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='SANC_REDUCTION_AMT', friendly_name='sanc reduction amt'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='WORK_REQ_SANCTION', friendly_name='work req sanction'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_sum(self, record):
-        """Test cat3 validator for sum of cash fields."""
-        val = validators.sumIsLarger(("AMT_FOOD_STAMP_ASSISTANCE", "AMT_SUB_CC", "CC_AMOUNT", "TRANSP_AMOUNT",
-                                      "TRANSITION_SERVICES_AMOUNT", "OTHER_AMOUNT"), 0)
-        result = val(record, RowSchema())
-        assert result == (True, None, ['AMT_FOOD_STAMP_ASSISTANCE', 'AMT_SUB_CC', 'CC_AMOUNT', 'TRANSP_AMOUNT',
-                                       'TRANSITION_SERVICES_AMOUNT', 'OTHER_AMOUNT'])
-
-        record.AMT_FOOD_STAMP_ASSISTANCE = 0
-        record.AMT_SUB_CC = 0
-        record.CC_AMOUNT = 0
-        record.TRANSP_AMOUNT = 0
-        record.TRANSITION_SERVICES_AMOUNT = 0
-        record.OTHER_AMOUNT = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='AMT_FOOD_STAMP_ASSISTANCE', friendly_name='amt food stamp assis'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='AMT_SUB_CC', friendly_name='amt sub cc'),
-                Field(item=3, startIndex=4, endIndex=5, type='string',
-                      name='CC_AMOUNT', friendly_name='cc amt'),
-                Field(item=4, startIndex=5, endIndex=6, type='string',
-                      name='TRANSP_AMOUNT', friendly_name='transp amt'),
-                Field(item=5, startIndex=6, endIndex=7, type='string',
-                      name='TRANSITION_SERVICES_AMOUNT', friendly_name='transition serv amt'),
-                Field(item=6, startIndex=7, endIndex=8, type='string',
-                      name='OTHER_AMOUNT', friendly_name='other amt'),
-            ]
-        ))
-        assert result[0] is False
-
-
-class TestT2Cat3Validators(TestCat3ValidatorsBase):
-    """Test category three validators for TANF T2 records."""
-
-    @pytest.fixture
-    def record(self):
-        """Override default record with TANF T2 record."""
-        return TanfT2Factory.create()
-
-    def test_validate_ssn(self, record):
-        """Test cat3 validator for social security number."""
-        val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
-                  result_field_name='SSN', result_function=validators.notOneOf(("000000000", "111111111", "222222222",
-                                                                                "333333333", "444444444", "555555555",
-                                                                                "666666666", "777777777", "888888888",
-                                                                                "999999999")),
-            )
-        record.SSN = "999989999"
-        record.FAMILY_AFFILIATION = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='ssn'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'SSN'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.SSN = "999999999"
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='ssn'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_race_ethnicity(self, record):
-        """Test cat3 validator for race/ethnicity."""
-        races = ["RACE_HISPANIC", "RACE_AMER_INDIAN", "RACE_ASIAN", "RACE_BLACK", "RACE_HAWAIIAN", "RACE_WHITE"]
-        record.FAMILY_AFFILIATION = 1
-        for race in races:
-            val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2, 3)),
-                  result_field_name=race, result_function=validators.isInLimits(1, 2),
-            )
-            result = val(record, RowSchema(
-                fields=[
-                    Field(item=1, startIndex=0, endIndex=2, type='string',
-                          name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                    Field(item=2, startIndex=2, endIndex=4, type='string',
-                          name=race, friendly_name='race'),
-                ]
-            ))
-            assert result == (True, None, ['FAMILY_AFFILIATION', race])
-
-        record.FAMILY_AFFILIATION = 0
-        for race in races:
-            val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2, 3)),
-                  result_field_name=race, result_function=validators.isInLimits(1, 2)
-            )
-            result = val(record, RowSchema(
-                fields=[
-                    Field(item=1, startIndex=0, endIndex=2, type='string',
-                          name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                    Field(item=2, startIndex=2, endIndex=4, type='string',
-                          name=race, friendly_name='race'),
-                ]
-            ))
-            assert result == (True, None, ['FAMILY_AFFILIATION', race])
-
-    def test_validate_marital_status(self, record):
-        """Test cat3 validator for marital status."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field_name='MARITAL_STATUS', result_function=validators.isInLimits(1, 5),
-                    )
-        record.FAMILY_AFFILIATION = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='MARITAL_STATUS', friendly_name='married?'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'MARITAL_STATUS'])
-
-        record.FAMILY_AFFILIATION = 3
-        record.MARITAL_STATUS = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='MARITAL_STATUS', friendly_name='married?'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_parent_with_minor(self, record):
-        """Test cat3 validator for parent with a minor child."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field_name='PARENT_MINOR_CHILD', result_function=validators.isInLimits(1, 3),
-                    )
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'PARENT_MINOR_CHILD'])
-
-        record.PARENT_MINOR_CHILD = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_education_level(self, record):
-        """Test cat3 validator for education level."""
-        val = validators.if_then_validator(
-                      condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2, 3)),
-                      result_field_name='EDUCATION_LEVEL', result_function=validators.oneOf(("01", "02", "03", "04",
-                                                                                             "05", "06", "07", "08",
-                                                                                             "09", "10", "11", "12",
-                                                                                             "13", "14", "15", "16",
-                                                                                             "98", "99")),
-                )
-        record.FAMILY_AFFILIATION = 3
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EDUCATION_LEVEL', friendly_name='education level'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'EDUCATION_LEVEL'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.EDUCATION_LEVEL = "00"
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EDUCATION_LEVEL', friendly_name='education level'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_citizenship(self, record):
-        """Test cat3 validator for citizenship."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                        result_field_name='CITIZENSHIP_STATUS', result_function=validators.oneOf((1, 2)),
-                    )
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.CITIZENSHIP_STATUS = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_cooperation_with_child_support(self, record):
-        """Test cat3 validator for cooperation with child support."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field_name='COOPERATION_CHILD_SUPPORT', result_function=validators.oneOf((1, 2, 9)),
-                    )
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='COOPERATION_CHILD_SUPPORT', friendly_name='cooperation child support'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'COOPERATION_CHILD_SUPPORT'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.COOPERATION_CHILD_SUPPORT = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='COOPERATION_CHILD_SUPPORT', friendly_name='cooperation child support'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_employment_status(self, record):
-        """Test cat3 validator for employment status."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field_name='EMPLOYMENT_STATUS', result_function=validators.isInLimits(1, 3),
-                    )
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EMPLOYMENT_STATUS', friendly_name='employment status'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'EMPLOYMENT_STATUS'])
-
-        record.FAMILY_AFFILIATION = 3
-        record.EMPLOYMENT_STATUS = 4
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EMPLOYMENT_STATUS', friendly_name='employment status'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_work_eligible_indicator(self, record):
-        """Test cat3 validator for work eligibility."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
-                        result_field_name='WORK_ELIGIBLE_INDICATOR', result_function=validators.or_validators(
-                            validators.isInStringRange(1, 9),
-                            validators.matches('12')
-                        ),
-                    )
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='WORK_ELIGIBLE_INDICATOR', friendly_name='work eligible indicator'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'WORK_ELIGIBLE_INDICATOR'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.WORK_ELIGIBLE_INDICATOR = "00"
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='WORK_ELIGIBLE_INDICATOR', friendly_name='work eligible indicator'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_work_participation(self, record):
-        """Test cat3 validator for work participation."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
-                        result_field_name='WORK_PART_STATUS', result_function=validators.oneOf(['01', '02', '05', '07',
-                                                                                                '09', '15', '17', '18',
-                                                                                                '19', '99']),
-                    )
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='WORK_PART_STATUS', friendly_name='work part status'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'WORK_PART_STATUS'])
-
-        record.FAMILY_AFFILIATION = 2
-        record.WORK_PART_STATUS = "04"
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='WORK_PART_STATUS', friendly_name='work part status'),
-            ]
-        ))
-        assert result[0] is False
-
-        val = validators.if_then_validator(
-                        condition_field_name='WORK_ELIGIBLE_INDICATOR',
-                        condition_function=validators.isInStringRange(1, 5),
-                        result_field_name='WORK_PART_STATUS',
-                        result_function=validators.notMatches('99'),
-                    )
-        record.WORK_PART_STATUS = "99"
-        record.WORK_ELIGIBLE_INDICATOR = "01"
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='WORK_ELIGIBLE_INDICATOR', friendly_name='work eligible indicator'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='WORK_PART_STATUS', friendly_name='work part status'),
-            ]
-        ))
-        assert result[0] is False
-
-
-class TestT3Cat3Validators(TestCat3ValidatorsBase):
-    """Test category three validators for TANF T3 records."""
-
-    @pytest.fixture
-    def record(self):
-        """Override default record with TANF T3 record."""
-        return TanfT3Factory.create()
-
-    def test_validate_ssn(self, record):
-        """Test cat3 validator for relationship to head of household."""
-        record.FAMILY_AFFILIATION = 1
-        record.SSN = "199199991"
-        val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                  result_field_name='SSN', result_function=validators.notOneOf(("999999999", "000000000")),
-            )
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='social'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'SSN'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.SSN = "999999999"
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='social'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_t3_race_ethnicity(self, record):
-        """Test cat3 validator for race/ethnicity."""
-        races = ["RACE_HISPANIC", "RACE_AMER_INDIAN", "RACE_ASIAN", "RACE_BLACK", "RACE_HAWAIIAN", "RACE_WHITE"]
-        record.FAMILY_AFFILIATION = 1
-        for race in races:
-            val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
-                  result_field_name=race, result_function=validators.oneOf((1, 2)),
-            )
-            result = val(record, RowSchema(
-                fields=[
-                    Field(item=1, startIndex=0, endIndex=2, type='string',
-                          name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                    Field(item=2, startIndex=2, endIndex=4, type='string',
-                          name=race, friendly_name='race'),
-                ]
-            ))
-            assert result == (True, None, ['FAMILY_AFFILIATION', race])
-
-        record.FAMILY_AFFILIATION = 0
-        for race in races:
-            val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
-                  result_field_name=race, result_function=validators.oneOf((1, 2)),
-            )
-            result = val(record, RowSchema(
-                fields=[
-                    Field(item=1, startIndex=0, endIndex=2, type='string',
-                          name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                    Field(item=2, startIndex=2, endIndex=4, type='string',
-                          name=race, friendly_name='race'),
-                ]
-            ))
-            assert result == (True, None, ['FAMILY_AFFILIATION', race])
-
-    def test_validate_relationship_hoh(self, record):
-        """Test cat3 validator for relationship to head of household."""
-        val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
-                  result_field_name='RELATIONSHIP_HOH', result_function=validators.isInStringRange(4, 9),
-            )
-        record.FAMILY_AFFILIATION = 0
-        record.RELATIONSHIP_HOH = "04"
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='RELATIONSHIP_HOH', friendly_name='relationship hoh'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.RELATIONSHIP_HOH = "01"
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='RELATIONSHIP_HOH', friendly_name='relationship hoh'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_t3_education_level(self, record):
-        """Test cat3 validator for education level."""
-        val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                  result_field_name='EDUCATION_LEVEL', result_function=validators.notMatches("99"),
-            )
-        record.FAMILY_AFFILIATION = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EDUCATION_LEVEL', friendly_name='ed lev'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'EDUCATION_LEVEL'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.EDUCATION_LEVEL = "99"
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EDUCATION_LEVEL', friendly_name='ed lev'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_t3_citizenship(self, record):
-        """Test cat3 validator for citizenship."""
-        val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                  result_field_name='CITIZENSHIP_STATUS', result_function=validators.oneOf((1, 2)),
-            )
-        record.FAMILY_AFFILIATION = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.CITIZENSHIP_STATUS = 3
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
-            ]
-        ))
-        assert result[0] is False
-
-        val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(2),
-                  result_field_name='CITIZENSHIP_STATUS', result_function=validators.oneOf((1, 2, 9)),
-            )
-        record.FAMILY_AFFILIATION = 2
-        record.CITIZENSHIP_STATUS = 3
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
-            ]
-        ))
-        assert result[0] is False
-
-
-class TestT5Cat3Validators(TestCat3ValidatorsBase):
-    """Test category three validators for TANF T5 records."""
-
-    @pytest.fixture
-    def record(self):
-        """Override default record with TANF T5 record."""
-        return TanfT5Factory.create()
-
-    def test_validate_ssn(self, record):
-        """Test cat3 validator for SSN."""
-        val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.notMatches(1),
-                  result_field_name='SSN', result_function=validators.isNumber()
-                  )
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='social'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'SSN'])
-
-        record.SSN = "abc"
-        record.FAMILY_AFFILIATION = 2
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='social'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_ssn_citizenship(self, record):
-        """Test cat3 validator for SSN/citizenship."""
-        val = validators.validate__FAM_AFF__SSN()
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='social'),
-                Field(item=3, startIndex=4, endIndex=5, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
-
-        record.FAMILY_AFFILIATION = 2
-        record.SSN = "000000000"
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='social'),
-                Field(item=3, startIndex=4, endIndex=5, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_race_ethnicity(self, record):
-        """Test cat3 validator for race/ethnicity."""
-        races = ["RACE_HISPANIC", "RACE_AMER_INDIAN", "RACE_ASIAN", "RACE_BLACK", "RACE_HAWAIIAN", "RACE_WHITE"]
-        record.FAMILY_AFFILIATION = 1
-        for race in races:
-            val = validators.if_then_validator(
-                    condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                    result_field_name=race, result_function=validators.isInLimits(1, 2)
-                  )
-            result = val(record, RowSchema(
-                fields=[
-                    Field(item=1, startIndex=0, endIndex=2, type='string',
-                          name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                    Field(item=2, startIndex=2, endIndex=4, type='string',
-                          name=race, friendly_name='social'),
-                ]
-            ))
-            assert result == (True, None, ['FAMILY_AFFILIATION', race])
-
-        record.FAMILY_AFFILIATION = 1
-        record.RACE_HISPANIC = 0
-        record.RACE_AMER_INDIAN = 0
-        record.RACE_ASIAN = 0
-        record.RACE_BLACK = 0
-        record.RACE_HAWAIIAN = 0
-        record.RACE_WHITE = 0
-        for race in races:
-            val = validators.if_then_validator(
-                    condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                    result_field_name=race, result_function=validators.isInLimits(1, 2)
-                  )
-            result = val(record, RowSchema(
-                fields=[
-                    Field(item=1, startIndex=0, endIndex=2, type='string',
-                          name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                    Field(item=2, startIndex=2, endIndex=4, type='string',
-                          name=race, friendly_name='social'),
-                ]
-            ))
-            assert result[0] is False
-
-    def test_validate_marital_status(self, record):
-        """Test cat3 validator for marital status."""
-        val = validators.if_then_validator(
-                    condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                    result_field_name='MARITAL_STATUS', result_function=validators.isInLimits(0, 5)
-                  )
-
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='MARITAL_STATUS', friendly_name='marital status'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'MARITAL_STATUS'])
-
-        record.FAMILY_AFFILIATION = 2
-        record.MARITAL_STATUS = 6
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='MARITAL_STATUS', friendly_name='marital status'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_parent_minor(self, record):
-        """Test cat3 validator for parent with minor."""
-        val = validators.if_then_validator(
-                    condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 2),
-                    result_field_name='PARENT_MINOR_CHILD', result_function=validators.isInLimits(1, 3)
-                  )
-
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'PARENT_MINOR_CHILD'])
-
-        record.FAMILY_AFFILIATION = 2
-        record.PARENT_MINOR_CHILD = 0
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_education(self, record):
-        """Test cat3 validator for education level."""
-        val = validators.if_then_validator(
-                  condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                  result_field_name='EDUCATION_LEVEL', result_function=validators.or_validators(
-                      validators.isInStringRange(1, 16),
-                      validators.isInStringRange(98, 99)
-                      )
-                  )
-
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EDUCATION_LEVEL', friendly_name='education level'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'EDUCATION_LEVEL'])
-
-        record.FAMILY_AFFILIATION = 2
-        record.EDUCATION_LEVEL = "0"
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EDUCATION_LEVEL', friendly_name='education level'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_citizenship_status(self, record):
-        """Test cat3 validator for citizenship status."""
-        val = validators.if_then_validator(
-                    condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                    result_field_name='CITIZENSHIP_STATUS', result_function=validators.isInLimits(1, 2)
-                  )
-
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.CITIZENSHIP_STATUS = 0
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_oasdi_insurance(self, record):
-        """Test cat3 validator for OASDI insurance."""
-        val = validators.if_then_validator(
-                    condition_field_name='DATE_OF_BIRTH', condition_function=validators.olderThan(18),
-                    result_field_name='REC_OASDI_INSURANCE', result_function=validators.isInLimits(1, 2)
-                  )
-
-        record.DATE_OF_BIRTH = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='DATE_OF_BIRTH', friendly_name='dob'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='REC_OASDI_INSURANCE', friendly_name='rec oasdi insurance'),
-            ]
-        ))
-        assert result == (True, None, ['DATE_OF_BIRTH', 'REC_OASDI_INSURANCE'])
-
-        record.DATE_OF_BIRTH = 200001
-        record.REC_OASDI_INSURANCE = 0
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='DATE_OF_BIRTH', friendly_name='dob'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='REC_OASDI_INSURANCE', friendly_name='rec oasdi insurance'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_validate_federal_disability(self, record):
-        """Test cat3 validator for federal disability."""
-        val = validators.if_then_validator(
-                    condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                    result_field_name='REC_FEDERAL_DISABILITY', result_function=validators.isInLimits(1, 2)
-                  )
-
-        record.FAMILY_AFFILIATION = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='REC_FEDERAL_DISABILITY', friendly_name='rec fed disability'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'REC_FEDERAL_DISABILITY'])
-
-        record.FAMILY_AFFILIATION = 1
-        record.REC_FEDERAL_DISABILITY = 0
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='REC_FEDERAL_DISABILITY', friendly_name='rec fed disability'),
-            ]
-        ))
-        assert result[0] is False
-
-
-class TestT6Cat3Validators(TestCat3ValidatorsBase):
-    """Test category three validators for TANF T6 records."""
-
-    @pytest.fixture
-    def record(self):
-        """Override default record with TANF T6 record."""
-        return TanfT6Factory.create()
-
-    def test_sum_of_applications(self, record):
-        """Test cat3 validator for sum of applications."""
-        val = validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"])
-
-        record.NUM_APPLICATIONS = 2
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='NUM_APPLICATIONS', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='NUM_APPROVED', friendly_name='num approved'),
-                Field(item=2, startIndex=4, endIndex=5, type='string',
-                      name='NUM_DENIED', friendly_name='num denied'),
-            ]
-        ))
-
-        assert result == (True, None, ['NUM_APPLICATIONS', 'NUM_APPROVED', 'NUM_DENIED'])
-
-        record.NUM_APPLICATIONS = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='NUM_APPLICATIONS', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='NUM_APPROVED', friendly_name='num approved'),
-                Field(item=3, startIndex=4, endIndex=5, type='string',
-                      name='NUM_DENIED', friendly_name='num denied'),
-            ]
-        ))
-
-        assert result[0] is False
-
-    def test_sum_of_families(self, record):
-        """Test cat3 validator for sum of families."""
-        val = validators.sumIsEqual("NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"])
-
-        record.NUM_FAMILIES = 3
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='NUM_FAMILIES', friendly_name='num fam'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='NUM_2_PARENTS', friendly_name='num 2 parent'),
-                Field(item=3, startIndex=4, endIndex=5, type='string',
-                      name='NUM_1_PARENTS', friendly_name='num 2 parent'),
-                Field(item=4, startIndex=5, endIndex=6, type='string',
-                      name='NUM_NO_PARENTS', friendly_name='num 0 parent'),
-            ]
-        ))
-
-        assert result == (True, None, ['NUM_FAMILIES', 'NUM_2_PARENTS', 'NUM_1_PARENTS', 'NUM_NO_PARENTS'])
-
-        record.NUM_FAMILIES = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='NUM_FAMILIES', friendly_name='num fam'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='NUM_2_PARENTS', friendly_name='num 2 parent'),
-                Field(item=3, startIndex=4, endIndex=5, type='string',
-                      name='NUM_1_PARENTS', friendly_name='num 2 parent'),
-                Field(item=4, startIndex=5, endIndex=6, type='string',
-                      name='NUM_NO_PARENTS', friendly_name='num 0 parent'),
-            ]
-        ))
-
-        assert result[0] is False
-
-    def test_sum_of_recipients(self, record):
-        """Test cat3 validator for sum of recipients."""
-        val = validators.sumIsEqual("NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"])
-
-        record.NUM_RECIPIENTS = 2
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='NUM_RECIPIENTS', friendly_name='num recip'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='NUM_ADULT_RECIPIENTS', friendly_name='num adult recip'),
-                Field(item=3, startIndex=4, endIndex=5, type='string',
-                      name='NUM_CHILD_RECIPIENTS', friendly_name='num child recip'),
-            ]
-        ))
-
-        assert result == (True, None, ['NUM_RECIPIENTS', 'NUM_ADULT_RECIPIENTS', 'NUM_CHILD_RECIPIENTS'])
-
-        record.NUM_RECIPIENTS = 1
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='NUM_RECIPIENTS', friendly_name='num recip'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='NUM_ADULT_RECIPIENTS', friendly_name='num adult recip'),
-                Field(item=3, startIndex=4, endIndex=5, type='string',
-                      name='NUM_CHILD_RECIPIENTS', friendly_name='num child recip'),
-            ]
-        ))
-
-        assert result[0] is False
-
-class TestM5Cat3Validators(TestCat3ValidatorsBase):
-    """Test category three validators for TANF T6 records."""
-
-    @pytest.fixture
-    def record(self):
-        """Override default record with TANF T6 record."""
-        return SSPM5Factory.create()
-
-    def test_fam_affil_ssn(self, record):
-        """Test cat3 validator for family affiliation and ssn."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                        result_field_name='SSN', result_function=validators.validateSSN(),
-                  )
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='social'),
-            ]
-        ))
-        assert result == (True, None, ["FAMILY_AFFILIATION", "SSN"])
-
-        record.SSN = '111111111'
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='SSN', friendly_name='social'),
-            ]
-        ))
-
-        assert result[0] is False
-
-    def test_validate_race_ethnicity(self, record):
-        """Test cat3 validator for race/ethnicity."""
-        races = ["RACE_HISPANIC", "RACE_AMER_INDIAN", "RACE_ASIAN", "RACE_BLACK", "RACE_HAWAIIAN", "RACE_WHITE"]
-        for race in races:
-            val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field_name=race, result_function=validators.isInLimits(1, 2),
-                  )
-            result = val(record, RowSchema(
-                fields=[
-                    Field(item=1, startIndex=0, endIndex=2, type='string',
-                          name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                    Field(item=2, startIndex=2, endIndex=4, type='string',
-                          name=race, friendly_name='social'),
-                ]
-            ))
-            assert result == (True, None, ['FAMILY_AFFILIATION', race])
-
-    def test_fam_affil_marital_stat(self, record):
-        """Test cat3 validator for family affiliation, and marital status."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field_name='MARITAL_STATUS', result_function=validators.isInLimits(1, 5),
-                  )
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='MARITAL_STATUS', friendly_name='marital status'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'MARITAL_STATUS'])
-
-        record.MARITAL_STATUS = 0
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='MARITAL_STATUS', friendly_name='marital status'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_fam_affil_parent_with_minor(self, record):
-        """Test cat3 validator for family affiliation, and parent with minor child."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 2),
-                        result_field_name='PARENT_MINOR_CHILD', result_function=validators.isInLimits(1, 3),
-                  )
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'PARENT_MINOR_CHILD'])
-
-        record.PARENT_MINOR_CHILD = 0
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_fam_affil_ed_level(self, record):
-        """Test cat3 validator for family affiliation, and education level."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
-                        result_field_name='EDUCATION_LEVEL', result_function=validators.or_validators(
-                            validators.isInStringRange(1, 16), validators.isInStringRange(98, 99)),
-                  )
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EDUCATION_LEVEL', friendly_name='education level'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'EDUCATION_LEVEL'])
-
-        record.EDUCATION_LEVEL = 0
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='EDUCATION_LEVEL', friendly_name='education level'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_fam_affil_citz_stat(self, record):
-        """Test cat3 validator for family affiliation, and citizenship status."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                        result_field_name='CITIZENSHIP_STATUS', result_function=validators.isInLimits(1, 3),
-                  )
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS'])
-
-        record.CITIZENSHIP_STATUS = 0
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_dob_oasdi_insur(self, record):
-        """Test cat3 validator for dob, and REC_OASDI_INSURANCE."""
-        val = validators.if_then_validator(
-                        condition_field_name='DATE_OF_BIRTH', condition_function=validators.olderThan(18),
-                        result_field_name='REC_OASDI_INSURANCE', result_function=validators.isInLimits(1, 2),
-                  )
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='DATE_OF_BIRTH', friendly_name='dob'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='REC_OASDI_INSURANCE', friendly_name='rec oasdi insurance'),
-            ]
-        ))
-        assert result == (True, None, ['DATE_OF_BIRTH', 'REC_OASDI_INSURANCE'])
-
-        record.REC_OASDI_INSURANCE = 0
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='DATE_OF_BIRTH', friendly_name='dob'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='REC_OASDI_INSURANCE', friendly_name='rec oasdi insurance'),
-            ]
-        ))
-        assert result[0] is False
-
-    def test_fam_affil_fed_disability(self, record):
-        """Test cat3 validator for family affiliation, and REC_FEDERAL_DISABILITY."""
-        val = validators.if_then_validator(
-                        condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
-                        result_field_name='REC_FEDERAL_DISABILITY', result_function=validators.isInLimits(1, 2),
-                  )
-
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='REC_FEDERAL_DISABILITY', friendly_name='rec fed disability'),
-            ]
-        ))
-        assert result == (True, None, ['FAMILY_AFFILIATION', 'REC_FEDERAL_DISABILITY'])
-
-        record.REC_FEDERAL_DISABILITY = 0
-        result = val(record, RowSchema(
-            fields=[
-                Field(item=1, startIndex=0, endIndex=2, type='string',
-                      name='FAMILY_AFFILIATION', friendly_name='fam affil'),
-                Field(item=2, startIndex=2, endIndex=4, type='string',
-                      name='REC_FEDERAL_DISABILITY', friendly_name='rec fed disability'),
-            ]
-        ))
-        assert result[0] is False
-
-def test_is_quiet_preparser_errors():
-    """Test is_quiet_preparser_errors."""
-    assert validators.is_quiet_preparser_errors(2, 4, 6)("#######") is True
-    assert validators.is_quiet_preparser_errors(2, 4, 6)("####1##") is False
-    assert validators.is_quiet_preparser_errors(4, 4, 6)("##1") is True
-
-def test_t3_m3_child_validator():
-    """Test t3_m3_child_validator."""
-    assert validators.t3_m3_child_validator(1)(
-        "4" * 61, None, "fake_friendly_name", 0
-    ) == (True, None)
-    assert validators.t3_m3_child_validator(1)("12", None, "fake_friendly_name", 0) == (
-        False,
-        "The first child record is too short at 2 characters and must be at least 60 characters.",
-    )
+# class TestT1Cat3Validators(TestCat3ValidatorsBase):
+#     """Test category three validators for TANF T1 records."""
+
+#     @pytest.fixture
+#     def record(self):
+#         """Override default record with TANF T1 record."""
+#         return TanfT1Factory.create()
+
+#     def test_validate_food_stamps(self, record):
+#         """Test cat3 validator for food stamps."""
+#         val = validators.if_then_validator(
+#           condition_field_name='RECEIVES_FOOD_STAMPS', condition_function=validators.matches(1),
+#           result_field_name='AMT_FOOD_STAMP_ASSISTANCE', result_function=validators.isLargerThan(0),
+#         )
+#         record.RECEIVES_FOOD_STAMPS = 1
+#         record.AMT_FOOD_STAMP_ASSISTANCE = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='RECEIVES_FOOD_STAMPS', friendly_name='receives food stamps'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='AMT_FOOD_STAMP_ASSISTANCE', friendly_name='amt food stamps'),
+#             ]
+#         ))
+#         assert result == (True, None, ['RECEIVES_FOOD_STAMPS', 'AMT_FOOD_STAMP_ASSISTANCE'])
+
+#         record.AMT_FOOD_STAMP_ASSISTANCE = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='RECEIVES_FOOD_STAMPS', friendly_name='receives food stamps'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='AMT_FOOD_STAMP_ASSISTANCE', friendly_name='amt food stamps'),
+#             ]
+#         ))
+#         assert result[0] is False
+#         assert result[1] == 'If Item 1 (receives food stamps) is 1, then Item 2 (amt food stamps) 0 is not larger than 0.'
+
+#     def test_validate_subsidized_child_care(self, record):
+#         """Test cat3 validator for subsidized child care."""
+#         val = validators.if_then_validator(
+#           condition_field_name='RECEIVES_SUB_CC', condition_function=validators.notMatches(3),
+#           result_field_name='AMT_SUB_CC', result_function=validators.isLargerThan(0),
+#         )
+#         record.RECEIVES_SUB_CC = 4
+#         record.AMT_SUB_CC = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='RECEIVES_SUB_CC', friendly_name='receives sub cc'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='AMT_SUB_CC', friendly_name='amt sub cc'),
+#             ]
+#         ))
+#         assert result == (True, None, ['RECEIVES_SUB_CC', 'AMT_SUB_CC'])
+
+#         record.RECEIVES_SUB_CC = 4
+#         record.AMT_SUB_CC = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='RECEIVES_SUB_CC', friendly_name='receives sub cc'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='AMT_SUB_CC', friendly_name='amt sub cc'),
+#             ]
+#         ))
+#         assert result[0] is False
+#         assert result[1] == 'Uh oh'
+
+#     def test_validate_cash_amount_and_nbr_months(self, record):
+#         """Test cat3 validator for cash amount and number of months."""
+#         val = validators.if_then_validator(
+#           condition_field_name='CASH_AMOUNT', condition_function=validators.isLargerThan(0),
+#           result_field_name='NBR_MONTHS', result_function=validators.isLargerThan(0),
+#         )
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='CASH_AMOUNT', friendly_name='cash amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='NBR_MONTHS', friendly_name='nbr months'),
+#             ]
+#         ))
+#         assert result == (True, None, ['CASH_AMOUNT', 'NBR_MONTHS'])
+
+#         record.CASH_AMOUNT = 1
+#         record.NBR_MONTHS = -1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='CASH_AMOUNT', friendly_name='cash amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='NBR_MONTHS', friendly_name='nbr months'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_child_care(self, record):
+#         """Test cat3 validator for child care."""
+#         val = validators.if_then_validator(
+#           condition_field_name='CC_AMOUNT', condition_function=validators.isLargerThan(0),
+#           result_field_name='CHILDREN_COVERED', result_function=validators.isLargerThan(0),
+#         )
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='CC_AMOUNT', friendly_name='cc amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CHILDREN_COVERED', friendly_name='chldrn coverd'),
+#             ]
+#         ))
+#         assert result == (True, None, ['CC_AMOUNT', 'CHILDREN_COVERED'])
+
+#         record.CC_AMOUNT = 1
+#         record.CHILDREN_COVERED = -1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='CC_AMOUNT', friendly_name='cc amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CHILDREN_COVERED', friendly_name='chldrn coverd'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#         val = validators.if_then_validator(
+#           condition_field_name='CC_AMOUNT', condition_function=validators.isLargerThan(0),
+#           result_field_name='CC_NBR_MONTHS', result_function=validators.isLargerThan(0),
+#         )
+#         record.CC_AMOUNT = 10
+#         record.CC_NBR_MONTHS = -1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='CC_AMOUNT', friendly_name='cc amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CC_NBR_MONTHS', friendly_name='cc nbr mnths'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_transportation(self, record):
+#         """Test cat3 validator for transportation."""
+#         val = validators.if_then_validator(
+#           condition_field_name='TRANSP_AMOUNT', condition_function=validators.isLargerThan(0),
+#           result_field_name='TRANSP_NBR_MONTHS', result_function=validators.isLargerThan(0),
+#         )
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='TRANSP_AMOUNT', friendly_name='transp amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='TRANSP_NBR_MONTHS', friendly_name='transp nbr months'),
+#             ]
+#         ))
+#         assert result == (True, None, ['TRANSP_AMOUNT', 'TRANSP_NBR_MONTHS'])
+
+#         record.TRANSP_AMOUNT = 1
+#         record.TRANSP_NBR_MONTHS = -1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='TRANSP_AMOUNT', friendly_name='transp amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='TRANSP_NBR_MONTHS', friendly_name='transp nbr months'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_transitional_services(self, record):
+#         """Test cat3 validator for transitional services."""
+#         val = validators.if_then_validator(
+#           condition_field_name='TRANSITION_SERVICES_AMOUNT', condition_function=validators.isLargerThan(0),
+#           result_field_name='TRANSITION_NBR_MONTHS', result_function=validators.isLargerThan(0),
+#         )
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='TRANSITION_SERVICES_AMOUNT', friendly_name='transition serv amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='TRANSITION_NBR_MONTHS', friendly_name='transition nbr months'),
+#             ]
+#         ))
+#         assert result == (True, None, ['TRANSITION_SERVICES_AMOUNT', 'TRANSITION_NBR_MONTHS'])
+
+#         record.TRANSITION_SERVICES_AMOUNT = 1
+#         record.TRANSITION_NBR_MONTHS = -1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='TRANSITION_SERVICES_AMOUNT', friendly_name='transition serv amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='TRANSITION_NBR_MONTHS', friendly_name='transition nbr months'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_other(self, record):
+#         """Test cat3 validator for other."""
+#         val = validators.if_then_validator(
+#           condition_field_name='OTHER_AMOUNT', condition_function=validators.isLargerThan(0),
+#           result_field_name='OTHER_NBR_MONTHS', result_function=validators.isLargerThan(0),
+#         )
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='OTHER_AMOUNT', friendly_name='other amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='OTHER_NBR_MONTHS', friendly_name='other nbr months'),
+#             ]
+#         ))
+#         assert result == (True, None, ['OTHER_AMOUNT', 'OTHER_NBR_MONTHS'])
+
+#         record.OTHER_AMOUNT = 1
+#         record.OTHER_NBR_MONTHS = -1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='OTHER_AMOUNT', friendly_name='other amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='OTHER_NBR_MONTHS', friendly_name='other nbr months'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_reasons_for_amount_of_assistance_reductions(self, record):
+#         """Test cat3 validator for assistance reductions."""
+#         val = validators.if_then_validator(
+#           condition_field_name='SANC_REDUCTION_AMT', condition_function=validators.isLargerThan(0),
+#           result_field_name='WORK_REQ_SANCTION', result_function=validators.oneOf((1, 2)),
+#         )
+#         record.SANC_REDUCTION_AMT = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='SANC_REDUCTION_AMT', friendly_name='sanc reduction amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='WORK_REQ_SANCTION', friendly_name='work req sanction'),
+#             ]
+#         ))
+#         assert result == (True, None, ['SANC_REDUCTION_AMT', 'WORK_REQ_SANCTION'])
+
+#         record.SANC_REDUCTION_AMT = 10
+#         record.WORK_REQ_SANCTION = -1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='SANC_REDUCTION_AMT', friendly_name='sanc reduction amt'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='WORK_REQ_SANCTION', friendly_name='work req sanction'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_sum(self, record):
+#         """Test cat3 validator for sum of cash fields."""
+#         val = validators.sumIsLarger(("AMT_FOOD_STAMP_ASSISTANCE", "AMT_SUB_CC", "CC_AMOUNT", "TRANSP_AMOUNT",
+#                                       "TRANSITION_SERVICES_AMOUNT", "OTHER_AMOUNT"), 0)
+#         result = val(record, RowSchema())
+#         assert result == (True, None, ['AMT_FOOD_STAMP_ASSISTANCE', 'AMT_SUB_CC', 'CC_AMOUNT', 'TRANSP_AMOUNT',
+#                                        'TRANSITION_SERVICES_AMOUNT', 'OTHER_AMOUNT'])
+
+#         record.AMT_FOOD_STAMP_ASSISTANCE = 0
+#         record.AMT_SUB_CC = 0
+#         record.CC_AMOUNT = 0
+#         record.TRANSP_AMOUNT = 0
+#         record.TRANSITION_SERVICES_AMOUNT = 0
+#         record.OTHER_AMOUNT = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='AMT_FOOD_STAMP_ASSISTANCE', friendly_name='amt food stamp assis'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='AMT_SUB_CC', friendly_name='amt sub cc'),
+#                 Field(item=3, startIndex=4, endIndex=5, type='string',
+#                       name='CC_AMOUNT', friendly_name='cc amt'),
+#                 Field(item=4, startIndex=5, endIndex=6, type='string',
+#                       name='TRANSP_AMOUNT', friendly_name='transp amt'),
+#                 Field(item=5, startIndex=6, endIndex=7, type='string',
+#                       name='TRANSITION_SERVICES_AMOUNT', friendly_name='transition serv amt'),
+#                 Field(item=6, startIndex=7, endIndex=8, type='string',
+#                       name='OTHER_AMOUNT', friendly_name='other amt'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+
+# class TestT2Cat3Validators(TestCat3ValidatorsBase):
+#     """Test category three validators for TANF T2 records."""
+
+#     @pytest.fixture
+#     def record(self):
+#         """Override default record with TANF T2 record."""
+#         return TanfT2Factory.create()
+
+#     def test_validate_ssn(self, record):
+#         """Test cat3 validator for social security number."""
+#         val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
+#                   result_field_name='SSN', result_function=validators.notOneOf(("000000000", "111111111", "222222222",
+#                                                                                 "333333333", "444444444", "555555555",
+#                                                                                 "666666666", "777777777", "888888888",
+#                                                                                 "999999999")),
+#             )
+#         record.SSN = "999989999"
+#         record.FAMILY_AFFILIATION = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='ssn'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'SSN'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.SSN = "999999999"
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='ssn'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_race_ethnicity(self, record):
+#         """Test cat3 validator for race/ethnicity."""
+#         races = ["RACE_HISPANIC", "RACE_AMER_INDIAN", "RACE_ASIAN", "RACE_BLACK", "RACE_HAWAIIAN", "RACE_WHITE"]
+#         record.FAMILY_AFFILIATION = 1
+#         for race in races:
+#             val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2, 3)),
+#                   result_field_name=race, result_function=validators.isInLimits(1, 2),
+#             )
+#             result = val(record, RowSchema(
+#                 fields=[
+#                     Field(item=1, startIndex=0, endIndex=2, type='string',
+#                           name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                     Field(item=2, startIndex=2, endIndex=4, type='string',
+#                           name=race, friendly_name='race'),
+#                 ]
+#             ))
+#             assert result == (True, None, ['FAMILY_AFFILIATION', race])
+
+#         record.FAMILY_AFFILIATION = 0
+#         for race in races:
+#             val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2, 3)),
+#                   result_field_name=race, result_function=validators.isInLimits(1, 2)
+#             )
+#             result = val(record, RowSchema(
+#                 fields=[
+#                     Field(item=1, startIndex=0, endIndex=2, type='string',
+#                           name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                     Field(item=2, startIndex=2, endIndex=4, type='string',
+#                           name=race, friendly_name='race'),
+#                 ]
+#             ))
+#             assert result == (True, None, ['FAMILY_AFFILIATION', race])
+
+#     def test_validate_marital_status(self, record):
+#         """Test cat3 validator for marital status."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                         result_field_name='MARITAL_STATUS', result_function=validators.isInLimits(1, 5),
+#                     )
+#         record.FAMILY_AFFILIATION = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='MARITAL_STATUS', friendly_name='married?'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'MARITAL_STATUS'])
+
+#         record.FAMILY_AFFILIATION = 3
+#         record.MARITAL_STATUS = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='MARITAL_STATUS', friendly_name='married?'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_parent_with_minor(self, record):
+#         """Test cat3 validator for parent with a minor child."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                         result_field_name='PARENT_MINOR_CHILD', result_function=validators.isInLimits(1, 3),
+#                     )
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'PARENT_MINOR_CHILD'])
+
+#         record.PARENT_MINOR_CHILD = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_education_level(self, record):
+#         """Test cat3 validator for education level."""
+#         val = validators.if_then_validator(
+#                       condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2, 3)),
+#                       result_field_name='EDUCATION_LEVEL', result_function=validators.oneOf(("01", "02", "03", "04",
+#                                                                                              "05", "06", "07", "08",
+#                                                                                              "09", "10", "11", "12",
+#                                                                                              "13", "14", "15", "16",
+#                                                                                              "98", "99")),
+#                 )
+#         record.FAMILY_AFFILIATION = 3
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EDUCATION_LEVEL', friendly_name='education level'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'EDUCATION_LEVEL'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.EDUCATION_LEVEL = "00"
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EDUCATION_LEVEL', friendly_name='education level'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_citizenship(self, record):
+#         """Test cat3 validator for citizenship."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+#                         result_field_name='CITIZENSHIP_STATUS', result_function=validators.oneOf((1, 2)),
+#                     )
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.CITIZENSHIP_STATUS = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_cooperation_with_child_support(self, record):
+#         """Test cat3 validator for cooperation with child support."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                         result_field_name='COOPERATION_CHILD_SUPPORT', result_function=validators.oneOf((1, 2, 9)),
+#                     )
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='COOPERATION_CHILD_SUPPORT', friendly_name='cooperation child support'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'COOPERATION_CHILD_SUPPORT'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.COOPERATION_CHILD_SUPPORT = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='COOPERATION_CHILD_SUPPORT', friendly_name='cooperation child support'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_employment_status(self, record):
+#         """Test cat3 validator for employment status."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                         result_field_name='EMPLOYMENT_STATUS', result_function=validators.isInLimits(1, 3),
+#                     )
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EMPLOYMENT_STATUS', friendly_name='employment status'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'EMPLOYMENT_STATUS'])
+
+#         record.FAMILY_AFFILIATION = 3
+#         record.EMPLOYMENT_STATUS = 4
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EMPLOYMENT_STATUS', friendly_name='employment status'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_work_eligible_indicator(self, record):
+#         """Test cat3 validator for work eligibility."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
+#                         result_field_name='WORK_ELIGIBLE_INDICATOR', result_function=validators.or_validators(
+#                             validators.isInStringRange(1, 9),
+#                             validators.matches('12')
+#                         ),
+#                     )
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='WORK_ELIGIBLE_INDICATOR', friendly_name='work eligible indicator'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'WORK_ELIGIBLE_INDICATOR'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.WORK_ELIGIBLE_INDICATOR = "00"
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='WORK_ELIGIBLE_INDICATOR', friendly_name='work eligible indicator'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_work_participation(self, record):
+#         """Test cat3 validator for work participation."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
+#                         result_field_name='WORK_PART_STATUS', result_function=validators.oneOf(['01', '02', '05', '07',
+#                                                                                                 '09', '15', '17', '18',
+#                                                                                                 '19', '99']),
+#                     )
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='WORK_PART_STATUS', friendly_name='work part status'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'WORK_PART_STATUS'])
+
+#         record.FAMILY_AFFILIATION = 2
+#         record.WORK_PART_STATUS = "04"
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='WORK_PART_STATUS', friendly_name='work part status'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#         val = validators.if_then_validator(
+#                         condition_field_name='WORK_ELIGIBLE_INDICATOR',
+#                         condition_function=validators.isInStringRange(1, 5),
+#                         result_field_name='WORK_PART_STATUS',
+#                         result_function=validators.notMatches('99'),
+#                     )
+#         record.WORK_PART_STATUS = "99"
+#         record.WORK_ELIGIBLE_INDICATOR = "01"
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='WORK_ELIGIBLE_INDICATOR', friendly_name='work eligible indicator'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='WORK_PART_STATUS', friendly_name='work part status'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+
+# class TestT3Cat3Validators(TestCat3ValidatorsBase):
+#     """Test category three validators for TANF T3 records."""
+
+#     @pytest.fixture
+#     def record(self):
+#         """Override default record with TANF T3 record."""
+#         return TanfT3Factory.create()
+
+#     def test_validate_ssn(self, record):
+#         """Test cat3 validator for relationship to head of household."""
+#         record.FAMILY_AFFILIATION = 1
+#         record.SSN = "199199991"
+#         val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+#                   result_field_name='SSN', result_function=validators.notOneOf(("999999999", "000000000")),
+#             )
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='social'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'SSN'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.SSN = "999999999"
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='social'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_t3_race_ethnicity(self, record):
+#         """Test cat3 validator for race/ethnicity."""
+#         races = ["RACE_HISPANIC", "RACE_AMER_INDIAN", "RACE_ASIAN", "RACE_BLACK", "RACE_HAWAIIAN", "RACE_WHITE"]
+#         record.FAMILY_AFFILIATION = 1
+#         for race in races:
+#             val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
+#                   result_field_name=race, result_function=validators.oneOf((1, 2)),
+#             )
+#             result = val(record, RowSchema(
+#                 fields=[
+#                     Field(item=1, startIndex=0, endIndex=2, type='string',
+#                           name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                     Field(item=2, startIndex=2, endIndex=4, type='string',
+#                           name=race, friendly_name='race'),
+#                 ]
+#             ))
+#             assert result == (True, None, ['FAMILY_AFFILIATION', race])
+
+#         record.FAMILY_AFFILIATION = 0
+#         for race in races:
+#             val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
+#                   result_field_name=race, result_function=validators.oneOf((1, 2)),
+#             )
+#             result = val(record, RowSchema(
+#                 fields=[
+#                     Field(item=1, startIndex=0, endIndex=2, type='string',
+#                           name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                     Field(item=2, startIndex=2, endIndex=4, type='string',
+#                           name=race, friendly_name='race'),
+#                 ]
+#             ))
+#             assert result == (True, None, ['FAMILY_AFFILIATION', race])
+
+#     def test_validate_relationship_hoh(self, record):
+#         """Test cat3 validator for relationship to head of household."""
+#         val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.oneOf((1, 2)),
+#                   result_field_name='RELATIONSHIP_HOH', result_function=validators.isInStringRange(4, 9),
+#             )
+#         record.FAMILY_AFFILIATION = 0
+#         record.RELATIONSHIP_HOH = "04"
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='RELATIONSHIP_HOH', friendly_name='relationship hoh'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'RELATIONSHIP_HOH'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.RELATIONSHIP_HOH = "01"
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='RELATIONSHIP_HOH', friendly_name='relationship hoh'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_t3_education_level(self, record):
+#         """Test cat3 validator for education level."""
+#         val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+#                   result_field_name='EDUCATION_LEVEL', result_function=validators.notMatches("99"),
+#             )
+#         record.FAMILY_AFFILIATION = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EDUCATION_LEVEL', friendly_name='ed lev'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'EDUCATION_LEVEL'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.EDUCATION_LEVEL = "99"
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EDUCATION_LEVEL', friendly_name='ed lev'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_t3_citizenship(self, record):
+#         """Test cat3 validator for citizenship."""
+#         val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+#                   result_field_name='CITIZENSHIP_STATUS', result_function=validators.oneOf((1, 2)),
+#             )
+#         record.FAMILY_AFFILIATION = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.CITIZENSHIP_STATUS = 3
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#         val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(2),
+#                   result_field_name='CITIZENSHIP_STATUS', result_function=validators.oneOf((1, 2, 9)),
+#             )
+#         record.FAMILY_AFFILIATION = 2
+#         record.CITIZENSHIP_STATUS = 3
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+
+# class TestT5Cat3Validators(TestCat3ValidatorsBase):
+#     """Test category three validators for TANF T5 records."""
+
+#     @pytest.fixture
+#     def record(self):
+#         """Override default record with TANF T5 record."""
+#         return TanfT5Factory.create()
+
+#     def test_validate_ssn(self, record):
+#         """Test cat3 validator for SSN."""
+#         val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.notMatches(1),
+#                   result_field_name='SSN', result_function=validators.isNumber()
+#                   )
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='social'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'SSN'])
+
+#         record.SSN = "abc"
+#         record.FAMILY_AFFILIATION = 2
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='social'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_ssn_citizenship(self, record):
+#         """Test cat3 validator for SSN/citizenship."""
+#         val = validators.validate__FAM_AFF__SSN()
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='social'),
+#                 Field(item=3, startIndex=4, endIndex=5, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
+
+#         record.FAMILY_AFFILIATION = 2
+#         record.SSN = "000000000"
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='social'),
+#                 Field(item=3, startIndex=4, endIndex=5, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='cit stat'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_race_ethnicity(self, record):
+#         """Test cat3 validator for race/ethnicity."""
+#         races = ["RACE_HISPANIC", "RACE_AMER_INDIAN", "RACE_ASIAN", "RACE_BLACK", "RACE_HAWAIIAN", "RACE_WHITE"]
+#         record.FAMILY_AFFILIATION = 1
+#         for race in races:
+#             val = validators.if_then_validator(
+#                     condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                     result_field_name=race, result_function=validators.isInLimits(1, 2)
+#                   )
+#             result = val(record, RowSchema(
+#                 fields=[
+#                     Field(item=1, startIndex=0, endIndex=2, type='string',
+#                           name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                     Field(item=2, startIndex=2, endIndex=4, type='string',
+#                           name=race, friendly_name='social'),
+#                 ]
+#             ))
+#             assert result == (True, None, ['FAMILY_AFFILIATION', race])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.RACE_HISPANIC = 0
+#         record.RACE_AMER_INDIAN = 0
+#         record.RACE_ASIAN = 0
+#         record.RACE_BLACK = 0
+#         record.RACE_HAWAIIAN = 0
+#         record.RACE_WHITE = 0
+#         for race in races:
+#             val = validators.if_then_validator(
+#                     condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                     result_field_name=race, result_function=validators.isInLimits(1, 2)
+#                   )
+#             result = val(record, RowSchema(
+#                 fields=[
+#                     Field(item=1, startIndex=0, endIndex=2, type='string',
+#                           name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                     Field(item=2, startIndex=2, endIndex=4, type='string',
+#                           name=race, friendly_name='social'),
+#                 ]
+#             ))
+#             assert result[0] is False
+
+#     def test_validate_marital_status(self, record):
+#         """Test cat3 validator for marital status."""
+#         val = validators.if_then_validator(
+#                     condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                     result_field_name='MARITAL_STATUS', result_function=validators.isInLimits(0, 5)
+#                   )
+
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='MARITAL_STATUS', friendly_name='marital status'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'MARITAL_STATUS'])
+
+#         record.FAMILY_AFFILIATION = 2
+#         record.MARITAL_STATUS = 6
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='MARITAL_STATUS', friendly_name='marital status'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_parent_minor(self, record):
+#         """Test cat3 validator for parent with minor."""
+#         val = validators.if_then_validator(
+#                     condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 2),
+#                     result_field_name='PARENT_MINOR_CHILD', result_function=validators.isInLimits(1, 3)
+#                   )
+
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'PARENT_MINOR_CHILD'])
+
+#         record.FAMILY_AFFILIATION = 2
+#         record.PARENT_MINOR_CHILD = 0
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_education(self, record):
+#         """Test cat3 validator for education level."""
+#         val = validators.if_then_validator(
+#                   condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                   result_field_name='EDUCATION_LEVEL', result_function=validators.or_validators(
+#                       validators.isInStringRange(1, 16),
+#                       validators.isInStringRange(98, 99)
+#                       )
+#                   )
+
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EDUCATION_LEVEL', friendly_name='education level'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'EDUCATION_LEVEL'])
+
+#         record.FAMILY_AFFILIATION = 2
+#         record.EDUCATION_LEVEL = "0"
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EDUCATION_LEVEL', friendly_name='education level'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_citizenship_status(self, record):
+#         """Test cat3 validator for citizenship status."""
+#         val = validators.if_then_validator(
+#                     condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+#                     result_field_name='CITIZENSHIP_STATUS', result_function=validators.isInLimits(1, 2)
+#                   )
+
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.CITIZENSHIP_STATUS = 0
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_oasdi_insurance(self, record):
+#         """Test cat3 validator for OASDI insurance."""
+#         val = validators.if_then_validator(
+#                     condition_field_name='DATE_OF_BIRTH', condition_function=validators.olderThan(18),
+#                     result_field_name='REC_OASDI_INSURANCE', result_function=validators.isInLimits(1, 2)
+#                   )
+
+#         record.DATE_OF_BIRTH = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='DATE_OF_BIRTH', friendly_name='dob'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='REC_OASDI_INSURANCE', friendly_name='rec oasdi insurance'),
+#             ]
+#         ))
+#         assert result == (True, None, ['DATE_OF_BIRTH', 'REC_OASDI_INSURANCE'])
+
+#         record.DATE_OF_BIRTH = 200001
+#         record.REC_OASDI_INSURANCE = 0
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='DATE_OF_BIRTH', friendly_name='dob'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='REC_OASDI_INSURANCE', friendly_name='rec oasdi insurance'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_validate_federal_disability(self, record):
+#         """Test cat3 validator for federal disability."""
+#         val = validators.if_then_validator(
+#                     condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+#                     result_field_name='REC_FEDERAL_DISABILITY', result_function=validators.isInLimits(1, 2)
+#                   )
+
+#         record.FAMILY_AFFILIATION = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='REC_FEDERAL_DISABILITY', friendly_name='rec fed disability'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'REC_FEDERAL_DISABILITY'])
+
+#         record.FAMILY_AFFILIATION = 1
+#         record.REC_FEDERAL_DISABILITY = 0
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='REC_FEDERAL_DISABILITY', friendly_name='rec fed disability'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+
+# class TestT6Cat3Validators(TestCat3ValidatorsBase):
+#     """Test category three validators for TANF T6 records."""
+
+#     @pytest.fixture
+#     def record(self):
+#         """Override default record with TANF T6 record."""
+#         return TanfT6Factory.create()
+
+#     def test_sum_of_applications(self, record):
+#         """Test cat3 validator for sum of applications."""
+#         val = validators.sumIsEqual("NUM_APPLICATIONS", ["NUM_APPROVED", "NUM_DENIED"])
+
+#         record.NUM_APPLICATIONS = 2
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='NUM_APPLICATIONS', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='NUM_APPROVED', friendly_name='num approved'),
+#                 Field(item=2, startIndex=4, endIndex=5, type='string',
+#                       name='NUM_DENIED', friendly_name='num denied'),
+#             ]
+#         ))
+
+#         assert result == (True, None, ['NUM_APPLICATIONS', 'NUM_APPROVED', 'NUM_DENIED'])
+
+#         record.NUM_APPLICATIONS = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='NUM_APPLICATIONS', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='NUM_APPROVED', friendly_name='num approved'),
+#                 Field(item=3, startIndex=4, endIndex=5, type='string',
+#                       name='NUM_DENIED', friendly_name='num denied'),
+#             ]
+#         ))
+
+#         assert result[0] is False
+
+#     def test_sum_of_families(self, record):
+#         """Test cat3 validator for sum of families."""
+#         val = validators.sumIsEqual("NUM_FAMILIES", ["NUM_2_PARENTS", "NUM_1_PARENTS", "NUM_NO_PARENTS"])
+
+#         record.NUM_FAMILIES = 3
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='NUM_FAMILIES', friendly_name='num fam'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='NUM_2_PARENTS', friendly_name='num 2 parent'),
+#                 Field(item=3, startIndex=4, endIndex=5, type='string',
+#                       name='NUM_1_PARENTS', friendly_name='num 2 parent'),
+#                 Field(item=4, startIndex=5, endIndex=6, type='string',
+#                       name='NUM_NO_PARENTS', friendly_name='num 0 parent'),
+#             ]
+#         ))
+
+#         assert result == (True, None, ['NUM_FAMILIES', 'NUM_2_PARENTS', 'NUM_1_PARENTS', 'NUM_NO_PARENTS'])
+
+#         record.NUM_FAMILIES = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='NUM_FAMILIES', friendly_name='num fam'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='NUM_2_PARENTS', friendly_name='num 2 parent'),
+#                 Field(item=3, startIndex=4, endIndex=5, type='string',
+#                       name='NUM_1_PARENTS', friendly_name='num 2 parent'),
+#                 Field(item=4, startIndex=5, endIndex=6, type='string',
+#                       name='NUM_NO_PARENTS', friendly_name='num 0 parent'),
+#             ]
+#         ))
+
+#         assert result[0] is False
+
+#     def test_sum_of_recipients(self, record):
+#         """Test cat3 validator for sum of recipients."""
+#         val = validators.sumIsEqual("NUM_RECIPIENTS", ["NUM_ADULT_RECIPIENTS", "NUM_CHILD_RECIPIENTS"])
+
+#         record.NUM_RECIPIENTS = 2
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='NUM_RECIPIENTS', friendly_name='num recip'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='NUM_ADULT_RECIPIENTS', friendly_name='num adult recip'),
+#                 Field(item=3, startIndex=4, endIndex=5, type='string',
+#                       name='NUM_CHILD_RECIPIENTS', friendly_name='num child recip'),
+#             ]
+#         ))
+
+#         assert result == (True, None, ['NUM_RECIPIENTS', 'NUM_ADULT_RECIPIENTS', 'NUM_CHILD_RECIPIENTS'])
+
+#         record.NUM_RECIPIENTS = 1
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='NUM_RECIPIENTS', friendly_name='num recip'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='NUM_ADULT_RECIPIENTS', friendly_name='num adult recip'),
+#                 Field(item=3, startIndex=4, endIndex=5, type='string',
+#                       name='NUM_CHILD_RECIPIENTS', friendly_name='num child recip'),
+#             ]
+#         ))
+
+#         assert result[0] is False
+
+# class TestM5Cat3Validators(TestCat3ValidatorsBase):
+#     """Test category three validators for TANF T6 records."""
+
+#     @pytest.fixture
+#     def record(self):
+#         """Override default record with TANF T6 record."""
+#         return SSPM5Factory.create()
+
+#     def test_fam_affil_ssn(self, record):
+#         """Test cat3 validator for family affiliation and ssn."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+#                         result_field_name='SSN', result_function=validators.validateSSN(),
+#                   )
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='social'),
+#             ]
+#         ))
+#         assert result == (True, None, ["FAMILY_AFFILIATION", "SSN"])
+
+#         record.SSN = '111111111'
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='SSN', friendly_name='social'),
+#             ]
+#         ))
+
+#         assert result[0] is False
+
+#     def test_validate_race_ethnicity(self, record):
+#         """Test cat3 validator for race/ethnicity."""
+#         races = ["RACE_HISPANIC", "RACE_AMER_INDIAN", "RACE_ASIAN", "RACE_BLACK", "RACE_HAWAIIAN", "RACE_WHITE"]
+#         for race in races:
+#             val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                         result_field_name=race, result_function=validators.isInLimits(1, 2),
+#                   )
+#             result = val(record, RowSchema(
+#                 fields=[
+#                     Field(item=1, startIndex=0, endIndex=2, type='string',
+#                           name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                     Field(item=2, startIndex=2, endIndex=4, type='string',
+#                           name=race, friendly_name='social'),
+#                 ]
+#             ))
+#             assert result == (True, None, ['FAMILY_AFFILIATION', race])
+
+#     def test_fam_affil_marital_stat(self, record):
+#         """Test cat3 validator for family affiliation, and marital status."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                         result_field_name='MARITAL_STATUS', result_function=validators.isInLimits(1, 5),
+#                   )
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='MARITAL_STATUS', friendly_name='marital status'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'MARITAL_STATUS'])
+
+#         record.MARITAL_STATUS = 0
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='MARITAL_STATUS', friendly_name='marital status'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_fam_affil_parent_with_minor(self, record):
+#         """Test cat3 validator for family affiliation, and parent with minor child."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 2),
+#                         result_field_name='PARENT_MINOR_CHILD', result_function=validators.isInLimits(1, 3),
+#                   )
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'PARENT_MINOR_CHILD'])
+
+#         record.PARENT_MINOR_CHILD = 0
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='PARENT_MINOR_CHILD', friendly_name='parent minor child'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_fam_affil_ed_level(self, record):
+#         """Test cat3 validator for family affiliation, and education level."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.isInLimits(1, 3),
+#                         result_field_name='EDUCATION_LEVEL', result_function=validators.or_validators(
+#                             validators.isInStringRange(1, 16), validators.isInStringRange(98, 99)),
+#                   )
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EDUCATION_LEVEL', friendly_name='education level'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'EDUCATION_LEVEL'])
+
+#         record.EDUCATION_LEVEL = 0
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='EDUCATION_LEVEL', friendly_name='education level'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_fam_affil_citz_stat(self, record):
+#         """Test cat3 validator for family affiliation, and citizenship status."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+#                         result_field_name='CITIZENSHIP_STATUS', result_function=validators.isInLimits(1, 3),
+#                   )
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS'])
+
+#         record.CITIZENSHIP_STATUS = 0
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='CITIZENSHIP_STATUS', friendly_name='citizenship status'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_dob_oasdi_insur(self, record):
+#         """Test cat3 validator for dob, and REC_OASDI_INSURANCE."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='DATE_OF_BIRTH', condition_function=validators.olderThan(18),
+#                         result_field_name='REC_OASDI_INSURANCE', result_function=validators.isInLimits(1, 2),
+#                   )
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='DATE_OF_BIRTH', friendly_name='dob'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='REC_OASDI_INSURANCE', friendly_name='rec oasdi insurance'),
+#             ]
+#         ))
+#         assert result == (True, None, ['DATE_OF_BIRTH', 'REC_OASDI_INSURANCE'])
+
+#         record.REC_OASDI_INSURANCE = 0
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='DATE_OF_BIRTH', friendly_name='dob'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='REC_OASDI_INSURANCE', friendly_name='rec oasdi insurance'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+#     def test_fam_affil_fed_disability(self, record):
+#         """Test cat3 validator for family affiliation, and REC_FEDERAL_DISABILITY."""
+#         val = validators.if_then_validator(
+#                         condition_field_name='FAMILY_AFFILIATION', condition_function=validators.matches(1),
+#                         result_field_name='REC_FEDERAL_DISABILITY', result_function=validators.isInLimits(1, 2),
+#                   )
+
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='REC_FEDERAL_DISABILITY', friendly_name='rec fed disability'),
+#             ]
+#         ))
+#         assert result == (True, None, ['FAMILY_AFFILIATION', 'REC_FEDERAL_DISABILITY'])
+
+#         record.REC_FEDERAL_DISABILITY = 0
+#         result = val(record, RowSchema(
+#             fields=[
+#                 Field(item=1, startIndex=0, endIndex=2, type='string',
+#                       name='FAMILY_AFFILIATION', friendly_name='fam affil'),
+#                 Field(item=2, startIndex=2, endIndex=4, type='string',
+#                       name='REC_FEDERAL_DISABILITY', friendly_name='rec fed disability'),
+#             ]
+#         ))
+#         assert result[0] is False
+
+# def test_is_quiet_preparser_errors():
+#     """Test is_quiet_preparser_errors."""
+#     assert validators.is_quiet_preparser_errors(2, 4, 6)("#######") is True
+#     assert validators.is_quiet_preparser_errors(2, 4, 6)("####1##") is False
+#     assert validators.is_quiet_preparser_errors(4, 4, 6)("##1") is True
+
+# def test_t3_m3_child_validator():
+#     """Test t3_m3_child_validator."""
+#     assert validators.t3_m3_child_validator(1)(
+#         "4" * 61, None, "fake_friendly_name", 0
+#     ) == (True, None)
+#     assert validators.t3_m3_child_validator(1)("12", None, "fake_friendly_name", 0) == (
+#         False,
+#         "The first child record is too short at 2 characters and must be at least 60 characters.",
+#     )

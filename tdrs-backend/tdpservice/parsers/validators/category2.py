@@ -38,7 +38,7 @@ class FieldValidators():
     @staticmethod
     def isNotOneOf(options, **kwargs):
         return make_validator(
-            ValidatorFunctions.isOneOf(options, **kwargs),
+            ValidatorFunctions.isNotOneOf(options, **kwargs),
             lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {clean_options_string(options)}."
         )
 
@@ -62,7 +62,7 @@ class FieldValidators():
             return f"{format_error_context(eargs)} {eargs.value} is not in range [{min}, {max}]."
 
         def exclusive_err(eargs):
-            return f"{format_error_context(eargs)} {eargs.value} is not between {min} and {max}.",
+            return f"{format_error_context(eargs)} {eargs.value} is not between {min} and {max}."
 
         return make_validator(
             ValidatorFunctions.isBetween(min, max, inclusive, **kwargs),
@@ -79,7 +79,7 @@ class FieldValidators():
     @staticmethod
     def contains(substr, **kwargs):
         return make_validator(
-            ValidatorFunctions.startsWith(substr, **kwargs),
+            ValidatorFunctions.contains(substr, **kwargs),
             lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not contain {substr}."
         )
 
