@@ -1615,7 +1615,10 @@ def test_parse_tanf_section_1_file_with_bad_update_indicator(tanf_section_1_file
     error = parser_errors.first()
 
     assert error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
-    assert error.error_message == "HEADER Item 10 (update indicator): U does not match D."
+    assert error.error_message == ("HEADER Update Indicator must be set to D "
+                                   "instead of U. Please review "
+                                   "Exporting Complete Data Using FTANF in the "
+                                   "Knowledge Center.")
 
 
 @pytest.mark.django_db()
