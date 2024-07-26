@@ -74,7 +74,7 @@ def get_system_values():
     with open('/home/vcap/.pgpass', 'w') as f:
         f.write(sys_values['DATABASE_HOST'] + ":"
                 + sys_values['DATABASE_PORT'] + ":"
-                + sys_values['DATABASE_DB_NAME'] + ":"
+                + settings.DATABASES['default']['NAME'] + ":"
                 + sys_values['DATABASE_USERNAME'] + ":"
                 + sys_values['DATABASE_PASSWORD'])
     os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
@@ -94,7 +94,17 @@ def backup_database(file_name,
     pg_dump -F c --no-acl --no-owner -f backup.pg postgresql://${USERNAME}:${PASSWORD}@${HOST}:${PORT}/${NAME}
     """
     try:
-        cmd = postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " -d " + database_uri
+        # TODO: This is a bandaid until the correct logic is determined for the system values with respect to the
+        # correct database name.
+        # cmd = postgres_client + "pg_dump -Fc --no-acl -f " + file_name + " -d " + database_uri
+        db_host = settings.DATABASES['default']['HOST']
+        db_port = settings.DATABASES['default']['PORT']
+        db_name = settings.DATABASES['default']['NAME']
+        db_user = settings.DATABASES['default']['USER']
+
+        export_password = f"export PGPASSWORD={settings.DATABASES['default']['PASSWORD']}"
+        cmd = (f"{export_password} && {postgres_client}pg_dump -h {db_host} -p {db_port} -d {db_name} -U {db_user} "
+               f"-F c --no-password --no-acl --no-owner -f {file_name}")
         logger.info(f"Executing backup command: {cmd}")
         os.system(cmd)
         msg = "Successfully executed backup. Wrote pg dumpfile to {}".format(file_name)
@@ -140,32 +150,32 @@ def restore_database(file_name, postgres_client, database_uri, system_user):
             change_message=msg
         )
         logger.info(msg)
+
+        # write .pgpass
+        with open('/home/vcap/.pgpass', 'w') as f:
+            f.write(DATABASE_HOST+":"+DATABASE_PORT+":"+DATABASE_DB_NAME+":"+DATABASE_USERNAME+":"+DATABASE_PASSWORD)
+        os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
+        os.system('chmod 0600 /home/vcap/.pgpass')
+
+        logger.info("Begining database restoration.")
+        cmd = (postgres_client + "pg_restore" + " -p " + DATABASE_PORT + " -h " +
+               DATABASE_HOST + " -U " + DATABASE_USERNAME + " -d " + DATABASE_DB_NAME + " " + file_name)
+        logger.info(f"Executing restore command: {cmd}")
+        os.system(cmd)
+        msg = "Completed database restoration."
+        LogEntry.objects.log_action(
+            user_id=system_user.pk,
+            content_type_id=content_type.pk,
+            object_id=None,
+            object_repr="Executed Database restore",
+            action_flag=ADDITION,
+            change_message=msg
+        )
+        logger.info(msg)
+        return True
     except Exception as e:
-        logger.error(f"Caught exception while creating the database. Exception: {e}.")
-        return False
-
-    # write .pgpass
-    with open('/home/vcap/.pgpass', 'w') as f:
-        f.write(DATABASE_HOST+":"+DATABASE_PORT+":"+DATABASE_DB_NAME+":"+DATABASE_USERNAME+":"+DATABASE_PASSWORD)
-    os.environ['PGPASSFILE'] = '/home/vcap/.pgpass'
-    os.system('chmod 0600 /home/vcap/.pgpass')
-
-    logger.info("Begining database restoration.")
-    cmd = (postgres_client + "pg_restore" + " -p " + DATABASE_PORT + " -h " +
-           DATABASE_HOST + " -U " + DATABASE_USERNAME + " -d " + DATABASE_DB_NAME + " " + file_name)
-    logger.info(f"Executing restore command: {cmd}")
-    os.system(cmd)
-    msg = "Completed database restoration."
-    LogEntry.objects.log_action(
-        user_id=system_user.pk,
-        content_type_id=content_type.pk,
-        object_id=None,
-        object_repr="Executed Database restore",
-        action_flag=ADDITION,
-        change_message=msg
-    )
-    logger.info(msg)
-    return True
+        logger.error(f"Caught exception while restoring the database. Exception: {e}.")
+        raise e
 
 
 def upload_file(file_name, bucket, sys_values, system_user, object_name=None, region='us-gov-west-1'):
