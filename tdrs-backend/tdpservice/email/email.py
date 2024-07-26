@@ -77,6 +77,8 @@ def filter_valid_emails(emails, logger_context=None):
                 logger_context=logger_context
             )
     if len(valid_emails) == 0:
-        logger.warn("No valid emails provided.")
+        log("No valid emails provided.",
+            logger_context,
+            "warn")
 
     return valid_emails
