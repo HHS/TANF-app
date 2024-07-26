@@ -20,7 +20,7 @@ curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://
 sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
 apt -y update && apt install postgresql-client-15 -y
 # Install packages:
-RUN apt install -y gcc graphviz graphviz-dev libpq-dev python3-dev
+RUN apt install -y gcc graphviz graphviz-dev libpq-dev python3-dev vim
 # Install pipenv
 RUN pip install --upgrade pip pipenv
 RUN pipenv install --dev --system --deploy
