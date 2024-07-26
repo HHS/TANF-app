@@ -1698,6 +1698,7 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
         Query(error_type=ParserErrorCategoryChoices.PRE_CHECK)
 
     parser_errors = ParserError.objects.filter(file=m3_cat2_invalid_68_69_file).exclude(exclusion).order_by("pk")
+    print(parser_errors)
 
     assert parser_errors.count() == 4
 

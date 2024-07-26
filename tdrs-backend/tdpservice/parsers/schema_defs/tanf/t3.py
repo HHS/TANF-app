@@ -289,8 +289,8 @@ child_one = RowSchema(
             required=True,
             validators=[
                 FieldValidators.orValidators([
-                    FieldValidators.isBetween(0, 16, inclusive=True, cast=int),
-                    FieldValidators.isBetween(98, 99, inclusive=True, cast=int),
+                    PostparsingValidators.isBetween(0, 16, inclusive=True, cast=int),
+                    PostparsingValidators.isBetween(98, 99, inclusive=True, cast=int),
                 ])
             ],
         ),
@@ -605,8 +605,8 @@ child_two = RowSchema(
             required=True,
             validators=[
                 FieldValidators.orValidators([
-                    FieldValidators.isBetween(0, 16, inclusive=True, cast=int),
-                    FieldValidators.isOneOf(["98", "99"])
+                    PostparsingValidators.isBetween(0, 16, inclusive=True, cast=int),
+                    PostparsingValidators.isOneOf(["98", "99"])
                 ])
             ],
         ),

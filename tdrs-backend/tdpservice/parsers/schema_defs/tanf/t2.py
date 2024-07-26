@@ -317,8 +317,8 @@ t2 = SchemaManager(
                     required=True,
                     validators=[
                         FieldValidators.orValidators([
-                            FieldValidators.isOneOf(["1", "2"]),
-                            FieldValidators.isBlank()
+                            PostparsingValidators.isOneOf(["1", "2"]),
+                            PostparsingValidators.isBlank()
                     ])
                     ],
                 ),
@@ -404,8 +404,8 @@ t2 = SchemaManager(
                     required=False,
                     validators=[
                         FieldValidators.orValidators([
-                            FieldValidators.isBetween(0, 16, inclusive=True, cast=int),
-                            FieldValidators.isBetween(98, 99, inclusive=True, cast=int),
+                            PostparsingValidators.isBetween(0, 16, inclusive=True, cast=int),
+                            PostparsingValidators.isBetween(98, 99, inclusive=True, cast=int),
                         ])
                     ],
                 ),
@@ -489,8 +489,8 @@ t2 = SchemaManager(
                     required=True,
                     validators=[
                         FieldValidators.orValidators([
-                            FieldValidators.isBetween(0, 9, inclusive=True, cast=int),
-                            FieldValidators.isOneOf(("11", "12")),
+                            PostparsingValidators.isBetween(0, 9, inclusive=True, cast=int),
+                            PostparsingValidators.isOneOf(("11", "12")),
                         ])
                     ],
                 ),

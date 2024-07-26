@@ -111,8 +111,8 @@ t4 = SchemaManager(
                     required=True,
                     validators=[
                         FieldValidators.orValidators([
-                            FieldValidators.isBetween(1, 18, inclusive=True, cast=int),
-                            FieldValidators.isEqual("99")
+                            PostparsingValidators.isBetween(1, 18, inclusive=True, cast=int),
+                            PostparsingValidators.isEqual("99")
                         ])
                     ],
                 ),

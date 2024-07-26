@@ -16,6 +16,8 @@ class ValidatorFunctions:
     @staticmethod
     def _make_validator(func, **kwargs):
         def _validate(val):
+            if val is None:
+                print(f'val is None!!! {func}')
             val = ValidatorFunctions._handle_kwargs(val, **kwargs)
             return func(val)
         return _validate

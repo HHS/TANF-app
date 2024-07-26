@@ -351,8 +351,8 @@ m5 = SchemaManager(
                     required=False,
                     validators=[
                         FieldValidators.orValidators([
-                            FieldValidators.isBetween(0, 16, inclusive=True, cast=int),
-                            FieldValidators.isBetween(98, 99, inclusive=True, cast=int),
+                            PostparsingValidators.isBetween(0, 16, inclusive=True, cast=int),
+                            PostparsingValidators.isBetween(98, 99, inclusive=True, cast=int),
                         ]),
                         FieldValidators.isNotEqual("00")
                     ],

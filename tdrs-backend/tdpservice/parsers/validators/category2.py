@@ -138,7 +138,7 @@ class FieldValidators():
     @staticmethod
     def intHasLength(length, **kwargs):
         return make_validator(
-            ValidatorFunctions.hasLengthGreaterThan(length, **kwargs),
+            ValidatorFunctions.intHasLength(length, **kwargs),
             lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not have exactly {length} digits.",
         )
 

@@ -159,6 +159,7 @@ class RowSchema:
             print(f'empty: {is_empty}; should validate: {should_validate}')
             if (field.required and not is_empty) or should_validate:
                 print('validating')
+                print('error' if value is None else '')
                 for validator in field.validators:
                     validator_is_valid, validator_error = validator(value, eargs)
                     is_valid = False if not validator_is_valid else is_valid
@@ -193,6 +194,8 @@ class RowSchema:
         """Run each of the `postparsing_validator` functions against the parsed model."""
         is_valid = True
         errors = []
+
+        print('postparsing')
 
         for validator in self.postparsing_validators:
             validator_is_valid, validator_error, field_names = validator(instance, self)
