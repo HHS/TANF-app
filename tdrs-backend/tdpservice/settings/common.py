@@ -372,6 +372,8 @@ class Common(Configuration):
     KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
     BYPASS_KIBANA_AUTH = os.getenv("BYPASS_KIBANA_AUTH", False)
     ELASTIC_INDEX_PREFIX = APP_NAME + '_'
+    es_logger = logging.getLogger('elasticsearch')
+    es_logger.setLevel(logging.WARNING)
 
     s3_src = "s3-us-gov-west-1.amazonaws.com"
 

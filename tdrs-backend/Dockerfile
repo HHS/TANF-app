@@ -14,10 +14,13 @@ WORKDIR /tdpapp/
 RUN apt-get -y update
 # Upgrade already installed packages:
 RUN apt-get -y upgrade
-# Install a new package:
-RUN apt-get install -y gcc && apt-get install -y graphviz && apt-get install -y graphviz-dev
-RUN apt-get install postgresql-client -y
-RUN apt-get install -y libpq-dev python3-dev vim
+# Postgres client setup
+RUN apt install -y postgresql-common curl ca-certificates && install -d /usr/share/postgresql-common/pgdg && \
+curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+apt -y update && apt install postgresql-client-15 -y
+# Install packages:
+RUN apt install -y gcc graphviz graphviz-dev libpq-dev python3-dev vim
 # Install pipenv
 RUN pip install --upgrade pip pipenv
 RUN pipenv install --dev --system --deploy
