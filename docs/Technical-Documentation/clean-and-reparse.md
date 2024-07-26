@@ -7,11 +7,12 @@ we wanted to introduce a way to re-parse and subsequently re-validate datafiles 
 and the quality of the submissions. The following lays out the process TDP takes to automate and execute this process, and how this process can
 be tested locally and in our deployed environments.
 
-## Clean and Re-parse Flow
+# Clean and Re-parse Flow
 As a safety measure, this process must ALWAYS be executed manually by a system administrator. Once executed, all processes thereafter are completely
 automated. The steps below outline how this process executes.
 
 1. System admin logs in to the appropriate backend application. E.g. `tdp-backend-raft`.
+    - See [OFA Admin Backend App Login](#OFA-Admin-Backend-App-Login) instructions below
 2. System admin executes the `clean_and_reparse` Django command. E.g `python manage.py clean_and_reparse ...options`.
 4. System admin validates the command is selecting the appropriate set of datafiles to reparse and executes the command.
 4. `clean_and_reparse` collects the appropriate datafiles that match the system admin's command choices.
@@ -118,7 +119,7 @@ dev_tanf_t3_submissions_2024-07-05_17.34.34       1380
 dev_tanf_t3_submissions_2024-07-05_17.35.26          4
 ```
 
-### Cloud.gov Examples
+## Cloud.gov Examples
 Running the `clean_and_reparse` command in a Cloud.gov environment will require the executor to do some exploratory data analysis for the environment to verify things are running correctly. With that said, the logic and general expected results for the local example commands above will be a one to one match with same command executed in Cloud.gov. Below are the general steps a system admin will follow to execute a desired command and also verify the results of the command.
 
 1. System admin logs in to the appropriate backend application. E.g. `tdp-backend-raft`.
@@ -127,3 +128,106 @@ Running the `clean_and_reparse` command in a Cloud.gov environment will require 
 4. System admin queries the indices for their counts from the Elastic proxy: `curl http://localhost:8080/_cat/indices/?pretty&v&s=index`
 5. System admin executes the `clean_and_reparse` Django command from the backend app. E.g `python manage.py clean_and_reparse -a -n`.
 6. System admin verifies the DAC is consistent and the Elastic indices match their expectations.
+
+## OFA Admin Backend App Login
+
+### 0. Disconnect from VPN. 
+
+### 1. Authenticate with Cloud.gov
+API endpoint: api.fr.cloud.gov
+```bash
+$ cf login -a api.fr.cloud.gov  --sso
+
+Temporary Authentication Code ( Get one at https://login.fr.cloud.gov/passcode ): <one-time passcode redacted>
+
+Authenticating...
+OK
+
+
+Select an org:
+1. hhs-acf-ofa
+2. sandbox-hhs
+
+Org (enter to skip): 1
+1
+Targeted org hhs-acf-ofa.
+
+Select a space:
+1. tanf-dev
+2. tanf-prod
+3. tanf-staging
+
+Space (enter to skip): 1
+1
+Targeted space tanf-dev.
+
+API endpoint:   https://api.fr.cloud.gov
+API version:    3.170.0
+user:           <USER_NAME>
+org:            hhs-acf-ofa
+space:          tanf-dev
+```
+
+### 2. SSH into Backend App
+1. Get the app GUID
+    ```bash
+    $ cf curl v3/apps/$(cf app tdp-backend-qasp --guid)/processes | jq --raw-output '.resources | .[]? | select(.type == "web").guid'
+    
+    <PROCESS_GUID redacted>
+    ```
+
+2. Get the SSH code
+    ```bash
+    $ cf ssh-code
+
+    <SSH_CODE redacted>
+    ```
+
+3. SSH into the App
+    ```bash
+    $ ssh -p 2222 cf:<PROCESS_GUID redacted>/0@ssh.fr.cloud.gov
+
+    The authenticity of host '[ssh.fr.cloud.gov]:2222 ([2620:108:d00f::fcd:e8d8]:2222)' can't be established.
+    RSA key fingerprint is <KEY redacted>.
+    This key is not known by any other names
+    Please type 'yes', 'no' or the fingerprint: yes
+    Could not create directory '/u/.ssh' (No such file or directory).
+    Failed to add the host to the list of known hosts (/u/.ssh/known_hosts).
+    cf:<PROCESS_GUID redacted>/0@ssh.fr.cloud.gov's password:<SSH_CODE - will be invisible>
+    ```
+
+### 3. Activate Interactive Shell
+```bash
+$ /tmp/lifecycle/shell
+```
+
+### 4. Display Help for Re-parse Command
+```bash
+$ python manage.py clean_and_reparse -h
+
+usage: manage.py clean_and_parse [-h] [-q {Q1,Q2,Q3,Q4}] [-y FISCAL_YEAR] [-a] [-n] [-d] [--configuration CONFIGURATION] [--version] [-v {0,1,2,3}] [--settings SETTINGS] [--pythonpath PYTHONPATH] [--traceback] [--no-color] [--force-color] [--skip-checks]
+
+Delete and re-parse a set of datafiles. All re-parsed data will be moved into a new set of Elastic indexes.
+
+options:
+  -h, --help            show this help message and exit
+  -q {Q1,Q2,Q3,Q4}, --fiscal_quarter {Q1,Q2,Q3,Q4}
+                        Re-parse all files in the fiscal quarter, e.g. Q1.
+  -y FISCAL_YEAR, --fiscal_year FISCAL_YEAR
+                        Re-parse all files in the fiscal year, e.g. 2021.
+  -a, --all             Clean and re-parse all datafiles. If selected, fiscal_year/quarter aren't necessary.
+  -n, --new_indices     Move re-parsed data to new Elastic indices.
+  -d, --delete_indices  Requires new_indices. Delete the current Elastic indices.
+  --configuration CONFIGURATION
+                        The name of the configuration class to load, e.g. "Development". If this isn't provided, the DJANGO_CONFIGURATION environment variable will be used.
+  --version             show program's version number and exit
+  -v {0,1,2,3}, --verbosity {0,1,2,3}
+                        Verbosity level; 0=minimal output, 1=normal output, 2=verbose output, 3=very verbose output
+  --settings SETTINGS   The Python path to a settings module, e.g. "myproject.settings.main". If this isn't provided, the DJANGO_SETTINGS_MODULE environment variable will be used.
+  --pythonpath PYTHONPATH
+                        A directory to add to the Python path, e.g. "/home/djangoprojects/myproject".
+  --traceback           Raise on CommandError exceptions
+  --no-color            Don't colorize the command output.
+  --force-color         Force colorization of the command output.
+  --skip-checks         Skip system checks.
+```
