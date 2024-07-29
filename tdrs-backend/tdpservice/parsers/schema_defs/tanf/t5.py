@@ -6,7 +6,7 @@ from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators
+from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators, PostparsingValidators
 from tdpservice.search_indexes.documents.tanf import TANF_T5DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
@@ -34,7 +34,7 @@ t5 = SchemaManager(
                     result_field_name="SSN",
                     result_function=ComposableFieldValidators.validateSSN(),
                 ),
-                ComposableValidators.validate__FAM_AFF__SSN(),
+                PostparsingValidators.validate__FAM_AFF__SSN(),
                 ComposableValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
                     condition_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
@@ -350,7 +350,7 @@ t5 = SchemaManager(
                     endIndex=56,
                     required=False,
                     validators=[
-                        FieldValidators.orValidators([
+                        ComposableValidators.orValidators([
                             ComposableFieldValidators.isBetween(0, 16, inclusive=True, cast=int),
                             ComposableFieldValidators.isBetween(98, 99, inclusive=True, cast=int),
                         ])
@@ -365,7 +365,7 @@ t5 = SchemaManager(
                     endIndex=57,
                     required=False,
                     validators=[
-                        FieldValidators.orValidators([
+                        ComposableValidators.orValidators([
                             ComposableFieldValidators.isBetween(0, 2, inclusive=True),
                             ComposableFieldValidators.isEqual(9)
                         ])

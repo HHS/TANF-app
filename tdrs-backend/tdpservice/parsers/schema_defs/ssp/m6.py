@@ -6,7 +6,7 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators
+from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators, PostparsingValidators
 from tdpservice.search_indexes.documents.ssp import SSP_M6DataSubmissionDocument
 
 s1 = RowSchema(
@@ -18,14 +18,14 @@ s1 = RowSchema(
         PreparsingValidators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
-        ComposableValidators.sumIsEqual(
+        PostparsingValidators.sumIsEqual(
             "SSPMOE_FAMILIES", [
                 "NUM_2_PARENTS",
                 "NUM_1_PARENTS",
                 "NUM_NO_PARENTS"
             ]
         ),
-        ComposableValidators.sumIsEqual(
+        PostparsingValidators.sumIsEqual(
             "NUM_RECIPIENTS", [
                 "ADULT_RECIPIENTS",
                 "CHILD_RECIPIENTS"
@@ -183,14 +183,14 @@ s2 = RowSchema(
         PreparsingValidators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
-        ComposableValidators.sumIsEqual(
+        PostparsingValidators.sumIsEqual(
             "SSPMOE_FAMILIES", [
                 "NUM_2_PARENTS",
                 "NUM_1_PARENTS",
                 "NUM_NO_PARENTS"
             ]
         ),
-        ComposableValidators.sumIsEqual(
+        PostparsingValidators.sumIsEqual(
             "NUM_RECIPIENTS", [
                 "ADULT_RECIPIENTS",
                 "CHILD_RECIPIENTS"
@@ -348,14 +348,14 @@ s3 = RowSchema(
         PreparsingValidators.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
-        ComposableValidators.sumIsEqual(
+        PostparsingValidators.sumIsEqual(
             "SSPMOE_FAMILIES", [
                 "NUM_2_PARENTS",
                 "NUM_1_PARENTS",
                 "NUM_NO_PARENTS"
             ]
         ),
-        ComposableValidators.sumIsEqual(
+        PostparsingValidators.sumIsEqual(
             "NUM_RECIPIENTS", [
                 "ADULT_RECIPIENTS",
                 "CHILD_RECIPIENTS"

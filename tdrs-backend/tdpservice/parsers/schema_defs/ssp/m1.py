@@ -5,7 +5,7 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators
+from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators, PostparsingValidators
 from tdpservice.search_indexes.documents.ssp import SSP_M1DataSubmissionDocument
 from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
@@ -97,7 +97,7 @@ m1 = SchemaManager(
                     result_field_name='OTHER_NON_SANCTION',
                     result_function=ComposableFieldValidators.isOneOf((1, 2)),
                 ),
-                ComposableValidators.sumIsLarger([
+                PostparsingValidators.sumIsLarger([
                     "AMT_FOOD_STAMP_ASSISTANCE",
                     "AMT_SUB_CC",
                     "CASH_AMOUNT",

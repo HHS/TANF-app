@@ -1,6 +1,6 @@
 import pytest
 import datetime
-from ..category3 import ComposableValidators, ComposableFieldValidators
+from ..category3 import ComposableValidators, ComposableFieldValidators, PostparsingValidators
 from ..util import ValidationErrorArgs
 from ...row_schema import RowSchema
 from ...fields import Field
@@ -221,6 +221,12 @@ class TestComposableFieldValidators:
 
 
 class TestComposableValidators:
+    # if/or
+    pass
+
+
+class TestPostparsingValidators:
+    #sum is equal/larger
     def test_validate__FAM_AFF__SSN(self):
         """Test `validate__FAM_AFF__SSN` gives a valid result."""
         schema = RowSchema(
@@ -256,7 +262,7 @@ class TestComposableValidators:
             'CITIZENSHIP_STATUS': 1,
             'SSN': '0'*9,
         }
-        result = ComposableValidators.validate__FAM_AFF__SSN()(instance, schema)
+        result = PostparsingValidators.validate__FAM_AFF__SSN()(instance, schema)
         assert result == (
             False,
             'T1: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, ' +
@@ -264,7 +270,7 @@ class TestComposableValidators:
             ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN']
         )
         instance['SSN'] = '1'*8 + '0'
-        result = ComposableValidators.validate__FAM_AFF__SSN()(instance, schema)
+        result = PostparsingValidators.validate__FAM_AFF__SSN()(instance, schema)
         assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
 
     def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(self):
@@ -310,12 +316,12 @@ class TestComposableValidators:
             'DATE_OF_BIRTH': '20200101',
             'RPT_MONTH_YEAR': '202010',
         }
-        result = ComposableValidators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
+        result = PostparsingValidators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
         assert result == (
             False,
             'T1: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1',
             ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
         )
         instance['DATE_OF_BIRTH'] = '19950101'
-        result = ComposableValidators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
+        result = PostparsingValidators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
         assert result == (True, None, ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'])

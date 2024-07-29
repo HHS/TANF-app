@@ -220,18 +220,6 @@ class TestFieldValidators:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # @staticmethod
-    # def orValidators(validators, **kwargs):
-    #     """Return a validator that is true only if one of the validators is true."""
-    #     def _validate(value, eargs):
-    #         validator_results = evaluate_all(validators, value, eargs)
-
-    #         if not any(result[0] for result in validator_results):
-    #             return (False, " or ".join([result[1] for result in validator_results]))
-    #         return (True, None)
-
-    #     return _validate
-
-    # @staticmethod
     # def validateRace():
     #     """Validate race."""
     #     return make_validator(

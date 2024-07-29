@@ -6,7 +6,7 @@ from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators
+from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators, PostparsingValidators
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
 from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
@@ -292,7 +292,7 @@ first_part_schema = RowSchema(
             endIndex=51,
             required=True,
             validators=[
-                FieldValidators.orValidators([
+                ComposableValidators.orValidators([
                     ComposableFieldValidators.isBetween(1, 16, inclusive=True, cast=int),
                     ComposableFieldValidators.isBetween(98, 99, inclusive=True, cast=int)
                 ]),
@@ -609,7 +609,7 @@ second_part_schema = RowSchema(
             endIndex=92,
             required=True,
             validators=[
-                FieldValidators.orValidators([
+                ComposableValidators.orValidators([
                     ComposableFieldValidators.isBetween(1, 16, inclusive=True, cast=int),
                     ComposableFieldValidators.isBetween(98, 99, inclusive=True, cast=int)
                 ])

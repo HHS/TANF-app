@@ -162,13 +162,6 @@ class ComposableFieldValidators():
                 f"than or equal to {datetime.date.today().year - min_age} to meet the minimum age requirement."
         )
 
-        # return make_validator(
-        #     lambda value: datetime.date.today().year - int(str(value)[:4]) > min_age,
-        #     lambda eargs:
-        #         f"{format_error_context(eargs)} {str(eargs.value)[:4]} must be less "
-        #         f"than or equal to {datetime.date.today().year - min_age} to meet the minimum age requirement."
-        # )
-
     @staticmethod
     def validateSSN():
         """Validate that SSN value is not a repeating digit."""
@@ -242,6 +235,7 @@ class ComposableValidators():
 
         return _validate
 
+class PostparsingValidators:
     @staticmethod
     def sumIsEqual(condition_field_name, sum_fields=[]):
         """Validate that the sum of the sum_fields equals the condition_field."""

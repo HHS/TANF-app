@@ -6,7 +6,7 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators
+from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators, PostparsingValidators
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T2DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
@@ -28,7 +28,7 @@ t2 = SchemaManager(
                 ]),
             ],
             postparsing_validators=[
-                ComposableValidators.validate__FAM_AFF__SSN(),
+                PostparsingValidators.validate__FAM_AFF__SSN(),
                 ComposableValidators.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
                     condition_function=ComposableFieldValidators.isEqual(1),
@@ -304,7 +304,7 @@ t2 = SchemaManager(
                     endIndex=48,
                     required=True,
                     validators=[
-                        FieldValidators.orValidators([
+                        ComposableValidators.orValidators([
                             ComposableFieldValidators.isOneOf(["1", "2"]),
                             ComposableFieldValidators.isBlank()
                         ])
@@ -391,7 +391,7 @@ t2 = SchemaManager(
                     endIndex=57,
                     required=False,
                     validators=[
-                        FieldValidators.orValidators([
+                        ComposableValidators.orValidators([
                             ComposableFieldValidators.isBetween(0, 16, inclusive=True, cast=int),
                             ComposableFieldValidators.isBetween(98, 99, inclusive=True, cast=int),
                         ])
@@ -476,7 +476,7 @@ t2 = SchemaManager(
                     endIndex=68,
                     required=False,
                     validators=[
-                        FieldValidators.orValidators([
+                        ComposableValidators.orValidators([
                             ComposableFieldValidators.isBetween(0, 3, inclusive=True, cast=int),
                             ComposableFieldValidators.isBetween(5, 9, inclusive=True, cast=int),
                             ComposableFieldValidators.isBetween(11, 19, inclusive=True, cast=int),

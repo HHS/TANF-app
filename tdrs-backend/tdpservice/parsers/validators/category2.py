@@ -149,18 +149,6 @@ class FieldValidators():
             lambda eargs: f"{format_error_context(eargs)} {eargs.value} is zero."
         )
 
-    @staticmethod
-    def orValidators(validators, **kwargs):
-        """Return a validator that is true only if one of the validators is true."""
-        def _validate(value, eargs):
-            validator_results = evaluate_all(validators, value, eargs)
-
-            if not any(result[0] for result in validator_results):
-                return (False, " or ".join([result[1] for result in validator_results]))
-            return (True, None)
-
-        return _validate
-
     # the remaining can be written using the previous validator functions
     @staticmethod
     def dateYearIsLargerThan(year, **kwargs):
