@@ -146,14 +146,31 @@ class ComposableValidators():
     # needs a base? and/or implement as composition of other validators
 
     @staticmethod
-    def olderThan(min_age):
+    def isOlderThan(min_age):
         """Validate that value is larger than min_age."""
+        def _validate(val):
+            birth_year = int(str(val)[:4])
+            age = datetime.date.today().year - birth_year
+            _validator = ValidatorFunctions.isGreaterThan(min_age)
+            result = _validator(age)
+            print(f'birth_year: {birth_year}')
+            print(f'age: {age}')
+            print(f'result: {result}')
+            return result
+
         return make_validator(
-            lambda value: datetime.date.today().year - int(str(value)[:4]) > min_age,
+            _validate,
             lambda eargs:
                 f"{format_error_context(eargs)} {str(eargs.value)[:4]} must be less "
                 f"than or equal to {datetime.date.today().year - min_age} to meet the minimum age requirement."
         )
+
+        # return make_validator(
+        #     lambda value: datetime.date.today().year - int(str(value)[:4]) > min_age,
+        #     lambda eargs:
+        #         f"{format_error_context(eargs)} {str(eargs.value)[:4]} must be less "
+        #         f"than or equal to {datetime.date.today().year - min_age} to meet the minimum age requirement."
+        # )
 
     @staticmethod
     def validateSSN():
@@ -378,19 +395,11 @@ class ComposableValidators():
                 )
                 RPT_MONTH_YEAR += "01"
 
-                print('***values***')
-                print(f'WORK_ELIGIBLE_INDICATOR: {WORK_ELIGIBLE_INDICATOR}')
-                print(f'RELATIONSHIP_HOH: {RELATIONSHIP_HOH}')
-                print(f'DOB: {DOB}')
-                print(f'RPT_MONTH_YEAR: {RPT_MONTH_YEAR}')
-
                 DOB_datetime = datetime.datetime.strptime(DOB, '%Y%m%d')
                 RPT_MONTH_YEAR_datetime = datetime.datetime.strptime(RPT_MONTH_YEAR, '%Y%m%d')
 
                 # age computation should use generic
                 AGE = (RPT_MONTH_YEAR_datetime - DOB_datetime).days / 365.25
-
-                print(f'AGE: {AGE}')
 
                 if WORK_ELIGIBLE_INDICATOR == "11" and AGE < 19:
                     if RELATIONSHIP_HOH == 1:

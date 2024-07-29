@@ -100,7 +100,7 @@ m5 = SchemaManager(
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name="DATE_OF_BIRTH",
-                    condition_function=ComposableValidators.olderThan(18),
+                    condition_function=ComposableValidators.isOlderThan(18),
                     result_field_name="REC_OASDI_INSURANCE",
                     result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
                 ),

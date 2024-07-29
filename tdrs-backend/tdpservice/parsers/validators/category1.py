@@ -52,6 +52,7 @@ class PreparsingValidators():
             lambda eargs: f'{eargs.row_schema.record_type}: Case number {str(eargs.value)} cannot contain blanks.'
         )
 
+    # todo: rewrite/test
     @staticmethod
     def or_priority_validators(validators=[]):
         """Return a validator that is true based on a priority of validators.
@@ -90,18 +91,43 @@ class PreparsingValidators():
     @staticmethod
     def validateRptMonthYear():
         """Validate RPT_MONTH_YEAR."""
+        def _validate(line, eargs):
+            rpt_month_year = line[2:8]
+
+            _validate_month = ValidatorFunctions.dateMonthIsValid()
+            month_is_valid, _ = _validate_month(rpt_month_year, eargs)
+
+            _validate_year = ValidatorFunctions.dateYearIsLargerThan(1900)
+            year_is_valid, _ = _validate_year(rpt_month_year, eargs)
+
+            return month_is_valid and year_is_valid
+
         return make_validator(
-            lambda value: value[2:8].isdigit() and int(value[2:6]) > 1900 and value[6:8] in {
-                "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"
-            },
+            _validate,
             lambda eargs:
                 f"{format_error_context(eargs)} The value: {eargs.value[2:8]}, "
                 "does not follow the YYYYMM format for Reporting Year and Month.",
         )
+        # return make_validator(
+        #     lambda value: value[2:8].isdigit() and int(value[2:6]) > 1900 and value[6:8] in {
+        #         "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"
+        #     },
+        #     lambda eargs:
+        #         f"{format_error_context(eargs)} The value: {eargs.value[2:8]}, "
+        #         "does not follow the YYYYMM format for Reporting Year and Month.",
+        # )
 
     @staticmethod
     def t3_m3_child_validator(which_child):
         """T3 child validator."""
+        # def _validate_first_child(line, eargs):
+        #     _validate_not_empty = ValidatorFunctions.isNotEmpty(1, 60)
+        #     not_empty_is_valid, _ = _validate_not_empty(line, eargs)
+        #     _validate_record_len = ValidatorFunctions.hasLengthGreaterThan(60, inclusive=True)
+        #     record_len_is_valid, _ = _validate_record_len(line, eargs)
+
+        #     return not_empty_is_valid and record_len_is_valid
+
         def t3_first_child_validator_func(line, eargs):
             if not _is_empty(line, 1, 60) and len(line) >= 60:
                 return (True, None)
