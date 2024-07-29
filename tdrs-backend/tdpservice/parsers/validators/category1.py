@@ -11,7 +11,7 @@ def format_error_context(eargs: ValidationErrorArgs):
 
 class PreparsingValidators():
     @staticmethod
-    def isNotEmpty(start=0, end=None, **kwargs):
+    def recordIsNotEmpty(start=0, end=None, **kwargs):
         return make_validator(
             ValidatorFunctions.isNotEmpty(**kwargs),
             lambda eargs: f'{format_error_context(eargs)} {str(eargs.value)} contains blanks '
@@ -26,15 +26,6 @@ class PreparsingValidators():
                 f"{eargs.row_schema.record_type}: record length is {len(eargs.value)} characters but must be {length}.",
         )
 
-    # todo: this is only used for header/trailer, want custom error messages here anyway
-    # make new custom validator functions
-    @staticmethod
-    def recordStartsWith(substr, func, **kwargs):
-        return make_validator(
-            ValidatorFunctions.startsWith(substr, **kwargs),
-            lambda eargs: f'{eargs.value} must start with {substr}.'
-        )
-
     @staticmethod
     def recordHasLengthBetween(min, max, **kwargs):
         _validator = ValidatorFunctions.isBetween(min, max, inclusive=True, **kwargs)
@@ -43,6 +34,15 @@ class PreparsingValidators():
             lambda eargs:
                 f"{eargs.row_schema.record_type}: record length of {len(eargs.value)} "
                 f"characters is not in the range [{min}, {max}].",
+        )
+
+    # todo: this is only used for header/trailer, want custom error messages here anyway
+    # make new custom validator functions
+    @staticmethod
+    def recordStartsWith(substr, func=None, **kwargs):
+        return make_validator(
+            ValidatorFunctions.startsWith(substr, **kwargs),
+            lambda eargs: f'{eargs.value} must start with {substr}.'
         )
 
     @staticmethod

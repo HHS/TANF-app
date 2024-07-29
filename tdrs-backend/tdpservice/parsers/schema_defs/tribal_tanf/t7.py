@@ -26,8 +26,8 @@ for i in range(1, 31):
             quiet_preparser_errors=i > 1,
             preparsing_validators=[
                 PreparsingValidators.recordHasLength(247),
-                PreparsingValidators.isNotEmpty(0, 7),
-                PreparsingValidators.isNotEmpty(validator_index, validator_index + 24),
+                PreparsingValidators.recordIsNotEmpty(0, 7),
+                PreparsingValidators.recordIsNotEmpty(validator_index, validator_index + 24),
                 PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
                 PreparsingValidators.calendarQuarterIsValid(2, 7),
             ],

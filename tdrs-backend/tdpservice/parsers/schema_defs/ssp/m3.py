@@ -27,7 +27,7 @@ first_part_schema = RowSchema(
                     PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
                     PreparsingValidators.validateRptMonthYear(),
                 ]),
-        PreparsingValidators.isNotEmpty(8, 19)
+        PreparsingValidators.recordIsNotEmpty(8, 19)
     ],
     postparsing_validators=[
         ComposableValidators.ifThenAlso(
