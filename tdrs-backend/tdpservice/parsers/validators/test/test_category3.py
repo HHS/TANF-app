@@ -224,3 +224,56 @@ class TestComposableValidators:
         instance['SSN'] = '1'*8 + '0'
         result = ComposableValidators.validate__FAM_AFF__SSN()(instance, schema)
         assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
+
+    def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(self):
+        schema = RowSchema(
+            fields=[
+                Field(
+                    item='1',
+                    name='WORK_ELIGIBLE_INDICATOR',
+                    friendly_name='work eligible indicator',
+                    type='string',
+                    startIndex=0,
+                    endIndex=1
+                ),
+                Field(
+                    item='2',
+                    name='RELATIONSHIP_HOH',
+                    friendly_name='relationship w/ head of household',
+                    type='string',
+                    startIndex=1,
+                    endIndex=2
+                ),
+                Field(
+                    item='3',
+                    name='DATE_OF_BIRTH',
+                    friendly_name='date of birth',
+                    type='string',
+                    startIndex=2,
+                    endIndex=10
+                ),
+                Field(
+                    item='4',
+                    name='RPT_MONTH_YEAR',
+                    friendly_name='report month/year',
+                    type='string',
+                    startIndex=10,
+                    endIndex=16
+                )
+            ]
+        )
+        instance = {
+            'WORK_ELIGIBLE_INDICATOR': '11',
+            'RELATIONSHIP_HOH': '1',
+            'DATE_OF_BIRTH': '20200101',
+            'RPT_MONTH_YEAR': '202010',
+        }
+        result = ComposableValidators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
+        assert result == (
+            False,
+            'T1: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1',
+            ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
+        )
+        instance['DATE_OF_BIRTH'] = '19950101'
+        result = ComposableValidators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
+        assert result == (True, None, ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'])

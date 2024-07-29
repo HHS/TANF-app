@@ -360,16 +360,7 @@ class ComposableValidators():
                 )
 
                 dob_field = row_schema.get_field_by_name('DATE_OF_BIRTH')
-                DOB = int(get_record_value_by_field_name(record, 'DATE_OF_BIRTH'))
-                dob_eargs = ValidationErrorArgs(
-                    value=DOB,
-                    row_schema=row_schema,
-                    friendly_name=dob_field.friendly_name,
-                    item_num=dob_field.item,
-                )
-
-                dob_field = row_schema.get_field_by_name('DATE_OF_BIRTH')
-                DOB = int(get_record_value_by_field_name(record, 'DATE_OF_BIRTH'))
+                DOB = get_record_value_by_field_name(record, 'DATE_OF_BIRTH')
                 dob_eargs = ValidationErrorArgs(
                     value=DOB,
                     row_schema=row_schema,
@@ -378,7 +369,7 @@ class ComposableValidators():
                 )
 
                 rpt_mthyr_field = row_schema.get_field_by_name('RPT_MONTH_YEAR')
-                RPT_MONTH_YEAR = int(get_record_value_by_field_name(record, 'RPT_MONTH_YEAR'))
+                RPT_MONTH_YEAR = get_record_value_by_field_name(record, 'RPT_MONTH_YEAR')
                 rpt_mthyr_eargs = ValidationErrorArgs(
                     value=RPT_MONTH_YEAR,
                     row_schema=row_schema,
@@ -387,11 +378,19 @@ class ComposableValidators():
                 )
                 RPT_MONTH_YEAR += "01"
 
+                print('***values***')
+                print(f'WORK_ELIGIBLE_INDICATOR: {WORK_ELIGIBLE_INDICATOR}')
+                print(f'RELATIONSHIP_HOH: {RELATIONSHIP_HOH}')
+                print(f'DOB: {DOB}')
+                print(f'RPT_MONTH_YEAR: {RPT_MONTH_YEAR}')
+
                 DOB_datetime = datetime.datetime.strptime(DOB, '%Y%m%d')
                 RPT_MONTH_YEAR_datetime = datetime.datetime.strptime(RPT_MONTH_YEAR, '%Y%m%d')
 
                 # age computation should use generic
                 AGE = (RPT_MONTH_YEAR_datetime - DOB_datetime).days / 365.25
+
+                print(f'AGE: {AGE}')
 
                 if WORK_ELIGIBLE_INDICATOR == "11" and AGE < 19:
                     if RELATIONSHIP_HOH == 1:
@@ -400,7 +399,7 @@ class ComposableValidators():
                         return true_case
                 else:
                     return true_case
-            except Exception:
+            except Exception as e:
                 vals = {
                     "WORK_ELIGIBLE_INDICATOR": WORK_ELIGIBLE_INDICATOR,
                     "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
@@ -410,6 +409,7 @@ class ComposableValidators():
                     "Caught exception in validator: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE. " +
                     f"With field values: {vals}."
                 )
+                logger.error(f'Exception: {e}')
                 # Per conversation with Alex on 03/26/2024, returning the true case during exception handling to avoid
                 # confusing the STTs.
                 return true_case
