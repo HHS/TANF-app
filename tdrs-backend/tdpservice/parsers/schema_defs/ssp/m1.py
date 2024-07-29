@@ -5,7 +5,7 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import ComposableValidators
+from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators
 from tdpservice.search_indexes.documents.ssp import SSP_M1DataSubmissionDocument
 from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
@@ -27,75 +27,75 @@ m1 = SchemaManager(
             postparsing_validators=[
                 ComposableValidators.ifThenAlso(
                     condition_field_name='CASH_AMOUNT',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='NBR_MONTHS',
-                    result_function=ComposableValidators.isGreaterThan(0),
+                    result_function=ComposableFieldValidators.isGreaterThan(0),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='CC_AMOUNT',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='CHILDREN_COVERED',
-                    result_function=ComposableValidators.isGreaterThan(0),
+                    result_function=ComposableFieldValidators.isGreaterThan(0),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='CC_AMOUNT',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='CC_NBR_MONTHS',
-                    result_function=ComposableValidators.isGreaterThan(0),
+                    result_function=ComposableFieldValidators.isGreaterThan(0),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='TRANSP_AMOUNT',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='TRANSP_NBR_MONTHS',
-                    result_function=ComposableValidators.isGreaterThan(0),
+                    result_function=ComposableFieldValidators.isGreaterThan(0),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='SANC_REDUCTION_AMT',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='WORK_REQ_SANCTION',
-                    result_function=ComposableValidators.isOneOf((1, 2)),
+                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='SANC_REDUCTION_AMT',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='SANC_TEEN_PARENT',
-                    result_function=ComposableValidators.isOneOf((1, 2)),
+                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='SANC_REDUCTION_AMT',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='NON_COOPERATION_CSE',
-                    result_function=ComposableValidators.isOneOf((1, 2)),
+                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='SANC_REDUCTION_AMT',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='FAILURE_TO_COMPLY',
-                    result_function=ComposableValidators.isOneOf((1, 2)),
+                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='SANC_REDUCTION_AMT',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='OTHER_SANCTION',
-                    result_function=ComposableValidators.isOneOf((1, 2)),
+                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='OTHER_TOTAL_REDUCTIONS',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='FAMILY_CAP',
-                    result_function=ComposableValidators.isOneOf((1, 2)),
+                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='OTHER_TOTAL_REDUCTIONS',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='REDUCTIONS_ON_RECEIPTS',
-                    result_function=ComposableValidators.isOneOf((1, 2)),
+                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
                 ),
                 ComposableValidators.ifThenAlso(
                     condition_field_name='OTHER_TOTAL_REDUCTIONS',
-                    condition_function=ComposableValidators.isGreaterThan(0),
+                    condition_function=ComposableFieldValidators.isGreaterThan(0),
                     result_field_name='OTHER_NON_SANCTION',
-                    result_function=ComposableValidators.isOneOf((1, 2)),
+                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
                 ),
                 ComposableValidators.sumIsLarger([
                     "AMT_FOOD_STAMP_ASSISTANCE",

@@ -15,7 +15,7 @@ def format_error_context(eargs: ValidationErrorArgs):
 # decorator takes ValidatorFunction as arg
 # function handles error msg
 
-class ComposableValidators():
+class ComposableFieldValidators():
     # redefine cat2 error messages to make sense in composable context
     @staticmethod
     def isEqual(option, **kwargs):
@@ -153,9 +153,6 @@ class ComposableValidators():
             age = datetime.date.today().year - birth_year
             _validator = ValidatorFunctions.isGreaterThan(min_age)
             result = _validator(age)
-            print(f'birth_year: {birth_year}')
-            print(f'age: {age}')
-            print(f'result: {result}')
             return result
 
         return make_validator(
@@ -177,12 +174,13 @@ class ComposableValidators():
         """Validate that SSN value is not a repeating digit."""
         options = [str(i) * 9 for i in range(0, 10)]
         return make_validator(
-            lambda value: value not in options,
+            ValidatorFunctions.isNotOneOf(options),
             lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {options}."
         )
 
-    # the prior validators must be used within the following compositional validators
 
+# the prior validators must be used within the following compositional validators
+class ComposableValidators():
     @staticmethod
     def ifThenAlso(condition_field_name, condition_function, result_field_name, result_function, **kwargs):
         """Return second validation if the first validator is true.
@@ -225,6 +223,7 @@ class ComposableValidators():
                 else:
                     center_error = msg1
                 error_message = f"If {center_error}, then {msg2}"
+
                 return (result_success, error_message, fields)
             else:
                 return (result_success, None, fields)

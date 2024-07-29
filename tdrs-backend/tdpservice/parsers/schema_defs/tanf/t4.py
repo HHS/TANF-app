@@ -5,7 +5,7 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import ComposableValidators
+from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators
 from tdpservice.search_indexes.documents.tanf import TANF_T4DataSubmissionDocument
 from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
@@ -111,8 +111,8 @@ t4 = SchemaManager(
                     required=True,
                     validators=[
                         FieldValidators.orValidators([
-                            ComposableValidators.isBetween(1, 19, inclusive=True, cast=int),
-                            ComposableValidators.isEqual("99")
+                            ComposableFieldValidators.isBetween(1, 19, inclusive=True, cast=int),
+                            ComposableFieldValidators.isEqual("99")
                         ])
                     ],
                 ),
