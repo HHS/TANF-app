@@ -161,31 +161,44 @@ class FieldValidators():
 
         return _validate
 
+    # the remaining can be written using the previous validator functions
     @staticmethod
-    def dateYearIsLargerThan(year):
+    def dateYearIsLargerThan(year, **kwargs):
         """Validate that in a monthyear combination, the year is larger than the given year."""
+        _validator = ValidatorFunctions.dateYearIsLargerThan(year, **kwargs)
         return make_validator(
-            lambda value: int(str(value)[:4]) > year,
+            lambda value: _validator(int(str(value)[:4])),
             lambda eargs: f"{format_error_context(eargs)} Year {str(eargs.value)[:4]} must be larger than {year}.",
         )
 
     @staticmethod
-    def dateMonthIsValid():
+    def dateMonthIsValid(**kwargs):
         """Validate that in a monthyear combination, the month is a valid month."""
+        _validator = ValidatorFunctions.dateMonthIsValid(**kwargs)
         return make_validator(
-            lambda value: int(str(value)[4:6]) in range(1, 13),
+            lambda val: _validator(int(str(val)[4:6])),
             lambda eargs: f"{format_error_context(eargs)} {str(eargs.value)[4:6]} is not a valid month.",
         )
 
     @staticmethod
-    def dateDayIsValid():
+    def dateDayIsValid(**kwargs):
         """Validate that in a monthyearday combination, the day is a valid day."""
+        _validator = ValidatorFunctions.dateDayIsValid(**kwargs)
         return make_validator(
-            lambda value: int(str(value)[6:]) in range(1, 32),
+            lambda value: _validator(int(str(value)[6:])),
             lambda eargs: f"{format_error_context(eargs)} {str(eargs.value)[6:]} is not a valid day.",
         )
 
     @staticmethod
+    def quarterIsValid(**kwargs):
+        """Validate in a year quarter combination, the quarter is valid."""
+        _validator = ValidatorFunctions.quarterIsValid(**kwargs)
+        return make_validator(
+            lambda value: _validator(int(str(value)[-1])),
+            lambda eargs: f"{format_error_context(eargs)} {str(eargs.value)[-1]} is not a valid quarter.",
+        )
+
+    @staticmethod  ## dunno what to do with this guy yet
     def validateRace():
         """Validate race."""
         return make_validator(
@@ -193,12 +206,4 @@ class FieldValidators():
             lambda eargs:
                 f"{format_error_context(eargs)} {eargs.value} is not greater than or equal to 0 "
                 "or smaller than or equal to 2."
-        )
-
-    @staticmethod
-    def quarterIsValid():
-        """Validate in a year quarter combination, the quarter is valid."""
-        return make_validator(
-            lambda value: int(str(value)[-1]) > 0 and int(str(value)[-1]) < 5,
-            lambda eargs: f"{format_error_context(eargs)} {str(eargs.value)[-1]} is not a valid quarter.",
         )

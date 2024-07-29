@@ -156,3 +156,35 @@ class ValidatorFunctions:
             lambda val: val != "0" * number_of_zeros,
             **kwargs
         )
+
+    @staticmethod
+    def dateYearIsLargerThan(year, **kwargs):
+        """Validate that in a monthyear combination, the year is larger than the given year."""
+        return ValidatorFunctions._make_validator(
+            lambda val: int(val) > year,
+            **kwargs
+        )
+
+    @staticmethod
+    def dateMonthIsValid(**kwargs):
+        """Validate that in a monthyear combination, the month is a valid month."""
+        return ValidatorFunctions._make_validator(
+            lambda val: int(val) in range(1, 13),
+            **kwargs
+        )
+
+    @staticmethod
+    def dateDayIsValid(**kwargs):
+        """Validate that in a monthyearday combination, the day is a valid day."""
+        return ValidatorFunctions._make_validator(
+            lambda val: int(val) in range(1, 32),
+            **kwargs
+        )
+
+    @staticmethod
+    def quarterIsValid(**kwargs):
+        """Validate in a year quarter combination, the quarter is valid."""
+        return ValidatorFunctions._make_validator(
+            lambda val: int(val) > 0 and int(val) < 5,
+            **kwargs
+        )

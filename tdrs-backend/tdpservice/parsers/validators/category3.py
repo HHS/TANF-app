@@ -6,7 +6,7 @@ from .util import ValidationErrorArgs, make_validator, evaluate_all
 
 logger = logging.getLogger(__name__)
 
-# @staticmethod
+
 def format_error_context(eargs: ValidationErrorArgs):
     """Format the error message for consistency across cat3 validators."""
     return f'Item {eargs.item_num} ({eargs.friendly_name})'
@@ -14,9 +14,9 @@ def format_error_context(eargs: ValidationErrorArgs):
 
 # decorator takes ValidatorFunction as arg
 # function handles error msg
-# commit and msg eric
 
-class PostparsingValidators():
+class ComposableValidators():
+    # redefine cat2 error messages to make sense in composable context
     @staticmethod
     def isEqual(option, **kwargs):
         return make_validator(
@@ -143,6 +143,29 @@ class PostparsingValidators():
             lambda eargs: f'{eargs.value} must not be zero.'
         )
 
+    # needs a base? and/or implement as composition of other validators
+
+    @staticmethod
+    def olderThan(min_age):
+        """Validate that value is larger than min_age."""
+        return make_validator(
+            lambda value: datetime.date.today().year - int(str(value)[:4]) > min_age,
+            lambda eargs:
+                f"{format_error_context(eargs)} {str(eargs.value)[:4]} must be less "
+                f"than or equal to {datetime.date.today().year - min_age} to meet the minimum age requirement."
+        )
+
+    @staticmethod
+    def validateSSN():
+        """Validate that SSN value is not a repeating digit."""
+        options = [str(i) * 9 for i in range(0, 10)]
+        return make_validator(
+            lambda value: value not in options,
+            lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {options}."
+        )
+
+    # the prior validators must be used within the following compositional validators
+
     @staticmethod
     def ifThenAlso(condition_field_name, condition_function, result_field_name, result_function, **kwargs):
         """Return second validation if the first validator is true.
@@ -257,18 +280,33 @@ class PostparsingValidators():
         then item SSN != 000000000 -- 999999999.
         """
         # value is instance
-        def validate(instance, row_schema):
-            FAMILY_AFFILIATION = (
-                instance["FAMILY_AFFILIATION"]
-                if type(instance) is dict
-                else getattr(instance, "FAMILY_AFFILIATION")
+        def validate(record, row_schema):
+            fam_affil_field = row_schema.get_field_by_name('FAMILY_AFFILIATION')
+            FAMILY_AFFILIATION = get_record_value_by_field_name(record, 'FAMILY_AFFILIATION')
+            fam_affil_eargs = ValidationErrorArgs(
+                value=FAMILY_AFFILIATION,
+                row_schema=row_schema,
+                friendly_name=fam_affil_field.friendly_name,
+                item_num=fam_affil_field.item,
             )
-            CITIZENSHIP_STATUS = (
-                instance["CITIZENSHIP_STATUS"]
-                if type(instance) is dict
-                else getattr(instance, "CITIZENSHIP_STATUS")
+            cit_stat_field = row_schema.get_field_by_name('CITIZENSHIP_STATUS')
+            CITIZENSHIP_STATUS = get_record_value_by_field_name(record, 'CITIZENSHIP_STATUS')
+            cit_stat_eargs = ValidationErrorArgs(
+                value=CITIZENSHIP_STATUS,
+                row_schema=row_schema,
+                friendly_name=cit_stat_field.friendly_name,
+                item_num=cit_stat_field.item,
             )
-            SSN = instance["SSN"] if type(instance) is dict else getattr(instance, "SSN")
+            ssn_field = row_schema.get_field_by_name('SSN')
+            SSN = get_record_value_by_field_name(record, 'SSN')
+            ssn_eargs = ValidationErrorArgs(
+                value=SSN,
+                row_schema=row_schema,
+                friendly_name=ssn_field.friendly_name,
+                item_num=ssn_field.item,
+            )
+
+
             if FAMILY_AFFILIATION == 2 and (
                 CITIZENSHIP_STATUS == 1 or CITIZENSHIP_STATUS == 2
             ):
@@ -287,57 +325,72 @@ class PostparsingValidators():
         return validate
 
     @staticmethod
-    def validateSSN():
-        """Validate that SSN value is not a repeating digit."""
-        options = [str(i) * 9 for i in range(0, 10)]
-        return make_validator(
-            lambda value: value not in options,
-            lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {options}."
-        )
-
-    @staticmethod
     def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
         """If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
         # value is instance
-        def validate(instance, row_schema):
-            false_case = (False,
-                        f"{row_schema.record_type}: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, "
-                        "then RELATIONSHIP_HOH != 1",
-                        ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
-                        )
-            true_case = (True,
-                        None,
-                        ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
-                        )
+        def validate(record, row_schema):
+            false_case = (
+                False,
+                f"{row_schema.record_type}: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, "
+                "then RELATIONSHIP_HOH != 1",
+                ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
+            )
+            true_case = (
+                True,
+                None,
+                ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
+            )
             try:
-                WORK_ELIGIBLE_INDICATOR = (
-                    instance["WORK_ELIGIBLE_INDICATOR"]
-                    if type(instance) is dict
-                    else getattr(instance, "WORK_ELIGIBLE_INDICATOR")
-                )
-                RELATIONSHIP_HOH = (
-                    instance["RELATIONSHIP_HOH"]
-                    if type(instance) is dict
-                    else getattr(instance, "RELATIONSHIP_HOH")
-                )
-                RELATIONSHIP_HOH = int(RELATIONSHIP_HOH)
-
-                DOB = str(
-                    instance["DATE_OF_BIRTH"]
-                    if type(instance) is dict
-                    else getattr(instance, "DATE_OF_BIRTH")
+                work_elig_field = row_schema.get_field_by_name('WORK_ELIGIBLE_INDICATOR')
+                WORK_ELIGIBLE_INDICATOR = get_record_value_by_field_name(record, 'WORK_ELIGIBLE_INDICATOR')
+                work_elig_eargs = ValidationErrorArgs(
+                    value=WORK_ELIGIBLE_INDICATOR,
+                    row_schema=row_schema,
+                    friendly_name=work_elig_field.friendly_name,
+                    item_num=work_elig_field.item,
                 )
 
-                RPT_MONTH_YEAR = str(
-                    instance["RPT_MONTH_YEAR"]
-                    if type(instance) is dict
-                    else getattr(instance, "RPT_MONTH_YEAR")
+                relat_hoh_field = row_schema.get_field_by_name('RELATIONSHIP_HOH')
+                RELATIONSHIP_HOH = int(get_record_value_by_field_name(record, 'RELATIONSHIP_HOH'))
+                relat_hoh_eargs = ValidationErrorArgs(
+                    value=RELATIONSHIP_HOH,
+                    row_schema=row_schema,
+                    friendly_name=relat_hoh_field.friendly_name,
+                    item_num=relat_hoh_field.item,
                 )
 
+                dob_field = row_schema.get_field_by_name('DATE_OF_BIRTH')
+                DOB = int(get_record_value_by_field_name(record, 'DATE_OF_BIRTH'))
+                dob_eargs = ValidationErrorArgs(
+                    value=DOB,
+                    row_schema=row_schema,
+                    friendly_name=dob_field.friendly_name,
+                    item_num=dob_field.item,
+                )
+
+                dob_field = row_schema.get_field_by_name('DATE_OF_BIRTH')
+                DOB = int(get_record_value_by_field_name(record, 'DATE_OF_BIRTH'))
+                dob_eargs = ValidationErrorArgs(
+                    value=DOB,
+                    row_schema=row_schema,
+                    friendly_name=dob_field.friendly_name,
+                    item_num=dob_field.item,
+                )
+
+                rpt_mthyr_field = row_schema.get_field_by_name('RPT_MONTH_YEAR')
+                RPT_MONTH_YEAR = int(get_record_value_by_field_name(record, 'RPT_MONTH_YEAR'))
+                rpt_mthyr_eargs = ValidationErrorArgs(
+                    value=RPT_MONTH_YEAR,
+                    row_schema=row_schema,
+                    friendly_name=rpt_mthyr_field.friendly_name,
+                    item_num=rpt_mthyr_field.item,
+                )
                 RPT_MONTH_YEAR += "01"
 
                 DOB_datetime = datetime.datetime.strptime(DOB, '%Y%m%d')
                 RPT_MONTH_YEAR_datetime = datetime.datetime.strptime(RPT_MONTH_YEAR, '%Y%m%d')
+
+                # age computation should use generic
                 AGE = (RPT_MONTH_YEAR_datetime - DOB_datetime).days / 365.25
 
                 if WORK_ELIGIBLE_INDICATOR == "11" and AGE < 19:
@@ -348,24 +401,17 @@ class PostparsingValidators():
                 else:
                     return true_case
             except Exception:
-                vals = {"WORK_ELIGIBLE_INDICATOR": WORK_ELIGIBLE_INDICATOR,
-                        "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
-                        "DOB": DOB
-                        }
-                logger.debug("Caught exception in validator: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE. " +
-                            f"With field values: {vals}.")
+                vals = {
+                    "WORK_ELIGIBLE_INDICATOR": WORK_ELIGIBLE_INDICATOR,
+                    "RELATIONSHIP_HOH": RELATIONSHIP_HOH,
+                    "DOB": DOB
+                }
+                logger.debug(
+                    "Caught exception in validator: validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE. " +
+                    f"With field values: {vals}."
+                )
                 # Per conversation with Alex on 03/26/2024, returning the true case during exception handling to avoid
                 # confusing the STTs.
                 return true_case
 
         return validate
-
-    @staticmethod
-    def olderThan(min_age):
-        """Validate that value is larger than min_age."""
-        return make_validator(
-            lambda value: datetime.date.today().year - int(str(value)[:4]) > min_age,
-            lambda eargs:
-                f"{format_error_context(eargs)} {str(eargs.value)[:4]} must be less "
-                f"than or equal to {datetime.date.today().year - min_age} to meet the minimum age requirement."
-        )

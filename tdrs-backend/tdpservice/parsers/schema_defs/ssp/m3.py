@@ -6,7 +6,7 @@ from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import PostparsingValidators
+from tdpservice.parsers.validators.category3 import ComposableValidators
 from tdpservice.parsers.validators.util import is_quiet_preparser_errors
 from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
@@ -30,77 +30,77 @@ first_part_schema = RowSchema(
         PreparsingValidators.isNotEmpty(8, 19)
     ],
     postparsing_validators=[
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isEqual(1),
+            condition_function=ComposableValidators.isEqual(1),
             result_field_name='SSN',
-            result_function=PostparsingValidators.validateSSN(),
+            result_function=ComposableValidators.validateSSN(),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_HISPANIC',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_AMER_INDIAN',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_ASIAN',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_BLACK',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_HAWAIIAN',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_WHITE',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RELATIONSHIP_HOH',
-            result_function=PostparsingValidators.isBetween(4, 9, inclusive=True),
+            result_function=ComposableValidators.isBetween(4, 9, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='PARENT_MINOR_CHILD',
-            result_function=PostparsingValidators.isOneOf((1, 2, 3)),
+            result_function=ComposableValidators.isOneOf((1, 2, 3)),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isEqual(1),
+            condition_function=ComposableValidators.isEqual(1),
             result_field_name='EDUCATION_LEVEL',
-            result_function=PostparsingValidators.isNotEqual(99),
+            result_function=ComposableValidators.isNotEqual(99),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isEqual(1),
+            condition_function=ComposableValidators.isEqual(1),
             result_field_name='CITIZENSHIP_STATUS',
-            result_function=PostparsingValidators.isOneOf((1, 2)),
+            result_function=ComposableValidators.isOneOf((1, 2)),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isEqual(2),
+            condition_function=ComposableValidators.isEqual(2),
             result_field_name='CITIZENSHIP_STATUS',
-            result_function=PostparsingValidators.isOneOf((1, 2, 3, 9)),
+            result_function=ComposableValidators.isOneOf((1, 2, 3, 9)),
             ),
     ],
     fields=[
@@ -293,8 +293,8 @@ first_part_schema = RowSchema(
             required=True,
             validators=[
                 FieldValidators.orValidators([
-                    PostparsingValidators.isBetween(1, 16, inclusive=True, cast=int),
-                    PostparsingValidators.isBetween(98, 99, inclusive=True, cast=int)
+                    ComposableValidators.isBetween(1, 16, inclusive=True, cast=int),
+                    ComposableValidators.isBetween(98, 99, inclusive=True, cast=int)
                 ]),
             ]
         ),
@@ -347,77 +347,77 @@ second_part_schema = RowSchema(
                 ]),
     ],
     postparsing_validators=[
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isEqual(1),
+            condition_function=ComposableValidators.isEqual(1),
             result_field_name='SSN',
-            result_function=PostparsingValidators.validateSSN(),
+            result_function=ComposableValidators.validateSSN(),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_HISPANIC',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_AMER_INDIAN',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_ASIAN',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_BLACK',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_HAWAIIAN',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RACE_WHITE',
-            result_function=PostparsingValidators.isBetween(1, 2, inclusive=True),
+            result_function=ComposableValidators.isBetween(1, 2, inclusive=True),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='RELATIONSHIP_HOH',
-            result_function=PostparsingValidators.isBetween(4, 9, inclusive=True, cast=int),
+            result_function=ComposableValidators.isBetween(4, 9, inclusive=True, cast=int),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isOneOf((1, 2)),
+            condition_function=ComposableValidators.isOneOf((1, 2)),
             result_field_name='PARENT_MINOR_CHILD',
-            result_function=PostparsingValidators.isOneOf((1, 2, 3)),
+            result_function=ComposableValidators.isOneOf((1, 2, 3)),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isEqual(1),
+            condition_function=ComposableValidators.isEqual(1),
             result_field_name='EDUCATION_LEVEL',
-            result_function=PostparsingValidators.isNotEqual(99),
+            result_function=ComposableValidators.isNotEqual(99),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isEqual(1),
+            condition_function=ComposableValidators.isEqual(1),
             result_field_name='CITIZENSHIP_STATUS',
-            result_function=PostparsingValidators.isOneOf((1, 2)),
+            result_function=ComposableValidators.isOneOf((1, 2)),
             ),
-        PostparsingValidators.ifThenAlso(
+        ComposableValidators.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=PostparsingValidators.isEqual(2),
+            condition_function=ComposableValidators.isEqual(2),
             result_field_name='CITIZENSHIP_STATUS',
-            result_function=PostparsingValidators.isOneOf((1, 2, 3, 9)),
+            result_function=ComposableValidators.isOneOf((1, 2, 3, 9)),
             ),
     ],
     fields=[
@@ -610,8 +610,8 @@ second_part_schema = RowSchema(
             required=True,
             validators=[
                 FieldValidators.orValidators([
-                    PostparsingValidators.isBetween(1, 16, inclusive=True, cast=int),
-                    PostparsingValidators.isBetween(98, 99, inclusive=True, cast=int)
+                    ComposableValidators.isBetween(1, 16, inclusive=True, cast=int),
+                    ComposableValidators.isBetween(98, 99, inclusive=True, cast=int)
                 ])
             ]
         ),

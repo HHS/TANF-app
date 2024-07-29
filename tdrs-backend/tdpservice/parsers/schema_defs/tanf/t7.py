@@ -5,7 +5,7 @@ from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import PostparsingValidators
+from tdpservice.parsers.validators.category3 import ComposableValidators
 from tdpservice.search_indexes.documents.tanf import TANF_T7DataSubmissionDocument
 
 schemas = []

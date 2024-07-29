@@ -176,6 +176,47 @@ class TestFieldValidators:
         _validator = FieldValidators.isNotZero(number_of_zeros, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
+    @pytest.mark.parametrize('val, year, kwargs, exp_result, exp_message', [
+        ('202201', 2020, {}, True, None),
+        ('201001', 2020, {}, False, 'Test Item 1 (test field): Year 2010 must be larger than 2020.'),
+        ('202001', 2020, {}, False, 'Test Item 1 (test field): Year 2020 must be larger than 2020.'),
+    ])
+    def test_dateYearIsLargerThan(self, val, year, kwargs, exp_result, exp_message):
+        _validator = FieldValidators.dateYearIsLargerThan(year, **kwargs)
+        _validate_and_assert(_validator, val, exp_result, exp_message)
+
+    @pytest.mark.parametrize('val, kwargs, exp_result, exp_message', [
+        ('202010', {}, True, None),
+        ('202001', {}, True, None),
+        ('202012', {}, True, None),
+        ('202015', {}, False, 'Test Item 1 (test field): 15 is not a valid month.'),
+    ])
+    def test_dateMonthIsValid(self, val, kwargs, exp_result, exp_message):
+        _validator = FieldValidators.dateMonthIsValid(**kwargs)
+        _validate_and_assert(_validator, val, exp_result, exp_message)
+
+    @pytest.mark.parametrize('val, kwargs, exp_result, exp_message', [
+        ('20201001', {}, True, None),
+        ('20201031', {}, True, None),
+        ('20201032', {}, False, 'Test Item 1 (test field): 32 is not a valid day.'),
+        ('20201050', {}, False, 'Test Item 1 (test field): 50 is not a valid day.'),
+    ])
+    def test_dateDayIsValid(self, val, kwargs, exp_result, exp_message):
+        _validator = FieldValidators.dateDayIsValid(**kwargs)
+        _validate_and_assert(_validator, val, exp_result, exp_message)
+
+    @pytest.mark.parametrize('val, kwargs, exp_result, exp_message', [
+        ('20201', {}, True, None),
+        ('20204', {}, True, None),
+        ('20200', {}, False, 'Test Item 1 (test field): 0 is not a valid quarter.'),
+        ('20205', {}, False, 'Test Item 1 (test field): 5 is not a valid quarter.'),
+        ('20207', {}, False, 'Test Item 1 (test field): 7 is not a valid quarter.'),
+
+    ])
+    def test_quarterIsValid(self, val, kwargs, exp_result, exp_message):
+        _validator = FieldValidators.quarterIsValid(**kwargs)
+        _validate_and_assert(_validator, val, exp_result, exp_message)
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # @staticmethod
@@ -191,30 +232,6 @@ class TestFieldValidators:
     #     return _validate
 
     # @staticmethod
-    # def dateYearIsLargerThan(year):
-    #     """Validate that in a monthyear combination, the year is larger than the given year."""
-    #     return make_validator(
-    #         lambda value: int(str(value)[:4]) > year,
-    #         lambda eargs: f"{format_error_context(eargs)} Year {str(eargs.value)[:4]} must be larger than {year}.",
-    #     )
-
-    # @staticmethod
-    # def dateMonthIsValid():
-    #     """Validate that in a monthyear combination, the month is a valid month."""
-    #     return make_validator(
-    #         lambda value: int(str(value)[4:6]) in range(1, 13),
-    #         lambda eargs: f"{format_error_context(eargs)} {str(eargs.value)[4:6]} is not a valid month.",
-    #     )
-
-    # @staticmethod
-    # def dateDayIsValid():
-    #     """Validate that in a monthyearday combination, the day is a valid day."""
-    #     return make_validator(
-    #         lambda value: int(str(value)[6:]) in range(1, 32),
-    #         lambda eargs: f"{format_error_context(eargs)} {str(eargs.value)[6:]} is not a valid day.",
-    #     )
-
-    # @staticmethod
     # def validateRace():
     #     """Validate race."""
     #     return make_validator(
@@ -222,12 +239,4 @@ class TestFieldValidators:
     #         lambda eargs:
     #             f"{format_error_context(eargs)} {eargs.value} is not greater than or equal to 0 "
     #             "or smaller than or equal to 2."
-    #     )
-
-    # @staticmethod
-    # def quarterIsValid():
-    #     """Validate in a year quarter combination, the quarter is valid."""
-    #     return make_validator(
-    #         lambda value: int(str(value)[-1]) > 0 and int(str(value)[-1]) < 5,
-    #         lambda eargs: f"{format_error_context(eargs)} {str(eargs.value)[-1]} is not a valid quarter.",
     #     )
