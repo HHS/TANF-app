@@ -235,6 +235,7 @@ class ComposableValidators():
 
         return _validate
 
+
 class PostparsingValidators:
     @staticmethod
     def sumIsEqual(condition_field_name, sum_fields=[]):
