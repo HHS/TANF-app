@@ -35,7 +35,7 @@ def _validate_and_assert(validator, val, exp_result, exp_message):
 class TestComposableFieldValidators:
     @pytest.mark.parametrize('val, option, kwargs, exp_result, exp_message', [
         (10, 10, {}, True, None),
-        (1, 10, {}, False, 'Test Item 1 (test field): 1 does not match 10.'),
+        (1, 10, {}, False, '1 must match 10'),
     ])
     def test_isEqual(self, val, option, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isEqual(option, **kwargs)
@@ -43,7 +43,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, option, kwargs, exp_result, exp_message', [
         (1, 10, {}, True, None),
-        (10, 10, {}, False, 'Test Item 1 (test field): 10 matches 10.'),
+        (10, 10, {}, False, '10 must not be equal to 10'),
     ])
     def test_isNotEqual(self, val, option, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isNotEqual(option, **kwargs)
@@ -51,7 +51,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, options, kwargs, exp_result, exp_message', [
         (1, [1, 2, 3], {}, True, None),
-        (1, [4, 5, 6], {}, False, 'Test Item 1 (test field): 1 is not in [4, 5, 6].'),
+        (1, [4, 5, 6], {}, False, '1 must be one of [4, 5, 6]'),
     ])
     def test_isOneOf(self, val, options, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isOneOf(options, **kwargs)
@@ -59,7 +59,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, options, kwargs, exp_result, exp_message', [
         (1, [4, 5, 6], {}, True, None),
-        (1, [1, 2, 3], {}, False, 'Test Item 1 (test field): 1 is in [1, 2, 3].'),
+        (1, [1, 2, 3], {}, False, '1 must not be one of [1, 2, 3]'),
     ])
     def test_isNotOneOf(self, val, options, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isNotOneOf(options, **kwargs)
@@ -67,8 +67,8 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, option, inclusive, kwargs, exp_result, exp_message', [
         (10, 5, True, {}, True, None),
-        (10, 20, True, {}, False, 'Test Item 1 (test field): 10 is not larger than 20.'),
-        (10, 10, False, {}, False, 'Test Item 1 (test field): 10 is not larger than 10.'),
+        (10, 20, True, {}, False, '10 must be greater than 20'),
+        (10, 10, False, {}, False, '10 must be greater than 10'),
     ])
     def test_isGreaterThan(self, val, option, inclusive, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isGreaterThan(option, inclusive, **kwargs)
@@ -76,8 +76,8 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, option, inclusive, kwargs, exp_result, exp_message', [
         (5, 10, True, {}, True, None),
-        (5, 3, True, {}, False, 'Test Item 1 (test field): 5 is not smaller than 3.'),
-        (5, 5, False, {}, False, 'Test Item 1 (test field): 5 is not smaller than 5.'),
+        (5, 3, True, {}, False, '5 must be less than 3'),
+        (5, 5, False, {}, False, '5 must be less than 5'),
     ])
     def test_isLessThan(self, val, option, inclusive, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isLessThan(option, inclusive, **kwargs)
@@ -85,9 +85,9 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, min, max, inclusive, kwargs, exp_result, exp_message', [
         (5, 1, 10, True, {}, True, None),
-        (20, 1, 10, True, {}, False, 'Test Item 1 (test field): 20 is not in range [1, 10].'),
+        (20, 1, 10, True, {}, False, '20 must be between 1 and 10'),
         (5, 1, 10, False, {}, True, None),
-        (20, 1, 10, False, {}, False, 'Test Item 1 (test field): 20 is not between 1 and 10.'),
+        (20, 1, 10, False, {}, False, '20 must be between 1 and 10'),
     ])
     def test_isBetween(self, val, min, max, inclusive, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isBetween(min, max, inclusive, **kwargs)
@@ -95,7 +95,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, substr, kwargs, exp_result, exp_message', [
         ('abcdef', 'abc', {}, True, None),
-        ('abcdef', 'xyz', {}, False, 'Test Item 1 (test field): abcdef does not start with xyz.')
+        ('abcdef', 'xyz', {}, False, 'abcdef must start with xyz')
     ])
     def test_startsWith(self, val, substr, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.startsWith(substr, **kwargs)
@@ -103,7 +103,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, substr, kwargs, exp_result, exp_message', [
         ('abc123', 'c1', {}, True, None),
-        ('abc123', 'xy', {}, False, 'Test Item 1 (test field): abc123 does not contain xy.'),
+        ('abc123', 'xy', {}, False, 'abc123 must contain xy'),
     ])
     def test_contains(self, val, substr, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.contains(substr, **kwargs)
@@ -111,14 +111,14 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, kwargs, exp_result, exp_message', [
         (1001, {}, True, None),
-        ('ABC', {}, False, 'Test Item 1 (test field): ABC is not a number.'),
+        ('ABC', {}, False, 'ABC must be a number'),
     ])
     def test_isNumber(self, val, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isNumber(**kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
     @pytest.mark.parametrize('val, kwargs, exp_result, exp_message', [
-        ('F*&k', {}, False, 'Test Item 1 (test field): F*&k is not alphanumeric.'),
+        ('F*&k', {}, False, 'F*&k must be alphanumeric'),
         ('Fork', {}, True, None),
     ])
     def test_isAlphaNumeric(self, val, kwargs, exp_result, exp_message):
@@ -127,7 +127,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, start, end, kwargs, exp_result, exp_message', [
         ('   ', 0, 4, {}, True, None),
-        ('1001', 0, 4, {}, False, 'Test Item 1 (test field): 1001 is not blank between positions 0 and 4.'),
+        ('1001', 0, 4, {}, False, '1001 must be empty'),
     ])
     def test_isEmpty(self, val, start, end, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isEmpty(start, end, **kwargs)
@@ -135,7 +135,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, start, end, kwargs, exp_result, exp_message', [
         ('1001', 0, 4, {}, True, None),
-        ('    ', 0, 4, {}, False, 'Test Item 1 (test field):      contains blanks between positions 0 and 4.'),
+        ('    ', 0, 4, {}, False, '     must not be empty'),
     ])
     def test_isNotEmpty(self, val, start, end, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isNotEmpty(start, end, **kwargs)
@@ -143,7 +143,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, kwargs, exp_result, exp_message', [
         ('    ', {}, True, None),
-        ('0000', {}, False, 'Test Item 1 (test field): 0000 is not blank.'),
+        ('0000', {}, False, '0000 must be blank'),
     ])
     def test_isBlank(self, val, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isBlank(**kwargs)
@@ -151,7 +151,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, length, kwargs, exp_result, exp_message', [
         ('123', 3, {}, True, None),
-        ('123', 4, {}, False, 'Test Item 1 (test field): field length is 3 characters but must be 4.'),
+        ('123', 4, {}, False, '123 must have length 4'),
     ])
     def test_hasLength(self, val, length, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.hasLength(length, **kwargs)
@@ -159,7 +159,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, length, inclusive, kwargs, exp_result, exp_message', [
         ('123', 3, True, {}, True, None),
-        ('123', 3, False, {}, False, 'Test Item 1 (test field): Value length 3 is not greater than 3.'),
+        ('123', 3, False, {}, False, '123 must have length greater than 3'),
     ])
     def test_hasLengthGreaterThan(self, val, length, inclusive, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.hasLengthGreaterThan(length, inclusive, **kwargs)
@@ -167,7 +167,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, length, kwargs, exp_result, exp_message', [
         (101, 3, {}, True, None),
-        (101, 2, {}, False, 'Test Item 1 (test field): 101 does not have exactly 2 digits.'),
+        (101, 2, {}, False, '101 must have length 2'),
     ])
     def test_intHasLength(self, val, length, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.intHasLength(length, **kwargs)
@@ -175,7 +175,7 @@ class TestComposableFieldValidators:
 
     @pytest.mark.parametrize('val, number_of_zeros, kwargs, exp_result, exp_message', [
         ('111', 3, {}, True, None),
-        ('000', 3, {}, False, 'Test Item 1 (test field): 000 is zero.'),
+        ('000', 3, {}, False, '000 must not be zero'),
     ])
     def test_isNotZero(self, val, number_of_zeros, kwargs, exp_result, exp_message):
         _validator = ComposableFieldValidators.isNotZero(number_of_zeros, **kwargs)
