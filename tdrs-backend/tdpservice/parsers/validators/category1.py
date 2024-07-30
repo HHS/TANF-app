@@ -1,6 +1,8 @@
 from tdpservice.parsers.util import fiscal_to_calendar, year_month_to_year_quarter, clean_options_string, get_record_value_by_field_name
 from .base import ValidatorFunctions
-from .util import ValidationErrorArgs, make_validator, evaluate_all, _is_all_zeros, _is_empty
+from .util import ValidationErrorArgs, make_validator, evaluate_all, _is_all_zeros, _is_empty, value_is_empty
+from tdpservice.parsers.models import ParserErrorCategoryChoices
+from tdpservice.parsers.util import fiscal_to_calendar
 
 
 def format_error_context(eargs: ValidationErrorArgs):
@@ -133,3 +135,67 @@ class PreparsingValidators():
             lambda eargs: f"{eargs.row_schema.record_type}: {eargs.value[start:end]} is invalid. "
             "Calendar Quarter must be a numeric representing the Calendar Year and Quarter formatted as YYYYQ",
         )
+
+    @staticmethod
+    def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code, generate_error):
+        """Validate tribe code, fips code, and program type all agree with eachother."""
+        is_valid = False
+
+        if program_type == 'TAN' and value_is_empty(state_fips_code, 2, extra_vals={'0'*2}):
+            is_valid = not value_is_empty(tribe_code, 3, extra_vals={'0'*3})
+        else:
+            is_valid = value_is_empty(tribe_code, 3, extra_vals={'0'*3})
+
+        error = None
+        if not is_valid:
+            error = generate_error(
+                schema=None,
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+
+                error_message=f"Tribe Code ({tribe_code}) inconsistency with Program Type ({program_type}) and " +
+                f"FIPS Code ({state_fips_code}).",
+                record=None,
+                field=None
+            )
+
+        return is_valid, error
+
+    @staticmethod
+    def validate_header_section_matches_submission(datafile, section, generate_error):
+        """Validate header section matches submission section."""
+        is_valid = datafile.section == section
+
+        error = None
+        if not is_valid:
+            error = generate_error(
+                schema=None,
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                error_message=f"Data does not match the expected layout for {datafile.section}.",
+                record=None,
+                field=None,
+            )
+
+        return is_valid, error
+
+    @staticmethod
+    def validate_header_rpt_month_year(datafile, header, generate_error):
+        """Validate header rpt_month_year."""
+        # the header year/quarter represent a calendar period, and frontend year/qtr represents a fiscal period
+        header_calendar_qtr = f"Q{header['quarter']}"
+        header_calendar_year = header['year']
+        file_calendar_year, file_calendar_qtr = fiscal_to_calendar(datafile.year, f"{datafile.quarter}")
+
+        is_valid = file_calendar_year is not None and file_calendar_qtr is not None
+        is_valid = is_valid and file_calendar_year == header_calendar_year and file_calendar_qtr == header_calendar_qtr
+
+        error = None
+        if not is_valid:
+            error = generate_error(
+                schema=None,
+                error_category=ParserErrorCategoryChoices.PRE_CHECK,
+                error_message=f"Submitted reporting year:{header['year']}, quarter:Q{header['quarter']} doesn't match "
+                + f"file reporting year:{datafile.year}, quarter:{datafile.quarter}.",
+                record=None,
+                field=None,
+            )
+        return is_valid, error

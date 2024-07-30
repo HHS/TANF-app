@@ -10,7 +10,8 @@ import logging
 from .models import ParserErrorCategoryChoices, ParserError
 from . import schema_defs, util
 from . import row_schema
-from .validators.util import value_is_empty, validate_header_rpt_month_year, validate_header_section_matches_submission, validate_tribe_fips_program_agree
+from .validators.util import value_is_empty
+from .validators.category1 import PreparsingValidators
 from .schema_defs.utils import get_section_reference, get_program_model
 from .case_consistency_validator import CaseConsistencyValidator
 from elasticsearch.helpers.errors import BulkIndexError
@@ -60,10 +61,12 @@ def parse_datafile(datafile, dfs):
 
     # Validate tribe code in submission across program type and fips code
     generate_error = util.make_generate_parser_error(datafile, 1)
-    tribe_is_valid, tribe_error = validate_tribe_fips_program_agree(header['program_type'],
-                                                                               field_values["tribe_code"],
-                                                                               field_values["state_fips"],
-                                                                               generate_error)
+    tribe_is_valid, tribe_error = PreparsingValidators.validate_tribe_fips_program_agree(
+        header['program_type'],
+        field_values["tribe_code"],
+        field_values["state_fips"],
+        generate_error
+    )
 
     if not tribe_is_valid:
         logger.info(f"Tribe Code ({field_values['tribe_code']}) inconsistency with Program Type " +
@@ -73,7 +76,7 @@ def parse_datafile(datafile, dfs):
         return errors
 
     # Ensure file section matches upload section
-    section_is_valid, section_error = validate_header_section_matches_submission(
+    section_is_valid, section_error = PreparsingValidators.validate_header_section_matches_submission(
         datafile,
         get_section_reference(program_type, section),
         util.make_generate_parser_error(datafile, 1)
@@ -86,7 +89,7 @@ def parse_datafile(datafile, dfs):
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
         return errors
 
-    rpt_month_year_is_valid, rpt_month_year_error = validate_header_rpt_month_year(
+    rpt_month_year_is_valid, rpt_month_year_error = PreparsingValidators.validate_header_rpt_month_year(
         datafile,
         header,
         util.make_generate_parser_error(datafile, 1)

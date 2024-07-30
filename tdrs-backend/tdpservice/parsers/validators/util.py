@@ -1,8 +1,6 @@
 import logging
 from dataclasses import dataclass
 from typing import Any
-from tdpservice.parsers.models import ParserErrorCategoryChoices
-from tdpservice.parsers.util import fiscal_to_calendar
 
 logger = logging.getLogger(__name__)
 
@@ -65,70 +63,6 @@ def is_quiet_preparser_errors(min_length, empty_from=61, empty_to=101):
             )
         return not (is_length_valid and not is_empty and not _is_all_zeros(value, empty_from, empty_to))
     return return_value
-
-
-def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code, generate_error):
-    """Validate tribe code, fips code, and program type all agree with eachother."""
-    is_valid = False
-
-    if program_type == 'TAN' and value_is_empty(state_fips_code, 2, extra_vals={'0'*2}):
-        is_valid = not value_is_empty(tribe_code, 3, extra_vals={'0'*3})
-    else:
-        is_valid = value_is_empty(tribe_code, 3, extra_vals={'0'*3})
-
-    error = None
-    if not is_valid:
-        error = generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-
-            error_message=f"Tribe Code ({tribe_code}) inconsistency with Program Type ({program_type}) and " +
-            f"FIPS Code ({state_fips_code}).",
-            record=None,
-            field=None
-        )
-
-    return is_valid, error
-
-
-def validate_header_section_matches_submission(datafile, section, generate_error):
-    """Validate header section matches submission section."""
-    is_valid = datafile.section == section
-
-    error = None
-    if not is_valid:
-        error = generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message=f"Data does not match the expected layout for {datafile.section}.",
-            record=None,
-            field=None,
-        )
-
-    return is_valid, error
-
-
-def validate_header_rpt_month_year(datafile, header, generate_error):
-    """Validate header rpt_month_year."""
-    # the header year/quarter represent a calendar period, and frontend year/qtr represents a fiscal period
-    header_calendar_qtr = f"Q{header['quarter']}"
-    header_calendar_year = header['year']
-    file_calendar_year, file_calendar_qtr = fiscal_to_calendar(datafile.year, f"{datafile.quarter}")
-
-    is_valid = file_calendar_year is not None and file_calendar_qtr is not None
-    is_valid = is_valid and file_calendar_year == header_calendar_year and file_calendar_qtr == header_calendar_qtr
-
-    error = None
-    if not is_valid:
-        error = generate_error(
-            schema=None,
-            error_category=ParserErrorCategoryChoices.PRE_CHECK,
-            error_message=f"Submitted reporting year:{header['year']}, quarter:Q{header['quarter']} doesn't match "
-            + f"file reporting year:{datafile.year}, quarter:{datafile.quarter}.",
-            record=None,
-            field=None,
-        )
-    return is_valid, error
 
 
 @dataclass
