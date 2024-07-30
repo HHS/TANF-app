@@ -3,6 +3,7 @@ from .models import ParserErrorCategoryChoices
 from .fields import Field, TransformField
 from .validators.util import value_is_empty, ValidationErrorArgs
 from .validators.category2 import format_error_context
+from .util import get_record_value_by_field_name
 import logging
 
 logger = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class RowSchema:
         )
         is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
-                if type(self.quiet_preparser_errors) == bool
+                if type(self.quiet_preparser_errors) is bool
                 else self.quiet_preparser_errors(line)
             )
         if not preparsing_is_valid:
@@ -95,14 +96,13 @@ class RowSchema:
                 row_schema=self,
                 friendly_name=field.friendly_name if field else 'record type',
                 item_num=field.item if field else '0',
-                # error_context_format='prefix'
             )
             validator_is_valid, validator_error = validator(line, eargs)
             is_valid = False if not validator_is_valid else is_valid
 
             is_quiet_preparser_errors = (
                 self.quiet_preparser_errors
-                if type(self.quiet_preparser_errors) == bool
+                if type(self.quiet_preparser_errors) is bool
                 else self.quiet_preparser_errors(line)
             )
             if validator_error and not is_quiet_preparser_errors:
@@ -139,27 +139,17 @@ class RowSchema:
         errors = []
 
         for field in self.fields:
-            value = None
-            if isinstance(instance, dict):
-                value = instance.get(field.name, None)
-            else:
-                value = getattr(instance, field.name, None)
-
+            value = get_record_value_by_field_name(instance, field.name)
             eargs = ValidationErrorArgs(
                 value=value,
                 row_schema=self,
                 friendly_name=field.friendly_name,
                 item_num=field.item,
-                # error_context_format='prefix'
             )
 
-            print(f'RUNNING VALIDATOR {field.name} value: "{value}"')
             is_empty = value_is_empty(value, field.endIndex-field.startIndex)
             should_validate = not field.required and not is_empty
-            print(f'empty: {is_empty}; should validate: {should_validate}')
             if (field.required and not is_empty) or should_validate:
-                print('validating')
-                print('error' if value is None else '')
                 for validator in field.validators:
                     validator_is_valid, validator_error = validator(value, eargs)
                     is_valid = False if not validator_is_valid else is_valid
@@ -194,8 +184,6 @@ class RowSchema:
         """Run each of the `postparsing_validator` functions against the parsed model."""
         is_valid = True
         errors = []
-
-        print('postparsing')
 
         for validator in self.postparsing_validators:
             validator_is_valid, validator_error, field_names = validator(instance, self)

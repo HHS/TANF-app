@@ -295,4 +295,4 @@ def get_t2_t3_t5_partial_hash_members():
 
 def get_record_value_by_field_name(record, field_name):
     """Return the value of a record for a given field name, accounting for the generic record type."""
-    return record[field_name] if type(record) is dict else getattr(record, field_name)
+    return record.get(field_name, None) if type(record) is dict else getattr(record, field_name, None)

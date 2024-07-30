@@ -21,126 +21,126 @@ class ComposableFieldValidators():
     def isEqual(option, **kwargs):
         return make_validator(
             ValidatorFunctions.isEqual(option, **kwargs),
-            lambda eargs: f'{format_error_context(eargs)} {eargs.value} must match {option}.'
+            lambda eargs: f'{eargs.value} must match {option}'
         )
 
     @staticmethod
     def isNotEqual(option, **kwargs):
         return make_validator(
             ValidatorFunctions.isNotEqual(option, **kwargs),
-            lambda eargs: f'{eargs.value} must not be equal to {option}.'
+            lambda eargs: f'{eargs.value} must not be equal to {option}'
         )
 
     @staticmethod
     def isOneOf(options, **kwargs):
         return make_validator(
             ValidatorFunctions.isOneOf(options, **kwargs),
-            lambda eargs: f'{eargs.value} must be one of {options}.'
+            lambda eargs: f'{eargs.value} must be one of {options}'
         )
 
     @staticmethod
     def isNotOneOf(options, **kwargs):
         return make_validator(
             ValidatorFunctions.isNotOneOf(options, **kwargs),
-            lambda eargs: f'{eargs.value} must not be one of {options}.'
+            lambda eargs: f'{eargs.value} must not be one of {options}'
         )
 
     @staticmethod
     def isGreaterThan(option, inclusive=False, **kwargs):
         return make_validator(
             ValidatorFunctions.isGreaterThan(option, inclusive, **kwargs),
-            lambda eargs: f'{eargs.value} must be greater than {option}.'
+            lambda eargs: f'{eargs.value} must be greater than {option}'
         )
 
     @staticmethod
     def isLessThan(option, inclusive=False, **kwargs):
         return make_validator(
             ValidatorFunctions.isLessThan(option, inclusive, **kwargs),
-            lambda eargs: f'{eargs.value} must be less than {option}.'
+            lambda eargs: f'{eargs.value} must be less than {option}'
         )
 
     @staticmethod
     def isBetween(min, max, inclusive=False, **kwargs):
         return make_validator(
             ValidatorFunctions.isBetween(min, max, inclusive, **kwargs),
-            lambda eargs: f'{eargs.value} must be between {min} and {max}.'
+            lambda eargs: f'{eargs.value} must be between {min} and {max}'
         )
 
     @staticmethod
     def startsWith(substr, **kwargs):
         return make_validator(
             ValidatorFunctions.startsWith(substr, **kwargs),
-            lambda eargs: f'{eargs.value} must start with {substr}.'
+            lambda eargs: f'{eargs.value} must start with {substr}'
         )
 
     @staticmethod
     def contains(substr, **kwargs):
         return make_validator(
             ValidatorFunctions.contains(substr, **kwargs),
-            lambda eargs: f'{eargs.value} must contain {substr}.'
+            lambda eargs: f'{eargs.value} must contain {substr}'
         )
 
     @staticmethod
     def isNumber(**kwargs):
         return make_validator(
             ValidatorFunctions.isNumber(**kwargs),
-            lambda eargs: f'{eargs.value} must be a number.'
+            lambda eargs: f'{eargs.value} must be a number'
         )
 
     @staticmethod
     def isAlphaNumeric(**kwargs):
         return make_validator(
             ValidatorFunctions.isAlphaNumeric(**kwargs),
-            lambda eargs: f'{eargs.value} must be alphanumeric.'
+            lambda eargs: f'{eargs.value} must be alphanumeric'
         )
 
     @staticmethod
     def isEmpty(start=0, end=None, **kwargs):
         return make_validator(
             ValidatorFunctions.isEmpty(start, end, **kwargs),
-            lambda eargs: f'{eargs.value} must be empty.'
+            lambda eargs: f'{eargs.value} must be empty'
         )
 
     @staticmethod
     def isNotEmpty(start=0, end=None, **kwargs):
         return make_validator(
             ValidatorFunctions.isNotEmpty(start, end, **kwargs),
-            lambda eargs: f'{eargs.value} must not be empty.'
+            lambda eargs: f'{eargs.value} must not be empty'
         )
 
     @staticmethod
     def isBlank(**kwargs):
         return make_validator(
             ValidatorFunctions.isBlank(**kwargs),
-            lambda eargs: f'{eargs.value} must be blank.'
+            lambda eargs: f'{eargs.value} must be blank'
         )
 
     @staticmethod
     def hasLength(length, **kwargs):
         return make_validator(
             ValidatorFunctions.hasLength(length, **kwargs),
-            lambda eargs: f'{eargs.value} must have length {length}.'
+            lambda eargs: f'{eargs.value} must have length {length}'
         )
 
     @staticmethod
     def hasLengthGreaterThan(length, inclusive=False, **kwargs):
         return make_validator(
             ValidatorFunctions.hasLengthGreaterThan(length, inclusive, **kwargs),
-            lambda eargs: f'{eargs.value} must have length greater than {length}.'
+            lambda eargs: f'{eargs.value} must have length greater than {length}'
         )
 
     @staticmethod
     def intHasLength(length, **kwargs):
         return make_validator(
             ValidatorFunctions.intHasLength(length, **kwargs),
-            lambda eargs: f'{eargs.value} must have length {length}.'
+            lambda eargs: f'{eargs.value} must have length {length}'
         )
 
     @staticmethod
     def isNotZero(number_of_zeros=1, **kwargs):
         return make_validator(
             ValidatorFunctions.isNotZero(number_of_zeros, **kwargs),
-            lambda eargs: f'{eargs.value} must not be zero.'
+            lambda eargs: f'{eargs.value} must not be zero'
         )
 
     # needs a base? and/or implement as composition of other validators
@@ -230,7 +230,10 @@ class ComposableValidators():
             validator_results = evaluate_all(validators, value, eargs)
 
             if not any(result[0] for result in validator_results):
-                return (False, " or ".join([result[1] for result in validator_results]))
+                error_msg = f'{format_error_context(eargs)} '
+                error_msg += " or ".join([result[1] for result in validator_results]) + '.'
+                return (False, error_msg)
+
             return (True, None)
 
         return _validate

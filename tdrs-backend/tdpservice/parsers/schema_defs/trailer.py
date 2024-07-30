@@ -13,8 +13,9 @@ trailer = RowSchema(
     document=None,
     preparsing_validators=[
         PreparsingValidators.recordHasLength(23),
-        PreparsingValidators.recordStartsWith("TRAILER",
-                              lambda value: f"Your file does not end with a {value} record."),
+        PreparsingValidators.recordStartsWith(
+            "TRAILER", lambda _: "Your file does not end with a TRAILER record."
+        ),
     ],
     postparsing_validators=[],
     fields=[

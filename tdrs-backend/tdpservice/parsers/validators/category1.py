@@ -14,7 +14,7 @@ class PreparsingValidators():
     @staticmethod
     def recordIsNotEmpty(start=0, end=None, **kwargs):
         return make_validator(
-            ValidatorFunctions.isNotEmpty(**kwargs),
+            ValidatorFunctions.isNotEmpty(start, end, **kwargs),
             lambda eargs: f'{format_error_context(eargs)} {str(eargs.value)} contains blanks '
             f'between positions {start} and {end if end else len(str(eargs.value))}.'
         )
@@ -43,7 +43,7 @@ class PreparsingValidators():
     def recordStartsWith(substr, func=None, **kwargs):
         return make_validator(
             ValidatorFunctions.startsWith(substr, **kwargs),
-            lambda eargs: f'{eargs.value} must start with {substr}.'
+            func if func else lambda eargs: f'{eargs.value} must start with {substr}.'
         )
 
     @staticmethod

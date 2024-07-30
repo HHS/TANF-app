@@ -13,8 +13,9 @@ header = RowSchema(
     document=None,
     preparsing_validators=[
         PreparsingValidators.recordHasLength(23),
-        PreparsingValidators.recordStartsWith("HEADER",
-                              lambda value: f"Your file does not begin with a {value} record."),
+        PreparsingValidators.recordStartsWith(
+            "HEADER", lambda _: "Your file does not begin with a HEADER record."
+        ),
     ],
     postparsing_validators=[],
     fields=[
