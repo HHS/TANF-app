@@ -1,8 +1,13 @@
+"""Test base validators."""
+
+
 import pytest
 from ..base import ValidatorFunctions
 
 
 class TestValidatorFunctions:
+    """Test base ValidatorFunction logic."""
+
     @pytest.mark.parametrize('val, option, kwargs, expected', [
         (1, 1, {}, True),
         (1, 2, {}, False),
@@ -23,6 +28,7 @@ class TestValidatorFunctions:
         (123, '123', {'cast': bool}, False),
     ])
     def test_isEqual(self, val, kwargs, option, expected):
+        """Test isEqual validator."""
         _validator = ValidatorFunctions.isEqual(option, **kwargs)
         assert _validator(val) == expected
 
@@ -46,6 +52,7 @@ class TestValidatorFunctions:
         (123, '123', {'cast': bool}, True),
     ])
     def test_isNotEqual(self, val, option, kwargs, expected):
+        """Test isNotEqual validator."""
         _validator = ValidatorFunctions.isNotEqual(option, **kwargs)
         assert _validator(val) == expected
 
@@ -58,6 +65,7 @@ class TestValidatorFunctions:
         ('1', [1, 2, 3], {'cast': int}, True),
     ])
     def test_isOneOf(self, val, options, kwargs, expected):
+        """Test isOneOf validator."""
         _validator = ValidatorFunctions.isOneOf(options, **kwargs)
         assert _validator(val) == expected
 
@@ -70,6 +78,7 @@ class TestValidatorFunctions:
         ('1', [1, 2, 3], {'cast': int}, False),
     ])
     def test_isNotOneOf(self, val, options, kwargs, expected):
+        """Test isNotOneOf validator."""
         _validator = ValidatorFunctions.isNotOneOf(options, **kwargs)
         assert _validator(val) == expected
 
@@ -81,6 +90,7 @@ class TestValidatorFunctions:
         ('30', '40', False, {}, False),
     ])
     def test_isGreaterThan(self, val, option, inclusive, kwargs, expected):
+        """Test isGreaterThan validator."""
         _validator = ValidatorFunctions.isGreaterThan(option, inclusive, **kwargs)
         assert _validator(val) == expected
 
@@ -92,6 +102,7 @@ class TestValidatorFunctions:
         ('30', '40', False, {}, True),
     ])
     def test_isLessThan(self, val, option, inclusive, kwargs, expected):
+        """Test isLessThan validator."""
         _validator = ValidatorFunctions.isLessThan(option, inclusive, **kwargs)
         assert _validator(val) == expected
 
@@ -103,6 +114,7 @@ class TestValidatorFunctions:
         ('20', 1, 20, False, {'cast': int}, False),
     ])
     def test_isBetween(self, val, min, max, inclusive, kwargs, expected):
+        """Test isBetween validator."""
         _validator = ValidatorFunctions.isBetween(min, max, inclusive, **kwargs)
         assert _validator(val) == expected
 
@@ -112,6 +124,7 @@ class TestValidatorFunctions:
         (12345, '12', {}, True),  # don't need 'cast'
     ])
     def test_startsWith(self, val, substr, kwargs, expected):
+        """Test startsWith validator."""
         _validator = ValidatorFunctions.startsWith(substr, **kwargs)
         assert _validator(val) == expected
 
@@ -123,6 +136,7 @@ class TestValidatorFunctions:
         (10001, '10', {}, True),  # don't need 'cast'
     ])
     def test_contains(self, val, substr, kwargs, expected):
+        """Test contains validator."""
         _validator = ValidatorFunctions.contains(substr, **kwargs)
         assert _validator(val) == expected
 
@@ -134,6 +148,7 @@ class TestValidatorFunctions:
         ('123abc', {}, False),
     ])
     def test_isNumber(self, val, kwargs, expected):
+        """Test isNumber validator."""
         _validator = ValidatorFunctions.isNumber(**kwargs)
         assert _validator(val) == expected
 
@@ -145,6 +160,7 @@ class TestValidatorFunctions:
         (10, {'cast': str}, True),
     ])
     def test_isAlphaNumeric(self, val, kwargs, expected):
+        """Test isAlphaNumeric validator."""
         _validator = ValidatorFunctions.isAlphaNumeric(**kwargs)
         assert _validator(val) == expected
 
@@ -162,6 +178,7 @@ class TestValidatorFunctions:
         ('   1', 0, 4, {}, False),
     ])
     def test_isEmpty(self, val, start, end, kwargs, expected):
+        """Test isEmpty validator."""
         _validator = ValidatorFunctions.isEmpty(start, end, **kwargs)
         assert _validator(val) == expected
 
@@ -179,6 +196,7 @@ class TestValidatorFunctions:
         ('   1', 0, 4, {}, True),
     ])
     def test_isNotEmpty(self, val, start, end, kwargs, expected):
+        """Test isNotEmpty validator."""
         _validator = ValidatorFunctions.isNotEmpty(start, end, **kwargs)
         assert _validator(val) == expected
 
@@ -191,6 +209,7 @@ class TestValidatorFunctions:
         ('', {}, False),
     ])
     def test_isBlank(self, val, kwargs, expected):
+        """Test isBlank validator."""
         _validator = ValidatorFunctions.isBlank(**kwargs)
         assert _validator(val) == expected
 
@@ -201,6 +220,7 @@ class TestValidatorFunctions:
         ([1, 2, 3], 3, {}, True),
     ])
     def test_hasLength(self, val, length, kwargs, expected):
+        """Test hasLength validator."""
         _validator = ValidatorFunctions.hasLength(length, **kwargs)
         assert _validator(val) == expected
 
@@ -214,6 +234,7 @@ class TestValidatorFunctions:
         ([1, 2, 3], 1, False, {}, True),
     ])
     def test_hasLengthGreaterThan(self, val, length, inclusive, kwargs, expected):
+        """Test hasLengthGreaterThan validator."""
         _validator = ValidatorFunctions.hasLengthGreaterThan(length, inclusive, **kwargs)
         assert _validator(val) == expected
 
@@ -231,6 +252,7 @@ class TestValidatorFunctions:
         ('1000', 4, {}, True),
     ])
     def test_intHasLength(self, val, length, kwargs, expected):
+        """Test intHasLength validator."""
         _validator = ValidatorFunctions.intHasLength(length, **kwargs)
         assert _validator(val) == expected
 
@@ -244,5 +266,6 @@ class TestValidatorFunctions:
         (000, 1, {'cast': str}, False),
     ])
     def test_isNotZero(self, val, number_of_zeros, kwargs, expected):
+        """Test isNotZero validator."""
         _validator = ValidatorFunctions.isNotZero(number_of_zeros, **kwargs)
         assert _validator(val) == expected

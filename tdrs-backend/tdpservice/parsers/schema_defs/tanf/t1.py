@@ -5,7 +5,9 @@ from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.validators.category1 import PreparsingValidators
 from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators, PostparsingValidators
+from tdpservice.parsers.validators.category3 import (
+    ComposableValidators, ComposableFieldValidators, PostparsingValidators
+)
 from tdpservice.search_indexes.documents.tanf import TANF_T1DataSubmissionDocument
 from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 

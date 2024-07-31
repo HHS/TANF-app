@@ -51,7 +51,6 @@ class CaseConsistencyValidator:
                                          row_schema=schema,
                                          friendly_name=field.friendly_name,
                                          item_num=field.item,
-                                        #  error_context_format="inline"
                                          )
         return format_error_context(error_args)
 

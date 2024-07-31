@@ -1,8 +1,9 @@
-from tdpservice.parsers.util import fiscal_to_calendar, year_month_to_year_quarter, clean_options_string, get_record_value_by_field_name
-from .base import ValidatorFunctions
-from .util import ValidationErrorArgs, make_validator, evaluate_all, _is_all_zeros, _is_empty, value_is_empty
+"""Overloads and custom validators for category 1 (preparsing)."""
+
 from tdpservice.parsers.models import ParserErrorCategoryChoices
-from tdpservice.parsers.util import fiscal_to_calendar
+from tdpservice.parsers.util import fiscal_to_calendar, year_month_to_year_quarter
+from .base import ValidatorFunctions
+from .util import ValidationErrorArgs, make_validator, _is_all_zeros, _is_empty, value_is_empty
 
 
 def format_error_context(eargs: ValidationErrorArgs):
@@ -11,8 +12,11 @@ def format_error_context(eargs: ValidationErrorArgs):
 
 
 class PreparsingValidators():
+    """Overloaded base and custom validators for preparsing."""
+
     @staticmethod
     def recordIsNotEmpty(start=0, end=None, **kwargs):
+        """Return a function that tests that a record/line is not empty."""
         return make_validator(
             ValidatorFunctions.isNotEmpty(start, end, **kwargs),
             lambda eargs: f'{format_error_context(eargs)} {str(eargs.value)} contains blanks '
@@ -21,6 +25,7 @@ class PreparsingValidators():
 
     @staticmethod
     def recordHasLength(length, **kwargs):
+        """Return a function that tests that a record/line has the specified length."""
         return make_validator(
             ValidatorFunctions.hasLength(length, **kwargs),
             lambda eargs:
@@ -29,6 +34,7 @@ class PreparsingValidators():
 
     @staticmethod
     def recordHasLengthBetween(min, max, **kwargs):
+        """Return a function that tests that a record/line has a length between min and max."""
         _validator = ValidatorFunctions.isBetween(min, max, inclusive=True, **kwargs)
         return make_validator(
             lambda record: _validator(len(record)),
@@ -41,6 +47,7 @@ class PreparsingValidators():
     # make new custom validator functions
     @staticmethod
     def recordStartsWith(substr, func=None, **kwargs):
+        """Return a function that tests that a record/line starts with a specified substr."""
         return make_validator(
             ValidatorFunctions.startsWith(substr, **kwargs),
             func if func else lambda eargs: f'{eargs.value} must start with {substr}.'
@@ -48,6 +55,7 @@ class PreparsingValidators():
 
     @staticmethod
     def caseNumberNotEmpty(start=0, end=None, **kwargs):
+        """Return a function that tests that a record/line is not blank between the Case Number indices."""
         return make_validator(
             ValidatorFunctions.isNotEmpty(start, end, **kwargs),
             lambda eargs: f'{eargs.row_schema.record_type}: Case number {str(eargs.value)} cannot contain blanks.'
@@ -82,10 +90,15 @@ class PreparsingValidators():
             # get reporting month year from header
             field_year, field_quarter = year_month_to_year_quarter(f"{field_month_year}")
             file_calendar_year, file_calendar_qtr = fiscal_to_calendar(df_year, f"{df_quarter}")
-            return (True, None) if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter else (
-                False, f"{row_schema.record_type}: Reporting month year {field_month_year} " +
+
+            if str(file_calendar_year) == str(field_year) and file_calendar_qtr == field_quarter:
+                return (True, None)
+
+            return (
+                False,
+                f"{row_schema.record_type}: Reporting month year {field_month_year} " +
                 f"does not match file reporting year:{df_year}, quarter:{df_quarter}.",
-                )
+            )
 
         return validate_reporting_month_year_fields_header
 

@@ -1,3 +1,6 @@
+"""Test category3 validators."""
+
+
 import pytest
 import datetime
 from ..category3 import ComposableValidators, ComposableFieldValidators, PostparsingValidators
@@ -33,11 +36,14 @@ def _validate_and_assert(validator, val, exp_result, exp_message):
 
 
 class TestComposableFieldValidators:
+    """Test ComposableFieldValidator error messages."""
+
     @pytest.mark.parametrize('val, option, kwargs, exp_result, exp_message', [
         (10, 10, {}, True, None),
         (1, 10, {}, False, '1 must match 10'),
     ])
     def test_isEqual(self, val, option, kwargs, exp_result, exp_message):
+        """Test isEqual validator error messages."""
         _validator = ComposableFieldValidators.isEqual(option, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -46,6 +52,7 @@ class TestComposableFieldValidators:
         (10, 10, {}, False, '10 must not be equal to 10'),
     ])
     def test_isNotEqual(self, val, option, kwargs, exp_result, exp_message):
+        """Test isNotEqual validator error messages."""
         _validator = ComposableFieldValidators.isNotEqual(option, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -54,6 +61,7 @@ class TestComposableFieldValidators:
         (1, [4, 5, 6], {}, False, '1 must be one of [4, 5, 6]'),
     ])
     def test_isOneOf(self, val, options, kwargs, exp_result, exp_message):
+        """Test isOneOf validator error messages."""
         _validator = ComposableFieldValidators.isOneOf(options, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -62,6 +70,7 @@ class TestComposableFieldValidators:
         (1, [1, 2, 3], {}, False, '1 must not be one of [1, 2, 3]'),
     ])
     def test_isNotOneOf(self, val, options, kwargs, exp_result, exp_message):
+        """Test isNotOneOf validator error messages."""
         _validator = ComposableFieldValidators.isNotOneOf(options, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -71,6 +80,7 @@ class TestComposableFieldValidators:
         (10, 10, False, {}, False, '10 must be greater than 10'),
     ])
     def test_isGreaterThan(self, val, option, inclusive, kwargs, exp_result, exp_message):
+        """Test isGreaterThan validator error messages."""
         _validator = ComposableFieldValidators.isGreaterThan(option, inclusive, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -80,6 +90,7 @@ class TestComposableFieldValidators:
         (5, 5, False, {}, False, '5 must be less than 5'),
     ])
     def test_isLessThan(self, val, option, inclusive, kwargs, exp_result, exp_message):
+        """Test isLessThan validator error messages."""
         _validator = ComposableFieldValidators.isLessThan(option, inclusive, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -90,6 +101,7 @@ class TestComposableFieldValidators:
         (20, 1, 10, False, {}, False, '20 must be between 1 and 10'),
     ])
     def test_isBetween(self, val, min, max, inclusive, kwargs, exp_result, exp_message):
+        """Test isBetween validator error messages."""
         _validator = ComposableFieldValidators.isBetween(min, max, inclusive, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -98,6 +110,7 @@ class TestComposableFieldValidators:
         ('abcdef', 'xyz', {}, False, 'abcdef must start with xyz')
     ])
     def test_startsWith(self, val, substr, kwargs, exp_result, exp_message):
+        """Test startsWith validator error messages."""
         _validator = ComposableFieldValidators.startsWith(substr, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -106,6 +119,7 @@ class TestComposableFieldValidators:
         ('abc123', 'xy', {}, False, 'abc123 must contain xy'),
     ])
     def test_contains(self, val, substr, kwargs, exp_result, exp_message):
+        """Test contains validator error messages."""
         _validator = ComposableFieldValidators.contains(substr, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -114,6 +128,7 @@ class TestComposableFieldValidators:
         ('ABC', {}, False, 'ABC must be a number'),
     ])
     def test_isNumber(self, val, kwargs, exp_result, exp_message):
+        """Test isNumber validator error messages."""
         _validator = ComposableFieldValidators.isNumber(**kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -122,6 +137,7 @@ class TestComposableFieldValidators:
         ('Fork', {}, True, None),
     ])
     def test_isAlphaNumeric(self, val, kwargs, exp_result, exp_message):
+        """Test isAlphaNumeric validator error messages."""
         _validator = ComposableFieldValidators.isAlphaNumeric(**kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -130,6 +146,7 @@ class TestComposableFieldValidators:
         ('1001', 0, 4, {}, False, '1001 must be empty'),
     ])
     def test_isEmpty(self, val, start, end, kwargs, exp_result, exp_message):
+        """Test isEmpty validator error messages."""
         _validator = ComposableFieldValidators.isEmpty(start, end, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -138,6 +155,7 @@ class TestComposableFieldValidators:
         ('    ', 0, 4, {}, False, '     must not be empty'),
     ])
     def test_isNotEmpty(self, val, start, end, kwargs, exp_result, exp_message):
+        """Test isNotEmpty validator error messages."""
         _validator = ComposableFieldValidators.isNotEmpty(start, end, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -146,6 +164,7 @@ class TestComposableFieldValidators:
         ('0000', {}, False, '0000 must be blank'),
     ])
     def test_isBlank(self, val, kwargs, exp_result, exp_message):
+        """Test isBlank validator error messages."""
         _validator = ComposableFieldValidators.isBlank(**kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -154,6 +173,7 @@ class TestComposableFieldValidators:
         ('123', 4, {}, False, '123 must have length 4'),
     ])
     def test_hasLength(self, val, length, kwargs, exp_result, exp_message):
+        """Test hasLength validator error messages."""
         _validator = ComposableFieldValidators.hasLength(length, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -162,6 +182,7 @@ class TestComposableFieldValidators:
         ('123', 3, False, {}, False, '123 must have length greater than 3'),
     ])
     def test_hasLengthGreaterThan(self, val, length, inclusive, kwargs, exp_result, exp_message):
+        """Test hasLengthGreaterThan validator error messages."""
         _validator = ComposableFieldValidators.hasLengthGreaterThan(length, inclusive, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -170,6 +191,7 @@ class TestComposableFieldValidators:
         (101, 2, {}, False, '101 must have length 2'),
     ])
     def test_intHasLength(self, val, length, kwargs, exp_result, exp_message):
+        """Test intHasLength validator error messages."""
         _validator = ComposableFieldValidators.intHasLength(length, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -178,13 +200,14 @@ class TestComposableFieldValidators:
         ('000', 3, {}, False, '000 must not be zero'),
     ])
     def test_isNotZero(self, val, number_of_zeros, kwargs, exp_result, exp_message):
+        """Test isNotZero validator error messages."""
         _validator = ComposableFieldValidators.isNotZero(number_of_zeros, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
     @pytest.mark.parametrize('val, min_age, kwargs, exp_result, exp_message', [
         ('199510', 18, {}, True, None),
         (
-            f'{datetime.date.today().year - 18}01', 18, {}, False, 
+            f'{datetime.date.today().year - 18}01', 18, {}, False,
             'Item 1 (test field) 2006 must be less than or equal to 2006 to meet the minimum age requirement.'
         ),
         (
@@ -193,6 +216,7 @@ class TestComposableFieldValidators:
         ),
     ])
     def test_isOlderThan(self, val, min_age, kwargs, exp_result, exp_message):
+        """Test isOlderThan validator error messages."""
         _validator = ComposableFieldValidators.isOlderThan(min_age, **kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
@@ -216,18 +240,21 @@ class TestComposableFieldValidators:
         ),
     ])
     def test_validateSSN(self, val, kwargs, exp_result, exp_message):
+        """Test validateSSN validator error messages."""
         _validator = ComposableFieldValidators.validateSSN(**kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
 
 
 class TestComposableValidators:
-    # if/or
+    """Test ComposableValidator functions."""
+
     @pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message', [
         (1, 1, True, None),  # condition fails, valid
         (10, 1, True, None),  # condition pass, result pass
         (10, 20, False, 'If Item 1 (test1) is 10, then 20 must be less than 10'),  # condition pass, result fail
     ])
     def test_ifThenAlso(self, condition_val, result_val, exp_result, exp_message):
+        """Test ifThenAlso validator error messages."""
         schema = RowSchema(
             fields=[
                 Field(
@@ -278,6 +305,7 @@ class TestComposableValidators:
         (100, False, 'Item 1 (TestField1) 100 must match 10 or 100 must be less than 5.'),
     ])
     def test_orValidators(self, val, exp_result, exp_message):
+        """Test orValidators error messages."""
         _validator = ComposableValidators.orValidators([
             ComposableFieldValidators.isEqual(10),
             ComposableFieldValidators.isLessThan(5)
@@ -296,7 +324,10 @@ class TestComposableValidators:
 
 
 class TestPostparsingValidators:
+    """Test custom postparsing validator functions."""
+
     def test_sumIsEqual(self):
+        """Test sumIsEqual postparsing validator."""
         schema = RowSchema(
             fields=[
                 Field(
@@ -341,6 +372,7 @@ class TestPostparsingValidators:
         assert result == (True, None, ['TestField2', 'TestField1', 'TestField3'])
 
     def test_sumIsLarger(self):
+        """Test sumIsLarger postparsing validator."""
         schema = RowSchema(
             fields=[
                 Field(
@@ -431,6 +463,7 @@ class TestPostparsingValidators:
         assert result == (True, None, ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN'])
 
     def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(self):
+        """Test `validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE` gives a valid result."""
         schema = RowSchema(
             fields=[
                 Field(

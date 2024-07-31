@@ -1,3 +1,6 @@
+"""Validation helper functions and data classes."""
+
+
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -73,4 +76,3 @@ class ValidationErrorArgs:
     row_schema: object  # RowSchema causes circular import
     friendly_name: str
     item_num: str
-    # error_context_format: str = 'prefix'

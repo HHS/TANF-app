@@ -1,3 +1,5 @@
+"""Overloaded base validators and custom postparsing validators."""
+
 import datetime
 import logging
 from tdpservice.parsers.util import get_record_value_by_field_name
@@ -16,9 +18,11 @@ def format_error_context(eargs: ValidationErrorArgs):
 # function handles error msg
 
 class ComposableFieldValidators():
-    # redefine cat2 error messages to make sense in composable context
+    """Redefine validator messages to work in the ComposableValidator context."""
+
     @staticmethod
     def isEqual(option, **kwargs):
+        """Return a custom message for the isEqual validator."""
         return make_validator(
             ValidatorFunctions.isEqual(option, **kwargs),
             lambda eargs: f'{eargs.value} must match {option}'
@@ -26,6 +30,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isNotEqual(option, **kwargs):
+        """Return a custom message for the isNotEqual validator."""
         return make_validator(
             ValidatorFunctions.isNotEqual(option, **kwargs),
             lambda eargs: f'{eargs.value} must not be equal to {option}'
@@ -33,6 +38,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isOneOf(options, **kwargs):
+        """Return a custom message for the isOneOf validator."""
         return make_validator(
             ValidatorFunctions.isOneOf(options, **kwargs),
             lambda eargs: f'{eargs.value} must be one of {options}'
@@ -40,6 +46,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isNotOneOf(options, **kwargs):
+        """Return a custom message for the isNotOneOf validator."""
         return make_validator(
             ValidatorFunctions.isNotOneOf(options, **kwargs),
             lambda eargs: f'{eargs.value} must not be one of {options}'
@@ -47,6 +54,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isGreaterThan(option, inclusive=False, **kwargs):
+        """Return a custom message for the isGreaterThan validator."""
         return make_validator(
             ValidatorFunctions.isGreaterThan(option, inclusive, **kwargs),
             lambda eargs: f'{eargs.value} must be greater than {option}'
@@ -54,6 +62,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isLessThan(option, inclusive=False, **kwargs):
+        """Return a custom message for the isLessThan validator."""
         return make_validator(
             ValidatorFunctions.isLessThan(option, inclusive, **kwargs),
             lambda eargs: f'{eargs.value} must be less than {option}'
@@ -61,6 +70,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isBetween(min, max, inclusive=False, **kwargs):
+        """Return a custom message for the isBetween validator."""
         return make_validator(
             ValidatorFunctions.isBetween(min, max, inclusive, **kwargs),
             lambda eargs: f'{eargs.value} must be between {min} and {max}'
@@ -68,6 +78,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def startsWith(substr, **kwargs):
+        """Return a custom message for the startsWith validator."""
         return make_validator(
             ValidatorFunctions.startsWith(substr, **kwargs),
             lambda eargs: f'{eargs.value} must start with {substr}'
@@ -75,6 +86,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def contains(substr, **kwargs):
+        """Return a custom message for the contains validator."""
         return make_validator(
             ValidatorFunctions.contains(substr, **kwargs),
             lambda eargs: f'{eargs.value} must contain {substr}'
@@ -82,6 +94,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isNumber(**kwargs):
+        """Return a custom message for the isNumber validator."""
         return make_validator(
             ValidatorFunctions.isNumber(**kwargs),
             lambda eargs: f'{eargs.value} must be a number'
@@ -89,6 +102,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isAlphaNumeric(**kwargs):
+        """Return a custom message for the isAlphaNumeric validator."""
         return make_validator(
             ValidatorFunctions.isAlphaNumeric(**kwargs),
             lambda eargs: f'{eargs.value} must be alphanumeric'
@@ -96,6 +110,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isEmpty(start=0, end=None, **kwargs):
+        """Return a custom message for the isEmpty validator."""
         return make_validator(
             ValidatorFunctions.isEmpty(start, end, **kwargs),
             lambda eargs: f'{eargs.value} must be empty'
@@ -103,6 +118,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isNotEmpty(start=0, end=None, **kwargs):
+        """Return a custom message for the isNotEmpty validator."""
         return make_validator(
             ValidatorFunctions.isNotEmpty(start, end, **kwargs),
             lambda eargs: f'{eargs.value} must not be empty'
@@ -110,6 +126,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isBlank(**kwargs):
+        """Return a custom message for the isBlank validator."""
         return make_validator(
             ValidatorFunctions.isBlank(**kwargs),
             lambda eargs: f'{eargs.value} must be blank'
@@ -117,6 +134,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def hasLength(length, **kwargs):
+        """Return a custom message for the hasLength validator."""
         return make_validator(
             ValidatorFunctions.hasLength(length, **kwargs),
             lambda eargs: f'{eargs.value} must have length {length}'
@@ -124,6 +142,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def hasLengthGreaterThan(length, inclusive=False, **kwargs):
+        """Return a custom message for the hasLengthGreaterThan validator."""
         return make_validator(
             ValidatorFunctions.hasLengthGreaterThan(length, inclusive, **kwargs),
             lambda eargs: f'{eargs.value} must have length greater than {length}'
@@ -131,6 +150,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def intHasLength(length, **kwargs):
+        """Return a custom message for the intHasLength validator."""
         return make_validator(
             ValidatorFunctions.intHasLength(length, **kwargs),
             lambda eargs: f'{eargs.value} must have length {length}'
@@ -138,6 +158,7 @@ class ComposableFieldValidators():
 
     @staticmethod
     def isNotZero(number_of_zeros=1, **kwargs):
+        """Return a custom message for the isNotZero validator."""
         return make_validator(
             ValidatorFunctions.isNotZero(number_of_zeros, **kwargs),
             lambda eargs: f'{eargs.value} must not be zero'
@@ -174,9 +195,12 @@ class ComposableFieldValidators():
 
 # the prior validators must be used within the following compositional validators
 class ComposableValidators():
+    """Allow multiple ComposableFieldValidators to be run, and their error messages combined."""
+
     @staticmethod
     def ifThenAlso(condition_field_name, condition_function, result_field_name, result_function, **kwargs):
         """Return second validation if the first validator is true.
+
         :param condition_field: function that returns (bool, string) to represent validation state
         :param condition_function: function that returns (bool, string) to represent validation state
         :param result_field: function that returns (bool, string) to represent validation state
@@ -212,7 +236,7 @@ class ComposableValidators():
             elif not result_success:
                 center_error = None
                 if condition_success:
-                    center_error = f'{format_error_context(condition_field_eargs)} is {condition_value}' if condition_success else msg1
+                    center_error = f'{format_error_context(condition_field_eargs)} is {condition_value}'
                 else:
                     center_error = msg1
                 error_message = f"If {center_error}, then {msg2}"
@@ -240,6 +264,8 @@ class ComposableValidators():
 
 
 class PostparsingValidators:
+    """Custom postparsing validation messages."""
+
     @staticmethod
     def sumIsEqual(condition_field_name, sum_fields=[]):
         """Validate that the sum of the sum_fields equals the condition_field."""
@@ -295,31 +321,30 @@ class PostparsingValidators:
         """
         # value is instance
         def validate(record, row_schema):
-            fam_affil_field = row_schema.get_field_by_name('FAMILY_AFFILIATION')
+            # fam_affil_field = row_schema.get_field_by_name('FAMILY_AFFILIATION')
             FAMILY_AFFILIATION = get_record_value_by_field_name(record, 'FAMILY_AFFILIATION')
-            fam_affil_eargs = ValidationErrorArgs(
-                value=FAMILY_AFFILIATION,
-                row_schema=row_schema,
-                friendly_name=fam_affil_field.friendly_name,
-                item_num=fam_affil_field.item,
-            )
-            cit_stat_field = row_schema.get_field_by_name('CITIZENSHIP_STATUS')
+            # fam_affil_eargs = ValidationErrorArgs(
+            #     value=FAMILY_AFFILIATION,
+            #     row_schema=row_schema,
+            #     friendly_name=fam_affil_field.friendly_name,
+            #     item_num=fam_affil_field.item,
+            # )
+            # cit_stat_field = row_schema.get_field_by_name('CITIZENSHIP_STATUS')
             CITIZENSHIP_STATUS = get_record_value_by_field_name(record, 'CITIZENSHIP_STATUS')
-            cit_stat_eargs = ValidationErrorArgs(
-                value=CITIZENSHIP_STATUS,
-                row_schema=row_schema,
-                friendly_name=cit_stat_field.friendly_name,
-                item_num=cit_stat_field.item,
-            )
-            ssn_field = row_schema.get_field_by_name('SSN')
+            # cit_stat_eargs = ValidationErrorArgs(
+            #     value=CITIZENSHIP_STATUS,
+            #     row_schema=row_schema,
+            #     friendly_name=cit_stat_field.friendly_name,
+            #     item_num=cit_stat_field.item,
+            # )
+            # ssn_field = row_schema.get_field_by_name('SSN')
             SSN = get_record_value_by_field_name(record, 'SSN')
-            ssn_eargs = ValidationErrorArgs(
-                value=SSN,
-                row_schema=row_schema,
-                friendly_name=ssn_field.friendly_name,
-                item_num=ssn_field.item,
-            )
-
+            # ssn_eargs = ValidationErrorArgs(
+            #     value=SSN,
+            #     row_schema=row_schema,
+            #     friendly_name=ssn_field.friendly_name,
+            #     item_num=ssn_field.item,
+            # )
 
             if FAMILY_AFFILIATION == 2 and (
                 CITIZENSHIP_STATUS == 1 or CITIZENSHIP_STATUS == 2
@@ -355,41 +380,41 @@ class PostparsingValidators:
                 ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
             )
             try:
-                work_elig_field = row_schema.get_field_by_name('WORK_ELIGIBLE_INDICATOR')
+                # work_elig_field = row_schema.get_field_by_name('WORK_ELIGIBLE_INDICATOR')
                 WORK_ELIGIBLE_INDICATOR = get_record_value_by_field_name(record, 'WORK_ELIGIBLE_INDICATOR')
-                work_elig_eargs = ValidationErrorArgs(
-                    value=WORK_ELIGIBLE_INDICATOR,
-                    row_schema=row_schema,
-                    friendly_name=work_elig_field.friendly_name,
-                    item_num=work_elig_field.item,
-                )
+                # work_elig_eargs = ValidationErrorArgs(
+                #     value=WORK_ELIGIBLE_INDICATOR,
+                #     row_schema=row_schema,
+                #     friendly_name=work_elig_field.friendly_name,
+                #     item_num=work_elig_field.item,
+                # )
 
-                relat_hoh_field = row_schema.get_field_by_name('RELATIONSHIP_HOH')
+                # relat_hoh_field = row_schema.get_field_by_name('RELATIONSHIP_HOH')
                 RELATIONSHIP_HOH = int(get_record_value_by_field_name(record, 'RELATIONSHIP_HOH'))
-                relat_hoh_eargs = ValidationErrorArgs(
-                    value=RELATIONSHIP_HOH,
-                    row_schema=row_schema,
-                    friendly_name=relat_hoh_field.friendly_name,
-                    item_num=relat_hoh_field.item,
-                )
+                # relat_hoh_eargs = ValidationErrorArgs(
+                #     value=RELATIONSHIP_HOH,
+                #     row_schema=row_schema,
+                #     friendly_name=relat_hoh_field.friendly_name,
+                #     item_num=relat_hoh_field.item,
+                # )
 
-                dob_field = row_schema.get_field_by_name('DATE_OF_BIRTH')
+                # dob_field = row_schema.get_field_by_name('DATE_OF_BIRTH')
                 DOB = get_record_value_by_field_name(record, 'DATE_OF_BIRTH')
-                dob_eargs = ValidationErrorArgs(
-                    value=DOB,
-                    row_schema=row_schema,
-                    friendly_name=dob_field.friendly_name,
-                    item_num=dob_field.item,
-                )
+                # dob_eargs = ValidationErrorArgs(
+                #     value=DOB,
+                #     row_schema=row_schema,
+                #     friendly_name=dob_field.friendly_name,
+                #     item_num=dob_field.item,
+                # )
 
-                rpt_mthyr_field = row_schema.get_field_by_name('RPT_MONTH_YEAR')
+                # rpt_mthyr_field = row_schema.get_field_by_name('RPT_MONTH_YEAR')
                 RPT_MONTH_YEAR = get_record_value_by_field_name(record, 'RPT_MONTH_YEAR')
-                rpt_mthyr_eargs = ValidationErrorArgs(
-                    value=RPT_MONTH_YEAR,
-                    row_schema=row_schema,
-                    friendly_name=rpt_mthyr_field.friendly_name,
-                    item_num=rpt_mthyr_field.item,
-                )
+                # rpt_mthyr_eargs = ValidationErrorArgs(
+                #     value=RPT_MONTH_YEAR,
+                #     row_schema=row_schema,
+                #     friendly_name=rpt_mthyr_field.friendly_name,
+                #     item_num=rpt_mthyr_field.item,
+                # )
                 RPT_MONTH_YEAR += "01"
 
                 DOB_datetime = datetime.datetime.strptime(DOB, '%Y%m%d')

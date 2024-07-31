@@ -1,7 +1,11 @@
+"""Base functions to be overloaded and composed from within the other validator classes."""
+
 from .util import _is_empty
 
 
 class ValidatorFunctions:
+    """Base higher-order validator functions that can be composed and customized."""
+
     @staticmethod
     def _handle_cast(val, cast):
         return cast(val)
@@ -22,6 +26,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isEqual(option, **kwargs):
+        """Return a function that tests if an input param is equal to option."""
         return ValidatorFunctions._make_validator(
             lambda val: val == option,
             **kwargs
@@ -29,6 +34,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isNotEqual(option, **kwargs):
+        """Return a function that tests if an input param is not equal to option."""
         return ValidatorFunctions._make_validator(
             lambda val: val != option,
             **kwargs
@@ -36,6 +42,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isOneOf(options, **kwargs):
+        """Return a function that tests if an input param is one of options."""
         def check_option(value):
             # split the option if it is a range and append the range to the options
             for option in options:
@@ -52,6 +59,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isNotOneOf(options, **kwargs):
+        """Return a function that tests if an input param is not one of options."""
         return ValidatorFunctions._make_validator(
             lambda val: val not in options,
             **kwargs
@@ -59,6 +67,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isGreaterThan(option, inclusive=False, **kwargs):
+        """Return a function that tests if an input param is greater than option."""
         return ValidatorFunctions._make_validator(
             lambda val: val > option if not inclusive else val >= option,
             **kwargs
@@ -66,6 +75,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isLessThan(option, inclusive=False, **kwargs):
+        """Return a function that tests if an input param is less than option."""
         return ValidatorFunctions._make_validator(
             lambda val: val < option if not inclusive else val <= option,
             **kwargs
@@ -73,6 +83,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isBetween(min, max, inclusive=False, **kwargs):
+        """Return a function that tests if an input param is between min and max."""
         return ValidatorFunctions._make_validator(
             lambda val: min < val < max if not inclusive else min <= val <= max,
             **kwargs
@@ -80,6 +91,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def startsWith(substr, **kwargs):
+        """Return a function that tests if an input param starts with substr."""
         return ValidatorFunctions._make_validator(
             lambda val: str(val).startswith(substr),
             **kwargs
@@ -87,6 +99,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def contains(substr, **kwargs):
+        """Return a function that tests if an input param contains substr."""
         return ValidatorFunctions._make_validator(
             lambda val: str(val).find(substr) != -1,
             **kwargs
@@ -94,6 +107,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isNumber(**kwargs):
+        """Return a function that tests if an input param is numeric."""
         return ValidatorFunctions._make_validator(
             lambda val: str(val).strip().isnumeric(),
             **kwargs
@@ -101,6 +115,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isAlphaNumeric(**kwargs):
+        """Return a function that tests if an input param is alphanumeric."""
         return ValidatorFunctions._make_validator(
             lambda val: val.isalnum(),
             **kwargs
@@ -108,6 +123,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isEmpty(start=0, end=None, **kwargs):
+        """Return a function that tests if an input param is empty or all fill chars."""
         return ValidatorFunctions._make_validator(
             lambda val: _is_empty(val, start, end),
             **kwargs
@@ -115,6 +131,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isNotEmpty(start=0, end=None, **kwargs):
+        """Return a function that tests if an input param is not empty or all fill chars."""
         return ValidatorFunctions._make_validator(
             lambda val: not _is_empty(val, start, end),
             **kwargs
@@ -122,6 +139,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isBlank(**kwargs):
+        """Return a function that tests if an input param is all space."""
         return ValidatorFunctions._make_validator(
             lambda val: val.isspace(),
             **kwargs
@@ -129,6 +147,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def hasLength(length, **kwargs):
+        """Return a function that tests if an input param has length equal to length."""
         return ValidatorFunctions._make_validator(
             lambda val: len(val) == length,
             **kwargs
@@ -136,6 +155,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def hasLengthGreaterThan(length, inclusive=False, **kwargs):
+        """Return a function that tests if an input param has length greater than length."""
         return ValidatorFunctions._make_validator(
             lambda val: len(val) > length if not inclusive else len(val) >= length,
             **kwargs
@@ -143,6 +163,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def intHasLength(length, **kwargs):
+        """Return a function that tests if an integer input param has a number of digits equal to length."""
         return ValidatorFunctions._make_validator(
             lambda val: sum(c.isdigit() for c in str(val)) == length,
             **kwargs
@@ -150,6 +171,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def isNotZero(number_of_zeros=1, **kwargs):
+        """Return a function that tests if an input param is zero or all zeros."""
         return ValidatorFunctions._make_validator(
             lambda val: val != "0" * number_of_zeros,
             **kwargs
@@ -157,7 +179,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def dateYearIsLargerThan(year, **kwargs):
-        """Validate that in a monthyear combination, the year is larger than the given year."""
+        """Return a function that tests that an input date has a year value larger than the given year."""
         return ValidatorFunctions._make_validator(
             lambda val: int(val) > year,
             **kwargs
@@ -165,7 +187,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def dateMonthIsValid(**kwargs):
-        """Validate that in a monthyear combination, the month is a valid month."""
+        """Return a function that tests that an input date has a month value that is valid."""
         return ValidatorFunctions._make_validator(
             lambda val: int(val) in range(1, 13),
             **kwargs
@@ -173,7 +195,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def dateDayIsValid(**kwargs):
-        """Validate that in a monthyearday combination, the day is a valid day."""
+        """Return a function that tests that an input date has a day value that is valid."""
         return ValidatorFunctions._make_validator(
             lambda val: int(val) in range(1, 32),
             **kwargs
@@ -181,7 +203,7 @@ class ValidatorFunctions:
 
     @staticmethod
     def quarterIsValid(**kwargs):
-        """Validate in a year quarter combination, the quarter is valid."""
+        """Return a function that tests that an input date has a quarter value that is valid."""
         return ValidatorFunctions._make_validator(
             lambda val: int(val) > 0 and int(val) < 5,
             **kwargs

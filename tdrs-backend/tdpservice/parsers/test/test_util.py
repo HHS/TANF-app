@@ -35,7 +35,7 @@ def test_run_preparsing_validators_returns_valid():
     line = '12345'
     schema = RowSchema(
         document=None,
-    preparsing_validators=[
+        preparsing_validators=[
             passing_validator()
         ]
     )

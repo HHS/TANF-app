@@ -1,3 +1,6 @@
+"""Test category1 validators."""
+
+
 import pytest
 from ..category1 import PreparsingValidators
 from ..util import ValidationErrorArgs
@@ -28,6 +31,8 @@ def _validate_and_assert(validator, line, exp_result, exp_message):
 
 
 class TestPreparsingValidators:
+    """Test preparsing validation error messages."""
+
     @pytest.mark.parametrize('line, kwargs, exp_result, exp_message', [
         ('asdfasdf', {}, True, None),
         ('00000000', {}, True, None),
@@ -35,6 +40,7 @@ class TestPreparsingValidators:
         ('        ', {}, False, 'Test Item 1 (test field):          contains blanks between positions 0 and 8.'),
     ])
     def test_recordIsNotEmpty(self, line, kwargs, exp_result, exp_message):
+        """Test recordIsNotEmpty error messages."""
         _validator = PreparsingValidators.recordIsNotEmpty(**kwargs)
         _validate_and_assert(_validator, line, exp_result, exp_message)
 
@@ -44,6 +50,7 @@ class TestPreparsingValidators:
         ('123', 4, {}, False, 'Test: record length is 3 characters but must be 4.'),
     ])
     def test_recordHasLength(self, line, length, kwargs, exp_result, exp_message):
+        """Test recordHasLength error messages."""
         _validator = PreparsingValidators.recordHasLength(length, **kwargs)
         _validate_and_assert(_validator, line, exp_result, exp_message)
 
@@ -55,6 +62,7 @@ class TestPreparsingValidators:
         ('1234', 6, 8, {}, False, 'Test: record length of 4 characters is not in the range [6, 8].'),
     ])
     def test_recordHasLengthBetween(self, line, min, max, kwargs, exp_result, exp_message):
+        """Test recordHasLengthBetween error messages."""
         _validator = PreparsingValidators.recordHasLengthBetween(min, max, **kwargs)
         _validate_and_assert(_validator, line, exp_result, exp_message)
 
@@ -65,6 +73,7 @@ class TestPreparsingValidators:
         ('12345', 'abc', {}, False, '12345 must start with abc.'),
     ])
     def test_recordStartsWith(self, line, substr, kwargs, exp_result, exp_message):
+        """Test recordStartsWith error messages."""
         _validator = PreparsingValidators.recordStartsWith(substr, **kwargs)
         _validate_and_assert(_validator, line, exp_result, exp_message)
 
@@ -75,5 +84,6 @@ class TestPreparsingValidators:
         ('1##4', 1, 3, {}, False, 'Test: Case number 1##4 cannot contain blanks.'),
     ])
     def test_caseNumberNotEmpty(self, line, start, end, kwargs, exp_result, exp_message):
+        """Test caseNumberNotEmpty error messages."""
         _validator = PreparsingValidators.caseNumberNotEmpty(start, end, **kwargs)
         _validate_and_assert(_validator, line, exp_result, exp_message)
