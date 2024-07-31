@@ -149,6 +149,7 @@ class PreparsingValidators():
             "Calendar Quarter must be a numeric representing the Calendar Year and Quarter formatted as YYYYQ",
         )
 
+    # file pre-check validators
     @staticmethod
     def validate_tribe_fips_program_agree(program_type, tribe_code, state_fips_code, generate_error):
         """Validate tribe code, fips code, and program type all agree with eachother."""

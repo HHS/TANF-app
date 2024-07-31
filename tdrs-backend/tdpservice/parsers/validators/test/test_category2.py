@@ -244,15 +244,3 @@ class TestFieldValidators:
         """Test quarterIsValid validator error messages."""
         _validator = FieldValidators.quarterIsValid(**kwargs)
         _validate_and_assert(_validator, val, exp_result, exp_message)
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    # @staticmethod
-    # def validateRace():
-    #     """Validate race."""
-    #     return make_validator(
-    #         lambda value: value >= 0 and value <= 2,
-    #         lambda eargs:
-    #             f"{format_error_context(eargs)} {eargs.value} is not greater than or equal to 0 "
-    #             "or smaller than or equal to 2."
-    #     )

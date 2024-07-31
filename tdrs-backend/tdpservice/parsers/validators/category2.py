@@ -209,8 +209,7 @@ class FieldValidators():
         return make_validator(
             ValidatorFunctions.isBetween(0, 2, inclusive=True),
             lambda eargs:
-                f"{format_error_context(eargs)} {eargs.value} is not greater than or equal to 0 "
-                "or smaller than or equal to 2."
+                f"{format_error_context(eargs)} {eargs.value} is not in range [0, 2]."
         )
 
     @staticmethod
