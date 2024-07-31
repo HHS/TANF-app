@@ -4,7 +4,7 @@ import pytest
 from datetime import datetime
 from ..fields import Field
 from ..row_schema import RowSchema, SchemaManager
-from ..util import make_generate_parser_error, create_test_datafile, get_years_apart
+from ..util import make_generate_parser_error, create_test_datafile, get_years_apart, clean_options_string
 
 
 def passing_validator():
@@ -297,8 +297,8 @@ def test_field_validators_blank_and_required_returns_error(first, second):
     is_valid, errors = schema.run_field_validators(instance, error_func)
     assert is_valid is False
     assert errors == [
-        'first is required but a value was not provided.',
-        'second is required but a value was not provided.'
+        'T1 Item 1 (first): field is required but a value was not provided.',
+        'T1 Item 2 (second): field is required but a value was not provided.'
     ]
 
 
@@ -539,3 +539,17 @@ def test_get_years_apart(rpt_date_str, date_str, expected):
     rpt_date = datetime.strptime(rpt_date_str, '%Y%m%d')
     date = datetime.strptime(date_str, '%Y%m%d')
     assert int(get_years_apart(rpt_date, date)) == expected
+
+
+@pytest.mark.parametrize('options, expected', [
+    ([1, 2, 3, 4], '[1, 2, 3, 4]'),
+    (['1', '2', '3', '4'], '[1, 2, 3, 4]'),
+    (['a', 'b', 'c', 'd'], '[a, b, c, d]'),
+    (('a', 'b', 'c', 'd'), '[a, b, c, d]'),
+    (["'a'", "'b'", "'c'", "'d'"], "['a', 'b', 'c', 'd']"),
+    (['words', 'are very', 'weird'], '[words, are very, weird]'),
+])
+def test_clean_options_string(options, expected):
+    """Test `clean_options_string` util func."""
+    result = clean_options_string(options)
+    assert result == expected
