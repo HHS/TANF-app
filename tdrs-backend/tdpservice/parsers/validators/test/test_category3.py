@@ -222,7 +222,77 @@ class TestComposableFieldValidators:
 
 class TestComposableValidators:
     # if/or
-    pass
+    @pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message', [
+        (1, 1, True, None),  # condition fails, valid
+        (10, 1, True, None),  # condition pass, result pass
+        (10, 20, False, 'If Item 1 (test1) is 10, then 20 must be less than 10'),  # condition pass, result fail
+    ])
+    def test_ifThenAlso(self, condition_val, result_val, exp_result, exp_message):
+        schema = RowSchema(
+            fields=[
+                Field(
+                    item='1',
+                    name='TestField1',
+                    friendly_name='test1',
+                    type='number',
+                    startIndex=0,
+                    endIndex=1
+                ),
+                Field(
+                    item='2',
+                    name='TestField2',
+                    friendly_name='test2',
+                    type='number',
+                    startIndex=1,
+                    endIndex=2
+                ),
+                Field(
+                    item='3',
+                    name='TestField3',
+                    friendly_name='test3',
+                    type='number',
+                    startIndex=2,
+                    endIndex=3
+                )
+            ]
+        )
+        instance = {
+            'TestField1': condition_val,
+            'TestField2': 1,
+            'TestField3': result_val,
+        }
+        _validator = ComposableValidators.ifThenAlso(
+            condition_field_name='TestField1',
+            condition_function=ComposableFieldValidators.isEqual(10),
+            result_field_name='TestField3',
+            result_function=ComposableFieldValidators.isLessThan(10)
+        )
+        is_valid, error_msg, fields = _validator(instance, schema)
+        assert is_valid == exp_result
+        assert error_msg == exp_message
+        assert fields == ['TestField1', 'TestField3']
+
+    @pytest.mark.parametrize('val, exp_result, exp_message', [
+        (10, True, None),
+        (3, True, None),
+        (100, False, 'Item 1 (TestField1) 100 must match 10 or 100 must be less than 5.'),
+    ])
+    def test_orValidators(self, val, exp_result, exp_message):
+        _validator = ComposableValidators.orValidators([
+            ComposableFieldValidators.isEqual(10),
+            ComposableFieldValidators.isLessThan(5)
+        ])
+
+        eargs = ValidationErrorArgs(
+            value=val,
+            row_schema=RowSchema(),
+            friendly_name='TestField1',
+            item_num='1'
+        )
+
+        is_valid, error_msg = _validator(val, eargs)
+        assert is_valid == exp_result
+        assert error_msg == exp_message
 
 
 class TestPostparsingValidators:
