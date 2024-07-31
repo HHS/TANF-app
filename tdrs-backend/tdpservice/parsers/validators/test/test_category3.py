@@ -226,7 +226,94 @@ class TestComposableValidators:
 
 
 class TestPostparsingValidators:
-    #sum is equal/larger
+    def test_sumIsEqual(self):
+        schema = RowSchema(
+            fields=[
+                Field(
+                    item='1',
+                    name='TestField1',
+                    friendly_name='test1',
+                    type='number',
+                    startIndex=0,
+                    endIndex=1
+                ),
+                Field(
+                    item='2',
+                    name='TestField2',
+                    friendly_name='test2',
+                    type='number',
+                    startIndex=1,
+                    endIndex=2
+                ),
+                Field(
+                    item='3',
+                    name='TestField3',
+                    friendly_name='test3',
+                    type='number',
+                    startIndex=2,
+                    endIndex=3
+                )
+            ]
+        )
+        instance = {
+            'TestField1': 2,
+            'TestField2': 1,
+            'TestField3': 9,
+        }
+        result = PostparsingValidators.sumIsEqual('TestField2', ['TestField1', 'TestField3'])(instance, schema)
+        assert result == (
+            False,
+            "T1: The sum of ['TestField1', 'TestField3'] does not equal TestField2 test2 Item 2.",
+            ['TestField2', 'TestField1', 'TestField3']
+        )
+        instance['TestField2'] = 11
+        result = PostparsingValidators.sumIsEqual('TestField2', ['TestField1', 'TestField3'])(instance, schema)
+        assert result == (True, None, ['TestField2', 'TestField1', 'TestField3'])
+
+    def test_sumIsLarger(self):
+        schema = RowSchema(
+            fields=[
+                Field(
+                    item='1',
+                    name='TestField1',
+                    friendly_name='test1',
+                    type='number',
+                    startIndex=0,
+                    endIndex=1
+                ),
+                Field(
+                    item='2',
+                    name='TestField2',
+                    friendly_name='test2',
+                    type='number',
+                    startIndex=1,
+                    endIndex=2
+                ),
+                Field(
+                    item='3',
+                    name='TestField3',
+                    friendly_name='test3',
+                    type='number',
+                    startIndex=2,
+                    endIndex=3
+                )
+            ]
+        )
+        instance = {
+            'TestField1': 2,
+            'TestField2': 1,
+            'TestField3': 5,
+        }
+        result = PostparsingValidators.sumIsLarger(['TestField1', 'TestField3'], 10)(instance, schema)
+        assert result == (
+            False,
+            "T1: The sum of ['TestField1', 'TestField3'] is not larger than 10.",
+            ['TestField1', 'TestField3']
+        )
+        instance['TestField3'] = 9
+        result = PostparsingValidators.sumIsLarger(['TestField1', 'TestField3'], 10)(instance, schema)
+        assert result == (True, None, ['TestField1', 'TestField3'])
+
     def test_validate__FAM_AFF__SSN(self):
         """Test `validate__FAM_AFF__SSN` gives a valid result."""
         schema = RowSchema(
