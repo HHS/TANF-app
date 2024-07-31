@@ -127,29 +127,24 @@ class CloudGov(Common):
         "Cache-Control": "max-age=86400, s-maxage=86400, must-revalidate",
     }
     # The following variables are used to configure the Django Elasticsearch
-    # es_access_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['access_key']
-    # es_secret_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['secret_key']
-    # es_host = cloudgov_services['aws-elasticsearch'][0]['credentials']['uri']
+    es_access_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['access_key']
+    es_secret_key = cloudgov_services['aws-elasticsearch'][0]['credentials']['secret_key']
+    es_host = cloudgov_services['aws-elasticsearch'][0]['credentials']['uri']
 
-    # awsauth = AWS4Auth(
-    #     es_access_key,
-    #     es_secret_key,
-    #     'us-gov-west-1',
-    #     'es'
-    # )
+    awsauth = AWS4Auth(
+        es_access_key,
+        es_secret_key,
+        'us-gov-west-1',
+        'es'
+    )
 
-    # Elastic old config
-    # ELASTICSEARCH_DSL = {
-    #     'default': {
-    #         'hosts': es_host,
-    #         'http_auth': awsauth,
-    #         'use_ssl': True,
-    #         'connection_class': RequestsHttpConnection,
-    #     },
-    # }
+    # Elastic
     ELASTICSEARCH_DSL = {
         'default': {
-            'hosts': os.getenv('ELASTIC_HOST', 'elastic:9200'),
+            'hosts': es_host,
+            'http_auth': awsauth,
+            'use_ssl': True,
+            'connection_class': RequestsHttpConnection,
         },
     }
     ELASTIC_INDEX_PREFIX = f'{APP_NAME}_'
