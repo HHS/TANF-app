@@ -321,30 +321,32 @@ class PostparsingValidators:
         """
         # value is instance
         def validate(record, row_schema):
-            # fam_affil_field = row_schema.get_field_by_name('FAMILY_AFFILIATION')
+            fam_affil_field = row_schema.get_field_by_name('FAMILY_AFFILIATION')
             FAMILY_AFFILIATION = get_record_value_by_field_name(record, 'FAMILY_AFFILIATION')
-            # fam_affil_eargs = ValidationErrorArgs(
-            #     value=FAMILY_AFFILIATION,
-            #     row_schema=row_schema,
-            #     friendly_name=fam_affil_field.friendly_name,
-            #     item_num=fam_affil_field.item,
-            # )
-            # cit_stat_field = row_schema.get_field_by_name('CITIZENSHIP_STATUS')
+            fam_affil_eargs = ValidationErrorArgs(
+                value=FAMILY_AFFILIATION,
+                row_schema=row_schema,
+                friendly_name=fam_affil_field.friendly_name,
+                item_num=fam_affil_field.item,
+            )
+
+            cit_stat_field = row_schema.get_field_by_name('CITIZENSHIP_STATUS')
             CITIZENSHIP_STATUS = get_record_value_by_field_name(record, 'CITIZENSHIP_STATUS')
-            # cit_stat_eargs = ValidationErrorArgs(
-            #     value=CITIZENSHIP_STATUS,
-            #     row_schema=row_schema,
-            #     friendly_name=cit_stat_field.friendly_name,
-            #     item_num=cit_stat_field.item,
-            # )
-            # ssn_field = row_schema.get_field_by_name('SSN')
+            cit_stat_eargs = ValidationErrorArgs(
+                value=CITIZENSHIP_STATUS,
+                row_schema=row_schema,
+                friendly_name=cit_stat_field.friendly_name,
+                item_num=cit_stat_field.item,
+            )
+
+            ssn_field = row_schema.get_field_by_name('SSN')
             SSN = get_record_value_by_field_name(record, 'SSN')
-            # ssn_eargs = ValidationErrorArgs(
-            #     value=SSN,
-            #     row_schema=row_schema,
-            #     friendly_name=ssn_field.friendly_name,
-            #     item_num=ssn_field.item,
-            # )
+            ssn_eargs = ValidationErrorArgs(
+                value=SSN,
+                row_schema=row_schema,
+                friendly_name=ssn_field.friendly_name,
+                item_num=ssn_field.item,
+            )
 
             if FAMILY_AFFILIATION == 2 and (
                 CITIZENSHIP_STATUS == 1 or CITIZENSHIP_STATUS == 2
@@ -352,8 +354,9 @@ class PostparsingValidators:
                 if SSN in [str(i) * 9 for i in range(10)]:
                     return (
                         False,
-                        f"{row_schema.record_type}: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, "
-                        "then SSN != 000000000 -- 999999999.",
+                        f"{row_schema.record_type}: If {format_error_context(fam_affil_eargs)} is 2 "
+                        f"and {format_error_context(cit_stat_eargs)} is 1 or 2, "
+                        f"then {format_error_context(ssn_eargs)} must not be in 000000000 -- 999999999.",
                         ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"],
                     )
                 else:
@@ -368,10 +371,35 @@ class PostparsingValidators:
         """If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1."""
         # value is instance
         def validate(record, row_schema):
+            work_elig_field = row_schema.get_field_by_name('WORK_ELIGIBLE_INDICATOR')
+            work_elig_eargs = ValidationErrorArgs(
+                value=None,
+                row_schema=row_schema,
+                friendly_name=work_elig_field.friendly_name,
+                item_num=work_elig_field.item,
+            )
+
+            relat_hoh_field = row_schema.get_field_by_name('RELATIONSHIP_HOH')
+            relat_hoh_eargs = ValidationErrorArgs(
+                value=None,
+                row_schema=row_schema,
+                friendly_name=relat_hoh_field.friendly_name,
+                item_num=relat_hoh_field.item,
+            )
+
+            dob_field = row_schema.get_field_by_name('DATE_OF_BIRTH')
+            age_eargs = ValidationErrorArgs(
+                value=None,
+                row_schema=row_schema,
+                friendly_name='Age',
+                item_num=dob_field.item,
+            )
+
             false_case = (
                 False,
-                f"{row_schema.record_type}: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, "
-                "then RELATIONSHIP_HOH != 1",
+                f"{row_schema.record_type}: If {format_error_context(work_elig_eargs)} is 11 "
+                f"and {format_error_context(age_eargs)} is less than 19, "
+                f"then {format_error_context(relat_hoh_eargs)} must not be 1",
                 ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
             )
             true_case = (
@@ -380,41 +408,10 @@ class PostparsingValidators:
                 ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH'],
             )
             try:
-                # work_elig_field = row_schema.get_field_by_name('WORK_ELIGIBLE_INDICATOR')
                 WORK_ELIGIBLE_INDICATOR = get_record_value_by_field_name(record, 'WORK_ELIGIBLE_INDICATOR')
-                # work_elig_eargs = ValidationErrorArgs(
-                #     value=WORK_ELIGIBLE_INDICATOR,
-                #     row_schema=row_schema,
-                #     friendly_name=work_elig_field.friendly_name,
-                #     item_num=work_elig_field.item,
-                # )
-
-                # relat_hoh_field = row_schema.get_field_by_name('RELATIONSHIP_HOH')
                 RELATIONSHIP_HOH = int(get_record_value_by_field_name(record, 'RELATIONSHIP_HOH'))
-                # relat_hoh_eargs = ValidationErrorArgs(
-                #     value=RELATIONSHIP_HOH,
-                #     row_schema=row_schema,
-                #     friendly_name=relat_hoh_field.friendly_name,
-                #     item_num=relat_hoh_field.item,
-                # )
-
-                # dob_field = row_schema.get_field_by_name('DATE_OF_BIRTH')
                 DOB = get_record_value_by_field_name(record, 'DATE_OF_BIRTH')
-                # dob_eargs = ValidationErrorArgs(
-                #     value=DOB,
-                #     row_schema=row_schema,
-                #     friendly_name=dob_field.friendly_name,
-                #     item_num=dob_field.item,
-                # )
-
-                # rpt_mthyr_field = row_schema.get_field_by_name('RPT_MONTH_YEAR')
                 RPT_MONTH_YEAR = get_record_value_by_field_name(record, 'RPT_MONTH_YEAR')
-                # rpt_mthyr_eargs = ValidationErrorArgs(
-                #     value=RPT_MONTH_YEAR,
-                #     row_schema=row_schema,
-                #     friendly_name=rpt_mthyr_field.friendly_name,
-                #     item_num=rpt_mthyr_field.item,
-                # )
                 RPT_MONTH_YEAR += "01"
 
                 DOB_datetime = datetime.datetime.strptime(DOB, '%Y%m%d')
