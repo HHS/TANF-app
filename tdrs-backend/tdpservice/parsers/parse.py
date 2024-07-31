@@ -113,6 +113,7 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                 num_expected_db_records += len(records)
                 created_objs = document.Django.model.objects.bulk_create(records)
                 num_db_records_created += len(created_objs)
+
                 num_elastic_records_created += document.update(created_objs)[0]
             except ElasticsearchException as e:
                 log_parser_exception(datafile,

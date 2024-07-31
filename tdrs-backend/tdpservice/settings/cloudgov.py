@@ -138,7 +138,7 @@ class CloudGov(Common):
     #     'es'
     # )
 
-    # Elastic
+    # Elastic old config
     # ELASTICSEARCH_DSL = {
     #     'default': {
     #         'hosts': es_host,
