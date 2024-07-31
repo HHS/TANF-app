@@ -9,12 +9,12 @@ from ..util import make_generate_parser_error, create_test_datafile, get_years_a
 
 def passing_validator():
     """Fake validator that always returns valid."""
-    return lambda _, __, ___, ____: (True, None)
+    return lambda _, __: (True, None)
 
 
 def failing_validator():
     """Fake validator that always returns invalid."""
-    return lambda _, __, ___, ____: (False, 'Value is not valid.')
+    return lambda _, __: (False, 'Value is not valid.')
 
 def passing_postparsing_validator():
     """Fake validator that always returns valid."""
@@ -35,7 +35,7 @@ def test_run_preparsing_validators_returns_valid():
     line = '12345'
     schema = RowSchema(
         document=None,
-        preparsing_validators=[
+    preparsing_validators=[
             passing_validator()
         ]
     )

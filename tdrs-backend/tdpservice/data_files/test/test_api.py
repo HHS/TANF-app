@@ -101,8 +101,7 @@ class DataFileAPITestBase:
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
-            "if Cash Amount :873 validator1 passed then Item 21B "
-            "(Cash and Cash Equivalents: Number of Months) 0 is not larger than 0."
+            "If Item 21A (Cash Amount) is 873, then 0 must be greater than 0"
         )
 
     @staticmethod
@@ -115,7 +114,7 @@ class DataFileAPITestBase:
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert ws.cell(row=7, column=COL_ERROR_MESSAGE).value == ("M1 Item 11 (Receives Subsidized Housing): 3 is "
-                                                                  "not larger or equal to 1 and smaller or equal to 2.")
+                                                                  "not in range [1, 2].")
 
     @staticmethod
     def assert_error_report_file_content_matches_without_friendly_names(response):
@@ -135,8 +134,7 @@ class DataFileAPITestBase:
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
-            "if CASH_AMOUNT :873 validator1 passed then Item 21B "
-            "(Cash and Cash Equivalents: Number of Months) 0 is not larger than 0."
+            "If Item 21A (Cash Amount) is 873, then 0 must be greater than 0"
         )
 
     @staticmethod
