@@ -4,8 +4,13 @@ import pytest
 from datetime import datetime
 from ..fields import Field
 from ..row_schema import RowSchema, SchemaManager
-from ..util import make_generate_parser_error, create_test_datafile, get_years_apart, clean_options_string
-
+from ..util import (
+    make_generate_parser_error,
+    create_test_datafile,
+    get_years_apart,
+    clean_options_string,
+    generate_t2_t3_t5_hashes)
+import logging
 
 def passing_validator():
     """Fake validator that always returns valid."""
@@ -553,3 +558,21 @@ def test_clean_options_string(options, expected):
     """Test `clean_options_string` util func."""
     result = clean_options_string(options)
     assert result == expected
+
+
+@pytest.mark.django_db()
+def test_empty_SSN_DOB_space_filled(caplog):
+    """Test empty_SSN_DOB_space_filled."""
+    line = 'fake_line'
+
+    class record:
+        CASE_NUMBER = 'fake_case_number'
+        SSN = None
+        DATE_OF_BIRTH = None
+        FAMILY_AFFILIATION = 'fake_family_affiliation'
+        RPT_MONTH_YEAR = '202310'
+        RecordType = 'T2'
+
+    with caplog.at_level(logging.ERROR):
+        generate_t2_t3_t5_hashes(line, record)
+    assert caplog.text == ''
