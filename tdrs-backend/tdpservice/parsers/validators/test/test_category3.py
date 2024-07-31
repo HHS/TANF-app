@@ -454,8 +454,8 @@ class TestPostparsingValidators:
         result = PostparsingValidators.validate__FAM_AFF__SSN()(instance, schema)
         assert result == (
             False,
-            'T1: If FAMILY_AFFILIATION ==2 and CITIZENSHIP_STATUS==1 or 2, ' +
-            'then SSN != 000000000 -- 999999999.',
+            'T1: If Item 1 (family affiliation) is 2 and Item 2 (citizenship status) is 1 or 2, '
+            'then Item 3 (social security number) must not be in 000000000 -- 999999999.',
             ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN']
         )
         instance['SSN'] = '1'*8 + '0'
@@ -509,7 +509,8 @@ class TestPostparsingValidators:
         result = PostparsingValidators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
         assert result == (
             False,
-            'T1: If WORK_ELIGIBLE_INDICATOR == 11 and AGE < 19, then RELATIONSHIP_HOH != 1',
+            'T1: If Item 1 (work eligible indicator) is 11 and Item 3 (Age) is less than 19, '
+            'then Item 2 (relationship w/ head of household) must not be 1.',
             ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
         )
         instance['DATE_OF_BIRTH'] = '19950101'
