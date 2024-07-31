@@ -212,3 +212,13 @@ class FieldValidators():
                 f"{format_error_context(eargs)} {eargs.value} is not greater than or equal to 0 "
                 "or smaller than or equal to 2."
         )
+
+    @staticmethod
+    def validateHeaderUpdateIndicator():
+        """Validate the header update indicator."""
+        return make_validator(
+            ValidatorFunctions.isEqual('D'),
+            lambda eargs:
+                f"HEADER Update Indicator must be set to D instead of {eargs.value}. "
+                "Please review Exporting Complete Data Using FTANF in the Knowledge Center."
+        )
