@@ -12,16 +12,17 @@ else
 fi
 
 # Collect static files. This is needed for swagger to work in local environment
-if [[ $DISABLE_COLLECTSTATIC ]]; then 
+if [[ $DISABLE_COLLECTSTATIC ]]; then
     echo "DISABLE_COLLECTSTATIC is set to true, skipping collectstatic"
 else
     echo "Collecting static files"
     python manage.py collectstatic --noinput
 fi
 
-
-celery -A tdpservice.settings worker -c 1 &
+# Celery worker config can be found here: https://docs.celeryq.dev/en/stable/userguide/workers.html#:~:text=The-,hostname,-argument%20can%20expand
+celery -A tdpservice.settings worker --loglevel=WARNING --concurrency=1 -n worker1@%h &
 sleep 5
+
 # TODO: Uncomment the following line to add flower service when memory limitation is resolved
 celery -A tdpservice.settings --broker=$REDIS_URI flower &
 celery -A tdpservice.settings beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler &

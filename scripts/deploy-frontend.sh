@@ -57,6 +57,7 @@ update_frontend()
     unlink .env.production
     mkdir deployment
 
+
     cp -r build deployment/public
     cp nginx/cloud.gov/buildpack.nginx.conf deployment/nginx.conf
     cp nginx/cloud.gov/locations.conf deployment/locations.conf
