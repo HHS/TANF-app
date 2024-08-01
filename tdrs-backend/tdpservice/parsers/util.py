@@ -242,7 +242,7 @@ class SortedRecords:
             logger.error(f"Error: Case hash for record at line #{line_num} was None!")
 
     def get_bulk_create_struct(self):
-        """Return dict of form {document: Iterable(records)} for bulk_create_records to consume."""
+        """Return dict of form {document: {record: None}} for bulk_create_records to consume."""
         return self.cases
 
     def clear(self, all_created):
@@ -250,7 +250,12 @@ class SortedRecords:
         if all_created:
             self.serialized_cases.update(set(self.hash_sorted_cases.keys()))
             self.hash_sorted_cases = dict()
-            self.cases = dict()
+
+            # We don't want to re-assign self.cases here because we lose the keys of the record/doc types we've already
+            # made. If we don't maintain that state we might not delete everything if we need to roll the records back
+            # at the end of, or during parsing.
+            for key in self.cases.keys():
+                self.cases[key] = {}
 
     def remove_case_due_to_errors(self, should_remove, case_hash):
         """Remove all records from memory given the hash."""
@@ -276,14 +281,15 @@ class SortedRecords:
 def generate_t1_t4_hashes(line, record):
     """Return hashes for duplicate and partial duplicate detection for T1 & T4 records."""
     logger.debug(f"Partial Hash Field Values: {record.RecordType} {str(record.RPT_MONTH_YEAR)} {record.CASE_NUMBER}")
-    return hash(line), hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER)
+    return hash(line), hash(record.RecordType + str(record.RPT_MONTH_YEAR or '') + str(record.CASE_NUMBER or ''))
 
 def generate_t2_t3_t5_hashes(line, record):
     """Return hashes for duplicate and partial duplicate detection for T2 & T3 & T5 records."""
     logger.debug(f"Partial Hash Field Values: {record.RecordType} {str(record.RPT_MONTH_YEAR)} {record.CASE_NUMBER} " +
                  f"{str(record.FAMILY_AFFILIATION)} {record.DATE_OF_BIRTH} {record.SSN}")
-    return hash(line), hash(record.RecordType + str(record.RPT_MONTH_YEAR) + record.CASE_NUMBER +
-                            str(record.FAMILY_AFFILIATION) + record.DATE_OF_BIRTH + record.SSN)
+    return hash(line), hash(record.RecordType + str(record.RPT_MONTH_YEAR or '') + str(record.CASE_NUMBER or '') +
+                            str(record.FAMILY_AFFILIATION or '') + str(record.DATE_OF_BIRTH or '') +
+                            str(record.SSN or ''))
 
 def get_t1_t4_partial_hash_members():
     """Return field names used to generate t1/t4 partial hashes."""
