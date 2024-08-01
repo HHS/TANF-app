@@ -102,3 +102,4 @@ def get_xls_serialized_file(data):
 
     workbook.close()
     return {"data": data, "xls_report": base64.b64encode(output.getvalue()).decode("utf-8")}
+#
