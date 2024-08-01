@@ -108,6 +108,12 @@ def contains_encrypted_indicator(line, encryption_field):
     return False
 
 
+def clean_options_string(options, remove=['\'', '"', ' ']):
+    """Return a prettied-up version of an options array."""
+    options_str = ', '.join(str(o) for o in options)
+    return f'[{options_str}]'
+
+
 '''
 text -> section YES
 text -> models{} YES
@@ -145,6 +151,12 @@ def fiscal_to_calendar(year, fiscal_quarter):
 
     ind_qtr = array.index(int_qtr)  # get the index so we can easily wrap-around end of array
     return year, "Q{}".format(array[ind_qtr - 1])  # return the previous quarter
+
+
+def calendar_to_fiscal(calendar_year, fiscal_quarter):
+    """Decrement the calendar year if in Q1."""
+    return calendar_year - 1 if fiscal_quarter == 'Q1' else calendar_year
+
 
 def transform_to_months(quarter):
     """Return a list of months in a quarter depending the quarter's format."""

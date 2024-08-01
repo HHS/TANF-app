@@ -13,3 +13,4 @@ class EmailType(Enum):
     REQUEST_DENIED = 'request-denied.html'
     DEACTIVATION_WARNING = 'account-deactivation-warning.html'
     ACCOUNT_DEACTIVATED = 'account-deactivated.html'
+    UPCOMING_SUBMISSION_DEADLINE = 'upcoming-submission-deadline.html'

@@ -44,9 +44,8 @@ class CloudGov(Common):
     cloudgov_space = cloudgov_app.get('space_name', 'tanf-dev')
     cloudgov_space_suffix = cloudgov_space.strip('tanf-')
     cloudgov_name = cloudgov_app.get('name').split("-")[-1]  # converting "tdp-backend-name" to just "name"
-    services_basename = cloudgov_name if (
-        cloudgov_name == "develop" and cloudgov_space_suffix == "staging"
-    ) else cloudgov_space_suffix
+    # TODO: does this break prod?
+    services_basename = cloudgov_space_suffix
 
     database_creds = get_cloudgov_service_creds_by_instance_name(
         cloudgov_services['aws-rds'],
@@ -68,10 +67,10 @@ class CloudGov(Common):
     ###
     # Dynamic Database configuration based on cloud.gov services
     #
-    env_based_db_name = f'tdp_db_{cloudgov_space_suffix}_{cloudgov_name}'
+    env_based_db_name = f'tdp_db_{cloudgov_name}'
 
     logger.debug("css: " + cloudgov_space_suffix)
-    if (cloudgov_space_suffix in ["prod", "staging"]):
+    if (cloudgov_space_suffix == "prod"):
         db_name = database_creds['db_name']
     else:
         db_name = env_based_db_name

@@ -70,12 +70,16 @@ class ExportCsvMixin:
     export_as_csv.short_description = "Export Selected as CSV"
 
 
-class SttCodeMixin:
+class SttMixin:
     """Mixin class to display a record's associated stt code."""
 
     def stt_code(self, obj):
         """Return stt code."""
         return obj.datafile.stt.stt_code
+
+    def stt_name(self, obj):
+        """Return stt name."""
+        return obj.datafile.stt.name
 
 
 class AdminModelMixin(admin.ModelAdmin):
@@ -83,7 +87,7 @@ class AdminModelMixin(admin.ModelAdmin):
 
     pass
 
-class CsvExportAdminMixin(AdminModelMixin, ExportCsvMixin, SttCodeMixin):
+class CsvExportAdminMixin(AdminModelMixin, ExportCsvMixin, SttMixin):
     """Class to encapsulate CSV related mixins."""
 
     actions = ["export_as_csv"]
