@@ -90,7 +90,7 @@ function Header() {
         <div className="grid-container-widescreen usa-nav__wide desktop:padding-left-4 desktop:border-bottom-0 mobile:border-bottom-1px mobile:padding-left-0  mobile:padding-right-0">
           <div className="usa-logo" id="extended-logo">
             <em className="usa-logo__text">
-              <a href="/" aria-label="TANF Data Portal">
+              <a href="/" aria-label="TANF Data Portal Home">
                 TANF Data Portal
               </a>
             </em>
