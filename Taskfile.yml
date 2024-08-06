@@ -2,6 +2,11 @@ version: '3'
 
 tasks:
 
+  upload-kibana-objs:
+    desc: Upload dashboards to Kibana server
+    cmds:
+      - curl -X POST localhost:5601/api/saved_objects/_import -H "kbn-xsrf: true" --form file=@tdrs-backend/tdpservice/search_indexes/kibana_saved_objs.ndjson
+
   create-network:
     desc: Create the external network
     cmds:
@@ -102,7 +107,7 @@ tasks:
       - docker-compose -f tdrs-backend/docker-compose.yml down -v
       - docker-compose -f tdrs-frontend/docker-compose.yml down -v
       - docker system prune -f -a
-  
+
   clamav-up:
     desc: Start clamav service
     dir: tdrs-backend
@@ -134,7 +139,7 @@ tasks:
       - task: frontend-up
       - task: clamav-up
 
-  
+
   # need more work
   frontend-init:
     desc: Initialize the frontend project
