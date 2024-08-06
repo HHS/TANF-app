@@ -3,8 +3,7 @@
 
 from ..fields import Field
 from ..row_schema import RowSchema
-from tdpservice.parsers.validators.category1 import PreparsingValidators
-from tdpservice.parsers.validators.category2 import FieldValidators
+from tdpservice.parsers.validators import category1, category2
 
 
 trailer = RowSchema(
