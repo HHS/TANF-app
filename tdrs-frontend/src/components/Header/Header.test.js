@@ -33,9 +33,8 @@ describe('Header', () => {
       </Provider>
     )
 
-    const title = screen.getByLabelText('Home')
+    const title = screen.getByText('TANF Data Portal')
     expect(title).toBeInTheDocument()
-    expect(title).toHaveTextContent('TANF Data Portal')
   })
 
   it('should have a navigation link for Welcome', () => {
