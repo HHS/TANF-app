@@ -16,6 +16,7 @@ def _handle_kwargs(val, **kwargs):
 
 
 def base_validator(makeValidator):
+    """Wrap validator funcs to handle kwargs."""
     @functools.wraps(makeValidator)
     def _validator(*args, **kwargs):
         validator = makeValidator(*args, **kwargs)
@@ -31,6 +32,7 @@ def base_validator(makeValidator):
 
 @base_validator
 def isEqual(option, **kwargs):
+    """Return a function that tests if an input param is equal to option."""
     return lambda val: val == option
 
 
