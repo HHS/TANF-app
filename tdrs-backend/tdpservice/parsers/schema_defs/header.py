@@ -11,8 +11,8 @@ header = RowSchema(
     record_type="HEADER",
     document=None,
     preparsing_validators=[
-        PreparsingValidators.recordHasLength(23),
-        PreparsingValidators.recordStartsWith(
+        category1.recordHasLength(23),
+        category1.recordStartsWith(
             "HEADER", lambda _: "Your file does not begin with a HEADER record."
         ),
     ],
@@ -27,7 +27,7 @@ header = RowSchema(
             endIndex=6,
             required=True,
             validators=[
-                FieldValidators.isEqual("HEADER"),
+                category2.isEqual("HEADER"),
             ],
         ),
         Field(
@@ -38,7 +38,7 @@ header = RowSchema(
             startIndex=6,
             endIndex=10,
             required=True,
-            validators=[FieldValidators.isBetween(2000, 2099, inclusive=True)],
+            validators=[category2.isBetween(2000, 2099, inclusive=True)],
         ),
         Field(
             item="5",
@@ -48,7 +48,7 @@ header = RowSchema(
             startIndex=10,
             endIndex=11,
             required=True,
-            validators=[FieldValidators.isOneOf(["1", "2", "3", "4"])],
+            validators=[category2.isOneOf(["1", "2", "3", "4"])],
         ),
         Field(
             item="6",
@@ -58,7 +58,7 @@ header = RowSchema(
             startIndex=11,
             endIndex=12,
             required=True,
-            validators=[FieldValidators.isOneOf(["A", "C", "G", "S"])],
+            validators=[category2.isOneOf(["A", "C", "G", "S"])],
         ),
         Field(
             item="1",
@@ -69,7 +69,7 @@ header = RowSchema(
             endIndex=14,
             required=False,
             validators=[
-                FieldValidators.isOneOf([
+                category2.isOneOf([
                     "00", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13",
                     "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
                     "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36",
@@ -86,7 +86,7 @@ header = RowSchema(
             startIndex=14,
             endIndex=17,
             required=False,
-            validators=[FieldValidators.isBetween(0, 999, inclusive=True, cast=int)],
+            validators=[category2.isBetween(0, 999, inclusive=True, cast=int)],
         ),
         Field(
             item="7",
@@ -96,7 +96,7 @@ header = RowSchema(
             startIndex=17,
             endIndex=20,
             required=True,
-            validators=[FieldValidators.isOneOf(["TAN", "SSP"])],
+            validators=[category2.isOneOf(["TAN", "SSP"])],
         ),
         Field(
             item="8",
@@ -106,7 +106,7 @@ header = RowSchema(
             startIndex=20,
             endIndex=21,
             required=True,
-            validators=[FieldValidators.isOneOf(["1", "2"])],
+            validators=[category2.isOneOf(["1", "2"])],
         ),
         Field(
             item="9",
@@ -116,7 +116,7 @@ header = RowSchema(
             startIndex=21,
             endIndex=22,
             required=False,
-            validators=[FieldValidators.isOneOf([" ", "E"])],
+            validators=[category2.isOneOf([" ", "E"])],
         ),
         Field(
             item="10",
@@ -126,7 +126,7 @@ header = RowSchema(
             startIndex=22,
             endIndex=23,
             required=True,
-            validators=[FieldValidators.validateHeaderUpdateIndicator()],
+            validators=[category2.validateHeaderUpdateIndicator()],
         ),
     ],
 )

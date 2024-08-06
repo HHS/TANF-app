@@ -3,9 +3,7 @@
 from tdpservice.parsers.transforms import zero_pad
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
-from tdpservice.parsers.validators.category1 import PreparsingValidators
-from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import ComposableValidators, ComposableFieldValidators
+from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T4DataSubmissionDocument
 from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
@@ -18,11 +16,11 @@ t4 = SchemaManager(
             generate_hashes_func=generate_t1_t4_hashes,
             get_partial_hash_members_func=get_t1_t4_partial_hash_members,
             preparsing_validators=[
-                PreparsingValidators.recordHasLengthBetween(36, 71),
-                PreparsingValidators.caseNumberNotEmpty(8, 19),
-                PreparsingValidators.or_priority_validators([
-                    PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
-                    PreparsingValidators.validateRptMonthYear(),
+                category1.recordHasLengthBetween(36, 71),
+                category1.caseNumberNotEmpty(8, 19),
+                category1.or_priority_validators([
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
                 ]),
             ],
             postparsing_validators=[],
@@ -46,8 +44,8 @@ t4 = SchemaManager(
                     endIndex=8,
                     required=True,
                     validators=[
-                        FieldValidators.dateYearIsLargerThan(1998),
-                        FieldValidators.dateMonthIsValid(),
+                        category2.dateYearIsLargerThan(1998),
+                        category2.dateMonthIsValid(),
                     ],
                 ),
                 Field(
@@ -58,7 +56,7 @@ t4 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[FieldValidators.isNotEmpty()],
+                    validators=[category2.isNotEmpty()],
                 ),
                 TransformField(
                     zero_pad(3),
@@ -69,7 +67,7 @@ t4 = SchemaManager(
                     startIndex=19,
                     endIndex=22,
                     required=False,
-                    validators=[FieldValidators.isNumber()],
+                    validators=[category2.isNumber()],
                 ),
                 Field(
                     item="5",
@@ -79,7 +77,7 @@ t4 = SchemaManager(
                     startIndex=22,
                     endIndex=24,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 99, inclusive=True, cast=int)],
+                    validators=[category2.isBetween(0, 99, inclusive=True, cast=int)],
                 ),
                 Field(
                     item="7",
@@ -89,7 +87,7 @@ t4 = SchemaManager(
                     startIndex=24,
                     endIndex=29,
                     required=True,
-                    validators=[FieldValidators.isBetween(0, 99999, inclusive=True, cast=int)],
+                    validators=[category2.isBetween(0, 99999, inclusive=True, cast=int)],
                 ),
                 Field(
                     item="8",
@@ -99,7 +97,7 @@ t4 = SchemaManager(
                     startIndex=29,
                     endIndex=30,
                     required=True,
-                    validators=[FieldValidators.isOneOf([1, 2])],
+                    validators=[category2.isOneOf([1, 2])],
                 ),
                 Field(
                     item="9",
@@ -110,9 +108,9 @@ t4 = SchemaManager(
                     endIndex=32,
                     required=True,
                     validators=[
-                        ComposableValidators.orValidators([
-                            ComposableFieldValidators.isBetween(1, 18, inclusive=True, cast=int),
-                            ComposableFieldValidators.isEqual("99")
+                        category3.orValidators([
+                            category3.isBetween(1, 18, inclusive=True, cast=int),
+                            category3.isEqual("99")
                         ])
                     ],
                 ),
@@ -124,7 +122,7 @@ t4 = SchemaManager(
                     startIndex=32,
                     endIndex=33,
                     required=True,
-                    validators=[FieldValidators.isBetween(1, 3, inclusive=True)],
+                    validators=[category2.isBetween(1, 3, inclusive=True)],
                 ),
                 Field(
                     item="11",
@@ -134,7 +132,7 @@ t4 = SchemaManager(
                     startIndex=33,
                     endIndex=34,
                     required=True,
-                    validators=[FieldValidators.isBetween(1, 2, inclusive=True)],
+                    validators=[category2.isBetween(1, 2, inclusive=True)],
                 ),
                 Field(
                     item="12",
@@ -144,7 +142,7 @@ t4 = SchemaManager(
                     startIndex=34,
                     endIndex=35,
                     required=True,
-                    validators=[FieldValidators.isBetween(1, 2, inclusive=True)],
+                    validators=[category2.isBetween(1, 2, inclusive=True)],
                 ),
                 Field(
                     item="13",
@@ -154,7 +152,7 @@ t4 = SchemaManager(
                     startIndex=35,
                     endIndex=36,
                     required=True,
-                    validators=[FieldValidators.isBetween(1, 3, inclusive=True)],
+                    validators=[category2.isBetween(1, 3, inclusive=True)],
                 ),
                 Field(
                     item="-1",

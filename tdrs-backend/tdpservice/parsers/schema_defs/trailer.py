@@ -11,8 +11,8 @@ trailer = RowSchema(
     record_type="TRAILER",
     document=None,
     preparsing_validators=[
-        PreparsingValidators.recordHasLength(23),
-        PreparsingValidators.recordStartsWith(
+        category1.recordHasLength(23),
+        category1.recordStartsWith(
             "TRAILER", lambda _: "Your file does not end with a TRAILER record."
         ),
     ],
@@ -27,7 +27,7 @@ trailer = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                FieldValidators.isEqual('TRAILER')
+                category2.isEqual('TRAILER')
             ]
         ),
         Field(
@@ -39,7 +39,7 @@ trailer = RowSchema(
             endIndex=14,
             required=True,
             validators=[
-                FieldValidators.isBetween(0, 9999999, inclusive=True)
+                category2.isBetween(0, 9999999, inclusive=True)
             ]
         ),
         Field(
@@ -51,7 +51,7 @@ trailer = RowSchema(
             endIndex=23,
             required=False,
             validators=[
-                FieldValidators.isEqual('         ')
+                category2.isEqual('         ')
             ]
         ),
     ],

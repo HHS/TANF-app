@@ -4,11 +4,7 @@
 from tdpservice.parsers.transforms import ssp_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
-from tdpservice.parsers.validators.category1 import PreparsingValidators
-from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import (
-    ComposableValidators, ComposableFieldValidators, PostparsingValidators
-)
+from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.ssp import SSP_M5DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
@@ -22,95 +18,95 @@ m5 = SchemaManager(
             should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 4, 5},
             get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
             preparsing_validators=[
-                PreparsingValidators.recordHasLength(66),
-                PreparsingValidators.caseNumberNotEmpty(8, 19),
-                PreparsingValidators.or_priority_validators([
-                    PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
-                    PreparsingValidators.validateRptMonthYear(),
+                category1.recordHasLength(66),
+                category1.caseNumberNotEmpty(8, 19),
+                category1.or_priority_validators([
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
                 ]),
             ],
             postparsing_validators=[
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isEqual(1),
+                    condition_function=category3.isEqual(1),
                     result_field_name="SSN",
-                    result_function=ComposableFieldValidators.validateSSN(),
+                    result_function=category3.validateSSN(),
                 ),
-                PostparsingValidators.validate__FAM_AFF__SSN(),
-                ComposableValidators.ifThenAlso(
+                category3.validate__FAM_AFF__SSN(),
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_HISPANIC",
-                    result_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_AMER_INDIAN",
-                    result_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_ASIAN",
-                    result_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_BLACK",
-                    result_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_HAWAIIAN",
-                    result_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_WHITE",
-                    result_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="MARITAL_STATUS",
-                    result_function=ComposableFieldValidators.isBetween(1, 5, inclusive=True),
+                    result_function=category3.isBetween(1, 5, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    condition_function=category3.isBetween(1, 2, inclusive=True),
                     result_field_name="PARENT_MINOR_CHILD",
-                    result_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="EDUCATION_LEVEL",
-                    result_function=ComposableValidators.orValidators([
-                        ComposableFieldValidators.isBetween(1, 16, inclusive=True, cast=int),
-                        ComposableFieldValidators.isBetween(98, 99, inclusive=True, cast=int),
+                    result_function=category3.orValidators([
+                        category3.isBetween(1, 16, inclusive=True, cast=int),
+                        category3.isBetween(98, 99, inclusive=True, cast=int),
                     ]),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isEqual(1),
+                    condition_function=category3.isEqual(1),
                     result_field_name="CITIZENSHIP_STATUS",
-                    result_function=ComposableFieldValidators.isBetween(1, 3, inclusive=True),
+                    result_function=category3.isBetween(1, 3, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="DATE_OF_BIRTH",
-                    condition_function=ComposableFieldValidators.isOlderThan(18),
+                    condition_function=category3.isOlderThan(18),
                     result_field_name="REC_OASDI_INSURANCE",
-                    result_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=ComposableFieldValidators.isEqual(1),
+                    condition_function=category3.isEqual(1),
                     result_field_name="REC_FEDERAL_DISABILITY",
-                    result_function=ComposableFieldValidators.isBetween(1, 2, inclusive=True),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
             ],
             fields=[
@@ -133,8 +129,8 @@ m5 = SchemaManager(
                     endIndex=8,
                     required=True,
                     validators=[
-                        FieldValidators.dateYearIsLargerThan(1998),
-                        FieldValidators.dateMonthIsValid(),
+                        category2.dateYearIsLargerThan(1998),
+                        category2.dateMonthIsValid(),
                     ],
                 ),
                 Field(
@@ -145,7 +141,7 @@ m5 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[FieldValidators.isNotEmpty()],
+                    validators=[category2.isNotEmpty()],
                 ),
                 Field(
                     item="13",
@@ -155,7 +151,7 @@ m5 = SchemaManager(
                     startIndex=19,
                     endIndex=20,
                     required=True,
-                    validators=[FieldValidators.isBetween(1, 5, inclusive=True)],
+                    validators=[category2.isBetween(1, 5, inclusive=True)],
                 ),
                 Field(
                     item="14",
@@ -165,10 +161,10 @@ m5 = SchemaManager(
                     startIndex=20,
                     endIndex=28,
                     required=True,
-                    validators=[FieldValidators.intHasLength(8),
-                                FieldValidators.dateYearIsLargerThan(1900),
-                                FieldValidators.dateMonthIsValid(),
-                                FieldValidators.dateDayIsValid()
+                    validators=[category2.intHasLength(8),
+                                category2.dateYearIsLargerThan(1900),
+                                category2.dateMonthIsValid(),
+                                category2.dateDayIsValid()
                                 ],
                 ),
                 TransformField(
@@ -180,7 +176,7 @@ m5 = SchemaManager(
                     startIndex=28,
                     endIndex=37,
                     required=True,
-                    validators=[FieldValidators.isNumber()],
+                    validators=[category2.isNumber()],
                     is_encrypted=False,
                 ),
                 Field(
@@ -191,7 +187,7 @@ m5 = SchemaManager(
                     startIndex=37,
                     endIndex=38,
                     required=False,
-                    validators=[FieldValidators.validateRace()],
+                    validators=[category2.validateRace()],
                 ),
                 Field(
                     item="16B",
@@ -201,7 +197,7 @@ m5 = SchemaManager(
                     startIndex=38,
                     endIndex=39,
                     required=False,
-                    validators=[FieldValidators.validateRace()],
+                    validators=[category2.validateRace()],
                 ),
                 Field(
                     item="16C",
@@ -211,7 +207,7 @@ m5 = SchemaManager(
                     startIndex=39,
                     endIndex=40,
                     required=False,
-                    validators=[FieldValidators.validateRace()],
+                    validators=[category2.validateRace()],
                 ),
                 Field(
                     item="16D",
@@ -221,7 +217,7 @@ m5 = SchemaManager(
                     startIndex=40,
                     endIndex=41,
                     required=False,
-                    validators=[FieldValidators.validateRace()],
+                    validators=[category2.validateRace()],
                 ),
                 Field(
                     item="16E",
@@ -231,7 +227,7 @@ m5 = SchemaManager(
                     startIndex=41,
                     endIndex=42,
                     required=False,
-                    validators=[FieldValidators.validateRace()],
+                    validators=[category2.validateRace()],
                 ),
                 Field(
                     item="16F",
@@ -241,7 +237,7 @@ m5 = SchemaManager(
                     startIndex=42,
                     endIndex=43,
                     required=False,
-                    validators=[FieldValidators.validateRace()],
+                    validators=[category2.validateRace()],
                 ),
                 Field(
                     item="17",
@@ -251,7 +247,7 @@ m5 = SchemaManager(
                     startIndex=43,
                     endIndex=44,
                     required=True,
-                    validators=[FieldValidators.isBetween(0, 9, inclusive=True)],
+                    validators=[category2.isBetween(0, 9, inclusive=True)],
                 ),
                 Field(
                     item="18A",
@@ -261,7 +257,7 @@ m5 = SchemaManager(
                     startIndex=44,
                     endIndex=45,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 2, inclusive=True)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="18B",
@@ -271,7 +267,7 @@ m5 = SchemaManager(
                     startIndex=45,
                     endIndex=46,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 2, inclusive=True)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="18C",
@@ -281,7 +277,7 @@ m5 = SchemaManager(
                     startIndex=46,
                     endIndex=47,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 2, inclusive=True)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="18D",
@@ -291,7 +287,7 @@ m5 = SchemaManager(
                     startIndex=47,
                     endIndex=48,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 2, inclusive=True)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="18E",
@@ -301,7 +297,7 @@ m5 = SchemaManager(
                     startIndex=48,
                     endIndex=49,
                     required=True,
-                    validators=[FieldValidators.isBetween(1, 2, inclusive=True)],
+                    validators=[category2.isBetween(1, 2, inclusive=True)],
                 ),
                 Field(
                     item="19",
@@ -311,7 +307,7 @@ m5 = SchemaManager(
                     startIndex=49,
                     endIndex=50,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 5, inclusive=True)],
+                    validators=[category2.isBetween(0, 5, inclusive=True)],
                 ),
                 Field(
                     item="20",
@@ -321,7 +317,7 @@ m5 = SchemaManager(
                     startIndex=50,
                     endIndex=52,
                     required=True,
-                    validators=[FieldValidators.isBetween(1, 10, inclusive=True, cast=int)],
+                    validators=[category2.isBetween(1, 10, inclusive=True, cast=int)],
                 ),
                 Field(
                     item="21",
@@ -331,7 +327,7 @@ m5 = SchemaManager(
                     startIndex=52,
                     endIndex=53,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 2, inclusive=True)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="22",
@@ -341,7 +337,7 @@ m5 = SchemaManager(
                     startIndex=53,
                     endIndex=54,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 9, inclusive=True)],
+                    validators=[category2.isBetween(0, 9, inclusive=True)],
                 ),
                 Field(
                     item="23",
@@ -352,11 +348,11 @@ m5 = SchemaManager(
                     endIndex=56,
                     required=False,
                     validators=[
-                        ComposableValidators.orValidators([
-                            ComposableFieldValidators.isBetween(0, 16, inclusive=True, cast=int),
-                            ComposableFieldValidators.isBetween(98, 99, inclusive=True, cast=int),
+                        category3.orValidators([
+                            category3.isBetween(0, 16, inclusive=True, cast=int),
+                            category3.isBetween(98, 99, inclusive=True, cast=int),
                         ]),
-                        FieldValidators.isNotEqual("00")
+                        category2.isNotEqual("00")
                     ],
                 ),
                 Field(
@@ -368,7 +364,7 @@ m5 = SchemaManager(
                     endIndex=57,
                     required=False,
                     validators=[
-                        FieldValidators.isOneOf([1, 2, 3, 9]),
+                        category2.isOneOf([1, 2, 3, 9]),
                     ],
                 ),
                 Field(
@@ -379,7 +375,7 @@ m5 = SchemaManager(
                     startIndex=57,
                     endIndex=58,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 3, inclusive=True)],
+                    validators=[category2.isBetween(0, 3, inclusive=True)],
                 ),
                 Field(
                     item="26",
@@ -389,7 +385,7 @@ m5 = SchemaManager(
                     startIndex=58,
                     endIndex=62,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 9999, inclusive=True, cast=int)],
+                    validators=[category2.isBetween(0, 9999, inclusive=True, cast=int)],
                 ),
                 Field(
                     item="27",
@@ -399,7 +395,7 @@ m5 = SchemaManager(
                     startIndex=62,
                     endIndex=66,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 9999, inclusive=True, cast=int)],
+                    validators=[category2.isBetween(0, 9999, inclusive=True, cast=int)],
                 ),
             ],
         )

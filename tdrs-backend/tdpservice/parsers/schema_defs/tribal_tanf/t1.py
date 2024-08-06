@@ -3,11 +3,7 @@
 from tdpservice.parsers.transforms import zero_pad
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
-from tdpservice.parsers.validators.category1 import PreparsingValidators
-from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import (
-    ComposableValidators, ComposableFieldValidators, PostparsingValidators
-)
+from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.tribal import Tribal_TANF_T1DataSubmissionDocument
 from tdpservice.parsers.util import generate_t1_t4_hashes, get_t1_t4_partial_hash_members
 
@@ -20,105 +16,105 @@ t1 = SchemaManager(
             generate_hashes_func=generate_t1_t4_hashes,
             get_partial_hash_members_func=get_t1_t4_partial_hash_members,
             preparsing_validators=[
-                PreparsingValidators.recordHasLengthBetween(117, 122),
-                PreparsingValidators.caseNumberNotEmpty(8, 19),
-                PreparsingValidators.or_priority_validators([
-                    PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
-                    PreparsingValidators.validateRptMonthYear(),
+                category1.recordHasLengthBetween(117, 122),
+                category1.caseNumberNotEmpty(8, 19),
+                category1.or_priority_validators([
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
                 ]),
             ],
             postparsing_validators=[
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="CASH_AMOUNT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="NBR_MONTHS",
-                    result_function=ComposableFieldValidators.isGreaterThan(0),
+                    result_function=category3.isGreaterThan(0),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="CC_AMOUNT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="CHILDREN_COVERED",
-                    result_function=ComposableFieldValidators.isGreaterThan(0),
+                    result_function=category3.isGreaterThan(0),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="CC_AMOUNT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="CC_NBR_MONTHS",
-                    result_function=ComposableFieldValidators.isGreaterThan(0),
+                    result_function=category3.isGreaterThan(0),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="TRANSP_AMOUNT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="TRANSP_NBR_MONTHS",
-                    result_function=ComposableFieldValidators.isGreaterThan(0),
+                    result_function=category3.isGreaterThan(0),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="TRANSITION_SERVICES_AMOUNT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="TRANSITION_NBR_MONTHS",
-                    result_function=ComposableFieldValidators.isGreaterThan(0),
+                    result_function=category3.isGreaterThan(0),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="OTHER_AMOUNT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="OTHER_NBR_MONTHS",
-                    result_function=ComposableFieldValidators.isGreaterThan(0),
+                    result_function=category3.isGreaterThan(0),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="SANC_REDUCTION_AMT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="WORK_REQ_SANCTION",
-                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="SANC_REDUCTION_AMT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="FAMILY_SANC_ADULT",
-                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="SANC_REDUCTION_AMT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="SANC_TEEN_PARENT",
-                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="SANC_REDUCTION_AMT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="NON_COOPERATION_CSE",
-                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="SANC_REDUCTION_AMT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="FAILURE_TO_COMPLY",
-                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="SANC_REDUCTION_AMT",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="OTHER_SANCTION",
-                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="OTHER_TOTAL_REDUCTIONS",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="FAMILY_CAP",
-                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="OTHER_TOTAL_REDUCTIONS",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="REDUCTIONS_ON_RECEIPTS",
-                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                ComposableValidators.ifThenAlso(
+                category3.ifThenAlso(
                     condition_field_name="OTHER_TOTAL_REDUCTIONS",
-                    condition_function=ComposableFieldValidators.isGreaterThan(0),
+                    condition_function=category3.isGreaterThan(0),
                     result_field_name="OTHER_NON_SANCTION",
-                    result_function=ComposableFieldValidators.isOneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                PostparsingValidators.sumIsLarger(
+                category3.sumIsLarger(
                     (
                         "AMT_FOOD_STAMP_ASSISTANCE",
                         "AMT_SUB_CC",
@@ -151,8 +147,8 @@ t1 = SchemaManager(
                     endIndex=8,
                     required=True,
                     validators=[
-                        FieldValidators.dateYearIsLargerThan(1900),
-                        FieldValidators.dateMonthIsValid(),
+                        category2.dateYearIsLargerThan(1900),
+                        category2.dateMonthIsValid(),
                     ],
                 ),
                 Field(
@@ -163,7 +159,7 @@ t1 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[FieldValidators.isNotEmpty()],
+                    validators=[category2.isNotEmpty()],
                 ),
                 TransformField(
                     zero_pad(3),
@@ -174,7 +170,7 @@ t1 = SchemaManager(
                     startIndex=19,
                     endIndex=22,
                     required=False,
-                    validators=[FieldValidators.isNumber()],
+                    validators=[category2.isNumber()],
                 ),
                 Field(
                     item="5",
@@ -185,7 +181,7 @@ t1 = SchemaManager(
                     endIndex=24,
                     required=False,
                     validators=[
-                        FieldValidators.isBetween(0, 99, inclusive=True, cast=int),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -197,7 +193,7 @@ t1 = SchemaManager(
                     endIndex=29,
                     required=True,
                     validators=[
-                        FieldValidators.isNumber(),
+                        category2.isNumber(),
                     ],
                 ),
                 Field(
@@ -209,7 +205,7 @@ t1 = SchemaManager(
                     endIndex=30,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(1, 2, inclusive=True),
+                        category2.isBetween(1, 2, inclusive=True),
                     ],
                 ),
                 Field(
@@ -221,7 +217,7 @@ t1 = SchemaManager(
                     endIndex=31,
                     required=True,
                     validators=[
-                        FieldValidators.isEqual(1),
+                        category2.isEqual(1),
                     ],
                 ),
                 Field(
@@ -233,7 +229,7 @@ t1 = SchemaManager(
                     endIndex=32,
                     required=True,
                     validators=[
-                        FieldValidators.isOneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -245,7 +241,7 @@ t1 = SchemaManager(
                     endIndex=34,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(1, 99, inclusive=True),
+                        category2.isBetween(1, 99, inclusive=True),
                     ],
                 ),
                 Field(
@@ -257,7 +253,7 @@ t1 = SchemaManager(
                     endIndex=35,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(1, 3, inclusive=True),
+                        category2.isBetween(1, 3, inclusive=True),
                     ],
                 ),
                 Field(
@@ -269,7 +265,7 @@ t1 = SchemaManager(
                     endIndex=36,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(1, 3, inclusive=True),
+                        category2.isBetween(1, 3, inclusive=True),
                     ],
                 ),
                 Field(
@@ -281,7 +277,7 @@ t1 = SchemaManager(
                     endIndex=37,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(1, 2, inclusive=True),
+                        category2.isBetween(1, 2, inclusive=True),
                     ],
                 ),
                 Field(
@@ -293,7 +289,7 @@ t1 = SchemaManager(
                     endIndex=38,
                     required=False,
                     validators=[
-                        FieldValidators.isBetween(0, 2, inclusive=True),
+                        category2.isBetween(0, 2, inclusive=True),
                     ],
                 ),
                 Field(
@@ -305,7 +301,7 @@ t1 = SchemaManager(
                     endIndex=42,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -317,7 +313,7 @@ t1 = SchemaManager(
                     endIndex=43,
                     required=False,
                     validators=[
-                        FieldValidators.isBetween(0, 3, inclusive=True),
+                        category2.isBetween(0, 3, inclusive=True),
                     ],
                 ),
                 Field(
@@ -329,7 +325,7 @@ t1 = SchemaManager(
                     endIndex=47,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -341,7 +337,7 @@ t1 = SchemaManager(
                     endIndex=51,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -353,7 +349,7 @@ t1 = SchemaManager(
                     endIndex=55,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -365,7 +361,7 @@ t1 = SchemaManager(
                     endIndex=59,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -377,7 +373,7 @@ t1 = SchemaManager(
                     endIndex=62,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 999, inclusive=True),
+                        category2.isBetween(0, 999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -389,7 +385,7 @@ t1 = SchemaManager(
                     endIndex=66,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -401,7 +397,7 @@ t1 = SchemaManager(
                     endIndex=68,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 99, inclusive=True),
+                        category2.isBetween(0, 99, inclusive=True),
                     ],
                 ),
                 Field(
@@ -413,7 +409,7 @@ t1 = SchemaManager(
                     endIndex=71,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 999, inclusive=True),
+                        category2.isBetween(0, 999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -425,7 +421,7 @@ t1 = SchemaManager(
                     endIndex=75,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -437,7 +433,7 @@ t1 = SchemaManager(
                     endIndex=78,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 999, inclusive=True),
+                        category2.isBetween(0, 999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -449,7 +445,7 @@ t1 = SchemaManager(
                     endIndex=82,
                     required=False,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -461,7 +457,7 @@ t1 = SchemaManager(
                     endIndex=85,
                     required=False,
                     validators=[
-                        FieldValidators.isBetween(0, 999, inclusive=True),
+                        category2.isBetween(0, 999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -473,7 +469,7 @@ t1 = SchemaManager(
                     endIndex=89,
                     required=False,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -485,7 +481,7 @@ t1 = SchemaManager(
                     endIndex=92,
                     required=False,
                     validators=[
-                        FieldValidators.isBetween(0, 999, inclusive=True),
+                        category2.isBetween(0, 999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -497,7 +493,7 @@ t1 = SchemaManager(
                     endIndex=96,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -509,7 +505,7 @@ t1 = SchemaManager(
                     endIndex=97,
                     required=True,
                     validators=[
-                        FieldValidators.isOneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -521,7 +517,7 @@ t1 = SchemaManager(
                     endIndex=98,
                     required=False,
                     validators=[
-                        FieldValidators.isOneOf([0, 1, 2]),
+                        category2.isOneOf([0, 1, 2]),
                     ],
                 ),
                 Field(
@@ -533,7 +529,7 @@ t1 = SchemaManager(
                     endIndex=99,
                     required=True,
                     validators=[
-                        FieldValidators.isOneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -545,7 +541,7 @@ t1 = SchemaManager(
                     endIndex=100,
                     required=True,
                     validators=[
-                        FieldValidators.isOneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -557,7 +553,7 @@ t1 = SchemaManager(
                     endIndex=101,
                     required=True,
                     validators=[
-                        FieldValidators.isOneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -569,7 +565,7 @@ t1 = SchemaManager(
                     endIndex=102,
                     required=True,
                     validators=[
-                        FieldValidators.isOneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -581,7 +577,7 @@ t1 = SchemaManager(
                     endIndex=106,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -593,7 +589,7 @@ t1 = SchemaManager(
                     endIndex=110,
                     required=True,
                     validators=[
-                        FieldValidators.isBetween(0, 9999, inclusive=True),
+                        category2.isBetween(0, 9999, inclusive=True),
                     ],
                 ),
                 Field(
@@ -605,7 +601,7 @@ t1 = SchemaManager(
                     endIndex=111,
                     required=True,
                     validators=[
-                        FieldValidators.isOneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -617,7 +613,7 @@ t1 = SchemaManager(
                     endIndex=112,
                     required=True,
                     validators=[
-                        FieldValidators.isOneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -629,7 +625,7 @@ t1 = SchemaManager(
                     endIndex=113,
                     required=True,
                     validators=[
-                        FieldValidators.isOneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -640,7 +636,7 @@ t1 = SchemaManager(
                     startIndex=113,
                     endIndex=114,
                     required=False,
-                    validators=[FieldValidators.isBetween(0, 9, inclusive=True, cast=int)],
+                    validators=[category2.isBetween(0, 9, inclusive=True, cast=int)],
                 ),
                 Field(
                     item="28",
@@ -650,7 +646,7 @@ t1 = SchemaManager(
                     startIndex=114,
                     endIndex=116,
                     required=True,
-                    validators=[FieldValidators.isBetween(0, 9, inclusive=True)],
+                    validators=[category2.isBetween(0, 9, inclusive=True)],
                 ),
                 Field(
                     item="29",
@@ -661,7 +657,7 @@ t1 = SchemaManager(
                     endIndex=117,
                     required=False,
                     validators=[
-                        FieldValidators.isOneOf([0, 1, 2]),
+                        category2.isOneOf([0, 1, 2]),
                     ],
                 ),
                 Field(

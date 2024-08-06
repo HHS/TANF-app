@@ -4,28 +4,26 @@
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
-from tdpservice.parsers.validators.category1 import PreparsingValidators
-from tdpservice.parsers.validators.category2 import FieldValidators
-from tdpservice.parsers.validators.category3 import PostparsingValidators
+from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.ssp import SSP_M6DataSubmissionDocument
 
 s1 = RowSchema(
     record_type="M6",
     document=SSP_M6DataSubmissionDocument(),
     preparsing_validators=[
-        PreparsingValidators.recordHasLength(259),
-        PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
-        PreparsingValidators.calendarQuarterIsValid(2, 7),
+        category1.recordHasLength(259),
+        category1.validate_fieldYearMonth_with_headerYearQuarter(),
+        category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
-        PostparsingValidators.sumIsEqual(
+        category3.sumIsEqual(
             "SSPMOE_FAMILIES", [
                 "NUM_2_PARENTS",
                 "NUM_1_PARENTS",
                 "NUM_NO_PARENTS"
             ]
         ),
-        PostparsingValidators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_RECIPIENTS", [
                 "ADULT_RECIPIENTS",
                 "CHILD_RECIPIENTS"
@@ -52,8 +50,8 @@ s1 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                FieldValidators.dateYearIsLargerThan(2020),
-                FieldValidators.quarterIsValid()
+                category2.dateYearIsLargerThan(2020),
+                category2.quarterIsValid()
             ]
         ),
         TransformField(
@@ -66,8 +64,8 @@ s1 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                FieldValidators.dateYearIsLargerThan(1998),
-                FieldValidators.dateMonthIsValid()
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid()
             ]
         ),
         Field(
@@ -78,7 +76,7 @@ s1 = RowSchema(
             startIndex=7,
             endIndex=15,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="4A",
@@ -88,7 +86,7 @@ s1 = RowSchema(
             startIndex=31,
             endIndex=39,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="5A",
@@ -98,7 +96,7 @@ s1 = RowSchema(
             startIndex=55,
             endIndex=63,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="6A",
@@ -108,7 +106,7 @@ s1 = RowSchema(
             startIndex=79,
             endIndex=87,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="7A",
@@ -118,7 +116,7 @@ s1 = RowSchema(
             startIndex=103,
             endIndex=111,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="8A",
@@ -128,7 +126,7 @@ s1 = RowSchema(
             startIndex=127,
             endIndex=135,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="9A",
@@ -138,7 +136,7 @@ s1 = RowSchema(
             startIndex=151,
             endIndex=159,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="10A",
@@ -148,7 +146,7 @@ s1 = RowSchema(
             startIndex=175,
             endIndex=183,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="11A",
@@ -158,7 +156,7 @@ s1 = RowSchema(
             startIndex=199,
             endIndex=211,
             required=True,
-            validators=[FieldValidators.isBetween(0, 999999999999, inclusive=True)]
+            validators=[category2.isBetween(0, 999999999999, inclusive=True)]
         ),
         Field(
             item="12A",
@@ -168,7 +166,7 @@ s1 = RowSchema(
             startIndex=235,
             endIndex=243,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
     ],
 )
@@ -178,19 +176,19 @@ s2 = RowSchema(
     document=SSP_M6DataSubmissionDocument(),
     quiet_preparser_errors=True,
     preparsing_validators=[
-        PreparsingValidators.recordHasLength(259),
-        PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
-        PreparsingValidators.calendarQuarterIsValid(2, 7),
+        category1.recordHasLength(259),
+        category1.validate_fieldYearMonth_with_headerYearQuarter(),
+        category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
-        PostparsingValidators.sumIsEqual(
+        category3.sumIsEqual(
             "SSPMOE_FAMILIES", [
                 "NUM_2_PARENTS",
                 "NUM_1_PARENTS",
                 "NUM_NO_PARENTS"
             ]
         ),
-        PostparsingValidators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_RECIPIENTS", [
                 "ADULT_RECIPIENTS",
                 "CHILD_RECIPIENTS"
@@ -217,8 +215,8 @@ s2 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                FieldValidators.dateYearIsLargerThan(2020),
-                FieldValidators.quarterIsValid()
+                category2.dateYearIsLargerThan(2020),
+                category2.quarterIsValid()
             ]
         ),
         TransformField(
@@ -231,8 +229,8 @@ s2 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                FieldValidators.dateYearIsLargerThan(1998),
-                FieldValidators.dateMonthIsValid()
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid()
             ]
         ),
         Field(
@@ -243,7 +241,7 @@ s2 = RowSchema(
             startIndex=15,
             endIndex=23,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="4B",
@@ -253,7 +251,7 @@ s2 = RowSchema(
             startIndex=39,
             endIndex=47,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="5B",
@@ -263,7 +261,7 @@ s2 = RowSchema(
             startIndex=63,
             endIndex=71,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="6B",
@@ -273,7 +271,7 @@ s2 = RowSchema(
             startIndex=87,
             endIndex=95,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="7B",
@@ -283,7 +281,7 @@ s2 = RowSchema(
             startIndex=111,
             endIndex=119,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="8B",
@@ -293,7 +291,7 @@ s2 = RowSchema(
             startIndex=135,
             endIndex=143,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="9B",
@@ -303,7 +301,7 @@ s2 = RowSchema(
             startIndex=159,
             endIndex=167,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="10B",
@@ -313,7 +311,7 @@ s2 = RowSchema(
             startIndex=183,
             endIndex=191,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="11B",
@@ -323,7 +321,7 @@ s2 = RowSchema(
             startIndex=211,
             endIndex=223,
             required=True,
-            validators=[FieldValidators.isBetween(0, 999999999999, inclusive=True)]
+            validators=[category2.isBetween(0, 999999999999, inclusive=True)]
         ),
         Field(
             item="12B",
@@ -333,7 +331,7 @@ s2 = RowSchema(
             startIndex=243,
             endIndex=251,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
     ],
 )
@@ -343,19 +341,19 @@ s3 = RowSchema(
     document=SSP_M6DataSubmissionDocument(),
     quiet_preparser_errors=True,
     preparsing_validators=[
-        PreparsingValidators.recordHasLength(259),
-        PreparsingValidators.validate_fieldYearMonth_with_headerYearQuarter(),
-        PreparsingValidators.calendarQuarterIsValid(2, 7),
+        category1.recordHasLength(259),
+        category1.validate_fieldYearMonth_with_headerYearQuarter(),
+        category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
-        PostparsingValidators.sumIsEqual(
+        category3.sumIsEqual(
             "SSPMOE_FAMILIES", [
                 "NUM_2_PARENTS",
                 "NUM_1_PARENTS",
                 "NUM_NO_PARENTS"
             ]
         ),
-        PostparsingValidators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_RECIPIENTS", [
                 "ADULT_RECIPIENTS",
                 "CHILD_RECIPIENTS"
@@ -382,8 +380,8 @@ s3 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                FieldValidators.dateYearIsLargerThan(2020),
-                FieldValidators.quarterIsValid()
+                category2.dateYearIsLargerThan(2020),
+                category2.quarterIsValid()
             ]
         ),
         TransformField(
@@ -396,8 +394,8 @@ s3 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                FieldValidators.dateYearIsLargerThan(1998),
-                FieldValidators.dateMonthIsValid()
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid()
             ]
         ),
         Field(
@@ -408,7 +406,7 @@ s3 = RowSchema(
             startIndex=23,
             endIndex=31,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="4C",
@@ -418,7 +416,7 @@ s3 = RowSchema(
             startIndex=47,
             endIndex=55,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="5C",
@@ -428,7 +426,7 @@ s3 = RowSchema(
             startIndex=71,
             endIndex=79,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="6C",
@@ -438,7 +436,7 @@ s3 = RowSchema(
             startIndex=95,
             endIndex=103,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="7C",
@@ -448,7 +446,7 @@ s3 = RowSchema(
             startIndex=119,
             endIndex=127,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="8C",
@@ -458,7 +456,7 @@ s3 = RowSchema(
             startIndex=143,
             endIndex=151,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="9C",
@@ -468,7 +466,7 @@ s3 = RowSchema(
             startIndex=167,
             endIndex=175,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="10C",
@@ -478,7 +476,7 @@ s3 = RowSchema(
             startIndex=191,
             endIndex=199,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="11C",
@@ -488,7 +486,7 @@ s3 = RowSchema(
             startIndex=223,
             endIndex=235,
             required=True,
-            validators=[FieldValidators.isBetween(0, 999999999999, inclusive=True)]
+            validators=[category2.isBetween(0, 999999999999, inclusive=True)]
         ),
         Field(
             item="12C",
@@ -498,7 +496,7 @@ s3 = RowSchema(
             startIndex=251,
             endIndex=259,
             required=True,
-            validators=[FieldValidators.isBetween(0, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
     ],
 )
