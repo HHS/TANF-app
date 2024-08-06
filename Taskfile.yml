@@ -1,0 +1,196 @@
+version: '3'
+
+tasks:
+
+  create-network:
+    desc: Create the external network
+    cmds:
+      - docker network create external-net
+
+  init-backend:
+    desc: Initialize the backend project
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml up -d --build
+      - docker-compose -f docker-compose.yml exec web sh -c "python ./manage.py makemigrations"
+      - docker-compose -f docker-compose.yml exec web sh -c "python ./manage.py migrate"
+      - docker-compose -f docker-compose.yml down
+
+  drop-db:
+    desc: Drop the backend database
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml down
+      - docker volume rm tdrs-backend_postgres_data
+
+  backend-up:
+    desc: Start backend web server
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml up -d
+
+  backend-down:
+    desc: Stop backend web server
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml down
+
+  backend-logs:
+    desc: Show and follow backend web server logs
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml logs -f
+
+  backend-restart:
+    desc: Restart backend web server
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml restart -d
+
+  backend-bash:
+    desc: Open a shell in the backend container
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml exec web sh
+
+  backend-shell:
+    desc: Open a Django shell in the backend container
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml exec web sh -c "python ./manage.py shell"
+
+  backend-pytest:
+    desc: 'Run pytest in the backend container E.g: task backend-pytest PYTEST_ARGS="tdpservice/test/ -s -vv"'
+    dir: tdrs-backend
+    vars:
+      PYTEST_ARGS: '{{.PYTEST_ARGS | default "."}}'
+    cmds:
+      - task backend-up
+      - docker-compose -f docker-compose.yml exec web sh -c "pytest {{.PYTEST_ARGS}}"
+
+  backend-remove-volumes:
+    desc: Remove the backend volumes
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml down -v
+
+  backend-lint:
+    desc: Run flake8 in the backend container
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml exec web sh -c "flake8 . && if [ $? -eq 0 ]; then echo 'Flake8 linter found no issues'; fi"
+
+  backend-pip-lock:
+    #TODO: Add a task to lock the pip dependencies
+    desc: Lock the pip dependencies
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml exec web sh -c "pipenv lock"
+
+  psql:
+    desc: Open a psql shell in the backend container
+    dir: tdrs-backend
+    cmds:
+      - task create-network || true
+      - docker-compose -f docker-compose.yml up -d postgres
+      - sleep 5
+      - docker-compose -f docker-compose.yml exec postgres sh -c "psql -U tdpuser -d tdrs_test"
+
+  clean:
+    desc: Remove all containers, networks, and volumes
+    cmds:
+      - docker-compose -f tdrs-backend/docker-compose.yml down -v
+      - docker-compose -f tdrs-frontend/docker-compose.yml down -v
+      - docker system prune -f -a
+  
+  clamav-up:
+    desc: Start clamav service
+    dir: tdrs-backend
+    cmds:
+      - docker-compose -f docker-compose.yml up -d clamav-rest
+
+  frontend-up:
+    desc: Start frontend web server
+    dir: tdrs-frontend
+    cmds:
+      - docker-compose -f docker-compose.yml up -d
+
+  frontend-down:
+    desc: Stop frontend web server
+    dir: tdrs-frontend
+    cmds:
+      - docker-compose -f docker-compose.yml down
+
+  frontend-restart:
+    desc: Restart frontend web server
+    dir: tdrs-frontend
+    cmds:
+      - docker-compose -f docker-compose.yml restart -d
+
+  frontend-av:
+    desc: Start frontend with optional clamav service
+    dir: tdrs-frontend
+    cmds:
+      - task: frontend-up
+      - task: clamav-up
+
+  
+  # need more work
+  frontend-init:
+    desc: Initialize the frontend project
+    dir: tdrs-frontend
+    cmds:
+      - docker-compose -f docker-compose.yml up -d --build
+      - docker-compose -f docker-compose.yml exec tdp-frontend sh -c "apk add nodejs npm"
+      - docker-compose -f docker-compose.yml exec tdp-frontend sh -c "npm install"
+      - docker-compose -f docker-compose.yml down
+
+  frontend-test:
+    desc: Run frontend tests
+    dir: tdrs-frontend
+    cmds:
+      - docker-compose -f docker-compose.local.yml up tdp-frontend-test -d
+      - docker-compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test"
+
+  frontend-test-cov:
+    desc: Run frontend tests with coverage
+    dir: tdrs-frontend
+    cmds:
+      - docker-compose -f docker-compose.local.yml up tdp-frontend-test -d
+      - docker-compose -f docker-compose.local.yml exec tdp-frontend-test sh -c "npm run test:cov"
+
+  frontend-lint:
+    desc: Run eslint in the frontend container
+    dir: tdrs-frontend
+    cmds:
+      - docker-compose -f docker-compose.local.yml up -d tdp-frontend-test --quiet-pull
+      - docker-compose -f docker-compose.yml exec tdp-frontend-test sh -c "npm run lint"
+
+  frontend-logs:
+    desc: Show and follow frontend web server logs
+    dir: tdrs-frontend
+    cmds:
+      - docker-compose -f docker-compose.yml logs -f
+
+  frontend-bash:
+    desc: Open a shell in the frontend container
+    dir: tdrs-frontend
+    cmds:
+      - docker-compose -f docker-compose.yml exec tdp-frontend sh
+
+  up:
+    desc: Start both frontend and backend web servers
+    cmds:
+      - task: backend-up
+      - task: frontend-up
+
+  down:
+    desc: Stop both frontend and backend web servers
+    cmds:
+      - task: backend-down
+      - task: frontend-down
+
+  help:
+    desc: Show this help message
+    cmds:
+      - task --list
