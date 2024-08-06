@@ -1,6 +1,7 @@
 """Validation helper functions and data classes."""
 
 
+import functools
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -19,6 +20,18 @@ def make_validator(validator_func, error_func):
         return (False, error_func(eargs))
 
     return validator
+
+
+def validator(baseValidator):
+    """Wrap validator func to handle custom error messages."""
+    def _decorator(makeValidator):
+        @functools.wraps(makeValidator)
+        def _validator(*args, **kwargs):
+            validator_func = baseValidator(*args, **kwargs)
+            error_func = makeValidator(*args, **kwargs)
+            return make_validator(validator_func, error_func)
+        return _validator
+    return _decorator
 
 
 def value_is_empty(value, length, extra_vals={}):

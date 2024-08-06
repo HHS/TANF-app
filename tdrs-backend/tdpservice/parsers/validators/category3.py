@@ -4,7 +4,7 @@ import datetime
 import logging
 from tdpservice.parsers.util import get_record_value_by_field_name
 from . import base
-from .util import ValidationErrorArgs, make_validator, evaluate_all
+from .util import ValidationErrorArgs, validator, make_validator, evaluate_all
 
 logger = logging.getLogger(__name__)
 
@@ -14,150 +14,112 @@ def format_error_context(eargs: ValidationErrorArgs):
     return f'Item {eargs.item_num} ({eargs.friendly_name})'
 
 
-# decorator takes ValidatorFunction as arg
-# function handles error msg
+@validator(base.isEqual)
 def isEqual(option, **kwargs):
     """Return a custom message for the isEqual validator."""
-    return make_validator(
-        base.isEqual(option, **kwargs),
-        lambda eargs: f'{eargs.value} must match {option}'
-    )
+    return lambda eargs: f'{eargs.value} must match {option}'
 
 
+@validator(base.isNotEqual)
 def isNotEqual(option, **kwargs):
     """Return a custom message for the isNotEqual validator."""
-    return make_validator(
-        base.isNotEqual(option, **kwargs),
-        lambda eargs: f'{eargs.value} must not be equal to {option}'
-    )
+    return lambda eargs: f'{eargs.value} must not be equal to {option}'
 
 
+@validator(base.isOneOf)
 def isOneOf(options, **kwargs):
     """Return a custom message for the isOneOf validator."""
-    return make_validator(
-        base.isOneOf(options, **kwargs),
-        lambda eargs: f'{eargs.value} must be one of {options}'
-    )
+    return lambda eargs: f'{eargs.value} must be one of {options}'
 
 
+@validator(base.isNotOneOf)
 def isNotOneOf(options, **kwargs):
     """Return a custom message for the isNotOneOf validator."""
-    return make_validator(
-        base.isNotOneOf(options, **kwargs),
-        lambda eargs: f'{eargs.value} must not be one of {options}'
-    )
+    return lambda eargs: f'{eargs.value} must not be one of {options}'
 
 
+@validator(base.isGreaterThan)
 def isGreaterThan(option, inclusive=False, **kwargs):
     """Return a custom message for the isGreaterThan validator."""
-    return make_validator(
-        base.isGreaterThan(option, inclusive, **kwargs),
-        lambda eargs: f'{eargs.value} must be greater than {option}'
-    )
+    return lambda eargs: f'{eargs.value} must be greater than {option}'
 
 
+@validator(base.isLessThan)
 def isLessThan(option, inclusive=False, **kwargs):
     """Return a custom message for the isLessThan validator."""
-    return make_validator(
-        base.isLessThan(option, inclusive, **kwargs),
-        lambda eargs: f'{eargs.value} must be less than {option}'
-    )
+    return lambda eargs: f'{eargs.value} must be less than {option}'
 
 
+@validator(base.isBetween)
 def isBetween(min, max, inclusive=False, **kwargs):
     """Return a custom message for the isBetween validator."""
-    return make_validator(
-        base.isBetween(min, max, inclusive, **kwargs),
-        lambda eargs: f'{eargs.value} must be between {min} and {max}'
-    )
+    return lambda eargs: f'{eargs.value} must be between {min} and {max}'
 
 
+@validator(base.startsWith)
 def startsWith(substr, **kwargs):
     """Return a custom message for the startsWith validator."""
-    return make_validator(
-        base.startsWith(substr, **kwargs),
-        lambda eargs: f'{eargs.value} must start with {substr}'
-    )
+    return lambda eargs: f'{eargs.value} must start with {substr}'
 
 
+@validator(base.contains)
 def contains(substr, **kwargs):
     """Return a custom message for the contains validator."""
-    return make_validator(
-        base.contains(substr, **kwargs),
-        lambda eargs: f'{eargs.value} must contain {substr}'
-    )
+    return lambda eargs: f'{eargs.value} must contain {substr}'
 
 
+@validator(base.isNumber)
 def isNumber(**kwargs):
     """Return a custom message for the isNumber validator."""
-    return make_validator(
-        base.isNumber(**kwargs),
-        lambda eargs: f'{eargs.value} must be a number'
-    )
+    return lambda eargs: f'{eargs.value} must be a number'
 
 
+@validator(base.isAlphaNumeric)
 def isAlphaNumeric(**kwargs):
     """Return a custom message for the isAlphaNumeric validator."""
-    return make_validator(
-        base.isAlphaNumeric(**kwargs),
-        lambda eargs: f'{eargs.value} must be alphanumeric'
-    )
+    return lambda eargs: f'{eargs.value} must be alphanumeric'
 
 
+@validator(base.isEmpty)
 def isEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isEmpty validator."""
-    return make_validator(
-        base.isEmpty(start, end, **kwargs),
-        lambda eargs: f'{eargs.value} must be empty'
-    )
+    return lambda eargs: f'{eargs.value} must be empty'
 
 
+@validator(base.isNotEmpty)
 def isNotEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isNotEmpty validator."""
-    return make_validator(
-        base.isNotEmpty(start, end, **kwargs),
-        lambda eargs: f'{eargs.value} must not be empty'
-    )
+    return lambda eargs: f'{eargs.value} must not be empty'
 
 
+@validator(base.isBlank)
 def isBlank(**kwargs):
     """Return a custom message for the isBlank validator."""
-    return make_validator(
-        base.isBlank(**kwargs),
-        lambda eargs: f'{eargs.value} must be blank'
-    )
+    return lambda eargs: f'{eargs.value} must be blank'
 
 
+@validator(base.hasLength)
 def hasLength(length, **kwargs):
     """Return a custom message for the hasLength validator."""
-    return make_validator(
-        base.hasLength(length, **kwargs),
-        lambda eargs: f'{eargs.value} must have length {length}'
-    )
+    return lambda eargs: f'{eargs.value} must have length {length}'
 
 
+@validator(base.hasLengthGreaterThan)
 def hasLengthGreaterThan(length, inclusive=False, **kwargs):
     """Return a custom message for the hasLengthGreaterThan validator."""
-    return make_validator(
-        base.hasLengthGreaterThan(length, inclusive, **kwargs),
-        lambda eargs: f'{eargs.value} must have length greater than {length}'
-    )
+    return lambda eargs: f'{eargs.value} must have length greater than {length}'
 
 
+@validator(base.intHasLength)
 def intHasLength(length, **kwargs):
     """Return a custom message for the intHasLength validator."""
-    return make_validator(
-        base.intHasLength(length, **kwargs),
-        lambda eargs: f'{eargs.value} must have length {length}'
-    )
+    return lambda eargs: f'{eargs.value} must have length {length}'
 
 
+@validator(base.isNotZero)
 def isNotZero(number_of_zeros=1, **kwargs):
     """Return a custom message for the isNotZero validator."""
-    return make_validator(
-        base.isNotZero(number_of_zeros, **kwargs),
-        lambda eargs: f'{eargs.value} must not be zero'
-    )
+    return lambda eargs: f'{eargs.value} must not be zero'
 
 # needs a base? and/or implement as composition of other validators
 

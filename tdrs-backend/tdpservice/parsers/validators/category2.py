@@ -2,7 +2,7 @@
 
 from tdpservice.parsers.util import clean_options_string
 from . import base
-from .util import ValidationErrorArgs, make_validator
+from .util import ValidationErrorArgs, validator, make_validator
 
 
 def format_error_context(eargs: ValidationErrorArgs):
@@ -10,54 +10,43 @@ def format_error_context(eargs: ValidationErrorArgs):
     return f'{eargs.row_schema.record_type} Item {eargs.item_num} ({eargs.friendly_name}):'
 
 
+@validator(base.isEqual)
 def isEqual(option, **kwargs):
     """Return a custom message for the isEqual validator."""
-    return make_validator(
-        base.isEqual(option, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not match {option}."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not match {option}."
 
 
+@validator(base.isNotEqual)
 def isNotEqual(option, **kwargs):
     """Return a custom message for the isNotEqual validator."""
-    return make_validator(
-        base.isNotEqual(option, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} matches {option}."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} matches {option}."
 
 
+@validator(base.isOneOf)
 def isOneOf(options, **kwargs):
     """Return a custom message for the isOneOf validator."""
-    return make_validator(
-        base.isOneOf(options, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not in {clean_options_string(options)}."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not in {clean_options_string(options)}."
 
 
+@validator(base.isNotOneOf)
 def isNotOneOf(options, **kwargs):
     """Return a custom message for the isNotOneOf validator."""
-    return make_validator(
-        base.isNotOneOf(options, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {clean_options_string(options)}."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {clean_options_string(options)}."
 
 
+@validator(base.isGreaterThan)
 def isGreaterThan(option, inclusive=False, **kwargs):
     """Return a custom message for the isGreaterThan validator."""
-    return make_validator(
-        base.isGreaterThan(option, inclusive, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not larger than {option}."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not larger than {option}."
 
 
+@validator(base.isLessThan)
 def isLessThan(option, inclusive=False, **kwargs):
     """Return a custom message for the isLessThan validator."""
-    return make_validator(
-        base.isLessThan(option, inclusive, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not smaller than {option}."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not smaller than {option}."
 
 
+@validator(base.isBetween)
 def isBetween(min, max, inclusive=False, **kwargs):
     """Return a custom message for the isBetween validator."""
     def inclusive_err(eargs):
@@ -66,101 +55,84 @@ def isBetween(min, max, inclusive=False, **kwargs):
     def exclusive_err(eargs):
         return f"{format_error_context(eargs)} {eargs.value} is not between {min} and {max}."
 
-    return make_validator(
-        base.isBetween(min, max, inclusive, **kwargs),
-        inclusive_err if inclusive else exclusive_err
-    )
+    return inclusive_err if inclusive else exclusive_err
 
 
+@validator(base.startsWith)
 def startsWith(substr, **kwargs):
     """Return a custom message for the startsWith validator."""
-    return make_validator(
-        base.startsWith(substr, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not start with {substr}."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not start with {substr}."
 
 
+@validator(base.contains)
 def contains(substr, **kwargs):
     """Return a custom message for the contains validator."""
-    return make_validator(
-        base.contains(substr, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not contain {substr}."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not contain {substr}."
 
 
+@validator(base.isNumber)
 def isNumber(**kwargs):
     """Return a custom message for the isNumber validator."""
-    return make_validator(
-        base.isNumber(**kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not a number."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not a number."
 
 
+@validator(base.isAlphaNumeric)
 def isAlphaNumeric(**kwargs):
     """Return a custom message for the isAlphaNumeric validator."""
-    return make_validator(
-        base.isAlphaNumeric(**kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not alphanumeric."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not alphanumeric."
 
 
+@validator(base.isEmpty)
 def isEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isEmpty validator."""
-    return make_validator(
-        base.isEmpty(**kwargs),
-        lambda eargs: f'{format_error_context(eargs)} {eargs.value} is not blank '
+    return lambda eargs: (
+        f'{format_error_context(eargs)} {eargs.value} is not blank '
         f'between positions {start} and {end if end else len(eargs.value)}.'
     )
 
 
+@validator(base.isNotEmpty)
 def isNotEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isNotEmpty validator."""
-    return make_validator(
-        base.isNotEmpty(**kwargs),
-        lambda eargs: f'{format_error_context(eargs)} {str(eargs.value)} contains blanks '
+    return lambda eargs: (
+        f'{format_error_context(eargs)} {str(eargs.value)} contains blanks '
         f'between positions {start} and {end if end else len(str(eargs.value))}.'
     )
 
 
+@validator(base.isBlank)
 def isBlank(**kwargs):
     """Return a custom message for the isBlank validator."""
-    return make_validator(
-        base.isBlank(**kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not blank."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is not blank."
 
 
+@validator(base.hasLength)
 def hasLength(length, **kwargs):
     """Return a custom message for the hasLength validator."""
-    return make_validator(
-        base.hasLength(length, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} field length "
-        f"is {len(eargs.value)} characters but must be {length}.",
+    return lambda eargs: (
+        f"{format_error_context(eargs)} field length "
+        f"is {len(eargs.value)} characters but must be {length}."
     )
 
 
+@validator(base.hasLengthGreaterThan)
 def hasLengthGreaterThan(length, inclusive=False, **kwargs):
     """Return a custom message for the hasLengthGreaterThan validator."""
-    return make_validator(
-        base.hasLengthGreaterThan(length, inclusive, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} Value length {len(eargs.value)} is not greater than {length}."
+    return lambda eargs: (
+        f"{format_error_context(eargs)} Value length {len(eargs.value)} is not greater than {length}."
     )
 
 
+@validator(base.intHasLength)
 def intHasLength(length, **kwargs):
     """Return a custom message for the intHasLength validator."""
-    return make_validator(
-        base.intHasLength(length, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not have exactly {length} digits.",
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} does not have exactly {length} digits."
 
 
+@validator(base.isNotZero)
 def isNotZero(number_of_zeros=1, **kwargs):
     """Return a custom message for the isNotZero validator."""
-    return make_validator(
-        base.isNotZero(number_of_zeros, **kwargs),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is zero."
-    )
+    return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is zero."
 
 
 # the remaining can be written using the previous validator functions
