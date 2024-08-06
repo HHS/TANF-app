@@ -10,7 +10,7 @@ from .models import ParserErrorCategoryChoices, ParserError
 from . import schema_defs, util
 from . import row_schema
 from .validators.util import value_is_empty
-from .validators.category1 import PreparsingValidators
+from .validators import category1
 from .schema_defs.utils import get_section_reference, get_program_model
 from .case_consistency_validator import CaseConsistencyValidator
 from elasticsearch.exceptions import ElasticsearchException
