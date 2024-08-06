@@ -261,7 +261,6 @@ def test_validateSSN(val, kwargs, exp_result, exp_message):
     _validate_and_assert(_validator, val, exp_result, exp_message)
 
 
-
 @pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message', [
     (1, 1, True, None),  # condition fails, valid
     (10, 1, True, None),  # condition pass, result pass
