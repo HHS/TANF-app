@@ -264,7 +264,7 @@ def test_validateSSN(val, kwargs, exp_result, exp_message):
 @pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message', [
     (1, 1, True, None),  # condition fails, valid
     (10, 1, True, None),  # condition pass, result pass
-    (10, 20, False, 'If Item 1 (test1) is 10, then 20 must be less than 10'),  # condition pass, result fail
+    (10, 20, False, 'Since Item 1 (test1) is 10, then 20 must be less than 10'),  # condition pass, result fail
 ])
 def test_ifThenAlso(condition_val, result_val, exp_result, exp_message):
     """Test ifThenAlso validator error messages."""
@@ -467,7 +467,7 @@ def test_validate__FAM_AFF__SSN():
     result = category3.validate__FAM_AFF__SSN()(instance, schema)
     assert result == (
         False,
-        'T1: If Item 1 (family affiliation) is 2 and Item 2 (citizenship status) is 1 or 2, '
+        'T1: Since Item 1 (family affiliation) is 2 and Item 2 (citizenship status) is 1 or 2, '
         'then Item 3 (social security number) must not be in 000000000 -- 999999999.',
         ['FAMILY_AFFILIATION', 'CITIZENSHIP_STATUS', 'SSN']
     )
@@ -523,7 +523,7 @@ def test_validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
     result = category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE()(instance, schema)
     assert result == (
         False,
-        'T1: If Item 1 (work eligible indicator) is 11 and Item 3 (Age) is less than 19, '
+        'T1: Since Item 1 (work eligible indicator) is 11 and Item 3 (Age) is less than 19, '
         'then Item 2 (relationship w/ head of household) must not be 1.',
         ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
     )

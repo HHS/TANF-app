@@ -101,7 +101,7 @@ class DataFileAPITestBase:
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
-            "If Item 21A (Cash Amount) is 873, then 0 must be greater than 0"
+            "Since Item 21A (Cash Amount) is 873, then 0 must be greater than 0"
         )
 
     @staticmethod
@@ -134,7 +134,7 @@ class DataFileAPITestBase:
         assert ws.cell(row=1, column=1).value == "Please refer to the most recent versions of the coding " \
             + "instructions (linked below) when looking up items and allowable values during the data revision process"
         assert ws.cell(row=8, column=COL_ERROR_MESSAGE).value == (
-            "If Item 21A (Cash Amount) is 873, then 0 must be greater than 0"
+            "Since Item 21A (Cash Amount) is 873, then 0 must be greater than 0"
         )
 
     @staticmethod

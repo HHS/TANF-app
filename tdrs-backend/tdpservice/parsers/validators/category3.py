@@ -201,7 +201,7 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
                 center_error = f'{format_error_context(condition_field_eargs)} is {condition_value}'
             else:
                 center_error = msg1
-            error_message = f"If {center_error}, then {msg2}"
+            error_message = f"Since {center_error}, then {msg2}"
 
             return (result_success, error_message, fields)
         else:
@@ -274,7 +274,7 @@ def validate__FAM_AFF__SSN():
     """
     Validate social security number provided.
 
-    If item FAMILY_AFFILIATION ==2 and item CITIZENSHIP_STATUS ==1 or 2,
+    Since item FAMILY_AFFILIATION ==2 and item CITIZENSHIP_STATUS ==1 or 2,
     then item SSN != 000000000 -- 999999999.
     """
     # value is instance
@@ -312,7 +312,7 @@ def validate__FAM_AFF__SSN():
             if SSN in [str(i) * 9 for i in range(10)]:
                 return (
                     False,
-                    f"{row_schema.record_type}: If {format_error_context(fam_affil_eargs)} is 2 "
+                    f"{row_schema.record_type}: Since {format_error_context(fam_affil_eargs)} is 2 "
                     f"and {format_error_context(cit_stat_eargs)} is 1 or 2, "
                     f"then {format_error_context(ssn_eargs)} must not be in 000000000 -- 999999999.",
                     ["FAMILY_AFFILIATION", "CITIZENSHIP_STATUS", "SSN"],
