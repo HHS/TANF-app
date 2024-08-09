@@ -89,8 +89,9 @@ class RowSchema:
         is_valid = True
         errors = []
 
+        field = self.get_field_by_name('RecordType')
+
         for validator in self.preparsing_validators:
-            field = self.get_field_by_name('RecordType')
             eargs = ValidationErrorArgs(
                 value=line,
                 row_schema=self,
