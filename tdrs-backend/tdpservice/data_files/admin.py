@@ -116,7 +116,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'version',
         'summary__status',
         DataFileSummaryPrgTypeFilter,
-        CreationDateFilter
+        NewestVersionFilter
     ]
 
 
