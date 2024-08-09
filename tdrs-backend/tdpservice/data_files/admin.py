@@ -2,12 +2,46 @@
 from django.contrib import admin
 
 from ..core.utils import ReadOnlyAdminMixin
+from django.utils.translation import ugettext_lazy as _
 from .models import DataFile, LegacyFileTransfer
 from tdpservice.parsers.models import DataFileSummary, ParserError
 from django.conf import settings
 from django.utils.html import format_html
 
 DOMAIN = settings.FRONTEND_BASE_URL
+
+
+class NewestVersionFilter(admin.SimpleListFilter):
+    """Simple filter class to show newest created datafile records."""
+
+    title = _('Newest')
+
+    parameter_name = 'created_at'
+
+    def lookups(self, request, model_admin):
+        """Available options in dropdown."""
+        return (
+            (None, _('Most recent version')),
+            ('all', _('All')),
+        )
+
+    def choices(self, cl):
+        """Update query string based on selection."""
+        for lookup, title in self.lookup_choices:
+            yield {
+                'selected': self.value() == lookup,
+                'query_string': cl.get_query_string({
+                    self.parameter_name: lookup,
+                }, []),
+                'display': title,
+            }
+
+    def queryset(self, request, queryset):
+        """Sort queryset to show latest records."""
+        if self.value() is None and queryset.exists():
+            return queryset.order_by("stt__stt_code", "-pk")\
+                .distinct("stt__stt_code")
+
 
 class DataFileSummaryPrgTypeFilter(admin.SimpleListFilter):
     """Admin class filter for Program Type on datafile model."""
@@ -29,6 +63,7 @@ class DataFileSummaryPrgTypeFilter(admin.SimpleListFilter):
             return queryset.filter(id__in=query_set_ids)
         else:
             return queryset
+
 
 @admin.register(DataFile)
 class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
@@ -80,8 +115,10 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'year',
         'version',
         'summary__status',
-        DataFileSummaryPrgTypeFilter
+        DataFileSummaryPrgTypeFilter,
+        CreationDateFilter
     ]
+
 
 @admin.register(LegacyFileTransfer)
 class LegacyFileTransferAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
