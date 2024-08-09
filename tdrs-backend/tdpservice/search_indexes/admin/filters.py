@@ -17,7 +17,7 @@ class CreationDateFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         """Available options in dropdown."""
         return (
-            (None, _('Newest')),
+            (None, _('Most recent version')),
             ('all', _('All')),
         )
 
