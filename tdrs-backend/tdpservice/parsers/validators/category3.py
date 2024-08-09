@@ -355,7 +355,7 @@ def validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE():
 
         false_case = (
             False,
-            f"{row_schema.record_type}: If {format_error_context(work_elig_eargs)} is 11 "
+            f"{row_schema.record_type}: Since {format_error_context(work_elig_eargs)} is 11 "
             f"and {format_error_context(age_eargs)} is less than 19, "
             f"then {format_error_context(relat_hoh_eargs)} must not be 1.",
             ['WORK_ELIGIBLE_INDICATOR', 'RELATIONSHIP_HOH', 'DATE_OF_BIRTH']
