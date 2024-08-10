@@ -8,6 +8,7 @@ Backend API Service for TDP. Deployed to Cloud.gov at https://tdp-backend.app.cl
 - [Login.gov Account](https://login.gov/)
 - [Cloud.gov Account](https://cloud.gov/)
 - [Cloud Foundry CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
+- [Task file](https://taskfile.dev/installation/)
 
 # Contents
 
@@ -25,6 +26,8 @@ This project uses a Pipfile for dependency management.
 
 **Commands are to be executed from within the `tdrs-backend` directory**
 
+Note: first step is to install Taskfile
+
 1.) Configure your local environment by copying over the .env.example file
 ```bash
 $ cp .env.example .env
@@ -41,7 +44,7 @@ with the email you use to login to [login.gov](https://login.gov)
 ```bash
 # Merge in local overrides for docker-compose by using -f flag and specifying both
 # This allows environment variables to be passed in from .env files locally.
-$ docker-compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
+$ task backend-up
 ```
 
 This command will start the following containers: 
@@ -59,7 +62,7 @@ a64c18db30ed        localstack/localstack:0.12.9 "docker-entrypoint.sh"   2 hour
 6.) To `exec` into the PostgreSQL database in the container. 
 
 ```bash
-$ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
+$ task psql
 ```
 
 7.) For configuration of a superuser for admin tasks please refer to the [user_role_management.md](../docs/user_role_management.md) guide. 
@@ -67,13 +70,19 @@ $ docker exec -it tdrs-backend_postgres_1 psql -U tdpuser -d tdrs_test
 8.) Backend project tear down: 
 
 ```bash
- $ docker-compose down --remove-orphans
+ $ task backend-down
 ```
 
 9.) The `postgres` and `localstack` containers use [Docker Named Volumes](https://spin.atomicobject.com/2019/07/11/docker-volumes-explained/) to persist container data between tear down and restart of containers. To clear all stored data and reset to an initial state, pass the `-v` flag when tearing down the containers:
 
 ```bash
- $ docker-compose down -v
+ $ task backend-remove-volume
+```
+
+10.) To remove all volumes, containers and images, we can run the following command. Note that this will remove all containers including containers outside of this project.
+
+```bash
+$ task clean
 ```
 
 ----
@@ -116,13 +125,13 @@ s3_client.generate_presigned_url(**params)
 1. Run local unit tests by executing the following command.
 
 ```bash
-$ docker-compose run --rm web bash -c "./wait_for_services.sh && pytest"
+$ task backend-pytest
 ```
 
 2. Run local linting tests by executing the following command:
 
 ```bash
-$ docker-compose run --rm web bash -c "flake8 ."
+$ task backend-lint
 ```
 
 The [flake8](https://flake8.pycqa.org/en/latest/) linter is configured to check the formatting of the source against this [setup.cfg](./setup.cfg#L20-L34) file. 

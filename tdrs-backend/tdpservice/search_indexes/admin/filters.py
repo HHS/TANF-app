@@ -51,7 +51,7 @@ class STTFilter(MultiSelectDropdownFilter):
         self.lookup_choices = self._get_lookup_choices(request)
 
     def _get_lookup_choices(self, request):
-        """Filter queryset to guarentee lookup_choices only has STTs associated with the record type."""
+        """Filter queryset to guarantee lookup_choices only has STTs associated with the record type."""
         record_type = str(request.path).split('/')[-2]
         queryset = STT.objects.all()
         if 'tribal' in record_type:

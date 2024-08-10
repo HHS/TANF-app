@@ -317,7 +317,7 @@ def matches(option, error_func=None):
     """Validate that value is equal to option."""
     return make_validator(
         lambda value: value == option,
-        lambda eargs: error_func(option)
+        lambda eargs: error_func(eargs)
         if error_func
         else f"{format_error_context(eargs)} {eargs.value} does not match {option}.",
     )

@@ -122,7 +122,11 @@ header = RowSchema(
             startIndex=22,
             endIndex=23,
             required=True,
-            validators=[validators.matches("D")],
+            validators=[validators.matches("D",
+                                           error_func=lambda eargs: ("HEADER Update Indicator must be set to D "
+                                                                     f"instead of {eargs.value}. Please review "
+                                                                     "Exporting Complete Data Using FTANF in the "
+                                                                     "Knowledge Center."))],
         ),
     ],
 )
