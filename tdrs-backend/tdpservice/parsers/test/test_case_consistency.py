@@ -1042,7 +1042,7 @@ class TestCaseConsistencyValidator:
         ),
     ])
     @pytest.mark.django_db
-    def test_section2_aabd_ssi_validator_fail_state_aabd(self, small_correct_file, header, T4Stuff, T5Stuff):
+    def test_section2_atd_ssi_validator_fail_state_atdd(self, small_correct_file, header, T4Stuff, T5Stuff):
         """Test records are related validator section 2 success case."""
         (T4Factory, t4_schema, t4_model_name) = T4Stuff
         (T5Factory, t5_schema, t5_model_name) = T5Stuff
@@ -1198,7 +1198,7 @@ class TestCaseConsistencyValidator:
         ),
     ])
     @pytest.mark.django_db
-    def test_section2_aabd_ssi_validator_fail_state_ssi(self, small_correct_file, header, T4Stuff, T5Stuff):
+    def test_section2_atd_ssi_validator_fail_state_ssi(self, small_correct_file, header, T4Stuff, T5Stuff):
         """Test records are related validator section 2 success case."""
         (T4Factory, t4_schema, t4_model_name) = T4Stuff
         (T5Factory, t5_schema, t5_model_name) = T5Stuff
@@ -1228,7 +1228,7 @@ class TestCaseConsistencyValidator:
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=1,
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=2
+                REC_SSI=0
             ),
             T5Factory.create(
                 RPT_MONTH_YEAR=202010,
@@ -1236,7 +1236,7 @@ class TestCaseConsistencyValidator:
                 DATE_OF_BIRTH="19970209",
                 FAMILY_AFFILIATION=2,  # validator only applies to fam_affil = 1; won't generate error
                 REC_AID_TOTALLY_DISABLED=2,
-                REC_SSI=2
+                REC_SSI=0
             ),
         ]
         for t5 in t5s:
