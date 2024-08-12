@@ -168,7 +168,7 @@ class CaseConsistencyValidator:
     def __validate_section2(self, num_errors):
         """Perform TANF Section 2 category four validation on all cached records."""
         num_errors += self.__validate_s2_records_are_related()
-        num_errors += self.__validate_t5_aabd_and_ssi()
+        num_errors += self.__validate_t5_atd_and_ssi()
         return num_errors
 
     def __validate_family_affiliation(self, num_errors, t1s, t2s, t3s, error_msg):
@@ -390,7 +390,7 @@ class CaseConsistencyValidator:
                 num_errors += 1
         return num_errors
 
-    def __validate_t5_aabd_and_ssi(self):
+    def __validate_t5_atd_and_ssi(self):
         num_errors = 0
         is_ssp = self.program_type == 'SSP'
 
@@ -403,7 +403,7 @@ class CaseConsistencyValidator:
         t5s = self.sorted_cases.get(t5_model, [])
 
         for record, schema in t5s:
-            rec_aabd = getattr(record, 'REC_AID_TOTALLY_DISABLED')
+            rec_atd = getattr(record, 'REC_AID_TOTALLY_DISABLED')
             rec_ssi = getattr(record, 'REC_SSI')
             family_affiliation = getattr(record, 'FAMILY_AFFILIATION')
             dob = getattr(record, 'DATE_OF_BIRTH')
@@ -413,7 +413,7 @@ class CaseConsistencyValidator:
             dob_date = datetime.strptime(dob, '%Y%m%d')
             is_adult = get_years_apart(rpt_date, dob_date) >= 19
 
-            if is_territory and is_adult and (rec_aabd != 1 and rec_aabd != 2):
+            if is_territory and is_adult and rec_atd not in {1, 2}:
                 self.__generate_and_add_error(
                     schema,
                     record,
@@ -424,7 +424,7 @@ class CaseConsistencyValidator:
                     )
                 )
                 num_errors += 1
-            elif is_state and rec_aabd != 2:
+            elif is_state and rec_atd == 1:
                 self.__generate_and_add_error(
                     schema,
                     record,
@@ -446,7 +446,7 @@ class CaseConsistencyValidator:
                     )
                 )
                 num_errors += 1
-            elif is_state and family_affiliation == 1:
+            elif is_state and family_affiliation == 1 and rec_ssi not in {1, 2}:
                 self.__generate_and_add_error(
                     schema,
                     record,
