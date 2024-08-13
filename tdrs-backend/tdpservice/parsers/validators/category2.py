@@ -135,7 +135,7 @@ def isNotZero(number_of_zeros=1, **kwargs):
     return lambda eargs: f"{format_error_context(eargs)} {eargs.value} is zero."
 
 
-# the remaining can be written using the previous validator functions
+# custom validators, written using the previous validator functions
 def dateYearIsLargerThan(year, **kwargs):
     """Validate that in a monthyear combination, the year is larger than the given year."""
     _validator = base.dateYearIsLargerThan(year, **kwargs)

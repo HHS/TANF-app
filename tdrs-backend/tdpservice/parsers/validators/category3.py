@@ -121,8 +121,6 @@ def isNotZero(number_of_zeros=1, **kwargs):
     """Return a custom message for the isNotZero validator."""
     return lambda eargs: f'{eargs.value} must not be zero'
 
-# needs a base? and/or implement as composition of other validators
-
 
 def isOlderThan(min_age):
     """Validate that value is larger than min_age."""
@@ -150,16 +148,7 @@ def validateSSN():
     )
 
 
-# the prior validators must be used within the following compositional validators
-# ^^ hide this necessity somehow (?)
-# - possibly have all validation run in "the same" chain, followup discussion and possible ticket(s)
-# class base w/ mixins?
-
-# control over validation process: error precedence, verbosity, error msg limit
-# de-duplication (cat2/3)
-# decouple from flat file structure - api submission
-
-
+# compositional validators, build an error message using multiple of the above functions
 def ifThenAlso(condition_field_name, condition_function, result_field_name, result_function, **kwargs):
     """Return second validation if the first validator is true.
 
@@ -223,6 +212,7 @@ def orValidators(validators, **kwargs):
     return _validate
 
 
+# custom validators
 def sumIsEqual(condition_field_name, sum_fields=[]):
     """Validate that the sum of the sum_fields equals the condition_field."""
     def sumIsEqualFunc(record, row_schema):

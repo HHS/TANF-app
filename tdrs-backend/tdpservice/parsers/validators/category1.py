@@ -40,8 +40,6 @@ def recordHasLengthBetween(min, max, **kwargs):
     )
 
 
-# todo: this is only used for header/trailer, want custom error messages here anyway
-# make new custom validator functions
 def recordStartsWith(substr, func=None, **kwargs):
     """Return a function that tests that a record/line starts with a specified substr."""
     return make_validator(
@@ -58,7 +56,6 @@ def caseNumberNotEmpty(start=0, end=None, **kwargs):
     )
 
 
-# todo: rewrite/test
 def or_priority_validators(validators=[]):
     """Return a validator that is true based on a priority of validators.
 
