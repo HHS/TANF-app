@@ -199,40 +199,13 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
         )
         logger.info("%s: %s on %s", user_status, user.username, timezone.now)
 
-    def get(self, request, *args, **kwargs):
-        """Handle decoding auth token and authenticate user."""
-        code = request.GET.get("code", None)
-        state = request.GET.get("state", None)
-
-        if code is None:
-            logger.info("Redirecting call to main page. No code provided.")
-            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
-
-        if state is None:
-            logger.info("Redirecting call to main page. No state provided.")
-            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
-
-        token_endpoint_response = self.get_token_endpoint_response(code)
-
-        if token_endpoint_response.status_code != 200:
-            return Response(
-                {
-                    "error": (
-                        "Invalid Validation Code Or OpenID Connect Authenticator "
-                        "Down!"
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        token_data = token_endpoint_response.json()
-        id_token = token_data.get("id_token")
-
+    def _get_user_id_token(self, request, state, token_data):
+        """Get the user and id_token from the request."""
         try:
             decoded_payload = self.validate_and_decode_payload(request, state, token_data)
+            id_token = token_data.get("id_token")
             user = self.handle_user(request, id_token, decoded_payload)
             return response_redirect(user, id_token)
-
         except (InactiveUser, ExpiredToken) as e:
             logger.exception(e)
             return Response(
@@ -276,6 +249,39 @@ class TokenAuthorizationOIDC(ObtainAuthToken):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+    def get(self, request, *args, **kwargs):
+        """Handle decoding auth token and authenticate user."""
+        code = request.GET.get("code", None)
+        state = request.GET.get("state", None)
+
+        if code is None or state is None:
+            logger.info(f"Redirecting call to main page. No {'code' if code is None else 'state'} provided.")
+            return HttpResponseRedirect(settings.FRONTEND_BASE_URL)
+
+        try:
+            token_endpoint_response = self.get_token_endpoint_response(code)
+        except Exception as e:
+            logger.exception(e)
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+
+        if token_endpoint_response.status_code != 200:
+            return Response(
+                {
+                    "error": (
+                        "Invalid Validation Code Or OpenID Connect Authenticator "
+                        "Down!"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        token_data = token_endpoint_response.json()
+        return self._get_user_id_token(request, state, token_data)
 
 class TokenAuthorizationLoginDotGov(TokenAuthorizationOIDC):
     """Define methods for handling login request from login.gov."""
@@ -333,7 +339,11 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
         id_token = token_data.get("id_token")
         access_token = token_data.get("access_token")
 
-        ams_configuration = LoginRedirectAMS.get_ams_configuration()
+        try:
+            ams_configuration = LoginRedirectAMS.get_ams_configuration()
+        except Exception as e:
+            logger.error(e)
+            raise Exception(e)
         certs_endpoint = ams_configuration["jwks_uri"]
         cert_str = generate_jwt_from_jwks(certs_endpoint)
         issuer = ams_configuration["issuer"]
@@ -351,7 +361,11 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
     def get_token_endpoint_response(self, code):
         """Build out the query string params and full URL path for token endpoint."""
         # First fetch the token endpoint from AMS.
-        ams_configuration = LoginRedirectAMS.get_ams_configuration()
+        try:
+            ams_configuration = LoginRedirectAMS.get_ams_configuration()
+        except Exception as e:
+            logger.error(e)
+            raise Exception(e)
         options = {
             "client_id": settings.AMS_CLIENT_ID,
             "client_secret": settings.AMS_CLIENT_SECRET,
@@ -374,7 +388,11 @@ class TokenAuthorizationAMS(TokenAuthorizationOIDC):
             auth_options = {}
             # Fetch userinfo endpoint for AMS to authenticate against hhsid, or
             # other user claims.
-            ams_configuration = LoginRedirectAMS.get_ams_configuration()
+            try:
+                ams_configuration = LoginRedirectAMS.get_ams_configuration()
+            except Exception as e:
+                logger.error(e)
+                raise Exception(e)
             userinfo_response = requests.post(ams_configuration["userinfo_endpoint"],
                                               {"access_token": access_token})
             user_info = userinfo_response.json()
