@@ -176,7 +176,6 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
             row_schema=row_schema,
             friendly_name=condition_field.friendly_name,
             item_num=condition_field.item,
-            # error_context_format='inline'
         )
         condition_success, msg1 = condition_function(condition_value, condition_field_eargs)
 
@@ -187,7 +186,6 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
             row_schema=row_schema,
             friendly_name=result_field.friendly_name,
             item_num=result_field.item,
-            # error_context_format='inline'
         )
         result_success, msg2 = result_function(result_value, result_field_eargs)
 
@@ -201,7 +199,7 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
                 center_error = f'{format_error_context(condition_field_eargs)} is {condition_value}'
             else:
                 center_error = msg1
-            error_message = f"Since {center_error}, then {msg2}"
+            error_message = f"Since {center_error}, then {format_error_context(result_field_eargs)} {msg2}"
 
             return (result_success, error_message, fields)
         else:

@@ -264,7 +264,7 @@ def test_validateSSN(val, kwargs, exp_result, exp_message):
 @pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message', [
     (1, 1, True, None),  # condition fails, valid
     (10, 1, True, None),  # condition pass, result pass
-    (10, 20, False, 'Since Item 1 (test1) is 10, then 20 must be less than 10'),  # condition pass, result fail
+    (10, 20, False, 'Since Item 1 (test1) is 10, then Item 3 (test3) 20 must be less than 10'),  # condition pass, result fail
 ])
 def test_ifThenAlso(condition_val, result_val, exp_result, exp_message):
     """Test ifThenAlso validator error messages."""
