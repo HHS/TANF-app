@@ -18,6 +18,7 @@ class Field:
         endIndex,
         required=True,
         validators=[],
+        ignore_errors=False,
     ):
         self.item = item
         self.name = name
@@ -27,6 +28,7 @@ class Field:
         self.endIndex = endIndex
         self.required = required
         self.validators = validators
+        self.ignore_errors = ignore_errors
 
     def create(self, item, name, length, start, end, type):
         """Create a new field."""
@@ -64,7 +66,7 @@ class TransformField(Field):
     """Represents a field that requires some transformation before serializing."""
 
     def __init__(self, transform_func, item, name, friendly_name, type, startIndex, endIndex, required=True,
-                 validators=[], **kwargs):
+                 validators=[], ignore_errors=False, **kwargs):
         super().__init__(
             item=item,
             name=name,
@@ -73,7 +75,8 @@ class TransformField(Field):
             startIndex=startIndex,
             endIndex=endIndex,
             required=required,
-            validators=validators)
+            validators=validators,
+            ignore_errors=ignore_errors)
         self.transform_func = transform_func
         self.kwargs = kwargs
 
