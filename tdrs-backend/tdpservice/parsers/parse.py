@@ -33,6 +33,10 @@ def parse_datafile(datafile, dfs):
         errors['header'] = header_errors
         bulk_create_errors({1: header_errors}, 1, flush=True)
         return errors
+    elif header_is_valid and len(header_errors) > 0:
+        logger.info(f"Preparser Warning: {len(header_errors)} header warnings encountered.")
+        errors['header'] = header_errors
+        bulk_create_errors({1: header_errors}, 1, flush=True)
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
