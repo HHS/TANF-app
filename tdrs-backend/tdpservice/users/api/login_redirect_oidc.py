@@ -4,11 +4,13 @@ import logging
 import requests
 import secrets
 import time
+from rest_framework import status
 from urllib.parse import quote_plus, urlencode
 
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic.base import RedirectView
+from django.template.loader import render_to_string
 
 logger = logging.getLogger(__name__)
 
@@ -93,19 +95,32 @@ class LoginRedirectAMS(RedirectView):
 
         Includes currently published URLs for authorization, token, etc.
         """
-        r = requests.get(settings.AMS_CONFIGURATION_ENDPOINT)
-        data = r.json()
-        return data
+        r = requests.get(settings.AMS_CONFIGURATION_ENDPOINT, timeout=10)
+        if r.status_code != 200:
+            logger.error(
+                f"Failed to get AMS configuration: {r.status_code} - {r.text}"
+            )
+            raise Exception(f"Failed to get AMS configuration: {r.status_code} - {r.text}")
+        else:
+            data = r.json()
+            return data
 
     def get(self, request, *args, **kwargs):
         """Handle login workflow based on request origin."""
         # Create state and nonce to track requests
         state = secrets.token_hex(32)
         nonce = secrets.token_hex(32)
-
         """Get request and manage login information with AMS OpenID."""
-        configuration = self.get_ams_configuration()
-
+        try:
+            configuration = self.get_ams_configuration()
+        except Exception as e:
+            logger.error(f"Failed to get AMS configuration: {e}")
+            rendered = render_to_string(
+                'error_pages/500.html',
+                {'error': f"Failed to get AMS configuration: {e}",
+                 'frontend': settings.FRONTEND_BASE_URL})
+            return HttpResponse(rendered,
+                                status=status.HTTP_503_SERVICE_UNAVAILABLE,)
         auth_params = {
             "client_id": settings.AMS_CLIENT_ID,
             "nonce": nonce,
