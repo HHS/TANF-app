@@ -8,6 +8,7 @@ import uuid
 from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
+from unittest import mock
 import jwt
 import pytest
 
@@ -277,6 +278,27 @@ class TestLoginAMS:
         assert user_by_name.username == user.username
         user_by_id = CustomAuthentication.authenticate(username=user.username, hhs_id=self.test_hhs_id)
         assert str(user_by_id.hhs_id) == self.test_hhs_id
+
+    @mock.patch("requests.get")
+    def test_bad_AMS_configuration(
+        self,
+        ams_states_factory,
+        req_factory,
+        user
+    ):
+        """Test login with state and code."""
+        request = req_factory
+        request = create_session(request, ams_states_factory)
+        user.hhs_id = self.test_hhs_id
+        # test new hash
+        user.login_gov_uuid = None
+        user.save()
+
+        view = TokenAuthorizationAMS.as_view()
+        response = view(request)
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+        assert b'Failed to get AMS configuration' in response.render().content
+
 
 def test_login_gov_redirect(api_client):
     """Test login.gov login url redirects."""
