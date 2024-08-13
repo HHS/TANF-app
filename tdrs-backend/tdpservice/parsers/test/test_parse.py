@@ -170,8 +170,7 @@ def test_parse_big_file(big_file, dfs):
 
     parse.parse_datafile(big_file, dfs)
     dfs.status = dfs.get_status()
-    print(ParserError.objects.filter(file=big_file, error_type=ParserErrorCategoryChoices.PRE_CHECK))
-    # assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'months': [
