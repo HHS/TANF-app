@@ -126,6 +126,7 @@ header = RowSchema(
             endIndex=23,
             required=True,
             validators=[category2.validateHeaderUpdateIndicator()],
+            ignore_errors=True,
         ),
     ],
 )

@@ -50,7 +50,7 @@ for i in range(1, 31):
                     endIndex=7,
                     required=True,
                     validators=[
-                        category2.dateYearIsLargerThan(2020),
+                        category2.dateYearIsLargerThan(2019),
                         category2.quarterIsValid(),
                     ],
                 ),
