@@ -2,7 +2,6 @@
 
 from django.core import mail
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 
 from tdpservice.email.email import (
     automated_email,
@@ -50,8 +49,7 @@ class EmailTest(TestCase):
 
         mail.outbox.clear()
 
-        with self.assertRaises(ValidationError):
-            automated_email(email_path, recipient_email, subject, email_context, text_message)
+        automated_email(email_path, recipient_email, subject, email_context, text_message)
         self.assertEqual(len(mail.outbox), 0)
 
     def test_filter_valid_emails(self):
@@ -64,5 +62,4 @@ class EmailTest(TestCase):
         """Test validate emails raised ValidationError ."""
         emails = ["foo", "bar"]
 
-        with self.assertRaises(ValidationError):
-            filter_valid_emails(emails)
+        assert len(filter_valid_emails(emails)) == 0
