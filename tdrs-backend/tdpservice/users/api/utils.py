@@ -14,14 +14,12 @@ from django.http import HttpResponseRedirect
 import jwt
 import requests
 from jwcrypto import jwk
-from rest_framework import status
-from rest_framework.response import Response
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 now = datetime.datetime.now()
-timeout = now + datetime.timedelta(minutes=settings.SESSION_TIMEOUT)
+timeout = now + datetime.timedelta(minutes=settings.SESSION_COOKIE_AGE)
 
 """
 Validate the nonce and state returned by login.gov API calls match those
@@ -147,35 +145,6 @@ def get_nonce_and_state(session):
     nonce = openid_authenticity_tracker.get("nonce", None)
     validation_keys = {"state": state, "nonce": nonce}
     return validation_keys
-
-
-"""
-Returns a found users information along with an httpOnly cookie.
-
-:param self: parameter to permit django python to call a method within its own class
-:param user: current user associated with this session
-:param status_message: Helper message to note how the user was found
-:param id_token: encoded token returned by login.gov/token
-"""
-
-
-def response_internal(user, status_message, id_token):
-    """Respond with an httpOnly cookie to secure the session with the client."""
-    response = Response(
-        {"user_id": user.pk, "email": user.username, "status": status_message},
-        status=status.HTTP_200_OK,
-    )
-    response.set_cookie(
-        "id_token",
-        value=id_token,
-        max_age=None,
-        expires=timeout,
-        path="/",
-        domain=None,
-        secure=True,
-        httponly=True,
-    )
-    return response
 
 
 def response_redirect(self, id_token):
