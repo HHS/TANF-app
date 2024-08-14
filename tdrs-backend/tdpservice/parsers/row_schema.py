@@ -141,7 +141,7 @@ class RowSchema:
             if (field.required and not is_empty) or should_validate:
                 for validator in field.validators:
                     validator_is_valid, validator_error = validator(value, self, field.friendly_name, field.item)
-                    is_valid = False if not validator_is_valid else is_valid
+                    is_valid = False if (not validator_is_valid and not field.ignore_errors) else is_valid
                     if validator_error:
                         errors.append(
                             generate_error(
