@@ -12,9 +12,7 @@ from tdpservice.search_indexes.models.tribal import Tribal_TANF_T1, Tribal_TANF_
 from tdpservice.search_indexes.models.tribal import Tribal_TANF_T5, Tribal_TANF_T6, Tribal_TANF_T7
 from tdpservice.search_indexes.models.ssp import SSP_M1, SSP_M2, SSP_M3, SSP_M4, SSP_M5, SSP_M6, SSP_M7
 from tdpservice.search_indexes import documents
-from tdpservice.parsers.test.factories import DataFileSummaryFactory, ParsingFileFactory
 from tdpservice.data_files.models import DataFile
-from tdpservice.parsers import util
 from .. import schema_defs, aggregates
 from elasticsearch.helpers.errors import BulkIndexError
 import logging
@@ -26,38 +24,6 @@ es_logger.setLevel(logging.WARNING)
 
 settings.GENERATE_TRAILER_ERRORS = True
 
-@pytest.fixture
-def test_datafile(stt_user, stt):
-    """Fixture for small_correct_file."""
-    return util.create_test_datafile('small_correct_file.txt', stt_user, stt)
-
-
-@pytest.fixture
-def test_header_datafile(stt_user, stt):
-    """Fixture for header test."""
-    return util.create_test_datafile('tanf_section1_header_test.txt', stt_user, stt)
-
-
-@pytest.fixture
-def dfs():
-    """Fixture for DataFileSummary."""
-    return DataFileSummaryFactory.build()
-
-
-@pytest.fixture
-def t2_invalid_dob_file():
-    """Fixture for T2 file with an invalid DOB."""
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q1',
-        file__name='t2_invalid_dob_file.txt',
-        file__section='Active Case Data',
-        file__data=(b'HEADER20204A25   TAN1ED\n'
-                    b'T22020101111111111212Q897$9 3WTTTTTY@W222122222222101221211001472201140000000000000000000000000'
-                    b'0000000000000000000000000000000000000000000000000000000000291\n'
-                    b'TRAILER0000001         ')
-    )
-    return parsing_file
 
 # TODO: the name of this test doesn't make perfect sense anymore since it will always have errors now.
 # TODO: parametrize and merge with test_zero_filled_fips_code_file
@@ -1505,7 +1471,7 @@ def test_bulk_create_returns_rollback_response_on_bulk_index_exception(small_cor
     assert LogEntry.objects.all().count() == 1
 
     log = LogEntry.objects.get()
-    assert log.change_message == "Encountered error while indexing datafile documents: indexing exception"
+    assert log.change_message == "Encountered error while indexing datafile documents: \nindexing exception"
 
     assert all_created is True
     assert TANF_T1.objects.all().count() == 1
@@ -1731,31 +1697,6 @@ def test_parse_m5_cat2_invalid_23_24_file(m5_cat2_invalid_23_24_file, dfs):
 
     for e in parser_errors:
         assert e.error_message in error_msgs
-
-
-@pytest.fixture
-def test_file_zero_filled_fips_code():
-    """Fixture for T1 file with an invalid CITIZENSHIP_STATUS."""
-    parsing_file = ParsingFileFactory(
-        year=2021,
-        quarter='Q1',
-        file__name='t3_invalid_citizenship_file.txt',
-        file__section='Active Case Data',
-        file__data=(b'HEADER20241A01000TAN2ED\n'
-                    b'T1202401    2132333   0140951112 43312   03   0   0   2 554145' +
-                    b'   0 0  0   0  0   0  0   0  0   0222222   0   02229 22    \n' +
-                    b'T2202401    21323333219550117WT@TB9BT92122222222223 1329911 34' +
-                    b'  32 699 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0' +
-                    b' 0 0 0 0   0   01623   0   0   0\n' +
-                    b'T2202401    21323333219561102WTT@WBP992122221222222 2329911 28' +
-                    b'  32 699 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0' +
-                    b' 0 0 0 0   0   01432   0   0   0\n' +
-                    b'T3202401    2132333120070906WT@@#ZY@W212222122 63981   0   012' +
-                    b'0050201WTTYT#TT0212222122 63981   0   0                      \n' +
-                    b'TRAILER      4         ')
-    )
-    return parsing_file
-
 
 @pytest.mark.django_db()
 def test_zero_filled_fips_code_file(test_file_zero_filled_fips_code, dfs):

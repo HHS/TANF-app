@@ -43,7 +43,7 @@ def send_data_submitted_email(
         "url": settings.FRONTEND_BASE_URL
     }
 
-    log(f'Data file submitted; emailing Data Analysts {recipients}', logger_context=logger_context)
+    log(f'Data file submitted; emailing Data Analysts {list(recipients)}', logger_context=logger_context)
 
     match datafile_summary.status:
         case DataFileSummary.Status.PENDING:
