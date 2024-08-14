@@ -115,6 +115,10 @@ update_backend()
     else
       # Add environment varilables for clamav
       cf set-env "$CGAPPNAME_BACKEND" AV_SCAN_URL "http://tdp-clamav-nginx-$env.apps.internal:9000/scan"
+
+      # Add variable for dev/staging apps to know their DB name. Prod uses default AWS name.
+      cf unset-env "$CGAPPNAME_BACKEND" "APP_DB_NAME"
+      cf set-env "$CGAPPNAME_BACKEND" "APP_DB_NAME" "tdp_db_$backend_app_name"
     fi
 
     if [ "$1" = "rolling" ] ; then
