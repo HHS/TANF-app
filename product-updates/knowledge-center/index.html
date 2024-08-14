@@ -3,121 +3,151 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>TDP — Knowledge Center Home</title>
-    <link rel="stylesheet" href="../css/uswds3.css" />
-    <link rel="icon" type="image/x-icon" href="../img/favicons/gov-favicon.ico" />
+    <title>TANF Data Portal Project Updates - Janaury 2023</title>
+    <link rel="stylesheet" href="css/uswds3.css" />
+    <link rel="icon" type="image/x-icon" href="img/favicons/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="../js/uswds.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="js/uswds.min.js"></script>
+    <link href="dist/lity.css" rel="stylesheet">
+    <script src="dist/lity.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/sankey.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
+  <script src="https://code.highcharts.com/modules/export-data.js"></script>
+  <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
-  </head>
 
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8V03JLZHK0"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+document.addEventListener('DOMContentLoaded', function () {
+const chart = Highcharts.chart('container', {
 
-  gtag('config', 'G-8V03JLZHK0');
+
+  title: {
+    text: 'Pilot Participants'
+  },
+  accessibility: {
+    point: {
+      valueDescriptionFormat: '{index}. {point.from} to {point.to}, {point.weight}.'
+    }
+  },
+
+chart: {
+
+
+},
+
+  series: [{
+    keys: ['from', 'to', 'weight'],
+    data: [
+      ['6 States', '2.0 Pilot', 6],
+      ['5 Tribes', '2.0 Pilot', 5],
+      ['2.0 Pilot', '2.2 Expansion', 11],
+      ['Contacted States', 'Contacted for 2.2 Expansion', 4],
+      ['Contacted Tribes', 'Contacted for 2.2 Expansion', 4],
+      ['Contacted Territories', 'Contacted for 2.2 Expansion', 2],
+            ['Contacted for 2.2 Expansion', '2.2 Expansion', 5],
+            ['"Walk-in" Grantees', '2.2 Expansion', 2],
+
+
+    ],
+    clip: false,
+    type: 'sankey',
+    name: '2.0-2.2 Participants'
+  }]
+
+});})
 </script>
 
+<style>
+#csv {
+  display: none;
+}
+
+.highcharts-figure,
+.highcharts-data-table table {
+  min-width: 310px;
+  max-width: 800px;
+  margin: 1em auto;
+}
+
+.highcharts-data-table table {
+  font-family: Verdana, sans-serif;
+  border-collapse: collapse;
+  border: 1px solid #ebebeb;
+  margin: 10px auto;
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+}
+
+.highcharts-data-table caption {
+  padding: 1em 0;
+  font-size: 1.2em;
+  color: #555;
+}
+
+.highcharts-data-table th {
+  font-weight: 600;
+  padding: 0.5em;
+}
+
+.highcharts-data-table td,
+.highcharts-data-table th,
+.highcharts-data-table caption {
+  padding: 0.5em;
+}
+
+.highcharts-data-table thead tr,
+.highcharts-data-table tr:nth-child(even) {
+  background: #f8f8f8;
+}
+
+.highcharts-data-table tr:hover {
+  background: #f1f7ff;
+}
+</style>
+
+</script>
+
+  </head>
   <body>
+
     <a class="usa-skipnav" href="#main-content">Skip to main content</a>
 
-    <!-- Here begins banner -->
 
-  <section class="usa-banner" aria-label="Official government website">
+
+
+  <section class="usa-banner" aria-label="This page is maintained by the Design team at Raft LLC for the purposes of the TANF Data Portal project.">
     <div class="usa-accordion">
       <header class="usa-banner__header">
         <div class="usa-banner__inner">
           <div class="grid-col-auto">
-            <img class="usa-banner__header-flag" src="../img/us_flag_small.png" alt="U.S. flag"/>
           </div>
           <div class="grid-col-fill tablet:grid-col-auto">
-            <p class="usa-banner__header-text">
-              An official website of the United States government
-            </p>
-            <p class="usa-banner__header-action" aria-hidden="true">
-              Here’s how you know
-            </p>
+            <p class="usa-banner__header-text">This page is maintained by the Design team at Raft LLC for the purposes of the TANF Data Portal project.</p>
           </div>
-          <button
-            class="usa-accordion__button usa-banner__button"
-            aria-expanded="false"
-            aria-controls="gov-banner-default-default">
-            <span class="usa-banner__button-text">Here’s how you know</span>
 
-          </button>
         </div>
       </header>
-      <div
-        class="usa-banner__content usa-accordion__content"
-        id="gov-banner-default-default"
-      >
-        <div class="grid-row grid-gap-lg">
-          <div class="usa-banner__guidance tablet:grid-col-6">
-            <img
-              class="usa-banner__icon usa-media-block__img"
-              src="../img/icon-dot-gov.svg"
-              role="img"
-              alt=""
-              aria-hidden="true"
-            />
-            <div class="usa-media-block__body">
-              <p>
-                <strong>Official websites use .gov</strong><br>A
-                <strong>.gov</strong> website belongs to an official government
-                organization in the United States.
-              </p>
-            </div>
-          </div>
-          <div class="usa-banner__guidance tablet:grid-col-6">
-            <img
-              class="usa-banner__icon usa-media-block__img"
-              src="../img/icon-https.svg"
-              role="img"
-              alt=""
-              aria-hidden="true"
-            />
-            <div class="usa-media-block__body">
-              <p>
-                <strong>Secure .gov websites use HTTPS</strong><br>A
-                <strong>lock</strong> (
-                <span class="icon-lock"
-                  ><svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="52"
-                    height="64"
-                    viewBox="0 0 52 64"
-                    class="usa-banner__lock-image"
-                    role="img"
-                    aria-labelledby="banner-lock-title-default banner-lock-description-default"
-                    focusable="false"
-                  >
-                    <title id="banner-lock-title-default">Lock</title>
-                    <desc id="banner-lock-description-default">A locked padlock</desc>
-                    <path
-                      fill="#000000"
-                      fill-rule="evenodd"
-                      d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"
-                    />
-                  </svg> </span
-                >) or <strong>https://</strong> means you’ve safely connected to
-                the .gov website. Share sensitive information only on official,
-                secure websites.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </section>
-  <!-- Here ends banner -->
 
 
 
-<!-- Here begins mobile menu -->
+
+
+
+
+  </div>
+  </div>
+    </nav>
+  </header>
+
+
+
+
+  <main id="main-top">
+
 
   <div class="usa-overlay"></div>
 <header class="usa-header usa-header--basic">
@@ -126,7 +156,7 @@
       <div class="usa-logo" id="basic-logo">
         <em class="usa-logo__text">
           <a href="./index.html" title="TDP Project Updates">
-            TANF Data Portal  Knowledge Center
+            TANF Data Portal Project Updates
           </a>
         </em>
       </div>
@@ -134,715 +164,442 @@
     </div>
     <nav aria-label="Primary navigation" class="usa-nav">
       <button class="usa-nav__close">
-        <img src="../img/close.svg" role="img" alt="Close" />
+        <img src="./img/close.svg" role="img" alt="Close" />
       </button>
-      <a href="https://tanfdata.acf.hhs.gov/" class="usa-button usa-button--outline" style="position: relative; margin-bottom: 16px;">Go to TDP</a>
-
       <ul class="usa-nav__primary usa-accordion">
         <li class="usa-nav__primary-item">
-          <a href="./index.html" class="usa-current" aria-current="page">
-            <span>Getting Started</span>
+          <a href="index.html" class="usa-current" aria-current="page">
+            <span>January 2023</span>
           </a>
         </li>
-        <li>
-        <ul class="usa-sidenav__sublist">
-        <li class="usa-sidenav__item">
-        <a href="./create-new-login.html">Create a New Login.gov Account</a>
+        <li class="usa-nav__primary-item">
+          <a href="August-2022-Update.html" class="usa-nav__link">
+            <span>August 2022</span>
+          </a>
         </li>
-
-        <li class="usa-sidenav__item">
-        <a href="./existing-login.html">Use an Existing Login.gov Account</a>
+        <li class="usa-nav__primary-item">
+          <a href="april-2022-update.html" class="usa-nav__link">
+            <span>April 2022</span>
+          </a>
         </li>
-        <li class="usa-sidenav__item">
-        <a href="./about-email-notifications.html">About Email Notifications</a>
+        <li class="usa-nav__primary-item">
+          <a href="January-2022-Update.html" class="usa-nav__link">
+            <span>January 2022</span>
+          </a>
         </li>
-        <li class="usa-sidenav__item">
-        <a href="./faq.html">Frequently Asked Questions</a>
+           <li class="usa-nav__primary-item">
+          <a href="August-2021-Update.html" class="usa-nav__link">
+            <span>August 2021</span>
+          </a>
         </li>
-        </ul>
-      </li>
-
-        <li class="usa-sidenav__item">
-          <a href="uploading-data.html">Submitting Data to TDP</a>
-        </li>
-<li>
-        <ul class="usa-sidenav__sublist">
-        <li class="usa-sidenav__item">
-        <a href="view-submission-history.html">Viewing Submission History</a>
-        </li>
-
-        <li class="usa-sidenav__item">
-                <a href="./viewing-error-reports.html">Understanding Error Reports and File Structure</a>
-              </li>
-
-        <li class="usa-sidenav__item">
-        <a href="./complete-resubmissions.html">Resubmitting Complete Data Files</a>
-        </li>
-
-        <li class="usa-sidenav__item">
-        <a href="./exporting-complete-data-using-ftanf.html">Exporting Complete Data Using FTANF</a>
-        </li>
-
-       </ul>
-     </li>
-
-        <li class="usa-sidenav__item">
-        <a href="managing-your-account.html">Managing Your Account</a>
-        </li>
-        <li class="usa-sidenav__item">
-        <a href="./give-feedback.html">Give Feedback</a>
+             <li class="usa-nav__primary-item">
+          <a href="June-2021-Update.html" class="usa-nav__link">
+            <span>June 2021</span>
+          </a>
         </li>
       </ul>
-      <!-- Here ends mobile menu -->
 
 
     </nav>
   </div>
-</header>
-
-<!-- Here begins desktop web menu -->
+  </header>
 
   <div class="usa-section">
-  <div class="grid-container" style="min-height: 74vh;">
+  <div class="grid-container">
     <div class="grid-row grid-gap">
       <div class="usa-layout-docs__sidenav desktop:grid-col-3">
         <nav aria-label="Secondary navigation">
           <ul class="usa-sidenav">
             <li class="usa-sidenav__item">
-              <a href="./index.html" class="usa-current" aria-current="page">Getting Started</a>
+              <a href="./index.html" class="usa-current" aria-current="page">January 2023</a>
             </li>
-            <li>
-            <ul class="usa-sidenav__sublist">
-
-              <li class="usa-sidenav__item">
-                <a href="./create-new-login.html">Create a New Login.gov Account</a>
-              </li>
-
-              <li class="usa-sidenav__item">
-                <a href="./existing-login.html">Use an Existing Login.gov Account</a>
-              </li>
-
-              <li class="usa-sidenav__item">
-              <a href="./about-email-notifications.html">About Email Notifications</a>
-              </li>
-              <li class="usa-sidenav__item">
-              <a href="./faq.html">Frequently Asked Questions</a>
-              </li>
-
-            </ul>
-          </li>
-
-              <li class="usa-sidenav__item">
-                <a href="uploading-data.html">Submitting Data to TDP</a>
-              </li>
-
-<li>
-              <ul class="usa-sidenav__sublist">
-              <li class="usa-sidenav__item">
-              <a href="view-submission-history.html">Viewing Submission History</a>
-              </li>
-
-              <li class="usa-sidenav__item">
-                <a href="./viewing-error-reports.html">Understanding Error Reports and File Structure</a>
-              </li>
-
-              <li class="usa-sidenav__item">
-              <a href="./complete-resubmissions.html">Resubmitting Complete Data Files</a>
-              </li>
-
-              <li class="usa-sidenav__item">
-              <a href="./exporting-complete-data-using-ftanf.html">Exporting Complete Data Using FTANF</a>
-              </li>
-
-             </ul>
-           </li>
-
             <li class="usa-sidenav__item">
-              <a href="managing-your-account.html">Managing Your Account</a>
+              <a href="./August-2022-Update.html">August 2022</a>
             </li>
-
+            <li class="usa-sidenav__item">
+              <a href="april-2022-update.html">April 2022</a>
+            </li>
+            <li class="usa-sidenav__item">
+              <a href="January-2022-Update.html">January 2022</a>
+            </li>
+            <li class="usa-sidenav__item">
+              <a href="August-2021-Update.html">August 2021</a>
+            </li>
              <li class="usa-sidenav__item">
-              <a href="./give-feedback.html">Give Feedback</a>
+              <a href="June-2021-Update.html">June 2021</a>
             </li>
           </ul>
         </nav>
       </div>
-
-      <!-- Here ends desktop web menu -->
-
 
       <main
         class="usa-layout-docs__main desktop:grid-col-9 usa-prose usa-layout-docs"
-        id="main-content">
-        <h1>Getting Started</h1>
-        <div style="min-height: 22px;"></div>
+        id="main-content"
+      >
 
-        
-        <p class="usa-intro">
-          The TANF Data Portal (TDP) is a new, secure, web-based data reporting system designed to improve the federal reporting experience for TANF grantees and federal staff.
-        </p>
-        <div style="min-height: 8px;"></div>
+      <h1 id="tdp-update-month">TDP Project Update - January 2023</h1>
+      <div style="min-height: 22px;"></div>
 
 
+      <p class="usa-intro">Overall, the pilot expansion program was a success in which data was successfully transmitted for each grantee that participated. In addition, TDP has been utilized to help solve for instances where data file transfers have been a challenge due to existing file transfer protocols.</p>
+      <div style="min-height: 22px;"></div>
+      <div style="min-height: 22px;"></div>
+      <div style="min-height: 22px;"></div>
 
-        <div class="usa-alert usa-alert--info usa-alert--no-icon">
-     
-  
+      <h2 id="the-pilot-expansion">The Pilot Expansion</h2>
+      <div style="min-height: 22px;"></div>
 
-  <div class="usa-alert__body">
-    <p class="usa-alert__text">
-      <a class="usa-link" href="https://www.acf.hhs.gov/ofa/policy-guidance/dear-colleague-tanf-data-portal">Read the "Dear Colleague" letter</a>
-      from Ann Flagg, Director of the Office of Family Assistance, for key information about the rollout of TDP. 
+      <h3 id="who">Who participated in the expansion</h3>
+      <div style="min-height: 22px;"></div>
+
+      <p>We recruited grantees based primarily on the following criteria:</p>
+      <ul>
+      <li>Interest in participating in the pilot</li>
+      <li>Current reliance on email transmission (Tribes)</li>
+      <li>Recent submission of partial data</li>
+      <li>Submits SSP data</li>
+      </ul>
+
+<figure class="highcharts-figure">
+  <div id="container"></div>
+</figure>
+
+<p>TDP's userbase is now made up of:</p>
+<ul>
+<li>10 states</li>
+<li>7 Tribes</li>
+<li>One territory</li>
+</ul>
+
+<p>All together these STTs represent the following regions:</p>
+<ul>
+<li>Region 1 (2 STTs)</li>
+<li>Region 2 (1 STT)</li>
+<li>Region 3 (1 STT)</li>
+<li>Region 4 (3 STTs)</li>
+<li>Region 5 (1 STT)</li>
+<li>Region 6 (1 STT)</li>
+<li>Region 7 (1 STT)</li>
+<li>Region 8 (1 STT)</li>
+<li>Region 9 (5 STTs)</li>
+<li>Region 10 (3 STTs)</li>
+
+
+
+</ul>
+
+
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+
+
+
+
+
+
+
+
+
+
+      <h3 id="what">What we tested</h3>
+      <div style="min-height: 22px;"></div>
+
+      <p>Based on the task scenarios defined for v2.2 the pilot expansion program was a success. Grantees that participated were able to complete all task scenarios measured in v2.0 in addition to new released features for inline email notifications and being able to submit TANF and/or SSP-MOE data files. In addition, for those in our moderated sessions we were able to observe and record the efficiencies and perceived shortcomings of the current platform to help inform future iterations. While our top level findings focus on observed gaps to improve TDP, we continue to receive positive feedback on TDP’s impact from participating grantees.</p>
+      <div style="min-height: 22px;"></div>
+      <div style="min-height: 22px;"></div>
+      <h3 style="margin-top: 16px;">Continually tested functionality (v 2.0)</h3>
+
+      <h4 style="margin-top: 16px; color: #595959;">TDP's launch functionality:</h4>
+    <ul class="usa-icon-list">
+
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+  <div class="usa-icon-list__icon text-ink">
+    <img src="./img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+  </div>
+  <div class="usa-icon-list__content">
+    <h5 class="usa-icon-list__title">
+      Secure Login & Account Management
+    </h5>
+    <p>
     </p>
-  </div></div>
+  </div>
+</li>
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+  <div class="usa-icon-list__icon text-ink">
+    <img src="./img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+  </div>
+  <div class="usa-icon-list__content">
+    <h5 class="usa-icon-list__title">
+      Support for TANF Submission & Resubmission
+    </h5>
+    <p>
+    </p>
+  </div>
+</li>
 
+
+
+</ul>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+
+      <h3 style="margin-top: 16px;">Newly tested functionality (v 2.1 & 2.2)</h3>
+      <!-- <p style="margin-top: 16px;">Version 2.1 and 2.2 are aimed at making it possible to expand our pilot program to more TANF programs across the country by improving TDP's support for data submission and making the system itself more communicative.</p> -->
+
+      <h4 style="margin-top: 16px; color: #595959;">Added since 2.0:</h4>
+    <ul class="usa-icon-list">
+
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+  <div class="usa-icon-list__icon text-ink">
+    <img src="./img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+  </div>
+  <div class="usa-icon-list__content">
+    <h5 class="usa-icon-list__title">
+      Support for SSP Submission & Resubmission
+    </h5>
+    <p>
+      Users from TANF programs that submit SSP-MOE data now have access to a new field on the Data Files page allowing for quarterly SSP data to be submitted as well as TANF data.
+    </p>
+  </div>
+</li>
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+  <div class="usa-icon-list__icon text-ink">
+    <img src="./img/added.svg" aria-hidden="true" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+  </div>
+  <div class="usa-icon-list__content">
+    <h5 class="usa-icon-list__title">
+      Email Notifications
+    </h5>
+    <p>
+      TDP now sends out email notifications for key events to keep you informed about the status of your account during the account creation process and the status of your submitted data files.
+    </p>
+  </div>
+</li>
+
+
+</ul>
+
+<h4 style="margin-top: 16px; color: #595959;">Changed / Fixed since 2.0:</h4>
+<ul class="usa-icon-list">
+
+<li class="usa-icon-list__item" style="margin-top: 16px;">
+<div class="usa-icon-list__icon text-ink">
+  <img src="./img/changed.svg" aria-hidden="true" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+</div>
+<div class="usa-icon-list__content">
+<h5 class="usa-icon-list__title">
+  Improved visibility of success & error messages
+</h5>
+<p>
+  In v 2.0 the banner highlighting whether data files were submitted successfully or failed to submit often appeared off-screen. This change ensures that the message gets highlighted more prominently when it appears.
+</p>
+</div>
+</li>
+
+</ul>
+
+
+
+
+
+
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+
+
+
+      <h3 id="findings">Our findings</h3>
+
+      <div class="grid-row grid-gap margin-top-0">
+
+        <div class="tablet:grid-col-12">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="tribe-discoverability-update" class="usa-anchor"></a>
+             Participants expressed a variety of positive feedback about TDP
+          </h4>
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>There is nothing really I dislike, I think it is a needed changed for ease and modernization
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
           <div style="min-height: 22px;"></div>
 
-
-        <p>TDP will allow grantees to easily submit accurate data and be confident that they have fulfilled their reporting requirements. This will reduce the burden on all users, improve data quality, inform better policy and programs, and ultimately help low-income families.
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>This process is much simpler and less clunky in comparison to "insert vendor" on the mainframe
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
           <div style="min-height: 22px;"></div>
 
-        <p>
-        This knowledge center will guide you through setting up an account to access TDP, submitting data, and managing your account. It will continue to be updated as new improvements are added.<br>
-        </p>
-        <div style="min-height: 22px;"></div>
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>[I really like] the ease of uploading the reports and the email notifications that the reports were received
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <div style="min-height: 22px;"></div>
 
-        <ul class="usa-card-group">
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 17px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>[Discovering an easier way to attach files] Oh, I could just drop my files into these boxes!
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <div style="min-height: 22px;"></div>
+        </div>
 
-          <li class="usa-card usa-card--flag desktop:grid-col-6 usa-card--media-right">
-            <div class="usa-card__container" style="height: fit-content;">
-              <div class="usa-card__header" style="width: 100%;">
-                <h2 class="usa-card__heading" id="new">Create a new Login.gov Account</h2>
-              </div>
 
-              <div class="usa-card__footer" style="width: 100%;">
-                <a href="create-new-login.html" class="usa-button" aria-describedby="new">View Guide</a>
-              </div>
+
+
+
             </div>
-          </li>
-          <li class="usa-card usa-card--flag desktop:grid-col-6 usa-card--media-right">
-            <div class="usa-card__container" style="height: fit-content;">
-              <div class="usa-card__header" style="width: 100%;">
-                <h2 class="usa-card__heading" id="existing">Use an existing Login.gov Account</h2>
-              </div>
 
-              <div class="usa-card__footer" style="width: 100%;">
-                <a href="existing-login.html" class="usa-button" aria-describedby="existing">View Guide</a>
-              </div>
-            </div>
-          </li>
+      <div class="grid-row grid-gap margin-top-0">
 
-        </ul>
-        <hr style="margin-bottom: 30px;">
+        <div class="tablet:grid-col-6">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="tribe-discoverability-update" class="usa-anchor"></a>
+             Some Tribes still selected their state during the Request Access flow
+          </h4>
+          <p>A follow-up finding from our initial 2.0 Pilot, we've encountered additional instances of Tribal grantees selecting their State during the Request Access flow as opposed to the name of their Tribal program. This continues to support an enhancement we have in the backlog to make selection of State vs Tribe more explicit in that flow.</p>
+          <a href="img/jan-update-2023/request-access-form.png" data-lity data-lity-desc="TANF Data Portal Request Access Form containing inputs for First Name, Last Name, and a combobox for Associated State, Tribe, or Territory">
+          <img src="img/jan-update-2023/request-access-form.png" alt="TANF Data Portal Request Access Form containing inputs for First Name, Last Name, and a combobox for Associated State, Tribe, or Territory">
+            </a>
+        </div>
 
- 
+        <div class="tablet:grid-col-6">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="tailored-data-file-submission" class="usa-anchor"></a>
+             We further validated the case for more tailored data file submission screens
+          </h4>
+          <p>Also a continuation of a finding from the 2.0 Pilot we've encountered additional Universe data submitting grantees expressing some confusion over the presence of Section 4 (Stratum) as an option during the data submission process.</p>
+          <a href="img/jan-update-2023/section-optional.png" data-lity data-lity-desc="TANF Data Portal Request Access Form containing inputs for First Name, Last Name, and a combobox for Associated State, Tribe, or Territory">
+          <img src="img/jan-update-2023/section-optional.png" alt="TANF Data Portal Request Access Form containing inputs for First Name, Last Name, and a combobox for Associated State, Tribe, or Territory">
+            </a>
+        </div>
+
+      </div>
+
+      <div class="grid-row grid-gap margin-top-0">
+
+        <div class="tablet:grid-col-6">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="bugs" class="usa-anchor"></a>
+             We observed some new bugs concerning search results and data submission
+          </h4>
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 15px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>It was odd that the last quarter's reports were in the spaces for [Q4]
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <p>The 2.2 Expansion brought to light some errors that seem to result from certain file or network conditions—and possibly from users repeatedly clicking the submit button if/when there's lag due to those network conditions. While all the actual data submissions were successful we've drafted a number of tickets to smooth out the cause of the issues here so that grantees won't run into network errors when their data did successfully make it into our database.</p>
+          <a href="img/jan-update-2023/bug.png" data-lity data-lity-desc="Screenshot of the GitHub issue tracking one of the errors we observed during the 2.2 expansion">
+          <img src="img/jan-update-2023/bug.png" alt="Screenshot of the GitHub issue tracking one of the errors we observed during the 2.2 expansion">
+            </a>
+
+        </div>
+
+        <div class="tablet:grid-col-6">
+          <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="search-flow-friction" class="usa-anchor"></a>
+             One participant encountered some friction with TDP's search flow itself
+          </h4>
+          <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 15px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Other than the one dislike about the search function, I like this new system.
+          <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+          <p>One grantee told us about some friction they encountered due to expecting the Data Files search component to not actually require search to be pressed to update the results on the page. This new 2.2 finding is an area we'll continue to observe as we expand TDP to others. In the interim we've updated the Knowledge Center with new imagery that better conveys the need to click 'Search'.</p>
+          <a href="img/data-files/2-search-component.png" data-lity data-lity-desc="Data Files search with emphasis on File Type, Fiscal Year, and Quarter fields as well as the Search button">
+          <img src="img/data-files/2-search-component.png" alt="Data Files search with emphasis on File Type, Fiscal Year, and Quarter fields as well as the Search button">
+            </a>
+        </div>
+
+      </div>
+
+      <div style="min-height: 22px;"></div>
+
+
+            <a href="https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2022%2C%20Fall%20-%20TDP%202.2%20Pilot%20Expansion.md" class="usa-button">
+      <span style="color: white;">View Full Synthesis</span>      </a>
 
 
 
-        <h2>What's new in TDP</h2>
 
-         <h3 style="margin-top: 32px;">August 14th 2024 (v 3.5.2)</h3>
-        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
-        <ul class="usa-icon-list">
-          <li class="usa-icon-list__item" style="margin-top: 16px;">
-            <div class="usa-icon-list__icon text-ink">
-              <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-            </div>
-            <div class="usa-icon-list__content">
-              <h5 class="usa-icon-list__title">
-                Email notifications for quarterly data deadlines
-              </h5>
-              <p>.</p>
-            </div>
-          </li>
-              </ul>   
 
-        <h4 style="margin-top: 16px; color: #595959;">Changed / Fixed:</h4>
-        <ul class="usa-icon-list">
 
-    <li class="usa-icon-list__item" style="margin-top: 16px;">
-      <div class="usa-icon-list__icon text-ink">
-          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+
+<h2 id="whats-next">What's Next</h2>
+<div style="min-height: 22px;"></div>
+
+
+<div class="margin-top-2 border-05 border-primary-light bg-primary-lighter padding-2 tablet:padding-3">
+
+  <h3 id="scaling-research" class="margin-y-0"><a id="section_6" class="usa-anchor"></a>Scaling our error-related research and our userbase</h3>
+
+  <p class="margin-top-1">
+    As the development team is beginning to dig into building TDP's parsing engine we want to ensure that our research efforts are meeting the mark to ensure that the error reports grantees will ultimately receive from the new engine are the best they can be.
+  </p>
+
+  <ul class="usa-icon-list usa-icon-list--size-lg margin-top-3">
+    <li class="usa-icon-list__item">
+      <div class="usa-icon-list__icon text-blue">
+        <img src="./img/checkbox-check-print.svg" aria-hidden="true" style="background-color: #83b6f7; border-radius: 5px; width: 30px; height: 30px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+
       </div>
       <div class="usa-icon-list__content">
-        <h5 class="usa-icon-list__title">
-          Header update indicator errors will no longer result in rejected files
-        </h5>
-        <p>.</p>
+        <p><b>Making it real.</b> One ultimate test of TDP will be its ability to help guide grantees to higher quality data. We're integrating more and more real data into our research to directly measure how easily grantees are able to correct errors in a context directly relevant to them.</p>
       </div>
     </li>
-
-          <li class="usa-icon-list__item" style="margin-top: 16px;">
-      <div class="usa-icon-list__icon text-ink">
-          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+    <li class="usa-icon-list__item">
+      <div class="usa-icon-list__icon text-blue">
+        <img src="./img/checkbox-check-print.svg" aria-hidden="true" style="background-color: #83b6f7; border-radius: 5px; width: 30px; height: 30px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
       </div>
       <div class="usa-icon-list__content">
-        <h5 class="usa-icon-list__title">
-         A bug concerning Supplemental Security Income (SSI) related errors
-        </h5>
-        <p>Text</p>
-            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8;">T5 People in states must have a valid value for REC_SSI. 
-    </code><br> 
-           <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8;">M5 People in states must have a valid value for REC_SSI. 
-    </code>
-           <p>Text</p>
+        <p><b>Research as an onboarding aide.</b> Moving from our current user base to readiness to onboard every grantee is no small task and will require a number of strategies to facilitate. One has proven to be using research sessions as an opportunity to get new grantees up and running in TDP.</p>
       </div>
     </li>
-
-        <li class="usa-icon-list__item" style="margin-top: 16px;">
-      <div class="usa-icon-list__icon text-ink">
-          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+    <li class="usa-icon-list__item">
+      <div class="usa-icon-list__icon text-blue">
+        <img src="./img/checkbox-check-print.svg" aria-hidden="true" style="background-color: #83b6f7; border-radius: 5px; width: 30px; height: 30px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
       </div>
       <div class="usa-icon-list__content">
-        <h5 class="usa-icon-list__title">
-          A bug related to submitting data for the first quarter of fiscal year 2021
-        </h5>
-        <p>Text</p>
-            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8;">Year 2020 must be larger than 2020. 
-    </code>
-           <p>Text</p>
+        <p><b>Onboarding another cohort of STTs by February 7th.</b> Quarterly data submission deadlines represent prime opportunities for getting new users not only approved for access in TDP but logged in and fully engaging with it. As with past quarterly expansions, this one will be run in parallel to new features and enhancements going-live in TDP.</p>
       </div>
     </li>
-
-
-
-            <li class="usa-icon-list__item" style="margin-top: 16px;">
-      <div class="usa-icon-list__icon text-ink">
-          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-      </div>
-      <div class="usa-icon-list__content">
-        <h5 class="usa-icon-list__title">
-          We're continuing to improve on numerous other errors that TDP generates
-        </h5>
-        <p>.</p>
-      </div>
-    </li>
-
-  </ul>
-</ul>
-
-        <hr style="border: none;
-    height: 1px;
-    background: #000;
-    margin-top: 32px;
-    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
-
-        <h3 style="margin-top: 32px;">June 5th 2024 (v 3.4.3)</h3>
-        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
-        <ul class="usa-icon-list">
-          <li class="usa-icon-list__item" style="margin-top: 16px;">
-            <div class="usa-icon-list__icon text-ink">
-              <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-            </div>
-            <div class="usa-icon-list__content">
-              <h5 class="usa-icon-list__title">
-                Error reports are out of beta
-              </h5>
-              <p>
-               Error reports are generated for each file you submit when the TDP system detects potential data quality issues in your file. Error reports will help you to understand and correct a wide variety of data issues and are designed with easier-to-understand language than the errors you may have received from the (now retired) legacy transmission report system. While these reports are new and improved, they don't capture every possible data quality issue. The OFA TANF data team may reach out to you via email with additional feedback. <a href="viewing-error-reports.html">Read more about error reports.</a>
-              </p>
-            </div>
-          </li>
-                    <li class="usa-icon-list__item" style="margin-top: 16px;">
-            <div class="usa-icon-list__icon text-ink">
-              <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-            </div>
-            <div class="usa-icon-list__content">
-              <h5 class="usa-icon-list__title">
-                More detailed insights into your files in Submission History
-              </h5>
-              <p>
-              Submission History includes new details about the processing status of your files. These details are designed to give you a broad understanding of the completeness of your file and provide some insight into the type of errors you can expect to see in the error report if TDP has identified data quality issues. <a href="view-submission-history.html">Read more about Submission History and file statuses.</a>
-              </p>
-            </div>
-          </li>
-                              <li class="usa-icon-list__item" style="margin-top: 16px;">
-            <div class="usa-icon-list__icon text-ink">
-              <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-            </div>
-            <div class="usa-icon-list__content">
-              <h5 class="usa-icon-list__title">
-                New FAQ guidance for file format and update indicator requirements
-              </h5>
-              <p>
-              The <a href="faq.html">FAQ page</a> has been updated to assist you in preparing data files meeting all of TDP's submission requirements. This includes: 
-              <ol>
-                <li>How to correct "Invalid Extension" errors.</li>
-                <li>Guidance on setting the update indicator in data files.</li>
-              </ol>
-              </p>
-            </div>
-          </li>
-        </ul>
-
-        <h4 style="margin-top: 16px; color: #595959;">Changed / Fixed:</h4>
-        <ul class="usa-icon-list">
-
-    <li class="usa-icon-list__item" style="margin-top: 16px;">
-      <div class="usa-icon-list__icon text-ink">
-          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-      </div>
-      <div class="usa-icon-list__content">
-        <h5 class="usa-icon-list__title">
-          Improved the usability of TDP's request access form
-        </h5>
-        <p>
-      First-time users to TDP provide their first name, last name, and associated state, tribe, or territory to help TDP administrators confirm access to the system. We've made revisions to the form by adding the jurisdiction type (state, tribe, or territory). After selecting the jurisdiction type, the user can more quickly locate and select the appropriate jurisdiction from the dropdown menu. the eliminate confusion about whether tribes need to select the name of their tribal program or the name of the state it's located in.
-
-
-        </p>
-      </div>
-    </li>
-
   </ul>
 
-    <hr style="border: none;
-    height: 1px;
-    background: #000;
-    margin-top: 32px;
-    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
-
-        <h3 style="margin-top: 32px;">October 10th 2023 (v 3.1.6)</h3>
-        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
-        <ul class="usa-icon-list">
-          <li class="usa-icon-list__item" style="margin-top: 16px;">
-            <div class="usa-icon-list__icon text-ink">
-              <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-            </div>
-            <div class="usa-icon-list__content">
-              <h5 class="usa-icon-list__title">
-                Additions to knowledge center FAQs
-              </h5>
-              <p>
-                The knowledge center now offers new guidance including where to go for help if you encounter an unexpectedly high volume of errors in your data, how to proceed in a situation where you cannot correct a certain type of error, and how to utilize resubmission to improve your data quality and completeness throughout a fiscal quarter.
-              </p>
-            </div>
-          </li>
-        </ul>
-
-          <h4 style="margin-top: 16px; color: #595959;">Changed / Fixed:</h4>
-        <ul class="usa-icon-list">
-
-    <li class="usa-icon-list__item" style="margin-top: 16px;">
-      <div class="usa-icon-list__icon text-ink">
-          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-      </div>
-      <div class="usa-icon-list__content">
-        <h5 class="usa-icon-list__title">
-          Increased actionability of file upload error messages
-        </h5>
-        <p>
-      In cases where a user attempts to upload an incompatible file type to TDP we're now triggering a more descriptive error message that describes which file types are accepted and compatible with TDP; acceptable file types can end in: .txt, .ms##, .ts##, or .ts###. The filename of the incompatible file also now stays onscreen so that it can be more easily compared to the list of accepted file types. 
-        </p>
-      </div>
-    </li>
-
-  </ul>
-
-   <h4 style="margin-top: 16px; color: #595959;">In Development:</h4>
-      <ul class="usa-icon-list">
-
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/in-dev.svg" aria-hidden="true" alt="" style="background-color: #fff4bd; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        Expanded file processing and submission history features
-      </h5>
-      <p>
-        Building on work that began in v 3.1, TDP will soon feature more advanced submission file processing able to serve up detailed information about the data quality of newly uploaded files. This includes comparison of TANF cases within the file with errors to cases with no errors detected by the system. Additionally, each file receives an overall status describing different levels of data quality on the road to being fully accepted. We will keep you updated on the progress of these features and communicate when it will become available for use and benefit.
-      </p>
-    </div>
-  </li>
-</ul>
-
-  <hr style="border: none;
-    height: 1px;
-    background: #000;
-    margin-top: 32px;
-    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
-
-
-        <h3 style="margin-top: 32px;">May 19th 2023 (v 3.1)</h3>
-        <!-- <p style="margin-top: 16px;">Version 2.1 and 2.2 are aimed at making it possible to expand our pilot program to more TANF programs across the country by improving TDP's support for data submission and making the system itself more communicative.</p> -->
-
-        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
-      <ul class="usa-icon-list">
-
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        Knowledge center video tutorials
-      </h5>
-      <p>
-        The knowledge center now offers video tutorials to assist users in setting up a Login.gov account, requesting access, and submitting quarterly TANF data. Head over to the guides on <a href="create-new-login.html">Creating a New Login.gov Account</a>, <a href="existing-login.html">Using an Existing Login.gov Account</a>, and <a href="uploading-data.html">Submitting Data to TDP</a> to take a look!
-      </p>
-    </div>
-  </li>
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        Enhanced knowledge center FAQs
-      </h5>
-      <p>
-        The knowledge center's <a href="faq.html">FAQ page</a> has been updated with enhanced navigation, allowing you to quickly find the specific question you're looking for. Additionally, it now provides guidance on how to offboard team members from TDP when they no longer require access to TANF data. 
-      </p>
-    </div>
-  </li>
-</ul>
-
-  <h4 style="margin-top: 16px; color: #595959;">In Development:</h4>
-      <ul class="usa-icon-list">
-
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/in-dev.svg" aria-hidden="true" alt="" style="background-color: #fff4bd; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        TDP error reporting
-      </h5>
-      <p>
-        If you've recently visited a TDP submission history page, you may have noticed a new table column for error reports. These reports will provide near-instant plain-language feedback on your submitted data files, replacing the emailed transmission reports you may have previously received. While this functionality is not yet ready for rollout, it is one of our primary focuses for the next few months. We will keep you updated on its progress and let you know when it becomes available for use and benefit.
-      </p>
-    </div>
-  </li>
-</ul>
-
-   <hr style="border: none;
-    height: 1px;
-    background: #000;
-    margin-top: 32px;
-    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
-
-
-        <h3 style="margin-top: 32px;">February 7th 2023 (v 3.0)</h3>
-        <!-- <p style="margin-top: 16px;">Version 2.1 and 2.2 are aimed at making it possible to expand our pilot program to more TANF programs across the country by improving TDP's support for data submission and making the system itself more communicative.</p> -->
-
-        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
-      <ul class="usa-icon-list">
-
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        Data Files Submission History
-      </h5>
-      <p>
-        TDP now includes a submission history for each program, section, and quarter. This logs the time and date each file was submitted, the user who submitted it, and allows past submissions to be downloaded. <a href="view-submission-history.html">Read more about Submission History.</a>
-      </p>
-    </div>
-  </li>
+</div>
 
 
 
-</ul>
-        <h4 style="margin-top: 16px; color: #595959;">Changed / Fixed:</h4>
-        <ul class="usa-icon-list">
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<h3 id="initial-findings">Initial error-related research findings</h3>
 
-    <li class="usa-icon-list__item" style="margin-top: 16px;">
-      <div class="usa-icon-list__icon text-ink">
-          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-      </div>
-      <div class="usa-icon-list__content">
-        <h5 class="usa-icon-list__title">
-          Improved our data upload processes to reduce 'Network Errors'
-        </h5>
-        <p>
-      In our v 2.2 some users encountered 'Network Errors' when Submitting larger data files to TDP. While this error didn't prevent successful submission, it did appear to. Users uploading large files should see 'Network Error' less frequently and much more of the 'Successfully Submitted Data' message (Note: It may still take about 30 seconds for the success message to appear).
-        </p>
-      </div>
-    </li>
+<div class="grid-row grid-gap margin-top-0">
 
-  </ul>
+  <div class="tablet:grid-col-6">
+    <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="notification-excitement" class="usa-anchor"></a>
+       Tribes are excited about the prospect of immediate notifications in TDP
+    </h4>
+    <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 15px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Sometimes it was like a shot in the dark because I'd submit and then not hear anything back for [...] a month
+    <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+    <p>While Tribes tend to have a far lower rate of errors in their transmissions, the Tribes we've spoken to so far have expressed enthusiasm about the instant nature of data-related confirmations in TDP. e.g, Confirmation of successfully transmitted data.</p>
+  </div>
 
-  <hr style="border: none;
-    height: 1px;
-    background: #000;
-    margin-top: 32px;
-    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+  <div class="tablet:grid-col-6">
+    <h4 class="site-h2 font-lang-8 border-top-05 padding-top-1"><a id="familiar-structure" class="usa-anchor"></a>
+       The way we're presenting data in error report prototypes is providing grantees with the information they're after
+    </h4>
+    <blockquote style="margin-left: 0px; padding-left: 10px; padding-bottom: 10px; border-color: blue; border-left: solid 3px #005ea2; font-size: 15px; font-weight: 900; line-height: 20px; background-color: #ebf9fc; border-radius: 10px;"><span style="font-size: 40px; color: #005ea2; position: relative; right: 10px; padding-left: 10px;">“</span>Everything seems to be where I can understand it. It seems straightforward
+    <span style="font-size: 40px; position: relative; top: 37px; left: 10px; color: #005ea2">”</span></blockquote>
+    <p>Our prototype error reports have been successfully understood by grantees in each session we've tested them so far; ensuring that participants are taking away key information both about the nature of the error and where it's occurring in their data.</p>
+  </div>
 
+</div>
 
-        <h3 style="margin-top: 32px;">November 8th 2022 (v 2.1 & 2.2)</h3>
-        <!-- <p style="margin-top: 16px;">Version 2.1 and 2.2 are aimed at making it possible to expand our pilot program to more TANF programs across the country by improving TDP's support for data submission and making the system itself more communicative.</p> -->
-
-        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
-      <ul class="usa-icon-list">
-
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        Support for SSP Submission & Resubmission
-      </h5>
-      <p>
-        Users from TANF programs that submit SSP-MOE data now have access to a new field on the Data Files page allowing for quarterly SSP data to be submitted as well as TANF data.
-      </p>
-    </div>
-  </li>
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        Email notifications
-      </h5>
-      <p>
-        TDP now sends out email notifications for key events to keep you informed about the status of your account during the account creation process and the status of your submitted data files.
-      </p>
-    </div>
-  </li>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
 
 
-</ul>
-        <h4 style="margin-top: 16px; color: #595959;">Changed / Fixed:</h4>
-        <ul class="usa-icon-list">
 
-    <li class="usa-icon-list__item" style="margin-top: 16px;">
-      <div class="usa-icon-list__icon text-ink">
-          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-      </div>
-      <div class="usa-icon-list__content">
-        <h5 class="usa-icon-list__title">
-          Improved visibility of success & error messages
-        </h5>
-        <p>
-          In v 2.0 the banner highlighting whether data files were submitted successfully or failed to submit often appeared off-screen. This change ensures that the message gets highlighted more prominently when it appears.
-        </p>
-      </div>
-    </li>
 
-  </ul>
-        <!-- <h4 style="margin-top: 16px;">Removed</h4>
-        <ul class="usa-icon-list">
 
-    <li class="usa-icon-list__item" style="margin-top: 16px;">
-      <div class="usa-icon-list__icon text-ink">
-        <img src="../img/removed.svg" aria-hidden="true" style="background-color: #ffbbb3; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-      </div>
-      <div class="usa-icon-list__content">
-        <h5 class="usa-icon-list__title">
-          Talk to trusted organizations about volunteering.
-        </h5>
-        <p>
-          Financial contributions to recognized disaster relief organizations are
-          the fastest, most flexible and most effective method of donating.
-        </p>
-      </div>
-    </li>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
+<div style="min-height: 22px;"></div>
 
-  </ul> -->
-<hr style="border: none;
-  height: 1px;
-  background: #000;
-  margin-top: 32px;
-  background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
-
-        <h3 style="margin-top: 32px;">August 8th 2022 (v 2.0)</h3>
-                <p style="margin-top: 16px;">Version 2.0 is our first public-facing launch of TDP and contains foundational functionality to allow the first pilot group of users to create accounts, gain access, and submit their quarterly TANF data to ACF.</p>
-        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
-      <ul class="usa-icon-list">
-
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        Account creation
-      </h5>
-      <p>
-        Users can now <a href="existing-login.html">link</a> or <a href="create-new-login.html">create</a> a login.gov account and request access to TDP.
-      </p>
-    </div>
-  </li>
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        TANF submission & resubmission
-      </h5>
-      <p>
-        Data files for all four sections of TANF data can be <a href="uploading-data.html">submitted</a> to a given quarter and fiscal year. Previously submitted files can also be resubmitted to enable corrections & updates to be made.
-      </p>
-    </div>
-  </li>
-  <li class="usa-icon-list__item" style="margin-top: 16px;">
-    <div class="usa-icon-list__icon text-ink">
-      <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
-    </div>
-    <div class="usa-icon-list__content">
-      <h5 class="usa-icon-list__title">
-        Production environment
-      </h5>
-      <p>
-        Prior to 2.0 TDP existed in a number of internal development environments aimed at making it easy to test new and in-progress functionality. The production environment is all about ensuring a secure, and highly stable place for TDP to be accessed by users.
-      </p>
-    </div>
-  </li>
-
-</ul>
 
       </main>
-
-
-
-
-    </div>
-
-
-
-  </div>
-
-  <footer class="usa-footer usa-footer--slim">
-  <div class="grid-container usa-footer__return-to-top">
-    <a href="#">Return to top</a>
-  </div>
-  <div class="usa-footer__primary-section">
-    <div class="usa-footer__primary-container grid-row">
-      <div class="mobile-lg:grid-col-8">
-        <nav class="usa-footer__nav" aria-label="Footer navigation,">
-          <ul class="grid-row grid-gap">
-            <li
-              class="
-                mobile-lg:grid-col-6
-                desktop:grid-col-auto
-                usa-footer__primary-content
-              "
-            >
-              <a class="usa-footer__primary-link" href="https://www.acf.hhs.gov/privacy-policy"
-                >Privacy Policy</a
-              >
-            </li>
-
-          </ul>
-        </nav>
-      </div>
-
     </div>
   </div>
-  <div class="usa-footer__secondary-section">
-    <div class="grid-container" style="padding-left: 0rem !important;">
-      <div class="usa-footer__logo grid-row grid-gap-2">
-        <div class="grid-col-auto">
-          <img class="mobile-lg:maxw-mobile mobile:width-mobile" src="../img/acfofa.svg" alt="Administration for Children and Families: OFfice of Family Assistance" />
-        </div>
-      </div>
-    </div>
-  </div>
-</footer>
 </div>
