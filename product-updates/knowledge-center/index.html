@@ -352,7 +352,7 @@
               <h5 class="usa-icon-list__title">
                 Email notifications for quarterly data deadlines
               </h5>
-              <p>.</p>
+              <p>If you have an active TDP account you and have not yet submitted all your program's quarterly files, you will now receive friendly e-mail reminders five days in advance of each quarterly deadline to help support timely data submissions and feedback. <br> Please note: all program partners in the states, tribes, and territories still have 90 days after the end of each quarter to submit complete and accurate data. If additional time is needed, please reach out to <a href=mailto:TANFData@acf.hhs.gov>TANFData@acf.hhs.gov</a>.</p>
             </div>
           </li>
               </ul>   
@@ -366,9 +366,9 @@
       </div>
       <div class="usa-icon-list__content">
         <h5 class="usa-icon-list__title">
-          Header update indicator errors will no longer result in rejected files
+          The Header update indicator errors will no longer result in rejected files
         </h5>
-        <p>.</p>
+        <p>We have relaxed TDP's data processing requirements to help ensure that the data in your files can still be processed when your file has an invalid value for the update indicator. However, the TDP system expects the header update indicator to be set to "D" and if it isn't, your error report will still include an error asking you to correct it. <br><a href="viewing-error-reports">Read more about the header record</a> and <a href="exporting-complete-data-using-ftanf">how to export complete data using fTANF</a>.</p>
       </div>
     </li>
 
@@ -378,14 +378,14 @@
       </div>
       <div class="usa-icon-list__content">
         <h5 class="usa-icon-list__title">
-         A bug concerning Supplemental Security Income (SSI) related errors
+         A bug related to Supplemental Security Income (SSI) receipt
         </h5>
-        <p>Text</p>
-            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8;">T5 People in states must have a valid value for REC_SSI. 
+        <p>TDP was incorrectly generating the following errors for some TANF and SSP Section 2: Closed Case files (for states and territories only):</p>
+            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">T5 People in states must have a valid value for REC_SSI. 
     </code><br> 
-           <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8;">M5 People in states must have a valid value for REC_SSI. 
+           <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">M5 People in states must have a valid value for REC_SSI. 
     </code>
-           <p>Text</p>
+           <p>The issue made it more likely for these files to be "Rejected". This has been resolved, and no changes to these files are needed to resolve this. The TDP team will re-process the files at a later date. You may also resubmit any files impacted by this bug to obtain revised TDP-generated feedback reports, but this is not required.</p>
       </div>
     </li>
 
@@ -395,12 +395,12 @@
       </div>
       <div class="usa-icon-list__content">
         <h5 class="usa-icon-list__title">
-          A bug related to submitting data for the first quarter of fiscal year 2021
+          A bug related to submitting some data files for the first quarter of fiscal year 2021
         </h5>
-        <p>Text</p>
-            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8;">Year 2020 must be larger than 2020. 
+        <p>TDP was incorrectly generating the following error for  submitting sections 3 and 4 data for the first quarter of fiscal year 2021:</p>
+            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Year 2020 must be larger than 2020. 
     </code>
-           <p>Text</p>
+           <p>The issue has been corrected in TDP, and no changes to data are needed to resolve this.</p>
       </div>
     </li>
 
@@ -408,13 +408,16 @@
 
             <li class="usa-icon-list__item" style="margin-top: 16px;">
       <div class="usa-icon-list__icon text-ink">
-          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; min-width: 18px !important; height: 18px !important; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
       </div>
       <div class="usa-icon-list__content">
         <h5 class="usa-icon-list__title">
-          We're continuing to improve on numerous other errors that TDP generates
+          We're continuing to improve on error messages that TDP generates
         </h5>
-        <p>.</p>
+        <p>User feedback is an invaluable part of our approach to making sure that error reports are highly accurate, intuitive, and easy to act on. For example, we're currently trying to learn more from our TANF partners about the circumstances that appear to indicate that families on the active caseload are receiving $0 in assistance across multiple assistance categories. This will yield the following message in your Active Case error reports:</p>
+          <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">T1: The sum of ('amount of food stamp assistance', 'amount of subsidized child care', 'cash amount', 'child care amount', 'transportation amount', 'transition services amount', and/or 'other amount') is not larger than 0.</code>
+           
+    <p>If you have encountered an error message like this in your error reports, we'd love to learn more from you. Please reach out to <a href="mailto:tanfdata@acf.hhs.gov">TANFData@acf.hhs.gov</a>.</p>
       </div>
     </li>
 
