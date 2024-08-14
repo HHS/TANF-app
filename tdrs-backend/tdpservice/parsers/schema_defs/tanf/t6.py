@@ -277,8 +277,8 @@ s2 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(2019),
-                validators.quarterIsValid(),
+                category2.dateYearIsLargerThan(2019),
+                category2.quarterIsValid(),
             ],
         ),
         TransformField(
@@ -495,8 +495,8 @@ s3 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(2019),
-                validators.quarterIsValid(),
+                category2.dateYearIsLargerThan(2019),
+                category2.quarterIsValid(),
             ],
         ),
         TransformField(
