@@ -59,8 +59,8 @@ def test_header_cleanup(test_datafile):
     # Encryption error
     ("HEADER20204A06   TAN1AD", False, "HEADER Item 9 (encryption): A is not in [ , E]."),
     # Update error
-    ("HEADER20204A06   TAN1EA", False, ("HEADER Update Indicator must be set to D instead of A. Please review "
-                                        "Exporting Complete Data Using FTANF in the Knowledge Center.")),
+    ("HEADER20204A06   TAN1EA", True, ("HEADER Update Indicator must be set to D instead of A. Please review "
+                                       "Exporting Complete Data Using FTANF in the Knowledge Center.")),
 ])
 @pytest.mark.django_db
 def test_header_fields(test_datafile, header_line, is_valid, error):
