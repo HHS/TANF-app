@@ -6,6 +6,9 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from tdpservice.data_files.models import DataFile
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ParserErrorCategoryChoices(models.TextChoices):
     """Enum of ParserError error_type."""
@@ -93,8 +96,29 @@ class DataFileSummary(models.Model):
     total_number_of_records_in_file = models.IntegerField(null=True, blank=False, default=0)
     total_number_of_records_created = models.IntegerField(null=True, blank=False, default=0)
 
+    def set_status(self, status):
+        """Set the status on the summary object."""
+        match status:
+            case DataFileSummary.Status.PENDING:
+                self.status = DataFileSummary.Status.PENDING
+            case DataFileSummary.Status.ACCEPTED:
+                self.status = DataFileSummary.Status.ACCEPTED
+            case DataFileSummary.Status.ACCEPTED_WITH_ERRORS:
+                self.status = DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+            case DataFileSummary.Status.PARTIALLY_ACCEPTED:
+                self.status = DataFileSummary.Status.PARTIALLY_ACCEPTED
+            case DataFileSummary.Status.REJECTED:
+                self.status = DataFileSummary.Status.REJECTED
+            case _:
+                logger.warn(f"Unknown status: {status} passed into set_status.")
+
     def get_status(self):
         """Set and return the status field based on errors and models associated with datafile."""
+        # Because we introduced a setter for the status for exception handling, we need to
+        # check if it has been set before determining a status based on the queries below.
+        if self.status != DataFileSummary.Status.PENDING:
+            return self.status
+
         errors = ParserError.objects.filter(file=self.datafile)
 
         # excluding row-level pre-checks and trailer pre-checks.
