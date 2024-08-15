@@ -10,7 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 def make_validator(validator_func, error_func):
-    """Return a function accepting a value input and returning (bool, string) to represent validation state."""
+    """
+    Return a function accepting a value input and returning (bool, string) to represent validation state.
+
+    @param validator_func: a function accepting a val and returning a bool
+    @param error_func: a function accepting a ValidationErrorArguments obj and returning a string
+    @return: a function returning (True, None) for success or (False, string) for failure,
+    with the string representing the error message
+    """
     def validator(value, eargs):
         try:
             if validator_func(value):
@@ -22,13 +29,23 @@ def make_validator(validator_func, error_func):
     return validator
 
 
+# decorator helper
+# outer function wraps the decorator to handle arguments to the decorator itself
 def validator(baseValidator):
-    """Wrap validator func to handle custom error messages."""
-    def _decorator(makeValidator):
-        @functools.wraps(makeValidator)
+    """
+    Wrap error generation func to create a validator with baseValidator.
+
+    @param baseValidator: a function from parsers.validators.base
+    @param errorFunc: a function returning an error generator for make_validator
+    @return: make_validator with the results of baseValidator and errorFunc both evaluated
+    """
+    # inner decorator wraps the given function and returns a function
+    # that gives us our final make_validator
+    def _decorator(errorFunc):
+        @functools.wraps(errorFunc)
         def _validator(*args, **kwargs):
             validator_func = baseValidator(*args, **kwargs)
-            error_func = makeValidator(*args, **kwargs)
+            error_func = errorFunc(*args, **kwargs)
             return make_validator(validator_func, error_func)
         return _validator
     return _decorator
