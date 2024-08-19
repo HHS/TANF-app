@@ -224,7 +224,7 @@ class CaseConsistencyValidator:
 
         final_context = ""
         if is_t2 and is_t3:
-            final_context += t2_context + " and " + t3_context + "."
+            final_context += t2_context + " or " + t3_context + "."
         elif is_t2:
             final_context += t2_context + "."
         else:
