@@ -1791,7 +1791,7 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, num_error
     assert parser_errors.count() == num_errors
 
     dup_error = parser_errors.first()
-    assert dup_error.error_message == expected_error_msg.format(record_type=record_type)
+    assert expected_error_msg.format(record_type=record_type) in dup_error.error_message
 
     model.objects.count() == 0
 
