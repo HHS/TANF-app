@@ -204,23 +204,25 @@ class CaseConsistencyValidator:
                         f"{t2_model_name} or {t3_model_name} record with the same "
                     )
 
-        is_t2 = True
-        t2_context = self.__get_error_context("FAMILY_AFFILIATION", t2s[0][1]) + "==1"
-        for record, schema, line_num in t2s:
-            family_affiliation = getattr(record, "FAMILY_AFFILIATION")
-            if family_affiliation == 1:
-                passed = True
-                is_t2 = False
-                break
+        is_t2 = len(t2s) > 0
+        if is_t2:
+            t2_context = self.__get_error_context("FAMILY_AFFILIATION", t2s[0][1]) + "==1"
+            for record, schema, line_num in t2s:
+                family_affiliation = getattr(record, "FAMILY_AFFILIATION")
+                if family_affiliation == 1:
+                    passed = True
+                    is_t2 = False
+                    break
 
-        is_t3 = True
-        t3_context = self.__get_error_context("FAMILY_AFFILIATION", t3s[0][1]) + "==1"
-        for record, schema, line_num in t3s:
-            family_affiliation = getattr(record, "FAMILY_AFFILIATION")
-            if family_affiliation == 1:
-                passed = True
-                is_t3 = False
-                break
+        is_t3 = len(t3s) > 0
+        if is_t3:
+            t3_context = self.__get_error_context("FAMILY_AFFILIATION", t3s[0][1]) + "==1"
+            for record, schema, line_num in t3s:
+                family_affiliation = getattr(record, "FAMILY_AFFILIATION")
+                if family_affiliation == 1:
+                    passed = True
+                    is_t3 = False
+                    break
 
         final_context = ""
         if is_t2 and is_t3:
