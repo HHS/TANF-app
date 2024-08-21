@@ -469,9 +469,9 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     ssp_section1_datafile.year = 2019
     ssp_section1_datafile.quarter = 'Q1'
 
-    expected_m1_record_count = 818
-    expected_m2_record_count = 989
-    expected_m3_record_count = 1748
+    expected_m1_record_count = 817
+    expected_m2_record_count = 988
+    expected_m3_record_count = 1745
 
     dfs.datafile = ssp_section1_datafile
     dfs.save()
@@ -490,14 +490,14 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert err.content_type is not None
     assert err.object_id is not None
 
-    dup_errors = parser_errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("id")
-    assert dup_errors.count() == 2
-    assert dup_errors[0].error_message == "Duplicate record detected with record type M3 at line 453. " + \
-        "Record is a duplicate of the record at line number 452."
-    assert dup_errors[1].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
+    cat4_errors = parser_errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("-id")
+    assert cat4_errors.count() == 3
+    assert cat4_errors[0].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
         "Record is a duplicate of the record at line number 3272."
+    assert cat4_errors[2].error_message == "Duplicate record detected with record type M3 at line 453. " + \
+        "Record is a duplicate of the record at line number 452."
 
-    assert parser_errors.count() == 32488
+    assert parser_errors.count() == 32489
 
     assert SSP_M1.objects.count() == expected_m1_record_count
     assert SSP_M2.objects.count() == expected_m2_record_count
