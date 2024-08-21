@@ -191,6 +191,20 @@ class CaseConsistencyValidator:
         num_errors += self.__validate_t5_atd_and_ssi()
         return num_errors
 
+    def __has_family_affil(self, records):
+        context = ""
+        is_records = len(records) > 0
+        passed = False
+        if is_records:
+            context = self.__get_error_context("FAMILY_AFFILIATION", records[0][1]) + "==1"
+            for record, schema, line_num in records:
+                family_affiliation = getattr(record, "FAMILY_AFFILIATION")
+                if family_affiliation == 1:
+                    passed = True
+                    is_records = False
+                    break
+        return context, passed, is_records
+
     def __validate_family_affiliation(self,
                                       num_errors,
                                       t1_model_name, t1s,
@@ -204,25 +218,8 @@ class CaseConsistencyValidator:
                         f"{t2_model_name} or {t3_model_name} record with the same "
                     )
 
-        is_t2 = len(t2s) > 0
-        if is_t2:
-            t2_context = self.__get_error_context("FAMILY_AFFILIATION", t2s[0][1]) + "==1"
-            for record, schema, line_num in t2s:
-                family_affiliation = getattr(record, "FAMILY_AFFILIATION")
-                if family_affiliation == 1:
-                    passed = True
-                    is_t2 = False
-                    break
-
-        is_t3 = len(t3s) > 0
-        if is_t3:
-            t3_context = self.__get_error_context("FAMILY_AFFILIATION", t3s[0][1]) + "==1"
-            for record, schema, line_num in t3s:
-                family_affiliation = getattr(record, "FAMILY_AFFILIATION")
-                if family_affiliation == 1:
-                    passed = True
-                    is_t3 = False
-                    break
+        t2_context, passed, is_t2 = self.__has_family_affil(t2s)
+        t3_context, passed, is_t3 = self.__has_family_affil(t3s)
 
         final_context = ""
         if is_t2 and is_t3:
