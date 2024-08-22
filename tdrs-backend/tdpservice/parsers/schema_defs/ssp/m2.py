@@ -88,7 +88,7 @@ m2 = SchemaManager(
                     result_function=category3.orValidators([
                         category3.isBetween(1, 16, inclusive=True, cast=int),
                         category3.isBetween(98, 99, inclusive=True, cast=int),
-                    ]),
+                    ], if_result=True),
                 ),
                 category3.ifThenAlso(
                     condition_field_name='FAMILY_AFFILIATION',
@@ -115,7 +115,7 @@ m2 = SchemaManager(
                     result_function=category3.orValidators([
                         category3.isBetween(1, 9, inclusive=True),
                         category3.isOneOf((11, 12))
-                    ]),
+                    ], if_result=True),
                 ),
                 category3.ifThenAlso(
                     condition_field_name='FAMILY_AFFILIATION',

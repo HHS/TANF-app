@@ -223,11 +223,11 @@ def test_isNotZero(val, number_of_zeros, kwargs, exp_result, exp_message):
     ('199510', 18, {}, True, None),
     (
         f'{datetime.date.today().year - 18}01', 18, {}, False,
-        'Item 1 (test field) 2006 must be less than or equal to 2006 to meet the minimum age requirement.'
+        '2006 must be less than or equal to 2006 to meet the minimum age requirement.'
     ),
     (
         '202010', 18, {}, False,
-        'Item 1 (test field) 2020 must be less than or equal to 2006 to meet the minimum age requirement.'
+        '2020 must be less than or equal to 2006 to meet the minimum age requirement.'
     ),
 ])
 def test_isOlderThan(val, min_age, kwargs, exp_result, exp_message):
@@ -241,17 +241,17 @@ def test_isOlderThan(val, min_age, kwargs, exp_result, exp_message):
     ('987654321', {}, True, None),
     (
         '111111111', {}, False,
-        "Item 1 (test field) 111111111 is in ['000000000', '111111111', '222222222', '333333333', "
+        "111111111 is in ['000000000', '111111111', '222222222', '333333333', "
         "'444444444', '555555555', '666666666', '777777777', '888888888', '999999999']."
         ),
     (
         '999999999', {}, False,
-        "Item 1 (test field) 999999999 is in ['000000000', '111111111', '222222222', '333333333', "
+        "999999999 is in ['000000000', '111111111', '222222222', '333333333', "
         "'444444444', '555555555', '666666666', '777777777', '888888888', '999999999']."
     ),
     (
         '888888888', {}, False,
-        "Item 1 (test field) 888888888 is in ['000000000', '111111111', '222222222', '333333333', "
+        "888888888 is in ['000000000', '111111111', '222222222', '333333333', "
         "'444444444', '555555555', '666666666', '777777777', '888888888', '999999999']."
     ),
 ])
@@ -307,6 +307,63 @@ def test_ifThenAlso(condition_val, result_val, exp_result, exp_message):
         condition_function=category3.isEqual(10),
         result_field_name='TestField3',
         result_function=category3.isLessThan(10)
+    )
+    is_valid, error_msg, fields = _validator(instance, schema)
+    assert is_valid == exp_result
+    assert error_msg == exp_message
+    assert fields == ['TestField1', 'TestField3']
+
+
+@pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message', [
+    (1, 1, True, None),  # condition fails, valid
+    (10, 1, True, None),  # condition pass, result pass
+    (10, 110, True, None),
+    # condition pass, result fail
+    (10, 20, False, 'Since Item 1 (test1) is 10, then Item 3 (test3) 20 must be less than 10 or 20 must be greater than 100.'),
+])
+def test_ifThenAlso_or(condition_val, result_val, exp_result, exp_message):
+    """Test ifThenAlso validator error messages."""
+    schema = RowSchema(
+        fields=[
+            Field(
+                item='1',
+                name='TestField1',
+                friendly_name='test1',
+                type='number',
+                startIndex=0,
+                endIndex=1
+            ),
+            Field(
+                item='2',
+                name='TestField2',
+                friendly_name='test2',
+                type='number',
+                startIndex=1,
+                endIndex=2
+            ),
+            Field(
+                item='3',
+                name='TestField3',
+                friendly_name='test3',
+                type='number',
+                startIndex=2,
+                endIndex=3
+            )
+        ]
+    )
+    instance = {
+        'TestField1': condition_val,
+        'TestField2': 1,
+        'TestField3': result_val,
+    }
+    _validator = category3.ifThenAlso(
+        condition_field_name='TestField1',
+        condition_function=category3.isEqual(10),
+        result_field_name='TestField3',
+        result_function=category3.orValidators([
+            category3.isLessThan(10),
+            category3.isGreaterThan(100)
+        ], if_result=True)
     )
     is_valid, error_msg, fields = _validator(instance, schema)
     assert is_valid == exp_result

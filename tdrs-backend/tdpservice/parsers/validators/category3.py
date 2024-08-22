@@ -134,7 +134,7 @@ def isOlderThan(min_age):
     return make_validator(
         _validate,
         lambda eargs:
-            f"{format_error_context(eargs)} {str(eargs.value)[:4]} must be less "
+            f"{str(eargs.value)[:4]} must be less "
             f"than or equal to {datetime.date.today().year - min_age} to meet the minimum age requirement."
     )
 
@@ -144,7 +144,7 @@ def validateSSN():
     options = [str(i) * 9 for i in range(0, 10)]
     return make_validator(
         base.isNotOneOf(options),
-        lambda eargs: f"{format_error_context(eargs)} {eargs.value} is in {options}."
+        lambda eargs: f"{eargs.value} is in {options}."
     )
 
 
@@ -199,11 +199,13 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
 
 def orValidators(validators, **kwargs):
     """Return a validator that is true only if one of the validators is true."""
+    is_if_result_func = kwargs.get('if_result', False)
+
     def _validate(value, eargs):
         validator_results = evaluate_all(validators, value, eargs)
 
         if not any(result[0] for result in validator_results):
-            error_msg = f'{format_error_context(eargs)} '
+            error_msg = f'{format_error_context(eargs)} ' if not is_if_result_func else ''
             error_msg += " or ".join([result[1] for result in validator_results]) + '.'
             return (False, error_msg)
 
