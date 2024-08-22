@@ -136,8 +136,8 @@ def test_parse_big_file(big_file, dfs):
 
     parse.parse_datafile(big_file, dfs)
     dfs.status = dfs.get_status()
-    # assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
-    logger.info(ParserError.objects.all())
+    assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
+    # logger.info(ParserError.objects.all())
 
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
