@@ -37,6 +37,8 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         }
     }
 
+    field = fields[-1]  # if multiple fields, result field is last
+
     return ParserError(
         file=datafile,
         row_number=line_number,

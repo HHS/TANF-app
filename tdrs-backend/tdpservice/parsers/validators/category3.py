@@ -178,10 +178,8 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
         )
         result_success, msg2 = result_function(result_value, result_field_eargs)
 
-        fields = [condition_field_name, result_field_name]
-
         if not condition_success:
-            return (True, None, fields)
+            return (True, None, [result_field_name, condition_field_name])  # order is important
         elif not result_success:
             center_error = None
             if condition_success:
@@ -190,9 +188,9 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
                 center_error = msg1
             error_message = f"Since {center_error}, then {format_error_context(result_field_eargs)} {msg2}"
 
-            return (result_success, error_message, fields)
+            return (result_success, error_message, [condition_field_name, result_field_name])
         else:
-            return (result_success, None, fields)
+            return (result_success, None, [condition_field_name, result_field_name])
 
     return if_then_validator_func
 
