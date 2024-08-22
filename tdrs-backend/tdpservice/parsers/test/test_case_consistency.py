@@ -464,7 +464,7 @@ class TestCaseConsistencyValidator:
         assert errors[0].error_message == (
             f"Every {t1_model_name} record should have at least one corresponding "
             f"{t2_model_name} or {t3_model_name} record with the same Item {rpt_item_num} (Reporting Year and Month) "
-            f"and Item {case_item_num} ({case_num}), where Item {t2_fam_afil_item_num} (Family Affiliation)==1 and "
+            f"and Item {case_item_num} ({case_num}), where Item {t2_fam_afil_item_num} (Family Affiliation)==1 or "
             f"Item {t3_fam_afil_item_num} (Family Affiliation)==1."
         )
 
