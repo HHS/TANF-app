@@ -37,7 +37,7 @@ def _validate_and_assert(validator, val, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, option, kwargs, exp_result, exp_message', [
     (10, 10, {}, True, None),
-    (1, 10, {}, False, '1 must match 10'),
+    (1, 10, {}, False, 'must match 10'),
 ])
 def test_isEqual(val, option, kwargs, exp_result, exp_message):
     """Test isEqual validator error messages."""
@@ -47,7 +47,7 @@ def test_isEqual(val, option, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, option, kwargs, exp_result, exp_message', [
     (1, 10, {}, True, None),
-    (10, 10, {}, False, '10 must not be equal to 10'),
+    (10, 10, {}, False, 'must not be equal to 10'),
 ])
 def test_isNotEqual(val, option, kwargs, exp_result, exp_message):
     """Test isNotEqual validator error messages."""
@@ -57,7 +57,7 @@ def test_isNotEqual(val, option, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, options, kwargs, exp_result, exp_message', [
     (1, [1, 2, 3], {}, True, None),
-    (1, [4, 5, 6], {}, False, '1 must be one of [4, 5, 6]'),
+    (1, [4, 5, 6], {}, False, 'must be one of [4, 5, 6]'),
 ])
 def test_isOneOf(val, options, kwargs, exp_result, exp_message):
     """Test isOneOf validator error messages."""
@@ -67,7 +67,7 @@ def test_isOneOf(val, options, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, options, kwargs, exp_result, exp_message', [
     (1, [4, 5, 6], {}, True, None),
-    (1, [1, 2, 3], {}, False, '1 must not be one of [1, 2, 3]'),
+    (1, [1, 2, 3], {}, False, 'must not be one of [1, 2, 3]'),
 ])
 def test_isNotOneOf(val, options, kwargs, exp_result, exp_message):
     """Test isNotOneOf validator error messages."""
@@ -77,8 +77,8 @@ def test_isNotOneOf(val, options, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, option, inclusive, kwargs, exp_result, exp_message', [
     (10, 5, True, {}, True, None),
-    (10, 20, True, {}, False, '10 must be greater than 20'),
-    (10, 10, False, {}, False, '10 must be greater than 10'),
+    (10, 20, True, {}, False, 'must be greater than 20'),
+    (10, 10, False, {}, False, 'must be greater than 10'),
 ])
 def test_isGreaterThan(val, option, inclusive, kwargs, exp_result, exp_message):
     """Test isGreaterThan validator error messages."""
@@ -88,8 +88,8 @@ def test_isGreaterThan(val, option, inclusive, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, option, inclusive, kwargs, exp_result, exp_message', [
     (5, 10, True, {}, True, None),
-    (5, 3, True, {}, False, '5 must be less than 3'),
-    (5, 5, False, {}, False, '5 must be less than 5'),
+    (5, 3, True, {}, False, 'must be less than 3'),
+    (5, 5, False, {}, False, 'must be less than 5'),
 ])
 def test_isLessThan(val, option, inclusive, kwargs, exp_result, exp_message):
     """Test isLessThan validator error messages."""
@@ -99,9 +99,9 @@ def test_isLessThan(val, option, inclusive, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, min, max, inclusive, kwargs, exp_result, exp_message', [
     (5, 1, 10, True, {}, True, None),
-    (20, 1, 10, True, {}, False, '20 must be between 1 and 10'),
+    (20, 1, 10, True, {}, False, 'must be between 1 and 10'),
     (5, 1, 10, False, {}, True, None),
-    (20, 1, 10, False, {}, False, '20 must be between 1 and 10'),
+    (20, 1, 10, False, {}, False, 'must be between 1 and 10'),
 ])
 def test_isBetween(val, min, max, inclusive, kwargs, exp_result, exp_message):
     """Test isBetween validator error messages."""
@@ -111,7 +111,7 @@ def test_isBetween(val, min, max, inclusive, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, substr, kwargs, exp_result, exp_message', [
     ('abcdef', 'abc', {}, True, None),
-    ('abcdef', 'xyz', {}, False, 'abcdef must start with xyz')
+    ('abcdef', 'xyz', {}, False, 'must start with xyz')
 ])
 def test_startsWith(val, substr, kwargs, exp_result, exp_message):
     """Test startsWith validator error messages."""
@@ -121,7 +121,7 @@ def test_startsWith(val, substr, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, substr, kwargs, exp_result, exp_message', [
     ('abc123', 'c1', {}, True, None),
-    ('abc123', 'xy', {}, False, 'abc123 must contain xy'),
+    ('abc123', 'xy', {}, False, 'must contain xy'),
 ])
 def test_contains(val, substr, kwargs, exp_result, exp_message):
     """Test contains validator error messages."""
@@ -131,7 +131,7 @@ def test_contains(val, substr, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, kwargs, exp_result, exp_message', [
     (1001, {}, True, None),
-    ('ABC', {}, False, 'ABC must be a number'),
+    ('ABC', {}, False, 'must be a number'),
 ])
 def test_isNumber(val, kwargs, exp_result, exp_message):
     """Test isNumber validator error messages."""
@@ -140,7 +140,7 @@ def test_isNumber(val, kwargs, exp_result, exp_message):
 
 
 @pytest.mark.parametrize('val, kwargs, exp_result, exp_message', [
-    ('F*&k', {}, False, 'F*&k must be alphanumeric'),
+    ('F*&k', {}, False, 'must be alphanumeric'),
     ('Fork', {}, True, None),
 ])
 def test_isAlphaNumeric(val, kwargs, exp_result, exp_message):
@@ -151,7 +151,7 @@ def test_isAlphaNumeric(val, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, start, end, kwargs, exp_result, exp_message', [
     ('   ', 0, 4, {}, True, None),
-    ('1001', 0, 4, {}, False, '1001 must be empty'),
+    ('1001', 0, 4, {}, False, 'must be empty'),
 ])
 def test_isEmpty(val, start, end, kwargs, exp_result, exp_message):
     """Test isEmpty validator error messages."""
@@ -161,7 +161,7 @@ def test_isEmpty(val, start, end, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, start, end, kwargs, exp_result, exp_message', [
     ('1001', 0, 4, {}, True, None),
-    ('    ', 0, 4, {}, False, '     must not be empty'),
+    ('    ', 0, 4, {}, False, 'must not be empty'),
 ])
 def test_isNotEmpty(val, start, end, kwargs, exp_result, exp_message):
     """Test isNotEmpty validator error messages."""
@@ -171,7 +171,7 @@ def test_isNotEmpty(val, start, end, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, kwargs, exp_result, exp_message', [
     ('    ', {}, True, None),
-    ('0000', {}, False, '0000 must be blank'),
+    ('0000', {}, False, 'must be blank'),
 ])
 def test_isBlank(val, kwargs, exp_result, exp_message):
     """Test isBlank validator error messages."""
@@ -181,7 +181,7 @@ def test_isBlank(val, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, length, kwargs, exp_result, exp_message', [
     ('123', 3, {}, True, None),
-    ('123', 4, {}, False, '123 must have length 4'),
+    ('123', 4, {}, False, 'must have length 4'),
 ])
 def test_hasLength(val, length, kwargs, exp_result, exp_message):
     """Test hasLength validator error messages."""
@@ -191,7 +191,7 @@ def test_hasLength(val, length, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, length, inclusive, kwargs, exp_result, exp_message', [
     ('123', 3, True, {}, True, None),
-    ('123', 3, False, {}, False, '123 must have length greater than 3'),
+    ('123', 3, False, {}, False, 'must have length greater than 3'),
 ])
 def test_hasLengthGreaterThan(val, length, inclusive, kwargs, exp_result, exp_message):
     """Test hasLengthGreaterThan validator error messages."""
@@ -201,7 +201,7 @@ def test_hasLengthGreaterThan(val, length, inclusive, kwargs, exp_result, exp_me
 
 @pytest.mark.parametrize('val, length, kwargs, exp_result, exp_message', [
     (101, 3, {}, True, None),
-    (101, 2, {}, False, '101 must have length 2'),
+    (101, 2, {}, False, 'must have length 2'),
 ])
 def test_intHasLength(val, length, kwargs, exp_result, exp_message):
     """Test intHasLength validator error messages."""
@@ -211,7 +211,7 @@ def test_intHasLength(val, length, kwargs, exp_result, exp_message):
 
 @pytest.mark.parametrize('val, number_of_zeros, kwargs, exp_result, exp_message', [
     ('111', 3, {}, True, None),
-    ('000', 3, {}, False, '000 must not be zero'),
+    ('000', 3, {}, False, 'must not be zero'),
 ])
 def test_isNotZero(val, number_of_zeros, kwargs, exp_result, exp_message):
     """Test isNotZero validator error messages."""
@@ -241,17 +241,17 @@ def test_isOlderThan(val, min_age, kwargs, exp_result, exp_message):
     ('987654321', {}, True, None),
     (
         '111111111', {}, False,
-        "111111111 is in ['000000000', '111111111', '222222222', '333333333', "
+        "is in ['000000000', '111111111', '222222222', '333333333', "
         "'444444444', '555555555', '666666666', '777777777', '888888888', '999999999']."
         ),
     (
         '999999999', {}, False,
-        "999999999 is in ['000000000', '111111111', '222222222', '333333333', "
+        "is in ['000000000', '111111111', '222222222', '333333333', "
         "'444444444', '555555555', '666666666', '777777777', '888888888', '999999999']."
     ),
     (
         '888888888', {}, False,
-        "888888888 is in ['000000000', '111111111', '222222222', '333333333', "
+        "is in ['000000000', '111111111', '222222222', '333333333', "
         "'444444444', '555555555', '666666666', '777777777', '888888888', '999999999']."
     ),
 ])
@@ -261,13 +261,17 @@ def test_validateSSN(val, kwargs, exp_result, exp_message):
     _validate_and_assert(_validator, val, exp_result, exp_message)
 
 
-@pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message', [
-    (1, 1, True, None),  # condition fails, valid
-    (10, 1, True, None),  # condition pass, result pass
+@pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message, exp_fields', [
+    (1, 1, True, None, ['TestField3', 'TestField1']),  # condition fails, valid
+    (10, 1, True, None, ['TestField1', 'TestField3']),  # condition pass, result pass
     # condition pass, result fail
-    (10, 20, False, 'Since Item 1 (test1) is 10, then Item 3 (test3) 20 must be less than 10'),
+    (
+        10, 20, False,
+        'Since Item 1 (test1) is 10, then Item 3 (test3) 20 must be less than 10',
+        ['TestField1', 'TestField3']
+    ),
 ])
-def test_ifThenAlso(condition_val, result_val, exp_result, exp_message):
+def test_ifThenAlso(condition_val, result_val, exp_result, exp_message, exp_fields):
     """Test ifThenAlso validator error messages."""
     schema = RowSchema(
         fields=[
@@ -311,17 +315,21 @@ def test_ifThenAlso(condition_val, result_val, exp_result, exp_message):
     is_valid, error_msg, fields = _validator(instance, schema)
     assert is_valid == exp_result
     assert error_msg == exp_message
-    assert fields == ['TestField1', 'TestField3']
+    assert fields == exp_fields
 
 
-@pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message', [
-    (1, 1, True, None),  # condition fails, valid
-    (10, 1, True, None),  # condition pass, result pass
-    (10, 110, True, None),
+@pytest.mark.parametrize('condition_val, result_val, exp_result, exp_message, exp_fields', [
+    (1, 1, True, None, ['TestField3', 'TestField1']),  # condition fails, valid
+    (10, 1, True, None, ['TestField1', 'TestField3']),  # condition pass, result pass
+    (10, 110, True, None, ['TestField1', 'TestField3']),
     # condition pass, result fail
-    (10, 20, False, 'Since Item 1 (test1) is 10, then Item 3 (test3) 20 must be less than 10 or 20 must be greater than 100.'),
+    (
+        10, 20, False,
+        'Since Item 1 (test1) is 10, then Item 3 (test3) 20 must be less than 10 or must be greater than 100.',
+        ['TestField1', 'TestField3']
+    ),
 ])
-def test_ifThenAlso_or(condition_val, result_val, exp_result, exp_message):
+def test_ifThenAlso_or(condition_val, result_val, exp_result, exp_message, exp_fields):
     """Test ifThenAlso validator error messages."""
     schema = RowSchema(
         fields=[
@@ -368,13 +376,13 @@ def test_ifThenAlso_or(condition_val, result_val, exp_result, exp_message):
     is_valid, error_msg, fields = _validator(instance, schema)
     assert is_valid == exp_result
     assert error_msg == exp_message
-    assert fields == ['TestField1', 'TestField3']
+    assert fields == exp_fields
 
 
 @pytest.mark.parametrize('val, exp_result, exp_message', [
     (10, True, None),
     (3, True, None),
-    (100, False, 'Item 1 (TestField1) 100 must match 10 or 100 must be less than 5.'),
+    (100, False, 'Item 1 (TestField1) 100 must match 10 or must be less than 5.'),
 ])
 def test_orValidators(val, exp_result, exp_message):
     """Test orValidators error messages."""

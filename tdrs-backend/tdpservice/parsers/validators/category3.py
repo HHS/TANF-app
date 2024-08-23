@@ -17,109 +17,109 @@ def format_error_context(eargs: ValidationErrorArgs):
 @validator(base.isEqual)
 def isEqual(option, **kwargs):
     """Return a custom message for the isEqual validator."""
-    return lambda eargs: f'{eargs.value} must match {option}'
+    return lambda eargs: f'must match {option}'
 
 
 @validator(base.isNotEqual)
 def isNotEqual(option, **kwargs):
     """Return a custom message for the isNotEqual validator."""
-    return lambda eargs: f'{eargs.value} must not be equal to {option}'
+    return lambda eargs: f'must not be equal to {option}'
 
 
 @validator(base.isOneOf)
 def isOneOf(options, **kwargs):
     """Return a custom message for the isOneOf validator."""
-    return lambda eargs: f'{eargs.value} must be one of {options}'
+    return lambda eargs: f'must be one of {options}'
 
 
 @validator(base.isNotOneOf)
 def isNotOneOf(options, **kwargs):
     """Return a custom message for the isNotOneOf validator."""
-    return lambda eargs: f'{eargs.value} must not be one of {options}'
+    return lambda eargs: f'must not be one of {options}'
 
 
 @validator(base.isGreaterThan)
 def isGreaterThan(option, inclusive=False, **kwargs):
     """Return a custom message for the isGreaterThan validator."""
-    return lambda eargs: f'{eargs.value} must be greater than {option}'
+    return lambda eargs: f'must be greater than {option}'
 
 
 @validator(base.isLessThan)
 def isLessThan(option, inclusive=False, **kwargs):
     """Return a custom message for the isLessThan validator."""
-    return lambda eargs: f'{eargs.value} must be less than {option}'
+    return lambda eargs: f'must be less than {option}'
 
 
 @validator(base.isBetween)
 def isBetween(min, max, inclusive=False, **kwargs):
     """Return a custom message for the isBetween validator."""
-    return lambda eargs: f'{eargs.value} must be between {min} and {max}'
+    return lambda eargs: f'must be between {min} and {max}'
 
 
 @validator(base.startsWith)
 def startsWith(substr, **kwargs):
     """Return a custom message for the startsWith validator."""
-    return lambda eargs: f'{eargs.value} must start with {substr}'
+    return lambda eargs: f'must start with {substr}'
 
 
 @validator(base.contains)
 def contains(substr, **kwargs):
     """Return a custom message for the contains validator."""
-    return lambda eargs: f'{eargs.value} must contain {substr}'
+    return lambda eargs: f'must contain {substr}'
 
 
 @validator(base.isNumber)
 def isNumber(**kwargs):
     """Return a custom message for the isNumber validator."""
-    return lambda eargs: f'{eargs.value} must be a number'
+    return lambda eargs: f'must be a number'
 
 
 @validator(base.isAlphaNumeric)
 def isAlphaNumeric(**kwargs):
     """Return a custom message for the isAlphaNumeric validator."""
-    return lambda eargs: f'{eargs.value} must be alphanumeric'
+    return lambda eargs: f'must be alphanumeric'
 
 
 @validator(base.isEmpty)
 def isEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isEmpty validator."""
-    return lambda eargs: f'{eargs.value} must be empty'
+    return lambda eargs: f'must be empty'
 
 
 @validator(base.isNotEmpty)
 def isNotEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isNotEmpty validator."""
-    return lambda eargs: f'{eargs.value} must not be empty'
+    return lambda eargs: f'must not be empty'
 
 
 @validator(base.isBlank)
 def isBlank(**kwargs):
     """Return a custom message for the isBlank validator."""
-    return lambda eargs: f'{eargs.value} must be blank'
+    return lambda eargs: f'must be blank'
 
 
 @validator(base.hasLength)
 def hasLength(length, **kwargs):
     """Return a custom message for the hasLength validator."""
-    return lambda eargs: f'{eargs.value} must have length {length}'
+    return lambda eargs: f'must have length {length}'
 
 
 @validator(base.hasLengthGreaterThan)
 def hasLengthGreaterThan(length, inclusive=False, **kwargs):
     """Return a custom message for the hasLengthGreaterThan validator."""
-    return lambda eargs: f'{eargs.value} must have length greater than {length}'
+    return lambda eargs: f'must have length greater than {length}'
 
 
 @validator(base.intHasLength)
 def intHasLength(length, **kwargs):
     """Return a custom message for the intHasLength validator."""
-    return lambda eargs: f'{eargs.value} must have length {length}'
+    return lambda eargs: f'must have length {length}'
 
 
 @validator(base.isNotZero)
 def isNotZero(number_of_zeros=1, **kwargs):
     """Return a custom message for the isNotZero validator."""
-    return lambda eargs: f'{eargs.value} must not be zero'
+    return lambda eargs: f'must not be zero'
 
 
 def isOlderThan(min_age):
@@ -144,7 +144,7 @@ def validateSSN():
     options = [str(i) * 9 for i in range(0, 10)]
     return make_validator(
         base.isNotOneOf(options),
-        lambda eargs: f"{eargs.value} is in {options}."
+        lambda eargs: f"is in {options}."
     )
 
 
@@ -186,7 +186,10 @@ def ifThenAlso(condition_field_name, condition_function, result_field_name, resu
                 center_error = f'{format_error_context(condition_field_eargs)} is {condition_value}'
             else:
                 center_error = msg1
-            error_message = f"Since {center_error}, then {format_error_context(result_field_eargs)} {msg2}"
+            error_message = (
+                f"Since {center_error}, then {format_error_context(result_field_eargs)} "
+                f"{result_value} {msg2}"
+            )
 
             return (result_success, error_message, [condition_field_name, result_field_name])
         else:
@@ -203,7 +206,7 @@ def orValidators(validators, **kwargs):
         validator_results = evaluate_all(validators, value, eargs)
 
         if not any(result[0] for result in validator_results):
-            error_msg = f'{format_error_context(eargs)} ' if not is_if_result_func else ''
+            error_msg = f'{format_error_context(eargs)} {value} ' if not is_if_result_func else ''
             error_msg += " or ".join([result[1] for result in validator_results]) + '.'
             return (False, error_msg)
 
