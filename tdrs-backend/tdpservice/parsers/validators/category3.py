@@ -119,7 +119,7 @@ def intHasLength(length, **kwargs):
 @validator(base.isNotZero)
 def isNotZero(number_of_zeros=1, **kwargs):
     """Return a custom message for the isNotZero validator."""
-    return lambda eargs: f'must not be zero'
+    return lambda eargs: 'must not be zero'
 
 
 def isOlderThan(min_age):
