@@ -228,6 +228,7 @@
               <li class="usa-sidenav__item">
               <a href="./faq.html">Frequently Asked Questions</a>
               </li>
+
             </ul>
           </li>
 
@@ -340,6 +341,96 @@
 
         <h2>What's new in TDP</h2>
 
+         <h3 style="margin-top: 32px;">August 15th 2024 (v 3.5.2)</h3>
+        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
+        <ul class="usa-icon-list">
+          <li class="usa-icon-list__item" style="margin-top: 16px;">
+            <div class="usa-icon-list__icon text-ink">
+              <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+            </div>
+            <div class="usa-icon-list__content">
+              <h5 class="usa-icon-list__title">
+                Email notifications for quarterly data deadlines
+              </h5>
+              <p>If you have an active TDP account and have not yet submitted all of your program's quarterly files, you will now receive friendly e-mail reminders 5 days in advance of each quarterly deadline to help support timely submissions and feedback. <em>Please note:</em> If additional time is needed, please feel free to reach out to <a href=mailto:TANFData@acf.hhs.gov>TANFData@acf.hhs.gov</a>.</p>
+            </div>
+          </li>
+              </ul>   
+
+        <h4 style="margin-top: 16px; color: #595959;">Changed / Fixed:</h4>
+        <ul class="usa-icon-list">
+
+    <li class="usa-icon-list__item" style="margin-top: 16px;">
+      <div class="usa-icon-list__icon text-ink">
+          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+      </div>
+      <div class="usa-icon-list__content">
+        <h5 class="usa-icon-list__title">
+          The Header update indicator errors no longer results in "Rejected" files
+        </h5>
+        <p>We have relaxed TDP's data processing requirements to help ensure that the data in your files can still be processed even if these files have an invalid value for the <a href="https://www.acf.hhs.gov/sites/default/files/documents/ofa/transmission_file_header_trailer_record.pdf">update indicator</a>. However, the TDP system expects the header update indicator to be set to "D" and if not, your error report will still include an error asking you to correct it <br><a href="viewing-error-reports.html#headers">Read more about the header record</a> and <a href="exporting-complete-data-using-ftanf.html">how to export complete data using fTANF</a>.</p>
+      </div>
+    </li>
+
+          <li class="usa-icon-list__item" style="margin-top: 16px;">
+      <div class="usa-icon-list__icon text-ink">
+          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+      </div>
+      <div class="usa-icon-list__content">
+        <h5 class="usa-icon-list__title">
+         A bug related to Supplemental Security Income (SSI) receipt no longer results in "Rejected" files
+        </h5>
+        <p>TDP was incorrectly generating the following error messages for some TANF and SSP Section 2: Closed Case files (for states and territories only):</p>
+            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">T5 People in states must have a valid value for REC_SSI. 
+    </code><br> 
+           <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">M5 People in states must have a valid value for REC_SSI. 
+    </code>
+           <p>This bug made it more likely for these files to be "Rejected". This has been resolved, and no changes to these files are needed. The TDP team will re-process the files at a later date. You may also resubmit any files impacted by this bug to obtain revised TDP-generated feedback reports, but this is not required.</p>
+      </div>
+    </li>
+
+        <li class="usa-icon-list__item" style="margin-top: 16px;">
+      <div class="usa-icon-list__icon text-ink">
+          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+      </div>
+      <div class="usa-icon-list__content">
+        <h5 class="usa-icon-list__title">
+          A bug related to submitting some data files for the first quarter of fiscal year 2021 has been resolved
+        </h5>
+        <p>TDP was incorrectly generating the following error message on Section 3: Aggregate and Section 4: Stratum data files submitted for Q1, FY2021 (Oct - Dec, 2020):</p>
+            <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">Year 2020 must be larger than 2020. 
+    </code>
+           <p>The issue has been corrected in TDP, and no changes to data are needed to resolve this.</p>
+      </div>
+    </li>
+
+
+
+            <li class="usa-icon-list__item" style="margin-top: 16px;">
+      <div class="usa-icon-list__icon text-ink">
+          <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; min-width: 18px !important; height: 18px !important; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+      </div>
+      <div class="usa-icon-list__content">
+        <h5 class="usa-icon-list__title">
+          We're continuing to improve error messages that TDP generates
+        </h5>
+        <p>User feedback from our TANF partners is invaluable to ensure that TDP-generated error reports are highly accurate, intuitive, and easy to act on. <br><br> We are exploring better ways to structure the error report to help guide you toward the most important feedback to review. This will take some time, and we appreciate your patience and partnership in this process.</p>
+        <p>We're currently trying to learn more from our TANF partners about the circumstances that appear to indicate that families on the active caseload are receiving $0 in assistance across multiple assistance categories. This will yield the following message in your Active Case error reports:</p>
+          <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;">T1: The sum of ('amount of food stamp assistance', 'amount of subsidized child care', 'cash amount', 'child care amount', 'transportation amount', 'transition services amount', and/or 'other amount') is not larger than 0.</code>
+           
+    <p>If you have encountered an error message like this in your error reports, we'd love to learn more from you. Please reach out to <a href="mailto:tanfdata@acf.hhs.gov">TANFData@acf.hhs.gov</a>. You may also <a href="give-feedback.html">share feedback here on the Knowledge Center</a> at your convenience. We use it to ensure that the TANF Data Portal is meeting your needs and better serve you and your team. All feedback is anonymous unless you provide your contact information.</p>
+      </div>
+    </li>
+
+  </ul>
+</ul>
+
+        <hr style="border: none;
+    height: 1px;
+    background: #000;
+    margin-top: 32px;
+    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+
         <h3 style="margin-top: 32px;">June 5th 2024 (v 3.4.3)</h3>
         <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
         <ul class="usa-icon-list">
@@ -400,9 +491,7 @@
           Improved the usability of TDP's request access form
         </h5>
         <p>
-      First-time TDP users provide their first name, last name, and associated state, tribe, or territory. This information helps TDP administrators confirm system access.
-      We have updated the form to include a new field for the jurisdiction type (state, tribe, or territory). This change addresses questions from tribal program users about whether to select their tribal program name or the state where the program is located.
-      After selecting the jurisdiction type, the user can more quickly locate and select the appropriate jurisdiction from the dropdown menu.
+      First-time users to TDP provide their first name, last name, and associated state, tribe, or territory to help TDP administrators confirm access to the system. We've made revisions to the form by adding the jurisdiction type (state, tribe, or territory). After selecting the jurisdiction type, the user can more quickly locate and select the appropriate jurisdiction from the dropdown menu. the eliminate confusion about whether tribes need to select the name of their tribal program or the name of the state it's located in.
 
 
         </p>

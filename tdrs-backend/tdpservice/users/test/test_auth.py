@@ -8,6 +8,7 @@ import uuid
 from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
+from unittest import mock
 import jwt
 import pytest
 
@@ -18,7 +19,6 @@ from tdpservice.users.api.utils import (
     generate_client_assertion,
     generate_jwt_from_jwks,
     generate_token_endpoint_parameters,
-    response_internal,
 )
 from tdpservice.users.authentication import CustomAuthentication
 from tdpservice.users.models import User
@@ -278,6 +278,27 @@ class TestLoginAMS:
         user_by_id = CustomAuthentication.authenticate(username=user.username, hhs_id=self.test_hhs_id)
         assert str(user_by_id.hhs_id) == self.test_hhs_id
 
+    @mock.patch("requests.get")
+    def test_bad_AMS_configuration(
+        self,
+        ams_states_factory,
+        req_factory,
+        user
+    ):
+        """Test login with state and code."""
+        request = req_factory
+        request = create_session(request, ams_states_factory)
+        user.hhs_id = self.test_hhs_id
+        # test new hash
+        user.login_gov_uuid = None
+        user.save()
+
+        view = TokenAuthorizationAMS.as_view()
+        response = view(request)
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+        assert b'Failed to get AMS configuration' in response.render().content
+
+
 def test_login_gov_redirect(api_client):
     """Test login.gov login url redirects."""
     response = api_client.get("/v1/login/dotgov")
@@ -426,15 +447,6 @@ def test_login_fails_with_bad_data(api_client):
     """Test login fails with bad data."""
     response = api_client.get("/v1/login/", {"code": "dummy", "state": "dummy"})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-@pytest.mark.django_db
-def test_response_internal(user):
-    """Test response internal works."""
-    response = response_internal(
-        user, status_message="hello", id_token={"fake": "stuff"}
-    )
-    assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.django_db
