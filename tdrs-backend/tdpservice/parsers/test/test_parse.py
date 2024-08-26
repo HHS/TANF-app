@@ -136,8 +136,7 @@ def test_parse_big_file(big_file, dfs):
 
     parse.parse_datafile(big_file, dfs)
     dfs.status = dfs.get_status()
-    assert dfs.status == DataFileSummary.Status.PARTIALLY_ACCEPTED
-    # logger.info(ParserError.objects.all())
+    assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
 
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
@@ -1640,7 +1639,7 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
     assert parser_errors.count() == 3
 
     error_msgs = {
-        "Item 37 (Educational Level) 00 must be between 1 and 16 or 00 must be between 98 and 99.",
+        "Item 37 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
         "M2 Item 38 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
         "M2 Item 39 (Cooperated with Child Support): 0 is not in [1, 2, 9]."
     }
@@ -1665,9 +1664,9 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
     assert parser_errors.count() == 4
 
     error_msgs = {
-        "Item 68 (Educational Level) 00 must be between 1 and 16 or 00 must be between 98 and 99.",
+        "Item 68 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
         "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
-        "Item 68 (Educational Level) 00 must be between 1 and 16 or 00 must be between 98 and 99.",
+        "Item 68 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
         "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."
     }
 
