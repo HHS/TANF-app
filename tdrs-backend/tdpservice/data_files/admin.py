@@ -2,7 +2,6 @@
 from django.contrib import admin
 
 from ..core.utils import ReadOnlyAdminMixin
-from django.utils.translation import ugettext_lazy as _
 from tdpservice.core.filters import MostRecentVersionFilter
 from .models import DataFile, LegacyFileTransfer
 from tdpservice.parsers.models import DataFileSummary, ParserError

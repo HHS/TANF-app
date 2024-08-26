@@ -10,11 +10,10 @@ class MostRecentVersionFilter(admin.SimpleListFilter):
 
     title = _('Most recent version')
 
-    # parameter_name = 'created_at'
-
     @property
     @abstractmethod
     def parameter_name(self):
+        """Define the search parameter name as a class property."""
         pass
 
     def lookups(self, request, model_admin):
