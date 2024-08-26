@@ -71,31 +71,31 @@ def contains(substr, **kwargs):
 @validator(base.isNumber)
 def isNumber(**kwargs):
     """Return a custom message for the isNumber validator."""
-    return lambda eargs: f'must be a number'
+    return lambda eargs: 'must be a number'
 
 
 @validator(base.isAlphaNumeric)
 def isAlphaNumeric(**kwargs):
     """Return a custom message for the isAlphaNumeric validator."""
-    return lambda eargs: f'must be alphanumeric'
+    return lambda eargs: 'must be alphanumeric'
 
 
 @validator(base.isEmpty)
 def isEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isEmpty validator."""
-    return lambda eargs: f'must be empty'
+    return lambda eargs: 'must be empty'
 
 
 @validator(base.isNotEmpty)
 def isNotEmpty(start=0, end=None, **kwargs):
     """Return a custom message for the isNotEmpty validator."""
-    return lambda eargs: f'must not be empty'
+    return lambda eargs: 'must not be empty'
 
 
 @validator(base.isBlank)
 def isBlank(**kwargs):
     """Return a custom message for the isBlank validator."""
-    return lambda eargs: f'must be blank'
+    return lambda eargs: 'must be blank'
 
 
 @validator(base.hasLength)
