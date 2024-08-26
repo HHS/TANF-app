@@ -3,6 +3,7 @@ from django.contrib import admin
 
 from ..core.utils import ReadOnlyAdminMixin
 from django.utils.translation import ugettext_lazy as _
+from tdpservice.core.filters import MostRecentVersionFilter
 from .models import DataFile, LegacyFileTransfer
 from tdpservice.parsers.models import DataFileSummary, ParserError
 from django.conf import settings
@@ -11,30 +12,10 @@ from django.utils.html import format_html
 DOMAIN = settings.FRONTEND_BASE_URL
 
 
-class NewestVersionFilter(admin.SimpleListFilter):
+class NewestVersionFilter(MostRecentVersionFilter):
     """Simple filter class to show newest created datafile records."""
 
-    title = _('Newest')
-
     parameter_name = 'created_at'
-
-    def lookups(self, request, model_admin):
-        """Available options in dropdown."""
-        return (
-            (None, _('Most recent version')),
-            ('all', _('All')),
-        )
-
-    def choices(self, cl):
-        """Update query string based on selection."""
-        for lookup, title in self.lookup_choices:
-            yield {
-                'selected': self.value() == lookup,
-                'query_string': cl.get_query_string({
-                    self.parameter_name: lookup,
-                }, []),
-                'display': title,
-            }
 
     def queryset(self, request, queryset):
         """Sort queryset to show latest records."""
