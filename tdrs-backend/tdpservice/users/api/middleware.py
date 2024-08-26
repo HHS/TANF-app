@@ -13,7 +13,7 @@ class AuthUpdateMiddleware:
         """Update cookie."""
         response = self.get_response(request)
         now = datetime.datetime.now()
-        timeout = now + datetime.timedelta(minutes=settings.SESSION_TIMEOUT)
+        timeout = now + datetime.timedelta(minutes=settings.SESSION_COOKIE_AGE)
 
         # if there is no user, the user is currently
         # in the authentication process so we can't
