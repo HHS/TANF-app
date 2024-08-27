@@ -5,7 +5,7 @@
     {% for choice in choices|slice:":1" %}
         <a href="{{ choice.query_string|iriencode }}" title="Show {{ choice.display }}">Show {{ choice.display }}</a>
     {% endfor %}
-    <select id="{{ title|slugify }}_select" multiple style="color:#000000;width:100%" aria-mutliselectable="true" aria-label="{{ title|slugify }}s">
+    <select id="{{ title|slugify }}_select" multiple style="color:#000000;width:100%" aria-multiselectable="true" aria-label="{{ title|slugify }}s">
     {% for choice in choices|slice:"1:" %}
         <option{% if choice.selected %} selected{% endif %}
             value="{{ choice.value }}"
