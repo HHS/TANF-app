@@ -107,12 +107,14 @@ class CaseDuplicateDetector:
                    f"{record_type} at line {curr_line_number}. Record is a partial duplicate of the "
                    f"record at line number {existing_line_number}. Duplicated fields causing error: ")
         for i, name in enumerate(field_names):
+            field = schema.get_field_by_name(name)
+            item_and_name = f"Item {field.item} ({field.friendly_name})"
             if i == len(field_names) - 1 and len(field_names) != 1:
-                err_msg += f"and {schema.get_field_by_name(name).friendly_name}."
+                err_msg += f"and {item_and_name}."
             elif len(field_names) == 1:
-                err_msg += f"{schema.get_field_by_name(name).friendly_name}."
+                err_msg += f"{item_and_name}."
             else:
-                err_msg += f"{schema.get_field_by_name(name).friendly_name}, "
+                err_msg += f"{item_and_name}, "
         return err_msg
 
     def add_case_member(self, record, schema, line, line_number):

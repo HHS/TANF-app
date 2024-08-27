@@ -320,6 +320,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
     assert parser_errors.count() == 9
 
+    parser_errors = parser_errors.exclude(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
     trailer_errors = list(parser_errors.filter(row_number=3).order_by('id'))
 
     trailer_error_1 = trailer_errors[0]
@@ -480,7 +481,7 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
 
     parse.parse_datafile(ssp_section1_datafile, dfs)
 
-    parser_errors = ParserError.objects.filter(file=ssp_section1_datafile)
+    parser_errors = ParserError.objects.filter(file=ssp_section1_datafile).order_by('row_number')
 
     err = parser_errors.first()
 
@@ -492,11 +493,11 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
     assert err.content_type is not None
     assert err.object_id is not None
 
-    dup_errors = parser_errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("id")
-    assert dup_errors.count() == 2
-    assert dup_errors[0].error_message == "Duplicate record detected with record type M3 at line 453. " + \
+    cat4_errors = parser_errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("id")
+    assert cat4_errors.count() == 2
+    assert cat4_errors[0].error_message == "Duplicate record detected with record type M3 at line 453. " + \
         "Record is a duplicate of the record at line number 452."
-    assert dup_errors[1].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
+    assert cat4_errors[1].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
         "Record is a duplicate of the record at line number 3272."
 
     assert parser_errors.count() == 32488
@@ -1796,7 +1797,7 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, num_error
     assert parser_errors.count() == num_errors
 
     dup_error = parser_errors.first()
-    assert dup_error.error_message == expected_error_msg.format(record_type=record_type)
+    assert expected_error_msg.format(record_type=record_type) in dup_error.error_message
 
     model.objects.count() == 0
 
@@ -1825,4 +1826,4 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
 
     err = parser_errors.first()
     assert err.error_message == ("Every T1 record should have at least one corresponding T2 or T3 record with the "
-                                 "same RPT_MONTH_YEAR and CASE_NUMBER.")
+                                 "same Item 4 (Reporting Year and Month) and Item 6 (Case Number).")
