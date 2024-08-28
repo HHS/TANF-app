@@ -63,7 +63,7 @@ class LatestReparseEvent(admin.SimpleListFilter):
 class VersionFilter(MostRecentVersionFilter):
     """Simple filter class to show newest created datafile records."""
 
-    title = _('Submission')
+    title = _('Version')
     parameter_name = 'created_at'
 
     def queryset(self, request, queryset):
