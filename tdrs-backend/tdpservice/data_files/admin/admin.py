@@ -1,34 +1,26 @@
 """Admin class for DataFile objects."""
 from django.contrib import admin
-
-from ..core.utils import ReadOnlyAdminMixin
-from .models import DataFile, LegacyFileTransfer
+from tdpservice.core.utils import ReadOnlyAdminMixin
+from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 from tdpservice.parsers.models import DataFileSummary, ParserError
+from tdpservice.data_files.admin.filters import DataFileSummaryPrgTypeFilter, LatestReparseEvent
 from django.conf import settings
 from django.utils.html import format_html
 
 DOMAIN = settings.FRONTEND_BASE_URL
 
-class DataFileSummaryPrgTypeFilter(admin.SimpleListFilter):
-    """Admin class filter for Program Type on datafile model."""
 
-    title = 'Program Type'
-    parameter_name = 'program_type'
+class DataFileInline(admin.TabularInline):
+    """Inline model for many to many relationship."""
 
-    def lookups(self, request, model_admin):
-        """Return a list of tuples."""
-        return [
-            ('TAN', 'TAN'),
-            ('SSP', 'SSP'),
-        ]
+    model = DataFile.reparse_meta_models.through
+    can_delete = False
+    ordering = ["-pk"]
 
-    def queryset(self, request, queryset):
-        """Return a queryset."""
-        if self.value():
-            query_set_ids = [df.id for df in queryset if df.prog_type == self.value()]
-            return queryset.filter(id__in=query_set_ids)
-        else:
-            return queryset
+    def has_change_permission(self, request, obj=None):
+        """Read only permissions."""
+        return False
+
 
 @admin.register(DataFile)
 class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
@@ -61,6 +53,8 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                            field=f'{df.id}' + ":" + df.get_status(),
                            url=f"{DOMAIN}/admin/parsers/datafilesummary/{df.id}/change/")
 
+    inlines = [DataFileInline]
+
     list_display = [
         'id',
         'stt',
@@ -80,7 +74,8 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'year',
         'version',
         'summary__status',
-        DataFileSummaryPrgTypeFilter
+        DataFileSummaryPrgTypeFilter,
+        LatestReparseEvent
     ]
 
 @admin.register(LegacyFileTransfer)
