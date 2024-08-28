@@ -37,6 +37,8 @@ def generate_parser_error(datafile, line_number, schema, error_category, error_m
         }
     }
 
+    field = fields[-1]  # if multiple fields, result field is last
+
     return ParserError(
         file=datafile,
         row_number=line_number,
@@ -300,6 +302,10 @@ def get_t1_t4_partial_hash_members():
 def get_t2_t3_t5_partial_hash_members():
     """Return field names used to generate t2/t3/t5 partial hashes."""
     return ["RecordType", "RPT_MONTH_YEAR", "CASE_NUMBER", "FAMILY_AFFILIATION", "DATE_OF_BIRTH", "SSN"]
+
+def get_record_value_by_field_name(record, field_name):
+    """Return the value of a record for a given field name, accounting for the generic record type."""
+    return record.get(field_name, None) if type(record) is dict else getattr(record, field_name, None)
 
 def log_parser_exception(datafile, error_msg, level):
     """Log to DAC and console on parser exception."""
