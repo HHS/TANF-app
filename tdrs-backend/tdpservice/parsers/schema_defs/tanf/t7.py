@@ -3,7 +3,7 @@
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
-from tdpservice.parsers import validators
+from tdpservice.parsers.validators import category1, category2
 from tdpservice.search_indexes.documents.tanf import TANF_T7DataSubmissionDocument
 
 schemas = []
@@ -23,11 +23,11 @@ for i in range(1, 31):
             document=TANF_T7DataSubmissionDocument(),
             quiet_preparser_errors=i > 1,
             preparsing_validators=[
-                validators.recordHasLength(247),
-                validators.notEmpty(0, 7),
-                validators.notEmpty(validator_index, validator_index + 24),
-                validators.field_year_month_with_header_year_quarter(),
-                validators.calendarQuarterIsValid(2, 7),
+                category1.recordHasLength(247),
+                category1.recordIsNotEmpty(0, 7),
+                category1.recordIsNotEmpty(validator_index, validator_index + 24),
+                category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                category1.calendarQuarterIsValid(2, 7),
             ],
             postparsing_validators=[],
             fields=[
@@ -50,8 +50,8 @@ for i in range(1, 31):
                     endIndex=7,
                     required=True,
                     validators=[
-                        validators.dateYearIsLargerThan(2019),
-                        validators.quarterIsValid(),
+                        category2.dateYearIsLargerThan(2019),
+                        category2.quarterIsValid(),
                     ],
                 ),
                 TransformField(
@@ -64,8 +64,8 @@ for i in range(1, 31):
                     endIndex=7,
                     required=True,
                     validators=[
-                        validators.dateYearIsLargerThan(1998),
-                        validators.dateMonthIsValid(),
+                        category2.dateYearIsLargerThan(1998),
+                        category2.dateMonthIsValid(),
                     ],
                 ),
                 Field(
@@ -76,7 +76,7 @@ for i in range(1, 31):
                     startIndex=section_ind_index,
                     endIndex=section_ind_index + 1,
                     required=True,
-                    validators=[validators.oneOf(["1", "2"])],
+                    validators=[category2.isOneOf(["1", "2"])],
                 ),
                 Field(
                     item="5",
@@ -86,7 +86,7 @@ for i in range(1, 31):
                     startIndex=stratum_index,
                     endIndex=stratum_index + 2,
                     required=True,
-                    validators=[validators.isInStringRange(1, 99)],
+                    validators=[category2.isBetween(1, 99, inclusive=True, cast=int)],
                 ),
                 Field(
                     item=families_value_item_number,
@@ -96,7 +96,7 @@ for i in range(1, 31):
                     startIndex=families_index,
                     endIndex=families_index + 7,
                     required=True,
-                    validators=[validators.isInLimits(0, 9999999)],
+                    validators=[category2.isBetween(0, 9999999, inclusive=True)],
                 ),
             ],
         )

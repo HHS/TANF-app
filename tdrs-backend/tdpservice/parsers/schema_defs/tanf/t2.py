@@ -4,7 +4,7 @@
 from tdpservice.parsers.transforms import tanf_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
-from tdpservice.parsers import validators
+from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.tanf import TANF_T2DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
@@ -18,119 +18,120 @@ t2 = SchemaManager(
             should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {3, 5},
             get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
             preparsing_validators=[
-                validators.recordHasLength(156),
-                validators.caseNumberNotEmpty(8, 19),
-                validators.or_priority_validators([
-                    validators.field_year_month_with_header_year_quarter(),
-                    validators.validateRptMonthYear(),
+                category1.recordHasLength(156),
+                category1.caseNumberNotEmpty(8, 19),
+                category1.or_priority_validators([
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
                 ]),
             ],
             postparsing_validators=[
-                validators.validate__FAM_AFF__SSN(),
-                validators.if_then_validator(
+                category3.validate__FAM_AFF__SSN(),
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.matches(1),
+                    condition_function=category3.isEqual(1),
                     result_field_name="SSN",
-                    result_function=validators.validateSSN(),
+                    result_function=category3.validateSSN(),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_HISPANIC",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_AMER_INDIAN",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_ASIAN",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_BLACK",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_HAWAIIAN",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="RACE_WHITE",
-                    result_function=validators.isInLimits(1, 2),
+                    result_function=category3.isBetween(1, 2, inclusive=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="MARITAL_STATUS",
-                    result_function=validators.isInLimits(1, 5),
+                    result_function=category3.isBetween(1, 5, inclusive=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 2),
+                    condition_function=category3.isBetween(1, 2, inclusive=True),
                     result_field_name="PARENT_MINOR_CHILD",
-                    result_function=validators.isInLimits(1, 3),
+                    result_function=category3.isBetween(1, 3, inclusive=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="EDUCATION_LEVEL",
-                    result_function=validators.or_validators(
-                        validators.isInStringRange(0, 16),
-                        validators.isInStringRange(98, 99),
-                    ),
+                    result_function=category3.orValidators([
+                        category3.isBetween(0, 16, inclusive=True, cast=int),
+                        category3.isBetween(98, 99, inclusive=True, cast=int),
+                    ], if_result=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.matches(1),
+                    condition_function=category3.isEqual(1),
                     result_field_name="CITIZENSHIP_STATUS",
-                    result_function=validators.oneOf((1, 2)),
+                    result_function=category3.isOneOf((1, 2)),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="COOPERATION_CHILD_SUPPORT",
-                    result_function=validators.oneOf((1, 2, 9)),
+                    result_function=category3.isOneOf((1, 2, 9)),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.isInLimits(1, 3),
+                    condition_function=category3.isBetween(1, 3, inclusive=True),
                     result_field_name="EMPLOYMENT_STATUS",
-                    result_function=validators.isInLimits(1, 3),
+                    result_function=category3.isBetween(1, 3, inclusive=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.oneOf((1, 2)),
+                    condition_function=category3.isOneOf((1, 2)),
                     result_field_name="WORK_ELIGIBLE_INDICATOR",
-                    result_function=validators.or_validators(
-                        validators.isInStringRange(1, 9), validators.oneOf(("11", "12"))
-                    ),
+                    result_function=category3.orValidators([
+                        category3.isBetween(1, 9, inclusive=True, cast=int),
+                        category3.isOneOf(("11", "12"))
+                    ], if_result=True),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="FAMILY_AFFILIATION",
-                    condition_function=validators.oneOf((1, 2)),
+                    condition_function=category3.isOneOf((1, 2)),
                     result_field_name="WORK_PART_STATUS",
-                    result_function=validators.oneOf(
+                    result_function=category3.isOneOf(
                         ["01", "02", "05", "07", "09", "15", "17", "18", "19", "99"]
                     ),
                 ),
-                validators.if_then_validator(
+                category3.ifThenAlso(
                     condition_field_name="WORK_ELIGIBLE_INDICATOR",
-                    condition_function=validators.isInStringRange(1, 5),
+                    condition_function=category3.isBetween(1, 5, inclusive=True, cast=int),
                     result_field_name="WORK_PART_STATUS",
-                    result_function=validators.notMatches("99"),
+                    result_function=category3.isNotEqual("99"),
                 ),
-                validators.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(),
+                category3.validate__WORK_ELIGIBLE_INDICATOR__HOH__AGE(),
             ],
             fields=[
                 Field(
@@ -152,8 +153,8 @@ t2 = SchemaManager(
                     endIndex=8,
                     required=True,
                     validators=[
-                        validators.dateYearIsLargerThan(1998),
-                        validators.dateMonthIsValid(),
+                        category2.dateYearIsLargerThan(1998),
+                        category2.dateMonthIsValid(),
                     ],
                 ),
                 Field(
@@ -164,7 +165,7 @@ t2 = SchemaManager(
                     startIndex=8,
                     endIndex=19,
                     required=True,
-                    validators=[validators.notEmpty()],
+                    validators=[category2.isNotEmpty()],
                 ),
                 Field(
                     item="30",
@@ -174,7 +175,7 @@ t2 = SchemaManager(
                     startIndex=19,
                     endIndex=20,
                     required=True,
-                    validators=[validators.oneOf([1, 2, 3, 5])],
+                    validators=[category2.isOneOf([1, 2, 3, 5])],
                 ),
                 Field(
                     item="31",
@@ -184,7 +185,7 @@ t2 = SchemaManager(
                     startIndex=20,
                     endIndex=21,
                     required=True,
-                    validators=[validators.oneOf([1, 2])],
+                    validators=[category2.isOneOf([1, 2])],
                 ),
                 Field(
                     item="32",
@@ -194,10 +195,10 @@ t2 = SchemaManager(
                     startIndex=21,
                     endIndex=29,
                     required=True,
-                    validators=[validators.intHasLength(8),
-                                validators.dateYearIsLargerThan(1900),
-                                validators.dateMonthIsValid(),
-                                validators.dateDayIsValid()
+                    validators=[category2.intHasLength(8),
+                                category2.dateYearIsLargerThan(1900),
+                                category2.dateMonthIsValid(),
+                                category2.dateDayIsValid()
                                 ]
                 ),
                 TransformField(
@@ -209,7 +210,7 @@ t2 = SchemaManager(
                     startIndex=29,
                     endIndex=38,
                     required=True,
-                    validators=[validators.isNumber()],
+                    validators=[category2.isNumber()],
                     is_encrypted=False,
                 ),
                 Field(
@@ -220,7 +221,7 @@ t2 = SchemaManager(
                     startIndex=38,
                     endIndex=39,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="34B",
@@ -230,7 +231,7 @@ t2 = SchemaManager(
                     startIndex=39,
                     endIndex=40,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="34C",
@@ -240,7 +241,7 @@ t2 = SchemaManager(
                     startIndex=40,
                     endIndex=41,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="34D",
@@ -250,7 +251,7 @@ t2 = SchemaManager(
                     startIndex=41,
                     endIndex=42,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="34E",
@@ -260,7 +261,7 @@ t2 = SchemaManager(
                     startIndex=42,
                     endIndex=43,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="34F",
@@ -270,7 +271,7 @@ t2 = SchemaManager(
                     startIndex=43,
                     endIndex=44,
                     required=False,
-                    validators=[validators.isInLimits(0, 2)],
+                    validators=[category2.isBetween(0, 2, inclusive=True)],
                 ),
                 Field(
                     item="35",
@@ -281,7 +282,7 @@ t2 = SchemaManager(
                     endIndex=45,
                     required=True,
                     validators=[
-                        validators.isLargerThanOrEqualTo(0),
+                        category2.isGreaterThan(0, inclusive=True),
                     ],
                 ),
                 Field(
@@ -292,7 +293,7 @@ t2 = SchemaManager(
                     startIndex=45,
                     endIndex=46,
                     required=True,
-                    validators=[validators.oneOf([1, 2])],
+                    validators=[category2.isOneOf([1, 2])],
                 ),
                 Field(
                     item="36B",
@@ -302,7 +303,7 @@ t2 = SchemaManager(
                     startIndex=46,
                     endIndex=47,
                     required=True,
-                    validators=[validators.oneOf([1, 2])],
+                    validators=[category2.isOneOf([1, 2])],
                 ),
                 Field(
                     item="36C",
@@ -313,10 +314,10 @@ t2 = SchemaManager(
                     endIndex=48,
                     required=True,
                     validators=[
-                        validators.or_validators(
-                            validators.oneOf(["1", "2"]),
-                            validators.isBlank()
-                        )
+                        category3.orValidators([
+                            category3.isOneOf(["1", "2"]),
+                            category3.isBlank()
+                        ])
                     ],
                 ),
                 Field(
@@ -328,7 +329,7 @@ t2 = SchemaManager(
                     endIndex=49,
                     required=False,
                     validators=[
-                        validators.isLargerThanOrEqualTo(0),
+                        category2.isGreaterThan(0, inclusive=True),
                     ],
                 ),
                 Field(
@@ -340,7 +341,7 @@ t2 = SchemaManager(
                     endIndex=50,
                     required=True,
                     validators=[
-                        validators.oneOf([1, 2]),
+                        category2.isOneOf([1, 2]),
                     ],
                 ),
                 Field(
@@ -352,7 +353,7 @@ t2 = SchemaManager(
                     endIndex=51,
                     required=False,
                     validators=[
-                        validators.isInLimits(0, 5),
+                        category2.isBetween(0, 5, inclusive=True),
                     ],
                 ),
                 Field(
@@ -364,7 +365,7 @@ t2 = SchemaManager(
                     endIndex=53,
                     required=True,
                     validators=[
-                        validators.isInStringRange(1, 10),
+                        category2.isBetween(1, 10, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -376,7 +377,7 @@ t2 = SchemaManager(
                     endIndex=54,
                     required=False,
                     validators=[
-                        validators.isInLimits(0, 3),
+                        category2.isBetween(0, 3, inclusive=True),
                     ],
                 ),
                 Field(
@@ -388,7 +389,7 @@ t2 = SchemaManager(
                     endIndex=55,
                     required=False,
                     validators=[
-                        validators.isInLimits(0, 9),
+                        category2.isBetween(0, 9, inclusive=True),
                     ],
                 ),
                 Field(
@@ -400,10 +401,10 @@ t2 = SchemaManager(
                     endIndex=57,
                     required=False,
                     validators=[
-                        validators.or_validators(
-                            validators.isInStringRange(0, 16),
-                            validators.isInStringRange(98, 99),
-                        )
+                        category3.orValidators([
+                            category3.isBetween(0, 16, inclusive=True, cast=int),
+                            category3.isBetween(98, 99, inclusive=True, cast=int),
+                        ])
                     ],
                 ),
                 Field(
@@ -414,7 +415,7 @@ t2 = SchemaManager(
                     startIndex=57,
                     endIndex=58,
                     required=False,
-                    validators=[validators.oneOf([0, 1, 2, 9])],
+                    validators=[category2.isOneOf([0, 1, 2, 9])],
                 ),
                 Field(
                     item="43",
@@ -425,7 +426,7 @@ t2 = SchemaManager(
                     endIndex=59,
                     required=False,
                     validators=[
-                        validators.oneOf([0, 1, 2, 9]),
+                        category2.isOneOf([0, 1, 2, 9]),
                     ],
                 ),
                 Field(
@@ -437,7 +438,7 @@ t2 = SchemaManager(
                     endIndex=62,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 999),
+                        category2.isBetween(0, 999, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -449,7 +450,7 @@ t2 = SchemaManager(
                     endIndex=64,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -461,7 +462,7 @@ t2 = SchemaManager(
                     endIndex=65,
                     required=False,
                     validators=[
-                        validators.isInLimits(0, 9),
+                        category2.isBetween(0, 9, inclusive=True),
                     ],
                 ),
                 Field(
@@ -473,7 +474,7 @@ t2 = SchemaManager(
                     endIndex=66,
                     required=False,
                     validators=[
-                        validators.isInLimits(0, 3),
+                        category2.isBetween(0, 3, inclusive=True),
                     ],
                 ),
                 Field(
@@ -485,10 +486,10 @@ t2 = SchemaManager(
                     endIndex=68,
                     required=True,
                     validators=[
-                        validators.or_validators(
-                            validators.isInStringRange(0, 9),
-                            validators.oneOf(("11", "12")),
-                        )
+                        category3.orValidators([
+                            category3.isBetween(0, 9, inclusive=True, cast=int),
+                            category3.isOneOf(("11", "12")),
+                        ])
                     ],
                 ),
                 Field(
@@ -500,7 +501,7 @@ t2 = SchemaManager(
                     endIndex=70,
                     required=True,
                     validators=[
-                        validators.oneOf(
+                        category2.isOneOf(
                             [
                                 "01",
                                 "02",
@@ -525,7 +526,7 @@ t2 = SchemaManager(
                     endIndex=72,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -537,7 +538,7 @@ t2 = SchemaManager(
                     endIndex=74,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -549,7 +550,7 @@ t2 = SchemaManager(
                     endIndex=76,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -561,7 +562,7 @@ t2 = SchemaManager(
                     endIndex=78,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -573,7 +574,7 @@ t2 = SchemaManager(
                     endIndex=80,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -585,7 +586,7 @@ t2 = SchemaManager(
                     endIndex=82,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -597,7 +598,7 @@ t2 = SchemaManager(
                     endIndex=84,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -609,7 +610,7 @@ t2 = SchemaManager(
                     endIndex=86,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -621,7 +622,7 @@ t2 = SchemaManager(
                     endIndex=88,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -633,7 +634,7 @@ t2 = SchemaManager(
                     endIndex=90,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -645,7 +646,7 @@ t2 = SchemaManager(
                     endIndex=92,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -657,7 +658,7 @@ t2 = SchemaManager(
                     endIndex=94,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -669,7 +670,7 @@ t2 = SchemaManager(
                     endIndex=96,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -681,7 +682,7 @@ t2 = SchemaManager(
                     endIndex=98,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -693,7 +694,7 @@ t2 = SchemaManager(
                     endIndex=100,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -705,7 +706,7 @@ t2 = SchemaManager(
                     endIndex=102,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -717,7 +718,7 @@ t2 = SchemaManager(
                     endIndex=104,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -729,7 +730,7 @@ t2 = SchemaManager(
                     endIndex=106,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -741,7 +742,7 @@ t2 = SchemaManager(
                     endIndex=108,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -754,7 +755,7 @@ t2 = SchemaManager(
                     endIndex=110,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -767,7 +768,7 @@ t2 = SchemaManager(
                     endIndex=112,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -780,7 +781,7 @@ t2 = SchemaManager(
                     endIndex=114,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -793,7 +794,7 @@ t2 = SchemaManager(
                     endIndex=116,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -806,7 +807,7 @@ t2 = SchemaManager(
                     endIndex=118,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -819,7 +820,7 @@ t2 = SchemaManager(
                     endIndex=120,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -832,7 +833,7 @@ t2 = SchemaManager(
                     endIndex=122,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -845,7 +846,7 @@ t2 = SchemaManager(
                     endIndex=124,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -858,7 +859,7 @@ t2 = SchemaManager(
                     endIndex=126,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -870,7 +871,7 @@ t2 = SchemaManager(
                     endIndex=128,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -882,7 +883,7 @@ t2 = SchemaManager(
                     endIndex=130,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -894,7 +895,7 @@ t2 = SchemaManager(
                     endIndex=132,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 99),
+                        category2.isBetween(0, 99, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -906,7 +907,7 @@ t2 = SchemaManager(
                     endIndex=136,
                     required=True,
                     validators=[
-                        validators.isInStringRange(0, 9999),
+                        category2.isBetween(0, 9999, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -918,7 +919,7 @@ t2 = SchemaManager(
                     endIndex=140,
                     required=False,
                     validators=[
-                        validators.isInStringRange(0, 9999),
+                        category2.isBetween(0, 9999, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -930,7 +931,7 @@ t2 = SchemaManager(
                     endIndex=144,
                     required=True,
                     validators=[
-                        validators.isInStringRange(0, 9999),
+                        category2.isBetween(0, 9999, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -942,7 +943,7 @@ t2 = SchemaManager(
                     endIndex=148,
                     required=True,
                     validators=[
-                        validators.isInStringRange(0, 9999),
+                        category2.isBetween(0, 9999, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -954,7 +955,7 @@ t2 = SchemaManager(
                     endIndex=152,
                     required=True,
                     validators=[
-                        validators.isInStringRange(0, 9999),
+                        category2.isBetween(0, 9999, inclusive=True, cast=int),
                     ],
                 ),
                 Field(
@@ -966,7 +967,7 @@ t2 = SchemaManager(
                     endIndex=156,
                     required=True,
                     validators=[
-                        validators.isInStringRange(0, 9999),
+                        category2.isBetween(0, 9999, inclusive=True, cast=int),
                     ],
                 ),
             ],

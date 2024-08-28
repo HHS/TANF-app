@@ -7,7 +7,9 @@ from elasticsearch.exceptions import ElasticsearchException
 import itertools
 import logging
 from tdpservice.parsers.models import ParserErrorCategoryChoices, ParserError
-from tdpservice.parsers import row_schema, schema_defs, util, validators
+from tdpservice.parsers import row_schema, schema_defs, util
+from tdpservice.parsers.validators import category1
+from tdpservice.parsers.validators.util import value_is_empty
 from tdpservice.parsers.schema_defs.utils import get_section_reference, get_program_model
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
 from tdpservice.parsers.util import log_parser_exception
@@ -42,7 +44,7 @@ def parse_datafile(datafile, dfs):
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
     is_encrypted = field_values["encryption"] == "E"
-    is_tribal = not validators.value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
+    is_tribal = not value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
 
     logger.debug(f"Datafile has encrypted fields: {is_encrypted}.")
     logger.debug(f"Datafile: {datafile.__repr__()}, is Tribal: {is_tribal}.")
@@ -61,10 +63,12 @@ def parse_datafile(datafile, dfs):
 
     # Validate tribe code in submission across program type and fips code
     generate_error = util.make_generate_parser_error(datafile, 1)
-    tribe_is_valid, tribe_error = validators.validate_tribe_fips_program_agree(header['program_type'],
-                                                                               field_values["tribe_code"],
-                                                                               field_values["state_fips"],
-                                                                               generate_error)
+    tribe_is_valid, tribe_error = category1.validate_tribe_fips_program_agree(
+        header['program_type'],
+        field_values["tribe_code"],
+        field_values["state_fips"],
+        generate_error
+    )
 
     if not tribe_is_valid:
         logger.info(f"Tribe Code ({field_values['tribe_code']}) inconsistency with Program Type " +
@@ -75,7 +79,7 @@ def parse_datafile(datafile, dfs):
         return errors
 
     # Ensure file section matches upload section
-    section_is_valid, section_error = validators.validate_header_section_matches_submission(
+    section_is_valid, section_error = category1.validate_header_section_matches_submission(
         datafile,
         get_section_reference(program_type, section),
         util.make_generate_parser_error(datafile, 1)
@@ -89,7 +93,7 @@ def parse_datafile(datafile, dfs):
         update_meta_model(datafile, dfs)
         return errors
 
-    rpt_month_year_is_valid, rpt_month_year_error = validators.validate_header_rpt_month_year(
+    rpt_month_year_is_valid, rpt_month_year_error = category1.validate_header_rpt_month_year(
         datafile,
         header,
         util.make_generate_parser_error(datafile, 1)

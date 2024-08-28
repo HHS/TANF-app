@@ -4,7 +4,8 @@
 from tdpservice.parsers.transforms import ssp_ssn_decryption_func
 from tdpservice.parsers.fields import TransformField, Field
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
-from tdpservice.parsers import validators
+from tdpservice.parsers.validators import category1, category2, category3
+from tdpservice.parsers.validators.util import is_quiet_preparser_errors
 from tdpservice.search_indexes.documents.ssp import SSP_M3DataSubmissionDocument
 from tdpservice.parsers.util import generate_t2_t3_t5_hashes, get_t2_t3_t5_partial_hash_members
 
@@ -18,86 +19,86 @@ first_part_schema = RowSchema(
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
     preparsing_validators=[
-        validators.t3_m3_child_validator(FIRST_CHILD),
-        validators.caseNumberNotEmpty(8, 19),
-        validators.or_priority_validators([
-            validators.field_year_month_with_header_year_quarter(),
-            validators.validateRptMonthYear(),
-        ]),
-        validators.notEmpty(8, 19)
+        category1.t3_m3_child_validator(FIRST_CHILD),
+        category1.caseNumberNotEmpty(8, 19),
+        category1.or_priority_validators([
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
+                ]),
+        category1.recordIsNotEmpty(8, 19)
     ],
     postparsing_validators=[
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.matches(1),
+            condition_function=category3.isEqual(1),
             result_field_name='SSN',
-            result_function=validators.validateSSN(),
+            result_function=category3.validateSSN(),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_HISPANIC',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_AMER_INDIAN',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_ASIAN',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_BLACK',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_HAWAIIAN',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_WHITE',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RELATIONSHIP_HOH',
-            result_function=validators.isInLimits(4, 9),
+            result_function=category3.isBetween(4, 9, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='PARENT_MINOR_CHILD',
-            result_function=validators.oneOf((1, 2, 3)),
+            result_function=category3.isOneOf((1, 2, 3)),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.matches(1),
+            condition_function=category3.isEqual(1),
             result_field_name='EDUCATION_LEVEL',
-            result_function=validators.notMatches(99),
+            result_function=category3.isNotEqual(99),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.matches(1),
+            condition_function=category3.isEqual(1),
             result_field_name='CITIZENSHIP_STATUS',
-            result_function=validators.oneOf((1, 2)),
+            result_function=category3.isOneOf((1, 2)),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.matches(2),
+            condition_function=category3.isEqual(2),
             result_field_name='CITIZENSHIP_STATUS',
-            result_function=validators.oneOf((1, 2, 3, 9)),
+            result_function=category3.isOneOf((1, 2, 3, 9)),
             ),
     ],
     fields=[
@@ -120,8 +121,8 @@ first_part_schema = RowSchema(
             endIndex=8,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
-                validators.dateMonthIsValid(),
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid(),
             ]
         ),
         Field(
@@ -132,7 +133,7 @@ first_part_schema = RowSchema(
             startIndex=8,
             endIndex=19,
             required=True,
-            validators=[validators.notEmpty()]
+            validators=[category2.isNotEmpty()]
         ),
         Field(
             item="60",
@@ -142,7 +143,7 @@ first_part_schema = RowSchema(
             startIndex=19,
             endIndex=20,
             required=True,
-            validators=[validators.oneOf([1, 2, 4])]
+            validators=[category2.isOneOf([1, 2, 4])]
         ),
         Field(
             item="61",
@@ -152,10 +153,10 @@ first_part_schema = RowSchema(
             startIndex=20,
             endIndex=28,
             required=True,
-            validators=[validators.intHasLength(8),
-                        validators.dateYearIsLargerThan(1900),
-                        validators.dateMonthIsValid(),
-                        validators.dateDayIsValid()
+            validators=[category2.intHasLength(8),
+                        category2.dateYearIsLargerThan(1900),
+                        category2.dateMonthIsValid(),
+                        category2.dateDayIsValid()
                         ]
         ),
         TransformField(
@@ -168,7 +169,7 @@ first_part_schema = RowSchema(
             endIndex=37,
             required=True,
             is_encrypted=False,
-            validators=[validators.isNumber()]
+            validators=[category2.isNumber()]
         ),
         Field(
             item="63A",
@@ -178,7 +179,7 @@ first_part_schema = RowSchema(
             startIndex=37,
             endIndex=38,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63B",
@@ -188,7 +189,7 @@ first_part_schema = RowSchema(
             startIndex=38,
             endIndex=39,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63C",
@@ -198,7 +199,7 @@ first_part_schema = RowSchema(
             startIndex=39,
             endIndex=40,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63D",
@@ -208,7 +209,7 @@ first_part_schema = RowSchema(
             startIndex=40,
             endIndex=41,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63E",
@@ -218,7 +219,7 @@ first_part_schema = RowSchema(
             startIndex=41,
             endIndex=42,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63F",
@@ -228,7 +229,7 @@ first_part_schema = RowSchema(
             startIndex=42,
             endIndex=43,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="64",
@@ -238,7 +239,7 @@ first_part_schema = RowSchema(
             startIndex=43,
             endIndex=44,
             required=True,
-            validators=[validators.isInLimits(0, 9)]
+            validators=[category2.isBetween(0, 9, inclusive=True)]
         ),
         Field(
             item="65A",
@@ -248,7 +249,7 @@ first_part_schema = RowSchema(
             startIndex=44,
             endIndex=45,
             required=True,
-            validators=[validators.oneOf([1, 2])]
+            validators=[category2.isOneOf([1, 2])]
         ),
         Field(
             item="65B",
@@ -258,7 +259,7 @@ first_part_schema = RowSchema(
             startIndex=45,
             endIndex=46,
             required=True,
-            validators=[validators.oneOf([1, 2])]
+            validators=[category2.isOneOf([1, 2])]
         ),
         Field(
             item="66",
@@ -268,7 +269,7 @@ first_part_schema = RowSchema(
             startIndex=46,
             endIndex=48,
             required=False,
-            validators=[validators.isInStringRange(0, 10)]
+            validators=[category2.isBetween(0, 10, inclusive=True, cast=int)]
         ),
         Field(
             item="67",
@@ -278,7 +279,7 @@ first_part_schema = RowSchema(
             startIndex=48,
             endIndex=49,
             required=False,
-            validators=[validators.oneOf([0, 2, 3])]
+            validators=[category2.isOneOf([0, 2, 3])]
         ),
         Field(
             item="68",
@@ -289,10 +290,10 @@ first_part_schema = RowSchema(
             endIndex=51,
             required=True,
             validators=[
-                validators.or_validators(
-                    validators.isInStringRange(1, 16),
-                    validators.isInStringRange(98, 99)
-                ),
+                category3.orValidators([
+                    category3.isBetween(1, 16, inclusive=True, cast=int),
+                    category3.isBetween(98, 99, inclusive=True, cast=int)
+                ]),
             ]
         ),
         Field(
@@ -303,7 +304,7 @@ first_part_schema = RowSchema(
             startIndex=51,
             endIndex=52,
             required=False,
-            validators=[validators.oneOf([1, 2, 3, 9])]
+            validators=[category2.isOneOf([1, 2, 3, 9])]
         ),
         Field(
             item="70A",
@@ -313,7 +314,7 @@ first_part_schema = RowSchema(
             startIndex=52,
             endIndex=56,
             required=True,
-            validators=[validators.isInLimits(0, 9999)]
+            validators=[category2.isBetween(0, 9999, inclusive=True)]
         ),
         Field(
             item="70B",
@@ -323,7 +324,7 @@ first_part_schema = RowSchema(
             startIndex=56,
             endIndex=60,
             required=True,
-            validators=[validators.isInLimits(0, 9999)]
+            validators=[category2.isBetween(0, 9999, inclusive=True)]
         )
     ]
 )
@@ -334,87 +335,87 @@ second_part_schema = RowSchema(
     generate_hashes_func=generate_t2_t3_t5_hashes,
     should_skip_partial_dup_func=lambda record: record.FAMILY_AFFILIATION in {2, 4, 5},
     get_partial_hash_members_func=get_t2_t3_t5_partial_hash_members,
-    quiet_preparser_errors=validators.is_quiet_preparser_errors(min_length=61),
+    quiet_preparser_errors=is_quiet_preparser_errors(min_length=61),
     preparsing_validators=[
-        validators.t3_m3_child_validator(SECOND_CHILD),
-        validators.caseNumberNotEmpty(8, 19),
-        validators.or_priority_validators([
-                    validators.field_year_month_with_header_year_quarter(),
-                    validators.validateRptMonthYear(),
+        category1.t3_m3_child_validator(SECOND_CHILD),
+        category1.caseNumberNotEmpty(8, 19),
+        category1.or_priority_validators([
+                    category1.validate_fieldYearMonth_with_headerYearQuarter(),
+                    category1.validateRptMonthYear(),
                 ]),
     ],
     postparsing_validators=[
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.matches(1),
+            condition_function=category3.isEqual(1),
             result_field_name='SSN',
-            result_function=validators.validateSSN(),
+            result_function=category3.validateSSN(),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_HISPANIC',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_AMER_INDIAN',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_ASIAN',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_BLACK',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_HAWAIIAN',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RACE_WHITE',
-            result_function=validators.isInLimits(1, 2),
+            result_function=category3.isBetween(1, 2, inclusive=True),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='RELATIONSHIP_HOH',
-            result_function=validators.isInStringRange(4, 9),
+            result_function=category3.isBetween(4, 9, inclusive=True, cast=int),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.oneOf((1, 2)),
+            condition_function=category3.isOneOf((1, 2)),
             result_field_name='PARENT_MINOR_CHILD',
-            result_function=validators.oneOf((1, 2, 3)),
+            result_function=category3.isOneOf((1, 2, 3)),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.matches(1),
+            condition_function=category3.isEqual(1),
             result_field_name='EDUCATION_LEVEL',
-            result_function=validators.notMatches(99),
+            result_function=category3.isNotEqual(99),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.matches(1),
+            condition_function=category3.isEqual(1),
             result_field_name='CITIZENSHIP_STATUS',
-            result_function=validators.oneOf((1, 2)),
+            result_function=category3.isOneOf((1, 2)),
             ),
-        validators.if_then_validator(
+        category3.ifThenAlso(
             condition_field_name='FAMILY_AFFILIATION',
-            condition_function=validators.matches(2),
+            condition_function=category3.isEqual(2),
             result_field_name='CITIZENSHIP_STATUS',
-            result_function=validators.oneOf((1, 2, 3, 9)),
+            result_function=category3.isOneOf((1, 2, 3, 9)),
             ),
     ],
     fields=[
@@ -437,8 +438,8 @@ second_part_schema = RowSchema(
             endIndex=8,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
-                validators.dateMonthIsValid(),
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid(),
             ]
         ),
         Field(
@@ -449,7 +450,7 @@ second_part_schema = RowSchema(
             startIndex=8,
             endIndex=19,
             required=True,
-            validators=[validators.notEmpty()]
+            validators=[category2.isNotEmpty()]
         ),
         Field(
             item="60",
@@ -459,7 +460,7 @@ second_part_schema = RowSchema(
             startIndex=60,
             endIndex=61,
             required=True,
-            validators=[validators.oneOf([1, 2, 4])]
+            validators=[category2.isOneOf([1, 2, 4])]
         ),
         Field(
             item="61",
@@ -469,10 +470,10 @@ second_part_schema = RowSchema(
             startIndex=61,
             endIndex=69,
             required=True,
-            validators=[validators.intHasLength(8),
-                        validators.dateYearIsLargerThan(1900),
-                        validators.dateMonthIsValid(),
-                        validators.dateDayIsValid()
+            validators=[category2.intHasLength(8),
+                        category2.dateYearIsLargerThan(1900),
+                        category2.dateMonthIsValid(),
+                        category2.dateDayIsValid()
                         ]
         ),
         TransformField(
@@ -485,7 +486,7 @@ second_part_schema = RowSchema(
             endIndex=78,
             required=True,
             is_encrypted=False,
-            validators=[validators.isNumber()]
+            validators=[category2.isNumber()]
         ),
         Field(
             item="63A",
@@ -495,7 +496,7 @@ second_part_schema = RowSchema(
             startIndex=78,
             endIndex=79,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63B",
@@ -505,7 +506,7 @@ second_part_schema = RowSchema(
             startIndex=79,
             endIndex=80,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63C",
@@ -515,7 +516,7 @@ second_part_schema = RowSchema(
             startIndex=80,
             endIndex=81,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63D",
@@ -525,7 +526,7 @@ second_part_schema = RowSchema(
             startIndex=81,
             endIndex=82,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63E",
@@ -535,7 +536,7 @@ second_part_schema = RowSchema(
             startIndex=82,
             endIndex=83,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="63F",
@@ -545,7 +546,7 @@ second_part_schema = RowSchema(
             startIndex=83,
             endIndex=84,
             required=False,
-            validators=[validators.isInLimits(0, 2)]
+            validators=[category2.isBetween(0, 2, inclusive=True)]
         ),
         Field(
             item="64",
@@ -555,7 +556,7 @@ second_part_schema = RowSchema(
             startIndex=84,
             endIndex=85,
             required=True,
-            validators=[validators.isInLimits(0, 9)]
+            validators=[category2.isBetween(0, 9, inclusive=True)]
         ),
         Field(
             item="65A",
@@ -565,7 +566,7 @@ second_part_schema = RowSchema(
             startIndex=85,
             endIndex=86,
             required=True,
-            validators=[validators.oneOf([1, 2])]
+            validators=[category2.isOneOf([1, 2])]
         ),
         Field(
             item="65B",
@@ -575,7 +576,7 @@ second_part_schema = RowSchema(
             startIndex=86,
             endIndex=87,
             required=True,
-            validators=[validators.oneOf([1, 2])]
+            validators=[category2.isOneOf([1, 2])]
         ),
         Field(
             item="66",
@@ -585,7 +586,7 @@ second_part_schema = RowSchema(
             startIndex=87,
             endIndex=89,
             required=False,
-            validators=[validators.isInLimits(0, 10)]
+            validators=[category2.isBetween(0, 10, inclusive=True)]
         ),
         Field(
             item="67",
@@ -595,7 +596,7 @@ second_part_schema = RowSchema(
             startIndex=89,
             endIndex=90,
             required=False,
-            validators=[validators.oneOf([0, 2, 3])]
+            validators=[category2.isOneOf([0, 2, 3])]
         ),
         Field(
             item="68",
@@ -606,10 +607,10 @@ second_part_schema = RowSchema(
             endIndex=92,
             required=True,
             validators=[
-                validators.or_validators(
-                    validators.isInStringRange(1, 16),
-                    validators.isInStringRange(98, 99)
-                )
+                category3.orValidators([
+                    category3.isBetween(1, 16, inclusive=True, cast=int),
+                    category3.isBetween(98, 99, inclusive=True, cast=int)
+                ])
             ]
         ),
         Field(
@@ -620,7 +621,7 @@ second_part_schema = RowSchema(
             startIndex=92,
             endIndex=93,
             required=False,
-            validators=[validators.oneOf([1, 2, 3, 9])]
+            validators=[category2.isOneOf([1, 2, 3, 9])]
         ),
         Field(
             item="70A",
@@ -630,7 +631,7 @@ second_part_schema = RowSchema(
             startIndex=93,
             endIndex=97,
             required=True,
-            validators=[validators.isInLimits(0, 9999)]
+            validators=[category2.isBetween(0, 9999, inclusive=True)]
         ),
         Field(
             item="70B",
@@ -640,7 +641,7 @@ second_part_schema = RowSchema(
             startIndex=97,
             endIndex=101,
             required=True,
-            validators=[validators.isInLimits(0, 9999)]
+            validators=[category2.isBetween(0, 9999, inclusive=True)]
         )
     ]
 )
