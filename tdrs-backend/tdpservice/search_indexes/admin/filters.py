@@ -11,6 +11,7 @@ import datetime
 class CreationDateFilter(MostRecentVersionFilter):
     """Simple filter class to show newest created datafile records."""
 
+    title = _('Submission')
     parameter_name = 'created_at'
 
     def queryset(self, request, queryset):

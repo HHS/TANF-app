@@ -8,7 +8,11 @@ from django.utils.translation import ugettext_lazy as _
 class MostRecentVersionFilter(admin.SimpleListFilter):
     """Simple filter class to show newest created datafile records."""
 
-    title = _('Most recent version')
+    @property
+    @abstractmethod
+    def title(self):
+        """Define the widget title displayed for the form field."""
+        pass
 
     @property
     @abstractmethod
@@ -19,7 +23,7 @@ class MostRecentVersionFilter(admin.SimpleListFilter):
     def lookups(self, request, model_admin):
         """Available options in dropdown."""
         return (
-            (None, _('Most recent version')),
+            (None, _('Most recent')),
             ('all', _('All')),
         )
 
