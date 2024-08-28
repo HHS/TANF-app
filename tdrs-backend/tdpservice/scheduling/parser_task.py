@@ -11,6 +11,7 @@ from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoice
 from tdpservice.parsers.aggregates import case_aggregates_by_month, total_errors_by_month
 from tdpservice.parsers.util import log_parser_exception, make_generate_parser_error
 from tdpservice.email.helpers.data_file import send_data_submitted_email
+from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 
 
 logger = logging.getLogger(__name__)
@@ -53,6 +54,7 @@ def parse(data_file_id, should_send_submission_email=True):
                              f"Encountered Database exception in parser_task.py: \n{e}",
                              "error"
                              )
+        ReparseMeta.increment_files_failed(data_file.reparse_meta_models)
     except Exception as e:
         generate_error = make_generate_parser_error(data_file, None)
         error = generate_error(schema=None,
@@ -70,3 +72,4 @@ def parse(data_file_id, should_send_submission_email=True):
                              (f"Uncaught exception while parsing datafile: {data_file.pk}! Please review the logs to "
                               f"see if manual intervention is required. Exception: \n{e}"),
                              "critical")
+        ReparseMeta.increment_files_failed(data_file.reparse_meta_models)
