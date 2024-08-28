@@ -72,6 +72,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'stt',
         'user',
         'year',
+        'version',
         'summary__status',
         DataFileSummaryPrgTypeFilter,
         LatestReparseEvent,
