@@ -5,7 +5,7 @@
 **Date**:     August 27, 2024 <br>
 
 ## Summary
-This is a template to use to create new technical memorandums.
+This technical memorandum provides the suggested guidelines for a future engineer to integrate TDP's need for multi-select filtering with Django 508. The memorandum provides some necessary background on both the TDP multi-select filters as well as Django 508 and it's purpose and effects. The [Method](#method) section provides the guidelines and updates required to integrate TDP's custom filtering needs with Django 508. Specifically, the [Django 508 Updates](#django-508-updates) section introduces the engineer to the area where the filtering and query string building occurs within Django 508 and the suggested changes. The [TDP Updates](#tdp-updates) section introduces the recommended changes to current TDP custom filtering with respect to how it can be simplified and how it could be unified with Django 508 to provide a seamless filtering experience.
 
 ## Background
 TDP has been expanding it's Django Admin Console (DAC) filtering capabilities by introducing custom filters, specifically multi-select filters. This has introduced a myriad of issues because TDP does not use the default DAC. Instead, to assist with accessibility compliance TDP wraps the default DAC with [Django 508](https://github.com/raft-tech/django-admin-508) (henceforth referred to as 508) which makes various updates to the styling and functionality of the default DAC. A key change is that 508 introduces to the DAC is an `Apply Filters` button that intercepts query string parameters from default DAC filters and only applies them after clicking the button. The default DAC applies the filters as they are selected as opposed to all at once. The issue with 508's approach is that it assumes all filters are built-in Django filters (i.e. single select filters). This presents a discrepancy because Django allows developers to write custom templates and filters to add further filtering functionality (e.g. multi-select filters).
@@ -13,7 +13,7 @@ TDP has been expanding it's Django Admin Console (DAC) filtering capabilities by
 ## Out of Scope
 General filter template specification and general property based multi-select filtering mentioned in the [TDP Updates](#tdp-updates) section of this memorandum are out of scope for this memorandum.
 
-## Method/Design
+## Method
 To support multi-select/custom filtering in the DAC, both the TDP repository and the 508 repository will require updates.
 
 ### Django 508 Updates
