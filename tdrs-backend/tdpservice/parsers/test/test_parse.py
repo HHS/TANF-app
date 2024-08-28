@@ -137,6 +137,7 @@ def test_parse_big_file(big_file, dfs):
     parse.parse_datafile(big_file, dfs)
     dfs.status = dfs.get_status()
     assert dfs.status == DataFileSummary.Status.ACCEPTED_WITH_ERRORS
+
     dfs.case_aggregates = aggregates.case_aggregates_by_month(
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {'months': [
@@ -317,6 +318,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     parser_errors = ParserError.objects.filter(file=bad_trailer_file_2)
     assert parser_errors.count() == 9
 
+    parser_errors = parser_errors.exclude(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)
     trailer_errors = list(parser_errors.filter(row_number=3).order_by('id'))
 
     trailer_error_1 = trailer_errors[0]
@@ -335,8 +337,7 @@ def test_parse_bad_trailer_file2(bad_trailer_file_2, dfs):
     row_2_error = row_2_errors.first()
     assert row_2_error.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert row_2_error.error_message == (
-        'T1 Item 13 (Receives Subsidized Housing): 3 is not '
-        'larger or equal to 1 and smaller or equal to 2.'
+        'T1 Item 13 (Receives Subsidized Housing): 3 is not in range [1, 2].'
     )
 
     # catch-rpt-month-year-mismatches
@@ -477,23 +478,23 @@ def test_parse_ssp_section1_datafile(ssp_section1_datafile, dfs):
 
     parse.parse_datafile(ssp_section1_datafile, dfs)
 
-    parser_errors = ParserError.objects.filter(file=ssp_section1_datafile)
+    parser_errors = ParserError.objects.filter(file=ssp_section1_datafile).order_by('row_number')
 
     err = parser_errors.first()
 
     assert err.row_number == 2
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert err.error_message == (
-        'M1 Item 11 (Receives Subsidized Housing): 3 is not larger or equal to 1 and smaller or equal to 2.'
+        'M1 Item 11 (Receives Subsidized Housing): 3 is not in range [1, 2].'
     )
     assert err.content_type is not None
     assert err.object_id is not None
 
-    dup_errors = parser_errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("id")
-    assert dup_errors.count() == 2
-    assert dup_errors[0].error_message == "Duplicate record detected with record type M3 at line 453. " + \
+    cat4_errors = parser_errors.filter(error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by("id")
+    assert cat4_errors.count() == 2
+    assert cat4_errors[0].error_message == "Duplicate record detected with record type M3 at line 453. " + \
         "Record is a duplicate of the record at line number 452."
-    assert dup_errors[1].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
+    assert cat4_errors[1].error_message == "Duplicate record detected with record type M3 at line 3273. " + \
         "Record is a duplicate of the record at line number 3272."
 
     assert parser_errors.count() == 32488
@@ -884,8 +885,7 @@ def test_parse_tanf_section2_file(tanf_section2_file, dfs):
     err = parser_errors.first()
     assert err.error_type == ParserErrorCategoryChoices.FIELD_VALUE
     assert err.error_message == (
-        "T4 Item 10 (Received Subsidized Housing): 3 "
-        "is not larger or equal to 1 and smaller or equal to 2."
+        "T4 Item 10 (Received Subsidized Housing): 3 is not in range [1, 2]."
     )
     assert err.content_type.model == "tanf_t4"
     assert err.object_id is not None
@@ -1055,6 +1055,7 @@ def test_parse_ssp_section4_file(ssp_section4_file, dfs):
     dfs.status = dfs.get_status()
     dfs.case_aggregates = aggregates.total_errors_by_month(
         dfs.datafile, dfs.status)
+
     assert dfs.case_aggregates == {"months": [
         {"month": "Oct", "total_errors": 0},
         {"month": "Nov", "total_errors": 0},
@@ -1418,8 +1419,7 @@ def test_empty_t4_t5_values(t4_t5_empty_values, dfs):
     logger.info(t4[0].__dict__)
     assert t5.count() == 1
     assert parser_errors[0].error_message == (
-        "T4 Item 10 (Received Subsidized Housing): 3 is "
-        "not larger or equal to 1 and smaller or equal to 2."
+        "T4 Item 10 (Received Subsidized Housing): 3 is not in range [1, 2]."
     )
 
 
@@ -1639,8 +1639,7 @@ def test_parse_m2_cat2_invalid_37_38_39_file(m2_cat2_invalid_37_38_39_file, dfs)
     assert parser_errors.count() == 3
 
     error_msgs = {
-        "Item 37 (Educational Level) 00 is not in range [1, 16]. or "
-        "Item 37 (Educational Level) 00 is not in range [98, 99].",
+        "Item 37 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
         "M2 Item 38 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
         "M2 Item 39 (Cooperated with Child Support): 0 is not in [1, 2, 9]."
     }
@@ -1664,12 +1663,12 @@ def test_parse_m3_cat2_invalid_68_69_file(m3_cat2_invalid_68_69_file, dfs):
 
     assert parser_errors.count() == 4
 
-    error_msgs = {"Item 68 (Educational Level) 00 is not in range [1, 16]. or Item 68 (Educational Level) " +
-                  "00 is not in range [98, 99].",
-                  "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
-                  "Item 68 (Educational Level) 00 is not in range [1, 16]. or Item 68 (Educational Level) " +
-                  "00 is not in range [98, 99].",
-                  "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."}
+    error_msgs = {
+        "Item 68 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
+        "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9].",
+        "Item 68 (Educational Level) 00 must be between 1 and 16 or must be between 98 and 99.",
+        "M3 Item 69 (Citizenship/Immigration Status): 0 is not in [1, 2, 3, 9]."
+    }
 
     for e in parser_errors:
         assert e.error_message in error_msgs
@@ -1790,7 +1789,7 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, num_error
     assert parser_errors.count() == num_errors
 
     dup_error = parser_errors.first()
-    assert dup_error.error_message == expected_error_msg.format(record_type=record_type)
+    assert expected_error_msg.format(record_type=record_type) in dup_error.error_message
 
     model.objects.count() == 0
 
@@ -1819,4 +1818,4 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
 
     err = parser_errors.first()
     assert err.error_message == ("Every T1 record should have at least one corresponding T2 or T3 record with the "
-                                 "same RPT_MONTH_YEAR and CASE_NUMBER.")
+                                 "same Item 4 (Reporting Year and Month) and Item 6 (Case Number).")

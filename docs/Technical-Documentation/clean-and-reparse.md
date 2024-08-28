@@ -1,13 +1,13 @@
-# Clean and Re-parse DataFiles
+# Clean and Reparse DataFiles
 
 ## Background
 As TDP has evolved so has it's validation mechanisms, messages, and expansiveness. As such, many of the datafiles locked in the database and S3
 have not undergone TDP's latest and most stringent validation processes. Because data quality is so important to all TDP stakeholders
-we wanted to introduce a way to re-parse and subsequently re-validate datafiles that have already been submitted to TDP to enhance the integrity
+we wanted to introduce a way to reparse and subsequently re-validate datafiles that have already been submitted to TDP to enhance the integrity
 and the quality of the submissions. The following lays out the process TDP takes to automate and execute this process, and how this process can
 be tested locally and in our deployed environments.
 
-# Clean and Re-parse Flow
+# Clean and Reparse Flow
 As a safety measure, this process must ALWAYS be executed manually by a system administrator. Once executed, all processes thereafter are completely
 automated. The steps below outline how this process executes.
 
@@ -24,7 +24,7 @@ automated. The steps below outline how this process executes.
 10. `clean_and_reparse` re-saves the selected datafiles to the database.
 11. `clean_and_reparse` pushes a new `parser_task` onto the Redis queue for each of the selected datafiles.
 
-## Local Clean and Re-parse
+## Local Clean and Reparse
 Make sure you have submitted a few datafiles, ideally accross program types and fiscal timeframes.
 
 1. Browse the [indices](http://localhost:9200/_cat/indices/?pretty&v&s=index) and the DAC and verify the indices reflect the document counts you expect and the DAC reflects the record counts you expect.
@@ -53,70 +53,32 @@ The commands should ALWAYS be executed in the order they appear below.
 1. curl -X DELETE 'http://localhost:9200/dev*'
 2. python manage.py search_index --rebuild
 
-#### Clean and Re-parse All with New Indices and Keeping Old Indices
+#### Clean and Reparse All with New Indices and Keeping Old Indices
 1. Execute `python manage.py clean_and_reparse -a -n`
     - If this is the first time you're executing a command with new indices, because we have to create an alias in Elastic with the same name as the
     original index i.e. (`dev_tanf_t1_submissions`), the old indices no matter whether you specified `-d` or not will be deleted. From thereafter,
     the command will always respect the `-d` switch.
 2. Expected Elastic results.
-    - If this is the first time you have ran the command the [indices](http://localhost:9200/_cat/indices/?pretty&v&s=index) url should reflect 21 indices prefixed with `dev` and they should contain the same number of documents as the original indices did. The new indices will also have a datetime suffix indicating when the re-parse occurred.
+    - If this is the first time you have ran the command the [indices](http://localhost:9200/_cat/indices/?pretty&v&s=index) url should reflect 21 indices prefixed with `dev` and they should contain the same number of documents as the original indices did. The new indices will also have a datetime suffix indicating when the reparse occurred.
     - If this is the second time running this command the [indices](http://localhost:9200/_cat/indices/?pretty&v&s=index) url should reflect 42 indices prefixed with `dev` and they should each contain the same number of documents as the original indices did. The latest indices will have a new datetime suffix delineating them from the other indices.
 3. Expected DAC results.
     - The DAC record counts should be exactly the same no matter how many times the command is run.
     - The primary key for all reparsed datafiles should no longer be the same.
     - `ParserError` and `DataFileSummary` objects should be consistent with the file.
 
-#### Clean and Re-parse All with New Indices and Deleting Old Indices
-1. Execute `python manage.py clean_and_reparse -a -n -d`
+#### Clean and Reparse All
+1. Execute `python manage.py clean_and_reparse -a`
 2. The expected results for this command will be exactly the same as above. The only difference is that no matter how many times you execute this command, you should only see 21 indices in Elastic with the `dev` prefix.
 
-#### Clean and Re-parse All with Same Indices
-1. Execute `python manage.py clean_and_reparse -a`
-2. The expected results for this command will match the initial result from above.
-
 ```
-health status index                   uuid                   pri rep docs.count docs.deleted store.size pri.store.size
-green  open   .kibana_1               VKeA-BPcSQmJJl_AbZr8gQ   1   0          1            0      4.9kb          4.9kb
-yellow open   dev_ssp_m1_submissions  mDIiQxJrRdq0z7W9H_QUYg   1   1          5            0       24kb           24kb
-yellow open   dev_ssp_m2_submissions  OUrgAN1XRKOJgJHwr4xm7w   1   1          6            0     33.6kb         33.6kb
-yellow open   dev_ssp_m3_submissions  60fCBXHGTMK31MyWw4t2gQ   1   1          8            0     32.4kb         32.4kb
-yellow open   dev_tanf_t1_submissions 19f_lawWQKSeuwejo2Qgvw   1   1        817            0    288.2kb        288.2kb
-yellow open   dev_tanf_t2_submissions dPj2BdNtSJyAxCqnMaV2aw   1   1        884            0    414.4kb        414.4kb
-yellow open   dev_tanf_t3_submissions e7bEl0AURPmcZ5kiFwclcA   1   1       1380            0    355.2kb        355.2kb
-```
-
-#### Clean and Re-parse FY 2024 New Indices and Keep Old Indices
-1. Execute `python manage.py clean_and_reparse -y 2024 -n`
-2. The expected results here are much different with respect to Elastic. Again, Postgres is the ground truth and it's counts should never change. Because this is the first time we execute this command and therfore are creating our Elastic aliases the result returned from the [indices](http://localhost:9200/_cat/indices/?pretty&v&s=index) url might be confusing. See below.
-
-```
-index                                       docs.count
-.kibana_1                                            2
-dev_ssp_m1_submissions_2024-07-05_17.26.26           5
-dev_ssp_m2_submissions_2024-07-05_17.26.26           6
-dev_ssp_m3_submissions_2024-07-05_17.26.26           8
-dev_tanf_t1_submissions_2024-07-05_17.26.26          2
-dev_tanf_t2_submissions_2024-07-05_17.26.26          2
-dev_tanf_t3_submissions_2024-07-05_17.26.26          4
-```
-
-- While the DAC reports the correct number of records for all submitted types, Elastic does not. This is because we only reparsed a subset of the entire collection of datafiles for the first time we executed the `clean_and_reparse` command. Therefore, Elastic only has documents for the subset of resubmitted files. If we had already executed the command: `python manage.py clean_and_reparse -a -n` and then executed `python manage.py clean_and_reparse -y 2024 -n`, we would see what you might have initially expected to see.
-
-```
-index                                       docs.count
-.kibana_1                                            2
-dev_ssp_m1_submissions_2024-07-05_17.34.34           5
-dev_ssp_m1_submissions_2024-07-05_17.35.26           5
-dev_ssp_m2_submissions_2024-07-05_17.34.34           6
-dev_ssp_m2_submissions_2024-07-05_17.35.26           6
-dev_ssp_m3_submissions_2024-07-05_17.34.34           8
-dev_ssp_m3_submissions_2024-07-05_17.35.26           8
-dev_tanf_t1_submissions_2024-07-05_17.34.34        817
-dev_tanf_t1_submissions_2024-07-05_17.35.26          2
-dev_tanf_t2_submissions_2024-07-05_17.34.34        884
-dev_tanf_t2_submissions_2024-07-05_17.35.26          2
-dev_tanf_t3_submissions_2024-07-05_17.34.34       1380
-dev_tanf_t3_submissions_2024-07-05_17.35.26          4
+health status index                                       uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   .kibana_1                                   VKeA-BPcSQmJJl_AbZr8gQ   1   0          1            0      4.9kb          4.9kb
+yellow open   dev_ssp_m1_submissions_2024-07-05_17.26.26  mDIiQxJrRdq0z7W9H_QUYg   1   1          5            0       24kb           24kb
+yellow open   dev_ssp_m2_submissions_2024-07-05_17.26.26  OUrgAN1XRKOJgJHwr4xm7w   1   1          6            0     33.6kb         33.6kb
+yellow open   dev_ssp_m3_submissions_2024-07-05_17.26.26  60fCBXHGTMK31MyWw4t2gQ   1   1          8            0     32.4kb         32.4kb
+yellow open   dev_tanf_t1_submissions_2024-07-05_17.26.26 19f_lawWQKSeuwejo2Qgvw   1   1        817            0    288.2kb        288.2kb
+yellow open   dev_tanf_t2_submissions_2024-07-05_17.26.26 dPj2BdNtSJyAxCqnMaV2aw   1   1        884            0    414.4kb        414.4kb
+yellow open   dev_tanf_t3_submissions_2024-07-05_17.26.26 e7bEl0AURPmcZ5kiFwclcA   1   1       1380            0    355.2kb        355.2kb
 ```
 
 ## Cloud.gov Examples
@@ -131,7 +93,7 @@ Running the `clean_and_reparse` command in a Cloud.gov environment will require 
 
 ## OFA Admin Backend App Login
 
-### 0. Disconnect from VPN. 
+### 0. Disconnect from VPN.
 
 ### 1. Authenticate with Cloud.gov
 API endpoint: api.fr.cloud.gov
@@ -172,7 +134,7 @@ space:          tanf-dev
 1. Get the app GUID
     ```bash
     $ cf curl v3/apps/$(cf app tdp-backend-qasp --guid)/processes | jq --raw-output '.resources | .[]? | select(.type == "web").guid'
-    
+
     <PROCESS_GUID redacted>
     ```
 
@@ -201,23 +163,21 @@ space:          tanf-dev
 $ /tmp/lifecycle/shell
 ```
 
-### 4. Display Help for Re-parse Command
+### 4. Display Help for Reparse Command
 ```bash
 $ python manage.py clean_and_reparse -h
 
 usage: manage.py clean_and_parse [-h] [-q {Q1,Q2,Q3,Q4}] [-y FISCAL_YEAR] [-a] [-n] [-d] [--configuration CONFIGURATION] [--version] [-v {0,1,2,3}] [--settings SETTINGS] [--pythonpath PYTHONPATH] [--traceback] [--no-color] [--force-color] [--skip-checks]
 
-Delete and re-parse a set of datafiles. All re-parsed data will be moved into a new set of Elastic indexes.
+Delete and reparse a set of datafiles. All reparsed data will be moved into a new set of Elastic indexes.
 
 options:
   -h, --help            show this help message and exit
   -q {Q1,Q2,Q3,Q4}, --fiscal_quarter {Q1,Q2,Q3,Q4}
-                        Re-parse all files in the fiscal quarter, e.g. Q1.
+                        Reparse all files in the fiscal quarter, e.g. Q1.
   -y FISCAL_YEAR, --fiscal_year FISCAL_YEAR
-                        Re-parse all files in the fiscal year, e.g. 2021.
-  -a, --all             Clean and re-parse all datafiles. If selected, fiscal_year/quarter aren't necessary.
-  -n, --new_indices     Move re-parsed data to new Elastic indices.
-  -d, --delete_indices  Requires new_indices. Delete the current Elastic indices.
+                        Reparse all files in the fiscal year, e.g. 2021.
+  -a, --all             Clean and reparse all datafiles. If selected, fiscal_year/quarter aren't necessary.
   --configuration CONFIGURATION
                         The name of the configuration class to load, e.g. "Development". If this isn't provided, the DJANGO_CONFIGURATION environment variable will be used.
   --version             show program's version number and exit

@@ -1,52 +1,25 @@
 """Admin class for DataFile objects."""
 from django.contrib import admin
-from django.db.models import QuerySet, Max
-from django.utils.translation import ugettext_lazy as _
-from ..core.utils import ReadOnlyAdminMixin
-from tdpservice.core.filters import MostRecentVersionFilter
-from .models import DataFile, LegacyFileTransfer
+from tdpservice.core.utils import ReadOnlyAdminMixin
+from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 from tdpservice.parsers.models import DataFileSummary, ParserError
+from tdpservice.data_files.admin.filters import DataFileSummaryPrgTypeFilter, LatestReparseEvent
 from django.conf import settings
 from django.utils.html import format_html
-from tdpservice.stts.models import STT
 
 DOMAIN = settings.FRONTEND_BASE_URL
 
 
-class NewestVersionFilter(MostRecentVersionFilter):
-    """Simple filter class to show newest created datafile records."""
+class DataFileInline(admin.TabularInline):
+    """Inline model for many to many relationship."""
 
-    title = _('Version')
-    parameter_name = 'created_at'
+    model = DataFile.reparse_meta_models.through
+    can_delete = False
+    ordering = ["-pk"]
 
-    def queryset(self, request, queryset):
-        """Sort queryset to show latest records."""
-        if self.value() is None and queryset.exists():
-            return queryset.order_by(
-                'stt__stt_code', 'year', 'quarter', 'section', '-version'
-            ).distinct('stt__stt_code', 'year', 'quarter', 'section')
-
-
-class DataFileSummaryPrgTypeFilter(admin.SimpleListFilter):
-    """Admin class filter for Program Type on datafile model."""
-
-    title = 'Program Type'
-    parameter_name = 'program_type'
-
-    def lookups(self, request, model_admin):
-        """Return a list of tuples."""
-        return [
-            ('TAN', 'TAN'),
-            ('SSP', 'SSP'),
-        ]
-
-    def queryset(self, request, queryset):
-        """Return a queryset."""
-        if self.value():
-            query_set_ids = [df.id for df in queryset if df.prog_type == self.value()]
-            return queryset.filter(id__in=query_set_ids)
-        else:
-            return queryset
+    def has_change_permission(self, request, obj=None):
+        """Read only permissions."""
+        return False
 
 
 @admin.register(DataFile)
@@ -80,6 +53,8 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
                            field=f'{df.id}' + ":" + df.get_status(),
                            url=f"{DOMAIN}/admin/parsers/datafilesummary/{df.id}/change/")
 
+    inlines = [DataFileInline]
+
     list_display = [
         'id',
         'stt',
@@ -97,12 +72,11 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'stt',
         'user',
         'year',
-        # 'version',
+        'version',
         'summary__status',
         DataFileSummaryPrgTypeFilter,
-        NewestVersionFilter
+        LatestReparseEvent
     ]
-
 
 @admin.register(LegacyFileTransfer)
 class LegacyFileTransferAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
