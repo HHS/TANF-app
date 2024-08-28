@@ -1,12 +1,14 @@
 """Admin class for DataFile objects."""
 from django.contrib import admin
-
+from django.db.models import QuerySet, Max
+from django.utils.translation import ugettext_lazy as _
 from ..core.utils import ReadOnlyAdminMixin
 from tdpservice.core.filters import MostRecentVersionFilter
 from .models import DataFile, LegacyFileTransfer
 from tdpservice.parsers.models import DataFileSummary, ParserError
 from django.conf import settings
 from django.utils.html import format_html
+from tdpservice.stts.models import STT
 
 DOMAIN = settings.FRONTEND_BASE_URL
 
@@ -14,13 +16,15 @@ DOMAIN = settings.FRONTEND_BASE_URL
 class NewestVersionFilter(MostRecentVersionFilter):
     """Simple filter class to show newest created datafile records."""
 
+    title = _('Version')
     parameter_name = 'created_at'
 
     def queryset(self, request, queryset):
         """Sort queryset to show latest records."""
         if self.value() is None and queryset.exists():
-            return queryset.order_by("stt__stt_code", "-pk")\
-                .distinct("stt__stt_code")
+            return queryset.order_by(
+                'stt__stt_code', 'year', 'quarter', 'section', '-version'
+            ).distinct('stt__stt_code', 'year', 'quarter', 'section')
 
 
 class DataFileSummaryPrgTypeFilter(admin.SimpleListFilter):
@@ -93,7 +97,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'stt',
         'user',
         'year',
-        'version',
+        # 'version',
         'summary__status',
         DataFileSummaryPrgTypeFilter,
         NewestVersionFilter
