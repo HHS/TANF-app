@@ -69,6 +69,16 @@ services:
     volumes:
       - elastic_data:/usr/share/elasticsearch/data
 
+  prometheus:
+    restart: always
+    image: prom/prometheus:v2.54.1
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+
   web:
     restart: always
     environment:
@@ -141,6 +151,7 @@ volumes:
   localstack_data:
   postgres_data:
   elastic_data:
+  prometheus_data:
 
 
 networks:

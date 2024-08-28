@@ -52,6 +52,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 urlpatterns = [
     path("v1/", include(urlpatterns)),
     path("admin/", admin.site.urls, name="admin"),
+    path("prometheus/", include("django_prometheus.urls")),
     path("kibana_auth_check/", KibanaAuthorizationCheck.as_view(), name="kibana-authorization-check"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
