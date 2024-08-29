@@ -35,7 +35,8 @@ class ExportCsvMixin:
 
         def __iter__(self):
             """Yield the next row in the csv export."""
-            for obj in self.queryset:
+            for obj in self.queryset.iterator(chunk_size=1000):
+            # for obj in self.queryset:
                 row = []
 
                 if self.is_header_row:
@@ -45,7 +46,8 @@ class ExportCsvMixin:
                 for field_name in self.field_names:
                     field = getattr(obj, field_name)
                     row.append(field)
-                    if field_name == "datafile":
+                    if field and field_name == "datafile":
+                        print(field)
                         row.append(field.stt.stt_code)
                 yield self.writer.writerow(row)
 
