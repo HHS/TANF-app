@@ -47,7 +47,7 @@ class ExportCsvMixin:
                     field = getattr(obj, field_name)
                     row.append(field)
                     if field and field_name == "datafile":
-                        print(field)
+                        # print(field)
                         row.append(field.stt.stt_code)
                 yield self.writer.writerow(row)
 
