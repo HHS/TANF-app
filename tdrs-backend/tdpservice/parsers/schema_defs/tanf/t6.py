@@ -291,8 +291,8 @@ s2 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
-                validators.dateMonthIsValid(),
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid(),
             ],
         ),
         Field(
@@ -512,8 +512,8 @@ s3 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
-                validators.dateMonthIsValid(),
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid(),
             ],
         ),
         Field(
