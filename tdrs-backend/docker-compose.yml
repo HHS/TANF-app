@@ -73,8 +73,12 @@ services:
     restart: always
     image: grafana/grafana:11.2.0
     ports:
-      - 9400:3000
+      - 9400:9400
     volumes:
+      - ./plg/grafana/datasources.yml:/etc/grafana/provisioning/datasources/default.yml
+      - ./plg/grafana/dashboards/provider.yml:/etc/grafana/provisioning/dashboards/default.yml
+      - ./plg/grafana/dashboards:/var/lib/grafana/provisioning/dashboards
+      - ./plg/grafana/custom.ini:/etc/grafana/grafana.ini
       - grafana_data:/var/lib/grafana
 
   prometheus:
@@ -83,7 +87,8 @@ services:
     ports:
       - 9090:9090
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./plg/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./plg/prometheus/django_rules.yml:/etc/prometheus/prom_django_rules.yml
       - prometheus_data:/prometheus
     depends_on:
       - web
@@ -138,7 +143,7 @@ services:
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
       - GENERATE_TRAILER_ERRORS=True
-      - BYPASS_KIBANA_AUTH
+      - BYPASS_OFA_AUTH
       - ELASTICSEARCH_REINDEX_THREAD_COUNT
       - ELASTICSEARCH_REINDEX_CHUNK_SIZE
       - ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT

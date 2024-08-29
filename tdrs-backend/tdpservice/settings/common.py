@@ -367,7 +367,6 @@ class Common(Configuration):
     ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE', '0ms')
     ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
     KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
-    BYPASS_KIBANA_AUTH = os.getenv("BYPASS_KIBANA_AUTH", False)
     ELASTIC_INDEX_PREFIX = APP_NAME + '_'
     es_logger = logging.getLogger('elasticsearch')
     es_logger.setLevel(logging.WARNING)
@@ -537,3 +536,4 @@ class Common(Configuration):
     IGNORE_DUPLICATE_ERROR_PRECEDENCE = os.getenv("IGNORE_DUPLICATE_ERROR_PRECEDENCE", False)
     BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
     MEDIAN_LINE_PARSE_TIME = os.getenv("MEDIAN_LINE_PARSE_TIME", 0.0005574226379394531)
+    BYPASS_OFA_AUTH = os.getenv("BYPASS_OFA_AUTH", False)
