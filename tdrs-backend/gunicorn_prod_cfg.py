@@ -21,4 +21,4 @@ capture_output = True
 # Daemonize the Gunicorn process (detach & enter background)
 # daemon = True
 
-timeout = 100
+timeout = 600
