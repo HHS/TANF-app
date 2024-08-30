@@ -111,7 +111,7 @@ services:
       - ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL
     volumes:
       - .:/tdpapp
-    image: tdp
+    image: tdp-backend
     build: .
     command: >
       bash -c "./wait_for_services.sh &&
