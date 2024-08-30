@@ -5,6 +5,14 @@ With a few exceptions, we've tended to publish markdown research syntheses to su
 
 The syntheses included herein are organized reverse-chronologically from newest to oldest:
 
+### [2024, Summer - OFA Admin Experience](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2024,%20Summer%20-%20OFA%20Admin%20Experience.md)
+- Ran two workshops with the OFA DIGIT team focused on enhancement requests for the Django Admin Console (DAC) to achieve:
+   - A clear understanding of current enhancement requests and described pain points
+   - Initial estimation of the work required to deliver each change to the DAC
+   - Alignment on the scope of potential work to support prioritizing all issues within our product roadmap and upcoming sprints
+
+
+
 ### [2023, Sprint - TDP 3.0 Pilot Program](https://github.com/raft-tech/TANF-app/blob/develop/docs/User-Experience/Research-Syntheses/2023%2C%20Spring%20-%20Testing%20CSV%20%26%20Excel-based%20error%20reports.md#spring-2023---testing-csv--excel-based-error-reports)
 
 - Research sessions conducted with 5 states and 4 Tribes with a focus on programs that had errors on their Section 1 Data Files.
