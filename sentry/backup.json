@@ -1,0 +1,503 @@
+[
+{
+  "model": "sites.site",
+  "pk": 1,
+  "fields": {
+    "domain": "example.com",
+    "name": "example.com"
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 1,
+  "fields": {
+    "key": "sentry:last_worker_ping",
+    "last_updated": "2024-08-01T13:53:00.189Z",
+    "last_updated_by": "unknown",
+    "value": 1722520380.1114867
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 2,
+  "fields": {
+    "key": "sentry:last_worker_version",
+    "last_updated": "2024-08-01T13:53:00.238Z",
+    "last_updated_by": "unknown",
+    "value": "\"23.7.0.dev0\""
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 3,
+  "fields": {
+    "key": "system.url-prefix",
+    "last_updated": "2024-08-01T13:50:36.841Z",
+    "last_updated_by": "unknown",
+    "value": "\"http://localhost:9001\""
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 4,
+  "fields": {
+    "key": "system.admin-email",
+    "last_updated": "2024-08-01T13:50:36.854Z",
+    "last_updated_by": "unknown",
+    "value": "\"admin@tanf.com\""
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 5,
+  "fields": {
+    "key": "mail.port",
+    "last_updated": "2024-08-01T13:50:36.860Z",
+    "last_updated_by": "unknown",
+    "value": 25
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 6,
+  "fields": {
+    "key": "mail.username",
+    "last_updated": "2024-08-01T13:50:36.866Z",
+    "last_updated_by": "unknown",
+    "value": "\"\""
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 7,
+  "fields": {
+    "key": "mail.password",
+    "last_updated": "2024-08-01T13:50:36.870Z",
+    "last_updated_by": "unknown",
+    "value": "\"\""
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 8,
+  "fields": {
+    "key": "mail.use-tls",
+    "last_updated": "2024-08-01T13:50:36.873Z",
+    "last_updated_by": "unknown",
+    "value": false
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 9,
+  "fields": {
+    "key": "mail.use-ssl",
+    "last_updated": "2024-08-01T13:50:36.876Z",
+    "last_updated_by": "unknown",
+    "value": false
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 10,
+  "fields": {
+    "key": "auth.allow-registration",
+    "last_updated": "2024-08-01T13:50:36.883Z",
+    "last_updated_by": "unknown",
+    "value": false
+  }
+},
+{
+  "model": "sentry.option",
+  "pk": 11,
+  "fields": {
+    "key": "sentry:version-configured",
+    "last_updated": "2024-08-01T13:50:36.889Z",
+    "last_updated_by": "unknown",
+    "value": "\"23.7.0.dev0.dd25c26bcece07936bb6401f6fa9c89b96a2118e\""
+  }
+},
+{
+  "model": "sentry.actor",
+  "pk": 1,
+  "fields": {
+    "type": 0,
+    "user_id": null,
+    "team": 1
+  }
+},
+{
+  "model": "sentry.actor",
+  "pk": 2,
+  "fields": {
+    "type": 1,
+    "user_id": 1,
+    "team": null
+  }
+},
+{
+  "model": "sentry.email",
+  "pk": 1,
+  "fields": {
+    "email": "admin@tanf.com",
+    "date_added": "2024-08-01T13:46:16.066Z"
+  }
+},
+{
+  "model": "sentry.organization",
+  "pk": 1,
+  "fields": {
+    "name": "Sentry",
+    "slug": "sentry",
+    "status": 0,
+    "date_added": "2024-08-01T13:44:41.175Z",
+    "default_role": "member",
+    "is_test": false,
+    "flags": "1"
+  }
+},
+{
+  "model": "sentry.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$150000$hhBadj48lYdN$XnnczKcFZPnOXsw6KLgbOdg+9Ff8oIFCzKBFuLPh7M4=",
+    "last_login": "2024-08-01T13:50:33.020Z",
+    "username": "admin@tanf.com",
+    "name": "",
+    "email": "admin@tanf.com",
+    "is_staff": true,
+    "is_active": true,
+    "is_superuser": true,
+    "is_managed": false,
+    "is_sentry_app": null,
+    "is_password_expired": false,
+    "last_password_change": "2024-08-01T13:46:16.183Z",
+    "flags": "0",
+    "session_nonce": null,
+    "date_joined": "2024-08-01T13:46:16.058Z",
+    "last_active": "2024-08-01T13:51:16.376Z",
+    "avatar_type": 0,
+    "avatar_url": null
+  }
+},
+{
+  "model": "sentry.organizationmapping",
+  "pk": 1,
+  "fields": {
+    "organization_id": 1,
+    "slug": "sentry",
+    "name": "Sentry",
+    "date_created": "2024-08-01T13:44:41.239Z",
+    "customer_id": null,
+    "verified": false,
+    "idempotency_key": "",
+    "region_name": "--monolith--",
+    "status": 0
+  }
+},
+{
+  "model": "sentry.relayusage",
+  "pk": 1,
+  "fields": {
+    "relay_id": "6d26be62-e8e3-4604-a148-656227d9769f",
+    "version": "23.6.1",
+    "first_seen": "2024-08-01T13:48:32.374Z",
+    "last_seen": "2024-08-01T13:48:32.374Z",
+    "public_key": "VGxPbAyvOjbRdVdaIF8PmuCq-0YCjRqT9Q0dKhxYg_A"
+  }
+},
+{
+  "model": "sentry.relay",
+  "pk": 1,
+  "fields": {
+    "relay_id": "6d26be62-e8e3-4604-a148-656227d9769f",
+    "public_key": "VGxPbAyvOjbRdVdaIF8PmuCq-0YCjRqT9Q0dKhxYg_A",
+    "first_seen": null,
+    "last_seen": null,
+    "is_internal": true
+  }
+},
+{
+  "model": "sentry.useremail",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "admin@tanf.com"
+    ],
+    "email": "admin@tanf.com",
+    "validation_hash": "PFGHXGxhV2oGjQI9tZDOLjx6Q1qZWtKN",
+    "date_hash_added": "2024-08-01T13:46:16.064Z",
+    "is_verified": false
+  }
+},
+{
+  "model": "sentry.userip",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "admin@tanf.com"
+    ],
+    "ip_address": "192.168.65.1",
+    "country_code": null,
+    "region_code": null,
+    "first_seen": "2024-08-01T13:49:08.204Z",
+    "last_seen": "2024-08-01T13:49:08.193Z"
+  }
+},
+{
+  "model": "sentry.userrole",
+  "pk": 1,
+  "fields": {
+    "date_updated": "2024-08-01T13:44:41.170Z",
+    "date_added": "2024-08-01T13:44:41.170Z",
+    "name": "Super Admin",
+    "permissions": "['broadcasts.admin', 'users.admin', 'options.admin']"
+  }
+},
+{
+  "model": "sentry.userroleuser",
+  "pk": 1,
+  "fields": {
+    "date_updated": "2024-08-01T13:46:16.196Z",
+    "date_added": "2024-08-01T13:46:16.196Z",
+    "user": [
+      "admin@tanf.com"
+    ],
+    "role": 1
+  }
+},
+{
+  "model": "sentry.team",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "slug": "sentry",
+    "name": "Sentry",
+    "status": 0,
+    "actor": 1,
+    "idp_provisioned": false,
+    "date_added": "2024-08-01T13:44:41.185Z",
+    "org_role": null
+  }
+},
+{
+  "model": "sentry.organizationmember",
+  "pk": 1,
+  "fields": {
+    "organization": 1,
+    "user_id": 1,
+    "email": null,
+    "role": "owner",
+    "flags": "0",
+    "token": null,
+    "date_added": "2024-08-01T13:46:16.073Z",
+    "token_expires_at": null,
+    "has_global_access": true,
+    "inviter_id": null,
+    "invite_status": 0,
+    "type": 50,
+    "user_is_active": true,
+    "user_email": "admin@tanf.com"
+  }
+},
+{
+  "model": "sentry.project",
+  "pk": 1,
+  "fields": {
+    "slug": "internal",
+    "name": "Internal",
+    "forced_color": null,
+    "organization": 1,
+    "public": false,
+    "date_added": "2024-08-01T13:44:41.191Z",
+    "status": 0,
+    "first_event": null,
+    "flags": "10",
+    "platform": null
+  }
+},
+{
+  "model": "sentry.project",
+  "pk": 2,
+  "fields": {
+    "slug": "python-django",
+    "name": "python-django",
+    "forced_color": null,
+    "organization": 1,
+    "public": false,
+    "date_added": "2024-08-01T13:50:58.893Z",
+    "status": 0,
+    "first_event": null,
+    "flags": "10",
+    "platform": "python-django"
+  }
+},
+{
+  "model": "sentry.projectkey",
+  "pk": 1,
+  "fields": {
+    "project": 1,
+    "label": "Default",
+    "public_key": "20835f66e30e4e19ac9c98c83bbd951f",
+    "secret_key": "50b61843dabe4b78886b6817421dc6a1",
+    "roles": "1",
+    "status": 0,
+    "date_added": "2024-08-01T13:44:41.205Z",
+    "rate_limit_count": null,
+    "rate_limit_window": null,
+    "data": {
+      "dynamicSdkLoaderOptions": {
+        "hasPerformance": true,
+        "hasReplay": true
+      }
+    }
+  }
+},
+{
+  "model": "sentry.projectkey",
+  "pk": 2,
+  "fields": {
+    "project": 2,
+    "label": "Default",
+    "public_key": "43ebf8abe1434ec6aea2c7b92c465a0e",
+    "secret_key": "c62d7709665848f88bbe09082e019f75",
+    "roles": "1",
+    "status": 0,
+    "date_added": "2024-08-01T13:50:59.103Z",
+    "rate_limit_count": null,
+    "rate_limit_window": null,
+    "data": {
+      "dynamicSdkLoaderOptions": {
+        "hasPerformance": true,
+        "hasReplay": true
+      }
+    }
+  }
+},
+{
+  "model": "sentry.rule",
+  "pk": 1,
+  "fields": {
+    "project": 1,
+    "environment_id": null,
+    "label": "Send a notification for new issues",
+    "data": "{\"match\":\"all\",\"conditions\":[{\"id\":\"sentry.rules.conditions.first_seen_event.FirstSeenEventCondition\"}],\"actions\":[{\"id\":\"sentry.mail.actions.NotifyEmailAction\",\"targetType\":\"IssueOwners\",\"targetIdentifier\":null,\"fallthroughType\":\"ActiveMembers\"}]}",
+    "status": 0,
+    "source": 0,
+    "owner": null,
+    "date_added": "2024-08-01T13:44:41.213Z"
+  }
+},
+{
+  "model": "sentry.rule",
+  "pk": 2,
+  "fields": {
+    "project": 2,
+    "environment_id": null,
+    "label": "Send a notification for new issues",
+    "data": "{\"match\":\"all\",\"conditions\":[{\"id\":\"sentry.rules.conditions.first_seen_event.FirstSeenEventCondition\"}],\"actions\":[{\"id\":\"sentry.mail.actions.NotifyEmailAction\",\"targetType\":\"IssueOwners\",\"targetIdentifier\":null,\"fallthroughType\":\"ActiveMembers\"}]}",
+    "status": 0,
+    "source": 0,
+    "owner": null,
+    "date_added": "2024-08-01T13:50:59.204Z"
+  }
+},
+{
+  "model": "sentry.projectteam",
+  "pk": 1,
+  "fields": {
+    "project": 1,
+    "team": 1
+  }
+},
+{
+  "model": "sentry.projectteam",
+  "pk": 2,
+  "fields": {
+    "project": 2,
+    "team": 1
+  }
+},
+{
+  "model": "sentry.organizationmemberteam",
+  "pk": 1,
+  "fields": {
+    "team": 1,
+    "organizationmember": 1,
+    "is_active": true,
+    "role": null
+  }
+},
+{
+  "model": "sentry.projectoption",
+  "pk": 1,
+  "fields": {
+    "project": 1,
+    "key": "sentry:relay-rev",
+    "value": "\"124b064568394513a93c1cf6b96fa531\""
+  }
+},
+{
+  "model": "sentry.projectoption",
+  "pk": 2,
+  "fields": {
+    "project": 1,
+    "key": "sentry:relay-rev-lastchange",
+    "value": "\"2024-08-01T13:44:41.228498Z\""
+  }
+},
+{
+  "model": "sentry.projectoption",
+  "pk": 3,
+  "fields": {
+    "project": 1,
+    "key": "sentry:option-epoch",
+    "value": 11
+  }
+},
+{
+  "model": "sentry.projectoption",
+  "pk": 4,
+  "fields": {
+    "project": 1,
+    "key": "sentry:origins",
+    "value": "[\"*\"]"
+  }
+},
+{
+  "model": "sentry.projectoption",
+  "pk": 5,
+  "fields": {
+    "project": 2,
+    "key": "sentry:relay-rev",
+    "value": "\"c588a54b4537446c8ca91477867aeddd\""
+  }
+},
+{
+  "model": "sentry.projectoption",
+  "pk": 6,
+  "fields": {
+    "project": 2,
+    "key": "sentry:relay-rev-lastchange",
+    "value": "\"2024-08-01T13:51:01.098125Z\""
+  }
+},
+{
+  "model": "sentry.projectoption",
+  "pk": 7,
+  "fields": {
+    "project": 2,
+    "key": "sentry:option-epoch",
+    "value": 11
+  }
+},
+{
+  "model": "sentry.projectoption",
+  "pk": 8,
+  "fields": {
+    "project": 2,
+    "key": "sentry:token",
+    "value": "\"164d36a4500d11ef938f0242ac130024\""
+  }
+}
+]
