@@ -1,4 +1,10 @@
 # commands:
+  init-deploy:
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+
   build-and-tag-images:
     parameters:
       backend-appname:
@@ -8,13 +14,10 @@
         default: tdp-frontend
         type: string
     steps:
-      - checkout
-      - sudo-check
-      - cf-check
       - run:
-        name: Docker Login
-        command: |
-          docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi -p $DOCKER_PASSWORD
+          name: Docker Login
+          command: |
+            docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi -p $DOCKER_PASSWORD
 
   deploy-cloud-dot-gov:
     parameters:
@@ -42,9 +45,6 @@
         default: tdp-frontend
         type: string
     steps:
-      - checkout
-      - sudo-check
-      - cf-check
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-org: <<parameters.cf-org>>
