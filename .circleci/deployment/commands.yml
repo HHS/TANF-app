@@ -17,8 +17,6 @@
       - run:
           name: Docker Login
           command: |
-            pwd
-            ls
             echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
       - run:
           name: Tag Backend
