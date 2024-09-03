@@ -15,19 +15,12 @@
         type: string
     steps:
       - run:
-          name: Docker Login
-          command: |
-            echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
-      - run:
-          name: Tag Backend
+          name: Tag images
           command: |
             BUILD_DATE=`date +%F`
+            echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
             docker build -t tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:$BUILD_DATE -t tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:latest ./tdrs-backend
             docker push tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>> --all-tags
-      - run:
-          name: Tag Frontend
-          command: |
-            BUILD_DATE=`date +%F`
             docker build -t tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>>:$BUILD_DATE -t tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>>:latest ./tdrs-frontend
             docker push tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>> --all-tags
 
