@@ -16,8 +16,8 @@
     steps:
       - init-deploy
       - build-and-tag-images:
-          backend-appname: tdp-backend-<< parameters.target_env >>
-          frontend-appname: tdp-frontend-<< parameters.target_env >>
+          backend-appname: tdp-backend-staging
+          frontend-appname: tdp-frontend-staging
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
           frontend-appname: tdp-frontend-staging
@@ -31,8 +31,8 @@
     steps:
       - init-deploy
       - build-and-tag-images:
-          backend-appname: tdp-backend-<< parameters.target_env >>
-          frontend-appname: tdp-frontend-<< parameters.target_env >>
+          backend-appname: tdp-backend-develop
+          frontend-appname: tdp-frontend-develop
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-develop
           frontend-appname: tdp-frontend-develop
@@ -144,8 +144,8 @@
     steps:
       - init-deploy
       - build-and-tag-images:
-          backend-appname: tdp-backend-<< parameters.target_env >>
-          frontend-appname: tdp-frontend-<< parameters.target_env >>
+          backend-appname: tdp-backend-prod
+          frontend-appname: tdp-frontend-prod
       - deploy-cloud-dot-gov:
           environment: production
           backend-appname: tdp-backend-prod
