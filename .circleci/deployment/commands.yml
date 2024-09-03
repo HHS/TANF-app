@@ -17,7 +17,7 @@
       - run:
           name: Docker Login
           command: |
-            echo "$DOCKER_PASSWORD" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
+            echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
 
   deploy-cloud-dot-gov:
     parameters:
