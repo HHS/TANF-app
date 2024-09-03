@@ -74,3 +74,30 @@ We do not allow anonymous access on our Nexus instance. With that said, if you h
 ```
 docker pull tdp-docker.dev.raftlabs.tech/${ImageName}:${Version}
 ```
+
+## Nexus Admin UI Login
+To administer Nexus via the UI, you will need to access the service key in our dev cloud.gov environment.
+
+Log in with CloudFoundry
+```
+cf login --sso
+```
+Be sure to specify the space as `tanf-dev`
+
+After you've authenticated you can grab the password from the key:
+```
+cf service-key tanf-keys nexus-dev-admin
+```
+
+The key returns a username and a password:
+```
+{
+  "credentials": {
+    "password": REDACTED,
+    "username": REDACTED
+  }
+}
+```
+Copy the `password` to your clipboard and login into the Nexus UI with the `tdp-dev-admin` user. See below:
+
+![Nexus Dev Admin Login](./images/nexus-dev-admin-login.png)
