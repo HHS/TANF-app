@@ -5,7 +5,7 @@
       - sudo-check
       - cf-check
 
-  tag-build:
+  build-and-tag-images:
     parameters:
       backend-appname:
         default: tdp-backend
