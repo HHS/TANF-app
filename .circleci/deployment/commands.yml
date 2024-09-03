@@ -1,5 +1,5 @@
 # commands:
-  init:
+  init-deploy:
     steps:
       - checkout
       - sudo-check

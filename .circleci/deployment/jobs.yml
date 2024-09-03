@@ -5,7 +5,7 @@
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
-      - init
+      - init-deploy
       - build-and-tag-images:
           backend-appname: tdp-backend-<< parameters.target_env >>
           frontend-appname: tdp-frontend-<< parameters.target_env >>
@@ -17,7 +17,7 @@
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
-      - init
+      - init-deploy
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
           frontend-appname: tdp-frontend-staging
@@ -29,7 +29,7 @@
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
-      - init
+      - init-deploy
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-develop
           frontend-appname: tdp-frontend-develop
@@ -139,7 +139,7 @@
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
-      - init
+      - init-deploy
       - deploy-cloud-dot-gov:
           environment: production
           backend-appname: tdp-backend-prod
