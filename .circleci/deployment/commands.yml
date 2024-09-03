@@ -1,4 +1,30 @@
 # commands:
+  init:
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+
+  tag-build:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+    steps:
+      - run:
+        name: Docker Login
+        command: |
+          docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi -p $DOCKER_PASSWORD
+      # - run:
+      #   name: Tag Backend
+      #   command: |
+      #     sudo apt update
+      #     sudo apt-get install -y wget
+      #     sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.42.1/yq_linux_amd64 && chmod +x /usr/local/bin/yq
+
   deploy-cloud-dot-gov:
     parameters:
       environment:
@@ -25,9 +51,6 @@
         default: tdp-frontend
         type: string
     steps:
-      - checkout
-      - sudo-check
-      - cf-check
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-org: <<parameters.cf-org>>
