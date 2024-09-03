@@ -56,6 +56,6 @@
   docker-login:
     steps:
       - run:
-        name: Docker Login
-        command: |
-          echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
+          name: Docker login
+          command: |
+            echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
