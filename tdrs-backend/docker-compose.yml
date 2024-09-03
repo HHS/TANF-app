@@ -3,7 +3,7 @@ version: "3.4"
 
 services:
   zaproxy:
-    image: softwaresecurityproject/zap-stable:2.14.0
+    image: tdp-docker.dev.raftlabs.tech/dependencies/softwaresecurityproject/zap-stable:2.14.0
     command: sleep 3600
     depends_on:
       - web
@@ -12,7 +12,7 @@ services:
       - ../scripts/zap-hook.py:/zap/scripts/zap-hook.py:ro
 
   postgres:
-    image: postgres:15.7
+    image: tdp-docker.dev.raftlabs.tech/dependencies/postgres:15.7
     environment:
       - PGDATA=/var/lib/postgresql/data/
       - POSTGRES_DB=tdrs_test
@@ -25,14 +25,14 @@ services:
       - postgres_data:/var/lib/postgresql/data/:rw
 
   clamav-rest:
-    image: rafttech/clamav-rest:0.103.2
+    image: tdp-docker.dev.raftlabs.tech/dependencies/rafttech/clamav-rest:0.103.2
     environment:
       - MAX_FILE_SIZE=200M
     ports:
       - "9000:9000"
 
   localstack:
-    image: localstack/localstack:0.13.3
+    image: tdp-docker.dev.raftlabs.tech/dependencies/localstack/localstack:0.13.3
     environment:
       - SERVICES=s3
       - DATA_DIR=/tmp/localstack/data
@@ -46,7 +46,7 @@ services:
       - ../scripts/localstack-setup.sh:/docker-entrypoint-initaws.d/localstack-setup.sh
 
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:7.10.2
+    image: tdp-docker.dev.raftlabs.tech/dependencies/docker.elastic.co/kibana/kibana-oss:7.10.2
     ports:
       - 5601:5601
     environment:
@@ -59,7 +59,7 @@ services:
       - elastic
 
   elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+    image: tdp-docker.dev.raftlabs.tech/dependencies/docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
     environment:
       - discovery.type=single-node
       - logger.discovery.level=debug
@@ -130,7 +130,7 @@ services:
       - elastic
 
   redis-server:
-    image: "redis:alpine"
+    image: tdp-docker.dev.raftlabs.tech/dependencies/redis:alpine
     command: redis-server /tdpapp/redis.conf
     ports:
       - "6379:6379"
