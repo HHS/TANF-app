@@ -1,6 +1,7 @@
 """Admin class for DataFile objects."""
 from django.contrib import admin
 from tdpservice.core.utils import ReadOnlyAdminMixin
+from tdpservice.core.filters import custom_filter_title
 from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 from tdpservice.parsers.models import DataFileSummary, ParserError
 from tdpservice.data_files.admin.filters import DataFileSummaryPrgTypeFilter, LatestReparseEvent, VersionFilter
@@ -72,7 +73,7 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'stt',
         'user',
         'year',
-        'version',
+        ('version', custom_filter_title(admin.AllValuesFieldListFilter, 'version number')),
         'summary__status',
         DataFileSummaryPrgTypeFilter,
         LatestReparseEvent,
