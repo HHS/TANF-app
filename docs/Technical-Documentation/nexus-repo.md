@@ -102,7 +102,7 @@ Copy the `password` to your clipboard and login into the Nexus UI with the `tdp-
 
 ![Nexus Dev Admin Login](./images/nexus-dev-admin-login.png)
 
-## Docker Login
+## Local Docker Login
 After logging into the `tanf-dev` space with the `cf` cli, execute the following commands to authenticate your local docker daemon
 ```
 export NEXUS_DOCKER_PASSWORD=`cf service-key tanf-keys nexus-dev | tail -n +2 | jq .credentials.password`
