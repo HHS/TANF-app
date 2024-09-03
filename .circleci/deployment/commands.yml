@@ -17,7 +17,15 @@
       - run:
           name: Docker Login
           command: |
+            pwd
+            ls
             echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
+      # - run:
+      #     name: Tag Backend
+      #     command: |
+      #       BUILD_DATE=`date +%F`
+      #       docker build -t tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:$BUILD_DATE .
+      #       docker image tag tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:$BUILD_DATE tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:latest
 
   deploy-cloud-dot-gov:
     parameters:
