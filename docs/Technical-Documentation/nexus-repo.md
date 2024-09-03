@@ -69,7 +69,7 @@ docker push tdp-docker.dev.raftlabs.tech/${ImageName}:${Version}
 
 ### Pulling Images
 
-We do not allow anonymous access on our Nexus instance. With that said, if you have not logged in with Docker you will not be able to pull. If you are logged in:
+We do not allow anonymous access on our Nexus instance. With that said, if you have not [logged in with Docker](#docker-login) you will not be able to pull. If you are logged in:
 
 ```
 docker pull tdp-docker.dev.raftlabs.tech/${ImageName}:${Version}
@@ -101,3 +101,15 @@ The key returns a username and a password:
 Copy the `password` to your clipboard and login into the Nexus UI with the `tdp-dev-admin` user. See below:
 
 ![Nexus Dev Admin Login](./images/nexus-dev-admin-login.png)
+
+## Docker Login
+After logging into the `tanf-dev` space with the `cf` cli, execute the following commands to authenticate your local docker daemon
+```
+export NEXUS_DOCKER_PASSWORD=`cf service-key tanf-keys nexus-dev | tail -n +2 | jq .credentials.password`
+echo "$NEXUS_DOCKER_PASSWORD" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-dev --password-stdin
+```
+
+Sometimes the `docker login...` command above doesn't work. If that happens, just copy the content of `NEXUS_DOCKER_PASSWORD` to your clipboard and paste it when prompted for the password after executing the command below.
+```
+docker login https://tdp-docker.dev.raftlabs.tech -u tdp-dev
+```
