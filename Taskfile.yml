@@ -10,16 +10,66 @@ tasks:
   create-network:
     desc: Create the external network
     cmds:
-      - docker network create external-net
+      - (docker network create external-net) || true
 
   init-backend:
     desc: Initialize the backend project
     dir: tdrs-backend
     cmds:
+      - task: create-network
       - docker-compose -f docker-compose.yml up -d --build
       - docker-compose -f docker-compose.yml exec web sh -c "python ./manage.py makemigrations"
       - docker-compose -f docker-compose.yml exec web sh -c "python ./manage.py migrate"
       - docker-compose -f docker-compose.yml down
+      - task: sentry-down
+
+  clone-sentry-repo:
+    desc: Clone the sentry repo
+    dir: sentry
+    cmds:
+      - git clone https://github.com/getsentry/self-hosted.git || true
+
+
+  create-sentry:
+    desc: Create Sentry service
+    dir: sentry
+    cmds:
+      # limiting the memory to 2GB and CPU to only one cpu @0, for faster response, you can remove the limittask :  --cpuset-cpus 0
+      - (docker run --privileged -p 9001:9000 -d --memory="8g" --memory-swap="8g" --name sentry docker:dind) || true
+      - docker exec sentry sh -c "git clone https://github.com/getsentry/self-hosted.git || true"
+
+      # need sleep 10 for docker to start
+      # there is a bug with other version of self-hosted. looks like they are trying to upgrade to Django 5.0 (July 2024)
+      - docker exec sentry sh -c "cd self-hosted && sleep 10 && git checkout tags/23.10.1"
+
+      # add bash
+      - docker exec sentry sh -c "apk add bash"
+      - docker cp docker-compose.yml sentry:/self-hosted/docker-compose.yml
+      - docker cp .env sentry:/self-hosted/.env
+      - docker exec sentry bash -c "cd self-hosted && ./install.sh --skip-user-creation --no-report-self-hosted-issues"
+      # create a new user
+      - docker exec sentry bash -c "cd self-hosted && docker-compose run --rm web createuser --email admin@tanf.com --password admin --superuser"
+      # copy backup.json file to sentry
+      - docker cp backup.json sentry:/self-hosted/sentry/backup.json
+      # restore backup
+      - docker exec sentry bash -c "cd self-hosted && docker compose up -d"
+      - docker exec sentry bash -c "docker cp /self-hosted/sentry/backup.json sentry-self-hosted-web-1:/home/sentry/backup.json"
+      - docker exec sentry bash -c "docker exec sentry-self-hosted-web-1 bash -c 'sentry import /home/sentry/backup.json'"
+      - docker exec sentry bash -c "cd self-hosted && docker compose down"
+      - docker exec sentry bash -c "cd self-hosted && docker compose up -d"
+
+
+  sentry-up:
+    desc: Start sentry service
+    dir: sentry
+    cmds:
+      - docker exec sentry bash -c "cd self-hosted && docker-compose up -d"
+
+  sentry-down:
+    desc: Stop sentry service
+    dir: sentry
+    cmds:
+      - docker exec sentry bash -c "cd self-hosted && docker-compose down"
 
   drop-db:
     desc: Drop the backend database
@@ -50,7 +100,7 @@ tasks:
     desc: Restart backend web server
     dir: tdrs-backend
     cmds:
-      - docker-compose -f docker-compose.yml restart -d
+      - docker-compose -f docker-compose.yml restart
 
   backend-bash:
     desc: Open a shell in the backend container
@@ -83,6 +133,7 @@ tasks:
     desc: Run flake8 in the backend container
     dir: tdrs-backend
     cmds:
+      - task backend-up
       - docker-compose -f docker-compose.yml exec web sh -c "flake8 . && if [ $? -eq 0 ]; then echo 'Flake8 linter found no issues'; fi"
 
   backend-pip-lock:
@@ -90,6 +141,7 @@ tasks:
     desc: Lock the pip dependencies
     dir: tdrs-backend
     cmds:
+      - task: backend-up
       - docker-compose -f docker-compose.yml exec web sh -c "pipenv lock"
 
   psql:
@@ -104,9 +156,10 @@ tasks:
   clean:
     desc: Remove all containers, networks, and volumes
     cmds:
-      - docker-compose -f tdrs-backend/docker-compose.yml down -v
-      - docker-compose -f tdrs-frontend/docker-compose.yml down -v
-      - docker system prune -f -a
+      - docker stop $(docker ps -aq) || true
+      - docker rm $(docker ps -aq) || true
+      - docker rmi $(docker images -q) || true
+      - docker volume rm $(docker volume ls -q) || true
 
   clamav-up:
     desc: Start clamav service
@@ -130,7 +183,7 @@ tasks:
     desc: Restart frontend web server
     dir: tdrs-frontend
     cmds:
-      - docker-compose -f docker-compose.yml restart -d
+      - docker-compose -f docker-compose.yml restart
 
   frontend-av:
     desc: Start frontend with optional clamav service
