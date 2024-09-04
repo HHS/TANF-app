@@ -16,13 +16,22 @@
     steps:
       - setup_remote_docker
       - run:
-          name: Tag images
+          name: Tag AMD64 images
           command: |
             BUILD_DATE=`date +%F`
             echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
-            docker build -t tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:$BUILD_DATE -t tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:latest ./tdrs-backend
+            docker build --platform linux/amd64 -t tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:$BUILD_DATE -t tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:latest ./tdrs-backend
             docker push tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>> --all-tags
-            docker build -t tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>>:$BUILD_DATE -t tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>>:latest ./tdrs-frontend
+            docker build --platform linux/amd64 -t tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>>:$BUILD_DATE -t tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>>:latest ./tdrs-frontend
+            docker push tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>> --all-tags
+      - run:
+          name: Tag Arm64 images
+          command: |
+            BUILD_DATE=`date +%F`
+            echo "$CIRCI_DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-circi --password-stdin
+            docker build --platform linux/arm64 -t tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:$BUILD_DATE -t tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>>:latest ./tdrs-backend
+            docker push tdp-docker.dev.raftlabs.tech/<<parameters.backend-appname>> --all-tags
+            docker build --platform linux/arm64 -t tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>>:$BUILD_DATE -t tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>>:latest ./tdrs-frontend
             docker push tdp-docker.dev.raftlabs.tech/<<parameters.frontend-appname>> --all-tags
 
   deploy-cloud-dot-gov:
