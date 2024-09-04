@@ -2,6 +2,7 @@
 
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from django.core.paginator import Paginator
 from django.db.utils import DatabaseError
 from elasticsearch.exceptions import ElasticsearchException
 from tdpservice.data_files.models import DataFile
@@ -106,7 +107,9 @@ class Command(BaseCommand):
                 total_deleted += qset.count()
                 if not new_indices:
                     # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
-                    doc().update(qset, refresh=True, action='delete')
+                    paginator = Paginator(qset, settings.BULK_CREATE_BATCH_SIZE)
+                    for page in paginator:
+                        doc().update(page.object_list, action='delete')
                 qset._raw_delete(qset.db)
             except ElasticsearchException as e:
                 log(f'Elastic document delete failed for type {model}. The database and Elastic are INCONSISTENT! '
