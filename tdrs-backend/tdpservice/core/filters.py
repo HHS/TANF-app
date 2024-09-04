@@ -42,14 +42,3 @@ class MostRecentVersionFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         """Sort queryset to show latest records."""
         pass
-
-
-def custom_filter_title(filter_class, title):
-    """Wrap the Django Admin filter class so that a custom title can be used."""
-    class Wrapper(filter_class):
-        def __new__(cls, *args, **kwargs):
-            instance = filter_class(*args, **kwargs)
-            instance.title = title
-            return instance
-
-    return Wrapper
