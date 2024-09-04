@@ -95,7 +95,7 @@ tasks:
     desc: Restart backend web server
     dir: tdrs-backend
     cmds:
-      - docker-compose -f docker-compose.yml restart -d
+      - docker-compose -f docker-compose.yml restart
 
   backend-bash:
     desc: Open a shell in the backend container
@@ -178,7 +178,7 @@ tasks:
     desc: Restart frontend web server
     dir: tdrs-frontend
     cmds:
-      - docker-compose -f docker-compose.yml restart -d
+      - docker-compose -f docker-compose.yml restart
 
   frontend-av:
     desc: Start frontend with optional clamav service
