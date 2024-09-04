@@ -68,10 +68,14 @@ class ExportCsvMixin:
 
         iterator = ExportCsvMixin.RowIterator(field_names, queryset)
 
-        f = io.StringIO()
+        # f = io.StringIO()
 
-        s3 = S3Client()
-        s3.client.upload_fileobj(f, 'csvexport')
+        # s3 = S3Client()
+        # s3.client.upload_fileobj(f, 'csvexport')
+
+        with open('s3://commoncrawl/robots.txt', 'w') as f:
+            for r in enumerate(iterator.__iter__):
+                f.write(r)
 
         # return StreamingHttpResponse(
         #     iterator,
