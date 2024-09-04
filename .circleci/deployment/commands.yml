@@ -14,7 +14,8 @@
         default: tdp-frontend
         type: string
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Tag AMD64 images
           command: |
