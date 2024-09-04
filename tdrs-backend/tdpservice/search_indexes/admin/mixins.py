@@ -1,8 +1,10 @@
 """Mixin classes supproting custom functionality."""
+import io
 from django.contrib import admin
 from django.http import StreamingHttpResponse
 import csv
 from datetime import datetime
+from tdpservice.data_files.s3_client import S3Client
 
 class ExportCsvMixin:
     """Mixin class to support CSV exporting."""
@@ -61,13 +63,21 @@ class ExportCsvMixin:
             datafile_name = f"{meta}_FY{model.datafile.year}{model.datafile.quarter}_" +\
                 str(datetime.now().strftime("%d%m%y-%H-%M-%S"))
 
+        # https://stackoverflow.com/a/5359612
+        # https://github.com/piskvorky/smart_open
+
         iterator = ExportCsvMixin.RowIterator(field_names, queryset)
 
-        return StreamingHttpResponse(
-            iterator,
-            content_type="text/csv",
-            headers={"Content-Disposition": f'attachment; filename="{datafile_name}.csv"'},
-        )
+        f = io.StringIO()
+
+        s3 = S3Client()
+        s3.client.upload_fileobj(f, 'csvexport')
+
+        # return StreamingHttpResponse(
+        #     iterator,
+        #     content_type="text/csv",
+        #     headers={"Content-Disposition": f'attachment; filename="{datafile_name}.csv"'},
+        # )
 
     export_as_csv.short_description = "Export Selected as CSV"
 
