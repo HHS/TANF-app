@@ -2,7 +2,7 @@
 import pytest
 from django.contrib.admin.sites import AdminSite
 
-from tdpservice.data_files.admin import DataFileAdmin
+from tdpservice.data_files.admin.admin import DataFileAdmin
 from tdpservice.data_files.models import DataFile
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.parsers.test.factories import DataFileSummaryFactory

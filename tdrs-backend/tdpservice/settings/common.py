@@ -53,7 +53,6 @@ class Common(Configuration):
         "storages",
         "django_elasticsearch_dsl",
         "django_elasticsearch_dsl_drf",
-        "more_admin_filters",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -162,7 +161,7 @@ class Common(Configuration):
     TEMPLATES = [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": STATICFILES_DIRS,
+            "DIRS": [os.path.join(BASE_DIR, "templates")],
             "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [
@@ -271,9 +270,8 @@ class Common(Configuration):
     # Sessions
     SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_TIMEOUT = 30
     SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-    SESSION_COOKIE_AGE = 30 * 60  # 30 minutes
+    SESSION_COOKIE_AGE = 15 * 60  # 15 minutes
     # The CSRF token Cookie holds no security benefits when confined to HttpOnly.
     # Setting this to false to allow the frontend to include it in the header
     # of API POST calls to prevent false negative authorization errors.
@@ -477,6 +475,13 @@ class Common(Configuration):
                 'expires': 15.0,
             },
         },
+        'Deactivate Users': {
+            'task': 'tdpservice.email.tasks.deactivate_users',
+            'schedule': crontab(day_of_week='*', hour='13', minute='0'), # Every day at 1pm UTC (9am EST)
+            'options': {
+                'expires': 15.0,
+            },
+        },
         'Email Admin Number of Access Requests' : {
             'task': 'tdpservice.email.tasks.email_admin_num_access_requests',
             'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
@@ -532,3 +537,4 @@ class Common(Configuration):
     GENERATE_TRAILER_ERRORS = os.getenv("GENERATE_TRAILER_ERRORS", False)
     IGNORE_DUPLICATE_ERROR_PRECEDENCE = os.getenv("IGNORE_DUPLICATE_ERROR_PRECEDENCE", False)
     BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
+    MEDIAN_LINE_PARSE_TIME = os.getenv("MEDIAN_LINE_PARSE_TIME", 0.0005574226379394531)

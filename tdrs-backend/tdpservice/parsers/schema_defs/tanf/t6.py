@@ -4,32 +4,32 @@
 from tdpservice.parsers.transforms import calendar_quarter_to_rpt_month_year
 from tdpservice.parsers.fields import Field, TransformField
 from tdpservice.parsers.row_schema import RowSchema, SchemaManager
-from tdpservice.parsers import validators
+from tdpservice.parsers.validators import category1, category2, category3
 from tdpservice.search_indexes.documents.tanf import TANF_T6DataSubmissionDocument
 
 s1 = RowSchema(
     record_type="T6",
     document=TANF_T6DataSubmissionDocument(),
     preparsing_validators=[
-        validators.recordHasLength(379),
-        validators.field_year_month_with_header_year_quarter(),
-        validators.calendarQuarterIsValid(2, 7),
+        category1.recordHasLength(379),
+        category1.validate_fieldYearMonth_with_headerYearQuarter(),
+        category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
-        validators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_APPLICATIONS", [
                 "NUM_APPROVED",
                 "NUM_DENIED"
             ]
         ),
-        validators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_FAMILIES", [
                 "NUM_2_PARENTS",
                 "NUM_1_PARENTS",
                 "NUM_NO_PARENTS"
             ]
         ),
-        validators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_RECIPIENTS", [
                 "NUM_ADULT_RECIPIENTS",
                 "NUM_CHILD_RECIPIENTS"
@@ -56,8 +56,8 @@ s1 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(2020),
-                validators.quarterIsValid(),
+                category2.dateYearIsLargerThan(2019),
+                category2.quarterIsValid(),
             ],
         ),
         TransformField(
@@ -70,8 +70,8 @@ s1 = RowSchema(
             endIndex=7,
             required=True,
             validators=[
-                validators.dateYearIsLargerThan(1998),
-                validators.dateMonthIsValid(),
+                category2.dateYearIsLargerThan(1998),
+                category2.dateMonthIsValid(),
             ],
         ),
         Field(
@@ -82,7 +82,7 @@ s1 = RowSchema(
             startIndex=7,
             endIndex=15,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="5A",
@@ -92,7 +92,7 @@ s1 = RowSchema(
             startIndex=31,
             endIndex=39,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="6A",
@@ -102,7 +102,7 @@ s1 = RowSchema(
             startIndex=55,
             endIndex=63,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="7A",
@@ -112,7 +112,7 @@ s1 = RowSchema(
             startIndex=79,
             endIndex=91,
             required=True,
-            validators=[validators.isInLimits(0, 999999999999)],
+            validators=[category2.isBetween(0, 999999999999, inclusive=True)],
         ),
         Field(
             item="8A",
@@ -122,7 +122,7 @@ s1 = RowSchema(
             startIndex=115,
             endIndex=123,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="9A",
@@ -132,7 +132,7 @@ s1 = RowSchema(
             startIndex=139,
             endIndex=147,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="10A",
@@ -142,7 +142,7 @@ s1 = RowSchema(
             startIndex=163,
             endIndex=171,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="11A",
@@ -152,7 +152,7 @@ s1 = RowSchema(
             startIndex=187,
             endIndex=195,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="12A",
@@ -162,7 +162,7 @@ s1 = RowSchema(
             startIndex=211,
             endIndex=219,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="13A",
@@ -172,7 +172,7 @@ s1 = RowSchema(
             startIndex=235,
             endIndex=243,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="14A",
@@ -182,7 +182,7 @@ s1 = RowSchema(
             startIndex=259,
             endIndex=267,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="15A",
@@ -192,7 +192,7 @@ s1 = RowSchema(
             startIndex=283,
             endIndex=291,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="16A",
@@ -202,7 +202,7 @@ s1 = RowSchema(
             startIndex=307,
             endIndex=315,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="17A",
@@ -212,7 +212,7 @@ s1 = RowSchema(
             startIndex=331,
             endIndex=339,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="18A",
@@ -222,7 +222,7 @@ s1 = RowSchema(
             startIndex=355,
             endIndex=363,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
     ],
 )
@@ -232,25 +232,25 @@ s2 = RowSchema(
     document=TANF_T6DataSubmissionDocument(),
     quiet_preparser_errors=True,
     preparsing_validators=[
-        validators.recordHasLength(379),
-        validators.field_year_month_with_header_year_quarter(),
-        validators.calendarQuarterIsValid(2, 7),
+        category1.recordHasLength(379),
+        category1.validate_fieldYearMonth_with_headerYearQuarter(),
+        category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
-        validators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_APPLICATIONS", [
                 "NUM_APPROVED",
                 "NUM_DENIED"
             ]
         ),
-        validators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_FAMILIES", [
                 "NUM_2_PARENTS",
                 "NUM_1_PARENTS",
                 "NUM_NO_PARENTS"
             ]
         ),
-        validators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_RECIPIENTS", [
                 "NUM_ADULT_RECIPIENTS",
                 "NUM_CHILD_RECIPIENTS"
@@ -276,7 +276,10 @@ s2 = RowSchema(
             startIndex=2,
             endIndex=7,
             required=True,
-            validators=[],
+            validators=[
+                category2.dateYearIsLargerThan(2019),
+                category2.quarterIsValid(),
+            ],
         ),
         TransformField(
             calendar_quarter_to_rpt_month_year(1),
@@ -297,7 +300,7 @@ s2 = RowSchema(
             startIndex=15,
             endIndex=23,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="5B",
@@ -307,7 +310,7 @@ s2 = RowSchema(
             startIndex=39,
             endIndex=47,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="6B",
@@ -317,7 +320,7 @@ s2 = RowSchema(
             startIndex=63,
             endIndex=71,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="7B",
@@ -327,7 +330,7 @@ s2 = RowSchema(
             startIndex=91,
             endIndex=103,
             required=True,
-            validators=[validators.isInLimits(0, 999999999999)],
+            validators=[category2.isBetween(0, 999999999999, inclusive=True)],
         ),
         Field(
             item="8B",
@@ -337,7 +340,7 @@ s2 = RowSchema(
             startIndex=123,
             endIndex=131,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="9B",
@@ -347,7 +350,7 @@ s2 = RowSchema(
             startIndex=147,
             endIndex=155,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="10B",
@@ -357,7 +360,7 @@ s2 = RowSchema(
             startIndex=171,
             endIndex=179,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="11B",
@@ -367,7 +370,7 @@ s2 = RowSchema(
             startIndex=195,
             endIndex=203,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="12B",
@@ -377,7 +380,7 @@ s2 = RowSchema(
             startIndex=219,
             endIndex=227,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="13B",
@@ -387,7 +390,7 @@ s2 = RowSchema(
             startIndex=243,
             endIndex=251,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="14B",
@@ -397,7 +400,7 @@ s2 = RowSchema(
             startIndex=267,
             endIndex=275,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="15B",
@@ -407,7 +410,7 @@ s2 = RowSchema(
             startIndex=291,
             endIndex=299,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="16B",
@@ -417,7 +420,7 @@ s2 = RowSchema(
             startIndex=315,
             endIndex=323,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="17B",
@@ -427,7 +430,7 @@ s2 = RowSchema(
             startIndex=339,
             endIndex=347,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="18B",
@@ -437,7 +440,7 @@ s2 = RowSchema(
             startIndex=363,
             endIndex=371,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
     ],
 )
@@ -447,25 +450,25 @@ s3 = RowSchema(
     document=TANF_T6DataSubmissionDocument(),
     quiet_preparser_errors=True,
     preparsing_validators=[
-        validators.recordHasLength(379),
-        validators.field_year_month_with_header_year_quarter(),
-        validators.calendarQuarterIsValid(2, 7),
+        category1.recordHasLength(379),
+        category1.validate_fieldYearMonth_with_headerYearQuarter(),
+        category1.calendarQuarterIsValid(2, 7),
     ],
     postparsing_validators=[
-        validators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_APPLICATIONS", [
                 "NUM_APPROVED",
                 "NUM_DENIED"
             ]
         ),
-        validators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_FAMILIES", [
                 "NUM_2_PARENTS",
                 "NUM_1_PARENTS",
                 "NUM_NO_PARENTS"
             ]
         ),
-        validators.sumIsEqual(
+        category3.sumIsEqual(
             "NUM_RECIPIENTS", [
                 "NUM_ADULT_RECIPIENTS",
                 "NUM_CHILD_RECIPIENTS"
@@ -491,7 +494,10 @@ s3 = RowSchema(
             startIndex=2,
             endIndex=7,
             required=True,
-            validators=[],
+            validators=[
+                category2.dateYearIsLargerThan(2019),
+                category2.quarterIsValid(),
+            ],
         ),
         TransformField(
             calendar_quarter_to_rpt_month_year(2),
@@ -512,7 +518,7 @@ s3 = RowSchema(
             startIndex=23,
             endIndex=31,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="5C",
@@ -522,7 +528,7 @@ s3 = RowSchema(
             startIndex=47,
             endIndex=55,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="6C",
@@ -532,7 +538,7 @@ s3 = RowSchema(
             startIndex=71,
             endIndex=79,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="7C",
@@ -542,7 +548,7 @@ s3 = RowSchema(
             startIndex=103,
             endIndex=115,
             required=True,
-            validators=[validators.isInLimits(0, 999999999999)],
+            validators=[category2.isBetween(0, 999999999999, inclusive=True)],
         ),
         Field(
             item="8C",
@@ -552,7 +558,7 @@ s3 = RowSchema(
             startIndex=131,
             endIndex=139,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="9C",
@@ -562,7 +568,7 @@ s3 = RowSchema(
             startIndex=155,
             endIndex=163,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="10C",
@@ -572,7 +578,7 @@ s3 = RowSchema(
             startIndex=179,
             endIndex=187,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="11C",
@@ -582,7 +588,7 @@ s3 = RowSchema(
             startIndex=203,
             endIndex=211,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="12C",
@@ -592,7 +598,7 @@ s3 = RowSchema(
             startIndex=227,
             endIndex=235,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="13C",
@@ -602,7 +608,7 @@ s3 = RowSchema(
             startIndex=251,
             endIndex=259,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="14C",
@@ -612,7 +618,7 @@ s3 = RowSchema(
             startIndex=275,
             endIndex=283,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="15C",
@@ -622,7 +628,7 @@ s3 = RowSchema(
             startIndex=299,
             endIndex=307,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="16C",
@@ -632,7 +638,7 @@ s3 = RowSchema(
             startIndex=323,
             endIndex=331,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="17C",
@@ -642,7 +648,7 @@ s3 = RowSchema(
             startIndex=347,
             endIndex=355,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
         Field(
             item="18C",
@@ -652,7 +658,7 @@ s3 = RowSchema(
             startIndex=371,
             endIndex=379,
             required=True,
-            validators=[validators.isInLimits(0, 99999999)],
+            validators=[category2.isBetween(0, 99999999, inclusive=True)],
         ),
     ],
 )

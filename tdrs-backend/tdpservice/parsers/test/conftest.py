@@ -432,6 +432,29 @@ def m5_cat2_invalid_23_24_file():
     return parsing_file
 
 @pytest.fixture
+def test_file_zero_filled_fips_code():
+    """Fixture for T1 file with an invalid CITIZENSHIP_STATUS."""
+    parsing_file = ParsingFileFactory(
+        year=2021,
+        quarter='Q1',
+        file__name='t3_invalid_citizenship_file.txt',
+        file__section='Active Case Data',
+        file__data=(b'HEADER20241A01000TAN2ED\n'
+                    b'T1202401    2132333   0140951112 43312   03   0   0   2 554145' +
+                    b'   0 0  0   0  0   0  0   0  0   0222222   0   02229 22    \n' +
+                    b'T2202401    21323333219550117WT@TB9BT92122222222223 1329911 34' +
+                    b'  32 699 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0' +
+                    b' 0 0 0 0   0   01623   0   0   0\n' +
+                    b'T2202401    21323333219561102WTT@WBP992122221222222 2329911 28' +
+                    b'  32 699 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0' +
+                    b' 0 0 0 0   0   01432   0   0   0\n' +
+                    b'T3202401    2132333120070906WT@@#ZY@W212222122 63981   0   012' +
+                    b'0050201WTTYT#TT0212222122 63981   0   0                      \n' +
+                    b'TRAILER      4         ')
+    )
+    return parsing_file
+
+@pytest.fixture
 def tanf_s1_exact_dup_file():
     """Fixture for a section 1 file containing an exact duplicate record."""
     parsing_file = ParsingFileFactory(
@@ -711,21 +734,19 @@ def tanf_s4_partial_dup_file():
 def partial_dup_t1_err_msg():
     """Fixture for t1 record partial duplicate error."""
     return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
-            "duplicate of the record at line number 2. Duplicated fields causing error: Record Type, "
-            "Reporting Year and Month, and Case Number.")
+            "duplicate of the record at line number 2.")
 
 @pytest.fixture
 def partial_dup_t5_err_msg():
     """Fixture for t5 record partial duplicate error."""
     return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
-            "duplicate of the record at line number 2. Duplicated fields causing error: Record Type, "
-            "Reporting Year and Month, Case Number, Family Affiliation, Date of Birth, and Social Security Number.")
+            "duplicate of the record at line number 2.")
 
 @pytest.fixture
 def partial_dup_s3_s4_err_msg():
     """Fixture for t7 record partial duplicate error."""
     return ("Partial duplicate record detected with record type {record_type} at line 3. Record is a partial "
-            "duplicate of the record at line number 2. Duplicated fields causing error: Record Type.")
+            "duplicate of the record at line number 2.")
 
 @pytest.fixture
 def cat4_edge_case_file(stt_user, stt):

@@ -156,6 +156,9 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'search_indexes.add_tribal_tanf_t7',
         'search_indexes.view_tribal_tanf_t7',
         'search_indexes.change_tribal_tanf_t7',
+        'search_indexes.add_reparsemeta',
+        'search_indexes.view_reparsemeta',
+        'search_indexes.change_reparsemeta',
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions
@@ -177,6 +180,8 @@ def test_digit_team_permissions(digit_team):
     expected_permissions = {'parsers.view_parsererror',
                             'parsers.view_datafilesummary',
                             'data_files.view_datafile',
+                            'data_files.add_datafile',
+                            'stts.view_stt',
                             'search_indexes.view_ssp_m3',
                             'search_indexes.view_tribal_tanf_t5',
                             'search_indexes.view_tribal_tanf_t3',
@@ -197,7 +202,7 @@ def test_digit_team_permissions(digit_team):
                             'search_indexes.view_tanf_t4',
                             'search_indexes.view_ssp_m6',
                             'search_indexes.view_tribal_tanf_t2',
-                            'search_indexes.view_tanf_t6'
+                            'search_indexes.view_tanf_t6',
                             }
     group_permissions = digit_team.get_group_permissions()
     assert group_permissions == expected_permissions

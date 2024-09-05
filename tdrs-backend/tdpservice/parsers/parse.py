@@ -2,17 +2,18 @@
 
 
 from django.conf import settings
-from django.contrib.admin.models import LogEntry, ADDITION
-from django.contrib.contenttypes.models import ContentType
+from django.db.utils import DatabaseError
+from elasticsearch.exceptions import ElasticsearchException
 import itertools
 import logging
-from .models import ParserErrorCategoryChoices, ParserError
-from . import schema_defs, validators, util
-from . import row_schema
-from .schema_defs.utils import get_section_reference, get_program_model
-from .case_consistency_validator import CaseConsistencyValidator
-from elasticsearch.exceptions import ElasticsearchException
-from tdpservice.data_files.models import DataFile
+from tdpservice.parsers.models import ParserErrorCategoryChoices, ParserError
+from tdpservice.parsers import row_schema, schema_defs, util
+from tdpservice.parsers.validators import category1
+from tdpservice.parsers.validators.util import value_is_empty
+from tdpservice.parsers.schema_defs.utils import get_section_reference, get_program_model
+from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
+from tdpservice.parsers.util import log_parser_exception
+from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +34,17 @@ def parse_datafile(datafile, dfs):
         logger.info(f"Preparser Error: {len(header_errors)} header errors encountered.")
         errors['header'] = header_errors
         bulk_create_errors({1: header_errors}, 1, flush=True)
+        update_meta_model(datafile, dfs)
         return errors
+    elif header_is_valid and len(header_errors) > 0:
+        logger.info(f"Preparser Warning: {len(header_errors)} header warnings encountered.")
+        errors['header'] = header_errors
+        bulk_create_errors({1: header_errors}, 1, flush=True)
 
     field_values = schema_defs.header.get_field_values_by_names(header_line,
                                                                 {"encryption", "tribe_code", "state_fips"})
     is_encrypted = field_values["encryption"] == "E"
-    is_tribal = not validators.value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
+    is_tribal = not value_is_empty(field_values["tribe_code"], 3, extra_vals={'0'*3})
 
     logger.debug(f"Datafile has encrypted fields: {is_encrypted}.")
     logger.debug(f"Datafile: {datafile.__repr__()}, is Tribal: {is_tribal}.")
@@ -57,20 +63,23 @@ def parse_datafile(datafile, dfs):
 
     # Validate tribe code in submission across program type and fips code
     generate_error = util.make_generate_parser_error(datafile, 1)
-    tribe_is_valid, tribe_error = validators.validate_tribe_fips_program_agree(header['program_type'],
-                                                                               field_values["tribe_code"],
-                                                                               field_values["state_fips"],
-                                                                               generate_error)
+    tribe_is_valid, tribe_error = category1.validate_tribe_fips_program_agree(
+        header['program_type'],
+        field_values["tribe_code"],
+        field_values["state_fips"],
+        generate_error
+    )
 
     if not tribe_is_valid:
         logger.info(f"Tribe Code ({field_values['tribe_code']}) inconsistency with Program Type " +
                     f"({header['program_type']}) and FIPS Code ({field_values['state_fips']}).",)
         errors['header'] = [tribe_error]
         bulk_create_errors({1: [tribe_error]}, 1, flush=True)
+        update_meta_model(datafile, dfs)
         return errors
 
     # Ensure file section matches upload section
-    section_is_valid, section_error = validators.validate_header_section_matches_submission(
+    section_is_valid, section_error = category1.validate_header_section_matches_submission(
         datafile,
         get_section_reference(program_type, section),
         util.make_generate_parser_error(datafile, 1)
@@ -81,9 +90,10 @@ def parse_datafile(datafile, dfs):
         errors['document'] = [section_error]
         unsaved_parser_errors = {1: [section_error]}
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
+        update_meta_model(datafile, dfs)
         return errors
 
-    rpt_month_year_is_valid, rpt_month_year_error = validators.validate_header_rpt_month_year(
+    rpt_month_year_is_valid, rpt_month_year_error = category1.validate_header_rpt_month_year(
         datafile,
         header,
         util.make_generate_parser_error(datafile, 1)
@@ -93,6 +103,7 @@ def parse_datafile(datafile, dfs):
         errors['document'] = [rpt_month_year_error]
         unsaved_parser_errors = {1: [rpt_month_year_error]}
         bulk_create_errors(unsaved_parser_errors, 1, flush=True)
+        update_meta_model(datafile, dfs)
         return errors
 
     line_errors = parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, case_consistency_validator)
@@ -100,6 +111,11 @@ def parse_datafile(datafile, dfs):
     errors = errors | line_errors
 
     return errors
+
+def update_meta_model(datafile, dfs):
+    """Update appropriate meta models."""
+    ReparseMeta.increment_records_created(datafile.reparse_meta_models, dfs.total_number_of_records_created)
+    ReparseMeta.increment_files_completed(datafile.reparse_meta_models)
 
 def bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs, flush=False):
     """Bulk create passed in records."""
@@ -116,18 +132,22 @@ def bulk_create_records(unsaved_records, line_number, header_count, datafile, df
                 num_db_records_created += len(created_objs)
                 num_elastic_records_created += document.update(created_objs)[0]
             except ElasticsearchException as e:
-                logger.error(f"Encountered error while indexing datafile documents: {e}")
-                LogEntry.objects.log_action(
-                    user_id=datafile.user.pk,
-                    content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                    object_id=datafile,
-                    object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                    action_flag=ADDITION,
-                    change_message=f"Encountered error while indexing datafile documents: {e}",
-                )
+                log_parser_exception(datafile,
+                                     f"Encountered error while indexing datafile documents: \n{e}",
+                                     "error"
+                                     )
                 continue
+            except DatabaseError as e:
+                log_parser_exception(datafile,
+                                     f"Encountered error while creating database records: \n{e}",
+                                     "error"
+                                     )
+                return False
             except Exception as e:
-                logger.error(f"Encountered error while creating datafile records: {e}")
+                log_parser_exception(datafile,
+                                     f"Encountered generic exception while creating database records: \n{e}",
+                                     "error"
+                                     )
                 return False
 
         dfs.total_number_of_records_created += num_db_records_created
@@ -187,30 +207,28 @@ def rollback_records(unsaved_records, datafile):
         except ElasticsearchException as e:
             # Caught an Elastic exception, to ensure the quality of the DB, we will force the DB deletion and let
             # Elastic clean up later.
-            logger.error("Encountered an Elastic exception, enforcing DB cleanup.")
-            logger.error(f"Elastic Error: {e}")
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while indexing datafile documents: {e}",
-            )
+            log_parser_exception(datafile,
+                                 f"Encountered error while indexing datafile documents: \n{e}",
+                                 "error"
+                                 )
+            logger.warn("Encountered an Elastic exception, enforcing DB cleanup.")
             num_deleted, models = qset.delete()
             logger.info("Succesfully performed DB cleanup after elastic failure.")
+            log_parser_exception(datafile,
+                                 "Succesfully performed DB cleanup after elastic failure.",
+                                 "info"
+                                 )
+        except DatabaseError as e:
+            log_parser_exception(datafile,
+                                 (f"Encountered error while deleting database records for model: {model}. "
+                                  f"Exception: \n{e}"),
+                                 "error"
+                                 )
         except Exception as e:
-            logging.critical(f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                             f"Error message: {e}")
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                               f"Error message: {e}"
-            )
+            log_parser_exception(datafile,
+                                 f"Encountered generic exception while trying to rollback records. Exception: \n{e}",
+                                 "error"
+                                 )
 
 def rollback_parser_errors(datafile):
     """Delete created errors in the event of a failure."""
@@ -220,9 +238,18 @@ def rollback_parser_errors(datafile):
         # WARNING: we can use `_raw_delete` in this case because our error models don't have cascading dependencies. If
         # that ever changes, we should NOT use `_raw_delete`.
         num_deleted = qset._raw_delete(qset.db)
-        logger.debug(f"Deleted {num_deleted} {ParserError}.")
+        logger.debug(f"Deleted {num_deleted} ParserErrors.")
+    except DatabaseError as e:
+        log_parser_exception(datafile,
+                             ("Encountered error while deleting database records for ParserErrors. "
+                              f"Exception: \n{e}"),
+                             "error"
+                             )
     except Exception as e:
-        logging.error(f"Encountered error while deleting records of type {ParserError}. Error message: {e}")
+        log_parser_exception(datafile,
+                             f"Encountered generic exception while rolling back ParserErrors. Exception: \n{e}.",
+                             "error"
+                             )
 
 def validate_case_consistency(case_consistency_validator):
     """Force category four validation if we have reached the last case in the file."""
@@ -274,34 +301,30 @@ def delete_serialized_records(duplicate_manager, dfs):
         except ElasticsearchException as e:
             # Caught an Elastic exception, to ensure the quality of the DB, we will force the DB deletion and let
             # Elastic clean up later.
-            logger.error("Encountered an Elastic exception, enforcing DB cleanup.")
-            logger.error(f"Elastic Error: {e}")
-            datafile = dfs.datafile
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while indexing datafile documents: {e}",
-            )
+            log_parser_exception(dfs.datafile,
+                                 ("Encountered error while indexing datafile documents. Enforcing DB cleanup. "
+                                  f"Exception: \n{e}"),
+                                 "error"
+                                 )
             num_deleted, models = qset.delete()
             total_deleted += num_deleted
             dfs.total_number_of_records_created -= num_deleted
-            logger.info("Succesfully performed DB cleanup after elastic failure.")
+            log_parser_exception(dfs.datafile,
+                                 "Succesfully performed DB cleanup after elastic failure.",
+                                 "info"
+                                 )
+        except DatabaseError as e:
+            log_parser_exception(dfs.datafile,
+                                 (f"Encountered error while deleting database records for model {model}. "
+                                  f"Exception: \n{e}"),
+                                 "error"
+                                 )
         except Exception as e:
-            logging.critical(f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                             f"Error message: {e}")
-            datafile = dfs.datafile
-            LogEntry.objects.log_action(
-                user_id=datafile.user.pk,
-                content_type_id=ContentType.objects.get_for_model(DataFile).pk,
-                object_id=datafile,
-                object_repr=f"Datafile id: {datafile.pk}; year: {datafile.year}, quarter: {datafile.quarter}",
-                action_flag=ADDITION,
-                change_message=f"Encountered error while deleting records of type {model}. NO RECORDS DELETED! "
-                               f"Error message: {e}"
-            )
+            log_parser_exception(dfs.datafile,
+                                 (f"Encountered generic exception while deleting records of type {model}. "
+                                  f"Exception: \n{e}"),
+                                 "error"
+                                 )
     if total_deleted:
         logger.info(f"Deleted a total of {total_deleted} records from the DB because of case consistenecy errors.")
 
@@ -363,6 +386,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
             rollback_records(unsaved_records.get_bulk_create_struct(), datafile)
             rollback_parser_errors(datafile)
             bulk_create_errors(preparse_error, num_errors, flush=True)
+            update_meta_model(datafile, dfs)
             return errors
 
         if prev_sum != header_count + trailer_count:
@@ -425,6 +449,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
         rollback_parser_errors(datafile)
         preparse_error = {line_number: [err_obj]}
         bulk_create_errors(preparse_error, num_errors, flush=True)
+        update_meta_model(datafile, dfs)
         return errors
 
     should_remove = validate_case_consistency(case_consistency_validator)
@@ -445,6 +470,7 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
         logger.error(f"Not all parsed records created for file: {datafile.id}!")
         rollback_records(unsaved_records.get_bulk_create_struct(), datafile)
         bulk_create_errors(unsaved_parser_errors, num_errors, flush=True)
+        update_meta_model(datafile, dfs)
         return errors
 
     # Add any generated cat4 errors to our error data structure & clear our caches errors list
@@ -461,6 +487,8 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
                  f"validated {case_consistency_validator.total_cases_validated} of them.")
     dfs.save()
 
+    update_meta_model(datafile, dfs)
+
     return errors
 
 
@@ -472,8 +500,7 @@ def manager_parse_line(line, schema_manager, generate_error, datafile, is_encryp
         schema_manager.update_encrypted_fields(is_encrypted)
         records = schema_manager.parse_and_validate(line, generate_error)
         return records
-    except AttributeError as e:
-        logger.error(e)
+    except AttributeError:
         return [(None, False, [
             generate_error(
                 schema=None,
