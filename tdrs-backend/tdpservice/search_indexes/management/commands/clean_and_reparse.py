@@ -62,6 +62,7 @@ class Command(BaseCommand):
         """Create new Elastic indices and delete old ones."""
         if new_indices:
             try:
+                logger.info("Creating new elastic indexes.")
                 call_command('tdp_search_index', '--create', '-f', '--use-alias')
                 log("Index creation complete.",
                     logger_context=log_context,
@@ -83,7 +84,10 @@ class Command(BaseCommand):
         """Raw delete all DataFileSummary objects."""
         try:
             qset = DataFileSummary.objects.filter(datafile_id__in=file_ids)
+            count = qset.count()
+            logger.info(f"Deleting {count} datafile summary objects.")
             qset._raw_delete(qset.db)
+            logger.info("Successfully deleted datafile summary objects.")
         except DatabaseError as e:
             log('Encountered a DatabaseError while deleting DataFileSummary from Postgres. The database '
                 'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
@@ -103,8 +107,10 @@ class Command(BaseCommand):
         for doc in DOCUMENTS:
             try:
                 model = doc.Django.model
-                qset = model.objects.filter(datafile_id__in=file_ids)
-                total_deleted += qset.count()
+                qset = model.objects.filter(datafile_id__in=file_ids).order_by('id')
+                count = qset.count()
+                total_deleted += count
+                logger.info(f"Deleting {count} records of type: {model}.")
                 if not new_indices:
                     # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
                     paginator = Paginator(qset, settings.BULK_CREATE_BATCH_SIZE)
@@ -136,7 +142,10 @@ class Command(BaseCommand):
         """Raw delete all ParserErrors for each file ID."""
         try:
             qset = ParserError.objects.filter(file_id__in=file_ids)
+            count = qset.count()
+            logger.info(f"Deleting {count} parser errors.")
             qset._raw_delete(qset.db)
+            logger.info("Successfully deleted parser errors.")
         except DatabaseError as e:
             log('Encountered a DatabaseError while deleting ParserErrors from Postgres. The database '
                 'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
