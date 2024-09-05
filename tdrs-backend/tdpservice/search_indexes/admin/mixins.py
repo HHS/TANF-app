@@ -1,9 +1,10 @@
 """Mixin classes supproting custom functionality."""
-import io
-from django.contrib import admin
-from django.http import StreamingHttpResponse
 import csv
+import gzip
+import os
 from datetime import datetime
+from django.conf import settings
+from django.contrib import admin
 from tdpservice.data_files.s3_client import S3Client
 
 class ExportCsvMixin:
@@ -68,20 +69,23 @@ class ExportCsvMixin:
 
         iterator = ExportCsvMixin.RowIterator(field_names, queryset)
 
-        # f = io.StringIO()
+        s3 = S3Client()
+        # url = f's3://{settings.AWS_S3_DATAFILES_BUCKET_NAME}/{datafile_name}.csv'
 
-        # s3 = S3Client()
-        # s3.client.upload_fileobj(f, 'csvexport')
+        # with open(url, 'w', transport_params={'client': s3.client}) as fout:
+        #     for _, s in enumerate(iterator):
+        #         fout.write(s)
 
-        with open('s3://commoncrawl/robots.txt', 'w') as f:
-            for r in enumerate(iterator.__iter__):
-                f.write(r)
+        tmp_filename = 'file.csv.gz'
+        with gzip.open(tmp_filename, 'wt') as f:
+            for _, s in enumerate(iterator):
+                f.write(s)
 
-        # return StreamingHttpResponse(
-        #     iterator,
-        #     content_type="text/csv",
-        #     headers={"Content-Disposition": f'attachment; filename="{datafile_name}.csv"'},
-        # )
+        local_filename = os.path.basename(tmp_filename)
+        s3.client.upload_file(local_filename, settings.AWS_S3_DATAFILES_BUCKET_NAME, f'{datafile_name}.csv.gz')
+
+        # write + compress into tar/gz on filesystem - upload resulting file to s3
+        # have to clean up resulting file
 
     export_as_csv.short_description = "Export Selected as CSV"
 
