@@ -16,3 +16,10 @@ datasources:
     withCredentials: false
     isDefault: true
     typeLogoUrl: "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg"
+  - name: Loki
+    type: loki
+    access: proxy
+    url: "http://loki:3100"
+    editable: false
+    jsonData:
+      maxLines: 1000
