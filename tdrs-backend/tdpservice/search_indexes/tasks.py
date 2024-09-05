@@ -63,3 +63,9 @@ def reindex_elastic_documents():
         'object_id': None,
         'object_repr': ''
     })
+
+
+@shared_task
+def upload_local_file_to_s3(local_filename, s3_filename):
+    """Export a selected queryset to a csv file stored in s3."""
+    pass
