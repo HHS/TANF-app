@@ -80,12 +80,12 @@ class GrafanaAuthorizationCheck(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        """Handle get request and verify user is authorized to access kibana."""
+        """Handle get request and verify user is authorized to access grafana."""
         user = request.user
 
-        user_in_valid_group = user.is_ofa_sys_admin
+        user_in_valid_group = user.is_ofa_sys_admin or user.is_developer
 
-        if (user.hhs_id is not None and user_in_valid_group) or settings.BYPASS_OFA_AUTH:
+        if user_in_valid_group or settings.BYPASS_OFA_AUTH:
             logger.debug(f"User: {user} has correct authentication credentials. Allowing access to Grafana.")
             return HttpResponse(status=200)
         else:
