@@ -74,6 +74,4 @@ export const accountCanViewKibana = (state) =>
 
 export const accountCanViewGrafana = (state) =>
   accountStatusIsApproved(state) &&
-  (selectUser(state)?.email?.includes('@acf.hhs.gov') ||
-    process.env.REACT_APP_BYPASS_OFA_AUTH) &&
-  ['OFA System Admin'].includes(selectPrimaryUserRole(state)?.name)
+  ['OFA System Admin', 'Developer'].includes(selectPrimaryUserRole(state)?.name)
