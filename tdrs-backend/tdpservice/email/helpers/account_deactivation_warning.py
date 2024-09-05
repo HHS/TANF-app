@@ -3,12 +3,10 @@ from tdpservice.email.email_enums import EmailType
 from tdpservice.email.email import automated_email
 from datetime import datetime, timedelta, timezone
 from django.conf import settings
-
+from tdpservice.users.models import User
 
 def send_deactivation_warning_email(users, days):
     """Send an email to users that are about to be deactivated."""
-    from tdpservice.users.models import User
-
     template_path = EmailType.DEACTIVATION_WARNING.value
     text_message = f'Your account will be deactivated in {days} days.'
     subject = f'Account Deactivation Warning: {days} days remaining'
