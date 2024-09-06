@@ -18,9 +18,7 @@
       - run:
           name: Build and tag images
           command: |
-            ls 
-            pwd
-            ./scripts/build-and-tag-images.sh <<parameters.backend-appname>> <<parameters.frontend-appname>> "$CIRCLE_WORKING_DIRECTORY/tdrs-backend" "$CIRCLE_WORKING_DIRECTORY/tdrs-frontend" $CIRCLE_BUILD_NUM $CIRCLE_SHA1 "$CIRCI_DOCKER_LOGIN" tdp-circi
+            ./scripts/build-and-tag-images.sh <<parameters.backend-appname>> <<parameters.frontend-appname>> ./tdrs-backend ./tdrs-frontend $CIRCLE_BUILD_NUM $CIRCLE_SHA1 "$CIRCI_DOCKER_LOGIN" tdp-circi
 
   deploy-cloud-dot-gov:
     parameters:

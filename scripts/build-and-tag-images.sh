@@ -20,7 +20,7 @@ TAG="${BUILD_DATE}_build-${BUILD_NUM}_${COMMIT_HASH}"
 BUILD_DATE=`date +%F`
 
 pwd
-ls ..
+ls
 ls $BACKEND_PATH
 ls $FRONTEND_PATH
 
