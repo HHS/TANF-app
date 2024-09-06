@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 if [ "$#" -ne 8  ]; then
     echo "Error, this script expects 8 parameters."
@@ -18,11 +17,6 @@ DOCKER_USER=$8
 TAG="${BUILD_DATE}_build-${BUILD_NUM}_${COMMIT_HASH}"
 
 BUILD_DATE=`date +%F`
-
-pwd
-ls
-ls $BACKEND_PATH
-ls $FRONTEND_PATH
 
 build_and_tag() {
     echo "$DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u $DOCKER_USER --password-stdin
