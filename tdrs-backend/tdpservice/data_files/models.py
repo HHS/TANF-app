@@ -129,7 +129,7 @@ class DataFile(FileRecord):
                                null=False,
                                choices=Section.choices)
 
-    version = models.IntegerField(verbose_name='version number')
+    version = models.IntegerField()
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="user", blank=False, null=False
