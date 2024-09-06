@@ -1,58 +1,10 @@
 """Mixin classes supproting custom functionality."""
-import csv
-import gzip
-import os
 from datetime import datetime
-from django.conf import settings
 from django.contrib import admin
-from tdpservice.data_files.s3_client import S3Client
+from ..tasks import export_queryset_to_s3_csv
 
 class ExportCsvMixin:
     """Mixin class to support CSV exporting."""
-
-    class Echo:
-        """An object that implements just the write method of the file-like interface."""
-
-        def write(self, value):
-            """Write the value by returning it, instead of storing in a buffer."""
-            return value
-
-    class RowIterator:
-        """Iterator class to support custom CSV row generation."""
-
-        def __init__(self, field_names, queryset):
-            self.field_names = field_names
-            self.queryset = queryset
-            self.writer = csv.writer(ExportCsvMixin.Echo())
-            self.is_header_row = True
-            self.header_row = self.__init_header_row(field_names)
-
-        def __init_header_row(self, field_names):
-            """Generate custom header row."""
-            header_row = []
-            for name in field_names:
-                header_row.append(name)
-                if name == "datafile":
-                    header_row.append("STT")
-            return header_row
-
-        def __iter__(self):
-            """Yield the next row in the csv export."""
-            for obj in self.queryset.iterator(chunk_size=1000):
-                # for obj in self.queryset:
-                row = []
-
-                if self.is_header_row:
-                    self.is_header_row = False
-                    yield self.writer.writerow(self.header_row)
-
-                for field_name in self.field_names:
-                    field = getattr(obj, field_name)
-                    row.append(field)
-                    if field and field_name == "datafile":
-                        # print(field)
-                        row.append(field.stt.stt_code)
-                yield self.writer.writerow(row)
 
     def export_as_csv(self, request, queryset):
         """Convert queryset to CSV."""
@@ -67,25 +19,19 @@ class ExportCsvMixin:
         # https://stackoverflow.com/a/5359612
         # https://github.com/piskvorky/smart_open
 
-        iterator = ExportCsvMixin.RowIterator(field_names, queryset)
+        sql, params = queryset.query.sql_with_params()
 
-        s3 = S3Client()
-        # url = f's3://{settings.AWS_S3_DATAFILES_BUCKET_NAME}/{datafile_name}.csv'
+        file_path = f'path/to/file/location/{datafile_name}.csv.gz'
 
-        # with open(url, 'w', transport_params={'client': s3.client}) as fout:
-        #     for _, s in enumerate(iterator):
-        #         fout.write(s)
+        export_queryset_to_s3_csv.delay(
+            sql,
+            params,
+            field_names,
+            meta.model_name,
+            file_path,
+        )
 
-        tmp_filename = 'file.csv.gz'
-        with gzip.open(tmp_filename, 'wt') as f:
-            for _, s in enumerate(iterator):
-                f.write(s)
-
-        local_filename = os.path.basename(tmp_filename)
-        s3.client.upload_file(local_filename, settings.AWS_S3_DATAFILES_BUCKET_NAME, f'{datafile_name}.csv.gz')
-
-        # write + compress into tar/gz on filesystem - upload resulting file to s3
-        # have to clean up resulting file
+        self.message_user(request, f'Your s3 file url is: {file_path}')
 
     export_as_csv.short_description = "Export Selected as CSV"
 
