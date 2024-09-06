@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [ "$#" -ne 8  ]; then
     echo "Error, this script expects 8 parameters."
@@ -18,11 +19,14 @@ TAG="${BUILD_DATE}_build-${BUILD_NUM}_${COMMIT_HASH}"
 
 BUILD_DATE=`date +%F`
 
+ls $BACKEND_PATH
+ls $FRONTEND_PATH
+
 build_and_tag() {
     echo "$DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u $DOCKER_USER --password-stdin
     for platform in "linux/amd64" "linux/arm64"; do
-        docker build --platform $platform -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:latest $BACKEND_PATH
-        docker build --platform $platform -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:latest $FRONTEND_PATH
+        docker build --platform $platform -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:latest "$BACKEND_PATH"
+        docker build --platform $platform -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:latest "$FRONTEND_PATH"
 
         docker push tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME --all-tags
         docker push tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME --all-tags
