@@ -75,7 +75,9 @@ We do not allow anonymous access on our Nexus instance. With that said, if you h
 docker pull tdp-docker.dev.raftlabs.tech/${ImageName}:${Version}
 ```
 
-## Nexus Admin UI Login
+## Nexus Administration
+
+### UI Admin Login
 To administer Nexus via the UI, you will need to access the service key in our dev cloud.gov environment.
 
 Log in with CloudFoundry
@@ -101,6 +103,22 @@ The key returns a username and a password:
 Copy the `password` to your clipboard and login into the Nexus UI with the `tdp-dev-admin` user. See below:
 
 ![Nexus Dev Admin Login](./images/nexus-dev-admin-login.png)
+
+### VM Login
+To access the VM running Nexus, you will need to gain access to the Raft internal network. To do this, you will need to install CloudFlare's WARP zero trust VPN. Follow the instructions [here](https://gorafttech-my.sharepoint.com/:w:/g/personal/tradin_teamraft_com/EZePOTv0dbdBguHITcoXQF0Bd5JAcqeLsJTlEOktTfIXHA?e=34WqB4) to get setup. From there, reach out to Eric Lipe or Connor Meehan for the IP, username, and password to access the VM. Once you have the credentials, you can login with SSH:
+```
+ssh username@IP_Address
+```
+
+Once logged in, you can run `docker ps` or other docker commands to view and administer the Nexus container as necessary. You should also consider generating an ssh key to avoid having to enter the password each time you login. To do so, run the following commands on your local machine.
+```
+ssh-keygen
+```
+
+```
+ssh-copy-id username@IP_Address
+```
+Now you will no longer have to enter the password when logging in.
 
 ## Local Docker Login
 After logging into the `tanf-dev` space with the `cf` cli, execute the following commands to authenticate your local docker daemon
