@@ -18,9 +18,10 @@
       - run:
           name: Install Buildx
           command: |
+            docker version
             export DOCKER_CLI_EXPERIMENTAL=enabled
             sudo apt update
-            sudo apt install -y docker-buildx
+            sudo apt-get install -y docker.io docker-buildx
             docker buildx create --driver docker-container --use --bootstrap
       - run:
           name: Build and tag images
