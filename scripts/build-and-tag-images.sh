@@ -14,19 +14,15 @@ BUILD_NUM=$5
 COMMIT_HASH=$6
 DOCKER_LOGIN=$7
 DOCKER_USER=$8
+BUILD_DATE=`date +%F`
 TAG="${BUILD_DATE}_build-${BUILD_NUM}_${COMMIT_HASH}"
 
-BUILD_DATE=`date +%F`
+export DOCKER_CLI_EXPERIMENTAL=enabled
 
 build_and_tag() {
     echo "$DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u $DOCKER_USER --password-stdin
-    for platform in "linux/amd64" "linux/arm64"; do
-        docker build --platform $platform -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:latest "$BACKEND_PATH"
-        docker build --platform $platform -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:latest "$FRONTEND_PATH"
-
-        docker push tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME --all-tags
-        docker push tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME --all-tags
-    done
+    docker buildx build --push --platform linux/amd64,linux/arm64 -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:latest "$BACKEND_PATH"
+    docker buildx build --push --platform linux/amd64,linux/arm64 -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:latest "$FRONTEND_PATH"
     docker logout
 }
 

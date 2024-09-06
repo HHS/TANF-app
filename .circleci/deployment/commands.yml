@@ -16,6 +16,13 @@
     steps:
       - setup_remote_docker
       - run:
+          name: Install Buildx
+          command: |
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            sudo apt update
+            sudo apt install -y docker-buildx
+            docker buildx create --driver docker-container --use --bootstrap
+      - run:
           name: Build and tag images
           command: |
             ./scripts/build-and-tag-images.sh <<parameters.backend-appname>> <<parameters.frontend-appname>> ./tdrs-backend ./tdrs-frontend $CIRCLE_BUILD_NUM $CIRCLE_SHA1 "$CIRCI_DOCKER_LOGIN" tdp-circi
