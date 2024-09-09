@@ -6,12 +6,24 @@
     working_directory: ~/tdp-deploy
     steps:
       - init-deploy
-      - build-and-tag-images:
-          backend-appname: tdp-backend-<< parameters.target_env >>
-          frontend-appname: tdp-frontend-<< parameters.target_env >>
+      # - build-and-tag-images:
+      #     backend-appname: tdp-backend-<< parameters.target_env >>
+      #     frontend-appname: tdp-frontend-<< parameters.target_env >>
       # - deploy-cloud-dot-gov:
       #     backend-appname: tdp-backend-<< parameters.target_env >>
       #     frontend-appname: tdp-frontend-<< parameters.target_env >>
+
+  build-and-tag:
+    parameters:
+      target_env:
+        type: string
+    executor: large-machine-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - init-deploy
+      - build-and-tag-images:
+          backend-appname: tdp-backend-<< parameters.target_env >>
+          frontend-appname: tdp-frontend-<< parameters.target_env >>
 
   deploy-staging:
     executor: docker-executor

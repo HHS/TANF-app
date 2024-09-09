@@ -93,6 +93,16 @@
                 - develop
                 - main
                 - master
+      - build-and-tag:
+          target_env: << pipeline.parameters.target_env >>
+          requires:
+            - deploy-dev
+          filters:
+            branches:
+              ignore:
+                - develop
+                - main
+                - master
       - deploy-develop:
           requires:
             - deploy-infrastructure-staging
