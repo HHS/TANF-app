@@ -109,7 +109,7 @@
           backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
           frontend-appname: tdp-frontend-<< pipeline.parameters.target_env >>
           requires:
-            - deploy-infrastructure-dev
+            - build-and-tag-arm
           filters:
             branches:
               ignore:
