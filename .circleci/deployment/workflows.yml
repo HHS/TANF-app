@@ -86,7 +86,8 @@
       - deploy-dev:
           target_env: << pipeline.parameters.target_env >>
           requires:
-            - deploy-infrastructure-dev
+            - build-and-tag-arm
+            - build-and-tag
           filters:
             branches:
               ignore:
@@ -97,7 +98,7 @@
           backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
           frontend-appname: tdp-frontend-<< pipeline.parameters.target_env >>
           requires:
-            - deploy-infrastructure-dev
+            - enable-versioning
           filters:
             branches:
               ignore:
@@ -108,7 +109,7 @@
           backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
           frontend-appname: tdp-frontend-<< pipeline.parameters.target_env >>
           requires:
-            - deploy-infrastructure-dev
+            - enable-versioning
           filters:
             branches:
               ignore:
