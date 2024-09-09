@@ -20,7 +20,7 @@ else
 fi
 
 # Celery worker config can be found here: https://docs.celeryq.dev/en/stable/userguide/workers.html#:~:text=The-,hostname,-argument%20can%20expand
-celery -A tdpservice.settings worker --loglevel=WARNING --concurrency=1 -n worker1@%h &
+celery -A tdpservice.settings worker --loglevel=INFO --concurrency=1 --max-tasks-per-child=1 -n worker1@%h &
 sleep 5
 
 # TODO: Uncomment the following line to add flower service when memory limitation is resolved

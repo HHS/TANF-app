@@ -3,16 +3,17 @@
 
 from ..fields import Field
 from ..row_schema import RowSchema
-from .. import validators
+from tdpservice.parsers.validators import category1, category2
 
 
 header = RowSchema(
     record_type="HEADER",
     document=None,
     preparsing_validators=[
-        validators.recordHasLength(23),
-        validators.startsWith("HEADER",
-                              lambda value: f"Your file does not begin with a {value} record."),
+        category1.recordHasLength(23),
+        category1.recordStartsWith(
+            "HEADER", lambda _: "Your file does not begin with a HEADER record."
+        ),
     ],
     postparsing_validators=[],
     fields=[
@@ -25,7 +26,7 @@ header = RowSchema(
             endIndex=6,
             required=True,
             validators=[
-                validators.matches("HEADER"),
+                category2.isEqual("HEADER"),
             ],
         ),
         Field(
@@ -36,7 +37,7 @@ header = RowSchema(
             startIndex=6,
             endIndex=10,
             required=True,
-            validators=[validators.isInLimits(2000, 2099)],
+            validators=[category2.isBetween(2000, 2099, inclusive=True)],
         ),
         Field(
             item="5",
@@ -46,7 +47,7 @@ header = RowSchema(
             startIndex=10,
             endIndex=11,
             required=True,
-            validators=[validators.oneOf(["1", "2", "3", "4"])],
+            validators=[category2.isOneOf(["1", "2", "3", "4"])],
         ),
         Field(
             item="6",
@@ -56,7 +57,7 @@ header = RowSchema(
             startIndex=11,
             endIndex=12,
             required=True,
-            validators=[validators.oneOf(["A", "C", "G", "S"])],
+            validators=[category2.isOneOf(["A", "C", "G", "S"])],
         ),
         Field(
             item="1",
@@ -67,11 +68,13 @@ header = RowSchema(
             endIndex=14,
             required=False,
             validators=[
-                validators.oneOf(["00", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13",
-                                  "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
-                                  "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36",
-                                  "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48",
-                                  "49", "50", "51", "53", "54", "55", "56", "66", "72", "78"]),
+                category2.isOneOf([
+                    "00", "01", "02", "04", "05", "06", "08", "09", "10", "11", "12", "13",
+                    "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
+                    "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36",
+                    "37", "38", "39", "40", "41", "42", "44", "45", "46", "47", "48",
+                    "49", "50", "51", "53", "54", "55", "56", "66", "72", "78"
+                ]),
             ],
         ),
         Field(
@@ -82,7 +85,7 @@ header = RowSchema(
             startIndex=14,
             endIndex=17,
             required=False,
-            validators=[validators.isInStringRange(0, 999)],
+            validators=[category2.isBetween(0, 999, inclusive=True, cast=int)],
         ),
         Field(
             item="7",
@@ -92,7 +95,7 @@ header = RowSchema(
             startIndex=17,
             endIndex=20,
             required=True,
-            validators=[validators.oneOf(["TAN", "SSP"])],
+            validators=[category2.isOneOf(["TAN", "SSP"])],
         ),
         Field(
             item="8",
@@ -102,7 +105,7 @@ header = RowSchema(
             startIndex=20,
             endIndex=21,
             required=True,
-            validators=[validators.oneOf(["1", "2"])],
+            validators=[category2.isOneOf(["1", "2"])],
         ),
         Field(
             item="9",
@@ -112,7 +115,7 @@ header = RowSchema(
             startIndex=21,
             endIndex=22,
             required=False,
-            validators=[validators.oneOf([" ", "E"])],
+            validators=[category2.isOneOf([" ", "E"])],
         ),
         Field(
             item="10",
@@ -122,16 +125,7 @@ header = RowSchema(
             startIndex=22,
             endIndex=23,
             required=True,
-            validators=[
-                validators.matches(
-                    "D",
-                    error_func=lambda eargs: (
-                        "HEADER Update Indicator must be set to D "
-                        f"instead of {eargs.value}. Please review "
-                        "Exporting Complete Data Using FTANF in the "
-                        "Knowledge Center."
-                    ),
-                )],
+            validators=[category2.validateHeaderUpdateIndicator()],
             ignore_errors=True,
         ),
     ],
