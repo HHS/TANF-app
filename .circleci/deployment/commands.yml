@@ -26,6 +26,7 @@
       - run:
           name: Build and tag images
           command: |
+            dockerd --max-concurrent-uploads 1
             ./scripts/build-and-tag-images.sh <<parameters.backend-appname>> <<parameters.frontend-appname>> ./tdrs-backend ./tdrs-frontend $CIRCLE_BUILD_NUM $CIRCLE_SHA1 "$CIRCI_DOCKER_LOGIN" tdp-circi
 
   deploy-cloud-dot-gov:
