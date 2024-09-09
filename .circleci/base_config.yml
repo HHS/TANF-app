@@ -24,7 +24,7 @@ executors:
     docker:
       - image: cimg/python:3.10.4
         user: root
-    resource_class: arm.large
+    resource_class: arm.small
 
 parameters:
   build_and_test_all:
