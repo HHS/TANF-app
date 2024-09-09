@@ -20,7 +20,6 @@ class ExportCsvMixin:
         # https://github.com/piskvorky/smart_open
 
         sql, params = queryset.query.sql_with_params()
-
         file_path = f'exports/{datafile_name}.csv.gz'
 
         export_queryset_to_s3_csv.delay(
