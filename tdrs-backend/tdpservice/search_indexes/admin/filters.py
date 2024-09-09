@@ -4,33 +4,15 @@ from django.contrib.admin import SimpleListFilter
 from django.db.models import Q as Query
 from tdpservice.stts.models import STT
 from tdpservice.search_indexes.admin.multiselect_filter import MultiSelectDropdownFilter
+from tdpservice.core.filters import MostRecentVersionFilter
 import datetime
 
 
-class CreationDateFilter(SimpleListFilter):
+class CreationDateFilter(MostRecentVersionFilter):
     """Simple filter class to show newest created datafile records."""
 
-    title = _('Newest')
-
+    title = _('Submission')
     parameter_name = 'created_at'
-
-    def lookups(self, request, model_admin):
-        """Available options in dropdown."""
-        return (
-            (None, _('Newest')),
-            ('all', _('All')),
-        )
-
-    def choices(self, cl):
-        """Update query string based on selection."""
-        for lookup, title in self.lookup_choices:
-            yield {
-                'selected': self.value() == lookup,
-                'query_string': cl.get_query_string({
-                    self.parameter_name: lookup,
-                }, []),
-                'display': title,
-            }
 
     def queryset(self, request, queryset):
         """Sort queryset to show latest records."""

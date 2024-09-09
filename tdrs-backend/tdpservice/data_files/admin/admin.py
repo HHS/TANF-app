@@ -1,9 +1,10 @@
 """Admin class for DataFile objects."""
 from django.contrib import admin
 from tdpservice.core.utils import ReadOnlyAdminMixin
+# from tdpservice.core.filters import custom_filter_title
 from tdpservice.data_files.models import DataFile, LegacyFileTransfer
 from tdpservice.parsers.models import DataFileSummary, ParserError
-from tdpservice.data_files.admin.filters import DataFileSummaryPrgTypeFilter, LatestReparseEvent
+from tdpservice.data_files.admin.filters import DataFileSummaryPrgTypeFilter, LatestReparseEvent, VersionFilter
 from django.conf import settings
 from django.utils.html import format_html
 from datetime import datetime, timedelta, timezone
@@ -118,10 +119,10 @@ class DataFileAdmin(ReadOnlyAdminMixin, admin.ModelAdmin):
         'user',
         'year',
         SubmissionDateFilter,
-        'version',
         'summary__status',
         DataFileSummaryPrgTypeFilter,
-        LatestReparseEvent
+        LatestReparseEvent,
+        VersionFilter,
     ]
 
 @admin.register(LegacyFileTransfer)
