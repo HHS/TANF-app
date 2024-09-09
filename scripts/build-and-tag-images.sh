@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [ "$#" -ne 8  ]; then
     echo "Error, this script expects 8 parameters."
@@ -21,8 +22,8 @@ export DOCKER_CLI_EXPERIMENTAL=enabled
 
 build_and_tag() {
     echo "$DOCKER_LOGIN" | docker login https://tdp-docker.dev.raftlabs.tech -u $DOCKER_USER --password-stdin
-    docker buildx build --push --platform linux/amd64,linux/arm64 -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:latest "$BACKEND_PATH"
-    docker buildx build --push --platform linux/amd64,linux/arm64 -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:latest "$FRONTEND_PATH"
+    docker build --push -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$BACKEND_APP_NAME:latest "$BACKEND_PATH"
+    docker build --push -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:$TAG -t tdp-docker.dev.raftlabs.tech/$FRONTEND_APP_NAME:latest "$FRONTEND_PATH"
     docker logout
 }
 

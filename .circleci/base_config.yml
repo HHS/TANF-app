@@ -20,6 +20,11 @@ executors:
       docker_layer_caching: false
       image: ubuntu-2204:2024.01.1
     resource_class: large
+  arm-docker-executor:
+    docker:
+      - image: cimg/python:3.10.4
+        user: root
+    resource_class: arm.large
 
 parameters:
   build_and_test_all:
