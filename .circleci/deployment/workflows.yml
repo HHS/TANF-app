@@ -98,7 +98,7 @@
           backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
           frontend-appname: tdp-frontend-<< pipeline.parameters.target_env >>
           requires:
-            - enable-versioning
+            - deploy-infrastructure-dev
           filters:
             branches:
               ignore:
@@ -109,7 +109,7 @@
           backend-appname: tdp-backend-<< pipeline.parameters.target_env >>
           frontend-appname: tdp-frontend-<< pipeline.parameters.target_env >>
           requires:
-            - enable-versioning
+            - deploy-infrastructure-dev
           filters:
             branches:
               ignore:
