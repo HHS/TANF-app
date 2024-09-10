@@ -14,15 +14,15 @@
         default: tdp-frontend
         type: string
     steps:
-      # - setup_remote_docker
       - run:
-          name: Install Buildx
+          name: Update Docker daemon
           command: |
-            docker version
-            export DOCKER_CLI_EXPERIMENTAL=enabled
-            sudo apt update
-            sudo apt-get install -y containerd docker.io docker-buildx
-            docker buildx create --driver docker-container --use --bootstrap
+            sudo echo '{"max-concurrent-uploads": 1}' | sudo tee /etc/docker/daemon.json
+            sudo service docker restart
+      - run:
+          name: Create builder
+          command: |
+            docker buildx create --name container-builder --driver docker-container --use --bootstrap
       - run:
           name: Build and tag images
           command: |
