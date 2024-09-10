@@ -99,9 +99,8 @@
             - deploy-infrastructure-staging
           filters:
             branches:
-              branches:
-                only:
-                  - develop
+              only:
+                - develop
       - deploy-develop:
           requires:
             - build-and-tag-develop
@@ -115,9 +114,8 @@
             - deploy-infrastructure-staging
           filters:
             branches:
-              branches:
-                only:
-                  - main
+              only:
+                - main
       - deploy-staging:
           requires:
             - build-and-tag-staging
@@ -131,9 +129,8 @@
             - deploy-infrastructure-production
           filters:
             branches:
-              branches:
-                only:
-                  - master
+              only:
+                - master
       - deploy-production:
           requires:
             - build-and-tag-production
