@@ -156,6 +156,9 @@ def test_ofa_system_admin_permissions(ofa_system_admin):
         'search_indexes.add_tribal_tanf_t7',
         'search_indexes.view_tribal_tanf_t7',
         'search_indexes.change_tribal_tanf_t7',
+        'search_indexes.add_reparsemeta',
+        'search_indexes.view_reparsemeta',
+        'search_indexes.change_reparsemeta',
     }
     group_permissions = ofa_system_admin.get_group_permissions()
     assert group_permissions == expected_permissions
