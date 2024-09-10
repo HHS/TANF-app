@@ -256,11 +256,11 @@
         },
         "django-admin-508": {
             "hashes": [
-                "sha256:419d017eab16c264b771c8c7ef1815c1c181cf4a1603b7e45cf78a3bbecb1d4a",
-                "sha256:fbc7bb8bc37f4c2089efceda9818a97898881ab80273919248f85cd3d6f01215"
+                "sha256:0a54eb2c0953911dcc8a9a1a9cf997a23f0e74324be6b16d56852da08f857de3",
+                "sha256:31a1d9a27204b54fe353430a48f6d066dcbdc3dfabfd55994604cdc6686bbf41"
             ],
             "index": "pypi",
-            "version": "==1.0.1"
+            "version": "==1.0.2"
         },
         "django-admin-logs": {
             "hashes": [
