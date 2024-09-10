@@ -72,21 +72,20 @@ def reindex_elastic_documents():
     })
 
 
-class Echo:
-    """An object that implements just the write method of the file-like interface."""
-
-    def write(self, value):
-        """Write the value by returning it, instead of storing in a buffer."""
-        return value
-
-
 class RowIterator:
     """Iterator class to support custom CSV row generation."""
+
+    class Echo:
+        """An object that implements just the write method of the file-like interface."""
+
+        def write(self, value):
+            """Write the value by returning it, instead of storing in a buffer."""
+            return value
 
     def __init__(self, field_names, queryset):
         self.field_names = field_names
         self.queryset = queryset
-        self.writer = csv.writer(Echo())
+        self.writer = csv.writer(RowIterator.Echo())
         self.is_header_row = True
         self.header_row = self.__init_header_row(field_names)
 
