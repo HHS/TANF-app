@@ -7,8 +7,10 @@ from tdpservice.search_indexes.management.commands import clean_and_reparse
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.users.models import User
 
-from django.contrib.admin.models import ADDITION
+from django.contrib.admin.models import LogEntry, ADDITION
+from django.utils import timezone
 
+from datetime import timedelta
 import os
 import time
 
@@ -139,6 +141,33 @@ def test_reparse_dunce():
     cmd = clean_and_reparse.Command()
     assert None is cmd.handle()
     assert ReparseMeta.objects.count() == 0
+
+@pytest.mark.django_db
+def test_reparse_sequential(log_context):
+    """Test reparse _assert_sequential_execution."""
+    cmd = clean_and_reparse.Command()
+    assert True == cmd._assert_sequential_execution(log_context)
+
+    meta = ReparseMeta.objects.create(timeout_at=None)
+    assert False == cmd._assert_sequential_execution(log_context)
+    timeout_entry = LogEntry.objects.latest('pk')
+    assert timeout_entry.change_message == ("The latest ReparseMeta model's (ID: 1) timeout_at field is None. Cannot "
+                                            "safely execute reparse, please fix manually.")
+
+    meta.timeout_at = timezone.now() + timedelta(seconds=100)
+    meta.save()
+    assert False == cmd._assert_sequential_execution(log_context)
+    not_seq_entry = LogEntry.objects.latest('pk')
+    assert not_seq_entry.change_message == ("A previous execution of the reparse command is RUNNING. "
+                                            "Cannot execute in parallel, exiting.")
+
+    meta.timeout_at = timezone.now()
+    meta.save()
+    assert True == cmd._assert_sequential_execution(log_context)
+    timeout_entry = LogEntry.objects.latest('pk')
+    assert timeout_entry.change_message == ("Previous reparse has exceeded the timeout. Allowing "
+                                            "execution of the command.")
+
 
 
 ################################

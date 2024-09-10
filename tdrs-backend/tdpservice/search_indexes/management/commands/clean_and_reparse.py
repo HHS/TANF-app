@@ -213,18 +213,20 @@ class Command(BaseCommand):
                 "Cannot safely execute reparse, please fix manually.",
                 logger_context=log_context,
                 level='error')
-            exit(1)
+            return False
         if (is_not_none and not ReparseMeta.assert_all_files_done(latest_meta_model) and
                 not now > latest_meta_model.timeout_at):
             log('A previous execution of the reparse command is RUNNING. Cannot execute in parallel, exiting.',
                 logger_context=log_context,
                 level='warn')
-            exit(1)
+            return False
         elif (is_not_none and latest_meta_model.timeout_at is not None and now > latest_meta_model.timeout_at and not
               ReparseMeta.assert_all_files_done(latest_meta_model)):
             log("Previous reparse has exceeded the timeout. Allowing execution of the command.",
                 logger_context=log_context,
                 level='warn')
+            return True
+        return True
 
     def _calculate_timeout(self, num_files, num_records):
         """Estimate a timeout parameter based on the number of files and the number of records."""
@@ -307,7 +309,9 @@ class Command(BaseCommand):
                 level='warn')
             return
 
-        self._assert_sequential_execution(log_context)
+        is_sequential = self._assert_sequential_execution(log_context)
+        if not is_sequential:
+            exit(1)
         meta_model = ReparseMeta.objects.create(fiscal_quarter=fiscal_quarter,
                                                 fiscal_year=fiscal_year,
                                                 all=reparse_all,

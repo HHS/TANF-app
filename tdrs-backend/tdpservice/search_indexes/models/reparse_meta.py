@@ -55,7 +55,7 @@ class ReparseMeta(models.Model):
         This function assumes the meta_model has been passed in a distributed/thread safe way. If the database row
         containing this model has not been locked the caller will experience race issues.
         """
-        if (meta_model.finished or meta_model.files_completed == meta_model.num_files_to_reparse or
+        if meta_model.finished and (meta_model.files_completed == meta_model.num_files_to_reparse or
                 meta_model.files_completed + meta_model.files_failed == meta_model.num_files_to_reparse or
                 meta_model.files_failed == meta_model.num_files_to_reparse):
             return True
