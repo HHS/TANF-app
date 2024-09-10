@@ -7,6 +7,7 @@ import gzip
 import os
 from tdpservice.users.models import User
 from celery import shared_task
+from botocore.exceptions import ClientError
 from tdpservice.core.utils import log
 import subprocess
 from tdpservice.data_files.s3_client import S3Client
@@ -76,7 +77,10 @@ def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, 
     """
     Export a selected queryset to a csv file stored in s3.
 
-    @param query_str: a sql string obtained via queryset.query.
+    @param query_str: a sql string obtained via queryset.query.sql_with_params().
+    @param query_params: sql query params obtained via queryset.query.sql_with_params().
+    @param field_names: a list of field names for the csv header.
+    @param model_name: the `model._meta.model_name` of the model to export.
     @param s3_filename: a string representing the file path/name in s3.
     """
     class Echo:
@@ -107,8 +111,9 @@ def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, 
 
         def __iter__(self):
             """Yield the next row in the csv export."""
+            # queryset.iterator simply 'forgets' the record after iterating over it, instead of caching it
+            # this is okay here since we only write out the contents and don't need the record again
             for obj in self.queryset.iterator():
-                # for obj in self.queryset:
                 row = []
 
                 if self.is_header_row:
@@ -123,26 +128,33 @@ def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, 
                         row.append(field.stt.stt_code)
                 yield self.writer.writerow(row)
 
+    system_user, _ = User.objects.get_or_create(username='system')
     Model = apps.get_model('search_indexes', model_name)
     queryset = Model.objects.raw(query_str, query_params)
     iterator = RowIterator(field_names, queryset)
     s3 = S3Client()
 
-    # stream the creation of the file using smart_open
-    # url = f's3://{settings.AWS_S3_DATAFILES_BUCKET_NAME}/{s3_filename}.csv'
-    # with open(url, 'w', transport_params={'client': s3.client}) as fout:
-    #     for _, s in enumerate(iterator):
-    #         fout.write(s)
-
-    # write + compress into tar/gz on filesystem - upload resulting file to s3
-    # have to clean up resulting file
-
     tmp_filename = 'file.csv.gz'
+    record_count = -1  # offset row count to account for the header
     with gzip.open(tmp_filename, 'wt') as f:
         for _, s in enumerate(iterator):
+            record_count += 1
             f.write(s)
 
     local_filename = os.path.basename(tmp_filename)
-    s3.client.upload_file(local_filename, settings.AWS_S3_DATAFILES_BUCKET_NAME, s3_filename)
+
+    try:
+        s3.client.upload_file(local_filename, settings.AWS_S3_DATAFILES_BUCKET_NAME, s3_filename)
+    except ClientError as e:
+        log(
+            f'Export failed: {s3_filename}. {e}',
+            {'user_id': system_user.pk, 'object_id': None, 'object_repr': ''},
+            'error'
+        )
+    else:
+        log(
+            f'Export of {record_count} {model_name} objects complete: {s3_filename}',
+            {'user_id': system_user.pk, 'object_id': None, 'object_repr': ''}
+        )
 
     os.remove(local_filename)

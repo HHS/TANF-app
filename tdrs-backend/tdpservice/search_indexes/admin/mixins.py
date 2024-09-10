@@ -2,6 +2,8 @@
 from datetime import datetime
 from django.contrib import admin
 from ..tasks import export_queryset_to_s3_csv
+from tdpservice.core.utils import log
+from tdpservice.users.models import User
 
 class ExportCsvMixin:
     """Mixin class to support CSV exporting."""
@@ -16,9 +18,6 @@ class ExportCsvMixin:
             datafile_name = f"{meta}_FY{model.datafile.year}{model.datafile.quarter}_" +\
                 str(datetime.now().strftime("%d%m%y-%H-%M-%S"))
 
-        # https://stackoverflow.com/a/5359612
-        # https://github.com/piskvorky/smart_open
-
         sql, params = queryset.query.sql_with_params()
         file_path = f'exports/{datafile_name}.csv.gz'
 
@@ -31,6 +30,12 @@ class ExportCsvMixin:
         )
 
         self.message_user(request, f'Your s3 file url is: {file_path}')
+
+        system_user, _ = User.objects.get_or_create(username='system')
+        log(
+            f'Beginning export of {queryset.count()} {meta.model_name} objects to s3: {file_path}',
+            {'user_id': system_user.pk, 'object_id': None, 'object_repr': ''}
+        )
 
     export_as_csv.short_description = "Export Selected as CSV"
 
