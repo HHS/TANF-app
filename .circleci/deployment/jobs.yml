@@ -20,7 +20,8 @@
     executor: large-machine-executor
     working_directory: ~/tdp-deploy
     steps:
-      - init-deploy
+      - checkout
+      - sudo-check
       - build-and-tag-images:
           backend-appname: tdp-backend-<< parameters.target_env >>
           frontend-appname: tdp-frontend-<< parameters.target_env >>
