@@ -93,33 +93,50 @@
                 - develop
                 - main
                 - master
-      - build-and-tag:
-          target_env: << pipeline.parameters.target_env >>
+      - build-and-tag-develop:
+          target_env: develop
           requires:
-            - deploy-dev
+            - deploy-infrastructure-staging
           filters:
             branches:
-              ignore:
-                - develop
-                - main
-                - master
+              branches:
+                only:
+                  - develop
       - deploy-develop:
           requires:
-            - deploy-infrastructure-staging
+            - build-and-tag-develop
           filters:
             branches:
               only:
                 - develop
-      - deploy-staging:
+      - build-and-tag-staging:
+          target_env: staging
           requires:
             - deploy-infrastructure-staging
           filters:
             branches:
+              branches:
+                only:
+                  - main
+      - deploy-staging:
+          requires:
+            - build-and-tag-staging
+          filters:
+            branches:
               only:
                 - main
-      - deploy-production:
+      - build-and-tag-production:
+          target_env: production
           requires:
             - deploy-infrastructure-production
+          filters:
+            branches:
+              branches:
+                only:
+                  - master
+      - deploy-production:
+          requires:
+            - build-and-tag-production
           filters:
             branches:
               only:

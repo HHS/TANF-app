@@ -1,18 +1,3 @@
-  deploy-dev:
-    parameters:
-      target_env:
-        type: string
-    executor: docker-executor
-    working_directory: ~/tdp-deploy
-    steps:
-      - init-deploy
-      # - build-and-tag-images:
-      #     backend-appname: tdp-backend-<< parameters.target_env >>
-      #     frontend-appname: tdp-frontend-<< parameters.target_env >>
-      # - deploy-cloud-dot-gov:
-      #     backend-appname: tdp-backend-<< parameters.target_env >>
-      #     frontend-appname: tdp-frontend-<< parameters.target_env >>
-
   build-and-tag:
     parameters:
       target_env:
@@ -26,14 +11,23 @@
           backend-appname: tdp-backend-<< parameters.target_env >>
           frontend-appname: tdp-frontend-<< parameters.target_env >>
 
+  deploy-dev:
+    parameters:
+      target_env:
+        type: string
+    executor: docker-executor
+    working_directory: ~/tdp-deploy
+    steps:
+      - init-deploy
+      - deploy-cloud-dot-gov:
+          backend-appname: tdp-backend-<< parameters.target_env >>
+          frontend-appname: tdp-frontend-<< parameters.target_env >>
+
   deploy-staging:
     executor: docker-executor
     working_directory: ~/tdp-deploy
     steps:
       - init-deploy
-      - build-and-tag-images:
-          backend-appname: tdp-backend-staging
-          frontend-appname: tdp-frontend-staging
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-staging
           frontend-appname: tdp-frontend-staging
@@ -46,9 +40,6 @@
     working_directory: ~/tdp-deploy
     steps:
       - init-deploy
-      - build-and-tag-images:
-          backend-appname: tdp-backend-develop
-          frontend-appname: tdp-frontend-develop
       - deploy-cloud-dot-gov:
           backend-appname: tdp-backend-develop
           frontend-appname: tdp-frontend-develop
@@ -159,9 +150,6 @@
     working_directory: ~/tdp-deploy
     steps:
       - init-deploy
-      - build-and-tag-images:
-          backend-appname: tdp-backend-prod
-          frontend-appname: tdp-frontend-prod
       - deploy-cloud-dot-gov:
           environment: production
           backend-appname: tdp-backend-prod
