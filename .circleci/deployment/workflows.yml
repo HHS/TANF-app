@@ -94,7 +94,6 @@
                 - main
                 - master
       - build-and-tag-develop:
-          target_env: develop
           requires:
             - deploy-infrastructure-staging
           filters:
@@ -109,7 +108,6 @@
               only:
                 - develop
       - build-and-tag-staging:
-          target_env: staging
           requires:
             - deploy-infrastructure-staging
           filters:
@@ -124,7 +122,6 @@
               only:
                 - main
       - build-and-tag-production:
-          target_env: production
           requires:
             - deploy-infrastructure-production
           filters:
