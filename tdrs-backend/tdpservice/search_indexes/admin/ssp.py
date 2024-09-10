@@ -1,6 +1,7 @@
 """ModelAdmin classes for parsed SSP data files."""
-from .filters import CreationDateFilter, FiscalPeriodFilter, STTFilter
+from .filters import CreationDateFilter, STTFilter
 from .mixins import CsvExportAdminMixin, ReadOnlyAdminMixin
+from tdpservice.search_indexes.admin.multiselect_filter import MultiSelectDropdownFilter
 
 
 class SSP_M1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -14,9 +15,10 @@ class SSP_M1Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     ]
 
     list_filter = [
-        FiscalPeriodFilter,
-        CreationDateFilter,
+        ('datafile__year', MultiSelectDropdownFilter),
+        ('datafile__quarter', MultiSelectDropdownFilter),
         ('datafile__stt__name', STTFilter),
+        CreationDateFilter,
     ]
 
 
@@ -31,9 +33,10 @@ class SSP_M2Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     ]
 
     list_filter = [
-        FiscalPeriodFilter,
-        CreationDateFilter,
+        ('datafile__year', MultiSelectDropdownFilter),
+        ('datafile__quarter', MultiSelectDropdownFilter),
         ('datafile__stt__name', STTFilter),
+        CreationDateFilter,
     ]
 
 
@@ -48,9 +51,10 @@ class SSP_M3Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     ]
 
     list_filter = [
-        FiscalPeriodFilter,
-        CreationDateFilter,
+        ('datafile__year', MultiSelectDropdownFilter),
+        ('datafile__quarter', MultiSelectDropdownFilter),
         ('datafile__stt__name', STTFilter),
+        CreationDateFilter,
     ]
 
 class SSP_M4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -64,9 +68,10 @@ class SSP_M4Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     ]
 
     list_filter = [
-        FiscalPeriodFilter,
-        CreationDateFilter,
+        ('datafile__year', MultiSelectDropdownFilter),
+        ('datafile__quarter', MultiSelectDropdownFilter),
         ('datafile__stt__name', STTFilter),
+        CreationDateFilter,
     ]
 
 class SSP_M5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -80,9 +85,10 @@ class SSP_M5Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     ]
 
     list_filter = [
-        FiscalPeriodFilter,
-        CreationDateFilter,
+        ('datafile__year', MultiSelectDropdownFilter),
+        ('datafile__quarter', MultiSelectDropdownFilter),
         ('datafile__stt__name', STTFilter),
+        CreationDateFilter,
     ]
 
 class SSP_M6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -97,9 +103,10 @@ class SSP_M6Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     ]
 
     list_filter = [
-        FiscalPeriodFilter,
-        CreationDateFilter,
+        ('datafile__year', MultiSelectDropdownFilter),
+        ('datafile__quarter', MultiSelectDropdownFilter),
         ('datafile__stt__name', STTFilter),
+        CreationDateFilter,
     ]
 
 class SSP_M7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
@@ -117,7 +124,8 @@ class SSP_M7Admin(ReadOnlyAdminMixin, CsvExportAdminMixin):
     ]
 
     list_filter = [
-        FiscalPeriodFilter,
-        CreationDateFilter,
+        ('datafile__year', MultiSelectDropdownFilter),
+        ('datafile__quarter', MultiSelectDropdownFilter),
         ('datafile__stt__name', STTFilter),
+        CreationDateFilter,
     ]
