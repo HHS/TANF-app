@@ -72,6 +72,53 @@ def reindex_elastic_documents():
     })
 
 
+class Echo:
+    """An object that implements just the write method of the file-like interface."""
+
+    def write(self, value):
+        """Write the value by returning it, instead of storing in a buffer."""
+        return value
+
+
+class RowIterator:
+    """Iterator class to support custom CSV row generation."""
+
+    def __init__(self, field_names, queryset):
+        self.field_names = field_names
+        self.queryset = queryset
+        self.writer = csv.writer(Echo())
+        self.is_header_row = True
+        self.header_row = self.__init_header_row(field_names)
+
+    def __init_header_row(self, field_names):
+        """Generate custom header row."""
+        header_row = []
+        for name in field_names:
+            header_row.append(name)
+            if name == "datafile":
+                header_row.append("STT")
+        return header_row
+
+    def __iter__(self):
+        """Yield the next row in the csv export."""
+        # queryset.iterator simply 'forgets' the record after iterating over it, instead of caching it
+        # this is okay here since we only write out the contents and don't need the record again
+        for obj in self.queryset.iterator():
+            row = []
+
+            if self.is_header_row:
+                self.is_header_row = False
+                yield self.writer.writerow(self.header_row)
+
+            for field_name in self.field_names:
+                field = getattr(obj, field_name)
+                row.append(field)
+                if field and field_name == "datafile":
+                    # print(field)
+                    row.append(field.stt.stt_code)
+            yield self.writer.writerow(row)
+
+
 @shared_task
 def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, s3_filename):
     """
@@ -83,51 +130,6 @@ def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, 
     @param model_name: the `model._meta.model_name` of the model to export.
     @param s3_filename: a string representing the file path/name in s3.
     """
-    class Echo:
-        """An object that implements just the write method of the file-like interface."""
-
-        def write(self, value):
-            """Write the value by returning it, instead of storing in a buffer."""
-            return value
-
-    class RowIterator:
-        """Iterator class to support custom CSV row generation."""
-
-        def __init__(self, field_names, queryset):
-            self.field_names = field_names
-            self.queryset = queryset
-            self.writer = csv.writer(Echo())
-            self.is_header_row = True
-            self.header_row = self.__init_header_row(field_names)
-
-        def __init_header_row(self, field_names):
-            """Generate custom header row."""
-            header_row = []
-            for name in field_names:
-                header_row.append(name)
-                if name == "datafile":
-                    header_row.append("STT")
-            return header_row
-
-        def __iter__(self):
-            """Yield the next row in the csv export."""
-            # queryset.iterator simply 'forgets' the record after iterating over it, instead of caching it
-            # this is okay here since we only write out the contents and don't need the record again
-            for obj in self.queryset.iterator():
-                row = []
-
-                if self.is_header_row:
-                    self.is_header_row = False
-                    yield self.writer.writerow(self.header_row)
-
-                for field_name in self.field_names:
-                    field = getattr(obj, field_name)
-                    row.append(field)
-                    if field and field_name == "datafile":
-                        # print(field)
-                        row.append(field.stt.stt_code)
-                yield self.writer.writerow(row)
-
     system_user, _ = User.objects.get_or_create(username='system')
     Model = apps.get_model('search_indexes', model_name)
     queryset = Model.objects.raw(query_str, query_params)
