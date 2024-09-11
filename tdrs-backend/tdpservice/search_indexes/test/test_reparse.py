@@ -96,7 +96,7 @@ def test_count_total_num_records(log_context, dfs, cat4_edge_case_file, big_file
 
 @pytest.mark.django_db
 def test_reparse_backup_succeed(log_context, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                        tribal_section_1_file):
+                                tribal_section_1_file):
     """Verify a backup is created with the correct size."""
     parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
 
@@ -118,8 +118,6 @@ def test_reparse_backup_fail(mocker, log_context, dfs, cat4_edge_case_file, big_
         'tdpservice.search_indexes.management.commands.clean_and_reparse.Command._backup',
         side_effect=Exception('Backup exception')
     )
-
-
     cmd = clean_and_reparse.Command()
     file_name = "/tmp/test_reparse.pg"
     with pytest.raises(Exception):
@@ -127,7 +125,7 @@ def test_reparse_backup_fail(mocker, log_context, dfs, cat4_edge_case_file, big_
         assert os.path.exists(file_name) is False
         exception_msg = LogEntry.objects.latest('pk').change_message
         assert exception_msg == ("Database backup FAILED. Clean and reparse NOT executed. Database "
-                                "and Elastic are CONSISTENT!")
+                                 "and Elastic are CONSISTENT!")
 
 @pytest.mark.parametrize(("new_indexes"), [
     (True),
@@ -151,7 +149,7 @@ def test_delete_associated_models(new_indexes, log_context, dfs, cat4_edge_case_
 
 @pytest.mark.parametrize(("exc_msg, exception_type"), [
     (('Encountered a DatabaseError while deleting DataFileSummary from Postgres. The database '
-    'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!'), DatabaseError),
+      'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!'), DatabaseError),
     (('Caught generic exception while deleting DataFileSummary. The database and Elastic are INCONSISTENT! '
       'Restore the DB from the backup as soon as possible!'), Exception)
 ])
