@@ -118,7 +118,7 @@ def test_delete_associated_models(log_context, dfs, cat4_edge_case_file, big_fil
     class Fake:
         pass
     fake_meta = Fake()
-    cmd._delete_associated_models(fake_meta, ids, False, log_context)
+    cmd._delete_associated_models(fake_meta, ids, True, log_context)
 
     assert cmd._count_total_num_records(log_context) == 0
 
