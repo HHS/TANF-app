@@ -76,7 +76,7 @@ s1 = RowSchema(
             startIndex=7,
             endIndex=15,
             required=True,
-            validators=[category2.isBetween(1, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="4A",
@@ -241,7 +241,7 @@ s2 = RowSchema(
             startIndex=15,
             endIndex=23,
             required=True,
-            validators=[category2.isBetween(1, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="4B",
@@ -406,7 +406,7 @@ s3 = RowSchema(
             startIndex=23,
             endIndex=31,
             required=True,
-            validators=[category2.isBetween(1, 99999999, inclusive=True)]
+            validators=[category2.isBetween(0, 99999999, inclusive=True)]
         ),
         Field(
             item="4C",
