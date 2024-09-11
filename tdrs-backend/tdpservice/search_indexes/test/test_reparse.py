@@ -146,29 +146,27 @@ def test_reparse_dunce():
 def test_reparse_sequential(log_context):
     """Test reparse _assert_sequential_execution."""
     cmd = clean_and_reparse.Command()
-    assert True == cmd._assert_sequential_execution(log_context)
+    assert True is cmd._assert_sequential_execution(log_context)
 
     meta = ReparseMeta.objects.create(timeout_at=None)
-    assert False == cmd._assert_sequential_execution(log_context)
+    assert False is cmd._assert_sequential_execution(log_context)
     timeout_entry = LogEntry.objects.latest('pk')
     assert timeout_entry.change_message == ("The latest ReparseMeta model's (ID: 1) timeout_at field is None. Cannot "
                                             "safely execute reparse, please fix manually.")
 
     meta.timeout_at = timezone.now() + timedelta(seconds=100)
     meta.save()
-    assert False == cmd._assert_sequential_execution(log_context)
+    assert False is cmd._assert_sequential_execution(log_context)
     not_seq_entry = LogEntry.objects.latest('pk')
     assert not_seq_entry.change_message == ("A previous execution of the reparse command is RUNNING. "
                                             "Cannot execute in parallel, exiting.")
 
     meta.timeout_at = timezone.now()
     meta.save()
-    assert True == cmd._assert_sequential_execution(log_context)
+    assert True is cmd._assert_sequential_execution(log_context)
     timeout_entry = LogEntry.objects.latest('pk')
     assert timeout_entry.change_message == ("Previous reparse has exceeded the timeout. Allowing "
                                             "execution of the command.")
-
-
 
 ################################
 # The function below doesn't work. This is because the command kicks off the parser task which tries to query the DB for

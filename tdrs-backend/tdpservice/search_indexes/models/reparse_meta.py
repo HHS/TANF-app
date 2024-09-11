@@ -56,8 +56,9 @@ class ReparseMeta(models.Model):
         containing this model has not been locked the caller will experience race issues.
         """
         if meta_model.finished and (meta_model.files_completed == meta_model.num_files_to_reparse or
-                meta_model.files_completed + meta_model.files_failed == meta_model.num_files_to_reparse or
-                meta_model.files_failed == meta_model.num_files_to_reparse):
+                                    meta_model.files_completed + meta_model.files_failed ==
+                                    meta_model.num_files_to_reparse or
+                                    meta_model.files_failed == meta_model.num_files_to_reparse):
             return True
         return False
 

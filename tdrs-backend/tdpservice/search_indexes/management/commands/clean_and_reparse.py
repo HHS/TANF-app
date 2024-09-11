@@ -228,6 +228,11 @@ class Command(BaseCommand):
             return True
         return True
 
+    def _should_exit(self, condition):
+        """Exit on condition."""
+        if condition:
+            exit(1)
+
     def _calculate_timeout(self, num_files, num_records):
         """Estimate a timeout parameter based on the number of files and the number of records."""
         # Increase by an order of magnitude to have the bases covered.
@@ -310,8 +315,7 @@ class Command(BaseCommand):
             return
 
         is_sequential = self._assert_sequential_execution(log_context)
-        if not is_sequential:
-            exit(1)
+        self._should_exit(not is_sequential)
         meta_model = ReparseMeta.objects.create(fiscal_quarter=fiscal_quarter,
                                                 fiscal_year=fiscal_year,
                                                 all=reparse_all,
