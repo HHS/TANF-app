@@ -1,0 +1,18 @@
+{% load i18n admin_urls %}
+<div class="list-filter-dropdown">
+    <h3>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</h3>
+
+    <div>
+        <select id="{{ title|slugify }}_select" multiple style="color:#000000;width:100%" aria-multiselectable="true" aria-label="{{ title|slugify }}s" size="{% if choices|length < 7 %} {{ choices|length }} {% else %} 8 {% endif %}">
+        {% for choice in choices|slice:"1:" %}
+            <option{% if choice.selected %} selected{% endif %}
+                value="{{ choice.value }}"
+                key="{{ choice.key }}"
+                style="color:#000000"
+                {% if choice.selected %} aria-checked="true" {% else %} aria-checked="false" {% endif %}>
+                {{ choice.display }}
+            </option>
+        {% endfor %}
+        </select>
+    </div>
+</div>
