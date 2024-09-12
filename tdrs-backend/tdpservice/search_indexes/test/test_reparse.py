@@ -292,28 +292,21 @@ def test_reparse_sequential(log_context):
 # the parser task to fail because it cannot query the DataFile model. I couldn't find a way around this issue.
 ################################
 
-# @pytest.mark.django_db(transaction=False)
-# def test_reparse_all(log_context, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-#                              tribal_section_1_file):
-#     """Test reparse no args."""
-#     ids = parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
-#     cmd = clean_and_reparse.Command()
-#     print(f"\n\nPKS: {ids}\n\n")
+@pytest.mark.django_db()
+def test_reparse_quarter_and_year(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
+                                  tribal_section_1_file):
+    """Test reparse no args."""
+    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    cmd = clean_and_reparse.Command()
 
-#     opts = {'all': True, 'test': True}
-#     cmd.handle(**opts)
-#     done = False
-#     timeout = 0
-#     while (not done or timeout == 30):
-#         timeout += 1
-#         time.sleep(1)
-#         latest = ReparseMeta.objects.latest('pk')
-#         done = latest.finished
+    mocker.patch(
+        'tdpservice.scheduling.parser_task.parse',
+        return_value=None
+    )
 
-#     latest = ReparseMeta.objects.select_for_update().latest("pk")
-#     assert latest.success == True
-#     assert latest.num_files_to_reparse == len(ids)
-#     assert latest.files_completed == len(ids)
-#     assert latest.files_failed == 0
-#     assert latest.num_records_deleted == latest.num_records_created
-#     assert latest.total_num_records_initial == latest.total_num_records_post
+    opts = {'fiscal_quarter': 'Q1', 'fiscal_year': 2021, 'testing': True}
+    cmd.handle(**opts)
+
+    latest = ReparseMeta.objects.select_for_update().latest("pk")
+    assert latest.num_files_to_reparse == 1
+    assert latest.num_records_deleted == 3073

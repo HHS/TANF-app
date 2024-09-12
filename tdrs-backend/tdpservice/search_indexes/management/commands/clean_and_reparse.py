@@ -242,12 +242,24 @@ class Command(BaseCommand):
         logger.info(f"Setting timeout for the reparse event to be {delta} seconds from meta model creation date.")
         return delta
 
+    def _handle_input(self, testing, continue_msg):
+        """Handle user input."""
+        if not testing:
+            c = str(input(f'\n{continue_msg}\nContinue [y/n]? ')).lower()
+            if c not in ['y', 'yes']:
+                print('Cancelled.')
+                exit(0)
+
     def handle(self, *args, **options):
         """Delete and reparse datafiles matching a query."""
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
         reparse_all = options.get('all', False)
         new_indices = reparse_all is True
+
+        # Option that can only be specified by calling `handle` directly and passing it.
+        testing = options.get('testing', False)
+        ##
 
         args_passed = fiscal_year is not None or fiscal_quarter is not None or reparse_all
 
@@ -289,10 +301,7 @@ class Command(BaseCommand):
         fmt_str = f"ALL ({num_files})" if reparse_all else f"({num_files})"
         continue_msg += "\nThese options will delete and reparse {0} datafiles.".format(fmt_str)
 
-        c = str(input(f'\n{continue_msg}\nContinue [y/n]? ')).lower()
-        if c not in ['y', 'yes']:
-            print('Cancelled.')
-            return
+        self._handle_input(testing, continue_msg)
 
         system_user, created = User.objects.get_or_create(username='system')
         if created:
