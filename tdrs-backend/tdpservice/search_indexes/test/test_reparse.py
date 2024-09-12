@@ -286,16 +286,10 @@ def test_reparse_sequential(log_context):
     assert timeout_entry.change_message == ("Previous reparse has exceeded the timeout. Allowing "
                                             "execution of the command.")
 
-################################
-# The function below doesn't work. This is because the command kicks off the parser task which tries to query the DB for
-# the file to parse. But Pytest segregates the DB changes to the test (even when transactions are disbled) which leads
-# the parser task to fail because it cannot query the DataFile model. I couldn't find a way around this issue.
-################################
-
 @pytest.mark.django_db()
 def test_reparse_quarter_and_year(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
                                   tribal_section_1_file):
-    """Test reparse no args."""
+    """Test reparse with year and quarter."""
     parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
     cmd = clean_and_reparse.Command()
 
@@ -310,3 +304,41 @@ def test_reparse_quarter_and_year(mocker, dfs, cat4_edge_case_file, big_file, sm
     latest = ReparseMeta.objects.select_for_update().latest("pk")
     assert latest.num_files_to_reparse == 1
     assert latest.num_records_deleted == 3073
+
+@pytest.mark.django_db()
+def test_reparse_quarter(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
+                         tribal_section_1_file):
+    """Test reparse with quarter."""
+    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    cmd = clean_and_reparse.Command()
+
+    mocker.patch(
+        'tdpservice.scheduling.parser_task.parse',
+        return_value=None
+    )
+
+    opts = {'fiscal_quarter': 'Q1', 'testing': True}
+    cmd.handle(**opts)
+
+    latest = ReparseMeta.objects.select_for_update().latest("pk")
+    assert latest.num_files_to_reparse == 4
+    assert latest.num_records_deleted == 3104
+
+@pytest.mark.django_db()
+def test_reparse_year(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
+                      tribal_section_1_file):
+    """Test reparse year."""
+    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    cmd = clean_and_reparse.Command()
+
+    mocker.patch(
+        'tdpservice.scheduling.parser_task.parse',
+        return_value=None
+    )
+
+    opts = {'fiscal_year': 2024, 'testing': True}
+    cmd.handle(**opts)
+
+    latest = ReparseMeta.objects.select_for_update().latest("pk")
+    assert latest.num_files_to_reparse == 2
+    assert latest.num_records_deleted == 27
