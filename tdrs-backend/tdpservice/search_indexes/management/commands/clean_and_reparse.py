@@ -115,7 +115,7 @@ class Command(BaseCommand):
                     # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
                     paginator = Paginator(qset, settings.BULK_CREATE_BATCH_SIZE)
                     for page in paginator:
-                        doc().update(page.object_list, action='delete')
+                        doc().update(page.object_list, refresh=True, action='delete')
                 qset._raw_delete(qset.db)
             except ElasticsearchException as e:
                 log(f'Elastic document delete failed for type {model}. The database and Elastic are INCONSISTENT! '
