@@ -49,7 +49,6 @@ class LogoutRedirectOIDC(RedirectView):
 
         # params needed by the logout endpoint
         logout_params = {
-            "client_id": settings.LOGIN_GOV_CLIENT_ID,
             "post_logout_redirect_uri": settings.BASE_URL + "/logout",
             "state": state,
         }
@@ -63,5 +62,6 @@ class LogoutRedirectOIDC(RedirectView):
             encoded_params = urlencode(logout_params, quote_via=quote_plus)
             return HttpResponseRedirect(ams_configuration["end_session_endpoint"] + "?" + encoded_params)
         else:
+            logout_params["client_id"] = settings.LOGIN_GOV_CLIENT_ID
             encoded_params = urlencode(logout_params, quote_via=quote_plus)
             return HttpResponseRedirect(settings.LOGIN_GOV_LOGOUT_ENDPOINT + "?" + encoded_params)
