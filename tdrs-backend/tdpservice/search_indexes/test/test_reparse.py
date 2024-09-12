@@ -128,8 +128,8 @@ def test_reparse_backup_fail(mocker, log_context, dfs, cat4_edge_case_file, big_
                                  "and Elastic are CONSISTENT!")
 
 @pytest.mark.parametrize(("new_indexes"), [
-    (True),
-    (False)
+    (False),
+    (True)
 ])
 @pytest.mark.django_db
 def test_delete_associated_models(new_indexes, log_context, dfs, cat4_edge_case_file, big_file,
