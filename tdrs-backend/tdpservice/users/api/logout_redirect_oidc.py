@@ -59,7 +59,6 @@ class LogoutRedirectOIDC(RedirectView):
         # build out full API GET call to authorize endpoint
         if use_ams_handler:
             ams_configuration = LoginRedirectAMS.get_ams_configuration()
-            # logout_params["id_token_hint"] = token_hint
             encoded_params = urlencode(logout_params, quote_via=quote_plus)
             return HttpResponseRedirect(ams_configuration["end_session_endpoint"] + "?" + encoded_params)
         else:
