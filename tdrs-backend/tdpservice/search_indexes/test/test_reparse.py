@@ -127,8 +127,12 @@ def test_reparse_backup_fail(mocker, log_context, dfs, cat4_edge_case_file, big_
         assert exception_msg == ("Database backup FAILED. Clean and reparse NOT executed. Database "
                                  "and Elastic are CONSISTENT!")
 
+@pytest.mark.parametrize(("new_indexes"), [
+    (True),
+    (False)
+])
 @pytest.mark.django_db
-def test_delete_associated_models(log_context, dfs, cat4_edge_case_file, big_file,
+def test_delete_associated_models(log_context, new_indexes, dfs, cat4_edge_case_file, big_file,
                                   small_ssp_section1_datafile, tribal_section_1_file):
     """Verify all records and models are deleted."""
     ids = parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
@@ -139,7 +143,7 @@ def test_delete_associated_models(log_context, dfs, cat4_edge_case_file, big_fil
     class Fake:
         pass
     fake_meta = Fake()
-    cmd._delete_associated_models(fake_meta, ids, True, log_context)
+    cmd._delete_associated_models(fake_meta, ids, new_indexes, log_context)
 
     assert cmd._count_total_num_records(log_context) == 0
 
