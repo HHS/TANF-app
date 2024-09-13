@@ -346,3 +346,41 @@ def test_reparse_year(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_sect
     latest = ReparseMeta.objects.select_for_update().latest("pk")
     assert latest.num_files_to_reparse == 2
     assert latest.num_records_deleted == 27
+
+@pytest.mark.django_db()
+def test_reparse_all(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
+                      tribal_section_1_file):
+    """Test reparse year."""
+    parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
+    cmd = clean_and_reparse.Command()
+
+    mocker.patch(
+        'tdpservice.scheduling.parser_task.parse',
+        return_value=None
+    )
+
+    opts = {'all': True, 'testing': True}
+    cmd.handle(**opts)
+
+    latest = ReparseMeta.objects.select_for_update().latest("pk")
+    assert latest.num_files_to_reparse == 4
+    assert latest.num_records_deleted == 3104
+
+@pytest.mark.django_db()
+def test_reparse_no_files(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
+                      tribal_section_1_file):
+    """Test reparse year."""
+    cmd = clean_and_reparse.Command()
+
+    mocker.patch(
+        'tdpservice.scheduling.parser_task.parse',
+        return_value=None
+    )
+
+    opts = {'fiscal_year': 2025, 'testing': True}
+    res = cmd.handle(**opts)
+
+    assert ReparseMeta.objects.count() == 0
+    assert res is None
+    assert LogEntry.objects.latest('pk').change_message == ("No files available for the selected Fiscal Year: 2025 and "
+                                                            "Quarter: Q1-4. Nothing to do.")
