@@ -62,7 +62,7 @@ def test_main_backup(mocker, system_user):
                 "DATABASE_DB_NAME": "tdrs_test",
                 "POSTGRES_CLIENT_DIR": "",
                 "S3_BUCKET": "",
-                "S3_REGION": "",}
+                "S3_REGION": ""}
 
     db_backup.main(['-b', '-f', '/tmp/test_backup.pg'], sys_values=sys_vals, system_user=system_user)
     assert LogEntry.objects.get(change_message="Begining database backup.").pk is not None
