@@ -3,6 +3,7 @@
 import os
 import pytest
 from tdpservice.scheduling.management import db_backup
+from django.contrib.admin.models import LogEntry
 
 @pytest.mark.django_db
 def test_backup_database(system_user):
@@ -49,3 +50,20 @@ def test_get_database_credentials():
     """Test get credentials."""
     creds = db_backup.get_database_credentials("postgres://tdpuser:something_secure@postgres:5432/tdrs_test")
     assert creds == ["tdpuser", "something_secure", "postgres", "5432", "tdrs_test"]
+
+@pytest.mark.django_db
+def test_main_backup(mocker, system_user):
+    """Test call the main function."""
+    mocker.patch(
+        'tdpservice.scheduling.management.db_backup.upload_file',
+        return_value=True
+    )
+    sys_vals = {"DATABASE_URI": "postgres://tdpuser:something_secure@postgres:5432",
+                "DATABASE_DB_NAME": "tdrs_test",
+                "POSTGRES_CLIENT_DIR": "",
+                "S3_BUCKET": "",
+                "S3_REGION": "",}
+
+    db_backup.main(['-b', '-f', '/tmp/test_backup.pg'], sys_values=sys_vals, system_user=system_user)
+    assert LogEntry.objects.get(change_message="Begining database backup.").pk is not None
+    assert LogEntry.objects.get(change_message="Finished database backup.").pk is not None
