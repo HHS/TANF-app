@@ -386,7 +386,7 @@ def test_reparse_no_files(mocker):
 
 @pytest.mark.django_db()
 def test_mm_all_files_done():
-    """Test meta model all files done"""
+    """Test meta model all files done."""
     meta_model = ReparseMeta.objects.create()
     assert ReparseMeta.assert_all_files_done(meta_model) is False
 
