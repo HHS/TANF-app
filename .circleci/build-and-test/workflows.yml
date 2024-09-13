@@ -6,12 +6,12 @@
       - test-backend:
           requires:
             - secrets-check
-      # - test-frontend:
-      #     requires:
-      #       - secrets-check
-      # - test-e2e:
-      #     requires:
-      #       - secrets-check
+      - test-frontend:
+          requires:
+            - secrets-check
+      - test-e2e:
+          requires:
+            - secrets-check
 
   ci-build-and-test-all:
     jobs:
@@ -31,23 +31,23 @@
                 - /^release.*/
           requires:
             - secrets-check
-      # - test-frontend:
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
-      #           - master
-      #           - /^release.*/
-      #     requires:
-      #       - secrets-check
-      # - test-e2e:
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
-      #           - master
-      #           - /^release.*/
-      #     requires:
+      - test-frontend:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
+          requires:
+            - secrets-check
+      - test-e2e:
+          filters:
+            branches:
+              only:
+                - main
+                - master
+                - /^release.*/
+          requires:
             - secrets-check
 
   build-and-test-backend:

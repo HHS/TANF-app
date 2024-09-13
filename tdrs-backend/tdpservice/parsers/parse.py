@@ -285,7 +285,6 @@ def delete_serialized_records(duplicate_manager, dfs):
     """Delete all records that have already been serialized to the DB that have cat4 errors."""
     total_deleted = 0
     for document, ids in duplicate_manager.get_records_to_remove().items():
-        print(f"Doc: {document}, IDs: {ids}")
         try:
             model = document.Django.model
             qset = model.objects.filter(id__in=ids)
