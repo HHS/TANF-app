@@ -5,13 +5,8 @@ import pytest
 from tdpservice.scheduling.management import db_backup
 
 @pytest.mark.django_db
-def test_backup_database(mocker, system_user):
+def test_backup_database(system_user):
     """Test backup functionality."""
-    mocker.patch(
-        'tdpservice.scheduling.management.db_backup.get_system_values',
-        return_value={'DATABASE_URI': "postgres://tdpuser:something_secure@postgres:5432/tdrs_test"}
-    )
-
     file_name = "/tmp/test_backup.pg"
     ret = db_backup.backup_database(file_name, "",
                                     "postgres://tdpuser:something_secure@postgres:5432/tdrs_test",
