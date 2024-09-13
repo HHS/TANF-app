@@ -349,8 +349,8 @@ def test_reparse_year(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_sect
 
 @pytest.mark.django_db()
 def test_reparse_all(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                      tribal_section_1_file):
-    """Test reparse year."""
+                     tribal_section_1_file):
+    """Test reparse all."""
     parse_files(dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile, tribal_section_1_file)
     cmd = clean_and_reparse.Command()
 
@@ -367,9 +367,8 @@ def test_reparse_all(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_secti
     assert latest.num_records_deleted == 3104
 
 @pytest.mark.django_db()
-def test_reparse_no_files(mocker, dfs, cat4_edge_case_file, big_file, small_ssp_section1_datafile,
-                      tribal_section_1_file):
-    """Test reparse year."""
+def test_reparse_no_files(mocker):
+    """Test reparse with no files in query."""
     cmd = clean_and_reparse.Command()
 
     mocker.patch(
