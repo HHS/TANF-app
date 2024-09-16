@@ -1,8 +1,7 @@
 # my global config
 global:
-  scrape_interval: 10s # Set the scrape interval to every 10 seconds. Default is every 1 minute.
-  evaluation_interval: 10s # Evaluate rules every 10 seconds. The default is every 1 minute.
-  # scrape_timeout is set to the global default (10s).
+  scrape_interval: 30s # Set the scrape interval to every 30 seconds.
+  evaluation_interval: 60s # Evaluate rules every 60 seconds.
 
 # Alertmanager configuration
 alerting:
@@ -15,8 +14,6 @@ alerting:
 rule_files:
   - "django_rules.yml"
 
-# A scrape configuration containing exactly one endpoint to scrape:
-# Here it's Prometheus itself.
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
   - job_name: "prometheus"
@@ -26,12 +23,12 @@ scrape_configs:
   - job_name: "tdp-backend"
     metrics_path: "/prometheus/metrics"
     static_configs:
-      - targets: ["web:8080"]
+      - targets: {{ tdp_backend_url }}
 
   - job_name: "celery"
     static_configs:
-      - targets: ["celery-exporter:9540"]
+      - targets: {{ tdp_backend_url }} # port 9540
 
   - job_name: postgres
     static_configs:
-      - targets: ["postgres-exporter:9187"]
+      - targets: {{ postgres_exporter_url }} # port 9187

@@ -4,7 +4,7 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: http://prometheus:9090
+    url: {{ prometheus_url }}
     jsonData:
       httpMethod: POST
     isDefault: false
@@ -13,7 +13,7 @@ datasources:
   - name: Loki
     type: loki
     access: proxy
-    url: "http://loki:3100"
+    url: {{ loki_url }}
     jsonData:
       maxLines: 1000
     isDefault: false

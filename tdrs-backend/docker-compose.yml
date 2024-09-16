@@ -75,7 +75,7 @@ services:
     ports:
       - 9400:9400
     volumes:
-      - ./plg/grafana/datasources.yml:/etc/grafana/provisioning/datasources/default.yml
+      - ./plg/grafana/datasources.local.yml:/etc/grafana/provisioning/datasources/default.yml
       - ./plg/grafana/dashboards/provider.yml:/etc/grafana/provisioning/dashboards/default.yml
       - ./plg/grafana/dashboards:/var/lib/grafana/provisioning/dashboards
       - ./plg/grafana/custom.ini:/etc/grafana/grafana.ini
@@ -87,28 +87,28 @@ services:
     ports:
       - 9090:9090
     volumes:
-      - ./plg/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./plg/prometheus/django_rules.yml:/etc/prometheus/prom_django_rules.yml
+      - ./plg/prometheus/prometheus.local.yml:/etc/prometheus/prometheus.yml
+      - ./plg/prometheus/django_rules.yml:/etc/prometheus/django_rules.yml
       - prometheus_data:/prometheus
     depends_on:
       - web
       - celery-exporter
       - postgres-exporter
-  
+
   promtail:
     restart: always
-    image: grafana/promtail:3.0.1
+    image: grafana/promtail:3.1.1
     ports:
       - 9080:9080
     volumes:
-      - ./plg/promtail/config.yml:/etc/promtail/config.yml
+      - ./plg/promtail/config.local.yml:/etc/promtail/config.yml
       - ~/tdp-logs/nginx:/var/log/nginx
       - logs:/logs
     command: -config.file=/etc/promtail/config.yml
-  
+
   loki:
     restart: always
-    image: grafana/loki:3.0.1
+    image: grafana/loki:3.1.1
     ports:
       - 3100:3100
     volumes:
