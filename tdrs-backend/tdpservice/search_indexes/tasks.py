@@ -75,47 +75,33 @@ def reindex_elastic_documents():
 class RowIterator:
     """Iterator class to support custom CSV row generation."""
 
-    class Echo:
-        """An object that implements just the write method of the file-like interface."""
-
-        def write(self, value):
-            """Write the value by returning it, instead of storing in a buffer."""
-            return value
-
     def __init__(self, field_names, queryset):
         self.field_names = field_names
         self.queryset = queryset
-        self.writer = csv.writer(RowIterator.Echo())
-        self.is_header_row = True
-        self.header_row = self.__init_header_row(field_names)
 
-    def __init_header_row(self, field_names):
+    def _get_header(self, field_names):
         """Generate custom header row."""
-        header_row = []
+        header_row = ""
         for name in field_names:
-            header_row.append(name)
+            header_row += f"{name},"
             if name == "datafile":
-                header_row.append("STT")
-        return header_row
+                header_row += "STT,"
+        return header_row[:-1] + "\n"
 
     def __iter__(self):
         """Yield the next row in the csv export."""
+        yield self._get_header(self.field_names)
+
         # queryset.iterator simply 'forgets' the record after iterating over it, instead of caching it
-        # this is okay here since we only write out the contents and don't need the record again
+        # this is okay here since we only write out the contents and don't need the record again.
         for obj in self.queryset.iterator():
-            row = []
-
-            if self.is_header_row:
-                self.is_header_row = False
-                yield self.writer.writerow(self.header_row)
-
+            row = ""
             for field_name in self.field_names:
                 field = getattr(obj, field_name)
-                row.append(field)
+                row += f"{field},"
                 if field and field_name == "datafile":
-                    # print(field)
-                    row.append(field.stt.stt_code)
-            yield self.writer.writerow(row)
+                    row += f"{field.stt.stt_code},"
+            yield row[:-1] + "\n"
 
 
 @shared_task
@@ -138,9 +124,9 @@ def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, 
     tmp_filename = 'file.csv.gz'
     record_count = -1  # offset row count to account for the header
     with gzip.open(tmp_filename, 'wt') as f:
-        for _, s in enumerate(iterator):
+        for row in iterator:
             record_count += 1
-            f.write(s)
+            f.write(row)
 
     local_filename = os.path.basename(tmp_filename)
 
@@ -157,5 +143,4 @@ def export_queryset_to_s3_csv(query_str, query_params, field_names, model_name, 
             f'Export of {record_count} {model_name} objects complete: {s3_filename}',
             {'user_id': system_user.pk, 'object_id': None, 'object_repr': ''}
         )
-
     os.remove(local_filename)
