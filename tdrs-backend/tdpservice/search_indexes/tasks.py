@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import
 import time
-import csv
 import gzip
 import os
 from tdpservice.users.models import User
