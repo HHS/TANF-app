@@ -1,0 +1,25 @@
+version: 1
+applications:
+  - name: grafana_test
+    memory: 512M
+    disk_quota: 2G
+    instances: 1
+    env:
+      GF_PATHS_PROVISIONING: "/conf/provisioning"
+      GF_PATHS_CONFIG: "/home/vcap/app/custom.ini"
+      GF_PATHS_HOME: "/home/vcap/app/grafana-v11.2.0"
+      GF_PATHS_DATA: "/home/vcap/app/data"
+      GF_PATHS_PLUGINS: "/conf/provisioning/plugins"
+      GF_SERVER_HTTP_PORT: 8080
+    command: |
+      wget https://dl.grafana.com/oss/release/grafana-11.2.0.linux-amd64.tar.gz &&
+      tar -zxvf grafana-11.2.0.linux-amd64.tar.gz &&
+      mkdir /home/vcap/app/data &&
+      cp ./providers.yml /home/vcap/app/grafana-v11.2.0/conf/provisioning/dashboards/providers.yml &&
+      cp ./datasources.yml /home/vcap/app/grafana-v11.2.0/conf/provisioning/datasources/datasources.yml &&
+      ./grafana-v11.2.0/bin/grafana server --homepath="$GF_PATHS_HOME" --config="$GF_PATHS_CONFIG" \
+      cfg:default.log.mode="console" cfg:default.paths.data="$GF_PATHS_DATA" \
+      cfg:default.paths.logs="$GF_PATHS_LOGS" cfg:default.paths.plugins="$GF_PATHS_PLUGINS" \
+      cfg:default.paths.provisioning="$GF_PATHS_PROVISIONING"
+    buildpacks:
+    - https://github.com/cloudfoundry/binary-buildpack
