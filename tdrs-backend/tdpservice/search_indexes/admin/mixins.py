@@ -1,7 +1,7 @@
 """Mixin classes supproting custom functionality."""
 from datetime import datetime
 from django.contrib import admin
-from ..tasks import export_queryset_to_s3_csv
+from tdpservice.search_indexes.tasks import export_queryset_to_s3_csv
 from tdpservice.core.utils import log
 from tdpservice.users.models import User
 
