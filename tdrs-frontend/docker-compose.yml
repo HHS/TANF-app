@@ -24,6 +24,7 @@ services:
       - default
     volumes:
       - ./:/home/node/app
+      - ~/tdp-logs/nginx:/var/log/nginx
     environment:
       - NGINX_FRONTEND=tdp-frontend
       - BACK_END=web

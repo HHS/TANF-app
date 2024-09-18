@@ -94,6 +94,25 @@ services:
       - web
       - celery-exporter
       - postgres-exporter
+  
+  promtail:
+    restart: always
+    image: grafana/promtail:3.0.1
+    ports:
+      - 9080:9080
+    volumes:
+      - ./plg/promtail/config.yml:/etc/promtail/config.yml
+      - ~/tdp-logs/nginx:/var/log/nginx
+      - logs:/logs
+    command: -config.file=/etc/promtail/config.yml
+  
+  loki:
+    restart: always
+    image: grafana/loki:3.0.1
+    ports:
+      - 3100:3100
+    volumes:
+      - loki_data:/loki
 
   celery-exporter:
     restart: always
@@ -157,6 +176,7 @@ services:
       - ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL
     volumes:
       - .:/tdpapp
+      - logs:/logs
     image: tdp
     build: .
     command: >
@@ -189,6 +209,8 @@ volumes:
   elastic_data:
   prometheus_data:
   grafana_data:
+  loki_data:
+  logs:
 
 
 networks:

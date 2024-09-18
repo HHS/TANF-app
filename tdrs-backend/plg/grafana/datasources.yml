@@ -4,15 +4,17 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    # Access mode - proxy (server in the UI) or direct (browser in the UI).
     url: http://prometheus:9090
     jsonData:
       httpMethod: POST
-    secureJsonFields: {}
-    version: 2
-    readOnly: true
-    basicAuth: false
-    basicAuthUser: ""
-    withCredentials: false
-    isDefault: true
+    isDefault: false
+    uid: "PBFA97CFB590B2093"
     typeLogoUrl: "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg"
+  - name: Loki
+    type: loki
+    access: proxy
+    url: "http://loki:3100"
+    jsonData:
+      maxLines: 1000
+    isDefault: false
+    uid: "L8E80F9AEF21F6940"

@@ -233,30 +233,35 @@ class Common(Configuration):
                 "class": "logging.StreamHandler",
                 "formatter": "color",
             },
+            "file": {
+                "class": "logging.FileHandler",
+                "formatter": "verbose",
+                "filename": '/logs/django.log',
+            }
         },
         "loggers": {
             "tdpservice": {
-               "handlers": ["application"],
+               "handlers": ["application", "file"],
                "propagate": True,
                "level": LOGGING_LEVEL
             },
             "tdpservice.parsers": {
-               "handlers": ["application"],
+               "handlers": ["application", "file"],
                "propagate": False,
                "level": LOGGING_LEVEL
             },
-            "django": {"handlers": ["console"], "propagate": True},
+            "django": {"handlers": ["console", "file"], "propagate": True},
             "django.server": {
-                "handlers": ["django.server"],
+                "handlers": ["django.server", "file"],
                 "propagate": False,
                 "level": LOGGING_LEVEL
             },
             "django.request": {
-                "handlers": ["console"],
+                "handlers": ["console", "file"],
                 "propagate": False,
                 "level": LOGGING_LEVEL
             },
-            "django.db.backends": {"handlers": ["console"], "level": "INFO"},
+            "django.db.backends": {"handlers": ["console", "file"], "level": "INFO"},
         },
     }
     es_logger = logging.getLogger('elasticsearch')
