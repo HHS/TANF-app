@@ -7,6 +7,7 @@
 # fi
 
 deploy_pg_exporter() {
+    pushd postgres-exporter
     MANIFEST=manifest.$1.yml
     cp manifest.yml $MANIFEST
 
@@ -18,6 +19,8 @@ deploy_pg_exporter() {
     yq eval -i ".applications[0].services[0] = \"$3\""  $MANIFEST
 
     cf push --no-route -f $MANIFEST -t 180
+    rm $MANIFEST
+    popd
 }
 
 deploy_grafana() {
@@ -29,10 +32,11 @@ deploy_grafana() {
     yq eval -i ".datasources[0].url = \"http://prometheus.apps.internal:9090\""  $DATASOURCES
     yq eval -i ".datasources[1].url = \"http://loki.apps.internal:3100\""  $DATASOURCES
 
-    # cf push --no-route -f $MANIFEST -t 180
+    cf push --no-route -f manifest.yml -t 180
+    rm $DATASOURCES
     popd
 }
-deploy_grafana "test"
+
 # Commands below for when prometheus is deployed
 # cf map-route "$APP_NAME" apps.internal --hostname "$APP_NAME"
 # cf add-network-policy "$PROMETHEUS" "$APP_NAME" --protocol tcp --port 9187
