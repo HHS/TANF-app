@@ -1,0 +1,13 @@
+version: 1
+applications:
+  - name: loki
+    memory: 512M
+    disk_quota: 7G
+    instances: 1
+    command: |
+      mkdir /home/vcap/app/loki-data &&
+      wget https://github.com/grafana/loki/releases/download/v3.1.1/loki-linux-amd64.zip &&
+      unzip -a loki-linux-amd64.zip && rm -rf loki-linux-amd64.zip &&
+      ./loki-linux-amd64 -config.file=/home/vcap/app/loki.yml
+    buildpacks:
+    - https://github.com/cloudfoundry/binary-buildpack

@@ -1,0 +1,53 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 8080
+  grpc_listen_port: 9096
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /home/vcap/app/loki-data
+  storage:
+    filesystem:
+      chunks_directory: /home/vcap/app/loki-data/chunks
+      rules_directory: /home/vcap/app/loki-data/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  max_query_lookback: 672h # 28 days
+  retention_period: 672h   # 28 days
+
+compactor:
+  working_directory: /home/vcap/app/loki-data/compactor
+  compaction_interval: 10m
+  delete_request_store: "filesystem"
+  retention_enabled: true
+
+ruler:
+  alertmanager_url: http://localhost:9093
+
+frontend:
+  encoding: protobuf
+
+analytics:
+  reporting_enabled: false

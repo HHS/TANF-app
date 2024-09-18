@@ -43,7 +43,11 @@ deploy_prometheus() {
     popd
 }
 
-deploy_prometheus
+deploy_loki() {
+    pushd loki
+    cf push --no-route -f manifest.yml -t 180
+    popd
+}
 
 # Commands below for when prometheus is deployed
 # cf map-route "$APP_NAME" apps.internal --hostname "$APP_NAME"
