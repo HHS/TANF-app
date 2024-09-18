@@ -29,13 +29,21 @@ deploy_grafana() {
     DATASOURCES="datasources.yml"
     cp datasources.template.yml $DATASOURCES
 
-    yq eval -i ".datasources[0].url = \"http://prometheus.apps.internal:9090\""  $DATASOURCES
+    yq eval -i ".datasources[0].url = \"http://prometheus.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".datasources[1].url = \"http://loki.apps.internal:3100\""  $DATASOURCES
 
     cf push --no-route -f manifest.yml -t 180
     rm $DATASOURCES
     popd
 }
+
+deploy_prometheus() {
+    pushd prometheus
+    cf push --no-route -f manifest.yml -t 180
+    popd
+}
+
+deploy_prometheus
 
 # Commands below for when prometheus is deployed
 # cf map-route "$APP_NAME" apps.internal --hostname "$APP_NAME"

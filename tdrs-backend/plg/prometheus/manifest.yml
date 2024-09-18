@@ -1,0 +1,16 @@
+version: 1
+applications:
+  - name: prometheus
+    memory: 512M
+    disk_quota: 5G
+    instances: 1
+    command: |
+      mkdir /home/vcap/app/prometheus-data &&
+      wget https://github.com/prometheus/prometheus/releases/download/v2.54.1/prometheus-2.54.1.linux-amd64.tar.gz &&
+      tar -zxvf prometheus-2.54.1.linux-amd64.tar.gz &&
+      mv ./prometheus-2.54.1.linux-amd64/prometheus ./prometheus &&
+      mv ./prometheus-2.54.1.linux-amd64/promtool ./promtool &&
+      rm -rf ./prometheus-2.54.1.linux-amd64 && rm -rf prometheus-2.54.1.linux-amd64.tar.gz &&
+      ./prometheus --config.file=/home/vcap/app/prometheus.yml --storage.tsdb.path=/home/vcap/app/prometheus-data --web.listen-address="0.0.0.0:8080"
+    buildpacks:
+    - https://github.com/cloudfoundry/binary-buildpack

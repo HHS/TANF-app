@@ -14,6 +14,7 @@ applications:
     command: |
       wget https://dl.grafana.com/oss/release/grafana-11.2.0.linux-amd64.tar.gz &&
       tar -zxvf grafana-11.2.0.linux-amd64.tar.gz &&
+      rm -rf grafana-11.2.0.linux-amd64.tar.gz &&
       mkdir /home/vcap/app/data &&
       cp ./providers.yml /home/vcap/app/grafana-v11.2.0/conf/provisioning/dashboards/providers.yml &&
       cp ./datasources.yml /home/vcap/app/grafana-v11.2.0/conf/provisioning/datasources/datasources.yml &&
