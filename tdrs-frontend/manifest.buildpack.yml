@@ -8,7 +8,6 @@ applications:
   disk_quota: 256M
   buildpacks:
     - https://github.com/cloudfoundry/nginx-buildpack.git#v1.2.6
-    - https://github.com/cloudfoundry/binary-buildpack
   processes:
     - type: worker
       memory: 128M
