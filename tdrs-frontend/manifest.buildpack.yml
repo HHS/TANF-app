@@ -11,6 +11,9 @@ applications:
     - https://github.com/cloudfoundry/binary-buildpack
   processes:
     - type: worker
+      memory: 64M
+      instances: 1
+      disk_quota: 512M
       command: |
         wget https://github.com/grafana/loki/releases/download/v3.1.1/promtail-linux-amd64.zip &&
         unzip -a promtail-linux-amd64.zip && rm -rf promtail-linux-amd64.zip &&
