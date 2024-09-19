@@ -104,8 +104,8 @@ update_kibana()
 prepare_promtail() {
   pushd tdrs-backend/plg/promtail
   CONFIG=config.yml
-  yq eval -i ".scrape_configs[0].job_name = system-$backend_app_name"  $CONFIG
-  yq eval -i ".scrape_configs[1].job_name = backend-$backend_app_name"  $CONFIG
+  yq eval -i ".scrape_configs[0].job_name = \"system-$backend_app_name\""  $CONFIG
+  yq eval -i ".scrape_configs[1].job_name = \"backend-$backend_app_name\""  $CONFIG
   popd
 }
 

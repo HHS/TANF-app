@@ -21,8 +21,8 @@ KIBANA_BASE_URL="${CGAPPNAME_KIBANA}-${env}.apps.internal"
 prepare_promtail() {
   pushd tdrs-frontend
   CONFIG=promtail.config.yml
-  yq eval -i ".scrape_configs[0].job_name = system-$frontend_app_name"  $CONFIG
-  yq eval -i ".scrape_configs[1].job_name = frontend-$frontend_app_name"  $CONFIG
+  yq eval -i ".scrape_configs[0].job_name = \"system-$backend_app_name\""  $CONFIG
+  yq eval -i ".scrape_configs[1].job_name = \"backend-$backend_app_name\""  $CONFIG
   popd
 }
 
