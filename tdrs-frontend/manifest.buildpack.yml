@@ -11,7 +11,7 @@ applications:
     - https://github.com/cloudfoundry/binary-buildpack
   processes:
     - type: worker
-      memory: 64M
+      memory: 256M
       instances: 1
       disk_quota: 512M
       command: |
