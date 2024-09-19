@@ -12,7 +12,7 @@ applications:
       instances: 1
       disk_quota: 256M
       command: |
-        nginx -h
+        nginx -s reload -p /home/vcap/app -c ./nginx.conf
     - type: worker
       memory: 128M
       instances: 1
