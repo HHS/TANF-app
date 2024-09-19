@@ -113,6 +113,9 @@ class Command(BaseCommand):
                 logger.info(f"Deleting {count} records of type: {model}.")
                 if not new_indices:
                     # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
+                    # We alos use a Paginator here because it allows us to slice querysets based on a batch size. This
+                    # prevents a very large queryset from being brought into main memory when `doc().update(...)`
+                    # evaluates it by iterating over the queryset and deleting the models from ES.
                     paginator = Paginator(qset, settings.BULK_CREATE_BATCH_SIZE)
                     for page in paginator:
                         doc().update(page.object_list, refresh=True, action='delete')
