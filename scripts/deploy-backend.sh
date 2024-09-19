@@ -101,6 +101,14 @@ update_kibana()
   cf add-network-policy "$CGAPPNAME_KIBANA" "$CGAPPNAME_FRONTEND" --protocol tcp --port 80
 }
 
+prepare_promtail() {
+  pushd tdrs-backend/plg/promtail
+  CONFIG=config.yml
+  yq eval -i ".scrape_configs[0].job_name = system-$backend_app_name"  $CONFIG
+  yq eval -i ".scrape_configs[1].job_name = backend-$backend_app_name"  $CONFIG
+  popd
+}
+
 update_backend()
 {
     cd tdrs-backend || exit
@@ -225,6 +233,7 @@ else
   CYPRESS_TOKEN=$CYPRESS_TOKEN
 fi
 
+prepare_promtail
 if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
     # Perform a rolling update for the backend and frontend deployments if
     # specified, otherwise perform a normal deployment

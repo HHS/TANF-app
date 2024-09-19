@@ -13,9 +13,18 @@ CF_SPACE=${5}
 ENVIRONMENT=${6}
 
 env=${CF_SPACE#"tanf-"}
+frontend_app_name=$(echo $CGHOSTNAME_FRONTEND | cut -d"-" -f3)
 
 # Update the Kibana name to include the environment
 KIBANA_BASE_URL="${CGAPPNAME_KIBANA}-${env}.apps.internal"
+
+prepare_promtail() {
+  pushd tdrs-frontend
+  CONFIG=promtail.config.yml
+  yq eval -i ".scrape_configs[0].job_name = system-$frontend_app_name"  $CONFIG
+  yq eval -i ".scrape_configs[1].job_name = frontend-$frontend_app_name"  $CONFIG
+  popd
+}
 
 update_frontend()
 {
@@ -52,7 +61,7 @@ update_frontend()
 
     cf set-env "$CGHOSTNAME_FRONTEND" BACKEND_HOST "$CGHOSTNAME_BACKEND"
     cf set-env "$CGHOSTNAME_FRONTEND" KIBANA_BASE_URL "$KIBANA_BASE_URL"
-    
+
     npm run build:$ENVIRONMENT
     unlink .env.production
     mkdir deployment
@@ -86,13 +95,14 @@ update_frontend()
     else
         cf map-route "$CGHOSTNAME_FRONTEND" app.cloud.gov --hostname "${CGHOSTNAME_FRONTEND}"
     fi
-    
+
     cd ../..
     rm -r tdrs-frontend/deployment
 }
 
 # perform a rolling update for the backend and frontend deployments if
 # specified, otherwise perform a normal deployment
+prepare_promtail
 if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
     update_frontend 'rolling'
 else
