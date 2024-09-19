@@ -14,7 +14,7 @@ applications:
       disk_quota: 2G
       command: "./gunicorn_start.sh"
     - type: worker
-      memory: 256M
+      memory: 128M
       instances: 1
       disk_quota: 2G
       command: |
