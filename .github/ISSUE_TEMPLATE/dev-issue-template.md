@@ -9,6 +9,7 @@ assignees: ''
 
 **Description:**
 _Provide a brief background and justification for this issue_
+_OFA & UX team: Please include bullets capturing the value to STT end users, related guidance, and/or talking points that should be communicated to STTs in release notes_
 
 
 **Acceptance Criteria:** 

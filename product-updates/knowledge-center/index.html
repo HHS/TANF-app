@@ -335,13 +335,72 @@
         </ul>
         <hr style="margin-bottom: 30px;">
 
- 
-
-
-
         <h2>What's new in TDP</h2>
 
-         <h3 style="margin-top: 32px;">August 15th 2024 (v 3.5.2)</h3>
+        <h3 style="margin-top: 32px;">September 10th 2024 (v 3.6.0)</h3>
+        <h4 style="margin-top: 16px; color: #595959;">In Development:</h4>
+        <ul class="usa-icon-list">
+  
+    <li class="usa-icon-list__item" style="margin-top: 16px;">
+      <div class="usa-icon-list__icon text-ink">
+        <img src="../img/in-dev.svg" aria-hidden="true" alt="" style="background-color: #fff4bd; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+      </div>
+      <div class="usa-icon-list__content">
+        <h5 class="usa-icon-list__title">
+          File Status and Error Messaging 
+        </h5>
+        <p>
+          We've received some requests for clarification around <a href="view-submission-history.html#statuses">file submission status</a> and 
+          <a href="viewing-error-reports.html#overview-of-the-error-report">error messages</a>. In response, we're working to improve guidance and the user experience to better meet partners' needs. Additionally, the TDP team is planning more opportunities to connect with partners to discuss the TDP error report including terminology, what errors mean, etc. Please stay tuned.</a></p>
+        </div>
+    </li>
+      </ul>
+
+
+        <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
+        <ul class="usa-icon-list">
+          <li class="usa-icon-list__item" style="margin-top: 16px;">
+            <div class="usa-icon-list__icon text-ink">
+              <img src="../img/added.svg" aria-hidden="true" alt="" style="background-color: #d3ffcc; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+            </div>
+            <div class="usa-icon-list__content">
+              <h5 class="usa-icon-list__title">
+                Additional Context
+              </h5>
+              <p>Error messages regarding <a href="viewing-error-reports.html#related-records"> values across related records</a> now include the associated item number(s), item name(s), and row number to help you identify records that have been detected as having data quality discrepancies. </p>
+            </div>
+          </li>
+        </ul>   
+        <h4 style="margin-top: 16px; color: #595959;">Changed / Fixed:</h4>
+        <ul class="usa-icon-list">
+          <li class="usa-icon-list__item" style="margin-top: 16px;">
+            <div class="usa-icon-list__icon text-ink">
+                <img src="../img/changed.svg" aria-hidden="true" alt="" style="background-color: #b3e2ff; border-radius: 5px; width: 18px; height: 18px; position: relative; top: 2px; margin-right: 5px; margin-left: 5px;"/>
+            </div>
+            <div class="usa-icon-list__content">
+              <h5 class="usa-icon-list__title">
+                Error Message Language Cleanup
+              </h5>
+              <p>TDP performs validation checks across related items in a record and will generate error messages capturing instances where <a href="viewing-error-reports.html#inconsistent-values">inconsistent values within the record</a> were detected. </p>
+              <p>Previous versions of these types of error messages would return the following (for example): 
+              <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;"><b>If</b> Cash Amount <b>:873 validator1 passed</b> then Item 21B (Cash and Cash Equivalents: Number of Months) 0 <b>is not</b> larger than 0.</code>
+            </p>
+              <p>Now, this type of error message will read: 
+                <code style="border-left: solid 5px; border-color: #005ea2; padding: 8px; background-color: #f8f8f8; display: inline-block;"><b>Since Item 12</b> (Cash Amount) <b>is 100</b>, then Item 21B (Cash and Cash Equivalents: Number of Months) 0 <b>must be</b> larger than 0.</code>
+              </p>
+            </div>
+          </li>
+        </ul>
+</ul>
+
+        <hr style="border: none;
+    height: 1px;
+    background: #000;
+    margin-top: 32px;
+    background: repeating-linear-gradient(90deg,#000,#000 6px,transparent 6px,transparent 12px);">
+
+
+        <h3 style="margin-top: 32px;">August 15th 2024 (v 3.5.2)</h3>
         <h4 style="margin-top: 16px; color: #595959;">Added:</h4>
         <ul class="usa-icon-list">
           <li class="usa-icon-list__item" style="margin-top: 16px;">
@@ -403,8 +462,6 @@
            <p>The issue has been corrected in TDP, and no changes to data are needed to resolve this.</p>
       </div>
     </li>
-
-
 
             <li class="usa-icon-list__item" style="margin-top: 16px;">
       <div class="usa-icon-list__icon text-ink">
