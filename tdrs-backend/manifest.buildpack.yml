@@ -9,4 +9,12 @@ applications:
   buildpacks:
   - https://github.com/cloudfoundry/apt-buildpack
   - https://github.com/cloudfoundry/python-buildpack.git#v1.8.3
-  command: "./gunicorn_start.sh"
+  - https://github.com/cloudfoundry/binary-buildpack
+  processes:
+    - type: web
+      command: "./gunicorn_start.sh"
+    - type: worker
+      command: |
+        wget https://github.com/grafana/loki/releases/download/v3.1.1/promtail-linux-amd64.zip &&
+        unzip -a promtail-linux-amd64.zip && rm -rf promtail-linux-amd64.zip &&
+        ./promtail-linux-amd64 -config.file=./plg/promtail/config.yml

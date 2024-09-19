@@ -9,20 +9,20 @@ clients:
   - url: http://loki.apps.internal:8080/loki/api/v1/push
 
 scrape_configs:
-  - job_name: system
+  - job_name: {{ system_env }}
     static_configs:
     - targets:
         - localhost
       labels:
         job: varlogs
         __path__: /var/log/*log
-  - job_name: backend-raft
+  - job_name: {{ frontend_env_name }}
     static_configs:
       - targets:
         - localhost
         labels:
-          job: django
-          __path__: /logs/django.log
+          job: nginx
+          __path__: /var/log/nginx/*log
   - job_name: flog_scrape
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
