@@ -53,6 +53,7 @@ class Common(Configuration):
         "storages",
         "django_elasticsearch_dsl",
         "django_elasticsearch_dsl_drf",
+        "django_prometheus",
         # Local apps
         "tdpservice.core.apps.CoreConfig",
         "tdpservice.users",
@@ -67,6 +68,7 @@ class Common(Configuration):
 
     # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
     MIDDLEWARE = (
+        "django_prometheus.middleware.PrometheusBeforeMiddleware",
         "django.middleware.security.SecurityMiddleware",
         "django.contrib.sessions.middleware.SessionMiddleware",
         "django.middleware.common.CommonMiddleware",
@@ -77,8 +79,11 @@ class Common(Configuration):
         "corsheaders.middleware.CorsMiddleware",
         "tdpservice.users.api.middleware.AuthUpdateMiddleware",
         "csp.middleware.CSPMiddleware",
-        "tdpservice.middleware.NoCacheMiddleware"
+        "tdpservice.middleware.NoCacheMiddleware",
+        "django_prometheus.middleware.PrometheusAfterMiddleware",
     )
+    PROMETHEUS_LATENCY_BUCKETS = (.1, .2, .5, .6, .8, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 9.0, 12.0, 15.0, 20.0, 30.0, float("inf"))
+    PROMETHEUS_METRIC_NAMESPACE = ""
 
     APP_NAME = "dev"
     ALLOWED_HOSTS = ["*"]
@@ -105,7 +110,7 @@ class Common(Configuration):
 
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
+            "ENGINE": "django_prometheus.db.backends.postgresql",
             "NAME": os.getenv("DB_NAME"),
             "USER": os.getenv("DB_USER"),
             "PASSWORD": os.getenv("DB_PASSWORD"),
@@ -228,30 +233,35 @@ class Common(Configuration):
                 "class": "logging.StreamHandler",
                 "formatter": "color",
             },
+            "file": {
+                "class": "logging.FileHandler",
+                "formatter": "verbose",
+                "filename": '/logs/django.log',
+            }
         },
         "loggers": {
             "tdpservice": {
-               "handlers": ["application"],
+               "handlers": ["application", "file"],
                "propagate": True,
                "level": LOGGING_LEVEL
             },
             "tdpservice.parsers": {
-               "handlers": ["application"],
+               "handlers": ["application", "file"],
                "propagate": False,
                "level": LOGGING_LEVEL
             },
-            "django": {"handlers": ["console"], "propagate": True},
+            "django": {"handlers": ["console", "file"], "propagate": True},
             "django.server": {
-                "handlers": ["django.server"],
+                "handlers": ["django.server", "file"],
                 "propagate": False,
                 "level": LOGGING_LEVEL
             },
             "django.request": {
-                "handlers": ["console"],
+                "handlers": ["console", "file"],
                 "propagate": False,
                 "level": LOGGING_LEVEL
             },
-            "django.db.backends": {"handlers": ["console"], "level": "INFO"},
+            "django.db.backends": {"handlers": ["console", "file"], "level": "INFO"},
         },
     }
     es_logger = logging.getLogger('elasticsearch')
@@ -362,7 +372,6 @@ class Common(Configuration):
     ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE = os.getenv('ELASTICSEARCH_LOG_INDEX_SLOW_THRESHOLD_TRACE', '0ms')
     ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL = os.getenv('ELASTICSEARCH_LOG_SEARCH_SLOW_LEVEL', 'info')
     KIBANA_BASE_URL = os.getenv('KIBANA_BASE_URL', 'http://kibana:5601')
-    BYPASS_KIBANA_AUTH = os.getenv("BYPASS_KIBANA_AUTH", False)
     ELASTIC_INDEX_PREFIX = APP_NAME + '_'
     es_logger = logging.getLogger('elasticsearch')
     es_logger.setLevel(logging.WARNING)
@@ -457,6 +466,7 @@ class Common(Configuration):
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_RESULT_SERIALIZER = 'json'
     CELERY_TIMEZONE = 'UTC'
+    CELERYD_SEND_EVENTS=True
 
     CELERY_BEAT_SCHEDULE = {
         'Database Backup': {
@@ -538,3 +548,4 @@ class Common(Configuration):
     IGNORE_DUPLICATE_ERROR_PRECEDENCE = os.getenv("IGNORE_DUPLICATE_ERROR_PRECEDENCE", False)
     BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
     MEDIAN_LINE_PARSE_TIME = os.getenv("MEDIAN_LINE_PARSE_TIME", 0.0005574226379394531)
+    BYPASS_OFA_AUTH = os.getenv("BYPASS_OFA_AUTH", False)

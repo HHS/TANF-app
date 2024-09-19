@@ -4,12 +4,14 @@ import {
   accountStatusIsApproved,
   accountCanViewAdmin,
   accountCanViewKibana,
+  accountCanViewGrafana,
 } from '../../selectors/auth'
 
 const SiteMap = ({ user }) => {
   const userIsApproved = useSelector(accountStatusIsApproved)
   const userIsAdmin = useSelector(accountCanViewAdmin)
-  const userIsSysAdmin = useSelector(accountCanViewKibana)
+  const userViewKibana = useSelector(accountCanViewKibana)
+  const userViewGrafana = useSelector(accountCanViewGrafana)
 
   return (
     <div className="margin-top-5">
@@ -34,10 +36,17 @@ const SiteMap = ({ user }) => {
         />
       )}
 
-      {userIsSysAdmin && (
+      {userViewKibana && (
         <SiteMap.Link
           text="Kibana"
           link={`${process.env.REACT_APP_BACKEND_HOST}/kibana/`}
+        />
+      )}
+
+      {userViewGrafana && (
+        <SiteMap.Link
+          text="Grafana"
+          link={`${process.env.REACT_APP_BACKEND_HOST}/grafana/`}
         />
       )}
     </div>
