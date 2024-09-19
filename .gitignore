@@ -109,3 +109,6 @@ cypress.env.json
 
 # Patches
 *.patch
+
+# Logs
+*.log
