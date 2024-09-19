@@ -22,7 +22,7 @@ scrape_configs:
         - localhost
         labels:
           job: nginx
-          __path__: /var/log/nginx/*log
+          __path__: /home/vcap/app/*log
   - job_name: flog_scrape
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
