@@ -6,7 +6,7 @@ server:
 
 common:
   instance_addr: 127.0.0.1
-  path_prefix: /loki
+  path_prefix: /home/vcap/app/loki-data
   replication_factor: 1
   ring:
     kvstore:
