@@ -36,6 +36,7 @@ storage_config:
     region: ${S3_REGION}
     access_key_id: ${S3_ACCESS_KEY}
     secret_access_key: ${S3_SECRET_KEY}
+    bucketnames: logs
   tsdb_shipper:
     active_index_directory: /data/index
     cache_location: /data/cache
