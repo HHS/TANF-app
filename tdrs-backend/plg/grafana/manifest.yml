@@ -1,6 +1,6 @@
 version: 1
 applications:
-  - name: grafana_test
+  - name: grafana
     memory: 512M
     disk_quota: 2G
     instances: 1

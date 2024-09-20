@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 deploy_pg_exporter() {
     pushd postgres-exporter
@@ -7,7 +8,7 @@ deploy_pg_exporter() {
 
     APP_NAME="pg-exporter-$1"
 
-    yq eval -i ".applications[0].name = $APP_NAME"  $MANIFEST
+    yq eval -i ".applications[0].name = \"$APP_NAME\""  $MANIFEST
     yq eval -i ".applications[0].env.PG_EXPORTER_METRIC_PREFIX = \"pg_$1\""  $MANIFEST
     yq eval -i ".applications[0].env.DATA_SOURCE_NAME = \"$2\""  $MANIFEST
     yq eval -i ".applications[0].services[0] = \"$3\""  $MANIFEST
@@ -61,5 +62,5 @@ pushd "$(dirname "$0")"
 deploy_prometheus
 deploy_loki
 deploy_grafana
-deploy_pg_exporter raft postgres://u9oc318z26941vlu:p2wtjxap7i30tjpg2gef0hfwv@cg-aws-broker-prodmezsouuuxrb933l.ci7nkegdizyy.us-gov-west-1.rds.amazonaws.com:5432/tdp_db_raft tdp-db-dev
+deploy_pg_exporter REDACTED
 popd

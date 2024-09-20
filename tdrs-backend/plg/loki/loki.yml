@@ -36,7 +36,7 @@ storage_config:
     region: ${S3_REGION}
     access_key_id: ${S3_ACCESS_KEY}
     secret_access_key: ${S3_SECRET_KEY}
-    bucketnames: logs
+    bucketnames: ${S3_BUCKET}
   tsdb_shipper:
     active_index_directory: /home/vcap/app/loki-data/index
     cache_location: /home/vcap/app/loki-data/cache
