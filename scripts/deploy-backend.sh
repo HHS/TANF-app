@@ -109,6 +109,18 @@ prepare_promtail() {
   popd
 }
 
+update_plg_networking() {
+  # Backend needs to send metrics to prometheus
+  cf add-network-policy prometheus "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
+
+  # Backend needs to talk to grafana if the frontend is going to proxy for us
+  cf add-network-policy "$CGAPPNAME_BACKEND" grafana --protocol tcp --port 8080
+
+  # Frontend might proxy grafana
+  cf add-network-policy "$CGAPPNAME_FRONTEND" grafana --protocol tcp --port 8080
+  cf add-network-policy grafana "$CGAPPNAME_FRONTEND" --protocol tcp --port 80
+}
+
 update_backend()
 {
     cd tdrs-backend || exit
@@ -146,6 +158,9 @@ update_backend()
 
     # Add network policy to allow frontend to access backend
     cf add-network-policy "$CGAPPNAME_FRONTEND" "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
+
+    # Add PLG routing
+    update_plg_networking
 
     if [ "$CF_SPACE" = "tanf-prod" ]; then
       # Add network policy to allow backend to access tanf-prod services
