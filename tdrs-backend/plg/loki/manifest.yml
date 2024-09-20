@@ -5,11 +5,12 @@ applications:
     disk_quota: 7G
     instances: 1
     command: |
-      S3_URI=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.uri)
-      S3_ENDPOINT=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.endpoint)
-      S3_REGION=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.region)
-      S3_ACCESS_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.access_key_id)
-      S3_SECRET_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.secret_access_key)
+      mkdir /home/vcap/app/loki-data &&
+      S3_URI=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.uri) &&
+      S3_ENDPOINT=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.endpoint) &&
+      S3_REGION=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.region) &&
+      S3_ACCESS_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.access_key_id) &&
+      S3_SECRET_KEY=$(echo $VCAP_SERVICES | jq -r .s3[0].credentials.secret_access_key) &&
       wget https://github.com/grafana/loki/releases/download/v3.1.1/loki-linux-amd64.zip &&
       unzip -a loki-linux-amd64.zip && rm -rf loki-linux-amd64.zip &&
       ./loki-linux-amd64 -config.expand-env=true -config.file=/home/vcap/app/loki.yml

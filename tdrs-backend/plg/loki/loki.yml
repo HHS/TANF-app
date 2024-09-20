@@ -38,8 +38,8 @@ storage_config:
     secret_access_key: ${S3_SECRET_KEY}
     bucketnames: logs
   tsdb_shipper:
-    active_index_directory: /data/index
-    cache_location: /data/cache
+    active_index_directory: /home/vcap/app/loki-data/index
+    cache_location: /home/vcap/app/loki-data/cache
 
 #### Loki does not allow retention configs when using non-filesystem stores. We need to configure that on our specific
 ### block store (i.e S3).
