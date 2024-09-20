@@ -1,22 +1,9 @@
----
 version: 1
 applications:
 - name: tdp-frontend
-  timeout: 180
   buildpacks:
-    - https://github.com/cloudfoundry/nginx-buildpack.git#v1.2.19
-    - https://github.com/cloudfoundry/binary-buildpack
-  processes:
-    - type: web
-      memory: 256M
-      instances: 1
-      disk_quota: 256M
-      command: nginx -p /home/vcap/app -c ./nginx.conf
-    - type: worker
-      memory: 128M
-      instances: 1
-      disk_quota: 1G
-      command: |
-        wget https://github.com/grafana/loki/releases/download/v3.1.1/promtail-linux-amd64.zip &&
-        unzip -a promtail-linux-amd64.zip && rm -rf promtail-linux-amd64.zip &&
-        ./promtail-linux-amd64 -config.file=./promtail.config.yml
+    - https://github.com/cloudfoundry/nginx-buildpack.git#v1.2.6
+  memory: 256M
+  instances: 1
+  disk_quota: 256M
+  timeout: 180
