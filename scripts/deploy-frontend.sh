@@ -78,6 +78,7 @@ update_frontend()
     cp -r nginx/src/static/ deployment/public/
 
     cp manifest.buildpack.yml deployment/manifest.buildpack.yml
+    cp promtail.config.yml deployment/config.yml
     cd deployment || exit
 
     if [ "$1" = "rolling" ] ; then
