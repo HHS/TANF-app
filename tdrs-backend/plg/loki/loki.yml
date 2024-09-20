@@ -6,11 +6,7 @@ server:
 
 common:
   instance_addr: 127.0.0.1
-  path_prefix: /home/vcap/app/loki-data
-  storage:
-    filesystem:
-      chunks_directory: /home/vcap/app/loki-data/chunks
-      rules_directory: /home/vcap/app/loki-data/rules
+  path_prefix: /loki
   replication_factor: 1
   ring:
     kvstore:
@@ -25,23 +21,36 @@ query_range:
 
 schema_config:
   configs:
-    - from: 2020-10-24
+    - from: 2024-01-01
       store: tsdb
-      object_store: filesystem
+      object_store: aws
       schema: v13
       index:
         prefix: index_
         period: 24h
 
-limits_config:
-  max_query_lookback: 672h # 28 days
-  retention_period: 672h   # 28 days
+storage_config:
+  aws:
+    s3: ${S3_URI}
+    endpoint: ${S3_ENDPOINT}
+    region: ${S3_REGION}
+    access_key_id: ${S3_ACCESS_KEY}
+    secret_access_key: ${S3_SECRET_KEY}
+  tsdb_shipper:
+    active_index_directory: /data/index
+    cache_location: /data/cache
 
-compactor:
-  working_directory: /home/vcap/app/loki-data/compactor
-  compaction_interval: 10m
-  delete_request_store: "filesystem"
-  retention_enabled: true
+#### Loki does not allow retention configs when using non-filesystem stores. We need to configure that on our specific
+### block store (i.e S3).
+# limits_config:
+#   max_query_lookback: 672h # 28 days
+#   retention_period: 672h   # 28 days
+
+# compactor:
+#   working_directory: /home/vcap/app/loki-data/compactor
+#   compaction_interval: 10m
+#   delete_request_store: "aws"
+#   retention_enabled: true
 
 ruler:
   alertmanager_url: http://localhost:9093
@@ -49,5 +58,6 @@ ruler:
 frontend:
   encoding: protobuf
 
+# Don't let Loki send analytics data to the Grafana team.
 analytics:
   reporting_enabled: false
