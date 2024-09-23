@@ -1,6 +1,7 @@
 """Define settings for all environments."""
 
 import logging
+import logging.handlers
 import os
 from distutils.util import strtobool
 from os.path import join
@@ -234,9 +235,11 @@ class Common(Configuration):
                 "formatter": "color",
             },
             "file": {
-                "class": "logging.FileHandler",
+                "class": "logging.handlers.RotatingFileHandler",
                 "formatter": "verbose",
-                "filename": '/logs/django.log',
+                "filename": "django.log",
+                "maxBytes": 1024*1024*10, # 10 MiB
+                "backupCount": 5,
             }
         },
         "loggers": {
