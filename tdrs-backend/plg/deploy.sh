@@ -56,10 +56,23 @@ deploy_loki() {
     popd
 }
 
+while getopts ":hn:" option; do
+   case $option in
+      h) # display Help
+         Help
+         exit;;
+      n) # Enter a name
+         Name=$OPTARG;;
+     \?) # Invalid option
+         echo "Error: Invalid option"
+         exit;;
+   esac
+done
+
 pushd "$(dirname "$0")"
 # Fancy logic for deploys goes here
 deploy_prometheus
 deploy_loki
 deploy_grafana
-deploy_pg_exporter REDACTED
+deploy_pg_exporter $1 $2 $3
 popd
