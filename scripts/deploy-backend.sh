@@ -110,7 +110,7 @@ prepare_promtail() {
 }
 
 update_plg_networking() {
-  # Backend needs to send metrics to prometheus
+  # Prometheus needs to scrape metrics from the backend
   cf add-network-policy prometheus "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
 
   # Backend needs to talk to grafana if the frontend is going to proxy for us

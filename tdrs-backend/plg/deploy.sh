@@ -9,7 +9,6 @@ deploy_pg_exporter() {
     APP_NAME="pg-exporter-$1"
 
     yq eval -i ".applications[0].name = \"$APP_NAME\""  $MANIFEST
-    yq eval -i ".applications[0].env.PG_EXPORTER_METRIC_PREFIX = \"pg_$1\""  $MANIFEST
     yq eval -i ".applications[0].env.DATA_SOURCE_NAME = \"$2\""  $MANIFEST
     yq eval -i ".applications[0].services[0] = \"$3\""  $MANIFEST
 
