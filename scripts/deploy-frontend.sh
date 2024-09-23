@@ -18,14 +18,6 @@ frontend_app_name=$(echo $CGHOSTNAME_FRONTEND | cut -d"-" -f3)
 # Update the Kibana name to include the environment
 KIBANA_BASE_URL="${CGAPPNAME_KIBANA}-${env}.apps.internal"
 
-prepare_promtail() {
-  pushd tdrs-frontend
-  CONFIG=promtail.config.yml
-  yq eval -i ".scrape_configs[0].job_name = \"system-$backend_app_name\""  $CONFIG
-  yq eval -i ".scrape_configs[1].job_name = \"backend-$backend_app_name\""  $CONFIG
-  popd
-}
-
 update_frontend()
 {
     echo DEPLOY_STRATEGY: "$DEPLOY_STRATEGY"
@@ -102,7 +94,6 @@ update_frontend()
 
 # perform a rolling update for the backend and frontend deployments if
 # specified, otherwise perform a normal deployment
-prepare_promtail
 if [ "$DEPLOY_STRATEGY" = "rolling" ] ; then
     update_frontend 'rolling'
 else
