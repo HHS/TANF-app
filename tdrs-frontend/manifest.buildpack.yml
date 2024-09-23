@@ -6,13 +6,5 @@ applications:
     - https://github.com/cloudfoundry/nginx-buildpack.git#v1.2.6
   memory: 256M
   instances: 1
-  disk_quota: 512M
+  disk_quota: 256M
   timeout: 180
-  sidecars:
-    - name: promtail
-      process_types:
-        - worker
-      command: |
-        wget https://github.com/grafana/loki/releases/download/v3.1.1/promtail-linux-amd64.zip &&
-        unzip -a promtail-linux-amd64.zip && rm -rf promtail-linux-amd64.zip &&
-        ./promtail-linux-amd64 -config.file=./config.yml
