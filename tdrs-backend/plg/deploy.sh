@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+help() {
+    echo "Deploy the PLG stack or a Postgres exporter to the Cloud Foundry space you're currently authenticated in."
+    echo "Syntax: deploy.sh [-h|a|p|u|d]"
+    echo "Options:"
+    echo "h     Print this help message."
+    echo "a     Deploy the entire PLG stack."
+    echo "p     Deploy a postgres exporter. Requires -u and -d"
+    echo "u     Requires -p. The database URI the exporter should connect with."
+    echo "d     Requires -p. The Cloud Foundry service name of the RDS instance."
+    echo
+}
+
 deploy_pg_exporter() {
     pushd postgres-exporter
     MANIFEST=manifest.$1.yml
@@ -56,23 +68,45 @@ deploy_loki() {
     popd
 }
 
-while getopts ":hn:" option; do
+while getopts ":hap:u:d:" option; do
    case $option in
       h) # display Help
-         Help
+         help
          exit;;
-      n) # Enter a name
-         Name=$OPTARG;;
+      a) # Deploy PLG stack
+         DEPLOY="plg";;
+      p) # Deploy a Postgres exporter to $ENV
+         ENV=$OPTARG
+         DEPLOY="pg-exporter";;
+      u) # Bind a Postgres exporter to $DB_URI
+         DB_URI=$OPTARG;;
+      d) # Bind a Postgres exporter to $DB_SERVICE_NAME
+         DB_SERVICE_NAME=$OPTARG;;
      \?) # Invalid option
          echo "Error: Invalid option"
          exit;;
    esac
 done
 
+if [ "$#" -eq 0 ]; then
+    help
+    exit
+fi
+
 pushd "$(dirname "$0")"
-# Fancy logic for deploys goes here
-deploy_prometheus
-deploy_loki
-deploy_grafana
-deploy_pg_exporter $1 $2 $3
+if [ "$DEPLOY" == "plg" ]; then
+    deploy_prometheus
+    deploy_loki
+    deploy_grafana
+fi
+if [ "$DEPLOY" == "pg-exporter" ]; then
+    if [ "$DB_URI" == "" ] || [ "$DB_SERVICE_NAME" == "" ]; then
+        echo "Error: you must also pass -u and -d when deploying a postgres exporter."
+        echo
+        help
+        popd
+        exit
+    fi
+    deploy_pg_exporter $ENV $DB_URI $DB_SERVICE_NAME
+fi
 popd
