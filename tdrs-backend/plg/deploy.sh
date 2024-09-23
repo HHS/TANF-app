@@ -16,7 +16,7 @@ deploy_pg_exporter() {
     cf map-route $APP_NAME apps.internal --hostname $APP_NAME
 
     # Add policy to allow prometheus to talk to pg-exporter
-    cf add-network-policy prometheus $APP_NAME --protocol tcp --port 9187
+    cf add-network-policy prometheus $APP_NAME -s "tanf-dev" --protocol tcp --port 9187
     rm $MANIFEST
     popd
 }

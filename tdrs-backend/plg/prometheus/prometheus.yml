@@ -29,6 +29,14 @@ scrape_configs:
     static_configs:
       - targets: ["celery-exporter-raft.apps.internal:9540"]
 
-  - job_name: postgres-raft
+  - job_name: postgres-dev
     static_configs:
-      - targets: ["pg-exporter-raft.apps.internal:9187"]
+      - targets: ["pg-exporter-dev.apps.internal:9187"]
+
+  - job_name: postgres-staging
+    static_configs:
+      - targets: ["pg-exporter-staging.apps.internal:9187"]
+
+  - job_name: postgres-production
+    static_configs:
+      - targets: ["pg-exporter-production.apps.internal:9187"]

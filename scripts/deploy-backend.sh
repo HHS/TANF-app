@@ -111,17 +111,17 @@ prepare_promtail() {
 
 update_plg_networking() {
   # Prometheus needs to scrape metrics from the backend
-  cf add-network-policy prometheus "$CGAPPNAME_BACKEND" --protocol tcp --port 8080
+  cf add-network-policy prometheus "$CGAPPNAME_BACKEND" -s "tanf-dev" --protocol tcp --port 8080
 
   # Promtial needs to send logs to Loki
-  cf add-network-policy "$CGAPPNAME_BACKEND" loki --protocol tcp --port 8080
+  cf add-network-policy "$CGAPPNAME_BACKEND" loki -s "tanf-dev" --protocol tcp --port 8080
 
   # Backend needs to talk to Grafana if the frontend is going to proxy for us
-  cf add-network-policy "$CGAPPNAME_BACKEND" grafana --protocol tcp --port 8080
+  cf add-network-policy "$CGAPPNAME_BACKEND" grafana -s "tanf-dev" --protocol tcp --port 8080
 
   # Frontend might proxy Grafana
-  cf add-network-policy "$CGAPPNAME_FRONTEND" grafana --protocol tcp --port 8080
-  cf add-network-policy grafana "$CGAPPNAME_FRONTEND" --protocol tcp --port 80
+  cf add-network-policy "$CGAPPNAME_FRONTEND" grafana -s "tanf-dev" --protocol tcp --port 8080
+  cf add-network-policy grafana "$CGAPPNAME_FRONTEND" -s "tanf-dev" --protocol tcp --port 80
 }
 
 update_backend()
