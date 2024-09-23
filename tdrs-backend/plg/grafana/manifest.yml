@@ -9,6 +9,7 @@ applications:
       GF_PATHS_CONFIG: "/home/vcap/app/custom.ini"
       GF_PATHS_HOME: "/home/vcap/app/grafana-v11.2.0"
       GF_PATHS_DATA: "/home/vcap/app/data"
+      GF_PATHS_LOGS: "/home/vcap/app/logs"
       GF_PATHS_PLUGINS: "/conf/provisioning/plugins"
       GF_SERVER_HTTP_PORT: 8080
     command: |

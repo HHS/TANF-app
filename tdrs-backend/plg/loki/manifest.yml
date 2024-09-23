@@ -23,7 +23,7 @@ applications:
       ./yq_linux_amd64 eval -i ".storage_config.aws.bucketnames = \"$S3_BUCKET\"" loki.yml
       wget https://github.com/grafana/loki/releases/download/v3.1.1/loki-linux-amd64.zip
       unzip -a loki-linux-amd64.zip && rm -rf loki-linux-amd64.zip
-      ./loki-linux-amd64 -config.expand-env=true -config.file=/home/vcap/app/loki.yml
+      ./loki-linux-amd64 -config.file=/home/vcap/app/loki.yml
     buildpacks:
     - https://github.com/cloudfoundry/binary-buildpack
     services:
