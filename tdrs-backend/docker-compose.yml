@@ -81,7 +81,7 @@ services:
       - ./plg/grafana/datasources.local.yml:/usr/share/grafana/conf/provisioning/datasources/datasources.yml
       - ./plg/grafana/providers.local.yml:/usr/share/grafana/conf/provisioning/dashboards/providers.yml
       - ./plg/grafana/dashboards:/var/lib/grafana/dashboards
-      - ./plg/grafana/custom.ini:/usr/share/grafana/conf/custom.ini
+      - ./plg/grafana/custom.local.ini:/usr/share/grafana/conf/custom.ini
       - grafana_data:/var/lib/grafana
     command: --config /usr/share/grafana/conf/custom.ini
 
