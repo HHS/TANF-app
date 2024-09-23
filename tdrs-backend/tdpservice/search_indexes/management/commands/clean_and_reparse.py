@@ -101,9 +101,25 @@ class Command(BaseCommand):
                 level='critical')
             raise e
 
+    def __handle_elastic_doc_delete(self, doc, qset, model, elastic_exceptions, new_indices):
+        """Delete documents from Elastic and handle exceptions."""
+        if not new_indices:
+            # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
+            # We alos use a Paginator here because it allows us to slice querysets based on a batch size. This
+            # prevents a very large queryset from being brought into main memory when `doc().update(...)`
+            # evaluates it by iterating over the queryset and deleting the models from ES.
+            paginator = Paginator(qset, settings.BULK_CREATE_BATCH_SIZE)
+            for page in paginator:
+                try:
+                    doc().update(page.object_list, refresh=True, action='delete')
+                except ElasticsearchException:
+                    elastic_exceptions[model] = elastic_exceptions.get(model, 0) + 1
+                    continue
+
     def _delete_records(self, file_ids, new_indices, log_context):
         """Delete records, errors, and documents from Postgres and Elastic."""
         total_deleted = 0
+        elastic_exceptions = dict()
         for doc in DOCUMENTS:
             try:
                 model = doc.Django.model
@@ -111,21 +127,8 @@ class Command(BaseCommand):
                 count = qset.count()
                 total_deleted += count
                 logger.info(f"Deleting {count} records of type: {model}.")
-                if not new_indices:
-                    # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
-                    # We alos use a Paginator here because it allows us to slice querysets based on a batch size. This
-                    # prevents a very large queryset from being brought into main memory when `doc().update(...)`
-                    # evaluates it by iterating over the queryset and deleting the models from ES.
-                    paginator = Paginator(qset, settings.BULK_CREATE_BATCH_SIZE)
-                    for page in paginator:
-                        doc().update(page.object_list, refresh=True, action='delete')
+                self.__handle_elastic_doc_delete(doc, qset, model, elastic_exceptions, new_indices)
                 qset._raw_delete(qset.db)
-            except ElasticsearchException as e:
-                log(f'Elastic document delete failed for type {model}. The database and Elastic are INCONSISTENT! '
-                    'Restore the DB from the backup as soon as possible!',
-                    logger_context=log_context,
-                    level='critical')
-                raise e
             except DatabaseError as e:
                 log(f'Encountered a DatabaseError while deleting records of type {model} from Postgres. The database '
                     'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
@@ -138,6 +141,13 @@ class Command(BaseCommand):
                     logger_context=log_context,
                     level='critical')
                 raise e
+
+        if elastic_exceptions != {}:
+            msg = ("Warning: Elastic is inconsistent and the database is consistent. "
+                   "Models which generated the Elastic exception(s) are below:\n")
+            for key, val in elastic_exceptions.items():
+                msg += f"Model: {key} generated {val} Elastic Exception(s) while being deleted.\n"
+            log(msg, logger_context=log_context, level='warn')
         return total_deleted
 
     def _delete_errors(self, file_ids, log_context):
