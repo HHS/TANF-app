@@ -3,6 +3,7 @@ auth_enabled: false
 server:
   http_listen_port: 8080
   grpc_listen_port: 9096
+  log_level: debug
 
 common:
   instance_addr: 127.0.0.1

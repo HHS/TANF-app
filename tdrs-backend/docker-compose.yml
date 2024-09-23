@@ -117,6 +117,8 @@ services:
       - 3100:3100
     volumes:
       - loki_data:/loki
+      - ./plg/loki/loki.local.yml:/loki/loki.yml
+    command: -config.file=/loki/loki.yml
 
   celery-exporter:
     restart: always
