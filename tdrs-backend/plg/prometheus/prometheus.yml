@@ -25,6 +25,26 @@ scrape_configs:
     static_configs:
       - targets: ["tdp-backend-raft.apps.internal:8080"]
 
+  - job_name: "tdp-backend-qasp"
+    metrics_path: "/prometheus/metrics"
+    static_configs:
+      - targets: ["tdp-backend-qasp.apps.internal:8080"]
+
+  - job_name: "tdp-backend-develop"
+    metrics_path: "/prometheus/metrics"
+    static_configs:
+      - targets: ["tdp-backend-develop.apps.internal:8080"]
+
+  - job_name: "tdp-backend-staging"
+    metrics_path: "/prometheus/metrics"
+    static_configs:
+      - targets: ["tdp-backend-staging.apps.internal:8080"]
+
+  - job_name: "tdp-backend-prod"
+    metrics_path: "/prometheus/metrics"
+    static_configs:
+      - targets: ["tdp-backend-prod.apps.internal:8080"]
+
   - job_name: "celery-exporter-raft"
     static_configs:
       - targets: ["celery-exporter-raft.apps.internal:9540"]
