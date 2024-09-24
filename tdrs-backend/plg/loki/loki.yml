@@ -42,6 +42,13 @@ storage_config:
     active_index_directory: /home/vcap/app/loki-data/index
     cache_location: /home/vcap/app/loki-data/cache
 
+limits_config:
+  ingestion_rate_mb: 20
+  ingestion_burst_size_mb: 30
+  per_stream_rate_limit: 20MB
+  per_stream_rate_limit_burst: 30MB
+  max_entries_limit_per_query: 5000
+
 #### Loki does not allow retention configs when using non-filesystem stores. We need to configure that on our specific
 ### block store (i.e S3).
 # limits_config:

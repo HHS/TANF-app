@@ -8,23 +8,48 @@ server:
   http_listen_port: 3100
 
 common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  replication_factor: 1
   ring:
-    instance_addr: 127.0.0.1
     kvstore:
       store: inmemory
-  replication_factor: 1
-  path_prefix: /loki
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
 
 schema_config:
   configs:
-  - from: 2024-01-01
-    store: tsdb
-    object_store: filesystem
-    schema: v13
-    index:
-      prefix: index_
-      period: 24h
+    - from: 2024-01-01
+      store: tsdb
+      object_store: aws
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
 
 storage_config:
-  filesystem:
-    directory: /loki/chunks
+  aws:
+    endpoint: http://localstack:4566
+    region: us-gov-west-1
+    access_key_id: test
+    secret_access_key: test
+    bucketnames: loki-logs
+    s3forcepathstyle: true
+    insecure: true
+    http_config:
+      insecure_skip_verify: true
+  tsdb_shipper:
+    active_index_directory: /loki/index
+    cache_location: /loki/cache
+
+limits_config:
+  ingestion_rate_mb: 20
+  ingestion_burst_size_mb: 30
+  per_stream_rate_limit: 20MB
+  per_stream_rate_limit_burst: 30MB
+  max_entries_limit_per_query: 5000
