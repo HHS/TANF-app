@@ -1,0 +1,155 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "links": [],
+    "panels": [
+      {
+        "datasource": {
+          "name": "Loki",
+          "type": "loki",
+          "uid": "L8E80F9AEF21F6940"
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1,
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": true,
+          "showCommonLabels": false,
+          "showLabels": false,
+          "showTime": false,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "loki",
+              "uid": "L8E80F9AEF21F6940"
+            },
+            "expr": "{job=\"django\"}",
+            "queryType": "range",
+            "refId": "A"
+          }
+        ],
+        "title": "Django Logs",
+        "type": "logs"
+      },
+      {
+        "datasource": {
+          "name": "Loki",
+          "type": "loki",
+          "uid": "L8E80F9AEF21F6940"
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        },
+        "id": 2,
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": false,
+          "showTime": false,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "loki",
+              "uid": "L8E80F9AEF21F6940"
+            },
+            "expr": "{job=\"nginx\"}",
+            "queryType": "range",
+            "refId": "A"
+          }
+        ],
+        "title": "Nginx Logs",
+        "type": "logs"
+      },
+      {
+        "datasource": {
+          "name": "Loki",
+          "type": "loki",
+          "uid": "L8E80F9AEF21F6940"
+        },
+        "gridPos": {
+          "h": 9,
+          "w": 24,
+          "x": 0,
+          "y": 18
+        },
+        "id": 3,
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": false,
+          "showTime": false,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "loki",
+              "uid": "L8E80F9AEF21F6940"
+            },
+            "expr": "{job=\"varlogs\"}",
+            "queryType": "range",
+            "refId": "A"
+          }
+        ],
+        "title": "Promtail varlogs",
+        "type": "logs"
+      }
+    ],
+    "schemaVersion": 39,
+    "tags": [
+      "Loki",
+      "Logs",
+      "Nginx",
+      "Django"
+    ],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-30m",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Loki Test",
+    "uid": "adx2v8wzehla8e",
+    "version": 1,
+    "weekStart": ""
+  }
