@@ -1493,7 +1493,7 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {"months": [
         {"month": "Oct", "total_errors": 2},
-        {"month": "Nov", "total_errors": 2},
+        {"month": "Nov", "total_errors": 3},
         {"month": "Dec", "total_errors": 2}
     ]}
 
@@ -1503,7 +1503,7 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
 
     parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
 
-    assert parser_errors.count() == 6
+    assert parser_errors.count() == 7
 
     t7_objs = TANF_T7.objects.all().order_by('FAMILIES_MONTH')
 

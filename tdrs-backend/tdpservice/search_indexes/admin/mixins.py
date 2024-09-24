@@ -1,53 +1,12 @@
 """Mixin classes supproting custom functionality."""
-from django.contrib import admin
-from django.http import StreamingHttpResponse
-import csv
 from datetime import datetime
+from django.contrib import admin
+from tdpservice.search_indexes.tasks import export_queryset_to_s3_csv
+from tdpservice.core.utils import log
+from tdpservice.users.models import User
 
 class ExportCsvMixin:
     """Mixin class to support CSV exporting."""
-
-    class Echo:
-        """An object that implements just the write method of the file-like interface."""
-
-        def write(self, value):
-            """Write the value by returning it, instead of storing in a buffer."""
-            return value
-
-    class RowIterator:
-        """Iterator class to support custom CSV row generation."""
-
-        def __init__(self, field_names, queryset):
-            self.field_names = field_names
-            self.queryset = queryset
-            self.writer = csv.writer(ExportCsvMixin.Echo())
-            self.is_header_row = True
-            self.header_row = self.__init_header_row(field_names)
-
-        def __init_header_row(self, field_names):
-            """Generate custom header row."""
-            header_row = []
-            for name in field_names:
-                header_row.append(name)
-                if name == "datafile":
-                    header_row.append("STT")
-            return header_row
-
-        def __iter__(self):
-            """Yield the next row in the csv export."""
-            for obj in self.queryset:
-                row = []
-
-                if self.is_header_row:
-                    self.is_header_row = False
-                    yield self.writer.writerow(self.header_row)
-
-                for field_name in self.field_names:
-                    field = getattr(obj, field_name)
-                    row.append(field)
-                    if field_name == "datafile":
-                        row.append(field.stt.stt_code)
-                yield self.writer.writerow(row)
 
     def export_as_csv(self, request, queryset):
         """Convert queryset to CSV."""
@@ -59,12 +18,23 @@ class ExportCsvMixin:
             datafile_name = f"{meta}_FY{model.datafile.year}{model.datafile.quarter}_" +\
                 str(datetime.now().strftime("%d%m%y-%H-%M-%S"))
 
-        iterator = ExportCsvMixin.RowIterator(field_names, queryset)
+        sql, params = queryset.query.sql_with_params()
+        file_path = f'exports/{datafile_name}.csv.gz'
 
-        return StreamingHttpResponse(
-            iterator,
-            content_type="text/csv",
-            headers={"Content-Disposition": f'attachment; filename="{datafile_name}.csv"'},
+        export_queryset_to_s3_csv.delay(
+            sql,
+            params,
+            field_names,
+            meta.model_name,
+            file_path,
+        )
+
+        self.message_user(request, f'Your s3 file url is: {file_path}')
+
+        system_user, _ = User.objects.get_or_create(username='system')
+        log(
+            f'Beginning export of {queryset.count()} {meta.model_name} objects to s3: {file_path}',
+            {'user_id': system_user.pk, 'object_id': None, 'object_repr': ''}
         )
 
     export_as_csv.short_description = "Export Selected as CSV"
