@@ -112,18 +112,21 @@ prepare_promtail() {
 }
 
 update_plg_networking() {
-  # Prometheus needs to scrape metrics from the backend
-  cf add-network-policy prometheus "$CGAPPNAME_BACKEND" -s "tanf-dev" --protocol tcp --port 8080
+  # Need to switch the space after deploy since we're not always in dev space to handle specific networking from dev
+  # PLG apps to the correct backend app.
+  cf target -o hhs-acf-ofa -s tanf-dev
+  cf add-network-policy prometheus "$CGAPPNAME_BACKEND" -s "$CF_SPACE" --protocol tcp --port 8080
+  cf target -o hhs-acf-ofa -s "$CF_SPACE"
 
   # Promtial needs to send logs to Loki
   cf add-network-policy "$CGAPPNAME_BACKEND" loki -s "tanf-dev" --protocol tcp --port 8080
 
-  # Backend needs to talk to Grafana if the frontend is going to proxy for us
-  cf add-network-policy "$CGAPPNAME_BACKEND" grafana -s "tanf-dev" --protocol tcp --port 8080
+  # # Backend needs to talk to Grafana if the frontend is going to proxy for us
+  # cf add-network-policy "$CGAPPNAME_BACKEND" grafana -s "tanf-dev" --protocol tcp --port 8080
 
-  # Frontend might proxy Grafana
-  cf add-network-policy "$CGAPPNAME_FRONTEND" grafana -s "tanf-dev" --protocol tcp --port 8080
-  cf add-network-policy grafana "$CGAPPNAME_FRONTEND" -s "tanf-dev" --protocol tcp --port 80
+  # # Frontend routing for later
+  # cf add-network-policy "$CGAPPNAME_FRONTEND" grafana -s "tanf-dev" --protocol tcp --port 8080
+  # cf add-network-policy grafana "$CGAPPNAME_FRONTEND" -s "tanf-dev" --protocol tcp --port 80
 }
 
 update_backend()
