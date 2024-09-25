@@ -1,23 +1,13 @@
 version: 1
 applications:
 - name: tdp-backend
+  memory: 2128MB
+  instances: 1
+  disk_quota: 4G
+  command: "./gunicorn_start.sh cloud"
   env:
     REDIS_URI: redis://localhost:6379
   buildpacks:
   - https://github.com/cloudfoundry/apt-buildpack
   - https://github.com/cloudfoundry/python-buildpack.git#v1.8.3
   - https://github.com/cloudfoundry/binary-buildpack
-  processes:
-    - type: web
-      memory: 2G
-      instances: 1
-      disk_quota: 2G
-      command: "./gunicorn_start.sh"
-    - type: worker
-      memory: 128M
-      instances: 1
-      disk_quota: 2G
-      command: |
-        wget https://github.com/grafana/loki/releases/download/v3.1.1/promtail-linux-amd64.zip &&
-        unzip -a promtail-linux-amd64.zip && rm -rf promtail-linux-amd64.zip &&
-        ./promtail-linux-amd64 -config.file=./plg/promtail/config.yml > promtail.log
