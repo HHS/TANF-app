@@ -23,4 +23,4 @@ scrape_configs:
         - localhost
         labels:
           job: {{ backend_env_name }}
-          __path__: /home/vcap/app/django.log
+          __path__: /tmp/django.log

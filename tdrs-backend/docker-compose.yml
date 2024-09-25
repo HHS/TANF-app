@@ -182,7 +182,7 @@ services:
       - ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL
     volumes:
       - .:/tdpapp
-      - logs:/tdpapp
+      - logs:/tmp
     image: tdp
     build: .
     command: >
