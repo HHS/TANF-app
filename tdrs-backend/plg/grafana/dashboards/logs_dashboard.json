@@ -2,7 +2,7 @@
   "__inputs": [
     {
       "name": "DS_LOKI",
-      "label": "loki",
+      "label": "Loki",
       "description": "",
       "type": "datasource",
       "pluginId": "loki",
@@ -94,10 +94,9 @@
   "refresh": "10s",
   "schemaVersion": 39,
   "tags": [
-    "Loki",
+    "Django",
     "Logs",
-    "Nginx",
-    "Django"
+    "Loki"
   ],
   "templating": {
     "list": [
@@ -108,7 +107,7 @@
           "uid": "${DS_LOKI}"
         },
         "definition": "",
-        "description": "Specify the job you want to see logs for.",
+        "description": "Filter logs by job.",
         "hide": 0,
         "includeAll": true,
         "label": "Job",
@@ -124,7 +123,7 @@
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
-        "sort": 1,
+        "sort": 0,
         "type": "query"
       }
     ]
@@ -135,8 +134,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Logs",
-  "uid": "adx2v8wzehla8e",
-  "version": 9,
+  "title": "Logs Copy",
+  "uid": "cdyz6flmh0ttsf",
+  "version": 3,
   "weekStart": ""
 }
