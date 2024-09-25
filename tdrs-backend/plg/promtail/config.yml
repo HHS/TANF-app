@@ -15,12 +15,12 @@ scrape_configs:
     - targets:
         - localhost
       labels:
-        job: varlogs
+        job: {{ system_env_name }}
         __path__: /var/log/*log
   - job_name: {{ backend_env_name }}
     static_configs:
       - targets:
         - localhost
         labels:
-          job: django
+          job: {{ backend_env_name }}
           __path__: /home/vcap/app/django.log
