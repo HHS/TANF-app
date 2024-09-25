@@ -108,7 +108,20 @@
           },
           "unit": "decgbytes"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/cgaws*/"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "aws default"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 5,
@@ -131,6 +144,9 @@
           "values": false
         },
         "showPercentChange": false,
+        "text": {
+          "titleSize": 18
+        },
         "textMode": "auto",
         "wideLayout": true
       },
@@ -2338,8 +2354,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2440,8 +2455,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2540,8 +2554,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2642,8 +2655,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2741,8 +2753,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -2887,8 +2898,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3000,8 +3010,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3100,8 +3109,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -3394,8 +3402,8 @@
     ]
   },
   "timezone": "",
-  "title": "PostgreSQL Database",
+  "title": "Postgres",
   "uid": "000000039",
-  "version": 6,
+  "version": 8,
   "weekStart": ""
 }
