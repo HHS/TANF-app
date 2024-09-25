@@ -77,7 +77,7 @@ class CloudGov(Common):
 
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': 'django_prometheus.db.backends.postgresql',
             'NAME': db_name,
             'USER': database_creds['username'],
             'PASSWORD': database_creds['password'],
