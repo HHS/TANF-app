@@ -24,7 +24,7 @@ deploy_pg_exporter() {
     yq eval -i ".applications[0].env.DATA_SOURCE_NAME = \"$2\""  $MANIFEST
     yq eval -i ".applications[0].services[0] = \"$3\""  $MANIFEST
 
-    cf push --no-route -f $MANIFEST -t 180
+    cf push --no-route -f $MANIFEST -t 180 --strategy rolling
     cf map-route $APP_NAME apps.internal --hostname $APP_NAME
 
     # Add policy to allow prometheus to talk to pg-exporter
@@ -42,7 +42,7 @@ deploy_grafana() {
     yq eval -i ".datasources[0].url = \"http://prometheus.apps.internal:8080\""  $DATASOURCES
     yq eval -i ".datasources[1].url = \"http://loki.apps.internal:8080\""  $DATASOURCES
 
-    cf push --no-route -f manifest.yml -t 180
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
     # cf map-route $APP_NAME apps.internal --hostname $APP_NAME
     # Give Grafana a public route for now. Might be able to swap to internal route later.
     cf map-route "$APP_NAME" app.cloud.gov --hostname "${APP_NAME}"
@@ -56,14 +56,14 @@ deploy_grafana() {
 
 deploy_prometheus() {
     pushd prometheus
-    cf push --no-route -f manifest.yml -t 180
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
     cf map-route prometheus apps.internal --hostname prometheus
     popd
 }
 
 deploy_loki() {
     pushd loki
-    cf push --no-route -f manifest.yml -t 180
+    cf push --no-route -f manifest.yml -t 180  --strategy rolling
     cf map-route loki apps.internal --hostname loki
     popd
 }
