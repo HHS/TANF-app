@@ -69,6 +69,71 @@ services:
     volumes:
       - elastic_data:/usr/share/elasticsearch/data
 
+  grafana:
+    restart: always
+    image: grafana/grafana:11.2.0
+    ports:
+      - 9400:9400
+    volumes:
+      - ./plg/grafana/datasources.yml:/etc/grafana/provisioning/datasources/default.yml
+      - ./plg/grafana/dashboards/provider.yml:/etc/grafana/provisioning/dashboards/default.yml
+      - ./plg/grafana/dashboards:/var/lib/grafana/provisioning/dashboards
+      - ./plg/grafana/custom.ini:/etc/grafana/grafana.ini
+      - grafana_data:/var/lib/grafana
+
+  prometheus:
+    restart: always
+    image: prom/prometheus:v2.54.1
+    ports:
+      - 9090:9090
+    volumes:
+      - ./plg/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./plg/prometheus/django_rules.yml:/etc/prometheus/prom_django_rules.yml
+      - prometheus_data:/prometheus
+    depends_on:
+      - web
+      - celery-exporter
+      - postgres-exporter
+
+  promtail:
+    restart: always
+    image: grafana/promtail:3.0.1
+    ports:
+      - 9080:9080
+    volumes:
+      - ./plg/promtail/config.yml:/etc/promtail/config.yml
+      - ~/tdp-logs/nginx:/var/log/nginx
+      - logs:/logs
+    command: -config.file=/etc/promtail/config.yml
+
+  loki:
+    restart: always
+    image: grafana/loki:3.0.1
+    ports:
+      - 3100:3100
+    volumes:
+      - loki_data:/loki
+
+  celery-exporter:
+    restart: always
+    image: ovalmoney/celery-exporter:1.5.1
+    ports:
+      - 9540:9540
+    environment:
+      - CELERY_EXPORTER_BROKER_URL=redis://redis-server:6379/0
+    depends_on:
+      - web
+
+  postgres-exporter:
+    restart: always
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    ports:
+      - 9187:9187
+    environment:
+      - DATA_SOURCE_NAME=postgres://tdpuser:something_secure@postgres:5432/tdrs_test?sslmode=disable
+    depends_on:
+      - web
+
   web:
     restart: always
     environment:
@@ -97,7 +162,7 @@ services:
       - DJANGO_DEBUG
       - SENDGRID_API_KEY
       - GENERATE_TRAILER_ERRORS=True
-      - BYPASS_KIBANA_AUTH
+      - BYPASS_OFA_AUTH
       - ELASTICSEARCH_REINDEX_THREAD_COUNT
       - ELASTICSEARCH_REINDEX_CHUNK_SIZE
       - ELASTICSEARCH_REINDEX_REQUEST_TIMEOUT
@@ -111,6 +176,7 @@ services:
       - ELASTICSEARCH_LOG_INDEX_SLOW_LEVEL
     volumes:
       - .:/tdpapp
+      - logs:/tdpapp
     image: tdp-backend
     build: .
     command: >
@@ -141,6 +207,10 @@ volumes:
   localstack_data:
   postgres_data:
   elastic_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  logs:
 
 
 networks:

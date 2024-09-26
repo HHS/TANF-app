@@ -1,0 +1,13 @@
+version: 1
+applications:
+  - name: {{ name }}
+    memory: 24M
+    disk_quota: 24M
+    instances: 1
+    env:
+      DATA_SOURCE_NAME: {{ db_uri }}
+      PG_EXPORTER_METRIC_PREFIX: {{ env }}
+    docker:
+      image: prometheuscommunity/postgres-exporter:v0.15.0
+    services:
+      - {{ rds_service }}

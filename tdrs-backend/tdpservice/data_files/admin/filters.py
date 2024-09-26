@@ -2,6 +2,7 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
+from tdpservice.core.filters import MostRecentVersionFilter
 
 class DataFileSummaryPrgTypeFilter(admin.SimpleListFilter):
     """Admin class filter for Program Type on datafile model."""
@@ -56,4 +57,19 @@ class LatestReparseEvent(admin.SimpleListFilter):
             latest_meta = ReparseMeta.get_latest()
             if latest_meta is not None:
                 queryset = queryset.filter(reparse_meta_models=latest_meta)
+        return queryset
+
+
+class VersionFilter(MostRecentVersionFilter):
+    """Simple filter class to show newest created datafile records."""
+
+    title = _('Version')
+    parameter_name = 'created_at'
+
+    def queryset(self, request, queryset):
+        """Sort queryset to show latest records."""
+        if self.value() is None and queryset.exists():
+            return queryset.order_by(
+                'stt__stt_code', 'year', 'quarter', 'section', '-version'
+            ).distinct('stt__stt_code', 'year', 'quarter', 'section')
         return queryset
