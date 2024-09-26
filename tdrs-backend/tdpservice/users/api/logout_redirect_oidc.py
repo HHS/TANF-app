@@ -49,8 +49,7 @@ class LogoutRedirectOIDC(RedirectView):
 
         # params needed by the logout endpoint
         logout_params = {
-            "client_id": settings.LOGIN_GOV_CLIENT_ID,
-            "redirect_uri": settings.BASE_URL + "/logout",
+            "post_logout_redirect_uri": settings.BASE_URL + "/logout",
             "state": state,
         }
 
@@ -58,10 +57,11 @@ class LogoutRedirectOIDC(RedirectView):
 
         # build out full API GET call to authorize endpoint
         if use_ams_handler:
+            logout_params["client_id"] = settings.AMS_CLIENT_ID
             ams_configuration = LoginRedirectAMS.get_ams_configuration()
             encoded_params = urlencode(logout_params, quote_via=quote_plus)
             return HttpResponseRedirect(ams_configuration["end_session_endpoint"] + "?" + encoded_params)
         else:
-            logout_params["post_logout_redirect_uri"] = logout_params.pop("redirect_uri")
+            logout_params["client_id"] = settings.LOGIN_GOV_CLIENT_ID
             encoded_params = urlencode(logout_params, quote_via=quote_plus)
             return HttpResponseRedirect(settings.LOGIN_GOV_LOGOUT_ENDPOINT + "?" + encoded_params)

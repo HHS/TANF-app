@@ -24,16 +24,18 @@ services:
       - default
     volumes:
       - ./:/home/node/app
+      - ~/tdp-logs/nginx:/var/log/nginx
     environment:
       - NGINX_FRONTEND=tdp-frontend
       - BACK_END=web
       - LOCAL_DEV=true
       - KIBANA=kibana
+      - GRAFANA=grafana
       - REACT_APP_DEVAUTH=${REACT_APP_DEVAUTH}
     command: >
       /bin/sh -c
       "echo 'starting nginx' &&
-        envsubst '$${BACK_END} $${KIBANA}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
+        envsubst '$${BACK_END} $${KIBANA} $${GRAFANA}' < /etc/nginx/locations.conf > /etc/nginx/locations_.conf &&
         rm /etc/nginx/locations.conf &&
         cp /etc/nginx/locations_.conf /etc/nginx/locations.conf &&
        envsubst '

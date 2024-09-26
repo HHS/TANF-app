@@ -96,7 +96,7 @@ for i in range(1, 31):
                     startIndex=families_index,
                     endIndex=families_index + 7,
                     required=True,
-                    validators=[category2.isBetween(0, 9999999, inclusive=True)],
+                    validators=[category2.isBetween(1, 9999999, inclusive=True)],
                 ),
             ],
         )
