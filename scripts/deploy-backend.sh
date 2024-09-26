@@ -120,13 +120,6 @@ update_plg_networking() {
 
   # Promtial needs to send logs to Loki
   cf add-network-policy "$CGAPPNAME_BACKEND" loki -s "tanf-dev" --protocol tcp --port 8080
-
-  # # Backend needs to talk to Grafana if the frontend is going to proxy for us
-  # cf add-network-policy "$CGAPPNAME_BACKEND" grafana -s "tanf-dev" --protocol tcp --port 8080
-
-  # # Frontend routing for later
-  # cf add-network-policy "$CGAPPNAME_FRONTEND" grafana -s "tanf-dev" --protocol tcp --port 8080
-  # cf add-network-policy grafana "$CGAPPNAME_FRONTEND" -s "tanf-dev" --protocol tcp --port 80
 }
 
 update_backend()

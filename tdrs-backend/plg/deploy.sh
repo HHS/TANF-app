@@ -28,6 +28,7 @@ deploy_pg_exporter() {
     cf map-route $APP_NAME apps.internal --hostname $APP_NAME
 
     # Add policy to allow prometheus to talk to pg-exporter
+    # TODO: this logic needs to be updated to allow routing accross spaces based on where we want PLG to live.
     cf add-network-policy prometheus $APP_NAME -s "tanf-dev" --protocol tcp --port 9187
     rm $MANIFEST
     popd
