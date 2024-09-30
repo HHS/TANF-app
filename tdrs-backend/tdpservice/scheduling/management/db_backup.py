@@ -20,7 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 OS_ENV = os.environ
-content_type = ContentType.objects.get_for_model(LogEntry)
+
+def get_content_type():
+    """Get content type for log entry."""
+    return ContentType.objects.get_for_model(LogEntry)
 
 def get_system_values():
     """Return dict of keys and settings to use whether local or deployed."""
@@ -91,7 +94,7 @@ def backup_database(file_name,
         logger.info(msg)
         LogEntry.objects.log_action(
             user_id=system_user.pk,
-            content_type_id=content_type.pk,
+            content_type_id=get_content_type().pk,
             object_id=None,
             object_repr="Executed Database Backup",
             action_flag=ADDITION,
@@ -123,7 +126,7 @@ def restore_database(file_name, postgres_client, database_uri, system_user):
         msg = "Completed database creation."
         LogEntry.objects.log_action(
             user_id=system_user.pk,
-            content_type_id=content_type.pk,
+            content_type_id=get_content_type().pk,
             object_id=None,
             object_repr="Executed Database create",
             action_flag=ADDITION,
@@ -145,7 +148,7 @@ def restore_database(file_name, postgres_client, database_uri, system_user):
         msg = "Completed database restoration."
         LogEntry.objects.log_action(
             user_id=system_user.pk,
-            content_type_id=content_type.pk,
+            content_type_id=get_content_type().pk,
             object_id=None,
             object_repr="Executed Database restore",
             action_flag=ADDITION,
@@ -177,7 +180,7 @@ def upload_file(file_name, bucket, sys_values, system_user, object_name=None, re
     msg = "Successfully uploaded {} to s3://{}/{}.".format(file_name, bucket, object_name)
     LogEntry.objects.log_action(
         user_id=system_user.pk,
-        content_type_id=content_type.pk,
+        content_type_id=get_content_type().pk,
         object_id=None,
         object_repr="Executed database backup S3 upload",
         action_flag=ADDITION,
@@ -208,7 +211,7 @@ def download_file(bucket,
     msg = "Successfully downloaded s3 file {}/{} to {}.".format(bucket, object_name, file_name)
     LogEntry.objects.log_action(
         user_id=system_user.pk,
-        content_type_id=content_type.pk,
+        content_type_id=get_content_type().pk,
         object_id=None,
         object_repr="Executed database backup S3 download",
         action_flag=ADDITION,
@@ -293,7 +296,7 @@ def main(argv, sys_values, system_user):
     if arg_to_backup:
         LogEntry.objects.log_action(
             user_id=system_user.pk,
-            content_type_id=content_type.pk,
+            content_type_id=get_content_type().pk,
             object_id=None,
             object_repr="Begining Database Backup",
             action_flag=ADDITION,
@@ -316,7 +319,7 @@ def main(argv, sys_values, system_user):
 
         LogEntry.objects.log_action(
             user_id=system_user.pk,
-            content_type_id=content_type.pk,
+            content_type_id=get_content_type().pk,
             object_id=None,
             object_repr="Finished Database Backup",
             action_flag=ADDITION,
@@ -329,7 +332,7 @@ def main(argv, sys_values, system_user):
     elif arg_to_restore:
         LogEntry.objects.log_action(
             user_id=system_user.pk,
-            content_type_id=content_type.pk,
+            content_type_id=get_content_type().pk,
             object_id=None,
             object_repr="Begining Database Restore",
             action_flag=ADDITION,
@@ -352,7 +355,7 @@ def main(argv, sys_values, system_user):
 
         LogEntry.objects.log_action(
             user_id=system_user.pk,
-            content_type_id=content_type.pk,
+            content_type_id=get_content_type().pk,
             object_id=None,
             object_repr="Finished Database Restore",
             action_flag=ADDITION,
@@ -377,7 +380,7 @@ def run_backup(arg):
             logger.error(f"Caught Exception in run_backup. Exception: {e}.")
             LogEntry.objects.log_action(
                 user_id=system_user.pk,
-                content_type_id=content_type.pk,
+                content_type_id=get_content_type().pk,
                 object_id=None,
                 object_repr="Exception in run_backup",
                 action_flag=ADDITION,

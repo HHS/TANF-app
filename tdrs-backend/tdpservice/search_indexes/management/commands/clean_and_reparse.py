@@ -2,6 +2,7 @@
 
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from django.core.paginator import Paginator
 from django.db.utils import DatabaseError
 from elasticsearch.exceptions import ElasticsearchException
 from tdpservice.data_files.models import DataFile
@@ -33,7 +34,7 @@ class Command(BaseCommand):
         parser.add_argument("-a", "--all", action='store_true', help="Clean and reparse all datafiles. If selected, "
                             "fiscal_year/quarter aren't necessary.")
 
-    def __get_log_context(self, system_user):
+    def _get_log_context(self, system_user):
         """Return logger context."""
         context = {'user_id': system_user.id,
                    'action_flag': ADDITION,
@@ -41,7 +42,7 @@ class Command(BaseCommand):
                    }
         return context
 
-    def __backup(self, backup_file_name, log_context):
+    def _backup(self, backup_file_name, log_context):
         """Execute Postgres DB backup."""
         try:
             logger.info("Beginning reparse DB Backup.")
@@ -57,10 +58,11 @@ class Command(BaseCommand):
                 level='error')
             raise e
 
-    def __handle_elastic(self, new_indices, log_context):
+    def _handle_elastic(self, new_indices, log_context):
         """Create new Elastic indices and delete old ones."""
         if new_indices:
             try:
+                logger.info("Creating new elastic indexes.")
                 call_command('tdp_search_index', '--create', '-f', '--use-alias')
                 log("Index creation complete.",
                     logger_context=log_context,
@@ -72,17 +74,20 @@ class Command(BaseCommand):
                     level='error')
                 raise e
             except Exception as e:
-                log("Caught generic exception in __handle_elastic. Clean and reparse NOT executed. "
+                log("Caught generic exception in _handle_elastic. Clean and reparse NOT executed. "
                     "Database is CONSISTENT, Elastic is INCONSISTENT!",
                     logger_context=log_context,
                     level='error')
                 raise e
 
-    def __delete_summaries(self, file_ids, log_context):
+    def _delete_summaries(self, file_ids, log_context):
         """Raw delete all DataFileSummary objects."""
         try:
             qset = DataFileSummary.objects.filter(datafile_id__in=file_ids)
+            count = qset.count()
+            logger.info(f"Deleting {count} datafile summary objects.")
             qset._raw_delete(qset.db)
+            logger.info("Successfully deleted datafile summary objects.")
         except DatabaseError as e:
             log('Encountered a DatabaseError while deleting DataFileSummary from Postgres. The database '
                 'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
@@ -96,24 +101,34 @@ class Command(BaseCommand):
                 level='critical')
             raise e
 
-    def __delete_records(self, file_ids, new_indices, log_context):
+    def __handle_elastic_doc_delete(self, doc, qset, model, elastic_exceptions, new_indices):
+        """Delete documents from Elastic and handle exceptions."""
+        if not new_indices:
+            # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
+            # We alos use a Paginator here because it allows us to slice querysets based on a batch size. This
+            # prevents a very large queryset from being brought into main memory when `doc().update(...)`
+            # evaluates it by iterating over the queryset and deleting the models from ES.
+            paginator = Paginator(qset, settings.BULK_CREATE_BATCH_SIZE)
+            for page in paginator:
+                try:
+                    doc().update(page.object_list, refresh=True, action='delete')
+                except ElasticsearchException:
+                    elastic_exceptions[model] = elastic_exceptions.get(model, 0) + 1
+                    continue
+
+    def _delete_records(self, file_ids, new_indices, log_context):
         """Delete records, errors, and documents from Postgres and Elastic."""
         total_deleted = 0
+        elastic_exceptions = dict()
         for doc in DOCUMENTS:
             try:
                 model = doc.Django.model
-                qset = model.objects.filter(datafile_id__in=file_ids)
-                total_deleted += qset.count()
-                if not new_indices:
-                    # If we aren't creating new indices, then we don't want duplicate data in the existing indices.
-                    doc().update(qset, refresh=True, action='delete')
+                qset = model.objects.filter(datafile_id__in=file_ids).order_by('id')
+                count = qset.count()
+                total_deleted += count
+                logger.info(f"Deleting {count} records of type: {model}.")
+                self.__handle_elastic_doc_delete(doc, qset, model, elastic_exceptions, new_indices)
                 qset._raw_delete(qset.db)
-            except ElasticsearchException as e:
-                log(f'Elastic document delete failed for type {model}. The database and Elastic are INCONSISTENT! '
-                    'Restore the DB from the backup as soon as possible!',
-                    logger_context=log_context,
-                    level='critical')
-                raise e
             except DatabaseError as e:
                 log(f'Encountered a DatabaseError while deleting records of type {model} from Postgres. The database '
                     'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
@@ -126,13 +141,23 @@ class Command(BaseCommand):
                     logger_context=log_context,
                     level='critical')
                 raise e
+
+        if elastic_exceptions != {}:
+            msg = ("Warning: Elastic is inconsistent and the database is consistent. "
+                   "Models which generated the Elastic exception(s) are below:\n")
+            for key, val in elastic_exceptions.items():
+                msg += f"Model: {key} generated {val} Elastic Exception(s) while being deleted.\n"
+            log(msg, logger_context=log_context, level='warn')
         return total_deleted
 
-    def __delete_errors(self, file_ids, log_context):
+    def _delete_errors(self, file_ids, log_context):
         """Raw delete all ParserErrors for each file ID."""
         try:
             qset = ParserError.objects.filter(file_id__in=file_ids)
+            count = qset.count()
+            logger.info(f"Deleting {count} parser errors.")
             qset._raw_delete(qset.db)
+            logger.info("Successfully deleted parser errors.")
         except DatabaseError as e:
             log('Encountered a DatabaseError while deleting ParserErrors from Postgres. The database '
                 'and Elastic are INCONSISTENT! Restore the DB from the backup as soon as possible!',
@@ -146,14 +171,14 @@ class Command(BaseCommand):
                 level='critical')
             raise e
 
-    def __delete_associated_models(self, meta_model, file_ids, new_indices, log_context):
+    def _delete_associated_models(self, meta_model, file_ids, new_indices, log_context):
         """Delete all models associated to the selected datafiles."""
-        self.__delete_summaries(file_ids, log_context)
-        self.__delete_errors(file_ids, log_context)
-        num_deleted = self.__delete_records(file_ids, new_indices, log_context)
+        self._delete_summaries(file_ids, log_context)
+        self._delete_errors(file_ids, log_context)
+        num_deleted = self._delete_records(file_ids, new_indices, log_context)
         meta_model.num_records_deleted = num_deleted
 
-    def __handle_datafiles(self, files, meta_model, log_context):
+    def _handle_datafiles(self, files, meta_model, log_context):
         """Delete, re-save, and reparse selected datafiles."""
         for file in files:
             try:
@@ -167,13 +192,13 @@ class Command(BaseCommand):
                     level='critical')
                 raise e
             except Exception as e:
-                log('Caught generic exception in __handle_datafiles. Database and Elastic are INCONSISTENT! '
+                log('Caught generic exception in _handle_datafiles. Database and Elastic are INCONSISTENT! '
                     'Restore the DB from the backup as soon as possible!',
                     logger_context=log_context,
                     level='critical')
                 raise e
 
-    def __count_total_num_records(self, log_context):
+    def _count_total_num_records(self, log_context):
         """Count total number of records in the database for meta object."""
         try:
             return count_all_records()
@@ -190,7 +215,7 @@ class Command(BaseCommand):
                 level='error')
             exit(1)
 
-    def __assert_sequential_execution(self, log_context):
+    def _assert_sequential_execution(self, log_context):
         """Assert that no other reparse commands are still executing."""
         latest_meta_model = ReparseMeta.get_latest()
         now = timezone.now()
@@ -200,20 +225,27 @@ class Command(BaseCommand):
                 "Cannot safely execute reparse, please fix manually.",
                 logger_context=log_context,
                 level='error')
-            exit(1)
+            return False
         if (is_not_none and not ReparseMeta.assert_all_files_done(latest_meta_model) and
                 not now > latest_meta_model.timeout_at):
             log('A previous execution of the reparse command is RUNNING. Cannot execute in parallel, exiting.',
                 logger_context=log_context,
                 level='warn')
-            exit(1)
+            return False
         elif (is_not_none and latest_meta_model.timeout_at is not None and now > latest_meta_model.timeout_at and not
               ReparseMeta.assert_all_files_done(latest_meta_model)):
             log("Previous reparse has exceeded the timeout. Allowing execution of the command.",
                 logger_context=log_context,
                 level='warn')
+            return True
+        return True
 
-    def __calculate_timeout(self, num_files, num_records):
+    def _should_exit(self, condition):
+        """Exit on condition."""
+        if condition:
+            exit(1)
+
+    def _calculate_timeout(self, num_files, num_records):
         """Estimate a timeout parameter based on the number of files and the number of records."""
         # Increase by an order of magnitude to have the bases covered.
         line_parse_time = settings.MEDIAN_LINE_PARSE_TIME * 10
@@ -223,12 +255,24 @@ class Command(BaseCommand):
         logger.info(f"Setting timeout for the reparse event to be {delta} seconds from meta model creation date.")
         return delta
 
+    def _handle_input(self, testing, continue_msg):
+        """Handle user input."""
+        if not testing:
+            c = str(input(f'\n{continue_msg}\nContinue [y/n]? ')).lower()
+            if c not in ['y', 'yes']:
+                print('Cancelled.')
+                exit(0)
+
     def handle(self, *args, **options):
         """Delete and reparse datafiles matching a query."""
         fiscal_year = options.get('fiscal_year', None)
         fiscal_quarter = options.get('fiscal_quarter', None)
         reparse_all = options.get('all', False)
         new_indices = reparse_all is True
+
+        # Option that can only be specified by calling `handle` directly and passing it.
+        testing = options.get('testing', False)
+        ##
 
         args_passed = fiscal_year is not None or fiscal_quarter is not None or reparse_all
 
@@ -270,15 +314,12 @@ class Command(BaseCommand):
         fmt_str = f"ALL ({num_files})" if reparse_all else f"({num_files})"
         continue_msg += "\nThese options will delete and reparse {0} datafiles.".format(fmt_str)
 
-        c = str(input(f'\n{continue_msg}\nContinue [y/n]? ')).lower()
-        if c not in ['y', 'yes']:
-            print('Cancelled.')
-            return
+        self._handle_input(testing, continue_msg)
 
         system_user, created = User.objects.get_or_create(username='system')
         if created:
             logger.debug('Created reserved system user.')
-        log_context = self.__get_log_context(system_user)
+        log_context = self._get_log_context(system_user)
 
         all_fy = "All"
         all_q = "Q1-4"
@@ -294,7 +335,8 @@ class Command(BaseCommand):
                 level='warn')
             return
 
-        self.__assert_sequential_execution(log_context)
+        is_sequential = self._assert_sequential_execution(log_context)
+        self._should_exit(not is_sequential)
         meta_model = ReparseMeta.objects.create(fiscal_quarter=fiscal_quarter,
                                                 fiscal_year=fiscal_year,
                                                 all=reparse_all,
@@ -304,29 +346,29 @@ class Command(BaseCommand):
 
         # Backup the Postgres DB
         backup_file_name += f"_rpv{meta_model.pk}.pg"
-        self.__backup(backup_file_name, log_context)
+        self._backup(backup_file_name, log_context)
 
         meta_model.db_backup_location = backup_file_name
         meta_model.save()
 
         # Create and delete Elastic indices if necessary
-        self.__handle_elastic(new_indices, log_context)
+        self._handle_elastic(new_indices, log_context)
 
         # Delete records from Postgres and Elastic if necessary
         file_ids = files.values_list('id', flat=True).distinct()
-        meta_model.total_num_records_initial = self.__count_total_num_records(log_context)
+        meta_model.total_num_records_initial = self._count_total_num_records(log_context)
         meta_model.save()
 
-        self.__delete_associated_models(meta_model, file_ids, new_indices, log_context)
+        self._delete_associated_models(meta_model, file_ids, new_indices, log_context)
 
-        meta_model.timeout_at = meta_model.created_at + self.__calculate_timeout(num_files,
-                                                                                 meta_model.num_records_deleted)
+        meta_model.timeout_at = meta_model.created_at + self._calculate_timeout(num_files,
+                                                                                meta_model.num_records_deleted)
         meta_model.save()
         logger.info(f"Deleted a total of {meta_model.num_records_deleted} records accross {num_files} files.")
 
         # Delete and re-save datafiles to handle cascading dependencies
         logger.info(f'Deleting and re-parsing {num_files} files')
-        self.__handle_datafiles(files, meta_model, log_context)
+        self._handle_datafiles(files, meta_model, log_context)
 
         log("Database cleansing complete and all files have been re-scheduling for parsing and validation.",
             logger_context=log_context,
