@@ -2,6 +2,11 @@ version: '3'
 
 tasks:
 
+  upload-kibana-objs:
+    desc: Upload dashboards to Kibana server
+    cmds:
+      - curl -X POST localhost:5601/api/saved_objects/_import -H "kbn-xsrf: true" --form file=@tdrs-backend/tdpservice/search_indexes/kibana_saved_objs.ndjson
+
   create-network:
     desc: Create the external network
     cmds:
@@ -29,7 +34,7 @@ tasks:
     desc: Create Sentry service
     dir: sentry
     cmds:
-      # limiting the memory to 2GB and CPU to only one cpu @0, for faster response, you can remove the limittask :  --cpuset-cpus 0 
+      # limiting the memory to 2GB and CPU to only one cpu @0, for faster response, you can remove the limittask :  --cpuset-cpus 0
       - (docker run --privileged -p 9001:9000 -d --memory="8g" --memory-swap="8g" --name sentry docker:dind) || true
       - docker exec sentry sh -c "git clone https://github.com/getsentry/self-hosted.git || true"
 
@@ -155,7 +160,7 @@ tasks:
       - docker rm $(docker ps -aq) || true
       - docker rmi $(docker images -q) || true
       - docker volume rm $(docker volume ls -q) || true
-  
+
   clamav-up:
     desc: Start clamav service
     dir: tdrs-backend
@@ -187,7 +192,7 @@ tasks:
       - task: frontend-up
       - task: clamav-up
 
-  
+
   # need more work
   frontend-init:
     desc: Initialize the frontend project
