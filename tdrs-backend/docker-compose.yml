@@ -55,6 +55,8 @@ services:
       - SERVER_BASEPATH=/kibana
       - SERVER_SECURITYRESPONSEHEADERS_REFERRERPOLICY=no-referrer
       - CSP_WARNLEGACYBROWSERS=false
+    volumes:
+      - ./search_indexes/kibana_saved_objs.ndjson:/usr/share/kibana/kibana_saved_objs.ndjson
     depends_on:
       - elastic
 
