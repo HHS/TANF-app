@@ -1,8 +1,7 @@
 # Cloud Foundry, Cloud.gov AWS RDS Database Upgrade
+The process below provides a guide to roll our backend applications over to a new RDS version and instance. The entire process can take several hours and does involve downtime for the environment which you are upgrading. Be sure to take those factors into account when commencing the process.
 
 ## Process
-
-If you are performing this process for the staging or production, you need to ensure you are performing the changes through the [HHS](https://github.com/HHS/TANF-app) repo and not the [Raft](https://github.com/raft-tech/TANF-app) repo. You also need to have the postgres client binaries installed on your local machine.
 
 ### 1. Open an SSH tunnel to the service
 To execute commands on the RDS instance we can open an SSH tunnel to the service and run all our commands locally. Keep this tunnel open in a separate terminal window until this process is complete!
