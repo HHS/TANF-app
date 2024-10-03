@@ -3,11 +3,13 @@
 import pytest
 from tdpservice.parsers import util, parse
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
+from tdpservice.scheduling.management.commands import backup_db
 from tdpservice.search_indexes.management.commands import clean_and_reparse
 from tdpservice.search_indexes.tasks import prettify_time_delta
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.users.models import User
 
+from django.conf import settings
 from django.contrib.admin.models import LogEntry, ADDITION
 from django.db.utils import DatabaseError
 from django.utils import timezone
@@ -516,3 +518,14 @@ def test_prettify_time_delta():
     end = start + timedelta(seconds=100)
 
     assert prettify_time_delta(start.timestamp(), end.timestamp()) == (1, 40)
+
+@pytest.mark.django_db
+def test_db_backup_cloud(mocker):
+    """Test DB backup fail without localstack."""
+    settings.USE_LOCALSTACK = False
+
+    cmd = backup_db.Command()
+    opts = {'file': 'fake_file.pg'}
+
+    with pytest.raises(Exception):
+        cmd.handle(**opts)
