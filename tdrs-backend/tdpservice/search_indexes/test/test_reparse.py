@@ -529,3 +529,4 @@ def test_db_backup_cloud(mocker):
 
     with pytest.raises(Exception):
         cmd.handle(**opts)
+    settings.USE_LOCALSTACK = True
