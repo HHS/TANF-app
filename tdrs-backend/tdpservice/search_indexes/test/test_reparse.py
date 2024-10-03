@@ -4,6 +4,7 @@ import pytest
 from tdpservice.parsers import util, parse
 from tdpservice.parsers.test.factories import DataFileSummaryFactory
 from tdpservice.search_indexes.management.commands import clean_and_reparse
+from tdpservice.search_indexes.tasks import prettify_time_delta
 from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 from tdpservice.users.models import User
 
@@ -507,3 +508,11 @@ def test_mm_file_counts_match():
     meta_model.files_completed = 1
     meta_model.files_failed = 1
     assert ReparseMeta.file_counts_match(meta_model) is True
+
+@pytest.mark.django_db
+def test_prettify_time_delta():
+    """Test prettify_time_delta."""
+    start = timezone.now()
+    end = start + timedelta(seconds=100)
+
+    assert prettify_time_delta(start.timestamp(), end.timestamp()) == (1, 40)

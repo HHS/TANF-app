@@ -4,7 +4,9 @@
 import pytest
 from datetime import timedelta
 from django.utils import timezone
+from django.contrib.admin.models import LogEntry
 from tdpservice.data_files.models import DataFile
+from tdpservice.email.helpers.data_file import send_stuck_file_email
 from tdpservice.parsers.models import DataFileSummary
 from tdpservice.data_files.tasks import get_stuck_files
 from tdpservice.parsers.test.factories import ParsingFileFactory, DataFileSummaryFactory, ReparseMetaFactory
@@ -250,3 +252,16 @@ def test_find_pending_submissions__new_reparse_stuck__old_not_stuck(stt_user, st
     stuck_files = get_stuck_files()
     assert stuck_files.count() == 1
     assert stuck_files.first().pk == df1.pk
+
+@pytest.mark.django_db
+def test_send_stuck_file_email(mocker):
+    """Test send_stuck_file_email."""
+    mocker.patch(
+        'tdpservice.email.email.automated_email',
+        return_value=True
+    )
+
+    send_stuck_file_email([], ["recipient"])
+    entries = LogEntry.objects.all().order_by('pk')
+    assert len(entries) == 4
+    assert entries[0].change_message == ("Emailing stuck files to SysAdmins: ['recipient']")
