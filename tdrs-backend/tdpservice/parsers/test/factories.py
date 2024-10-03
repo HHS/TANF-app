@@ -1,10 +1,28 @@
 """Factories for generating test data for parsers."""
 import factory
+from django.utils import timezone
 from tdpservice.parsers.models import DataFileSummary, ParserErrorCategoryChoices
 from faker import Faker
 from tdpservice.data_files.test.factories import DataFileFactory
 from tdpservice.users.test.factories import UserFactory
 from tdpservice.stts.test.factories import STTFactory
+
+
+class ReparseMetaFactory(factory.django.DjangoModelFactory):
+    """Generate test reparse meta model."""
+
+    class Meta:
+        """Hardcoded meta data for factory."""
+
+        model = "search_indexes.ReparseMeta"
+
+    timeout_at = timezone.now()
+    finished = False
+    success = False
+    num_files_to_reparse = 1
+    files_completed = 1
+    files_failed = 0
+
 
 class ParsingFileFactory(factory.django.DjangoModelFactory):
     """Generate test data for data files."""
