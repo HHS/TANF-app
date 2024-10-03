@@ -40,7 +40,7 @@ After logging in as root for the first time, you will be taken to a page to set 
 
 In order to use Nexus as a Docker repository, the DNS for the repo needs to be able to terminate https. We are currently using cloudflare to do this.
 
-When creating the repository (must be signed in with admin privileges), since the nexus server isn't actually terminating the https, select the HTTP repository connector. The port can be anything you assign, as long as the tool used to terminate the https connection forwards the traffic to that port. 
+When creating the repository (must be signed in with admin privileges), since the nexus server isn't actually terminating the https, select the HTTP repository connector. The port can be anything you assign, as long as the tool used to terminate the https connection forwards the traffic to that port.
 
 In order to allow [Docker client login and connections](https://help.sonatype.com/repomanager3/nexus-repository-administration/formats/docker-registry/docker-authentication) you must set up the Docker Bearer Token Realm in Settings -> Security -> Realms -> and move the Docker Bearer Token Realm over to Active.
 Also, any users will need nx-repository-view-docker-#{RepoName}-(browse && read) at a minimum and (add and edit) in order to push images.
@@ -48,21 +48,86 @@ Also, any users will need nx-repository-view-docker-#{RepoName}-(browse && read)
 We have a separate endpoint to connect specifically to the docker repository.
 [https://tdp-docker.dev.raftlabs.tech](tdp-docker.dev.raftlabs.tech)
 
-e.g. `docker login https://tdp-docker.dev.raftlabs.tech`
+e.g.
+```
+docker login https://tdp-docker.dev.raftlabs.tech
+```
 
 ### Pushing Images
 
 Before an image can be pushed to the nexus repository, it must be tagged for that repo:
 
-`docker image tag ${ImageId} tdp-docker.dev.raftlabs.tech/${ImageName}:${Version}`
+```
+docker image tag ${ImageId} tdp-docker.dev.raftlabs.tech/${ImageName}:${Version}
+```
 
 then you can push:
 
-`docker push tdp-docker.dev.raftlabs.tech/${ImageName}:${Version}`
+```
+docker push tdp-docker.dev.raftlabs.tech/${ImageName}:${Version}
+```
 
 ### Pulling Images
 
-We have set up a proxy mirror to dockerhub that can pull and cache DockerHub images.
-Then we have created a group docker repository that can be pulled from. If the container is in our hosted repo, the group will return that container. If not, it will see if we have a cached version of that container in our proxy repo and, if not, pull that from dockerhub, cache it and allow the docker pull to happen.
+We do not allow anonymous access on our Nexus instance. With that said, if you have not [logged in with Docker](#docker-login) you will not be able to pull. If you are logged in:
 
-`docker pull https://tdp-docker-store.dev.raftlabs.tech/${ImageName}:${Version}`
+```
+docker pull tdp-docker.dev.raftlabs.tech/${ImageName}:${Version}
+```
+
+## Nexus Administration
+
+### UI Admin Login
+To administer Nexus via the UI, you will need to access the service key in our dev cloud.gov environment.
+
+Log in with CloudFoundry
+```
+cf login --sso
+```
+Be sure to specify the space as `tanf-dev`
+
+After you've authenticated you can grab the password from the key:
+```
+cf service-key tanf-keys nexus-dev-admin
+```
+
+The key returns a username and a password:
+```
+{
+  "credentials": {
+    "password": REDACTED,
+    "username": REDACTED
+  }
+}
+```
+Copy the `password` to your clipboard and login into the Nexus UI with the `tdp-dev-admin` user. See below:
+
+![Nexus Dev Admin Login](./images/nexus-dev-admin-login.png)
+
+### VM Login
+To access the VM running Nexus, you will need to gain access to the Raft internal network. To do this, you will need to install CloudFlare's WARP zero trust VPN. Follow the instructions [here](https://gorafttech-my.sharepoint.com/:w:/g/personal/tradin_teamraft_com/EZePOTv0dbdBguHITcoXQF0Bd5JAcqeLsJTlEOktTfIXHA?e=34WqB4) to get setup. From there, reach out to Eric Lipe or Connor Meehan for the IP, username, and password to access the VM. Once you have the credentials, you can login with SSH:
+```
+ssh username@IP_Address
+```
+
+Once logged in, you can run `docker ps` or other docker commands to view and administer the Nexus container as necessary. You should also consider generating an ssh key to avoid having to enter the password each time you login. To do so, run the following commands on your local machine.
+```
+ssh-keygen
+```
+
+```
+ssh-copy-id username@IP_Address
+```
+Now you will no longer have to enter the password when logging in.
+
+## Local Docker Login
+After logging into the `tanf-dev` space with the `cf` cli, execute the following commands to authenticate your local docker daemon
+```
+export NEXUS_DOCKER_PASSWORD=`cf service-key tanf-keys nexus-dev | tail -n +2 | jq .credentials.password`
+echo "$NEXUS_DOCKER_PASSWORD" | docker login https://tdp-docker.dev.raftlabs.tech -u tdp-dev --password-stdin
+```
+
+Sometimes the `docker login...` command above doesn't work. If that happens, just copy the content of `NEXUS_DOCKER_PASSWORD` to your clipboard and paste it when prompted for the password after executing the command below.
+```
+docker login https://tdp-docker.dev.raftlabs.tech -u tdp-dev
+```

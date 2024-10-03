@@ -273,8 +273,10 @@ def test_reparse_sequential(log_context):
     meta = ReparseMeta.objects.create(timeout_at=None)
     assert False is cmd._assert_sequential_execution(log_context)
     timeout_entry = LogEntry.objects.latest('pk')
-    assert timeout_entry.change_message == ("The latest ReparseMeta model's (ID: 1) timeout_at field is None. Cannot "
-                                            "safely execute reparse, please fix manually.")
+    assert timeout_entry.change_message == (
+        f"The latest ReparseMeta model's (ID: {meta.pk}) timeout_at field is None. Cannot "
+        "safely execute reparse, please fix manually."
+    )
 
     meta.timeout_at = timezone.now() + timedelta(seconds=100)
     meta.save()
