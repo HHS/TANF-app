@@ -124,4 +124,3 @@ def test_fiscal_year(data_file_instance):
     assert df.fiscal_year == "2020 - Q3 (Apr - Jun)"
     df.quarter = "Q4"
     assert df.fiscal_year == "2020 - Q4 (Jul - Sep)"
-
