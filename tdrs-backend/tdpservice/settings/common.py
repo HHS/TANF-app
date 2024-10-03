@@ -499,6 +499,10 @@ class Common(Configuration):
             'task': 'tdpservice.email.tasks.email_admin_num_access_requests',
             'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
         },
+        'Email Admin Number of Stuck Files' : {
+            'task': 'tdpservice.data_files.tasks.notify_stuck_files',
+            'schedule': crontab(minute='0', hour='1', day_of_week='*', day_of_month='*', month_of_year='*'), # Every day at 1am UTC (9pm EST)
+        },
         'Email Data Analyst Q1 Upcoming Submission Deadline Reminder': {
             'task': 'tdpservice.email.tasks.send_data_submission_reminder',
             # Feb 9 at 1pm UTC (9am EST)

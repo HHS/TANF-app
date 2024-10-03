@@ -1,5 +1,6 @@
 """Helper functions for sending data file submission emails."""
 from django.conf import settings
+from tdpservice.users.models import User
 from tdpservice.email.email_enums import EmailType
 from tdpservice.email.email import automated_email, log
 from tdpservice.parsers.util import get_prog_from_section
@@ -60,6 +61,34 @@ def send_data_submitted_email(
             text_message = f'{file_type} has been submitted and processed with errors.'
 
     context.update({'subject': subject})
+
+    automated_email(
+        email_path=template_path,
+        recipient_email=recipients,
+        subject=subject,
+        email_context=context,
+        text_message=text_message,
+        logger_context=logger_context
+    )
+
+
+def send_stuck_file_email(stuck_files, recipients):
+    """Send an email to sys admins with details of files stuck in Pending."""
+    logger_context = {
+        'user_id': User.objects.get_or_create(username='system')[0].pk
+    }
+
+    template_path = EmailType.STUCK_FILE_LIST.value
+    subject = 'List of submitted files with pending status after 1 hour'
+    text_message = 'The system has detected stuck files.'
+
+    context = {
+        "subject": subject,
+        "url": settings.FRONTEND_BASE_URL,
+        "files": stuck_files,
+    }
+
+    log(f'Emailing stuck files to SysAdmins: {list(recipients)}', logger_context=logger_context)
 
     automated_email(
         email_path=template_path,
