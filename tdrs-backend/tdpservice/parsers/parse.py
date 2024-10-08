@@ -13,7 +13,6 @@ from tdpservice.parsers.validators.util import value_is_empty
 from tdpservice.parsers.schema_defs.utils import get_section_reference, get_program_model
 from tdpservice.parsers.case_consistency_validator import CaseConsistencyValidator
 from tdpservice.parsers.util import log_parser_exception
-from tdpservice.search_indexes.models.reparse_meta import ReparseMeta
 
 logger = logging.getLogger(__name__)
 
@@ -473,7 +472,6 @@ def parse_datafile_lines(datafile, dfs, program_type, section, is_encrypted, cas
     logger.debug(f"Cat4 validator cached {case_consistency_validator.total_cases_cached} cases and "
                  f"validated {case_consistency_validator.total_cases_validated} of them.")
     dfs.save()
-
 
     return errors
 

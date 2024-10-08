@@ -9,10 +9,12 @@ class ReparseMetaAdmin(ReadOnlyAdminMixin):
     inlines = [DataFileInline]
 
     def reparse_is_finished(self, instance):
+        """Overload instance property for ui checkboxes."""
         return instance.is_finished
     reparse_is_finished.boolean = True
 
     def reparse_is_success(self, instance):
+        """Overload instance property for ui checkboxes."""
         return instance.is_success
     reparse_is_success.boolean = True
 

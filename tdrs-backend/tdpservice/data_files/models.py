@@ -81,12 +81,17 @@ class FileRecord(models.Model):
 
 class ReparseFileMeta(models.Model):
     """Meta data model representing a single file parse within a reparse execution."""
+
     data_file = models.ForeignKey('data_files.DataFile', on_delete=models.CASCADE, related_name='reparse_file_metas')
-    reparse_meta = models.ForeignKey('search_indexes.ReparseMeta', on_delete=models.CASCADE, related_name='reparse_file_metas')
+    reparse_meta = models.ForeignKey(
+        'search_indexes.ReparseMeta',
+        on_delete=models.CASCADE,
+        related_name='reparse_file_metas'
+    )
 
     finished = models.BooleanField(default=False)
     success = models.BooleanField(default=False)
-    started_at = models.DateTimeField(auto_now_add=False, null=True)  # set at beg of parse run
+    started_at = models.DateTimeField(auto_now_add=False, null=True)
     finished_at = models.DateTimeField(auto_now_add=False, null=True)
 
     num_records_created = models.PositiveIntegerField(default=0)
