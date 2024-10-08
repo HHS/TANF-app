@@ -31,7 +31,7 @@ class Command(search_index.Command):
 
     def __get_index_suffix(self):
         meta_model = ReparseMeta.get_latest()
-        if meta_model is not None and not meta_model.finished:
+        if meta_model is not None and not meta_model.is_finished:
             return f"_rpv{meta_model.pk}"
         fmt = "%Y-%m-%d_%H.%M.%S"
         return f"_{datetime.now().strftime(fmt)}"

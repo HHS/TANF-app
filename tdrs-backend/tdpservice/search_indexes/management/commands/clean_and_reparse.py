@@ -341,8 +341,7 @@ class Command(BaseCommand):
                                                 fiscal_year=fiscal_year,
                                                 all=reparse_all,
                                                 new_indices=new_indices,
-                                                delete_old_indices=new_indices,
-                                                num_files_to_reparse=num_files)
+                                                delete_old_indices=new_indices)
 
         # Backup the Postgres DB
         backup_file_name += f"_rpv{meta_model.pk}.pg"

@@ -23,8 +23,8 @@ def get_stuck_files():
         Q(
             reparse_count__gt=0,
             reparses__timeout_at__lte=timezone.now(),
-            reparses__finished=False,
-            reparses__success=False
+            reparse_file_metas__finished=False,
+            reparse_file_metas__success=False
         )
     ).filter(
         # where there is NO summary or the summary is in PENDING status

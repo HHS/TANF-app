@@ -17,11 +17,6 @@ class ReparseMetaFactory(factory.django.DjangoModelFactory):
         model = "search_indexes.ReparseMeta"
 
     timeout_at = timezone.now()
-    finished = False
-    success = False
-    num_files_to_reparse = 1
-    files_completed = 1
-    files_failed = 0
 
 
 class ParsingFileFactory(factory.django.DjangoModelFactory):
