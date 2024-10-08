@@ -89,7 +89,6 @@ class ReparseFileMeta(models.Model):
     started_at = models.DateTimeField(auto_now_add=False, null=True)  # set at beg of parse run
     finished_at = models.DateTimeField(auto_now_add=False, null=True)
 
-    # num_records_deleted = models.PositiveIntegerField(default=0)
     num_records_created = models.PositiveIntegerField(default=0)
     cat_4_errors_generated = models.PositiveIntegerField(default=0)
 
