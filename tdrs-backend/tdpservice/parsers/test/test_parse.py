@@ -2,6 +2,7 @@
 
 
 import pytest
+import os
 from django.contrib.admin.models import LogEntry
 from django.conf import settings
 from django.db.models import Q as Query
@@ -1305,7 +1306,7 @@ def test_parse_tribal_section_2_file(tribal_section_2_file, dfs):
     t4 = t4_objs.first()
     t5 = t5_objs.last()
 
-    assert t4.CLOSURE_REASON == 8
+    assert t4.CLOSURE_REASON == '15'
     assert t5.COUNTABLE_MONTH_FED_TIME == '  8'
 
 
@@ -1498,7 +1499,7 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
         dfs.datafile, dfs.status)
     assert dfs.case_aggregates == {"months": [
         {"month": "Oct", "total_errors": 2},
-        {"month": "Nov", "total_errors": 2},
+        {"month": "Nov", "total_errors": 3},
         {"month": "Dec", "total_errors": 2}
     ]}
 
@@ -1508,7 +1509,7 @@ def test_parse_tanf_section4_file_with_errors(tanf_section_4_file_with_errors, d
 
     parser_errors = ParserError.objects.filter(file=tanf_section_4_file_with_errors)
 
-    assert parser_errors.count() == 6
+    assert parser_errors.count() == 7
 
     t7_objs = TANF_T7.objects.all().order_by('FAMILIES_MONTH')
 
@@ -1745,6 +1746,9 @@ def test_parse_duplicate(file, batch_size, model, record_type, num_errors, dfs, 
     settings.BULK_CREATE_BATCH_SIZE = batch_size
 
     parse.parse_datafile(datafile, dfs)
+
+    settings.BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
+
     parser_errors = ParserError.objects.filter(file=datafile,
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
@@ -1788,6 +1792,9 @@ def test_parse_partial_duplicate(file, batch_size, model, record_type, num_error
     settings.BULK_CREATE_BATCH_SIZE = batch_size
 
     parse.parse_datafile(datafile, dfs)
+
+    settings.BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
+
     parser_errors = ParserError.objects.filter(file=datafile,
                                                error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY).order_by('id')
     for e in parser_errors:
@@ -1811,6 +1818,8 @@ def test_parse_cat_4_edge_case_file(cat4_edge_case_file, dfs):
     settings.BULK_CREATE_BATCH_SIZE = 1
 
     parse.parse_datafile(cat4_edge_case_file, dfs)
+
+    settings.BULK_CREATE_BATCH_SIZE = os.getenv("BULK_CREATE_BATCH_SIZE", 10000)
 
     parser_errors = ParserError.objects.filter(file=cat4_edge_case_file).filter(
         error_type=ParserErrorCategoryChoices.CASE_CONSISTENCY)

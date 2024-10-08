@@ -1,4 +1,33 @@
 # commands:
+  init-deploy:
+    steps:
+      - checkout
+      - sudo-check
+      - cf-check
+
+  build-and-tag-images:
+    parameters:
+      backend-appname:
+        default: tdp-backend
+        type: string
+      frontend-appname:
+        default: tdp-frontend
+        type: string
+    steps:
+      - run:
+          name: Update Docker daemon
+          command: |
+            sudo echo '{"max-concurrent-uploads": 1}' | sudo tee /etc/docker/daemon.json
+            sudo service docker restart
+      - run:
+          name: Create builder
+          command: |
+            docker buildx create --name container-builder --driver docker-container --use --bootstrap
+      - run:
+          name: Build and tag images
+          command: |
+            ./scripts/build-and-tag-images.sh <<parameters.backend-appname>> <<parameters.frontend-appname>> ./tdrs-backend ./tdrs-frontend $CIRCLE_BUILD_NUM $CIRCLE_SHA1 "$CIRCI_DOCKER_LOGIN" tdp-circi
+
   deploy-cloud-dot-gov:
     parameters:
       environment:
@@ -25,9 +54,6 @@
         default: tdp-frontend
         type: string
     steps:
-      - checkout
-      - sudo-check
-      - cf-check
       - login-cloud-dot-gov:
           cf-password: <<parameters.cf-password>>
           cf-org: <<parameters.cf-org>>

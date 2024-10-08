@@ -5,6 +5,7 @@ from hashlib import sha256
 from io import StringIO
 from typing import Union
 
+from django.conf import settings
 from django.contrib.admin.models import ADDITION, ContentType, LogEntry
 from django.core.files.base import File
 from django.db import models
@@ -205,6 +206,10 @@ class DataFile(FileRecord):
     def submitted_by(self):
         """Return the author as a string for this data file."""
         return self.user.get_full_name()
+
+    def admin_link(self):
+        """Return a link to the admin console for this file."""
+        return f"{settings.FRONTEND_BASE_URL}/admin/data_files/datafile/?id={self.pk}"
 
     @classmethod
     def create_new_version(self, data):
