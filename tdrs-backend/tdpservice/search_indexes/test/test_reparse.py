@@ -401,16 +401,16 @@ def test_mm_all_files_done():
 def test_mm_increment_files_completed(big_file):
     """Test meta model increment files completed."""
     meta_model = ReparseMeta.objects.create(num_files_to_reparse=2, all=True)
-    big_file.reparse_meta_models.add(meta_model)
+    big_file.reparses.add(meta_model)
     big_file.save()
 
-    ReparseMeta.increment_files_completed(big_file.reparse_meta_models)
+    ReparseMeta.increment_files_completed(big_file.reparses)
     meta_model = ReparseMeta.get_latest()
     assert meta_model.finished is False
     assert meta_model.files_completed == 1
     assert meta_model.files_failed == 0
 
-    ReparseMeta.increment_files_completed(big_file.reparse_meta_models)
+    ReparseMeta.increment_files_completed(big_file.reparses)
     meta_model = ReparseMeta.get_latest()
     assert meta_model.finished is True
     assert meta_model.files_completed == 2
@@ -424,16 +424,16 @@ def test_mm_increment_files_completed(big_file):
 def test_mm_increment_files_failed(big_file):
     """Test meta model increment files failed."""
     meta_model = ReparseMeta.objects.create(num_files_to_reparse=2, all=True)
-    big_file.reparse_meta_models.add(meta_model)
+    big_file.reparses.add(meta_model)
     big_file.save()
 
-    ReparseMeta.increment_files_failed(big_file.reparse_meta_models)
+    ReparseMeta.increment_files_failed(big_file.reparses)
     meta_model = ReparseMeta.get_latest()
     assert meta_model.finished is False
     assert meta_model.files_completed == 0
     assert meta_model.files_failed == 1
 
-    ReparseMeta.increment_files_failed(big_file.reparse_meta_models)
+    ReparseMeta.increment_files_failed(big_file.reparses)
     meta_model = ReparseMeta.get_latest()
     assert meta_model.finished is True
     assert meta_model.files_completed == 0
@@ -447,16 +447,16 @@ def test_mm_increment_files_failed(big_file):
 def test_mm_increment_files_failed_and_passed(big_file):
     """Test meta model both increment failed and passed files."""
     meta_model = ReparseMeta.objects.create(num_files_to_reparse=2, all=True)
-    big_file.reparse_meta_models.add(meta_model)
+    big_file.reparses.add(meta_model)
     big_file.save()
 
-    ReparseMeta.increment_files_completed(big_file.reparse_meta_models)
+    ReparseMeta.increment_files_completed(big_file.reparses)
     meta_model = ReparseMeta.get_latest()
     assert meta_model.finished is False
     assert meta_model.files_completed == 1
     assert meta_model.files_failed == 0
 
-    ReparseMeta.increment_files_failed(big_file.reparse_meta_models)
+    ReparseMeta.increment_files_failed(big_file.reparses)
     meta_model = ReparseMeta.get_latest()
     assert meta_model.finished is True
     assert meta_model.files_completed == 1
@@ -470,14 +470,14 @@ def test_mm_increment_files_failed_and_passed(big_file):
 def test_mm_increment_records_created(big_file):
     """Test meta model increment records created."""
     meta_model = ReparseMeta.objects.create(num_files_to_reparse=2, all=True)
-    big_file.reparse_meta_models.add(meta_model)
+    big_file.reparses.add(meta_model)
     big_file.save()
 
-    ReparseMeta.increment_records_created(big_file.reparse_meta_models, 500)
+    ReparseMeta.increment_records_created(big_file.reparses, 500)
     meta_model = ReparseMeta.get_latest()
     assert meta_model.num_records_created == 500
 
-    ReparseMeta.increment_records_created(big_file.reparse_meta_models, 888)
+    ReparseMeta.increment_records_created(big_file.reparses, 888)
     meta_model = ReparseMeta.get_latest()
     assert meta_model.num_records_created == 1388
 

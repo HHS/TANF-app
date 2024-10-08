@@ -79,6 +79,20 @@ class FileRecord(models.Model):
     # separately
     extension = models.CharField(max_length=8, default="txt")
 
+class ReparseFileMeta(models.Model):
+    """Meta data model representing a single file parse within a reparse execution."""
+    data_file = models.ForeignKey('data_files.DataFile', on_delete=models.CASCADE, related_name='reparse_file_metas')
+    reparse_meta = models.ForeignKey('search_indexes.ReparseMeta', on_delete=models.CASCADE, related_name='reparse_file_metas')
+
+    finished = models.BooleanField(default=False)
+    success = models.BooleanField(default=False)
+    started_at = models.DateTimeField(auto_now_add=False, null=True)  # set at beg of parse run
+    finished_at = models.DateTimeField(auto_now_add=False, null=True)
+
+    # num_records_deleted = models.PositiveIntegerField(default=0)
+    num_records_created = models.PositiveIntegerField(default=0)
+    cat_4_errors_generated = models.PositiveIntegerField(default=0)
+
 
 class DataFile(FileRecord):
     """Represents a version of a data file."""
@@ -153,10 +167,17 @@ class DataFile(FileRecord):
                                         null=True
                                         )
 
-    reparse_meta_models = models.ManyToManyField("search_indexes.ReparseMeta",
-                                                 help_text="Reparse events this file has been associated with.",
-                                                 related_name="datafiles"
-                                                 )
+    # reparse_meta_models = models.ManyToManyField("search_indexes.ReparseMeta",
+    #                                              help_text="Reparse events this file has been associated with.",
+    #                                              related_name="datafiles"
+    #                                              )
+
+    reparses = models.ManyToManyField(
+        "search_indexes.ReparseMeta",
+        through="data_files.ReparseFileMeta",
+        help_text="Reparse events this file has been associated with.",
+        related_name="files"
+    )
 
     @property
     def prog_type(self):

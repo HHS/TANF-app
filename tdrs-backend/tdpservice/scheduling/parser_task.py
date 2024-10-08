@@ -54,7 +54,7 @@ def parse(data_file_id, should_send_submission_email=True):
                              f"Encountered Database exception in parser_task.py: \n{e}",
                              "error"
                              )
-        ReparseMeta.increment_files_failed(data_file.reparse_meta_models)
+        ReparseMeta.increment_files_failed(data_file.reparses)
     except Exception as e:
         generate_error = make_generate_parser_error(data_file, None)
         error = generate_error(schema=None,
@@ -72,4 +72,4 @@ def parse(data_file_id, should_send_submission_email=True):
                              (f"Uncaught exception while parsing datafile: {data_file.pk}! Please review the logs to "
                               f"see if manual intervention is required. Exception: \n{e}"),
                              "critical")
-        ReparseMeta.increment_files_failed(data_file.reparse_meta_models)
+        ReparseMeta.increment_files_failed(data_file.reparses)

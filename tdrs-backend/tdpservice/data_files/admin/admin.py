@@ -15,7 +15,7 @@ DOMAIN = settings.FRONTEND_BASE_URL
 class DataFileInline(admin.TabularInline):
     """Inline model for many to many relationship."""
 
-    model = DataFile.reparse_meta_models.through
+    model = DataFile.reparses.through
     can_delete = False
     ordering = ["-pk"]
 

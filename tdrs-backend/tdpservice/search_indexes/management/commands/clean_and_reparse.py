@@ -182,7 +182,7 @@ class Command(BaseCommand):
         """Delete, re-save, and reparse selected datafiles."""
         for file in files:
             try:
-                file.reparse_meta_models.add(meta_model)
+                file.reparses.add(meta_model)
                 file.save()
                 parser_task.parse.delay(file.pk, should_send_submission_email=False)
             except DatabaseError as e:

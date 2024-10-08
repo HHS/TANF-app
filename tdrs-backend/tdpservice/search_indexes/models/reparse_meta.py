@@ -88,7 +88,7 @@ class ReparseMeta(models.Model):
         meta_model.save()
 
     @staticmethod
-    def increment_files_completed(reparse_meta_models):
+    def increment_files_completed(reparses):
         """
         Increment the count of files that have completed parsing for the datafile's current/latest reparse model.
 
@@ -96,10 +96,10 @@ class ReparseMeta(models.Model):
         referrence the same ReparseMeta object that is being queried below. `select_for_update` provides a DB lock on
         the object and forces other transactions on the object to wait until this one completes.
         """
-        if reparse_meta_models.exists():
+        if reparses.exists():
             with transaction.atomic():
                 try:
-                    meta_model = reparse_meta_models.select_for_update().latest("pk")
+                    meta_model = reparses.select_for_update().latest("pk")
                     meta_model.files_completed += 1
                     if ReparseMeta.file_counts_match(meta_model):
                         ReparseMeta.set_reparse_finished(meta_model)
@@ -109,7 +109,7 @@ class ReparseMeta(models.Model):
                                      f"ReparseMeta object with ID: {meta_model.pk}.")
 
     @staticmethod
-    def increment_files_failed(reparse_meta_models):
+    def increment_files_failed(reparses):
         """
         Increment the count of files that failed parsing for the datafile's current/latest reparse meta model.
 
@@ -117,10 +117,10 @@ class ReparseMeta(models.Model):
         referrence the same ReparseMeta object that is being queried below. `select_for_update` provides a DB lock on
         the object and forces other transactions on the object to wait until this one completes.
         """
-        if reparse_meta_models.exists():
+        if reparses.exists():
             with transaction.atomic():
                 try:
-                    meta_model = reparse_meta_models.select_for_update().latest("pk")
+                    meta_model = reparses.select_for_update().latest("pk")
                     meta_model.files_failed += 1
                     if ReparseMeta.file_counts_match(meta_model):
                         ReparseMeta.set_reparse_finished(meta_model)
@@ -130,7 +130,7 @@ class ReparseMeta(models.Model):
                                      f"ReparseMeta object with ID: {meta_model.pk}.")
 
     @staticmethod
-    def increment_records_created(reparse_meta_models, num_created):
+    def increment_records_created(reparses, num_created):
         """
         Increment the count of records created for the datafile's current/latest reparse meta model.
 
@@ -138,10 +138,10 @@ class ReparseMeta(models.Model):
         referrence the same ReparseMeta object that is being queried below. `select_for_update` provides a DB lock on
         the object and forces other transactions on the object to wait until this one completes.
         """
-        if reparse_meta_models.exists():
+        if reparses.exists():
             with transaction.atomic():
                 try:
-                    meta_model = reparse_meta_models.select_for_update().latest("pk")
+                    meta_model = reparses.select_for_update().latest("pk")
                     meta_model.num_records_created += num_created
                     meta_model.save()
                 except DatabaseError:

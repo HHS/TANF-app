@@ -114,8 +114,8 @@ def parse_datafile(datafile, dfs):
 
 def update_meta_model(datafile, dfs):
     """Update appropriate meta models."""
-    ReparseMeta.increment_records_created(datafile.reparse_meta_models, dfs.total_number_of_records_created)
-    ReparseMeta.increment_files_completed(datafile.reparse_meta_models)
+    ReparseMeta.increment_records_created(datafile.reparses, dfs.total_number_of_records_created)
+    ReparseMeta.increment_files_completed(datafile.reparses)
 
 def bulk_create_records(unsaved_records, line_number, header_count, datafile, dfs, flush=False):
     """Bulk create passed in records."""
