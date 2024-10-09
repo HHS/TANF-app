@@ -24,6 +24,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/:rw
 
+  grafana-pg:
+    image: tdp-docker.dev.raftlabs.tech/dependencies/postgres:15.7
+    environment:
+      - PGDATA=/var/lib/postgresql/data/
+      - POSTGRES_DB=grafana
+      - POSTGRES_PASSWORD=something_secure
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=grafana
+    ports:
+      - "5433:5432"
+    volumes:
+      - grafana_pg_data:/var/lib/postgresql/data/:rw
+
   clamav-rest:
     image: tdp-docker.dev.raftlabs.tech/dependencies/rafttech/clamav-rest:0.103.2
     environment:
@@ -86,6 +99,8 @@ services:
       - ./plg/grafana/custom.local.ini:/usr/share/grafana/conf/custom.ini
       - grafana_data:/var/lib/grafana
     command: --config /usr/share/grafana/conf/custom.ini
+    depends_on:
+      - grafana-pg
 
   prometheus:
     restart: always
@@ -214,6 +229,7 @@ services:
 volumes:
   localstack_data:
   postgres_data:
+  grafana_pg_data:
   elastic_data:
   prometheus_data:
   grafana_data:
